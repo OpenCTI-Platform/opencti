@@ -5,7 +5,7 @@ import { notify } from '../../../database/redis';
 import type { DomainFindById } from '../../../domain/domainTypes';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { type BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE } from './task-template-types';
+import { type BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE, type StoreEntityTaskTemplate } from './task-template-types';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import type { EditInput, TaskTemplateAddInput } from '../../../generated/graphql';
 
@@ -31,7 +31,7 @@ export const taskTemplateAdd = async (context: AuthContext, user: AuthUser, inpu
 };
 
 export const taskTemplateDelete = async (context: AuthContext, user: AuthUser, id: string) => {
-  const element = await deleteElementById(context, user, id, ENTITY_TYPE_TASK_TEMPLATE);
+  const element = await deleteElementById<StoreEntityTaskTemplate>(context, user, id, ENTITY_TYPE_TASK_TEMPLATE);
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, element, user);
   await publishUserAction({
     user,
@@ -45,7 +45,7 @@ export const taskTemplateDelete = async (context: AuthContext, user: AuthUser, i
 };
 
 export const taskTemplateEdit = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
-  const { element: updatedElem } = await updateAttribute(context, user, id, ENTITY_TYPE_TASK_TEMPLATE, input);
+  const { element: updatedElem } = await updateAttribute<StoreEntityTaskTemplate>(context, user, id, ENTITY_TYPE_TASK_TEMPLATE, input);
   await publishUserAction({
     user,
     event_type: 'mutation',

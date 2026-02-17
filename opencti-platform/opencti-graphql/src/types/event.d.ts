@@ -55,8 +55,8 @@ interface StreamDataEvent extends BaseEvent {
 
 interface Change {
   field: string;
-  previous?: Array<string>;
-  new?: Array<string>;
+  previous?: Array<string> | null;
+  new?: Array<string> | null;
   added?: Array<string>;
   removed?: Array<string>;
 }

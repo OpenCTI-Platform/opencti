@@ -6,7 +6,7 @@ OpenCTI supports multiple ways to integrate with other systems which do not have
 
 !!! note "Connectors list"
     
-    If you are looking for the list of OpenCTI connectors or native integration, please check the [OpenCTI Ecosystem](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76).
+    If you are looking for the list of OpenCTI connectors or native integration, please check the [XTM Hub Integrations Library](https://hub.filigran.io/cybersecurity-solutions/open-cti-integrations).
 
 ## Native feeds and streams
 
@@ -45,7 +45,7 @@ That's why we've developed the live streams. They are available in Data > Data s
 
 ![Streams](assets/streams.png)
 
-Streams implement the [HTTP SSE (Server-sent events)](https://en.wikipedia.org/wiki/Server-sent_events) protocol and give applications the possibility to consume a real time pure STIX 2.1 stream. Stream connectors in the [OpenCTI Ecosystem](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76) are using live streams to consume data and *do* something such as create / update / delete information in SIEMs, XDRs, etc.
+Streams implement the [HTTP SSE (Server-sent events)](https://en.wikipedia.org/wiki/Server-sent_events) protocol and give applications the possibility to consume a real time pure STIX 2.1 stream. Stream connectors in the [XTM Hub Integrations Library](https://hub.filigran.io/cybersecurity-solutions/open-cti-integrations) are using live streams to consume data and *do* something such as create / update / delete information in SIEMs, XDRs, etc.
 
 ### Authentication
 

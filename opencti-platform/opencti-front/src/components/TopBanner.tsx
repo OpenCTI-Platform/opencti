@@ -1,9 +1,10 @@
 import Button from '@mui/material/Button';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import React, { useContext } from 'react';
 import { isNotEmptyField } from '../utils/utils';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
 import { UserContext } from '../utils/hooks/useAuth';
+import { SxProps } from '@mui/material';
+import { ChevronRight } from '@mui/icons-material';
 
 export const TOP_BANNER_HEIGHT = 30;
 
@@ -21,10 +22,11 @@ interface TopBannerProps {
   bannerText: React.ReactNode;
   bannerColor?: TopBannerColor;
   buttonText: React.ReactNode;
+  buttonSx?: SxProps;
   onButtonClick?: () => void;
 }
 
-const TopBanner = ({ bannerText, bannerColor = 'gradient_blue', buttonText, onButtonClick }: TopBannerProps) => {
+const TopBanner = ({ bannerText, bannerColor = 'gradient_blue', buttonText, onButtonClick, buttonSx }: TopBannerProps) => {
   const { settings } = useContext(UserContext);
   const colors = TOPBANNER_COLORS[bannerColor];
 
@@ -65,8 +67,9 @@ const TopBanner = ({ bannerText, bannerColor = 'gradient_blue', buttonText, onBu
             '& .MuiButton-endIcon': {
               marginLeft: '2px',
             },
+            ...buttonSx,
           }}
-          endIcon={<ArrowForwardIcon />}
+          endIcon={<ChevronRight />}
         >
           {buttonText}
         </Button>

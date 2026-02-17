@@ -327,6 +327,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
         resolve_result_indicators = kwargs.get("resolve_result_indicators", True)
         files = kwargs.get("files", None)
         files_markings = kwargs.get("filesMarkings", None)
+        no_trigger_import = kwargs.get("noTriggerImport", None)
+        embedded = kwargs.get("embedded", None)
         upsert_operations = kwargs.get("upsert_operations", None)
 
         create_indicator = (
@@ -577,6 +579,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "rir": observable_data["rir"] if "rir" in observable_data else None,
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Directory":
                 input_variables["Directory"] = {
@@ -597,12 +601,16 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Domain-Name":
                 input_variables["DomainName"] = {
                     "value": observable_data["value"],
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
                 if attribute is not None:
                     input_variables["DomainName"][attribute] = simple_observable_value
@@ -616,6 +624,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Email-Message":
                 input_variables["EmailMessage"] = {
@@ -647,6 +657,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Email-Mime-Part-Type":
                 input_variables["EmailMimePartType"] = {
@@ -665,6 +677,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Artifact":
                 if (
@@ -704,6 +718,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "StixFile":
                 if (
@@ -757,6 +773,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "X509-Certificate":
                 input_variables["X509Certificate"] = {
@@ -898,6 +916,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "SSH-Key" or type.lower() == "ssh-key":
                 input_variables["SSHKey"] = {
@@ -943,6 +963,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "IPv4-Addr":
                 input_variables["IPv4Addr"] = {
@@ -951,6 +973,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "IPv6-Addr":
                 input_variables["IPv6Addr"] = {
@@ -959,6 +983,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Mac-Addr":
                 input_variables["MacAddr"] = {
@@ -967,6 +993,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Mutex":
                 input_variables["Mutex"] = {
@@ -975,6 +1003,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Network-Traffic":
                 input_variables["NetworkTraffic"] = {
@@ -1034,6 +1064,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Process":
                 input_variables["Process"] = {
@@ -1061,6 +1093,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Software":
                 if (
@@ -1105,6 +1139,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Url":
                 input_variables["Url"] = {
@@ -1113,6 +1149,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "User-Account":
                 input_variables["UserAccount"] = {
@@ -1188,6 +1226,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Windows-Registry-Key":
                 input_variables["WindowsRegistryKey"] = {
@@ -1206,6 +1246,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Windows-Registry-Value-Type":
                 input_variables["WindowsRegistryValueType"] = {
@@ -1222,6 +1264,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "User-Agent":
                 input_variables["UserAgent"] = {
@@ -1230,6 +1274,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Cryptographic-Key":
                 input_variables["CryptographicKey"] = {
@@ -1238,6 +1284,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Hostname":
                 input_variables["Hostname"] = {
@@ -1246,6 +1294,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Text":
                 input_variables["Text"] = {
@@ -1254,6 +1304,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Bank-Account":
                 input_variables["BankAccount"] = {
@@ -1268,6 +1320,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Phone-Number":
                 input_variables["PhoneNumber"] = {
@@ -1276,6 +1330,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Payment-Card":
                 input_variables["PaymentCard"] = {
@@ -1297,6 +1353,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Media-Content":
                 input_variables["MediaContent"] = {
@@ -1321,6 +1379,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Persona":
                 input_variables["Persona"] = {
@@ -1336,6 +1396,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Payment-Card" or type.lower() == "x-opencti-payment-card":
                 input_variables["PaymentCard"] = {
@@ -1357,6 +1419,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif (
                 type == "Cryptocurrency-Wallet"
@@ -1368,6 +1432,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif type == "Credential" or type.lower() == "x-opencti-credential":
                 input_variables["Credential"] = {
@@ -1376,6 +1442,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             elif (
                 type == "Tracking-Number" or type.lower() == "x-opencti-tracking-number"
@@ -1386,6 +1454,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "noTriggerImport": no_trigger_import,
+                    "embedded": embedded,
                 }
             result = self.opencti.query(query, input_variables)
             if "payload_bin" in observable_data and "mime_type" in observable_data:

@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import { Readable } from 'stream';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityDocument } from '../modules/internal/document/document-types';
-import type { BasicStoreBase, BasicStoreEntity, BasicStoreObject } from '../types/store';
+import type { BasicStoreBase, BasicStoreEntity, BasicStoreObject, StoreFile } from '../types/store';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import conf, { logApp } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
@@ -29,7 +29,7 @@ import {
   SUPPORT_STORAGE_PATH,
 } from '../modules/internal/document/document-domain';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
-import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, validateMarking } from '../utils/access';
+import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, SYSTEM_USER, validateMarking } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
 import { getDraftContext } from '../utils/draftContext';
 import { isModuleActivated } from './cluster-module';
@@ -37,6 +37,9 @@ import { getDraftFilePrefix, isDraftFile } from './draft-utils';
 import { deleteFileFromStorage, getFileSize, rawCopyFile, rawListObjects, rawUpload } from './raw-file-storage';
 import { promiseMap } from '../utils/promiseUtils';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
+import { pushAll } from '../utils/arrayUtil';
+import { getEntitiesMapFromCache } from './cache';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 // Minio configuration
 const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
@@ -180,17 +183,22 @@ export const loadFile = async (
  * @param {AuthContext} context - The authentication context
  * @param {AuthUser} user - The user performing the deletion
  * @param {string} id - The file ID (S3 path) to delete
+ * @param {Object} opts - Options for deletion
+ * @param {boolean} opts.forceDelete - If true, proceeds with cleanup even if file not found (useful for retention manager)
  * @returns {Promise<LoadedFile | undefined>} The deleted file information
  * @throws {UnsupportedError} When attempting to delete non-draft files in draft mode
  */
-export const deleteFile = async (context: AuthContext, user: AuthUser, id: string) => {
+export const deleteFile = async (context: AuthContext, user: AuthUser, id: string, opts: { forceDelete?: boolean } = {}) => {
+  const { forceDelete = false } = opts;
   const draftContext = getDraftContext(context, user);
   if (draftContext && !isDraftFile(id, draftContext)) {
     throw UnsupportedError('Cannot delete non draft imports in draft');
   }
-  const up = await loadFile(context, user, id);
+  const up = await loadFile(context, user, id, { dontThrow: forceDelete });
+  // If file not found and not forcing, loadFile already threw
+  // If file not found and forcing, we still proceed to clean up any orphan data
   logApp.debug(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
-  // Delete in S3
+  // Delete in S3 (idempotent - won't fail if file doesn't exist)
   await deleteFileFromStorage(id);
   // Delete associated works
   await deleteWorkForFile(context, user, id);
@@ -281,7 +289,7 @@ export const copyFile = async (
 /**
  * Convert File object coming from uploadToStorage/upload functions to x_opencti_file format.
  */
-export const storeFileConverter = (user: AuthUser, file: LoadedFile) => {
+export const storeFileConverter = (_user: AuthUser, file: LoadedFile): StoreFile => {
   return {
     id: file.id,
     name: file.name,
@@ -399,7 +407,7 @@ export const loadedFilesListing = async (
       if (callback) {
         callback(resultLoaded.filter((n) => n !== undefined));
       } else {
-        files.push(...resultLoaded.filter((n) => n !== undefined));
+        pushAll(files, resultLoaded.filter((n) => n !== undefined));
       }
       truncated = response.IsTruncated ?? false;
       if (truncated) {
@@ -560,10 +568,16 @@ export const upload = async (
   opts: FileUploadOpts,
 ): Promise<{ upload: LoadedFile; untouched: boolean }> => {
   const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [] } = opts;
+  const markings = await getEntitiesMapFromCache<BasicStoreObject>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const normalized_file_markings = file_markings?.map((m) => {
+    const marking = markings.get(m);
+    return marking ? marking.internal_id : m;
+  }) ?? [];
+  const filtered_markings = normalized_file_markings.filter((id) => id) as string[];
   // Verify markings
-  for (let index = 0; index < (file_markings ?? []).length; index += 1) {
-    const markingId = file_markings[index];
-    await validateMarking(context, user, markingId);
+  for (let index = 0; index < (filtered_markings ?? []).length; index += 1) {
+    const markingId = filtered_markings[index];
+    await validateMarking(context, user, markingId, markings);
   }
   const metadata: FileMetadata = { ...meta };
   if (!metadata.version) {
@@ -616,7 +630,7 @@ export const upload = async (
     information: '',
     lastModified: new Date(),
     lastModifiedSinceMin: sinceNowInMinutes(new Date()),
-    metaData: { ...fullMetadata, messages: [], errors: [], file_markings },
+    metaData: { ...fullMetadata, messages: [], errors: [], file_markings: filtered_markings },
     uploadStatus: 'complete',
   };
   await indexFileToDocument(context, file);
@@ -649,7 +663,7 @@ export const streamConverter = (stream: Readable): Promise<string> => {
   });
 };
 export interface FileUploadOpts {
-  entity?: BasicStoreBase; // entity on which the file is uploaded
+  entity?: BasicStoreBase | null; // entity on which the file is uploaded
   meta?: Record<string, any>;
   noTriggerImport?: boolean;
   errorOnExisting?: boolean;
@@ -720,17 +734,22 @@ export const deleteAllObjectFiles = async (context: AuthContext, user: AuthUser,
     const fromTemplateFilesPromise = allFilesForPaths(context, user, [fromTemplatePath]);
     const fromTemplateWorkPromise = deleteWorkForSource(fromTemplatePath);
 
-    const [importFiles, embeddedFiles, exportFiles, fromTemplateFiles, _, __, ___, ____] = await Promise.all([
+    // Also delete workbenches linked to this entity (files in import/pending with metaData.entity_id)
+    const pendingPath = `${IMPORT_STORAGE_PATH}/pending/`;
+    const pendingFilesPromise = allFilesForPaths(context, user, [pendingPath], { entity_id: element.internal_id });
+
+    const [importFiles, embeddedFiles, exportFiles, fromTemplateFiles, pendingFiles] = await Promise.all([
       importFilesPromise,
       embeddedFilesPromise,
       exportFilesPromise,
       fromTemplateFilesPromise,
+      pendingFilesPromise,
       importWorkPromise,
       embeddedWorkPromise,
       exportWorkPromise,
       fromTemplateWorkPromise,
     ]);
-    ids = [...importFiles, ...embeddedFiles, ...exportFiles, ...fromTemplateFiles].map((file) => file.id);
+    ids = [...importFiles, ...embeddedFiles, ...exportFiles, ...fromTemplateFiles, ...pendingFiles].map((file) => file.id);
   }
   logApp.debug('[FILE STORAGE] deleting all files with ids:', { ids });
   return deleteFiles(context, user, ids);
@@ -790,7 +809,7 @@ export const moveAllFilesFromEntityToAnother = async (context: AuthContext, user
   if (getDraftContext(context, user)) {
     throw UnsupportedError('Cannot merge all files in draft');
   }
-  const updatedXOpenctiFiles: Array<{ id: string; name: string; version?: string; mime_type?: string; file_markings: string[] }> = [];
+  const updatedXOpenctiFiles: Array<StoreFile> = [];
   for (let folderI = 0; folderI < ALL_MERGEABLE_FOLDERS.length; folderI += 1) {
     try {
       const sourcePath = `${ALL_MERGEABLE_FOLDERS[folderI]}/${sourceEntity.entity_type}/${sourceEntity.internal_id}`;

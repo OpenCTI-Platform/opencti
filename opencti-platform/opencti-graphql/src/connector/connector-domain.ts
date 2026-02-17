@@ -4,6 +4,7 @@ import { ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR } from './importCsv/importCsv-con
 import { DRAFT_VALIDATION_CONNECTOR, draftValidationConnectorRuntime } from '../modules/draftWorkspace/draftWorkspace-connector';
 import { getInternalBackgroundTaskQueues, getInternalPlaybookQueues, getInternalSyncQueues } from '../database/rabbitmq';
 import type { Connector } from './internalConnector';
+import { pushAll } from '../utils/arrayUtil';
 
 const builtInInternalConnectors = async (context: AuthContext, user: AuthUser) => {
   const builtInInternalConnectorsList: Connector[] = [];
@@ -34,7 +35,7 @@ export const builtInConnectorsRuntime = async (context: AuthContext, user: AuthU
     builtInConnectors.push(csvConnector);
   }
   builtInConnectors.push(await draftValidationConnectorRuntime());
-  builtInConnectors.push(...(await builtInInternalConnectors(context, user)));
+  pushAll(builtInConnectors, (await builtInInternalConnectors(context, user)));
   return builtInConnectors;
 };
 

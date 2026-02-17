@@ -9,7 +9,7 @@ import { DraftEntities_node$data } from '@components/drafts/__generated__/DraftE
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, addFilter } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -120,13 +120,13 @@ const LOCAL_STORAGE_KEY = 'draft_entities';
 
 interface DraftEntitiesProps {
   entitiesType?: string;
-  excludedEntitiesType?: string;
+  excludedEntityTypes?: string;
   isReadOnly: boolean;
 }
 
 const DraftEntities: FunctionComponent<DraftEntitiesProps> = ({
   entitiesType = 'Stix-Core-Object',
-  excludedEntitiesType,
+  excludedEntityTypes,
   isReadOnly,
 }) => {
   const computeLink = useComputeLink();
@@ -166,9 +166,8 @@ const DraftEntities: FunctionComponent<DraftEntitiesProps> = ({
     filters,
     searchTerm,
   } = viewStorage;
-  const filtersWithType = useBuildEntityTypeBasedFilterContext(entitiesType, filters, excludedEntitiesType);
-  // add filter to keep only relevant draft operations
-  const contextFilters = addFilter(filtersWithType, 'draft_change.draft_operation', ['create', 'update', 'delete']);
+  const contextFilters = useBuildEntityTypeBasedFilterContext(entitiesType, filters, { excludedEntityTypesParam: excludedEntityTypes, draftId });
+
   const queryPaginationOptions = {
     ...paginationOptions,
     draftId,

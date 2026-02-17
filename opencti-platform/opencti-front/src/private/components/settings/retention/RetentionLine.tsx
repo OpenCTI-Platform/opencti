@@ -84,7 +84,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
     appliedOnContent = t_i18n('Global files');
   } else if (data.scope === 'workbench') {
     scopeColor = 'primary';
-    appliedOnContent = t_i18n('Global workbenches');
+    appliedOnContent = t_i18n('All workbenches');
   }
   return (
     <ListItem

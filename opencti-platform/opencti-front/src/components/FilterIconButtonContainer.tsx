@@ -1,24 +1,24 @@
-import Chip from '@mui/material/Chip';
-import Tooltip from '@mui/material/Tooltip';
-import React, { Fragment, FunctionComponent, useContext, useEffect, useRef, useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
-import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import Box from '@mui/material/Box';
-import { truncate } from '../utils/String';
-import { DataColumns } from './list_lines';
-import { useFormatter } from './i18n';
-import type { Theme } from './Theme';
+import Chip from '@mui/material/Chip';
+import { ChipOwnProps } from '@mui/material/Chip/Chip';
+import Tooltip from '@mui/material/Tooltip';
+import makeStyles from '@mui/styles/makeStyles';
+import React, { Fragment, FunctionComponent, useContext, useEffect, useRef } from 'react';
+import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { convertOperatorToIcon, filterOperatorsWithIcon, FilterSearchContext, FiltersRestrictions, isFilterEditable, useFilterDefinition } from '../utils/filters/filtersUtils';
+import { truncate } from '../utils/String';
 import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQuery.graphql';
 import FilterValues from './filters/FilterValues';
+import { useFormatter } from './i18n';
+import { DataColumns } from './list_lines';
+import type { Theme } from './Theme';
 // eslint-disable-next-line import/no-cycle
-import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
-import DisplayFilterGroup from './filters/DisplayFilterGroup';
-import FilterIconButtonGlobalMode from './FilterIconButtonGlobalMode';
-import { filterValuesContentQuery } from './FilterValuesContent';
-import { FilterRepresentative } from './filters/FiltersModel';
 import { Filter, FilterGroup, handleFilterHelpers } from '../utils/filters/filtersHelpers-types';
+import FilterIconButtonGlobalMode from './FilterIconButtonGlobalMode';
+import DisplayFilterGroup from './filters/DisplayFilterGroup';
+import { FilterChipPopover, FilterChipsParameter } from './filters/FilterChipPopover';
+import { FilterRepresentative } from './filters/FiltersModel';
+import { filterValuesContentQuery } from './FilterValuesContent';
 import { PageContainerContext } from './PageContainer';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -129,6 +129,8 @@ interface FilterIconButtonContainerProps {
   availableRelationshipTypes?: string[];
   fintelTemplatesContext?: boolean;
   hasSavedFilters?: boolean;
+  filterChipsParams: FilterChipsParameter;
+  setFilterChipsParams: React.Dispatch<React.SetStateAction<FilterChipsParameter>>;
 }
 
 const FilterIconButtonContainer: FunctionComponent<
@@ -154,6 +156,8 @@ const FilterIconButtonContainer: FunctionComponent<
   availableRelationshipTypes,
   fintelTemplatesContext,
   hasSavedFilters,
+  filterChipsParams,
+  setFilterChipsParams,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
@@ -173,33 +177,40 @@ const FilterIconButtonContainer: FunctionComponent<
   const filtersRepresentativesMap = new Map<string, FilterRepresentative>(
     filtersRepresentatives.map((n: FilterRepresentative) => [n.id, n]),
   );
-  const [filterChipsParams, setFilterChipsParams] = useState<FilterChipsParameter>({
-    filter: undefined,
-    anchorEl: undefined,
-  } as FilterChipsParameter);
-  const open = Boolean(filterChipsParams.anchorEl);
-  if (helpers) {
-    // activate popover feature on chip only when "helper" is defined, not the best way to handle but
-    // it means that the new filter feature is activated. Will be removed in the next version when we generalize the feature on every filter.
-    useEffect(() => {
-      const newFilterAdded = hasRenderedRef
-        && itemRefToPopover.current
-        && oldItemRefToPopover.current !== itemRefToPopover.current;
-      if (newFilterAdded) {
-        setFilterChipsParams({
-          filterId: helpers?.getLatestAddFilterId(),
-          anchorEl: itemRefToPopover.current as unknown as HTMLElement,
-        });
-      } else {
-        setHasRenderedRef(true);
-      }
-      oldItemRefToPopover.current = itemRefToPopover.current;
-    }, [displayedFilters]);
-  }
+
+  const getAnchorPosition = (element: HTMLElement) => {
+    const rect = element.getBoundingClientRect();
+    return { top: rect.bottom, left: rect.left };
+  };
+
+  // activate popover feature on chip only when "helper" is defined, not the best way to handle but
+  // it means that the new filter feature is activated. Will be removed in the next version when we generalize the feature on every filter.
+  useEffect(() => {
+    if (!helpers) return;
+    const latestFilterId = helpers.getLatestAddFilterId();
+    const newFilterAdded = hasRenderedRef
+      && latestFilterId
+      && itemRefToPopover.current
+      && oldItemRefToPopover.current !== itemRefToPopover.current;
+    if (newFilterAdded) {
+      const anchorEl = itemRefToPopover.current as unknown as HTMLElement;
+      const anchorPosition = getAnchorPosition(anchorEl);
+      setFilterChipsParams({
+        filterId: latestFilterId,
+        anchorEl,
+        anchorPosition,
+      });
+    } else {
+      setHasRenderedRef(true);
+    }
+    oldItemRefToPopover.current = itemRefToPopover.current;
+  }, [displayedFilters, helpers, hasRenderedRef, setFilterChipsParams, setHasRenderedRef]);
+
   const handleClose = () => {
     setFilterChipsParams({
       filterId: undefined,
       anchorEl: undefined,
+      anchorPosition: undefined,
     });
   };
   const handleChipClick = (
@@ -207,9 +218,12 @@ const FilterIconButtonContainer: FunctionComponent<
     filterId?: string,
   ) => {
     if (helpers) {
+      const anchorEl = event.currentTarget.parentElement ?? event.currentTarget;
+      const anchorPosition = getAnchorPosition(anchorEl);
       setFilterChipsParams({
         filterId,
-        anchorEl: event.currentTarget.parentElement ?? event.currentTarget,
+        anchorEl,
+        anchorPosition,
       });
     }
   };
@@ -394,23 +408,21 @@ const FilterIconButtonContainer: FunctionComponent<
           </Fragment>
         );
       })}
-      {filterChipsParams.anchorEl && (
-        <>
-          <FilterChipPopover
-            filters={filters.filters}
-            params={filterChipsParams}
-            handleClose={handleClose}
-            open={open}
-            helpers={helpers}
-            filtersRepresentativesMap={filtersRepresentativesMap}
-            availableRelationFilterTypes={availableRelationFilterTypes}
-            entityTypes={entityTypes}
-            searchContext={searchContext}
-            availableEntityTypes={availableEntityTypes}
-            availableRelationshipTypes={availableRelationshipTypes}
-            fintelTemplatesContext={fintelTemplatesContext}
-          />
-        </>
+      {filterChipsParams.filterId && filterChipsParams.anchorPosition && (
+        <FilterChipPopover
+          filters={filters.filters}
+          params={filterChipsParams}
+          handleClose={handleClose}
+          open={Boolean(filterChipsParams.filterId)}
+          helpers={helpers}
+          filtersRepresentativesMap={filtersRepresentativesMap}
+          availableRelationFilterTypes={availableRelationFilterTypes}
+          entityTypes={entityTypes}
+          searchContext={searchContext}
+          availableEntityTypes={availableEntityTypes}
+          availableRelationshipTypes={availableRelationshipTypes}
+          fintelTemplatesContext={fintelTemplatesContext}
+        />
       )}
       {filters.filterGroups
         && filters.filterGroups.length > 0 && ( // if there are filterGroups, we display a warning box // TODO display correctly filterGroups

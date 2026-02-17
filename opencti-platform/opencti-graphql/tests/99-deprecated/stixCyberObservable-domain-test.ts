@@ -35,7 +35,7 @@ describe('stixCyberObservable deprecated API [>=6.2 & <6.8]', () => {
 
     const result = await promoteObservableToIndicator_deprecated(testContext, ADMIN_USER, observable.id);
     expect(result).not.toBeUndefined();
-    expect(result.id).toEqual(observable.id);
+    expect(result?.id).toEqual(observable.id);
 
     // we need to find the indicator created to be able to delete it in afterAll
     const queryResult = await queryAsAdminWithSuccess({

@@ -1,16 +1,17 @@
-import React, { Dispatch, FunctionComponent, ReactNode, SyntheticEvent, useState } from 'react';
-import Popover from '@mui/material/Popover';
-import TextField from '@mui/material/TextField';
-import Checkbox from '@mui/material/Checkbox';
-import Tooltip from '@mui/material/Tooltip';
-import FilterDate from '@components/common/lists/FilterDate';
-import { Autocomplete, MenuItem, Select } from '@mui/material';
-import { SelectChangeEvent } from '@mui/material/Select';
-import SearchScopeElement from '@components/common/lists/SearchScopeElement';
-import Chip from '@mui/material/Chip';
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
-import { addDays, subDays } from 'date-fns';
+import FilterDate from '@components/common/lists/FilterDate';
+import SearchScopeElement from '@components/common/lists/SearchScopeElement';
+import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason, MenuItem, Select } from '@mui/material';
+import Checkbox from '@mui/material/Checkbox';
+import Chip from '@mui/material/Chip';
+import Popover from '@mui/material/Popover';
+import { SelectChangeEvent } from '@mui/material/Select';
 import { useTheme } from '@mui/material/styles';
+import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
+import { addDays, subDays } from 'date-fns';
+import { Dispatch, FunctionComponent, ReactNode, SyntheticEvent, useState } from 'react';
+import { Filter, FilterValue, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 import {
   DEFAULT_WITHIN_FILTER_VALUES,
   emptyFilterGroup,
@@ -24,20 +25,18 @@ import {
   SELF_ID_VALUE,
   useFilterDefinition,
 } from '../../utils/filters/filtersUtils';
+import { getOptionsFromEntities } from '../../utils/filters/SearchEntitiesUtil';
+import useSearchEntities from '../../utils/filters/useSearchEntities';
+import useAttributes from '../../utils/hooks/useAttributes';
+import { FilterDefinition } from '../../utils/hooks/useAuth';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
-import { getOptionsFromEntities } from '../../utils/filters/SearchEntitiesUtil';
-import { FilterDefinition } from '../../utils/hooks/useAuth';
-import { FilterRepresentative } from './FiltersModel';
-import useSearchEntities from '../../utils/filters/useSearchEntities';
-import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
-import useAttributes from '../../utils/hooks/useAttributes';
 import BasicFilterInput from './BasicFilterInput';
-import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
 import DateRangeFilter from './DateRangeFilter';
+import { FilterRepresentative } from './FiltersModel';
+import QuickRelativeDateFiltersButtons from './QuickRelativeDateFiltersButtons';
 // eslint-disable-next-line import/no-cycle
 import FilterFiltersInput from './FilterFiltersInput';
-import stopEvent from '../../utils/domEvent';
 
 interface FilterChipMenuProps {
   handleClose: () => void;
@@ -57,7 +56,16 @@ interface FilterChipMenuProps {
 export interface FilterChipsParameter {
   filterId?: string;
   anchorEl?: HTMLElement;
+  anchorPosition?: { top: number; left: number };
 }
+
+const AUTOCOMPLETE_KEY_ACTIONS: { [k: string]: AutocompleteChangeReason | AutocompleteInputChangeReason } = {
+  SELECT_OPTION: 'selectOption',
+  REMOVE_OPTION: 'removeOption',
+  CLEAR: 'clear',
+  INPUT: 'input',
+  RESET: 'reset',
+};
 
 const OperatorKeyValues: {
   [key: string]: string;
@@ -101,14 +109,16 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const filterOperator = filter?.operator ?? '';
   const filterValues = filter?.values ?? [];
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
-  const filterLabel = t_i18n(filterDefinition?.label ?? filterKey);
+  const filterLabel = filterKey ? t_i18n(filterDefinition?.label ?? filterKey) : '';
   const { typesWithFintelTemplates } = useAttributes();
+  const [autocompleteInputValues, setAutocompleteInputValues] = useState<Record<string, string>>({});
 
   const [inputValues, setInputValues] = useState<{
     key: string;
     values: string[];
     operator?: string;
   }[]>(filter ? [filter] : []);
+
   const [cacheEntities, setCacheEntities] = useState<Record<string, FilterOptionValue[]>>({});
   const [searchScope, setSearchScope] = useState<Record<string, string[]>>(
     availableRelationFilterTypes || {
@@ -127,6 +137,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       ],
     },
   );
+
   const [entities, searchEntities] = useSearchEntities({
     availableEntityTypes,
     availableRelationshipTypes,
@@ -141,6 +152,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     isSubKey?: boolean,
   ) => Record<string, FilterOptionValue[]>,
   ];
+
   const handleChange = (checked: boolean, value: string | null, childKey?: string) => {
     if (childKey) {
       const childFilters = filter?.values.filter((val) => val.key === childKey) as Filter[];
@@ -185,6 +197,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     // modify the operator
     helpers?.handleChangeOperatorFilters(filter?.id ?? '', newOperator);
   };
+
   const handleDateChange = (_: string, value: string) => {
     // convert the date to handle comparison with a timestamp
     const date = new Date(value);
@@ -258,15 +271,73 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     const groupByEntities = (option: FilterOptionValue, label?: string) => {
       return t_i18n(option?.group ? option?.group : label);
     };
+
+    const handleAutocompleteChange = (_event: SyntheticEvent, newValue: FilterOptionValue[], reason: AutocompleteChangeReason) => {
+      const newValues = newValue.map((v) => v.value);
+
+      if (reason === AUTOCOMPLETE_KEY_ACTIONS.CLEAR) {
+        if (subKey) {
+          const childFilters = (filter?.values ?? []).filter((val) => val.key === subKey) as Filter[];
+          const childFilter = childFilters.length > 0 ? childFilters[0] : undefined;
+          helpers?.handleChangeRepresentationFilter(filter?.id ?? '', childFilter, undefined);
+        } else {
+          helpers?.handleReplaceFilterValues(filter?.id ?? '', []);
+        }
+        return;
+      }
+
+      if (reason !== AUTOCOMPLETE_KEY_ACTIONS.SELECT_OPTION && reason !== AUTOCOMPLETE_KEY_ACTIONS.REMOVE_OPTION) {
+        return;
+      }
+
+      if (reason === AUTOCOMPLETE_KEY_ACTIONS.SELECT_OPTION) {
+        setAutocompleteInputValues((prev) => ({ ...prev, [fKey]: '' }));
+      }
+
+      const actualFilterValues: FilterValue[] = subKey
+        ? filterValues.filter((filterValue) => filterValue && filterValue.key === subKey).at(0)?.values ?? []
+        : filterValues;
+
+      const added = newValues.filter((v) => !actualFilterValues.includes(v));
+      const removed = actualFilterValues.filter((v: FilterValue) => !newValues.includes(v));
+
+      if (added.length === 1) {
+        const value = added[0];
+        const disabledOption = disabled && actualFilterValues.length === 1 && actualFilterValues.includes(value);
+        if (!disabledOption) {
+          handleChange(true, value, subKey);
+        }
+      } else if (removed.length === 1) {
+        const value = removed[0];
+        const disabledOption = disabled && actualFilterValues.length === 1;
+        if (!disabledOption) {
+          handleChange(false, value, subKey);
+        }
+      }
+    };
+
     return (
       <Autocomplete
         multiple
         key={fKey}
+        value={selectedOptions}
+        inputValue={autocompleteInputValues[fKey] || ''}
         getOptionLabel={(option) => option.label ?? ''}
         noOptionsText={t_i18n('No available options')}
         options={options}
         groupBy={(option) => groupByEntities(option, fLabel)}
-        onInputChange={(event) => searchEntities(fKey, cacheEntities, setCacheEntities, event, !!subKey)}
+        onInputChange={(event, newInputValue, reason: AutocompleteInputChangeReason) => {
+          if (reason === AUTOCOMPLETE_KEY_ACTIONS.INPUT || reason === AUTOCOMPLETE_KEY_ACTIONS.CLEAR) {
+            setAutocompleteInputValues((prev) => ({ ...prev, [fKey]: newInputValue }));
+          }
+          if (event && reason === AUTOCOMPLETE_KEY_ACTIONS.INPUT) {
+            const syntheticEvent = { target: { value: newInputValue } } as unknown as SyntheticEvent;
+            searchEntities(fKey, cacheEntities, setCacheEntities, syntheticEvent, !!subKey);
+          }
+        }}
+        onChange={handleAutocompleteChange}
+        disableCloseOnSelect
+        isOptionEqualToValue={(option, val) => option.value === val.value}
         renderInput={(paramsInput) => (
           <TextField
             {...paramsInput}
@@ -283,14 +354,15 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             size="small"
             fullWidth={true}
             autoFocus={true}
-            onFocus={(event) => searchEntities(
-              fKey,
-              cacheEntities,
-              setCacheEntities,
-              event,
-              !!subKey,
-            )
-            }
+            onFocus={(event) => {
+              searchEntities(
+                fKey,
+                cacheEntities,
+                setCacheEntities,
+                event,
+                !!subKey,
+              );
+            }}
           />
         )}
         renderOption={(props, option) => {
@@ -305,18 +377,14 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             <Tooltip title={option.label} key={key || option.value} followCursor>
               <li
                 {...otherProps}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.stopPropagation();
-                  }
-                }}
-                onClick={() => (disabledOptions ? {} : handleChange(!checked, option.value, subKey))}
+                aria-disabled={disabledOptions}
                 style={{
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   padding: 0,
                   margin: 0,
+                  pointerEvents: disabledOptions ? 'none' : undefined,
                 }}
               >
                 <Checkbox checked={checked} disabled={disabledOptions} />
@@ -402,22 +470,6 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
             onChange={(event) => handleChangeOperator(event, finalFilterDefinition)}
             style={{ marginBottom: 15 }}
             disabled={disabled}
-            MenuProps={{
-            // Force MUI to use a backdrop
-              hideBackdrop: false,
-              BackdropProps: {
-                style: {
-                // Make the backdrop invisible because we already have one
-                  backgroundColor: 'rgba(0, 0, 0, 0)',
-                },
-                // Prevent clicks from going through
-                onClick: (e) => {
-                  stopEvent(e);
-                  handleClose();
-                },
-                onMouseDown: stopEvent,
-              },
-            }}
           >
             {availableOperators.map((value) => (
               <MenuItem key={value} value={value}>
@@ -453,30 +505,17 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   return (
     <Popover
       open={open}
-      anchorEl={params.anchorEl}
+      anchorReference="anchorPosition"
+      anchorPosition={params.anchorPosition ?? { top: 0, left: 0 }}
       onClose={handleClose}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'left',
       }}
-      // Force MUI to use a backdrop
-      hideBackdrop={false}
       slotProps={{
         paper: {
           elevation: 1,
           style: { marginTop: 10 },
-        },
-        backdrop: {
-          style: {
-            // Make the backdrop invisible because we already have one
-            backgroundColor: 'rgba(0, 0, 0, 0)',
-          },
-          // Prevent clicks from going through
-          onClick: (e) => {
-            stopEvent(e);
-            handleClose();
-          },
-          onMouseDown: stopEvent,
         },
       }}
     >

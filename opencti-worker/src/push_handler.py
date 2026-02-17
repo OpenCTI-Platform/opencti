@@ -1,12 +1,13 @@
 import base64
 import datetime
 import json
+import time
 from dataclasses import dataclass
-from typing import Any, Dict, Union, Literal
+from typing import Any, Dict, Literal, Union
 
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
-
+from pika.exceptions import NackError, UnroutableError
 from pycti import OpenCTIApiClient, OpenCTIStix2Splitter, __version__
 
 
@@ -50,15 +51,27 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         data["content"] = base64.b64encode(
             text_bundle.encode("utf-8", "escape")
         ).decode("utf-8")
-        push_channel.basic_publish(
-            exchange=exchange,
-            routing_key=routing_key,
-            body=json.dumps(data),
-            properties=pika.BasicProperties(
-                delivery_mode=2,
-                content_encoding="utf-8",  # make message persistent
-            ),
-        )
+
+        # Send the message
+        retry_count = 0
+        while True:
+            try:
+                push_channel.basic_publish(
+                    exchange=exchange,
+                    routing_key=routing_key,
+                    body=json.dumps(data),
+                    properties=pika.BasicProperties(
+                        delivery_mode=2,
+                        content_encoding="utf-8",  # make message persistent
+                    ),
+                )
+                return
+            except (UnroutableError, NackError):
+                retry_count = retry_count + 1
+                self.logger.info(
+                    "Unable to send bundle, retrying...", {"retry_count": retry_count}
+                )
+                time.sleep(10)
 
     def handle_message(
         self,
@@ -122,7 +135,10 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                                 except Exception as err:  # pylint: disable=broad-except
                                     self.logger.warning(str(err))
                                 for too_large_item_bundle in too_large_items_bundles:
-                                    too_large_item_bundle["original_connector_id"] = (
+                                    rejection_info = too_large_item_bundle.setdefault(
+                                        "rejection_info", {}
+                                    )
+                                    rejection_info["original_connector_id"] = (
                                         self.connector_id
                                     )
                                     self.logger.warning(

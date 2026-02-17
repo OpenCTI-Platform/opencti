@@ -229,6 +229,8 @@ input TaskAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: [Boolean]
+  embedded: [Boolean]
   upsertOperations: [EditInput!]
 }
 

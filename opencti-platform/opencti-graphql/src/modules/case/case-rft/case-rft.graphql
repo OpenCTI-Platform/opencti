@@ -244,6 +244,8 @@ input CaseRftAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+  noTriggerImport: [Boolean]
+  embedded: [Boolean]
   clientMutationId: String
   x_opencti_modified_at: DateTime
   x_opencti_workflow_id: String

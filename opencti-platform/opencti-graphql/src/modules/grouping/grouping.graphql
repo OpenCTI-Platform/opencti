@@ -273,6 +273,8 @@ input GroupingAddInput {
     fileMarkings: [String]
     files: [Upload]
     filesMarkings: [[String]]
+    noTriggerImport: [Boolean]
+    embedded: [Boolean]
     authorized_members: [MemberAccessInput!]
     upsertOperations: [EditInput!]
 }

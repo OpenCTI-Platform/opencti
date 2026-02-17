@@ -1,4 +1,4 @@
-name: Run OpenCTI api tests
+name: Run OpenCTI backend tests
 
 on:
   workflow_call:
@@ -62,16 +62,15 @@ jobs:
           ./scripts/ci/wait-for-url-200.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
           ./scripts/ci/wait-for-url-200.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
 
-
-    - name: Start api test (aka yarn test:ci-integration-sync)
+    - name: Start backend test (aka yarn test:ci-integration-sync)
       run: |
         docker run --network runner-docker-network \
           --name api-tests \
           -p 4010:4100 \
           -v ${{ github.workspace }}/test-results:/opt/opencti/test-results \
+          -v ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage:/opt/opencti/coverage \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
-          -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e APP__SYNC_RAW_START_REMOTE_URI=http://opencti-raw-start:4100/graphql \
           -e APP__SYNC_LIVE_START_REMOTE_URI=http://opencti-live-start:4100/graphql \
           -e APP__SYNC_DIRECT_START_REMOTE_URI=http://opencti-direct-start:4100/graphql \
@@ -79,12 +78,24 @@ jobs:
           -e PYTHONUNBUFFERED=1  \
           filigran/platform:${{ github.sha }} \
           sh -c 'set -eux
+            APP__ENTERPRISE_EDITION_LICENSE="$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt)"
+            export APP__ENTERPRISE_EDITION_LICENSE
             mkdir -p ../../opencti-connectors/stream/backup-files/src
             wget -O ../../opencti-connectors/stream/backup-files/src/backup-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/stream/backup-files/src/backup-files.py
             mkdir -p ../../opencti-connectors/external-import/restore-files/src
             wget -O ../../opencti-connectors/external-import/restore-files/src/restore-files.py https://raw.githubusercontent.com/OpenCTI-Platform/connectors/master/external-import/restore-files/src/restore-files.py
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration-sync --coverage
         '
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage/coverage-final.json
+        flags: opencti-graphql
+        fail_ci_if_error: false
+        override_branch: ${{ github.head_ref || github.ref_name }}
+        override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
 
     - name: Upload backend test result
       uses: actions/upload-artifact@v6
@@ -182,14 +193,24 @@ jobs:
         docker run --network runner-docker-network \
           --name api-tests \
           -p 4010:4100 \
+          -v ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage:/opt/opencti/coverage \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
-          -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
           filigran/platform:${{ github.sha }} \
           sh -c 'set -eux
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules-and-others --coverage
         '
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage/coverage-final.json
+        flags: opencti-graphql
+        fail_ci_if_error: false
+        override_branch: ${{ github.head_ref || github.ref_name }}
+        override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
 
     # Output all logs used during the job
     - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
@@ -211,8 +232,8 @@ jobs:
       continue-on-error: true
       run: cat runner_resource_stat.log
 
-  run-opencti-api-unit-test:
-    name: Api unit tests
+  run-opencti-backend-unit-test:
+    name: Unit tests
     runs-on: ubuntu-latest
 
     steps:
@@ -239,6 +260,7 @@ jobs:
     - name: Start unit and linter (aka yarn test:ci-unit)
       run: |
         docker run --name unit-and-other-tests \
+          -v ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage:/opt/opencti/coverage \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e PYTHONUNBUFFERED=1  \
           filigran/platform:${{ github.sha }} \
@@ -247,6 +269,17 @@ jobs:
             yarn lint
             NODE_OPTIONS=--max_old_space_size=8192  yarn test:ci-unit --coverage
         '
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage/coverage-final.json
+        flags: opencti-graphql
+        fail_ci_if_error: false
+        override_branch: ${{ github.head_ref || github.ref_name }}
+        override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
+
     - name: Print resources stats
       if: always()
       continue-on-error: true

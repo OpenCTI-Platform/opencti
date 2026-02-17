@@ -26,6 +26,7 @@ import { getEntitiesListFromCache } from './cache';
 import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
+import { pushAll } from '../utils/arrayUtil';
 
 export const buildEntityData = async (context, user, input, type, opts = {}) => {
   const { fromRule } = opts;
@@ -47,6 +48,8 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
     R.dissoc('fileMarkings'),
     R.dissoc('files'),
     R.dissoc('filesMarkings'),
+    R.dissoc('noTriggerImport'),
+    R.dissoc('embedded'),
     R.omit(schemaRelationsRefDefinition.getInputNames(input.entity_type)),
   )(input);
   if (inferred) {
@@ -128,17 +131,17 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
       if (relType === RELATION_GRANTED_TO && isSegregationEntity) {
         if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[inputField]
           && (!Array.isArray(input[inputField]) || input[inputField].length > 0)) {
-          relToCreate.push(...buildInnerRelation(data, input[inputField], RELATION_GRANTED_TO));
+          pushAll(relToCreate, buildInnerRelation(data, input[inputField], RELATION_GRANTED_TO));
         } else if (!context.user_inside_platform_organization) {
           // If user is not part of the platform organization, put its own organizations
-          relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
+          pushAll(relToCreate, buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
         }
       } else if (relType === RELATION_OBJECT_MARKING) {
         const markingsFiltered = await cleanMarkings(context, input[inputField]);
-        relToCreate.push(...buildInnerRelation(data, markingsFiltered, relType));
+        pushAll(relToCreate, buildInnerRelation(data, markingsFiltered, relType));
       } else if (input[inputField]) {
         const instancesToCreate = Array.isArray(input[inputField]) ? input[inputField] : [input[inputField]];
-        relToCreate.push(...buildInnerRelation(data, instancesToCreate, relType));
+        pushAll(relToCreate, buildInnerRelation(data, instancesToCreate, relType));
       }
     }
   };
@@ -282,19 +285,19 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
     // We need to link the data to organization sharing, only for core and sightings.
     if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[INPUT_GRANTED_REFS]
       && (!Array.isArray(input[INPUT_GRANTED_REFS]) || input[INPUT_GRANTED_REFS].length > 0)) {
-      relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
+      pushAll(relToCreate, buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
     } else if (!context.user_inside_platform_organization) {
       // If user is not part of the platform organization, put its own organizations
-      relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
+      pushAll(relToCreate, buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
     }
     const markingsFiltered = await cleanMarkings(context, input.objectMarking);
-    relToCreate.push(...buildInnerRelation(data, markingsFiltered, RELATION_OBJECT_MARKING));
-    relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
-    relToCreate.push(...buildInnerRelation(data, input.objectLabel, RELATION_OBJECT_LABEL));
-    relToCreate.push(...buildInnerRelation(data, input.externalReferences, RELATION_EXTERNAL_REFERENCE));
+    pushAll(relToCreate, buildInnerRelation(data, markingsFiltered, RELATION_OBJECT_MARKING));
+    pushAll(relToCreate, buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
+    pushAll(relToCreate, buildInnerRelation(data, input.objectLabel, RELATION_OBJECT_LABEL));
+    pushAll(relToCreate, buildInnerRelation(data, input.externalReferences, RELATION_EXTERNAL_REFERENCE));
   }
   if (isStixCoreRelationship(relationshipType)) {
-    relToCreate.push(...buildInnerRelation(data, input.killChainPhases, RELATION_KILL_CHAIN_PHASE));
+    pushAll(relToCreate, buildInnerRelation(data, input.killChainPhases, RELATION_KILL_CHAIN_PHASE));
   }
   if (relationshipType === RELATION_IN_PIR) {
     data.pir_score = input.pir_score;

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { completeContextDataForEntity } from '../../../src/listener/UserActionListener';
 import type { UserReadActionContextData } from '../../../src/listener/UserActionListener';
+import type {BasicStoreCommon} from "../../../src/types/store";
 
 describe('User Action listening', () => {
   it('should complete context data for entity', async () => {
@@ -27,7 +28,7 @@ describe('User Action listening', () => {
       entity_name: 'data_name',
       entity_type: 'Report',
     };
-    const completedContextData = completeContextDataForEntity(contextData, data) as UserReadActionContextData;
+    const completedContextData = completeContextDataForEntity(contextData, data as BasicStoreCommon) as UserReadActionContextData;
     expect(completedContextData.id).toEqual(contextData.id);
     expect(completedContextData.entity_type).toEqual(contextData.entity_type);
     expect(completedContextData.creator_ids?.length).toEqual(1);

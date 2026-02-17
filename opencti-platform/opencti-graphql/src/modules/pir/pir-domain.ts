@@ -109,7 +109,7 @@ export const pirRelationshipsDistribution = async (
   const args = { ...R.dissoc('pirId', opts), relationship_type, toId: [pirId] };
   const filters = addDynamicFromAndToToFilters(args);
   const fullArgs = { ...args, filters };
-  return distributionRelations(context, user, fullArgs);
+  return distributionRelations(context, user, fullArgs as unknown as any) as unknown as any;
 };
 
 export const pirRelationshipsMultiTimeSeries = async (
@@ -127,7 +127,7 @@ export const pirRelationshipsMultiTimeSeries = async (
 
     const filters = addDynamicFromAndToToFilters(timeSeriesParameter);
     const fullArgs = { ...R.dissoc('pirId', timeSeriesParameter), filters };
-    return { data: await timeSeriesRelations(context, user, { ...opts, relationship_type, toId: [pirId], ...fullArgs }) };
+    return { data: await timeSeriesRelations(context, user, { ...opts, relationship_type, toId: [pirId], ...fullArgs } as unknown as any) };
   }));
 };
 

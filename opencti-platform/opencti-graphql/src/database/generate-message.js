@@ -7,7 +7,7 @@ import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, isEmptyField, isNotEmptyField } f
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FROM_START_STR, truncate, UNTIL_END_STR } from '../utils/format';
-import { authorizedMembers, creators as creatorsAttribute } from '../schema/attribute-definition';
+import { authorizedMembers, creators as creatorsAttribute, files as filesAttribute } from '../schema/attribute-definition';
 import { X_WORKFLOW_ID } from '../schema/identifier';
 import { isStoreRelationPir } from '../schema/internalRelationship';
 import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
@@ -122,6 +122,23 @@ const buildMessageForValues = (entityType, key, values, data = {}, specificOpera
   }
   if (key === creatorsAttribute.name) {
     return buildMessageForCreatorsValues(values, creators);
+  }
+  // Special handling for files - extract the 'name' property and markings from file objects
+  if (key === filesAttribute.name) {
+    const { markings = [] } = data;
+    return firstValues.map((f) => {
+      const fileName = truncate(f?.name ?? f?.id ?? 'unnamed', 200);
+      const fileMarkingIds = f?.file_markings ?? [];
+      if (fileMarkingIds.length > 0 && markings.length > 0) {
+        // Resolve marking IDs to names
+        const markingNames = fileMarkingIds
+          .map((id) => markings.find((m) => m?.internal_id === id || m?.id === id)?.definition)
+          .filter((name) => name)
+          .join(', ');
+        return markingNames ? `${fileName} (${markingNames})` : fileName;
+      }
+      return fileName;
+    }).join(', ');
   }
   if (key === authorizedMembers.name) {
     return values.map(({ id, access_right }) => {

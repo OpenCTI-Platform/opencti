@@ -646,6 +646,8 @@ class OpenCTIStix2:
                         # Prepare all files for upload during creation
                         files_to_upload = []
                         files_markings = []
+                        no_trigger_import = []
+                        embedded_flags = []
                         for file_obj in ext_ref_files:
                             data = None
                             if "data" in file_obj:
@@ -670,6 +672,10 @@ class OpenCTIStix2:
                                 files_markings.append(
                                     file_obj.get("object_marking_refs", None)
                                 )
+                                no_trigger_import.append(
+                                    file_obj.get("no_trigger_import", False)
+                                )
+                                embedded_flags.append(file_obj.get("embedded", False))
 
                         # Create external reference with all files attached
                         external_reference_id = self.opencti.external_reference.create(
@@ -683,6 +689,10 @@ class OpenCTIStix2:
                             ),
                             files=files_to_upload if files_to_upload else None,
                             filesMarkings=files_markings if files_markings else None,
+                            noTriggerImport=(
+                                no_trigger_import if no_trigger_import else None
+                            ),
+                            embedded=embedded_flags if embedded_flags else None,
                         )["id"]
 
                     external_references_ids.append(external_reference_id)
@@ -818,22 +828,27 @@ class OpenCTIStix2:
                 if generated_ref_id is None:
                     continue
                 else:
-                    # Prepare all files for direct upload during creation
-                    files_to_upload = []
-                    files_markings = []
+                    # Collect files from both x_opencti_files and extension
                     all_files = []
                     if "x_opencti_files" in external_reference:
-                        all_files = external_reference["x_opencti_files"]
-                    elif (
+                        all_files.extend(external_reference["x_opencti_files"])
+                    if (
                         self.opencti.get_attribute_in_extension(
                             "files", external_reference
                         )
                         is not None
                     ):
-                        all_files = self.opencti.get_attribute_in_extension(
-                            "files", external_reference
+                        all_files.extend(
+                            self.opencti.get_attribute_in_extension(
+                                "files", external_reference
+                            )
                         )
 
+                    # Prepare all files for direct upload during creation
+                    files_to_upload = []
+                    files_markings = []
+                    no_trigger_import = []
+                    embedded_flags = []
                     for file_obj in all_files:
                         data = None
                         if "data" in file_obj:
@@ -858,6 +873,10 @@ class OpenCTIStix2:
                             files_markings.append(
                                 file_obj.get("object_marking_refs", None)
                             )
+                            no_trigger_import.append(
+                                file_obj.get("no_trigger_import", False)
+                            )
+                            embedded_flags.append(file_obj.get("embedded", False))
 
                     external_reference_id = self.opencti.external_reference.create(
                         source_name=source_name,
@@ -870,6 +889,10 @@ class OpenCTIStix2:
                         ),
                         files=files_to_upload if files_to_upload else None,
                         filesMarkings=files_markings if files_markings else None,
+                        noTriggerImport=(
+                            no_trigger_import if no_trigger_import else None
+                        ),
+                        embedded=embedded_flags if embedded_flags else None,
                     )["id"]
 
                 external_references_ids.append(external_reference_id)
@@ -1122,6 +1145,8 @@ class OpenCTIStix2:
         # Prepare all files for direct upload during creation
         files_to_upload = []
         files_markings = []
+        no_trigger_import = []
+        embedded_flags = []
         for file_obj in x_opencti_files:
             data = None
             if "data" in file_obj:
@@ -1140,6 +1165,8 @@ class OpenCTIStix2:
                     )
                 )
                 files_markings.append(file_obj.get("object_marking_refs", None))
+                no_trigger_import.append(file_obj.get("no_trigger_import", False))
+                embedded_flags.append(file_obj.get("embedded", False))
 
         # Extra
         extras = {
@@ -1154,6 +1181,8 @@ class OpenCTIStix2:
             "sample_ids": sample_refs_ids,
             "files": files_to_upload if files_to_upload else None,
             "filesMarkings": files_markings if files_markings else None,
+            "noTriggerImport": no_trigger_import if no_trigger_import else None,
+            "embedded": embedded_flags if embedded_flags else None,
         }
 
         stix_helper = self.get_stix_helper().get(stix_object["type"])
@@ -1244,6 +1273,8 @@ class OpenCTIStix2:
         # Prepare all files for direct upload during creation
         files_to_upload = []
         files_markings = []
+        no_trigger_import = []
+        embedded_flags = []
         for file_obj in x_opencti_files:
             data = None
             if "data" in file_obj:
@@ -1262,6 +1293,8 @@ class OpenCTIStix2:
                     )
                 )
                 files_markings.append(file_obj.get("object_marking_refs", None))
+                no_trigger_import.append(file_obj.get("no_trigger_import", False))
+                embedded_flags.append(file_obj.get("embedded", False))
 
         # Extra
         extras = {
@@ -1277,6 +1310,8 @@ class OpenCTIStix2:
             "sample_ids": sample_refs_ids,
             "files": files_to_upload if files_to_upload else None,
             "filesMarkings": files_markings if files_markings else None,
+            "noTriggerImport": no_trigger_import if no_trigger_import else None,
+            "embedded": embedded_flags if embedded_flags else None,
         }
         upsert_operations = self.opencti.get_attribute_in_extension(
             "opencti_upsert_operations", stix_object
@@ -1325,6 +1360,7 @@ class OpenCTIStix2:
                 update=update,
                 files=extras.get("files"),
                 filesMarkings=extras.get("filesMarkings"),
+                noTriggerImport=extras.get("noTriggerImport", False),
                 upsert_operations=upsert_operations,
             )
         else:
@@ -1352,6 +1388,7 @@ class OpenCTIStix2:
                 update=update,
                 files=extras.get("files"),
                 filesMarkings=extras.get("filesMarkings"),
+                noTriggerImport=extras.get("noTriggerImport", False),
                 upsert_operations=upsert_operations,
             )
         if stix_observable_result is not None:
@@ -2213,14 +2250,39 @@ class OpenCTIStix2:
                     self.opencti.api_url.replace("graphql", "storage/get/") + file["id"]
                 )
                 data = self.opencti.fetch_opencti_file(url, binary=True, serialize=True)
-                entity["x_opencti_files"].append(
-                    {
-                        "name": file["name"],
-                        "data": data,
-                        "mime_type": file["metaData"]["mimetype"],
-                        "version": file["metaData"].get("version", None),
+                x_opencti_file = {
+                    "name": file["name"],
+                    "data": data,
+                    "mime_type": file["metaData"]["mimetype"],
+                    "version": file["metaData"].get("version", None),
+                    "object_marking_refs": [],
+                }
+                for file_marking_definition in file["objectMarking"]:
+                    if file_marking_definition["definition_type"] == "TLP":
+                        created = "2017-01-20T00:00:00.000Z"
+                    else:
+                        created = file_marking_definition["created"]
+                    marking_definition = {
+                        "type": "marking-definition",
+                        "spec_version": SPEC_VERSION,
+                        "id": file_marking_definition["standard_id"],
+                        "created": created,
+                        "definition_type": file_marking_definition[
+                            "definition_type"
+                        ].lower(),
+                        "name": file_marking_definition["definition"],
+                        "definition": {
+                            file_marking_definition["definition_type"]
+                            .lower(): file_marking_definition["definition"]
+                            .lower()
+                            .replace("tlp:", "")
+                        },
                     }
-                )
+                    result.append(marking_definition)
+                    x_opencti_file["object_marking_refs"].append(
+                        marking_definition["id"]
+                    )
+                entity["x_opencti_files"].append(x_opencti_file)
             del entity["importFiles"]
             del entity["importFilesIds"]
 
@@ -3306,6 +3368,7 @@ class OpenCTIStix2:
         """
         processing_count = 0
         worker_logger = self.opencti.logger_class("worker")
+        error_msg = ""
         while processing_count <= MAX_PROCESSING_COUNT:
             try:
                 self.opencti.set_retry_number(processing_count)
@@ -3313,7 +3376,8 @@ class OpenCTIStix2:
                 return None
             except (RequestException, Timeout):
                 bundles_timeout_error_counter.add(1)
-                worker_logger.warning("A connection error or timeout occurred")
+                error_msg = "A connection error or timeout occurred"
+                worker_logger.warning(error_msg)
                 # Platform is under heavy load: wait for unlock & retry almost indefinitely.
                 sleep_jitter = round(random.uniform(10, 30), 2)
                 time.sleep(sleep_jitter)
@@ -3400,6 +3464,10 @@ class OpenCTIStix2:
                     ),
                 },
             )
+        item["rejection_info"] = {
+            "reject_reason": "MAX_RETRY",
+            "last_error_msg": error_msg,
+        }
         return item
 
     def import_bundle(
@@ -3427,6 +3495,7 @@ class OpenCTIStix2:
         :rtype: Tuple[list, list]
         :raises ValueError: If the bundle is not properly formatted or empty
         """
+        worker_logger = self.opencti.logger_class("worker")
         # Check if the bundle is correctly formatted
         if "type" not in stix_bundle or stix_bundle["type"] != "bundle":
             raise ValueError("JSON data type is not a STIX2 bundle")
@@ -3466,10 +3535,16 @@ class OpenCTIStix2:
                 # If item is considered too large, meaning that it has a number of refs higher than inputted objects_max_refs, do not import it
                 nb_refs = OpenCTIStix2Utils.compute_object_refs_number(item)
                 if 0 < objects_max_refs <= nb_refs:
+                    too_large_element_message = "Too large element in bundle"
+                    worker_logger.warning(too_large_element_message)
+                    item["rejection_info"] = {
+                        "reject_reason": "ELEMENT_TOO_LARGE",
+                        "objects_max_refs": objects_max_refs,
+                    }
                     self.opencti.work.report_expectation(
                         work_id,
                         {
-                            "error": "Too large element in bundle",
+                            "error": too_large_element_message,
                             "source": "Element "
                             + item["id"]
                             + " is too large and couldn't be processed",
@@ -3481,7 +3556,7 @@ class OpenCTIStix2:
                         item, update, types, work_id
                     )
                     if failed_item is not None:
-                        too_large_elements_bundles.append(item)
+                        too_large_elements_bundles.append(failed_item)
                     else:
                         imported_elements.append(
                             {"id": item["id"], "type": item["type"]}

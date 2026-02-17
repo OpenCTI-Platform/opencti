@@ -13,6 +13,8 @@ import { utcDate } from '../utils/format';
 import { sendAdministratorsLostConnectivityEmail } from '../modules/xtm/hub/xtm-hub-email';
 import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 
+import { pushAll } from '../utils/arrayUtil';
+
 interface AttributeUpdate {
   key: keyof BasicStoreSettings;
   value: unknown[];
@@ -44,7 +46,7 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
   }
 
   const emailAttributeUpdates = await handleLostConnectivityEmail(context, settings, isConnectivityActive);
-  attributeUpdates.push(...emailAttributeUpdates);
+  pushAll(attributeUpdates, emailAttributeUpdates);
 
   if (isConnectivityActive) {
     attributeUpdates.push({ key: 'xtm_hub_last_connectivity_check', value: [new Date()] });
@@ -180,7 +182,7 @@ const handleLostConnectivityEmail = async (context: AuthContext, settings: Basic
   return attributeUpdates;
 };
 
-export const contactUsXtmHub = async (context: AuthContext, user: AuthUser): Promise<{ success: boolean }> => {
+export const contactUsXtmHub = async (context: AuthContext, user: AuthUser, message: string): Promise<{ success: boolean }> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
 
   if (!settings.xtm_hub_token) {
@@ -193,6 +195,5 @@ export const contactUsXtmHub = async (context: AuthContext, user: AuthUser): Pro
     platformToken: settings.xtm_hub_token,
   };
 
-  const response = await xtmHubClient.contactUs(platformInformation);
-  return response;
+  return xtmHubClient.contactUs(platformInformation, message); ;
 };

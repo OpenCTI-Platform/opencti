@@ -21,6 +21,16 @@
   updateNotScheduled: false,
   rebaseWhen: 'conflicted',
   packageRules: [
+    // override for CKEditor monorepos to add ckeditor5-react
+    {
+      extends: [
+        'monorepo:ckeditor',
+      ],
+      matchSourceUrls: [
+        'https://github.com/ckeditor/ckeditor5',
+        'https://github.com/ckeditor/ckeditor5-react',
+      ]
+    },
     {
       description: 'Disable updates of images intentionally pinned to older versions for compatibility testing',
       matchFileNames: [
@@ -43,6 +53,7 @@
       description: 'Update aws-sdk-js-v3 only once a week on Sunday',
       schedule: ['* * * * 0']
     },
+    // group non-major devDependencies once a week to avoid Renovate noise
     {
       groupName: 'devDependencies (non-major)',
       groupSlug: 'dev-dependencies-non-major',
@@ -58,14 +69,12 @@
         'digest',
       ],
       rebaseWhen: 'always',
-      automerge: true,
     }
   ],
   // do lock file maintenance once a week on Sunday
   lockFileMaintenance: {
     schedule: ['* * * * 0'],
     rebaseWhen: 'always',
-    automerge: true,
     enabled: true,
   }
 }

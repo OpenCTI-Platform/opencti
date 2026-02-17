@@ -10,7 +10,7 @@ on:
 
 jobs:
   opencti-frontend-test:
-    name: Frontend tests
+    name: Unit tests
     runs-on: ubuntu-latest
     steps:
     - name: OpenCTI checkout
@@ -42,6 +42,16 @@ jobs:
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:coverage
             '
 
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ${{ github.workspace }}/opencti-platform/opencti-front/coverage/unit/coverage-final.json
+        flags: opencti-front
+        fail_ci_if_error: false
+        override_branch: ${{ github.head_ref || github.ref_name }}
+        override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
+
     - name: Print resources stats
       if: always()
       continue-on-error: true
@@ -49,7 +59,7 @@ jobs:
 
 
   opencti-frontend-e2e-test:
-    name: Frontend e2e tests
+    name: e2e tests
     runs-on: ubuntu-latest
     steps:
     - name: OpenCTI checkout
@@ -81,7 +91,6 @@ jobs:
           --name opencti-e2e-start \
           -p 4500:4100 \
           -v ${{ github.workspace }}/frontend-e2e-start:/home/workspace \
-          -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e APP__PORT=4100 \
           -e APP__ENABLED_DEV_FEATURES='["*"]' \
           -e APP__ADMIN__PASSWORD=admin \
@@ -102,7 +111,9 @@ jobs:
           -e PUBLISHER_MANAGER__ENABLED=false \
           -e SMTP__ENABLED=false \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -ex
+          sh -c 'set -eux
+            APP__ENTERPRISE_EDITION_LICENSE="$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt)"
+            export APP__ENTERPRISE_EDITION_LICENSE
             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
             apk add build-base git libffi-dev cargo
             cd /home/workspace/client-python
@@ -140,7 +151,7 @@ jobs:
     - name: Wait for OpenCTI e2e backend instances to start
       run: ./frontend-e2e-test/scripts/ci/wait-for-url-200.sh http://localhost:4500/health?health_access_key=cihealthkey 300 10
 
-    - name: Frontend e2e tests
+    - name: e2e tests
       run: |
         docker run --network runner-docker-network \
           --name frontend-e2e-tests \

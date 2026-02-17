@@ -45,7 +45,8 @@ export const deleteElement = async (context: AuthContext, scope: string, nodeId:
     const deleteOpts = { forceDelete: true, forceRefresh: opts.forceRefresh ?? false };
     await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, knowledgeType, deleteOpts);
   } else if (scope === 'file' || scope === 'workbench') {
-    await deleteFile(context, RETENTION_MANAGER_USER, nodeId);
+    // forceDelete: true to clean up orphan ES entries even if S3 file doesn't exist
+    await deleteFile(context, RETENTION_MANAGER_USER, nodeId, { forceDelete: true });
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
@@ -60,7 +61,8 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
   } else if (scope === 'file') {
     result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/global', undefined, { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString() });
   } else if (scope === 'workbench') {
-    result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/pending', undefined, { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString() });
+    // exact_path: false to get ALL workbenches (both global and entity-attached)
+    result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/pending', undefined, { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString(), exact_path: false });
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }

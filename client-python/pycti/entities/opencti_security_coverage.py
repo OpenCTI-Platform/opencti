@@ -277,6 +277,8 @@ class SecurityCoverage:
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         files = kwargs.get("files", None)
         files_markings = kwargs.get("filesMarkings", None)
+        no_trigger_import = kwargs.get("noTriggerImport", None)
+        embedded = kwargs.get("embedded", None)
 
         if name is not None and object_covered is not None:
             self.opencti.app_logger.info("Creating Security Coverage", {"name": name})
@@ -315,6 +317,8 @@ class SecurityCoverage:
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "files": files,
                         "filesMarkings": files_markings,
+                        "noTriggerImport": no_trigger_import,
+                        "embedded": embedded,
                     }
                 },
             )
@@ -434,6 +438,8 @@ class SecurityCoverage:
                 ),
                 files=extras.get("files"),
                 filesMarkings=extras.get("filesMarkings"),
+                noTriggerImport=extras.get("noTriggerImport", None),
+                embedded=extras.get("embedded", None),
             )
         else:
             self.opencti.app_logger.error(

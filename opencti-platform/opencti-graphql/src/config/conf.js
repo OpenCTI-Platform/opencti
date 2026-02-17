@@ -68,7 +68,13 @@ export const booleanConf = (key, defaultValue = true) => {
 };
 
 // Environment from NODE_ENV environment variable
-nconf.env({ separator: '__', lowerCase: true, parseValues: true });
+const envSeparator = '__';
+nconf.env({ separator: envSeparator, lowerCase: true, parseValues: true });
+
+export const confNameToEnvName = (confName) => nconf
+  .path(confName, ':')
+  .map((part) => part.toUpperCase())
+  .join(envSeparator);
 
 // Environment from "-e" command line parameter
 nconf.add('argv', {

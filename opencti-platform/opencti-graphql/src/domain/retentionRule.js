@@ -11,6 +11,8 @@ import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resol
 import { publishUserAction } from '../listener/UserActionListener';
 import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { logApp } from '../config/conf';
+import { BASE_TYPE_ENTITY } from '../schema/general';
+import { getParentTypes } from '../schema/schemaUtils';
 
 export const checkRetentionRule = async (context, input) => {
   const { filters, max_retention: maxDays, scope, retention_unit: unit } = input;
@@ -27,7 +29,8 @@ export const checkRetentionRule = async (context, input) => {
   if (scope === 'file') {
     result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/global', undefined, { notModifiedSince: before.toISOString() });
   } else if (scope === 'workbench') {
-    result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/pending', undefined, { notModifiedSince: before.toISOString() });
+    // exact_path: false to get ALL workbenches (both global and entity-attached)
+    result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/pending', undefined, { notModifiedSince: before.toISOString(), exact_path: false });
   } else {
     logApp.error('[Retention manager] Scope not existing for Retention Rule.', { scope });
   }
@@ -57,6 +60,8 @@ export const createRetentionRule = async (_, user, input) => {
     internal_id: retentionRuleId,
     standard_id: generateStandardId(ENTITY_TYPE_RETENTION_RULE, input),
     entity_type: ENTITY_TYPE_RETENTION_RULE,
+    base_type: BASE_TYPE_ENTITY,
+    parent_types: getParentTypes(ENTITY_TYPE_RETENTION_RULE),
     last_execution_date: null,
     last_deleted_count: null,
     remaining_count: null,

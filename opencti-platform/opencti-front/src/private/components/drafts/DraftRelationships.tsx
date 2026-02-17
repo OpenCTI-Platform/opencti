@@ -9,7 +9,7 @@ import {
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, addFilter } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -221,9 +221,8 @@ const DraftRelationships: FunctionComponent<DraftRelationshipsProps> = ({ isRead
     filters,
   } = viewStorage;
 
-  const filtersWithType = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters);
-  // add filter to keep only relevant draft operations
-  const contextFilters = addFilter(filtersWithType, 'draft_change.draft_operation', ['create', 'update', 'delete']);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters, { draftId });
+
   const queryPaginationOptions = {
     ...paginationOptions,
     draftId,

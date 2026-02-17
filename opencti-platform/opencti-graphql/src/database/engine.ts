@@ -194,6 +194,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import { completeSpecialFilterKeys } from '../utils/filtering/filtering-completeSpecialFilterKeys';
 import { IDS_ATTRIBUTES } from '../domain/attribute-utils';
 import type { FiltersWithNested } from './middleware-loader';
+import { pushAll, unshiftAll } from '../utils/arrayUtil';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -628,7 +629,7 @@ export const buildDataRestrictions = async (
     return { must, must_not };
   }
   // check user access
-  must.push(...buildUserMemberAccessFilter(user, { includeAuthorities: opts?.includeAuthorities }));
+  pushAll(must, buildUserMemberAccessFilter(user, { includeAuthorities: opts?.includeAuthorities }));
   // If user have bypass, no need to check restrictions
   if (!isBypassUser(user)) {
     // region Handle marking restrictions
@@ -706,7 +707,7 @@ export const buildDataRestrictions = async (
         const should: any[] = [excludedEntityMatches];
         const shouldOrgs = user.organizations
           .map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_GRANTED_TO)]: m.internal_id } }));
-        should.push(...shouldOrgs);
+        pushAll(should, shouldOrgs);
         // User individual or data created by this individual must be accessible
         if (user.individual_id) {
           should.push({ match: { 'internal_id.keyword': user.individual_id } });
@@ -715,7 +716,7 @@ export const buildDataRestrictions = async (
         // For tasks
         should.push({ match: { 'initiator_id.keyword': user.internal_id } });
         // Access to authorized members
-        should.push(...buildUserMemberAccessFilter(user, { includeAuthorities: opts?.includeAuthorities, excludeEmptyAuthorizedMembers: true }));
+        pushAll(should, buildUserMemberAccessFilter(user, { includeAuthorities: opts?.includeAuthorities, excludeEmptyAuthorizedMembers: true }));
         // Finally build the bool should search
         must.push({ bool: { should, minimum_should_match: 1 } });
       }
@@ -1703,7 +1704,7 @@ const findElementsDuplicateIds = (elements: BasicStoreBase[]): string[] => {
 export const specialElasticCharsEscape = (query: string) => {
   return query.replace(/([/+|\-*()^~={}[\]:?!"\\])/g, '\\$1');
 };
-type ElFindByIdsOpts = {
+export type ElFindByIdsOpts = {
   indices?: string[] | string | null;
   baseData?: boolean | null;
   baseFields?: string[];
@@ -1777,7 +1778,7 @@ export const elFindByIds = async <T extends BasicStoreBase> (
     const restrictionOptions = { includeAuthorities: true }; // By default include authorized through capabilities
     // If an admin ask for a specific element, there is no need to ask him to explicitly extends his visibility to doing it.
     const markingRestrictions = await buildDataRestrictions(context, user, restrictionOptions);
-    mustTerms.push(...markingRestrictions.must);
+    pushAll(mustTerms, markingRestrictions.must);
     // Handle draft
     const draftMust = buildDraftFilter(context, user, opts);
     const body: any = {
@@ -1834,7 +1835,7 @@ export const elFindByIds = async <T extends BasicStoreBase> (
     }
     if (elements.length > 0) {
       const convertedHits = await elConvertHits<T>(elements);
-      hits.push(...convertedHits);
+      pushAll(hits, convertedHits);
     }
   }
   if (toMap) {
@@ -2009,43 +2010,41 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
   const { exactSearch, querySearch } = processSearch(search, args);
   // Return the elastic search engine expected bool should terms
   // Build the search for all exact match (between double quotes)
-  const shouldSearch = [];
+  const shouldSearch: unknown[] = [];
   const cleanExactSearch = R.uniq(exactSearch.map((e) => e.replace(/"|http?:/g, '')));
-  shouldSearch.push(
-    ...cleanExactSearch.map((ex) => [
-      {
-        multi_match: {
-          type: 'phrase',
-          query: ex,
-          lenient: true,
-          fields: BASE_SEARCH_ATTRIBUTES,
-        },
+  pushAll(shouldSearch, cleanExactSearch.map((ex) => [
+    {
+      multi_match: {
+        type: 'phrase',
+        query: ex,
+        lenient: true,
+        fields: BASE_SEARCH_ATTRIBUTES,
       },
-      {
-        nested: {
-          path: 'connections',
-          query: {
-            bool: {
-              must: [
-                {
-                  multi_match: {
-                    type: 'phrase',
-                    query: ex,
-                    lenient: true,
-                    fields: BASE_SEARCH_CONNECTIONS,
-                  },
+    },
+    {
+      nested: {
+        path: 'connections',
+        query: {
+          bool: {
+            must: [
+              {
+                multi_match: {
+                  type: 'phrase',
+                  query: ex,
+                  lenient: true,
+                  fields: BASE_SEARCH_CONNECTIONS,
                 },
-              ],
-            },
+              },
+            ],
           },
         },
       },
-    ]).flat(),
-  );
+    },
+  ]).flat());
   // Build the search for all other fields
   const searchPhrase = R.uniq(querySearch).join(' ');
   if (searchPhrase) {
-    shouldSearch.push(...[
+    pushAll(shouldSearch, [
       {
         query_string: {
           query: searchPhrase,
@@ -2091,23 +2090,21 @@ export const elGenerateFieldTextSearchShould = (
 ) => {
   const { exactSearch, querySearch } = processSearch(search, args);
   const cleanExactSearch = R.uniq(exactSearch.map((e) => e.replace(/"|http?:/g, '')));
-  const shouldSearch = [];
-  shouldSearch.push(
-    ...cleanExactSearch.map((ex) => [
-      {
-        multi_match: {
-          type: 'phrase',
-          query: ex,
-          lenient: true,
-          fields: arrayKeys,
-        },
+  const shouldSearch: unknown[] = [];
+  pushAll(shouldSearch, cleanExactSearch.map((ex) => [
+    {
+      multi_match: {
+        type: 'phrase',
+        query: ex,
+        lenient: true,
+        fields: arrayKeys,
       },
-    ]).flat(),
-  );
+    },
+  ]).flat());
   // Build the search for all other fields
   const searchPhrase = R.uniq(querySearch).join(' ');
   if (searchPhrase) {
-    shouldSearch.push(...[
+    pushAll(shouldSearch, [
       {
         query_string: {
           query: searchPhrase,
@@ -3048,7 +3045,7 @@ export const elPaginate = async <T extends BasicStoreBase>(
     throw DatabaseError('Fail to execute engine pagination', { cause: err, root_cause, query, queryArguments: options });
   }
 };
-type RepaginateOpts<T extends BasicStoreBase> = PaginateOpts & {
+export type RepaginateOpts<T extends BasicStoreBase> = PaginateOpts & {
   maxSize?: number;
   logForMigration?: boolean;
   callback?: (elements: T[], globalCount: number) => Promise<boolean | undefined>;
@@ -3094,7 +3091,7 @@ const elRepaginate = async <T extends BasicStoreBase> (
         const callbackResult = await callback(elements, total);
         continueProcess = callbackResult === true || callbackResult === undefined;
       } else {
-        listing.push(...elements);
+        pushAll<T | BasicNodeEdge<T>>(listing, elements);
       }
       emitSize += elements.length;
     }
@@ -3172,7 +3169,7 @@ export const elCount = async (
   logApp.debug('[SEARCH] elCount', { query });
   return elRawCount(query);
 };
-type HistogramCountOpts = QueryBodyBuilderOpts & {
+export type HistogramCountOpts = QueryBodyBuilderOpts & {
   interval?: string;
   field?: string;
 };
@@ -3328,7 +3325,7 @@ const buildAggregationRelationFilters = async (
     },
   };
 };
-type AggregationRelationsCount = {
+export type AggregationRelationsCount = {
   types?: string[];
   field?: string;
   searchOptions?: QueryBodyBuilderOpts;
@@ -3670,7 +3667,7 @@ export const elAttributeValues = async (
     };
     must.push(bool);
   }
-  must.push(...markingRestrictions.must);
+  pushAll(must, markingRestrictions.must);
   const body = {
     query: {
       bool: {
@@ -3833,12 +3830,12 @@ const getRelatedRelations = async (
       }
       preparedElements.push({ ...hit, level });
     });
-    elements.unshift(...preparedElements);
+    unshiftAll(elements, preparedElements);
     return true;
   };
   const finalOpts: RepaginateOpts<BasicStoreRelation> = { ...opts, filters, callback, types: [ABSTRACT_BASIC_RELATIONSHIP] };
   await elList<BasicStoreRelation>(context, user, READ_RELATIONSHIPS_INDICES, finalOpts);
-  // If relations find, need to recurs to find relations to relations
+  // If relations find, need to recurse to find relations to relations
   if (foundRelations.length > 0) {
     const groups = R.splitEvery(MAX_BULK_OPERATIONS, foundRelations);
     const concurrentFetch = (gIds: string[]) => getRelatedRelations(context, user, gIds, elements, level + 1, cache, opts);
@@ -4185,11 +4182,11 @@ const elCopyRelationsTargetsToDraft = async (
     if (e.base_type === BASE_TYPE_RELATION) {
       const relElement = e as StoreRelation;
       const { from, fromId, to, toId } = relElement as StoreRelation;
-      const resolvedFrom = (from ?? await elLoadById(context, user, fromId, { includeDeletedInDraft: true })) as BasicStoreBase;
+      const resolvedFrom = (from ?? (await elLoadById(context, user, fromId, { includeDeletedInDraft: true }))) as BasicStoreBase;
       const draftFrom = await loadDraftElement(context, user, resolvedFrom);
       relElement.from = draftFrom;
       relElement.fromId = draftFrom.id;
-      const resolvedTo = (to ?? await elLoadById(context, user, toId, { includeDeletedInDraft: true })) as BasicStoreBase;
+      const resolvedTo = (to ?? (await elLoadById(context, user, toId, { includeDeletedInDraft: true }))) as BasicStoreBase;
       const draftTo = await loadDraftElement(context, user, resolvedTo);
       relElement.to = draftTo;
       relElement.toId = draftTo.id;

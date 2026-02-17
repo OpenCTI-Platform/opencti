@@ -47,28 +47,33 @@ const Sync = () => {
   const dataColumns = {
     name: {
       label: 'Name',
-      width: '25%',
+      width: '20%',
       isSortable: true,
     },
     uri: {
       label: 'URL',
-      width: '30%',
+      width: '20%',
       isSortable: true,
     },
     messages: {
       label: 'Messages',
-      width: '10%',
+      width: '8%',
       isSortable: false,
     },
     running: {
       label: 'Status',
-      width: '15%',
+      width: '10%',
       isSortable: false,
     },
     current_state_date: {
       label: 'Current state',
-      width: '20%',
+      width: '15%',
       isSortable: true,
+    },
+    producer: {
+      label: 'Producer',
+      width: '25%',
+      isSortable: false,
     },
   };
 

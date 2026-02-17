@@ -232,6 +232,17 @@ class Campaign:
                             mimetype
                             version
                         }
+                        objectMarking {
+                            id
+                            standard_id
+                            entity_type
+                            definition_type
+                            definition
+                            created
+                            modified
+                            x_opencti_order
+                            x_opencti_color
+                        }
                     }
                 }
             }
@@ -490,6 +501,8 @@ class Campaign:
         update = kwargs.get("update", False)
         files = kwargs.get("files", None)
         files_markings = kwargs.get("filesMarkings", None)
+        no_trigger_import = kwargs.get("noTriggerImport", None)
+        embedded = kwargs.get("embedded", None)
         upsert_operations = kwargs.get("upsert_operations", None)
 
         if name is not None:
@@ -531,6 +544,8 @@ class Campaign:
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "files": files,
                         "filesMarkings": files_markings,
+                        "noTriggerImport": no_trigger_import,
+                        "embedded": embedded,
                         "upsertOperations": upsert_operations,
                     }
                 },
@@ -643,6 +658,8 @@ class Campaign:
                 update=update,
                 files=extras.get("files"),
                 filesMarkings=extras.get("filesMarkings"),
+                noTriggerImport=extras.get("noTriggerImport", None),
+                embedded=extras.get("embedded", None),
                 upsert_operations=(
                     stix_object["opencti_upsert_operations"]
                     if "opencti_upsert_operations" in stix_object

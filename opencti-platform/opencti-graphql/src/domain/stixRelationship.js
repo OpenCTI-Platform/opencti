@@ -11,6 +11,7 @@ import { UnsupportedError } from '../config/errors';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { addDynamicFromAndToToFilters } from '../utils/filtering/filtering-utils';
+import { pushAll } from '../utils/arrayUtil';
 
 export const findStixRelationPaginated = async (context, user, args) => {
   const filters = addDynamicFromAndToToFilters(args);
@@ -90,7 +91,7 @@ export const schemaTypesMapping = (mapping) => {
   entries.forEach(([key, values]) => {
     const [fromType, toType] = key.split('_');
     const generatedEntries = flattenEntries(fromType, toType, values);
-    flatEntries.push(...generatedEntries);
+    pushAll(flatEntries, generatedEntries);
   });
 
   return mergeEntries(flatEntries.map(([key, values]) => {

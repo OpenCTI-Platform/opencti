@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
@@ -90,6 +91,7 @@ import { doYield } from '../utils/eventloop-utils';
 import { sanitizeUser } from '../utils/templateContextSanitizer';
 import { safeRender } from '../utils/safeEjs.client';
 import { totp } from '../utils/totp';
+import { pushAll } from '../utils/arrayUtil';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -368,7 +370,7 @@ export const computeAvailableMarkings = (userMarkings, allMarkings) => {
       const lowerMatchingMarkings = R.filter((m) => {
         return userMarking.id !== m.id && m.definition_type === type && m.x_opencti_order <= order;
       }, allMarkings);
-      computedMarkings.push(...lowerMatchingMarkings);
+      pushAll(computedMarkings, lowerMatchingMarkings);
     } else {
       const error = { marking: userMarking, available_markings: allMarkings };
       throw UnsupportedError('[ACCESS] USER MARKING INACCESSIBLE', { error });
@@ -1636,22 +1638,39 @@ export const resolveUserById = async (context, id) => {
   return buildCompleteUser(context, client);
 };
 
-export const authenticateUserByTokenOrUserId = async (context, req, tokenOrId) => {
+export const authenticateUserByToken = async (context, req, token) => {
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  if (platformUsers.has(tokenOrId)) {
-    let authenticatedUser = platformUsers.get(tokenOrId);
-    const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    const applicantId = req.headers['opencti-applicant-id'];
-    if (applicantId && isBypassUser(authenticatedUser)) {
-      authenticatedUser = platformUsers.get(applicantId) || INTERNAL_USERS[applicantId];
-      if (!authenticatedUser) {
-        throw FunctionalError(`Cant impersonate applicant ${applicantId}`);
-      }
+  if (platformUsers.has(token)) {
+    const user = platformUsers.get(token);
+    if (crypto.timingSafeEqual(Buffer.from(user.api_token), Buffer.from(token))) {
+      return internalAuthenticateUser(context, req, user);
     }
-    validateUser(authenticatedUser, settings);
-    return userWithOrigin(req, authenticatedUser);
   }
-  throw FunctionalError(`Cant identify with ${tokenOrId}`);
+  throw FunctionalError('Cannot identify user with token');
+};
+
+export const authenticateUserByUserId = async (context, req, userId) => {
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  if (platformUsers.has(userId)) {
+    const user = platformUsers.get(userId);
+    return internalAuthenticateUser(context, req, user);
+  }
+  throw FunctionalError('Cannot identify user with id');
+};
+
+const internalAuthenticateUser = async (context, req, user) => {
+  let authenticatedUser = user;
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const applicantId = req.headers['opencti-applicant-id'];
+  if (applicantId && isBypassUser(authenticatedUser)) {
+    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    authenticatedUser = platformUsers.get(applicantId) || INTERNAL_USERS[applicantId];
+    if (!authenticatedUser) {
+      throw FunctionalError(`Cant impersonate applicant ${applicantId}`);
+    }
+  }
+  validateUser(authenticatedUser, settings);
+  return userWithOrigin(req, authenticatedUser);
 };
 
 export const userRenewToken = async (context, user, userId) => {
@@ -1773,7 +1792,7 @@ export const authenticateUserFromRequest = async (context, req) => {
       const headProvider = HEADERS_AUTHENTICATORS[i];
       const user = await headProvider.reqLoginHandler(req);
       if (user) {
-        return await authenticateUserByTokenOrUserId(context, req, user.id);
+        return await authenticateUserByUserId(context, req, user.id);
       }
     }
   }
@@ -1786,7 +1805,7 @@ export const authenticateUserFromRequest = async (context, req) => {
   // Get user from the token if found
   if (tokenUUID) {
     try {
-      return await authenticateUserByTokenOrUserId(context, req, tokenUUID);
+      return await authenticateUserByToken(context, req, tokenUUID);
     } catch (err) {
       logApp.warn('Error resolving user by token', { cause: err });
     }
