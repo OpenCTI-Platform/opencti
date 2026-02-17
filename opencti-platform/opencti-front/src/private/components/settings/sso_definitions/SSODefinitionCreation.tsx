@@ -55,7 +55,6 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
     <Drawer
       title={getTitle()}
       controlledDial={CreateSSODefinitionControlledDial}
-      disableBackdropClose
     >
       {({ onClose }) => {
         const handleCompleted = () => {

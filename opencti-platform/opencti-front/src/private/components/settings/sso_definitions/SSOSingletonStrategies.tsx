@@ -190,7 +190,6 @@ const SSOSingletonStrategiesContent = () => {
           title={drawerTitles[editingStrategy]}
           open={!!editingStrategy}
           onClose={() => setEditingStrategy(null)}
-          disableBackdropClose
         >
           <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             {editingStrategy === 'local' && <LocalStrategyForm onCancel={() => setEditingStrategy(null)} />}
