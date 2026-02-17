@@ -11,7 +11,7 @@ import { type AuthenticationProviderLogger } from './providers-logger';
 import { memoize } from '../../utils/memoize';
 import { createMapper } from './mappings-utils';
 import { flatExtraConf, decryptAuthValue } from './authenticationProvider-domain';
-import { checkValidEeLicense, handleProviderLogin } from './providers';
+import { handleProviderLogin } from './providers';
 
 const buildProxiedFetch = (issuerUrl: URL): typeof fetch => {
   const dispatcher = getPlatformHttpProxyAgent(issuerUrl.toString(), true);
@@ -50,23 +50,29 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
   };
 
   const verify: VerifyFunction = async (tokens, verified: AuthenticateCallback) => {
-    await checkValidEeLicense();
-    logger.info('Successfully logged on IdP');
+    try {
+      logger.info('Successfully logged on IdP');
 
-    const user_info = memoize(async () => {
-      const sub = tokens.claims()?.sub;
-      const userInfo = sub ? await fetchUserInfo(config, tokens.access_token, sub) : undefined;
-      logger.info('User info fetched', { sub: sub ?? null, userInfo: userInfo ?? null });
-      return userInfo;
-    });
+      const user_info = memoize(async () => {
+        const sub = tokens.claims()?.sub;
+        const userInfo = sub ? await fetchUserInfo(config, tokens.access_token, sub) : undefined;
+        logger.info('User info fetched', { sub: sub ?? null, userInfo: userInfo ?? null });
+        return userInfo;
+      });
 
-    const context = {
-      tokens: (name: string) => typeof tokens[name] === 'string' ? jwtDecode(tokens[name]) : undefined,
-      user_info,
-    };
+      const context = {
+        tokens: (name: string) => typeof tokens[name] === 'string' ? jwtDecode(tokens[name]) : undefined,
+        user_info,
+      };
 
-    const providerLoginInfo = await mapper(context);
-    await handleProviderLogin(logger, providerLoginInfo, verified);
+      const providerLoginInfo = await mapper(context);
+      const user = await handleProviderLogin(logger, providerLoginInfo);
+      return verified(null, user);
+    } catch (e) {
+      const err = e instanceof Error ? e : Error(String(e));
+      logger.error(err.message, err);
+      return verified(err);
+    }
   };
 
   const openIDStrategy = new OpenIDStrategy(options, verify);

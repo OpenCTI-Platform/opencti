@@ -1,7 +1,6 @@
 import type { BasicStoreSettings } from '../../types/settings';
 import type { AuthContext } from '../../types/user';
 import { getSettings } from '../../domain/settings';
-import { forgetPromise } from '../../utils/promiseUtils';
 import { type AuthenticationProviderLogger } from './providers-logger';
 import { createMapper } from './mappings-utils';
 import { handleProviderLogin } from './providers';
@@ -35,14 +34,5 @@ export const createHeaderLoginHandler = (logger: AuthenticationProviderLogger, c
     },
   };
 
-  return new Promise((resolve, reject) => {
-    const done = (err: any, user: any) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(user);
-      }
-    };
-    forgetPromise(handleProviderLogin(logger, infoWithMeta, done));
-  });
+  return handleProviderLogin(logger, infoWithMeta);
 };

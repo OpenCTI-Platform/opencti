@@ -53,32 +53,30 @@ export interface ProviderAuthInfo {
   };
 }
 
-export const handleProviderLogin = async (logger: AuthenticationProviderLogger, info: ProviderAuthInfo, done: (error: any, user?: any) => void) => {
+const context = executionContext('authentication_providers');
+export const handleProviderLogin = async (logger: AuthenticationProviderLogger, info: ProviderAuthInfo) => {
   logger.info('User info resolved', info);
   if (!info.userMapping.email) {
-    logger.error('Login has no resolved user email');
-    done(Error('No user email found, please verify provider configuration and server response'));
-    return;
+    throw Error('No user email found, please verify provider configuration and server response');
   }
 
-  try {
-    const user = await loginFromProvider(
-      info.userMapping,
-      {
-        providerGroups: info.groupsMapping.groups,
-        autoCreateGroup: info.groupsMapping.autoCreateGroup,
-        preventDefaultGroups: info.groupsMapping.preventDefaultGroups,
-        providerOrganizations: info.organizationsMapping.organizations,
-        autoCreateOrganization: info.organizationsMapping.autoCreateOrganization,
-      },
-    );
-    addUserLoginCount();
-    logger.info('User successfully logged', { userId: user.id });
-    done(null, user);
-  } catch (err) {
-    logger.error('User login failed', err as Error);
-    done(err);
+  if (!await isEnterpriseEdition(context)) {
+    throw ForbiddenAccess('This authentication strategy is only available with a valid Enterprise Edition license');
   }
+
+  const user = await loginFromProvider(
+    info.userMapping,
+    {
+      providerGroups: info.groupsMapping.groups,
+      autoCreateGroup: info.groupsMapping.autoCreateGroup,
+      preventDefaultGroups: info.groupsMapping.preventDefaultGroups,
+      providerOrganizations: info.organizationsMapping.organizations,
+      autoCreateOrganization: info.organizationsMapping.autoCreateOrganization,
+    },
+  );
+  addUserLoginCount();
+  logger.info('User successfully logged', { userId: user.id });
+  return user;
 };
 
 export const refreshStrategy = async (authenticationStrategy: BasicStoreEntityAuthenticationProvider) => {
@@ -92,13 +90,6 @@ export const refreshStrategy = async (authenticationStrategy: BasicStoreEntityAu
 export const unregisterStrategy = async (authenticationStrategy: BasicStoreEntityAuthenticationProvider) => {
   const identifier = resolveProviderIdentifier(authenticationStrategy);
   unregisterAuthenticationProvider(identifier);
-};
-
-const context = executionContext('authentication_providers');
-export const checkValidEeLicense = async () => {
-  if (!await isEnterpriseEdition(context)) {
-    throw ForbiddenAccess('This authentication strategy is only available with a valid Enterprise Edition license');
-  }
 };
 
 export const registerStrategy = async (authenticationProvider: BasicStoreEntityAuthenticationProvider) => {

@@ -7,7 +7,7 @@ import { Strategy as SamlStrategy } from '@node-saml/passport-saml/lib/strategy'
 import { createMapper } from './mappings-utils';
 import { decryptAuthValue, flatExtraConf } from './authenticationProvider-domain';
 import { getBaseUrl } from '../../config/conf';
-import { checkValidEeLicense, handleProviderLogin } from './providers';
+import { handleProviderLogin } from './providers';
 
 export const buildSAMLOptions = async (meta: ProviderMeta, conf: SamlStoreConfiguration): Promise<PassportSamlConfig> => ({
   name: meta.name,
@@ -37,23 +37,29 @@ export const createSAMLStrategy = async (logger: AuthenticationProviderLogger, m
   const mapper = createMapper(conf);
 
   const samlLoginCallback: VerifyWithoutRequest = async (profile, done) => {
-    await checkValidEeLicense();
-    if (!profile) {
-      throw ConfigurationError('No profile in SAML response, please verify SAML server configuration');
-    }
-    logger.info('Successfully logged on IdP', { profile });
+    try {
+      if (!profile) {
+        throw ConfigurationError('No profile in SAML response, please verify SAML server configuration');
+      }
+      logger.info('Successfully logged on IdP', { profile });
 
-    const attributes = profile.attributes ?? profile;
-    const loginInfo = await mapper(attributes);
-    const loginInfoWithMeta = {
-      ...loginInfo,
-      userMapping: {
-        ...loginInfo.userMapping,
-        nameID: profile.nameID,
-        nameIDFormat: profile.nameIDFormat,
-      },
-    };
-    await handleProviderLogin(logger, loginInfoWithMeta, done);
+      const attributes = profile.attributes ?? profile;
+      const loginInfo = await mapper(attributes);
+      const loginInfoWithMeta = {
+        ...loginInfo,
+        userMapping: {
+          ...loginInfo.userMapping,
+          nameID: profile.nameID,
+          nameIDFormat: profile.nameIDFormat,
+        },
+      };
+      const user = await handleProviderLogin(logger, loginInfoWithMeta);
+      return done(null, user);
+    } catch (e) {
+      const err = e instanceof Error ? e : Error(String(e));
+      logger.error(err.message, err);
+      return done(err);
+    }
   };
 
   const samlLogoutCallback: VerifyWithoutRequest = (profile) => {
