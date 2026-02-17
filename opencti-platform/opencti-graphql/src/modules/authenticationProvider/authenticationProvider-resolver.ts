@@ -1,5 +1,5 @@
 import { AuthenticationProviderType, AuthLogLevel, type Resolvers } from '../../generated/graphql';
-import {type AuthLogEntry, redisGetAuthLogHistory} from '../../database/redis';
+import { type AuthLogEntry, redisGetAuthLogHistory } from '../../database/redis';
 import {
   addAuthenticationProvider,
   deleteAuthenticationProvider,
