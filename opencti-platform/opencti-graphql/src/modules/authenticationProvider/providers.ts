@@ -133,15 +133,9 @@ export const registerStrategy = async (authenticationProvider: BasicStoreEntityA
     }
   } catch (e) {
     if (e instanceof GraphQLError) {
-      logger.error(
-        `Error when initializing an authentication provider (id: ${authenticationProvider?.id ?? 'no id'}, identifier: ${identifier ?? 'no identifier'}), cause: ${e.message}.`,
-        { message: e.message, data: e.extensions.data },
-      );
+      logger.error('Error when initializing an authentication provider', { message: e.message, data: e.extensions.data });
     } else {
-      logger.error(
-        `Unknown error when initializing an authentication provider (id: ${authenticationProvider?.id ?? 'no id'}, identifier: ${identifier ?? 'no identifier'})`,
-        e,
-      );
+      logger.error('Unknown error when initializing an authentication provider', e);
     }
   }
 };
