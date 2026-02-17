@@ -43,7 +43,7 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
 
   const options: StrategyOptions = {
     config,
-    scope: R.uniq(conf.scopes ?? ['openid', 'email', 'profile']).join(' '),
+    scope: R.uniq(conf.scopes.length > 0 ? conf.scopes : ['openid', 'email', 'profile']).join(' '),
     callbackURL,
     passReqToCallback: false,
     ...extraConf,
