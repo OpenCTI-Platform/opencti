@@ -12,8 +12,6 @@ import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
 import type { LocalStrategyFormQuery } from './__generated__/LocalStrategyFormQuery.graphql';
 import type { LocalStrategyFormMutation } from './__generated__/LocalStrategyFormMutation.graphql';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-
 const localStrategyFormQuery = graphql`
   query LocalStrategyFormQuery {
     settings {
@@ -70,7 +68,6 @@ interface LocalStrategyFormProps {
 const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const isEnterpriseEdition = useEnterpriseEdition();
   const data = useLazyLoadQuery<LocalStrategyFormQuery>(localStrategyFormQuery, {});
   const settings = data.settings;
 
@@ -83,7 +80,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
   const localAuth = settings.local_auth;
 
   const initialValues = {
-    enabled: isEnterpriseEdition ? true : (localAuth?.enabled ?? false),
+    enabled: localAuth?.enabled ?? true,
     password_policy_min_length: settings.password_policy_min_length ?? 0,
     password_policy_max_length: settings.password_policy_max_length ?? 0,
     password_policy_min_symbols: settings.password_policy_min_symbols ?? 0,
@@ -102,7 +99,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
       variables: {
         id: settings.id,
         input: {
-          enabled: isEnterpriseEdition ? true : values.enabled,
+          enabled: values.enabled,
           password_policy_min_length: Number(values.password_policy_min_length) || 0,
           password_policy_max_length: Number(values.password_policy_max_length) || 0,
           password_policy_min_symbols: Number(values.password_policy_min_symbols) || 0,
@@ -132,16 +129,13 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
     >
       {({ handleReset, submitForm, isSubmitting }) => (
         <Form>
-          {isEnterpriseEdition && (
-            <Field
-              component={SwitchField}
-              type="checkbox"
-              name="enabled"
-              disabled={!isEnterpriseEdition}
-              label={t_i18n('Enable local authentication')}
-            />
-          )}
-          <Typography variant="h4" gutterBottom style={{ marginBottom: 20, marginTop: isEnterpriseEdition ? 20 : 0 }}>
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            name="enabled"
+            label={t_i18n('Enable local authentication')}
+          />
+          <Typography variant="h4" gutterBottom style={{ marginBottom: 20, marginTop: 20 }}>
             {t_i18n('Local password policies')}
           </Typography>
           <Field
