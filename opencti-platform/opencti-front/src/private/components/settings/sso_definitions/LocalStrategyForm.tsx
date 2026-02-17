@@ -3,6 +3,9 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Tooltip from '@mui/material/Tooltip';
+import { InfoOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
@@ -26,6 +29,19 @@ const localStrategyFormQuery = graphql`
       password_policy_min_words
       password_policy_min_lowercase
       password_policy_min_uppercase
+      platform_enterprise_edition {
+        license_validated
+      }
+      platform_providers {
+        name
+        type
+        strategy
+        provider
+      }
+      headers_auth {
+        enabled
+      }
+      platform_https_enabled
     }
   }
 `;
@@ -79,6 +95,14 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
 
   const localAuth = settings.local_auth;
 
+  const eeActive = settings.platform_enterprise_edition?.license_validated === true;
+  const isHttpsEnabled = settings.platform_https_enabled;
+  const hasNonLocalProvider = (settings.platform_providers ?? []).some(
+    (p) => p.provider !== 'local' && (p.provider !== 'cert' || isHttpsEnabled),
+  );
+  const hasHeaderAuth = settings.headers_auth?.enabled === true;
+  const canDisableLocal = eeActive && (hasNonLocalProvider || hasHeaderAuth);
+
   const initialValues = {
     enabled: localAuth?.enabled ?? true,
     password_policy_min_length: settings.password_policy_min_length ?? 0,
@@ -129,12 +153,20 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
     >
       {({ handleReset, submitForm, isSubmitting }) => (
         <Form>
-          <Field
-            component={SwitchField}
-            type="checkbox"
-            name="enabled"
-            label={t_i18n('Enable local authentication')}
-          />
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="enabled"
+              label={t_i18n('Enable local authentication')}
+              disabled={!canDisableLocal && initialValues.enabled}
+            />
+            {!canDisableLocal && initialValues.enabled && (
+              <Tooltip title={t_i18n('Local authentication cannot be disabled when no other authentication provider is enabled')}>
+                <InfoOutlined fontSize="small" color="primary" sx={{ ml: 1, cursor: 'default' }} />
+              </Tooltip>
+            )}
+          </Box>
           <Typography variant="h4" gutterBottom style={{ marginBottom: 20, marginTop: 20 }}>
             {t_i18n('Local password policies')}
           </Typography>

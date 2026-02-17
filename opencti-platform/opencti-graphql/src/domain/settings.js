@@ -12,7 +12,7 @@ import { publishUserAction } from '../listener/UserActionListener';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { now } from '../utils/format';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { UnsupportedError } from '../config/errors';
+import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { decodeLicensePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
@@ -22,6 +22,7 @@ import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { LOCAL_PROVIDER } from '../modules/authenticationProvider/provider-local';
 import { AuthType, EnvStrategyType, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
+import { findAllAuthenticationProvider } from '../modules/authenticationProvider/authenticationProvider-domain';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -302,6 +303,22 @@ export const settingDeleteMessage = async (context, user, settingsId, messageId)
 // of the corresponding authentication provider.
 
 export const updateLocalAuth = async (context, user, settingsId, input) => {
+  // Guard: prevent disabling local auth when no other provider is available
+  if (input.enabled === false) {
+    const settings = await getSettings(context);
+    const eeActive = settings.valid_enterprise_edition === true;
+    if (!eeActive) {
+      throw FunctionalError('Local authentication cannot be disabled when no other authentication provider is available');
+    }
+    const isHttpsEnabled = !!(nconf.get('app:https_cert:key') && nconf.get('app:https_cert:crt'));
+    const hasCert = settings.cert_auth?.enabled === true && isHttpsEnabled;
+    const hasHeader = settings.headers_auth?.enabled === true;
+    const dbProviders = await findAllAuthenticationProvider(context, user);
+    const hasDbProvider = dbProviders.some((p) => p.enabled === true);
+    if (!hasCert && !hasHeader && !hasDbProvider) {
+      throw FunctionalError('Local authentication cannot be disabled when no other authentication provider is enabled');
+    }
+  }
   const patch = {
     local_auth: { enabled: input.enabled },
     ...(input.password_policy_min_length !== undefined && { password_policy_min_length: input.password_policy_min_length }),

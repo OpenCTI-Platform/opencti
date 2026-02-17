@@ -12,7 +12,9 @@ import {
   getConfigurationAdminPassword,
   getConfigurationAdminToken,
 } from './providers-configuration';
-import { getAllIdentifiers, runAuthenticationProviderMigration } from './authenticationProvider-domain';
+import nconf from 'nconf';
+import { findAllAuthenticationProvider, getAllIdentifiers, runAuthenticationProviderMigration } from './authenticationProvider-domain';
+import { getEnterpriseEditionInfo } from '../settings/licensing';
 import * as R from 'ramda';
 import passport from 'passport';
 import GitHub from 'github-api';
@@ -717,6 +719,20 @@ export const initializeEnvAuthenticationProviders = async (context, user) => {
   }
   if (shouldRunMigration && !isForcedEnv) {
     await runAuthenticationProviderMigration(context, user, { dry_run: false });
+  }
+  // Safety net: force local_auth enabled when no other provider is available
+  const finalSettings = await getSettings(context);
+  const eeActive = getEnterpriseEditionInfo(finalSettings).license_validated;
+  if (finalSettings.local_auth?.enabled === false) {
+    const isHttpsEnabled = !!(nconf.get('app:https_cert:key') && nconf.get('app:https_cert:crt'));
+    const hasCert = finalSettings.cert_auth?.enabled === true && eeActive && isHttpsEnabled;
+    const hasHeader = finalSettings.headers_auth?.enabled === true && eeActive;
+    const dbProviders = await findAllAuthenticationProvider(context, user);
+    const hasDbProvider = eeActive && dbProviders.some((p) => p.enabled === true);
+    if (!hasCert && !hasHeader && !hasDbProvider) {
+      logApp.warn('[MIGRATION-SAFETY] No other provider available, forcing local_auth to enabled');
+      await updateLocalAuth(context, user, finalSettings.id, { enabled: true });
+    }
   }
   logApp.info('[ENV-PROVIDER] End of reading environment');
 };
