@@ -40,7 +40,6 @@ import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { buildAggregationRelationFilter } from '../../../src/database/middleware-loader';
 import { mapCountPerEntityType, mapEdgesCountPerEntityType } from '../../utils/domainQueryHelper';
 import { entitiesCounter, entitiesCounterTotal, relationsCounter } from './entityCountHelper';
-import { ENTITY_TYPE_AUTHENTICATION_PROVIDER } from '../../../src/modules/authenticationProvider/authenticationProvider-types';
 
 const elWhiteUser = async () => {
   const opts = { types: ['Marking-Definition'], connectionFormat: false };
