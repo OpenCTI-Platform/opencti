@@ -229,6 +229,7 @@ const SSODefinitionEdition = ({
       title={t_i18n(`Update ${provider.type} Authentication`)}
       open={isOpen}
       onClose={onClose}
+      disableBackdropClose
       header={(
         <SSODefinitionDeletion
           ssoId={provider.id}

@@ -80,6 +80,7 @@ interface DrawerProps {
   disabled?: boolean;
   size?: DrawerSize;
   sx?: SxProps;
+  disableBackdropClose?: boolean;
 }
 
 const getDrawerWidth = (size: DrawerSize) => {
@@ -105,6 +106,7 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
   containerStyle,
   disabled = false,
   size = 'large',
+  disableBackdropClose = false,
 }: DrawerProps, ref) => {
   const {
     bannerSettings: { bannerHeightNumber },
@@ -204,7 +206,13 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
         open={open}
         anchor="right"
         elevation={1}
-        onClose={handleClose}
+        onClose={disableBackdropClose
+          ? (_, reason) => {
+              if (reason !== 'backdropClick') {
+                handleClose();
+              }
+            }
+          : handleClose}
         onClick={(e) => e.stopPropagation()}
         sx={{
           zIndex: 1202,
