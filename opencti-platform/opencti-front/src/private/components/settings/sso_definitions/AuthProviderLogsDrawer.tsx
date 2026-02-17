@@ -82,7 +82,7 @@ const AuthProviderLogsDrawerContent: React.FC<{
     >
       <AuthProviderLogsDrawerBody
         queryRef={queryRef}
-        onTitleLoaded={(name) => setTitle(`${t_i18n('Logs – ')}${name}`)}
+        onTitleLoaded={(name) => setTitle(`${t_i18n('Logs')} – ${name}`)}
       />
     </Suspense>
   ) : (

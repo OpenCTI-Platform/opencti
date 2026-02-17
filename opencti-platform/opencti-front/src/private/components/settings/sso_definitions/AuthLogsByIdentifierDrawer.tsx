@@ -48,7 +48,7 @@ const AuthLogsByIdentifierDrawerContent: React.FC<{
 }> = ({ queryRef, onClose, onRefresh, name }) => {
   const { t_i18n } = useFormatter();
   const [refreshing, setRefreshing] = useState(false);
-  const title = `${t_i18n('Logs – ')}${name}`;
+  const title = `${t_i18n('Logs')} - ${name}`;
 
   const handleRefresh = () => {
     setRefreshing(true);
