@@ -7,8 +7,16 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Chip from '@mui/material/Chip';
 import { ErrorOutlined, InfoOutlined, WarningAmberOutlined } from '@mui/icons-material';
-import { useFormatter } from '../../../../components/i18n';
 import type { SSODefinitionEditionFragment$data } from './__generated__/SSODefinitionEditionFragment.graphql';
+
+const formatTimestamp = (ts: string | unknown): string => {
+  if (!ts) return '—';
+  const d = new Date(ts as string);
+  if (Number.isNaN(d.getTime())) return '—';
+  const pad = (n: number, len = 2) => String(n).padStart(len, '0');
+  const ms = String(d.getMilliseconds()).padStart(3, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${ms}`;
+};
 
 interface AuthProviderLogTabProps {
   authLogHistory: SSODefinitionEditionFragment$data['authLogHistory'];
@@ -36,8 +44,10 @@ const LevelIcon = ({ level }: { level: string }) => {
   }
 };
 
+const TIMESTAMP_WIDTH = '11.5rem';
+const LEVEL_WIDTH = '7rem';
+
 const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory }) => {
-  const { fd } = useFormatter();
 
   if (!authLogHistory || authLogHistory.length === 0) {
     return (
@@ -49,32 +59,41 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory 
 
   return (
     <Box sx={{ overflowX: 'auto' }}>
-      <Table size="small" stickyHeader>
+      <Table size="small" stickyHeader sx={{ tableLayout: 'fixed', width: '100%' }}>
         <TableHead>
           <TableRow>
-            <TableCell sx={{ fontWeight: 600 }}>Timestamp</TableCell>
-            <TableCell sx={{ fontWeight: 600 }}>Level</TableCell>
-            <TableCell sx={{ fontWeight: 600 }}>Message</TableCell>
+            <TableCell sx={{ fontWeight: 600, width: TIMESTAMP_WIDTH, minWidth: TIMESTAMP_WIDTH }}>Timestamp</TableCell>
+            <TableCell sx={{ fontWeight: 600, width: LEVEL_WIDTH, minWidth: LEVEL_WIDTH }}>Level</TableCell>
+            <TableCell sx={{ fontWeight: 600, width: '22%' }}>Message</TableCell>
             <TableCell sx={{ fontWeight: 600 }}>Details</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {authLogHistory.map((entry, index) => (
             <TableRow key={`${entry.timestamp}-${index}`} hover>
-              <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                {entry.timestamp ? fd(entry.timestamp) : '—'}
+              <TableCell sx={{ whiteSpace: 'nowrap', width: TIMESTAMP_WIDTH, minWidth: TIMESTAMP_WIDTH, fontFamily: 'monospace', fontSize: '0.8125rem' }}>
+                {formatTimestamp(entry.timestamp)}
               </TableCell>
-              <TableCell>
+              <TableCell sx={{ width: LEVEL_WIDTH, minWidth: LEVEL_WIDTH, overflow: 'visible', whiteSpace: 'nowrap' }}>
                 <Chip
                   size="small"
                   icon={<LevelIcon level={entry.level} />}
                   label={entry.level}
                   color={levelColor(entry.level) as 'error' | 'warning' | 'default'}
                   variant="outlined"
+                  sx={{
+                    paddingTop: 0.75,
+                    paddingBottom: 0.75,
+                    paddingLeft: 0.75,
+                    paddingRight: 0.75,
+                    '& .MuiChip-icon': { marginLeft: 0, marginRight: 0.5 },
+                  }}
                 />
               </TableCell>
-              <TableCell>{entry.message}</TableCell>
-              <TableCell sx={{ maxWidth: 280 }}>
+              <TableCell sx={{ maxWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {entry.message}
+              </TableCell>
+              <TableCell>
                 {entry.meta && Object.keys(entry.meta).length > 0 ? (
                   <Box
                     component="pre"

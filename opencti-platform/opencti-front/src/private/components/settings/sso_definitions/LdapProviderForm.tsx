@@ -329,7 +329,7 @@ const LdapProviderForm = ({
               <Tab label={t_i18n('Configuration')} />
               <Tab label={t_i18n('Groups')} />
               <Tab label={t_i18n('Organizations')} />
-              <Tab label={t_i18n('Log')} />
+              <Tab label={t_i18n('Logs')} />
             </Tabs>
           </Box>
           {currentTab === 0 && (
