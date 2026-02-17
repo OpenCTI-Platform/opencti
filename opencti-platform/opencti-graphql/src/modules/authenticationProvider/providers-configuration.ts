@@ -6,7 +6,7 @@ import { addUserLoginCount } from '../../manager/telemetryManager';
 import { logAuthError, logAuthInfo } from './providers-logger';
 
 export const LOCAL_STRATEGY_IDENTIFIER = 'local';
-export const HEADER_STRATEGY_IDENTIFIER = 'headers';
+export const HEADERS_STRATEGY_IDENTIFIER = 'headers';
 
 const IS_AUTHENTICATION_FORCE_FROM_ENV = booleanConf('app:authentication:force_env', false);
 export const isAuthenticationForcedFromEnv = () => {

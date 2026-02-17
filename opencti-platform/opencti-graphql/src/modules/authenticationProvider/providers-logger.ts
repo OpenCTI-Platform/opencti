@@ -3,7 +3,7 @@ import type { EnvStrategyType } from './providers-configuration';
 import type { AuthenticationProviderType } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
 import { redisPushAuthLog } from '../../database/redis';
-import { CERT_PROVIDER_NAME, HEADER_PROVIDER_NAME } from './providers';
+import { CERT_PROVIDER_NAME, HEADERS_PROVIDER_NAME } from './providers';
 import { forgetPromise } from '../../utils/promiseUtils';
 
 export const logAuthInfo = (message: string, strategyType: EnvStrategyType | AuthenticationProviderType, meta?: any) => {
@@ -20,7 +20,7 @@ export interface AuthenticationProviderLogger {
   error: (message: string, meta?: any, err?: any) => void;
 }
 
-export const createAuthLogger = (type: AuthenticationProviderType | typeof HEADER_PROVIDER_NAME | typeof CERT_PROVIDER_NAME, identifier: string): AuthenticationProviderLogger => {
+export const createAuthLogger = (type: AuthenticationProviderType | typeof HEADERS_PROVIDER_NAME | typeof CERT_PROVIDER_NAME, identifier: string): AuthenticationProviderLogger => {
   const logPrefix = `[Auth-${type.toUpperCase()}] `;
   return ({
     info: (message, meta = {}) => {

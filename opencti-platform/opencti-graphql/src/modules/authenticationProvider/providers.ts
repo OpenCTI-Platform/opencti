@@ -12,30 +12,30 @@ import { createSAMLStrategy } from './provider-saml';
 import { createLDAPStrategy } from './provider-ldap';
 import { GraphQLError } from 'graphql/index';
 import { createOpenIdStrategy } from './provider-oidc';
-import { AuthType, EnvStrategyType, HEADER_STRATEGY_IDENTIFIER, isAuthenticationForcedFromEnv, type ProviderConfiguration } from './providers-configuration';
+import { AuthType, EnvStrategyType, HEADERS_STRATEGY_IDENTIFIER, isAuthenticationForcedFromEnv, type ProviderConfiguration } from './providers-configuration';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { findAllAuthenticationProvider, resolveProviderIdentifier } from './authenticationProvider-domain';
 import { registerLocalStrategy } from './provider-local';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
-import { createHeaderLoginHandler } from './provider-header';
+import { createHeadersLoginHandler } from './provider-headers';
 import { loginFromProvider } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import { ForbiddenAccess } from '../../config/errors';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 
 export const CERT_PROVIDER_NAME = 'Cert';
-export const HEADER_PROVIDER_NAME = 'Headers';
+export const HEADERS_PROVIDER_NAME = 'Headers';
 
-export let HEADER_PROVIDER: ProviderConfiguration | undefined = undefined;
-export const registerHeaderStrategy = async (context: AuthContext) => {
-  const logger = createAuthLogger(HEADER_PROVIDER_NAME, HEADER_PROVIDER_NAME);
+export let HEADERS_PROVIDER: ProviderConfiguration | undefined = undefined;
+export const registerHeadersStrategy = async (context: AuthContext) => {
+  const logger = createAuthLogger(HEADERS_PROVIDER_NAME, HEADERS_PROVIDER_NAME);
 
-  HEADER_PROVIDER = {
-    name: HEADER_PROVIDER_NAME,
-    reqLoginHandler: createHeaderLoginHandler(logger, context),
+  HEADERS_PROVIDER = {
+    name: HEADERS_PROVIDER_NAME,
+    reqLoginHandler: createHeadersLoginHandler(logger, context),
     type: AuthType.AUTH_REQ,
     strategy: EnvStrategyType.STRATEGY_HEADER,
-    provider: HEADER_STRATEGY_IDENTIFIER,
+    provider: HEADERS_STRATEGY_IDENTIFIER,
   };
 };
 
@@ -170,8 +170,8 @@ export const initializeAuthenticationProviders = async (context: AuthContext) =>
   await initializeEnvAuthenticationProviders(context, SYSTEM_USER);
   // If not explicit forced, use database ones
   if (!isAuthenticationForcedFromEnv()) {
-    // Header strategy: register handler that reads headers_auth from Settings on each request
-    await registerHeaderStrategy(context);
+    // Headers strategy: register handler that reads headers_auth from Settings on each request
+    await registerHeadersStrategy(context);
     // No need to do a specific registration for cert
     // Supported providers are in database (openid, ldap, saml, ....)
     await initEnterpriseAuthenticationProviders(context, SYSTEM_USER);

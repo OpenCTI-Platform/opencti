@@ -109,7 +109,7 @@ import { memoize } from '../utils/memoize';
 import { getSettings } from './settings';
 import passport from 'passport';
 import { LOCAL_STRATEGY_IDENTIFIER, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
-import { HEADER_PROVIDER } from '../modules/authenticationProvider/providers';
+import { HEADERS_PROVIDER } from '../modules/authenticationProvider/providers';
 import { addOrganization } from '../modules/organization/organization-domain';
 
 const BEARER = 'Bearer ';
@@ -1931,7 +1931,7 @@ export const authenticateUserFromRequest = async (context, req) => {
   // If user not identified, try headers authentication
   const settings = await getSettings(context);
   if (settings.headers_auth?.enabled) {
-    const user = await HEADER_PROVIDER?.reqLoginHandler(req);
+    const user = await HEADERS_PROVIDER?.reqLoginHandler(req);
     if (user) {
       return await authenticateUserByUserId(context, req, user.id);
     }

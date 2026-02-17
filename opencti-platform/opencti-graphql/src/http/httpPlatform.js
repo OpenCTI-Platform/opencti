@@ -34,7 +34,7 @@ import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { extractRefererPathFromReq, setCookieError } from './httpUtils';
 import { getChatbotProxy } from './httpChatbotProxy';
 import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
-import { HEADER_PROVIDER } from '../modules/authenticationProvider/providers';
+import { HEADERS_PROVIDER } from '../modules/authenticationProvider/providers';
 import { handleCertAuthenticationRequest } from '../modules/authenticationProvider/provider-cert';
 
 export const sanitizeReferer = (refererToSanitize) => {
@@ -397,8 +397,8 @@ const createApp = async (app, schema) => {
               logApp.debug('[LOGOUT] OpenCTI logout only, remote logout on IDP not requested.');
               res.redirect(referer);
             }
-          } else if (HEADER_PROVIDER && provider === HEADER_PROVIDER.provider) {
-            res.redirect(HEADER_PROVIDER.logout_uri ?? referer);
+          } else if (HEADERS_PROVIDER && provider === HEADERS_PROVIDER.provider) {
+            res.redirect(HEADERS_PROVIDER.logout_uri ?? referer);
           } else {
             res.redirect(referer);
           }

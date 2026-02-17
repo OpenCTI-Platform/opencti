@@ -7,7 +7,7 @@ import { handleProviderLogin } from './providers';
 import { ForbiddenAccess } from '../../config/errors';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 
-export const createHeaderLoginHandler = (logger: AuthenticationProviderLogger, context: AuthContext) => async (req: any) => {
+export const createHeadersLoginHandler = (logger: AuthenticationProviderLogger, context: AuthContext) => async (req: any) => {
   const settings = await getSettings(context) as unknown as BasicStoreSettings;
   const headerStrategy = settings.headers_auth;
   if (!headerStrategy) {
@@ -26,6 +26,13 @@ export const createHeaderLoginHandler = (logger: AuthenticationProviderLogger, c
   };
   const mapper = createMapper(headerStrategy, resolveExpr);
   const providerLoginInfo = await mapper(req.headers);
+
+  // since header provider is in auto mode, do a precheck on user email to avoid to produce errors logs
+  if (providerLoginInfo.userMapping.email === undefined) {
+    logger.warn('Email not found in headers, skipping header authentication', providerLoginInfo);
+    return undefined;
+  }
+
   const infoWithMeta = {
     ...providerLoginInfo,
     userMapping: {
