@@ -100,6 +100,7 @@ const SSOSingletonStrategiesContent = () => {
               label={isEnabled ? t_i18n('Enabled') : t_i18n('Disabled')}
               status={isEnabled}
             />
+            {showEE && <span onClick={(e) => e.stopPropagation()}><EEChip /></span>}
             {showCertHttpsInfo && (
               <Tooltip title={t_i18n('Client certificate requires the platform to be configured with HTTPS')}>
                 <span>
@@ -117,7 +118,6 @@ const SSOSingletonStrategiesContent = () => {
                 </span>
               </Tooltip>
             )}
-            {showEE && <span onClick={(e) => e.stopPropagation()}><EEChip /></span>}
           </Box>
         );
       },

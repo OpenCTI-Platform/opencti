@@ -4,8 +4,11 @@ import * as Yup from 'yup';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import { WarningAmberOutlined } from '@mui/icons-material';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
@@ -22,6 +25,7 @@ const certStrategyFormQuery = graphql`
   query CertStrategyFormQuery {
     settings {
       id
+      platform_https_enabled
       cert_auth {
         enabled
         description
@@ -261,13 +265,32 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
           {/* Tab 0: Configuration */}
           {currentTab === 0 && (
             <>
-              <Field
-                component={SwitchField}
-                type="checkbox"
-                name="enabled"
-                label={t_i18n('Enable client certificate authentication')}
-                containerstyle={{ marginTop: 20 }}
-              />
+              <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', marginTop: 2.5, gap: 0 }}>
+                <Field
+                  component={SwitchField}
+                  type="checkbox"
+                  name="enabled"
+                  label={t_i18n('Enable client certificate authentication')}
+                  containerstyle={{ marginTop: 0, marginRight: 0 }}
+                />
+                {!settings.platform_https_enabled && (
+                  <Tooltip title={t_i18n('Client certificate requires the platform to be configured with HTTPS')}>
+                    <span style={{ display: 'inline-flex', marginLeft: 4 }}>
+                      <IconButton
+                        size="small"
+                        disabled
+                        sx={{
+                          padding: 0.25,
+                          color: 'warning.main',
+                          '&.Mui-disabled': { color: 'warning.main', opacity: 1 },
+                        }}
+                      >
+                        <WarningAmberOutlined fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                )}
+              </Box>
               <Field
                 component={TextField}
                 variant="standard"
