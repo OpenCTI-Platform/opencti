@@ -8,17 +8,18 @@ import { createMapper } from './mappings-utils';
 import { TLSSocket } from 'node:tls';
 import { createAuthLogger } from './providers-logger';
 import { CERT_PROVIDER_NAME } from './providers';
+import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 
 const logger = createAuthLogger(CERT_PROVIDER_NAME, CERT_PROVIDER_NAME);
 export const handleCertAuthenticationRequest = async (req: Request, res: Response) => {
   const context = executionContext('cert_strategy');
-  const { cert_auth, valid_enterprise_edition } = await getSettings(context) as unknown as BasicStoreSettings;
+  const { cert_auth } = await getSettings(context) as unknown as BasicStoreSettings;
   const redirect = extractRefererPathFromReq(req) ?? '/';
   const isActivated = cert_auth?.enabled;
   if (!isActivated) {
     setCookieError(res, 'Cert authentication is not available');
     res.redirect(redirect);
-  } else if (!valid_enterprise_edition) {
+  } else if (!await isEnterpriseEdition(context)) {
     setCookieError(res, 'Cert authentication strategy is only available with a valid Enterprise Edition license');
     res.redirect(redirect);
   } else {

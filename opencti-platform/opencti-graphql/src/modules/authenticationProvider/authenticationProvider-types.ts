@@ -159,14 +159,3 @@ export interface StixAuthenticationProvider extends StixObject {
   button_label_override?: string;
   identifier_override?: string;
 }
-
-export const slugifyName = (name: string): string => {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-};
-
-export const resolveProviderIdentifier = (provider: BasicStoreEntityAuthenticationProvider): string => {
-  return provider.identifier_override ?? slugifyName(provider.name);
-};

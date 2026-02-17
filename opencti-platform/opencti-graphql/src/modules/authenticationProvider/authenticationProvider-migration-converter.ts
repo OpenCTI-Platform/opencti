@@ -30,7 +30,7 @@ import {
   type SamlConfigurationInput,
   type UserInfoMappingInput,
 } from '../../generated/graphql';
-import { slugifyName } from './authenticationProvider-types';
+import { resolveProviderIdentifier } from './authenticationProvider-domain';
 
 // [/] default conf for LDAP user info mapping : email -> 'mail' & name -> 'givenName'
 // [/] default conf for LDAP group mapping : ['_groups/cn'] or just ['cn'] ?
@@ -874,7 +874,7 @@ export const convertAllEnvProviders = (
     // Deduplicate converted providers by resolved identifier
     if (result.status === 'converted') {
       // Resolve identifier the same way as resolveProviderIdentifier: override, or slugified name
-      const identifier = result.provider.base.identifier_override ?? slugifyName(result.provider.base.name);
+      const identifier = resolveProviderIdentifier(result.provider.base);
       const existingEnvKey = seenIdentifiers.get(identifier);
       if (existingEnvKey !== undefined) {
         results.push({

@@ -8,13 +8,14 @@ import { GraphQLError } from 'graphql/index';
 import { createOpenIdStrategy } from './provider-oidc';
 import { AuthType, EnvStrategyType, HEADER_STRATEGY_IDENTIFIER, isAuthenticationForcedFromEnv, type ProviderConfiguration } from './providers-configuration';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { findAllAuthenticationProvider } from './authenticationProvider-domain';
+import { findAllAuthenticationProvider, resolveProviderIdentifier } from './authenticationProvider-domain';
 import { registerLocalStrategy } from './provider-local';
-import { SYSTEM_USER } from '../../utils/access';
+import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { createHeaderLoginHandler } from './provider-header';
-import { resolveProviderIdentifier } from './authenticationProvider-types';
 import { loginFromProvider } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
+import { ForbiddenAccess } from '../../config/errors';
+import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 
 export const CERT_PROVIDER_NAME = 'Cert';
 export const HEADER_PROVIDER_NAME = 'Headers';
@@ -90,6 +91,13 @@ export const refreshStrategy = async (authenticationStrategy: BasicStoreEntityAu
 export const unregisterStrategy = async (authenticationStrategy: BasicStoreEntityAuthenticationProvider) => {
   const identifier = resolveProviderIdentifier(authenticationStrategy);
   unregisterAuthenticationProvider(identifier);
+};
+
+const context = executionContext('authentication_providers');
+export const checkValidEeLicense = async () => {
+  if (!await isEnterpriseEdition(context)) {
+    throw ForbiddenAccess('This authentication strategy is only available with a valid Enterprise Edition license');
+  }
 };
 
 export const registerStrategy = async (authenticationProvider: BasicStoreEntityAuthenticationProvider) => {

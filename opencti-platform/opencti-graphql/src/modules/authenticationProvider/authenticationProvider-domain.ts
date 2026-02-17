@@ -20,8 +20,6 @@ import {
   samlSecretFields,
   ldapSecretFields,
   type ExtraConfEntry,
-  resolveProviderIdentifier,
-  slugifyName,
 } from './authenticationProvider-types';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
@@ -146,12 +144,18 @@ export const getAllIdentifiers = async (context: AuthContext, user: AuthUser) =>
   return allProvider.map((provider) => resolveProviderIdentifier(provider));
 };
 
+const slugifyName = (name: string): string => {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 /**
- * Resolve the identifier that a provider would have from its base input,
- * using the same logic as resolveProviderIdentifier (override ?? slugified name).
+ * Resolve the identifier that a provider would have from its configuration: use the override if provided, or slugify the name otherwise.
  */
-const resolveIdentifierFromInput = (base: AuthenticationProviderBaseInput): string => {
-  return base.identifier_override ?? slugifyName(base.name);
+export const resolveProviderIdentifier = (conf: { name: string; identifier_override?: string | null }): string => {
+  return conf.identifier_override ?? slugifyName(conf.name);
 };
 
 /**
@@ -163,7 +167,7 @@ const ensureUniqueIdentifier = async (
   base: AuthenticationProviderBaseInput,
   excludeId?: string,
 ) => {
-  const newIdentifier = resolveIdentifierFromInput(base);
+  const newIdentifier = resolveProviderIdentifier(base);
   const allProviders = await findAllAuthenticationProvider(context, user);
   const conflict = allProviders.find((p) => {
     if (excludeId && p.internal_id === excludeId) return false;

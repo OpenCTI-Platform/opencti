@@ -7,7 +7,7 @@ import { Strategy as SamlStrategy } from '@node-saml/passport-saml/lib/strategy'
 import { createMapper } from './mappings-utils';
 import { decryptAuthValue, flatExtraConf } from './authenticationProvider-domain';
 import { getBaseUrl } from '../../config/conf';
-import { handleProviderLogin } from './providers';
+import { checkValidEeLicense, handleProviderLogin } from './providers';
 
 export const buildSAMLOptions = async (meta: ProviderMeta, conf: SamlStoreConfiguration): Promise<PassportSamlConfig> => ({
   name: meta.name,
@@ -37,6 +37,7 @@ export const createSAMLStrategy = async (logger: AuthenticationProviderLogger, m
   const mapper = createMapper(conf);
 
   const samlLoginCallback: VerifyWithoutRequest = async (profile, done) => {
+    await checkValidEeLicense();
     if (!profile) {
       throw ConfigurationError('No profile in SAML response, please verify SAML server configuration');
     }

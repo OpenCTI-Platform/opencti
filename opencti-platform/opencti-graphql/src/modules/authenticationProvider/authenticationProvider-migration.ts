@@ -9,11 +9,10 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { AuthenticationProviderType } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
 import { convertAllEnvProviders, type ConvertedProvider } from './authenticationProvider-migration-converter';
-import { addAuthenticationProvider, getAllIdentifiers } from './authenticationProvider-domain';
+import { addAuthenticationProvider, getAllIdentifiers, resolveProviderIdentifier } from './authenticationProvider-domain';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { AuthRequired } from '../../config/errors';
 import { isAuthenticationProviderMigrated } from './providers-configuration';
-import { slugifyName } from './authenticationProvider-types';
 
 // ---------------------------------------------------------------------------
 // Provider type mapping
@@ -87,7 +86,7 @@ export const parseAuthenticationProviderConfiguration = async (
     // result.status === 'converted'
     const { provider } = result as { status: 'converted'; provider: ConvertedProvider };
     // Resolve identifier the same way as resolveProviderIdentifier: override, or slugified name
-    const identifier = provider.base.identifier_override ?? slugifyName(provider.base.name);
+    const identifier = resolveProviderIdentifier(provider.base);
 
     const providerType = PROVIDER_TYPE_MAP[provider.type];
     if (!providerType) {

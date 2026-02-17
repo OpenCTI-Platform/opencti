@@ -4,7 +4,7 @@ import { type AuthenticationProviderLogger } from './providers-logger';
 import { AuthType } from './providers-configuration';
 import LdapStrategy, { type VerifyCallback, type VerifyDoneCallback } from 'passport-ldapauth';
 import { createMapper } from './mappings-utils';
-import { handleProviderLogin } from './providers';
+import { checkValidEeLicense, handleProviderLogin } from './providers';
 
 const createLdapOptions = async (conf: LdapStoreConfiguration): Promise<LdapStrategy.Options> => ({
   server: {
@@ -26,11 +26,12 @@ const createLdapOptions = async (conf: LdapStoreConfiguration): Promise<LdapStra
   passwordField: conf.password_field,
 });
 
-export const createLDAPStrategy = async (logger: AuthenticationProviderLogger, meta: ProviderMeta, storeConf: LdapStoreConfiguration) => {
+export const createLDAPStrategy = async (logger: AuthenticationProviderLogger, _meta: ProviderMeta, storeConf: LdapStoreConfiguration) => {
   const ldapOptions = await createLdapOptions(storeConf);
   const mapper = createMapper(storeConf);
 
   const ldapLoginCallback: VerifyCallback = async (user: any, done: VerifyDoneCallback) => {
+    await checkValidEeLicense();
     logger.info('Successfully logged on IdP', { user });
     const providerLoginInfo = await mapper(user, user._groups, user);
     await handleProviderLogin(logger, providerLoginInfo, done);

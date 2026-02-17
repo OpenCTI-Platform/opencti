@@ -6,6 +6,7 @@ import { type AuthenticationProviderLogger } from './providers-logger';
 import { createMapper } from './mappings-utils';
 import { handleProviderLogin } from './providers';
 import { ForbiddenAccess } from '../../config/errors';
+import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 
 export const createHeaderLoginHandler = (logger: AuthenticationProviderLogger, context: AuthContext) => async (req: any) => {
   const settings = await getSettings(context) as unknown as BasicStoreSettings;
@@ -14,7 +15,7 @@ export const createHeaderLoginHandler = (logger: AuthenticationProviderLogger, c
     return undefined;
   }
 
-  if (!settings.valid_enterprise_edition) {
+  if (!await isEnterpriseEdition(context)) {
     throw ForbiddenAccess('Header authentication strategy is only available with a valid Enterprise Edition license');
   }
 
