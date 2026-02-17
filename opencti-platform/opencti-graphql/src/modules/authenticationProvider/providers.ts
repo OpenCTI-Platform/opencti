@@ -29,7 +29,6 @@ export const HEADER_PROVIDER_NAME = 'Headers';
 export let HEADER_PROVIDER: ProviderConfiguration | undefined = undefined;
 export const registerHeaderStrategy = async (context: AuthContext) => {
   const logger = createAuthLogger(HEADER_PROVIDER_NAME, HEADER_PROVIDER_NAME);
-  logger.info('Configuring provider');
 
   HEADER_PROVIDER = {
     name: HEADER_PROVIDER_NAME,
