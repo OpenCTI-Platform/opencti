@@ -17,22 +17,22 @@ export const logAuthError = (message: string, strategyType: EnvStrategyType | Au
 export interface AuthenticationProviderLogger {
   info: (message: string, meta?: any) => void;
   warn: (message: string, meta?: any) => void;
-  error: (message: string, meta?: any) => void;
+  error: (message: string, meta?: any, err?: any) => void;
 }
 
 export const createAuthLogger = (type: AuthenticationProviderType | typeof HEADER_PROVIDER_NAME | typeof CERT_PROVIDER_NAME, identifier: string): AuthenticationProviderLogger => {
   const logPrefix = `[Auth-${type.toUpperCase()}] `;
   return ({
-    info: (message: string, meta: any = {}) => {
+    info: (message, meta = {}) => {
       logApp.info(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } });
       forgetPromise(redisPushAuthLog({ level: 'info', type, identifier, message, meta }));
     },
-    warn: (message: string, meta: any = {}) => {
+    warn: (message, meta = {}) => {
       logApp.warn(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } });
       forgetPromise(redisPushAuthLog({ level: 'warn', type, identifier, message, meta }));
     },
-    error: (message: string, meta: any = {}) => {
-      logApp.error(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } });
+    error: (message, meta = {}, err?) => {
+      logApp.error(`${logPrefix}${message}`, { err, meta: { ...meta, type, identifier } });
       forgetPromise(redisPushAuthLog({ level: 'error', type, identifier, message, meta }));
     },
   });

@@ -59,7 +59,7 @@ export const createSAMLStrategy = async (logger: AuthenticationProviderLogger, m
       return done(null, user);
     } catch (e) {
       const err = e instanceof Error ? e : Error(String(e));
-      logger.error(err.message, err);
+      logger.error(err.message, {}, err);
       return done(err);
     }
   };

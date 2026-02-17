@@ -51,16 +51,14 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
 
   const verify: VerifyFunction = async (tokens, verified: AuthenticateCallback) => {
     try {
-      logger.info(
-        'Successfully logged on IdP',
-        {
-          tokens: {
-            access_token: tokens.access_token ? jwtDecode(tokens.access_token) : undefined,
-            id_token: tokens.id_token ? jwtDecode(tokens.id_token) : undefined,
-            refresh_token: tokens.refresh_token ? jwtDecode(tokens.refresh_token) : undefined,
-          },
-          scope: tokens.scope,
-        });
+      logger.info('Successfully logged on IdP', {
+        tokens: {
+          access_token: tokens.access_token ? jwtDecode(tokens.access_token) : undefined,
+          id_token: tokens.id_token ? jwtDecode(tokens.id_token) : undefined,
+          refresh_token: tokens.refresh_token ? jwtDecode(tokens.refresh_token) : undefined,
+        },
+        scope: tokens.scope,
+      });
 
       const user_info = memoize(async () => {
         const sub = tokens.claims()?.sub;
@@ -79,7 +77,7 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
       return verified(null, user);
     } catch (e) {
       const err = e instanceof Error ? e : Error(String(e));
-      logger.error(err.message, err);
+      logger.error(err.message, {}, err);
       return verified(err);
     }
   };

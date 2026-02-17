@@ -1,6 +1,12 @@
 import { AuthenticationProviderType } from '../../generated/graphql';
 import { type AuthenticationProviderLogger, createAuthLogger } from './providers-logger';
-import type { BasicStoreEntityAuthenticationProvider, LdapStoreConfiguration, OidcStoreConfiguration, SamlStoreConfiguration } from './authenticationProvider-types';
+import type {
+  BasicStoreEntityAuthenticationProvider,
+  LdapStoreConfiguration,
+  MappingConfiguration,
+  OidcStoreConfiguration,
+  SamlStoreConfiguration,
+} from './authenticationProvider-types';
 import { initializeEnvAuthenticationProviders, registerAuthenticationProvider, unregisterAuthenticationProvider } from './providers-initialization';
 import { createSAMLStrategy } from './provider-saml';
 import { createLDAPStrategy } from './provider-ldap';
@@ -23,7 +29,7 @@ export const HEADER_PROVIDER_NAME = 'Headers';
 export let HEADER_PROVIDER: ProviderConfiguration | undefined = undefined;
 export const registerHeaderStrategy = async (context: AuthContext) => {
   const logger = createAuthLogger(HEADER_PROVIDER_NAME, HEADER_PROVIDER_NAME);
-  logger.info('Configuring strategy');
+  logger.info('Configuring provider');
 
   HEADER_PROVIDER = {
     name: HEADER_PROVIDER_NAME,
@@ -97,16 +103,18 @@ export const registerStrategy = async (authenticationProvider: BasicStoreEntityA
   const identifier = resolveProviderIdentifier(authenticationProvider);
   const meta = { name, identifier };
   const logger = createAuthLogger(type, identifier);
-  logger.info('Configuring strategy');
+  const { configuration } = authenticationProvider;
+  const { user_info_mapping, groups_mapping, organizations_mapping } = configuration as MappingConfiguration;
+  logger.info('Configuring provider', { user_info_mapping, groups_mapping, organizations_mapping });
 
   const createStrategy = async () => {
     switch (authenticationProvider.type) {
       case AuthenticationProviderType.Saml:
-        return createSAMLStrategy(logger, meta, authenticationProvider.configuration as SamlStoreConfiguration);
+        return createSAMLStrategy(logger, meta, configuration as SamlStoreConfiguration);
       case AuthenticationProviderType.Oidc:
-        return createOpenIdStrategy(logger, meta, authenticationProvider.configuration as OidcStoreConfiguration);
+        return createOpenIdStrategy(logger, meta, configuration as OidcStoreConfiguration);
       case AuthenticationProviderType.Ldap:
-        return createLDAPStrategy(logger, meta, authenticationProvider.configuration as LdapStoreConfiguration);
+        return createLDAPStrategy(logger, meta, configuration as LdapStoreConfiguration);
       default:
         return undefined;
     }
@@ -116,7 +124,7 @@ export const registerStrategy = async (authenticationProvider: BasicStoreEntityA
     if (authenticationProvider.enabled) {
       const created = await createStrategy();
       if (!created) {
-        logger.error('Unknown strategy is not supported, skipping');
+        logger.error('Provider type is not supported, skipping');
         return;
       }
       registerAuthenticationProvider(
@@ -133,9 +141,9 @@ export const registerStrategy = async (authenticationProvider: BasicStoreEntityA
     }
   } catch (e) {
     if (e instanceof GraphQLError) {
-      logger.error('Error when initializing an authentication provider', { message: e.message, data: e.extensions.data });
+      logger.error('Error when initializing provider', { message: e.message, data: e.extensions.data });
     } else {
-      logger.error('Unknown error when initializing an authentication provider', e);
+      logger.error('Unknown error when initializing provider', {}, e);
     }
   }
 };

@@ -18,7 +18,7 @@ export const createHeaderLoginHandler = (logger: AuthenticationProviderLogger, c
     throw ForbiddenAccess('Header authentication strategy is only available with a valid Enterprise Edition license');
   }
 
-  logger.info('Processing login request');
+  logger.info('Processing login request', { headerNames: Object.keys(req.headers) }); // don't log header values for security reasons
 
   const resolveExpr = (expr: string) => (obj: unknown) => {
     const headers = obj as Record<string, string>;

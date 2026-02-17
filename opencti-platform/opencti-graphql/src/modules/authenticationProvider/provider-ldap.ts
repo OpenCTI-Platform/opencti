@@ -38,7 +38,7 @@ export const createLDAPStrategy = async (logger: AuthenticationProviderLogger, _
       return done(null, loggedUser);
     } catch (e) {
       const err = e instanceof Error ? e : Error(String(e));
-      logger.error(err.message, err);
+      logger.error(err.message, {}, err);
       return done(err);
     }
   };
