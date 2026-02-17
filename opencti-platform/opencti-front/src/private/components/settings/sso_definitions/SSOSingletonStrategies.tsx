@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import ListOutlined from '@mui/icons-material/ListOutlined';
-import { InfoOutlined } from '@mui/icons-material';
+import { WarningAmberOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
@@ -28,7 +28,6 @@ interface StrategyRow {
   type: string;
   enabled: boolean;
   strategy: StrategyType;
-  isClickable: boolean;
 }
 
 const ssoSingletonStrategiesQuery = graphql`
@@ -69,9 +68,9 @@ const SSOSingletonStrategiesContent = () => {
   const isHttpsEnabled = settings.platform_https_enabled;
 
   const strategiesData: StrategyRow[] = [
-    { id: 'local', name: t_i18n('Local'), type: t_i18n('FORM'), enabled: localEnabled, strategy: 'local', isClickable: true },
-    { id: 'header', name: t_i18n('HTTP headers'), type: t_i18n('AUTO'), enabled: headerEnabled, strategy: 'header', isClickable: true },
-    { id: 'cert', name: t_i18n('Client Certificate'), type: t_i18n('SSO'), enabled: certEnabled, strategy: 'cert', isClickable: !!isHttpsEnabled },
+    { id: 'local', name: t_i18n('Local'), type: t_i18n('FORM'), enabled: localEnabled, strategy: 'local' },
+    { id: 'header', name: t_i18n('HTTP headers'), type: t_i18n('AUTO'), enabled: headerEnabled, strategy: 'header' },
+    { id: 'cert', name: t_i18n('Client Certificate'), type: t_i18n('SSO'), enabled: certEnabled, strategy: 'cert' },
   ];
 
   const dataColumns: DataTableProps['dataColumns'] = {
@@ -79,28 +78,24 @@ const SSOSingletonStrategiesContent = () => {
       label: t_i18n('Configuration name'),
       percentWidth: 45,
       isSortable: false,
-      render: (node: StrategyRow) => (
-        <span style={{ opacity: node.isClickable ? 1 : 0.5 }}>{node.name}</span>
-      ),
+      render: (node: StrategyRow) => node.name,
     },
     type: {
       label: t_i18n('Authentication type'),
       percentWidth: 40,
       isSortable: false,
-      render: (node: StrategyRow) => (
-        <span style={{ opacity: node.isClickable ? 1 : 0.5 }}>{node.type}</span>
-      ),
+      render: (node: StrategyRow) => node.type,
     },
     enabled: {
       label: ' ',
       percentWidth: 15,
       isSortable: false,
       render: (node: StrategyRow) => {
-        const showEE = node.strategy !== 'local' && !isEnterpriseEdition && node.isClickable;
-        const isEnabled = node.isClickable && node.enabled && (node.strategy === 'local' || isEnterpriseEdition);
+        const showEE = node.strategy !== 'local' && !isEnterpriseEdition;
+        const isEnabled = node.enabled && (node.strategy !== 'cert' || isHttpsEnabled) && (node.strategy === 'local' || isEnterpriseEdition);
         const showCertHttpsInfo = node.strategy === 'cert' && !isHttpsEnabled;
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, opacity: node.isClickable ? 1 : 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, opacity: 1 }}>
             <ItemBoolean
               label={isEnabled ? t_i18n('Enabled') : t_i18n('Disabled')}
               status={isEnabled}
@@ -108,8 +103,16 @@ const SSOSingletonStrategiesContent = () => {
             {showCertHttpsInfo && (
               <Tooltip title={t_i18n('Client certificate requires the platform to be configured with HTTPS')}>
                 <span>
-                  <IconButton size="small" disabled sx={{ padding: 0.25 }}>
-                    <InfoOutlined fontSize="small" />
+                  <IconButton
+                    size="small"
+                    disabled
+                    sx={{
+                      padding: 0.25,
+                      color: 'warning.main',
+                      '&.Mui-disabled': { color: 'warning.main', opacity: 1 },
+                    }}
+                  >
+                    <WarningAmberOutlined fontSize="small" />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -122,9 +125,7 @@ const SSOSingletonStrategiesContent = () => {
   };
 
   const handleLineClick = (node: StrategyRow) => {
-    if (node.isClickable) {
-      setEditingStrategy(node.strategy);
-    }
+    setEditingStrategy(node.strategy);
   };
 
   const drawerTitles: Record<StrategyType, string> = {

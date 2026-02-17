@@ -24,7 +24,7 @@ export const handleCertAuthenticationRequest = async (req: Request, res: Respons
     res.redirect(redirect);
   } else {
     const socket = req.socket as TLSSocket;
-    const cert = socket.getPeerCertificate();
+    const cert = socket.getPeerCertificate?.();
     if (cert && socket.authorized) {
       logger.info('Valid certificate received', { cert });
       const info = await createMapper(cert_auth)(cert);
