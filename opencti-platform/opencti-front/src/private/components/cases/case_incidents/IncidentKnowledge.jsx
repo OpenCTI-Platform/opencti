@@ -155,6 +155,7 @@ class IncidentKnowledgeComponent extends Component {
           height: '100%',
           margin: 0,
           padding: 0,
+          position: 'relative',
         }}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
         data-testid="incident-response-knowledge"
@@ -189,10 +190,11 @@ class IncidentKnowledgeComponent extends Component {
                     );
                   }
                   return (
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                      withTopMargin={true}
-                    />
+                    <div style={{ height: '50vh' }}>
+                      <Loader
+                        variant={LoaderVariant.inElement}
+                      />
+                    </div>
                   );
                 }}
               />
@@ -237,10 +239,11 @@ class IncidentKnowledgeComponent extends Component {
                       );
                     }
                     return (
-                      <Loader
-                        variant={LoaderVariant.inElement}
-                        withTopMargin={true}
-                      />
+                      <div style={{ height: '50vh' }}>
+                        <Loader
+                          variant={LoaderVariant.inElement}
+                        />
+                      </div>
                     );
                   }}
                 />
@@ -263,10 +266,11 @@ class IncidentKnowledgeComponent extends Component {
                     );
                   }
                   return (
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                      withTopMargin={true}
-                    />
+                    <div style={{ height: '50vh' }}>
+                      <Loader
+                        variant={LoaderVariant.inElement}
+                      />
+                    </div>
                   );
                 }}
               />

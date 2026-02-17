@@ -52,6 +52,7 @@ class GroupingKnowledgeComponent extends Component {
         style={{
           width: '100%',
           height: '100%',
+          position: 'relative',
         }}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
         data-testid="groupings-knowledge"
@@ -111,10 +112,11 @@ class GroupingKnowledgeComponent extends Component {
                     );
                   }
                   return (
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                      withTopMargin={true}
-                    />
+                    <div style={{ height: '50vh' }}>
+                      <Loader
+                        variant={LoaderVariant.inElement}
+                      />
+                    </div>
                   );
                 }}
               />

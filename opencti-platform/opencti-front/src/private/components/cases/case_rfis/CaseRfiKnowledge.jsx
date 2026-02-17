@@ -155,6 +155,7 @@ class CaseRfiKnowledgeComponent extends Component {
           height: '100%',
           margin: 0,
           padding: 0,
+          position: 'relative',
         }}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
         data-testid="case-rfi-knowledge"
@@ -237,10 +238,11 @@ class CaseRfiKnowledgeComponent extends Component {
                       );
                     }
                     return (
-                      <Loader
-                        variant={LoaderVariant.inElement}
-                        withTopMargin={true}
-                      />
+                      <div style={{ height: '50vh' }}>
+                        <Loader
+                          variant={LoaderVariant.inElement}
+                        />
+                      </div>
                     );
                   }}
                 />
@@ -263,10 +265,11 @@ class CaseRfiKnowledgeComponent extends Component {
                     );
                   }
                   return (
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                      withTopMargin={true}
-                    />
+                    <div style={{ height: '50vh' }}>
+                      <Loader
+                        variant={LoaderVariant.inElement}
+                      />
+                    </div>
                   );
                 }}
               />

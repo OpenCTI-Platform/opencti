@@ -1,20 +1,18 @@
-import { graphql, PreloadedQuery, useFragment } from 'react-relay';
-import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
-import { useTheme } from '@mui/material/styles';
-import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import { knowledgeCorrelationStixCoreObjectQuery, knowledgeCorrelationStixCoreRelationshipQuery } from '@components/common/containers/KnowledgeCorrelationQuery';
-import type { Theme } from '../Theme';
-import Graph from './Graph';
-import GraphToolbar from './GraphToolbar';
-import { GraphProvider } from './GraphContext';
+import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
+import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
+import { graphql, PreloadedQuery, useFragment } from 'react-relay';
+import useDebounceCallback from '../../utils/hooks/useDebounceCallback';
 import usePreloadedPaginationFragment from '../../utils/hooks/usePreloadedPaginationFragment';
+import { deserializeObjectB64 } from '../../utils/object';
+import Graph from './Graph';
+import { GraphProvider } from './GraphContext';
+import GraphToolbar from './GraphToolbar';
 import { GraphContainerCorrelationObjectsQuery } from './__generated__/GraphContainerCorrelationObjectsQuery.graphql';
 import { GraphContainerCorrelationObjects_fragment$key } from './__generated__/GraphContainerCorrelationObjects_fragment.graphql';
-import useDebounceCallback from '../../utils/hooks/useDebounceCallback';
 import { GraphContainerCorrelationPositions_fragment$key } from './__generated__/GraphContainerCorrelationPositions_fragment.graphql';
-import { getObjectsToParse } from './utils/graphUtils';
-import { deserializeObjectB64 } from '../../utils/object';
 import { OctiGraphPositions } from './graph.types';
+import { getObjectsToParse } from './utils/graphUtils';
 import useGraphInteractions from './utils/useGraphInteractions';
 
 // region Relay queries and fragments
@@ -341,7 +339,6 @@ const GraphContainerCorrelationComponent = ({
   onPositionsChanged,
 }: GraphContainerCorrelationComponentProps) => {
   const ref = useRef(null);
-  const theme = useTheme<Theme>();
   const bannerHeight = useSettingsMessagesBannerHeight();
 
   const {
@@ -362,7 +359,6 @@ const GraphContainerCorrelationComponent = ({
   const toolbarHeight = 54;
   const totalHeight = bannerHeight + headerHeight + paddingHeight + breadcrumbHeight + titleHeight + tabsHeight + toolbarHeight;
   const graphContainerStyle: CSSProperties = {
-    margin: `-${theme.spacing(3)}`,
     height: `calc(100vh - ${totalHeight}px)`,
   };
 

@@ -111,7 +111,6 @@ const CaseHeaderMenu: FunctionComponent<CaseHeaderMenuProps> = ({
       <Breadcrumbs elements={breadcrumb} />
 
       <HeaderMainEntityLayout
-        hasPlaceholderTags={false}
         title={caseTemplate.name}
         rightActions={(
           <>
