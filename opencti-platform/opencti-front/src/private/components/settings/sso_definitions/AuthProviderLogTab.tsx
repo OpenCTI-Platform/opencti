@@ -7,8 +7,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Chip from '@mui/material/Chip';
 import { ErrorOutlined, InfoOutlined, WarningAmberOutlined } from '@mui/icons-material';
-import type { SSODefinitionEditionFragment$data } from './__generated__/SSODefinitionEditionFragment.graphql';
-
 const formatTimestamp = (ts: string | unknown): string => {
   if (!ts) return '—';
   const d = new Date(ts as string);
@@ -18,8 +16,17 @@ const formatTimestamp = (ts: string | unknown): string => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${ms}`;
 };
 
+export interface AuthLogEntryShape {
+  readonly timestamp: unknown;
+  readonly level: string;
+  readonly message: string;
+  readonly type: string;
+  readonly identifier: string;
+  readonly meta?: unknown;
+}
+
 interface AuthProviderLogTabProps {
-  authLogHistory: SSODefinitionEditionFragment$data['authLogHistory'];
+  authLogHistory: ReadonlyArray<AuthLogEntryShape>;
 }
 
 const levelColor = (level: string) => {
@@ -48,7 +55,6 @@ const TIMESTAMP_WIDTH = '11.5rem';
 const LEVEL_WIDTH = '7rem';
 
 const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory }) => {
-
   if (!authLogHistory || authLogHistory.length === 0) {
     return (
       <Box sx={{ py: 2, color: 'text.secondary' }}>

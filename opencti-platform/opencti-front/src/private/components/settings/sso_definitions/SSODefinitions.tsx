@@ -6,6 +6,7 @@ import { graphql } from 'react-relay';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import AuthProviderLogsDrawer from '@components/settings/sso_definitions/AuthProviderLogsDrawer';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { SSODefinitionsLinesPaginationQuery } from './__generated__/SSODefinitionsLinesPaginationQuery.graphql';
@@ -24,7 +25,6 @@ import ListOutlined from '@mui/icons-material/ListOutlined';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import SSODefinitionEdition from '@components/settings/sso_definitions/SSODefinitionEdition';
-import AuthProviderLogsDrawer from '@components/settings/sso_definitions/AuthProviderLogsDrawer';
 import { SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
 
 const LOCAL_STORAGE_KEY = 'SSODefinitions';
@@ -115,7 +115,7 @@ const SSODefinitions = () => {
   setTitle(t_i18n('Authentication | Security | Settings'));
 
   const [editingSSO, setEditingSSO] = useState<EditingSSO | null>(null);
-  const [logsDrawerProvider, setLogsDrawerProvider] = useState<SSODefinitionEditionFragment$key | null>(null);
+  const [logsDrawerProviderId, setLogsDrawerProviderId] = useState<string | null>(null);
 
   const initialValues = {
     searchTerm: '',
@@ -134,9 +134,9 @@ const SSODefinitions = () => {
     setEditingSSO({ data: node });
   };
 
-  const handleOpenLogs = (e: React.MouseEvent, node: SSODefinitionEditionFragment$key) => {
+  const handleOpenLogs = (e: React.MouseEvent, node: { id: string }) => {
     e.stopPropagation();
-    setLogsDrawerProvider(node);
+    setLogsDrawerProviderId(node.id);
   };
 
   const dataColumns = {
@@ -241,11 +241,11 @@ const SSODefinitions = () => {
             paginationOptions={queryPaginationOptions}
           />
         )}
-        {logsDrawerProvider && (
+        {logsDrawerProviderId && (
           <AuthProviderLogsDrawer
-            isOpen={!!logsDrawerProvider}
-            onClose={() => setLogsDrawerProvider(null)}
-            data={logsDrawerProvider}
+            isOpen={!!logsDrawerProviderId}
+            onClose={() => setLogsDrawerProviderId(null)}
+            providerId={logsDrawerProviderId}
           />
         )}
       </>
