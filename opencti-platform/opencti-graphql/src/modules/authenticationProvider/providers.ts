@@ -1,11 +1,11 @@
 import { AuthenticationProviderType } from '../../generated/graphql';
-import { createAuthLogger } from './providers-logger';
+import { type AuthenticationProviderLogger, createAuthLogger } from './providers-logger';
 import type { BasicStoreEntityAuthenticationProvider, LdapStoreConfiguration, OidcStoreConfiguration, SamlStoreConfiguration } from './authenticationProvider-types';
-import { initializeEnvAuthenticationProviders, unregisterAuthenticationProvider } from './providers-initialization';
-import { registerSAMLStrategy } from './provider-saml';
-import { registerLDAPStrategy } from './provider-ldap';
+import { initializeEnvAuthenticationProviders, registerAuthenticationProvider, unregisterAuthenticationProvider } from './providers-initialization';
+import { createSAMLStrategy } from './provider-saml';
+import { createLDAPStrategy } from './provider-ldap';
 import { GraphQLError } from 'graphql/index';
-import { registerOpenIdStrategy } from './provider-oidc';
+import { createOpenIdStrategy } from './provider-oidc';
 import { AuthType, EnvStrategyType, HEADER_STRATEGY_IDENTIFIER, isAuthenticationForcedFromEnv, type ProviderConfiguration } from './providers-configuration';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { findAllAuthenticationProvider } from './authenticationProvider-domain';
@@ -13,6 +13,8 @@ import { registerLocalStrategy } from './provider-local';
 import { SYSTEM_USER } from '../../utils/access';
 import { createHeaderLoginHandler } from './provider-header';
 import { resolveProviderIdentifier } from './authenticationProvider-types';
+import { loginFromProvider } from '../../domain/user';
+import { addUserLoginCount } from '../../manager/telemetryManager';
 
 export const CERT_PROVIDER_NAME = 'Cert';
 export const HEADER_PROVIDER_NAME = 'Headers';
@@ -31,6 +33,52 @@ export const registerHeaderStrategy = async (context: AuthContext) => {
   };
 };
 
+export interface ProviderAuthInfo {
+  userMapping: {
+    email?: string;
+    name?: string;
+    firstname?: string;
+    lastname?: string;
+    provider_metadata?: unknown;
+  };
+  groupsMapping: {
+    groups: string[];
+    autoCreateGroup: boolean;
+    preventDefaultGroups: boolean;
+  };
+  organizationsMapping: {
+    organizations: string[];
+    autoCreateOrganization: boolean;
+  };
+}
+
+export const handleProviderLogin = async (logger: AuthenticationProviderLogger, info: ProviderAuthInfo, done: (error: any, user?: any) => void) => {
+  logger.info('User info resolved', info);
+  if (!info.userMapping.email) {
+    logger.error('Login has no resolved user email');
+    done(Error('No user email found, please verify provider configuration and server response'));
+    return;
+  }
+
+  try {
+    const user = await loginFromProvider(
+      info.userMapping,
+      {
+        providerGroups: info.groupsMapping.groups,
+        providerOrganizations: info.organizationsMapping.organizations,
+        autoCreateGroup: info.groupsMapping.autoCreateGroup,
+        preventDefaultGroups: info.groupsMapping.preventDefaultGroups,
+      },
+    );
+    addUserLoginCount();
+    logger.info('User successfully logged', { userId: user.id });
+    done(null, user);
+  } catch (err) {
+    logger.error('User login failed', err as Error);
+    done(err);
+  }
+};
+
 export const refreshStrategy = async (authenticationStrategy: BasicStoreEntityAuthenticationProvider) => {
   await unregisterStrategy(authenticationStrategy);
 
@@ -47,26 +95,41 @@ export const unregisterStrategy = async (authenticationStrategy: BasicStoreEntit
 export const registerStrategy = async (authenticationProvider: BasicStoreEntityAuthenticationProvider) => {
   const { type, name } = authenticationProvider;
   const identifier = resolveProviderIdentifier(authenticationProvider);
+  const meta = { name, identifier };
   const logger = createAuthLogger(type, identifier);
   logger.info('Configuring strategy');
+
+  const createStrategy = async () => {
+    switch (authenticationProvider.type) {
+      case AuthenticationProviderType.Saml:
+        return createSAMLStrategy(logger, meta, authenticationProvider.configuration as SamlStoreConfiguration);
+      case AuthenticationProviderType.Oidc:
+        return createOpenIdStrategy(logger, meta, authenticationProvider.configuration as OidcStoreConfiguration);
+      case AuthenticationProviderType.Ldap:
+        return createLDAPStrategy(logger, meta, authenticationProvider.configuration as LdapStoreConfiguration);
+      default:
+        return undefined;
+    }
+  };
+
   try {
     if (authenticationProvider.enabled) {
-      const meta = { name, identifier };
-      switch (type) {
-        case AuthenticationProviderType.Saml:
-          await registerSAMLStrategy(logger, meta, authenticationProvider.configuration as SamlStoreConfiguration);
-          break;
-        case AuthenticationProviderType.Oidc:
-          await registerOpenIdStrategy(logger, meta, authenticationProvider.configuration as OidcStoreConfiguration);
-          break;
-        case AuthenticationProviderType.Ldap:
-          await registerLDAPStrategy(logger, meta, authenticationProvider.configuration as LdapStoreConfiguration);
-          break;
-
-        default:
-          logger.error('Unknown strategy should not be possible, skipping');
-          break;
+      const created = await createStrategy();
+      if (!created) {
+        logger.error('Unknown strategy is not supported, skipping');
+        return;
       }
+      registerAuthenticationProvider(
+        meta.identifier,
+        authenticationProvider.type,
+        {
+          name: meta.name,
+          type: created.auth_type,
+          strategy: authenticationProvider.type,
+          provider: meta.identifier,
+          logout_remote: created.logout_remote,
+        },
+      );
     }
   } catch (e) {
     if (e instanceof GraphQLError) {

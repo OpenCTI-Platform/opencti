@@ -5,37 +5,37 @@ describe('mappings-utils', () => {
   describe('resolvePath', () => {
     it('should resolve simple property', async () => {
       const obj = { foo: 'bar' };
-      const result = await resolvePath(obj, ['foo']);
+      const result = await resolvePath(['foo'])(obj);
       expect(result).toBe('bar');
     });
 
     it('should resolve nested property', async () => {
       const obj = { foo: { bar: 'baz' } };
-      const result = await resolvePath(obj, ['foo', 'bar']);
+      const result = await resolvePath(['foo', 'bar'])(obj);
       expect(result).toBe('baz');
     });
 
     it('should resolve function returning value', async () => {
       const obj = { foo: () => 'bar' };
-      const result = await resolvePath(obj, ['foo']);
+      const result = await resolvePath(['foo'])(obj);
       expect(result).toBe('bar');
     });
 
     it('should resolve nested function returning value', async () => {
       const obj = { foo: { bar: () => 'baz' } };
-      const result = await resolvePath(obj, ['foo', 'bar']);
+      const result = await resolvePath(['foo', 'bar'])(obj);
       expect(result).toBe('baz');
     });
 
     it('should resolve async function returning value', async () => {
       const obj = { foo: async () => 'bar' };
-      const result = await resolvePath(obj, ['foo']);
+      const result = await resolvePath(['foo'])(obj);
       expect(result).toBe('bar');
     });
 
     it('should resolve function with arguments', async () => {
       const obj = { foo: (arg: string) => `bar-${arg}` };
-      const result = await resolvePath(obj, ['foo', 'suffix']);
+      const result = await resolvePath(['foo', 'suffix'])(obj);
       expect(result).toBe('bar-suffix');
     });
 
@@ -48,19 +48,19 @@ describe('mappings-utils', () => {
       };
       // For resolvePath, if function has args, it takes next item in array as arg
       // So ['foo', 'arg1', 'bar'] -> obj.foo('arg1').bar
-      const result = await resolvePath(obj, ['foo', 'arg1', 'bar']);
+      const result = await resolvePath(['foo', 'arg1', 'bar'])(obj);
       expect(result).toBe('baz-arg1');
     });
 
     it('should handle missing property gracefully', async () => {
       const obj = { foo: 'bar' };
-      const result = await resolvePath(obj, ['baz']);
+      const result = await resolvePath(['baz'])(obj);
       expect(result).toBeUndefined();
     });
 
     it('should handle null/undefined intermediate value', async () => {
       const obj = { foo: null };
-      const result = await resolvePath(obj, ['foo', 'bar']);
+      const result = await resolvePath(['foo', 'bar'])(obj);
       expect(result).toBeUndefined();
     });
 
@@ -73,15 +73,14 @@ describe('mappings-utils', () => {
         },
       };
       // path: a -> b('arg1') -> c
-      const result = await resolvePath(obj, ['a', 'b', 'arg1', 'c']);
+      const result = await resolvePath(['a', 'b', 'arg1', 'c'])(obj);
       expect(result).toBe('value-arg1');
     });
 
     it('should resolve function with argument but no provided argument (undefined)', async () => {
       const obj = { foo: (arg: string | undefined) => `bar-${arg}` };
-      const result = await resolvePath(obj, ['foo']);
+      const result = await resolvePath(['foo'])(obj);
       expect(result).toBe('bar-undefined');
     });
   });
 });
-

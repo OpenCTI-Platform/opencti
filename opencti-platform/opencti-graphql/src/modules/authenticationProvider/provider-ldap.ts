@@ -1,11 +1,10 @@
 import type { LdapStoreConfiguration, ProviderMeta } from './authenticationProvider-types';
 import { flatExtraConf, decryptAuthValue } from './authenticationProvider-domain';
 import { type AuthenticationProviderLogger } from './providers-logger';
-import { AuthType, providerLoginHandler } from './providers-configuration';
+import { AuthType } from './providers-configuration';
 import LdapStrategy, { type VerifyCallback, type VerifyDoneCallback } from 'passport-ldapauth';
-import { registerAuthenticationProvider } from './providers-initialization';
-import { AuthenticationProviderType } from '../../generated/graphql';
-import { createMappers, resolveDotPath } from './mappings-utils';
+import { createMapper } from './mappings-utils';
+import { handleProviderLogin } from './providers';
 
 const createLdapOptions = async (conf: LdapStoreConfiguration): Promise<LdapStrategy.Options> => ({
   server: {
@@ -27,40 +26,21 @@ const createLdapOptions = async (conf: LdapStoreConfiguration): Promise<LdapStra
   passwordField: conf.password_field,
 });
 
-export const registerLDAPStrategy = async (logger: AuthenticationProviderLogger, meta: ProviderMeta, storeConf: LdapStoreConfiguration) => {
+export const createLDAPStrategy = async (logger: AuthenticationProviderLogger, meta: ProviderMeta, storeConf: LdapStoreConfiguration) => {
   const ldapOptions = await createLdapOptions(storeConf);
-  const { resolveUserInfo, resolveGroups, resolveOrganizations } = createMappers(storeConf);
+  const mapper = createMapper(storeConf);
 
   const ldapLoginCallback: VerifyCallback = async (user: any, done: VerifyDoneCallback) => {
     logger.info('Successfully logged on IdP', { user });
-
-    const userInfo = await resolveUserInfo((expr) => expr ? user[expr] : undefined);
-    const groups = await resolveGroups((expr) => resolveDotPath(user._groups, expr));
-    const organizations = await resolveOrganizations((expr) => resolveDotPath(user, expr));
-
-    logger.info('User info resolved', { userInfo, groups, organizations });
-
-    const opts = {
-      strategy: AuthenticationProviderType.Ldap,
-      name: meta.name,
-      identifier: meta.identifier,
-      providerGroups: groups,
-      providerOrganizations: organizations,
-      autoCreateGroup: storeConf.groups_mapping.auto_create_groups,
-      preventDefaultGroups: storeConf.groups_mapping.prevent_default_groups,
-    };
-    await providerLoginHandler(userInfo, done, opts);
+    const providerLoginInfo = await mapper(user, user._groups, user);
+    await handleProviderLogin(logger, providerLoginInfo, done);
   };
 
   const ldapStrategy = new LdapStrategy(ldapOptions, ldapLoginCallback);
-  registerAuthenticationProvider(
-    meta.identifier,
-    ldapStrategy,
-    {
-      name: meta.name,
-      type: AuthType.AUTH_FORM,
-      strategy: AuthenticationProviderType.Ldap,
-      provider: meta.identifier,
-    },
-  );
+
+  return {
+    strategy: ldapStrategy,
+    auth_type: AuthType.AUTH_FORM,
+    logout_remote: undefined,
+  };
 };

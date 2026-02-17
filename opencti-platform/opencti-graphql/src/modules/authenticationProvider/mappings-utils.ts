@@ -1,9 +1,10 @@
 import type { GroupsMapping, MappingConfiguration, OrganizationsMapping, UserInfoMapping } from './authenticationProvider-types';
 import * as R from 'ramda';
 import { pushAll } from '../../utils/arrayUtil';
+import type { ProviderAuthInfo } from './providers';
 
-export const resolvePath = async <T>(obj: any, [name, ...rest]: string[]): Promise<T | undefined> => {
-  const { [name]: value } = obj ?? {};
+export const resolvePath = ([name, ...rest]: string[]) => async <T>(obj: unknown): Promise<T | undefined> => {
+  const { [name]: value } = (obj ?? {}) as { [key: string]: unknown };
   if (value === undefined || obj === null) {
     return undefined;
   }
@@ -16,73 +17,96 @@ export const resolvePath = async <T>(obj: any, [name, ...rest]: string[]): Promi
     return resolvedValue;
   }
 
-  return resolvePath(resolvedValue, rest);
+  return resolvePath(rest)(resolvedValue);
 };
 
-export const resolveDotPath = async <T>(obj: any, path: string): Promise<T | undefined> => resolvePath(obj, path.split('.'));
+export const resolveDotPath = (path: string) => resolvePath(path.split('.'));
 
-export const resolveUserInfo = async (
+type ResolveExprFunction = (obj: unknown) => undefined | string | string[] | Promise<undefined | string | string[]>;
+type CreateResolveExprFunction = (expr: string) => ResolveExprFunction;
+
+const firstElement = (s: string | string[] | undefined) => Array.isArray(s) ? s.find((s) => Boolean(s)) : s;
+
+export const createUserMapper = (
   { email_expr, name_expr, firstname_expr, lastname_expr }: UserInfoMapping,
-  resolveExpr: (expr: string) => string | undefined | Promise<string | undefined>,
+  resolveExpr: CreateResolveExprFunction,
 ) => {
-  return {
-    email: await resolveExpr(email_expr),
-    name: await resolveExpr(name_expr),
-    firstname: firstname_expr ? await resolveExpr(firstname_expr) : undefined,
-    lastname: lastname_expr ? await resolveExpr(lastname_expr) : undefined,
+  const emailExpr = resolveExpr(email_expr);
+  const nameExpr = resolveExpr(name_expr);
+  const firstnameExpr = firstname_expr ? resolveExpr(firstname_expr) : () => undefined;
+  const lastnameExpr = lastname_expr ? resolveExpr(lastname_expr) : () => undefined;
+  return async (obj: unknown) => {
+    return {
+      email: firstElement(await emailExpr(obj))?.trim(),
+      name: firstElement(await nameExpr(obj))?.trim(),
+      firstname: firstElement(await firstnameExpr(obj))?.trim(),
+      lastname: firstElement(await lastnameExpr(obj))?.trim(),
+    };
   };
 };
 
-export const resolveGroups = async (conf: GroupsMapping, resolveExpr: (expr: string) => undefined | string | string[] | Promise<undefined | string | string[]>) => {
-  const allGroups: string[] = [];
-  for await (const expr of conf.groups_expr) {
-    const resolved = await resolveExpr(expr);
+const extractSplitMapAndDeduplicate = async (
+  obj: unknown,
+  resolvers: ResolveExprFunction[],
+  splitter: string | undefined,
+  mapping: { provider: string; platform: string }[],
+  defaultValues: string[],
+) => {
+  const allValues: string[] = [];
+  for await (const resolver of resolvers) {
+    const resolved = await resolver(obj);
     if (resolved) {
-      const groups = (Array.isArray(resolved) ? resolved : [resolved])
-        .map((g) => conf.group_splitter ? g.split(conf.group_splitter) : [g])
-        .flat()
-        .map((s) => s.trim());
-      pushAll(allGroups, groups);
+      pushAll(
+        allValues,
+        (Array.isArray(resolved) ? resolved : [resolved])
+          .map((g) => splitter ? g.split(splitter) : [g])
+          .flat()
+          .map((s) => s.trim()),
+      );
     }
   }
 
-  const mappedGroups = allGroups.map(
-    (g) => conf.groups_mapping.find(
+  const mapped = allValues.map(
+    (g) => mapping.find(
       ({ provider }) => provider === g)?.platform,
   ).filter((m): m is string => Boolean(m));
 
-  return R.uniq([...conf.default_groups, ...mappedGroups]);
+  return R.uniq([...defaultValues, ...mapped]);
 };
 
-export const resolveOrganizations = async (conf: OrganizationsMapping, resolveExpr: (expr: string) => undefined | string | string[] | Promise<undefined | string | string[]>) => {
-  const allOrganization: string[] = [];
-  for await (const expr of conf.organizations_expr) {
-    const resolved = await resolveExpr(expr);
-    if (resolved) {
-      const groups = (Array.isArray(resolved) ? resolved : [resolved])
-        .map((g) => conf.organizations_splitter ? g.split(conf.organizations_splitter) : [g])
-        .flat()
-        .map((s) => s.trim());
-      pushAll(allOrganization, groups);
-    }
-  }
-
-  const mappedOrga = allOrganization.map(
-    (o) => conf.organizations_mapping.find(
-      ({ provider }) => provider === o)?.platform,
-  ).filter((m): m is string => Boolean(m));
-
-  return R.uniq([...conf.default_organizations, ...mappedOrga]);
+export const createGroupsMapper = (conf: GroupsMapping, resolveExpr: CreateResolveExprFunction) => {
+  const groupExprs = conf.groups_expr.map((expr) => resolveExpr(expr));
+  return (obj: unknown) => extractSplitMapAndDeduplicate(obj, groupExprs, conf.group_splitter, conf.groups_mapping, conf.default_groups);
 };
 
-export const createMappers = (conf: MappingConfiguration) => ({
-  resolveGroups: (resolveExpr: (expr: string) => undefined | string | string[] | Promise<undefined | string | string[]>) => {
-    return resolveGroups(conf.groups_mapping, resolveExpr);
-  },
-  resolveOrganizations: (resolveExpr: (expr: string) => undefined | string | string[] | Promise<undefined | string | string[]>) => {
-    return resolveOrganizations(conf.organizations_mapping, resolveExpr);
-  },
-  resolveUserInfo: (resolveExpr: (expr: string) => string | undefined | Promise<string | undefined>) => {
-    return resolveUserInfo(conf.user_info_mapping, resolveExpr);
-  },
-});
+export const createOrganizationsMapper = (conf: OrganizationsMapping, resolveExpr: CreateResolveExprFunction) => {
+  const orgaExprs = conf.organizations_expr.map((expr) => resolveExpr(expr));
+  return (obj: unknown) => extractSplitMapAndDeduplicate(obj, orgaExprs, conf.organizations_splitter, conf.organizations_mapping, conf.default_organizations);
+};
+
+export const createMapper = (
+  conf: MappingConfiguration,
+  resolveExpr: (expr: string) => (obj: unknown) => undefined | string | string[] | Promise<undefined | string | string[]> = resolveDotPath,
+) => {
+  const userMapper = createUserMapper(conf.user_info_mapping, resolveExpr);
+  const groupsMapper = createGroupsMapper(conf.groups_mapping, resolveExpr);
+  const organizationsMapper = createOrganizationsMapper(conf.organizations_mapping, resolveExpr);
+
+  return async (userContext: unknown, groupContext = userContext, organizationContext = userContext): Promise<ProviderAuthInfo> => {
+    const userMapping = await userMapper(userContext);
+    const groups = await groupsMapper(groupContext);
+    const organizations = await organizationsMapper(organizationContext);
+    return {
+      userMapping,
+      groupsMapping: {
+        groups,
+        autoCreateGroup: conf.groups_mapping.auto_create_groups,
+        preventDefaultGroups: conf.groups_mapping.prevent_default_groups,
+      },
+      organizationsMapping: {
+        organizations,
+        autoCreateOrganization: conf.organizations_mapping.auto_create_organizations,
+      },
+    };
+  };
+};

@@ -1,14 +1,13 @@
 import type { ProviderMeta, SamlStoreConfiguration } from './authenticationProvider-types';
 import { type AuthenticationProviderLogger } from './providers-logger';
-import { AuthType, providerLoginHandler } from './providers-configuration';
-import { registerAuthenticationProvider } from './providers-initialization';
+import { AuthType } from './providers-configuration';
 import { ConfigurationError } from '../../config/errors';
 import type { PassportSamlConfig, VerifyWithoutRequest } from '@node-saml/passport-saml/lib/types';
-import { AuthenticationProviderType } from '../../generated/graphql';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml/lib/strategy';
-import { createMappers, resolveDotPath } from './mappings-utils';
+import { createMapper } from './mappings-utils';
 import { decryptAuthValue, flatExtraConf } from './authenticationProvider-domain';
 import { getBaseUrl } from '../../config/conf';
+import { handleProviderLogin } from './providers';
 
 export const buildSAMLOptions = async (meta: ProviderMeta, conf: SamlStoreConfiguration): Promise<PassportSamlConfig> => ({
   name: meta.name,
@@ -33,9 +32,9 @@ export const buildSAMLOptions = async (meta: ProviderMeta, conf: SamlStoreConfig
   ...flatExtraConf(conf.extra_conf),
 });
 
-export const registerSAMLStrategy = async (logger: AuthenticationProviderLogger, meta: ProviderMeta, conf: SamlStoreConfiguration) => {
+export const createSAMLStrategy = async (logger: AuthenticationProviderLogger, meta: ProviderMeta, conf: SamlStoreConfiguration) => {
   const samlOptions = await buildSAMLOptions(meta, conf);
-  const { resolveUserInfo, resolveGroups, resolveOrganizations } = createMappers(conf);
+  const mapper = createMapper(conf);
 
   const samlLoginCallback: VerifyWithoutRequest = async (profile, done) => {
     if (!profile) {
@@ -44,30 +43,16 @@ export const registerSAMLStrategy = async (logger: AuthenticationProviderLogger,
     logger.info('Successfully logged on IdP', { profile });
 
     const attributes = profile.attributes ?? profile;
-    const userInfo = await resolveUserInfo((expr) => resolveDotPath(attributes, expr));
-    const groups = await resolveGroups((expr) => resolveDotPath(attributes, expr));
-    const organizations = await resolveOrganizations((expr) => resolveDotPath(attributes, expr));
-
-    logger.info('User info resolved', { userInfo, groups, organizations });
-
-    const opts = {
-      strategy: AuthenticationProviderType.Saml,
-      name: meta.name,
-      identifier: meta.identifier,
-      providerGroups: groups,
-      providerOrganizations: organizations,
-      autoCreateGroup: conf.groups_mapping.auto_create_groups,
-      preventDefaultGroups: conf.groups_mapping.prevent_default_groups,
-    };
-    const userInfoWithMeta = {
-      ...userInfo,
-      email: userInfo.email || profile.nameID,
-      provider_metadata: {
+    const loginInfo = await mapper(attributes);
+    const loginInfoWithMeta = {
+      ...loginInfo,
+      userMapping: {
+        ...loginInfo.userMapping,
         nameID: profile.nameID,
         nameIDFormat: profile.nameIDFormat,
       },
     };
-    await providerLoginHandler(userInfoWithMeta, done, opts);
+    await handleProviderLogin(logger, loginInfoWithMeta, done);
   };
 
   const samlLogoutCallback: VerifyWithoutRequest = (profile) => {
@@ -76,15 +61,9 @@ export const registerSAMLStrategy = async (logger: AuthenticationProviderLogger,
 
   const samlStrategy = new SamlStrategy(samlOptions, samlLoginCallback, samlLogoutCallback);
 
-  registerAuthenticationProvider(
-    meta.identifier,
-    samlStrategy,
-    {
-      name: meta.name,
-      type: AuthType.AUTH_SSO,
-      strategy: AuthenticationProviderType.Saml,
-      provider: meta.identifier,
-      logout_remote: conf.logout_remote,
-    },
-  );
+  return {
+    strategy: samlStrategy,
+    auth_type: AuthType.AUTH_SSO,
+    logout_remote: conf.logout_remote,
+  };
 };
