@@ -16,6 +16,7 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { decodeLicensePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
+import { isEnterpriseEdition } from '../enterprise-edition/ee';
 import { getClusterInformation } from '../database/cluster-module';
 import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
 import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
@@ -158,11 +159,13 @@ export const getSettings = async (context) => {
 
 export const getPublicSettings = async (context) => {
   const { platform_enterprise_edition, platform_providers, ...settings } = await getSettings(context);
+  // Use same EE check as rest of codebase (env/conf or settings).
+  const eeValidated = await isEnterpriseEdition(context);
 
   return {
     ...settings,
     platform_enterprise_edition_license_validated: platform_enterprise_edition.license_validated,
-    platform_providers: platform_providers.filter((p) => p.type === 'SSO' || p.type === 'FORM'),
+    platform_providers: eeValidated ? platform_providers : platform_providers.filter((p) => p.strategy === EnvStrategyType.STRATEGY_LOCAL),
   };
 };
 
