@@ -1,4 +1,5 @@
 import time
+import traceback
 from typing import Dict, List, Optional
 
 
@@ -118,8 +119,8 @@ class OpenCTIApiWork:
         :type work_id: str
         :param expectations: the number of expectations to add
         :type expectations: int
-        :return: None
-        :rtype: None
+        :return: whether the work is still alive
+        :rtype: bool
         """
         if self.api.bundle_send_to_queue:
             self.api.app_logger.info(
@@ -138,7 +139,16 @@ class OpenCTIApiWork:
                     query, {"id": work_id, "expectations": expectations}, True
                 )
             except Exception:
-                self.api.app_logger.error("Cannot add expectations")
+                error_msg = traceback.format_exc()
+                if "WORK_NOT_ALIVE" in error_msg:
+                    self.api.app_logger.info(
+                        "Work no longer exists",
+                        {"work_id": work_id},
+                    )
+                    return False
+                else:
+                    self.api.app_logger.error("Cannot add expectations")
+        return True
 
     def add_draft_context(self, work_id: str, draft_context: str):
         """Add draft context to a work.

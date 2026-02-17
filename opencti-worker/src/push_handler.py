@@ -98,12 +98,8 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             self.api.set_synchronized_upsert_header(data.get("synchronized", False))
             self.api.set_previous_standard_header(data.get("previous_standard"))
             work_id = data.get("work_id")
-            # Check if work is still valid
-            if work_id is not None:
-                is_work_alive = self.api.work.get_is_work_alive(work_id)
-                # If work no longer exists, bundle can be acked without doing anything
-                if not is_work_alive:
-                    return "ack"
+            self.api.set_work_id(work_id)
+
             # Execute the import
             types = (
                 data["entities_types"]
@@ -176,7 +172,11 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                             )
                             # Add expectations to the work
                             if work_id is not None:
-                                self.api.work.add_expectations(work_id, expectations)
+                                work_alive = self.api.work.add_expectations(
+                                    work_id, expectations
+                                )
+                                if not work_alive:
+                                    return "ack"
                             # For each split bundle, send it to the same queue
                             for bundle in bundles:
                                 self.send_bundle_to_specific_queue(

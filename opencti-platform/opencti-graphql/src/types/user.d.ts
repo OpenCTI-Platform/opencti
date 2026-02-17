@@ -62,6 +62,7 @@ interface AuthContext {
   tracing: TracingContext;
   user: AuthUser | undefined;
   draft_context?: string | undefined;
+  workId?: string;
   batch?: Record<string, any>;
   changeDraftContext?: (draftId: string) => void;
   eventId?: string | undefined;
