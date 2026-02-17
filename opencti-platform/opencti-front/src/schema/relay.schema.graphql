@@ -11565,7 +11565,6 @@ type Vocabulary implements BasicObject & StixObject & StixMetaObject {
 enum VocabularyOrdering {
   name
   category
-  description
   order
   _score
 }
