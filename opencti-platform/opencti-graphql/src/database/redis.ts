@@ -731,3 +731,43 @@ export const redisGetConnectorHealthMetrics = async (connectorId: string): Promi
   return rawMetrics ? JSON.parse(rawMetrics) : null;
 };
 // endregion
+
+// region auth log history (FIFO, last 50 per provider)
+const AUTH_LOG_LIST_KEY_PREFIX = 'auth_logs:';
+const AUTH_LOG_MAX_SIZE = 50;
+
+export interface AuthLogEntry {
+  level: 'info' | 'warn' | 'error';
+  type: string;
+  identifier: string;
+  message: string;
+  meta?: Record<string, unknown>;
+}
+
+const authLogListKey = (identifier: string) => `${AUTH_LOG_LIST_KEY_PREFIX}${identifier}`;
+
+export const redisPushAuthLog = async (entry: AuthLogEntry) => {
+  try {
+    const key = authLogListKey(entry.identifier);
+    const value = JSON.stringify({ timestamp: Date.now(), ...entry });
+    await redisTx(getClientBase(), async (tx) => {
+      tx.lpush(key, value);
+      tx.ltrim(key, 0, AUTH_LOG_MAX_SIZE - 1);
+    });
+  } catch (err) {
+    logApp.error('Failed to push auth log entry to Redis', { cause: err });
+  }
+};
+
+export const redisGetAuthLogHistory = async (identifier: string): Promise<AuthLogEntry[]> => {
+  const key = authLogListKey(identifier);
+  const rawList = await getClientBase().lrange(key, 0, AUTH_LOG_MAX_SIZE - 1);
+  return rawList.map((s) => {
+    try {
+      return JSON.parse(s) as AuthLogEntry;
+    } catch {
+      return null;
+    }
+  }).filter((e): e is AuthLogEntry => e !== null);
+};
+// endregion

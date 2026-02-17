@@ -2,7 +2,9 @@
 import type { EnvStrategyType } from './providers-configuration';
 import type { AuthenticationProviderType } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
+import { redisPushAuthLog } from '../../database/redis';
 import { CERT_PROVIDER_NAME, HEADER_PROVIDER_NAME } from './providers';
+import { forgetPromise } from '../../utils/promiseUtils';
 
 export const logAuthInfo = (message: string, strategyType: EnvStrategyType | AuthenticationProviderType, meta?: any) => {
   logApp.info(`[Auth][${strategyType.toUpperCase()}]${message}`, { meta });
@@ -21,8 +23,17 @@ export interface AuthenticationProviderLogger {
 export const createAuthLogger = (type: AuthenticationProviderType | typeof HEADER_PROVIDER_NAME | typeof CERT_PROVIDER_NAME, identifier: string): AuthenticationProviderLogger => {
   const logPrefix = `[Auth-${type.toUpperCase()}] `;
   return ({
-    info: (message: string, meta: any = {}) => logApp.info(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } }),
-    warn: (message: string, meta: any = {}) => logApp.warn(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } }),
-    error: (message: string, meta: any = {}) => logApp.error(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } }),
+    info: (message: string, meta: any = {}) => {
+      logApp.info(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } });
+      forgetPromise(redisPushAuthLog({ level: 'info', type, identifier, message, meta }));
+    },
+    warn: (message: string, meta: any = {}) => {
+      logApp.warn(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } });
+      forgetPromise(redisPushAuthLog({ level: 'warn', type, identifier, message, meta }));
+    },
+    error: (message: string, meta: any = {}) => {
+      logApp.error(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } });
+      forgetPromise(redisPushAuthLog({ level: 'error', type, identifier, message, meta }));
+    },
   });
 };
