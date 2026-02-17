@@ -24,8 +24,8 @@ import SecurityCoverageDeletion from './SecurityCoverageDeletion';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Button from '@mui/material/Button';
 import { fileUri } from '../../../../relay/environment';
-import obasDark from '../../../../static/images/xtm/obas_dark.png';
-import obasLight from '../../../../static/images/xtm/obas_light.png';
+import oaevDark from '../../../../static/images/xtm/obas_dark.png';
+import oaevLight from '../../../../static/images/xtm/obas_light.png';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
@@ -96,6 +96,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
   const hasExternalUri = isNotEmptyField(securityCoverage?.external_uri);
   const paddingRight = getPaddingRight(location.pathname, securityCoverageId, '/dashboard/analyses/security_coverages');
+	const isContent = location.pathname.includes('content');
 
   return (
     <>
@@ -161,40 +162,26 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                 label={t_i18n('History')}
               />
             </Tabs>
-            {hasExternalUri ? (
-              <>
-                <Button
-                  style={{ marginBottom: 8 }}
-                  color="primary"
-                  startIcon={(
-                    <img
-                      style={{ width: 20 }}
-                      src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)}
-                      alt="OAEV"
-                    />
-                  )}
-                  variant="outlined"
-                  onClick={() => setDisplayExternalLink(true)}
-                  title={securityCoverage.external_uri} // tooltip on hover
-                >
-                  {t_i18n('Go to OpenAEV')}
-                </Button>
-                <ExternalLinkPopover
-                  externalLink={securityCoverage.external_uri}
-                  displayExternalLink={displayExternalLink}
-                  setDisplayExternalLink={setDisplayExternalLink}
-                />
-              </>
-            ) : (
-              <Button
-                style={{ marginBottom: 8 }}
-                variant="outlined"
-                disabled
-              >
-                {t_i18n('Provisioning OpenAEV')}
-              </Button>
-            )}
-          </Box>
+						{!isContent && (<><Button
+							disabled={!hasExternalUri}
+							style={{marginBottom: 8}}
+							color="primary"
+							startIcon={(
+								<img
+									style={{width: 20}}
+									src={fileUri(theme.palette.mode === 'dark' ? oaevDark : oaevLight)}
+									alt="OAEV"/>
+							)}
+							variant="outlined"
+							onClick={() => setDisplayExternalLink(true)}
+							title={hasExternalUri ? securityCoverage.external_uri : undefined} // tooltip on hover
+						>
+							{hasExternalUri ? `${t_i18n('Go to OpenAEV')}` : `${t_i18n('Provisioning OpenAEV')}`}
+						</Button><ExternalLinkPopover
+							externalLink={hasExternalUri ? securityCoverage.external_uri : undefined}
+							displayExternalLink={displayExternalLink}
+							setDisplayExternalLink={setDisplayExternalLink}/></>)}
+            </Box>
           <Routes>
             <Route
               path="/"
