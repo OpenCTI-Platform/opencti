@@ -1,6 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "6.9.18",
+  "version": "6.9.19",
   "private": true,
   "workspaces": [
     "packages/*"
