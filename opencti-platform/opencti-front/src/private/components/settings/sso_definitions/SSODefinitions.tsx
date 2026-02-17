@@ -20,8 +20,11 @@ import AuthenticationGlobalSettings from '@components/settings/sso_definitions/A
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import EditOutlined from '@mui/icons-material/EditOutlined';
+import ListOutlined from '@mui/icons-material/ListOutlined';
 import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import SSODefinitionEdition from '@components/settings/sso_definitions/SSODefinitionEdition';
+import AuthProviderLogsDrawer from '@components/settings/sso_definitions/AuthProviderLogsDrawer';
 import { SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
 
 const LOCAL_STORAGE_KEY = 'SSODefinitions';
@@ -112,6 +115,7 @@ const SSODefinitions = () => {
   setTitle(t_i18n('Authentication | Security | Settings'));
 
   const [editingSSO, setEditingSSO] = useState<EditingSSO | null>(null);
+  const [logsDrawerProvider, setLogsDrawerProvider] = useState<SSODefinitionEditionFragment$key | null>(null);
 
   const initialValues = {
     searchTerm: '',
@@ -128,6 +132,11 @@ const SSODefinitions = () => {
 
   const handleOpenEdition = (node: SSODefinitionEditionFragment$key) => {
     setEditingSSO({ data: node });
+  };
+
+  const handleOpenLogs = (e: React.MouseEvent, node: SSODefinitionEditionFragment$key) => {
+    e.stopPropagation();
+    setLogsDrawerProvider(node);
   };
 
   const dataColumns = {
@@ -202,10 +211,23 @@ const SSODefinitions = () => {
               disableLineSelection
               disableNavigation
               onLineClick={handleOpenEdition}
-              actions={() => (
-                <IconButton size="small">
-                  <EditOutlined fontSize="small" />
-                </IconButton>
+              actions={(node: SSODefinitionEditionFragment$key) => (
+                <>
+                  <Tooltip title={t_i18n('Update')}>
+                    <IconButton size="small" aria-label={t_i18n('Update')}>
+                      <EditOutlined fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title={t_i18n('Logs')}>
+                    <IconButton
+                      size="small"
+                      onClick={(e) => handleOpenLogs(e, node)}
+                      aria-label={t_i18n('Logs')}
+                    >
+                      <ListOutlined fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </>
               )}
               createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
             />
@@ -217,6 +239,13 @@ const SSODefinitions = () => {
             onClose={() => setEditingSSO(null)}
             data={editingSSO.data}
             paginationOptions={queryPaginationOptions}
+          />
+        )}
+        {logsDrawerProvider && (
+          <AuthProviderLogsDrawer
+            isOpen={!!logsDrawerProvider}
+            onClose={() => setLogsDrawerProvider(null)}
+            data={logsDrawerProvider}
           />
         )}
       </>

@@ -25,7 +25,6 @@ import IconButton from '@common/button/IconButton';
 import AuthProviderGroupsFields from './AuthProviderGroupsFields';
 import AuthProviderOrganizationsFields from './AuthProviderOrganizationsFields';
 import AuthProviderUserInfoFields from './AuthProviderUserInfoFields';
-import AuthProviderLogTab from './AuthProviderLogTab';
 import type { LdapProviderFormCreateMutation } from './__generated__/LdapProviderFormCreateMutation.graphql';
 import type { LdapProviderFormEditMutation } from './__generated__/LdapProviderFormEditMutation.graphql';
 import type { SSODefinitionEditionFragment$data } from './__generated__/SSODefinitionEditionFragment.graphql';
@@ -329,7 +328,6 @@ const LdapProviderForm = ({
               <Tab label={t_i18n('Configuration')} />
               <Tab label={t_i18n('Groups')} />
               <Tab label={t_i18n('Organizations')} />
-              <Tab label={t_i18n('Logs')} />
             </Tabs>
           </Box>
           {currentTab === 0 && (
@@ -574,7 +572,6 @@ const LdapProviderForm = ({
           )}
           {currentTab === 1 && <AuthProviderGroupsFields />}
           {currentTab === 2 && <AuthProviderOrganizationsFields />}
-          {currentTab === 3 && <AuthProviderLogTab authLogHistory={data?.authLogHistory ?? []} />}
           <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
               variant="secondary"
