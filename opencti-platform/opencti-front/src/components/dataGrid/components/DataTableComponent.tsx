@@ -49,6 +49,7 @@ type DataTableComponentProps = Pick<DataTableProps,
   | 'emptyStateMessage'
   | 'disableLineSelection'
   | 'pageSize'
+  | 'actionsColumnWidth'
 >;
 
 const DataTableComponent = ({
@@ -81,6 +82,7 @@ const DataTableComponent = ({
   onSort,
   emptyStateMessage,
   pageSize,
+  actionsColumnWidth,
 }: DataTableComponentProps) => {
   const { metricsDefinition } = useAppData();
 
@@ -209,6 +211,7 @@ const DataTableComponent = ({
   const [tableWidth, setTableWidth] = tableWidthState;
   const tableRef = useRef<HTMLDivElement | null>(null);
 
+  const endActionsWidth = actionsColumnWidth ?? SELECT_COLUMN_SIZE;
   const startColumnWidth = useMemo(() => {
     if (startsWithIcon && startsWithAction) {
       return ICON_COLUMN_SIZE + SELECT_COLUMN_SIZE;
@@ -227,7 +230,7 @@ const DataTableComponent = ({
         let offset = 10;
         if (startsWithAction) offset += SELECT_COLUMN_SIZE;
         if (startsWithIcon) offset += ICON_COLUMN_SIZE;
-        if (endsWithAction) offset += SELECT_COLUMN_SIZE;
+        if (endsWithAction) offset += endActionsWidth;
         if ((el.clientWidth - offset) !== tableWidth) {
           setTableWidth(el.clientWidth - offset);
         }
@@ -238,7 +241,7 @@ const DataTableComponent = ({
     return () => {
       observer?.disconnect();
     };
-  }, [tableRef.current, tableWidth, endsWithAction, startsWithAction, startsWithIcon]);
+  }, [tableRef.current, tableWidth, endActionsWidth, endsWithAction, startsWithAction, startsWithIcon]);
 
   return (
     <DataTableProvider
@@ -282,6 +285,7 @@ const DataTableComponent = ({
         startColumnWidth,
         endsWithAction,
         endsWithNavigate,
+        actionsColumnWidth: endActionsWidth,
       }}
     >
       {filtersComponent && <div>{filtersComponent}</div>}

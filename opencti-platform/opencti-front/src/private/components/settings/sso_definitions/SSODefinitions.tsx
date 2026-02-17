@@ -211,6 +211,7 @@ const SSODefinitions = () => {
               disableLineSelection
               disableNavigation
               onLineClick={handleOpenEdition}
+              actionsColumnWidth={72}
               actions={(node: SSODefinitionEditionFragment$data) => (
                 <>
                   <Tooltip title={t_i18n('Update')}>

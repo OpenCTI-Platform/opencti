@@ -80,6 +80,8 @@ export interface DataTableContextProps {
   startColumnWidth: number;
   endsWithAction: boolean;
   endsWithNavigate: boolean;
+  /** Width in px for the actions column (default: SELECT_COLUMN_SIZE). Use e.g. 72 when rendering two icon buttons. */
+  actionsColumnWidth?: number;
 }
 
 export interface DataTableProps {
@@ -148,6 +150,8 @@ export interface DataTableProps {
   markAsReadEnabled?: boolean;
   selectOnLineClick?: boolean;
   onLineClick?: (line: any) => void;
+  /** Width in px for the actions column (default: SELECT_COLUMN_SIZE). Use e.g. 72 when rendering two icon buttons. */
+  actionsColumnWidth?: number;
   hideHeaders?: boolean;
   message?: string;
   isLocalStorageEnabled?: boolean;

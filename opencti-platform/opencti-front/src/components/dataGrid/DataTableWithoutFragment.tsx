@@ -24,7 +24,8 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
   | 'onLineClick'
   | 'onSort'
   | 'isLocalStorageEnabled'
-  | 'variant'> & {
+  | 'variant'
+  | 'actionsColumnWidth'> & {
     data: unknown;
     globalCount: number;
   };

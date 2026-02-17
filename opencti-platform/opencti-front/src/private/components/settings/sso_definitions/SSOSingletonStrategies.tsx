@@ -135,6 +135,7 @@ const SSOSingletonStrategiesContent = () => {
         disableNavigation
         disableLineSelection
         isLocalStorageEnabled={false}
+        actionsColumnWidth={72}
         actions={(node: StrategyRow) => {
           if (node.strategy === 'cert' && !isHttpsEnabled) {
             return (
