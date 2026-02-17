@@ -254,7 +254,8 @@ class OpenCTIApiWork:
                         "Unexpected connector error", {"state_errors": state["errors"]}
                     )
                     return ""
-
+            if status == "complete":
+                return
             time.sleep(1)
 
     def get_work(self, work_id: str) -> Dict:

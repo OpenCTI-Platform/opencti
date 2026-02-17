@@ -7,8 +7,17 @@ import { redisGetManagerEventState, redisSetManagerEventState } from '../databas
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { createEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
-import { ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
+import {
+  EVENT_TYPE_CREATE,
+  EVENT_TYPE_DELETE,
+  EVENT_TYPE_MERGE,
+  EVENT_TYPE_UPDATE,
+  isEmptyField,
+  isNotEmptyField,
+  READ_DATA_INDICES,
+  runFunctionAsLongRunning,
+} from '../database/utils';
+import { ABSTRACT_STIX_RELATIONSHIP, OPENCTI_NAMESPACE, RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
 import { ALREADY_DELETED_ERROR, FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { getParentTypes } from '../schema/schemaUtils';
@@ -18,7 +27,7 @@ import { internalLoadById, fullRelationsList } from '../database/middleware-load
 import type { RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
 import type { BasicManagerEntity, BasicStoreBase, BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreObject } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { RuleManager } from '../generated/graphql';
+import { type RuleManager } from '../generated/graphql';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import type { StixCoreObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -30,6 +39,8 @@ import { isModuleActivated } from '../database/cluster-module';
 import { elList } from '../database/engine';
 import { isStixObject } from '../schema/stixCoreObject';
 import { buildCreateEvent, EVENT_CURRENT_VERSION, LIVE_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
+import jsonCanonicalize from 'canonicalize';
+import { v5 as uuidv5 } from 'uuid';
 
 import { pushAll } from '../utils/arrayUtil';
 
@@ -368,6 +379,19 @@ export const ruleApply = async (context: AuthContext, user: AuthUser, elementId:
     throw FunctionalError('Cant find rule to scan', { id: ruleId });
   }
   return executeRuleApply(context, user, rule, elementId);
+};
+
+export const ruleApplyAsync = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string, executionId: string): Promise<boolean> => {
+  const rule = await getRule(context, user, ruleId) as RuleRuntime;
+  if (!rule) {
+    throw FunctionalError('Cant find rule to scan', { id: ruleId });
+  }
+  const dataCanonicalize = jsonCanonicalize({ elementId, ruleId, executionId }) as string;
+  const ruleApplyId = uuidv5(dataCanonicalize, OPENCTI_NAMESPACE);
+  const ruleApplyFunction = async () => {
+    await executeRuleApply(context, user, rule, elementId);
+  };
+  return runFunctionAsLongRunning(context, user, ruleApplyFunction, ruleApplyId);
 };
 
 export const ruleClear = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {

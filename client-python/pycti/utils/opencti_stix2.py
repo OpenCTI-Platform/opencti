@@ -2889,7 +2889,7 @@ class OpenCTIStix2:
                 )
         self.apply_patch_files(item)
 
-    def rule_apply(self, item):
+    def rule_apply(self, item, bundle_id):
         """Apply a rule to an item.
 
         :param item: Item to apply the rule to
@@ -2898,7 +2898,9 @@ class OpenCTIStix2:
         rule_id = self.opencti.get_attribute_in_extension("opencti_rule", item)
         if rule_id is None:
             rule_id = item["opencti_rule"]
-        self.opencti.stix_core_object.rule_apply(element_id=item["id"], rule_id=rule_id)
+        self.opencti.stix_core_object.rule_apply_async(
+            element_id=item["id"], rule_id=rule_id, execution_id=bundle_id
+        )
 
     def rule_clear(self, item):
         """Clear a rule from an item.
@@ -3128,7 +3130,7 @@ class OpenCTIStix2:
             # Element is considered stix core object
             self.opencti.stix_core_object.remove_from_draft(id=item["id"])
 
-    def apply_opencti_operation(self, item, operation):
+    def apply_opencti_operation(self, item, operation, bundle_id):
         """Apply an OpenCTI operation to an item.
 
         :param item: Item to apply the operation to
@@ -3164,7 +3166,7 @@ class OpenCTIStix2:
             pir_input = item["input"]
             self.opencti.pir.pir_unflag_element(id=element_id, input=pir_input)
         elif operation == "rule_apply":
-            self.rule_apply(item=item)
+            self.rule_apply(item=item, bundle_id=bundle_id)
         elif operation == "rule_clear":
             self.rule_clear(item=item)
         elif operation == "rules_rescan":
@@ -3208,6 +3210,7 @@ class OpenCTIStix2:
         update: bool = False,
         types: List = None,
         work_id: str = None,
+        bundle_id: str = None,
     ):
         """Import a single STIX2 item into OpenCTI.
 
@@ -3226,9 +3229,9 @@ class OpenCTIStix2:
             "opencti_operation", item
         )
         if opencti_operation is not None:
-            self.apply_opencti_operation(item, opencti_operation)
+            self.apply_opencti_operation(item, opencti_operation, bundle_id)
         elif "opencti_operation" in item:
-            self.apply_opencti_operation(item, item["opencti_operation"])
+            self.apply_opencti_operation(item, item["opencti_operation"], bundle_id)
         elif item["type"] == "relationship":
             # Import relationship
             self.import_relationship(item, update, types)
@@ -3349,6 +3352,7 @@ class OpenCTIStix2:
         update: bool = False,
         types: List = None,
         work_id: str = None,
+        bundle_id: str = None,
     ):
         """Import a single STIX2 item with automatic retry on failures.
 
@@ -3372,7 +3376,7 @@ class OpenCTIStix2:
         while processing_count <= MAX_PROCESSING_COUNT:
             try:
                 self.opencti.set_retry_number(processing_count)
-                self.import_item(item, update, types, work_id)
+                self.import_item(item, update, types, work_id, bundle_id)
                 return None
             except (RequestException, Timeout):
                 bundles_timeout_error_counter.add(1)
@@ -3531,6 +3535,7 @@ class OpenCTIStix2:
         imported_elements = []
         too_large_elements_bundles = []
         for bundle in bundles:
+            bundle_id = bundle["id"]
             for item in bundle["objects"]:
                 # If item is considered too large, meaning that it has a number of refs higher than inputted objects_max_refs, do not import it
                 nb_refs = OpenCTIStix2Utils.compute_object_refs_number(item)
@@ -3553,7 +3558,7 @@ class OpenCTIStix2:
                     too_large_elements_bundles.append(item)
                 else:
                     failed_item = self.import_item_with_retries(
-                        item, update, types, work_id
+                        item, update, types, work_id, bundle_id
                     )
                     if failed_item is not None:
                         too_large_elements_bundles.append(failed_item)
