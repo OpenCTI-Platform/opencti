@@ -15,6 +15,7 @@ export const logAuthError = (message: string, strategyType: EnvStrategyType | Au
 };
 
 export interface AuthenticationProviderLogger {
+  success: (message: string, meta?: any) => void;
   info: (message: string, meta?: any) => void;
   warn: (message: string, meta?: any) => void;
   error: (message: string, meta?: any, err?: any) => void;
@@ -23,6 +24,10 @@ export interface AuthenticationProviderLogger {
 export const createAuthLogger = (type: AuthenticationProviderType | typeof HEADERS_PROVIDER_NAME | typeof CERT_PROVIDER_NAME, identifier: string): AuthenticationProviderLogger => {
   const logPrefix = `[Auth-${type.toUpperCase()}] `;
   return ({
+    success: (message, meta = {}) => {
+      logApp.info(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } });
+      forgetPromise(redisPushAuthLog({ level: 'success', type, identifier, message, meta }));
+    },
     info: (message, meta = {}) => {
       logApp.info(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } });
       forgetPromise(redisPushAuthLog({ level: 'info', type, identifier, message, meta }));

@@ -738,7 +738,7 @@ const AUTH_LOG_MAX_SIZE = 50;
 
 export interface AuthLogEntry {
   timestamp: number;
-  level: 'info' | 'warn' | 'error';
+  level: 'success' | 'info' | 'warn' | 'error';
   type: string;
   identifier: string;
   message: string;

@@ -15829,6 +15829,7 @@ input LdapConfigurationInput {
 }
 
 enum AuthLogLevel {
+  success
   info
   warn
   error

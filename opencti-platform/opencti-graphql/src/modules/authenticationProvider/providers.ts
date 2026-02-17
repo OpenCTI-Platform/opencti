@@ -80,7 +80,7 @@ export const handleProviderLogin = async (logger: AuthenticationProviderLogger, 
     },
   );
   addUserLoginCount();
-  logger.info('User successfully logged', { userId: user.id });
+  logger.success('User successfully logged', { userId: user.id, email: user.email });
   return user;
 };
 

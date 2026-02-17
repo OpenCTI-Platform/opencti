@@ -15,6 +15,8 @@ import { DatabaseError } from '../../config/errors';
 
 const levelToLevel = (level: string) => {
   switch (level) {
+    case 'success':
+      return AuthLogLevel.Success;
     case 'info':
       return AuthLogLevel.Info;
     case 'warn':

@@ -6,7 +6,7 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Chip from '@mui/material/Chip';
-import { ErrorOutlined, InfoOutlined, WarningAmberOutlined } from '@mui/icons-material';
+import { CheckCircleOutlined, ErrorOutlined, InfoOutlined, WarningAmberOutlined } from '@mui/icons-material';
 const formatTimestamp = (ts: string | unknown): string => {
   if (!ts) return '—';
   const d = new Date(ts as string);
@@ -35,6 +35,8 @@ const levelColor = (level: string) => {
       return 'error';
     case 'warn':
       return 'warning';
+    case 'success':
+      return 'success';
     default:
       return 'default';
   }
@@ -46,13 +48,15 @@ const LevelIcon = ({ level }: { level: string }) => {
       return <ErrorOutlined fontSize="small" color="error" />;
     case 'warn':
       return <WarningAmberOutlined fontSize="small" sx={{ color: 'warning.main' }} />;
+    case 'success':
+      return <CheckCircleOutlined fontSize="small" color="success" />;
     default:
       return <InfoOutlined fontSize="small" color="action" />;
   }
 };
 
 const TIMESTAMP_WIDTH = '11.5rem';
-const LEVEL_WIDTH = '7rem';
+const LEVEL_WIDTH = '8rem';
 
 const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory }) => {
   if (!authLogHistory || authLogHistory.length === 0) {
@@ -94,7 +98,7 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory 
                     size="small"
                     icon={<LevelIcon level={entry.level} />}
                     label={entry.level}
-                    color={levelColor(entry.level) as 'error' | 'warning' | 'default'}
+                    color={levelColor(entry.level) as 'error' | 'warning' | 'success' | 'default'}
                     variant="outlined"
                     sx={{
                       paddingTop: 0.75,

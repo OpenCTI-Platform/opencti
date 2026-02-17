@@ -1398,6 +1398,7 @@ export type AuthLogEntry = {
 export enum AuthLogLevel {
   Error = 'error',
   Info = 'info',
+  Success = 'success',
   Warn = 'warn'
 }
 
