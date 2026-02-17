@@ -321,7 +321,7 @@ const LdapProviderForm = ({
       onReset={onCancel}
       enableReinitialize
     >
-      {({ handleReset, submitForm, isSubmitting, values }) => (
+      {({ handleReset, submitForm, isSubmitting, dirty, values }) => (
         <Form>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={currentTab} onChange={(_, v) => setCurrentTab(v)}>
@@ -583,7 +583,7 @@ const LdapProviderForm = ({
             </Button>
             <Button
               onClick={submitForm}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !dirty}
               style={{ marginLeft: theme.spacing(1) }}
             >
               {t_i18n(isEditing ? 'Update' : 'Create')}

@@ -248,7 +248,7 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
       onSubmit={handleSubmit}
       onReset={onCancel}
     >
-      {({ handleReset, submitForm, isSubmitting }) => (
+      {({ handleReset, submitForm, isSubmitting, dirty }) => (
         <Form>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
@@ -318,7 +318,7 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
             </Button>
             <Button
               onClick={submitForm}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !dirty}
               style={{ marginLeft: theme.spacing(1) }}
             >
               {t_i18n('Update')}

@@ -151,7 +151,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
       onSubmit={handleSubmit}
       onReset={onCancel}
     >
-      {({ handleReset, submitForm, isSubmitting }) => (
+      {({ handleReset, submitForm, isSubmitting, dirty }) => (
         <Form>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Field
@@ -243,7 +243,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
             </Button>
             <Button
               onClick={submitForm}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !dirty}
               style={{ marginLeft: theme.spacing(1) }}
             >
               {t_i18n('Update')}

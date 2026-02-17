@@ -387,7 +387,7 @@ const SamlProviderForm = ({
       onReset={onCancel}
       enableReinitialize
     >
-      {({ handleReset, submitForm, isSubmitting, values, setFieldValue }) => {
+      {({ handleReset, submitForm, isSubmitting, dirty, values, setFieldValue }) => {
         const effectiveIdentifier = overrideIdentifier && values.identifier_override
           ? values.identifier_override
           : slugifyIdentifier(values.name);
@@ -827,7 +827,7 @@ const SamlProviderForm = ({
               </Button>
               <Button
                 onClick={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !dirty}
                 style={{ marginLeft: theme.spacing(1) }}
               >
                 {t_i18n(isEditing ? 'Update' : 'Create')}
