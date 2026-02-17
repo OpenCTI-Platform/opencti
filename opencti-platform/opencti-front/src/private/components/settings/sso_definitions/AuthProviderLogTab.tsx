@@ -58,14 +58,14 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory 
   }
 
   return (
-    <Box sx={{ overflowX: 'auto' }}>
+    <Box sx={{ overflow: 'auto', maxHeight: 'calc(100vh - 220px)' }}>
       <Table size="small" stickyHeader sx={{ tableLayout: 'fixed', width: '100%' }}>
         <TableHead>
           <TableRow>
-            <TableCell sx={{ fontWeight: 600, width: TIMESTAMP_WIDTH, minWidth: TIMESTAMP_WIDTH }}>Timestamp</TableCell>
-            <TableCell sx={{ fontWeight: 600, width: LEVEL_WIDTH, minWidth: LEVEL_WIDTH }}>Level</TableCell>
-            <TableCell sx={{ fontWeight: 600, width: '22%' }}>Message</TableCell>
-            <TableCell sx={{ fontWeight: 600 }}>Details</TableCell>
+            <TableCell sx={{ fontWeight: 600, width: TIMESTAMP_WIDTH, minWidth: TIMESTAMP_WIDTH, backgroundColor: 'background.paper', zIndex: 1 }}>Timestamp</TableCell>
+            <TableCell sx={{ fontWeight: 600, width: LEVEL_WIDTH, minWidth: LEVEL_WIDTH, backgroundColor: 'background.paper', zIndex: 1 }}>Level</TableCell>
+            <TableCell sx={{ fontWeight: 600, width: '22%', backgroundColor: 'background.paper', zIndex: 1 }}>Message</TableCell>
+            <TableCell sx={{ fontWeight: 600, backgroundColor: 'background.paper', zIndex: 1 }}>Details</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
