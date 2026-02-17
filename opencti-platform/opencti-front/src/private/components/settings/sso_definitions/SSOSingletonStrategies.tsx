@@ -98,12 +98,22 @@ const SSOSingletonStrategiesContent = () => {
       render: (node: StrategyRow) => {
         const showEE = node.strategy !== 'local' && !isEnterpriseEdition && node.isClickable;
         const isEnabled = node.isClickable && node.enabled && (node.strategy === 'local' || isEnterpriseEdition);
+        const showCertHttpsInfo = node.strategy === 'cert' && !isHttpsEnabled;
         return (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, opacity: node.isClickable ? 1 : 0.5 }}>
             <ItemBoolean
               label={isEnabled ? t_i18n('Enabled') : t_i18n('Disabled')}
               status={isEnabled}
             />
+            {showCertHttpsInfo && (
+              <Tooltip title={t_i18n('Client certificate requires the platform to be configured with HTTPS')}>
+                <span>
+                  <IconButton size="small" disabled sx={{ padding: 0.25 }}>
+                    <InfoOutlined fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
             {showEE && <span onClick={(e) => e.stopPropagation()}><EEChip /></span>}
           </Box>
         );
@@ -137,23 +147,21 @@ const SSOSingletonStrategiesContent = () => {
         isLocalStorageEnabled={false}
         actionsColumnWidth={72}
         actions={(node: StrategyRow) => {
-          if (node.strategy === 'cert' && !isHttpsEnabled) {
-            return (
-              <Tooltip title={t_i18n('Client certificate requires the platform to be configured with HTTPS')}>
-                <span>
-                  <IconButton size="small" disabled>
-                    <InfoOutlined fontSize="small" />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            );
-          }
-          const showLogs = (node.strategy === 'header' || node.strategy === 'cert') && node.isClickable;
+          const showLogs = node.strategy === 'header' || node.strategy === 'cert';
           return (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <IconButton size="small">
-                <EditOutlined fontSize="small" />
-              </IconButton>
+              <Tooltip title={t_i18n('Update')}>
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingStrategy(node.strategy);
+                  }}
+                  aria-label={t_i18n('Update')}
+                >
+                  <EditOutlined fontSize="small" />
+                </IconButton>
+              </Tooltip>
               {showLogs && (
                 <Tooltip title={t_i18n('Logs')}>
                   <IconButton
