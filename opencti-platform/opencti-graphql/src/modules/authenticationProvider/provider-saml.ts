@@ -8,6 +8,7 @@ import { createMapper } from './mappings-utils';
 import { decryptAuthValue, flatExtraConf } from './authenticationProvider-domain';
 import { getBaseUrl } from '../../config/conf';
 import { handleProviderLogin } from './providers';
+import { isNotEmptyField } from '../../database/utils';
 
 export const buildSAMLOptions = async (meta: ProviderMeta, conf: SamlStoreConfiguration): Promise<PassportSamlConfig> => ({
   name: meta.name,
@@ -28,7 +29,8 @@ export const buildSAMLOptions = async (meta: ProviderMeta, conf: SamlStoreConfig
   disableRequestedAuthnContext: conf.disable_requested_authn_context,
   disableRequestAcsUrl: conf.disable_request_acs_url,
   skipRequestCompression: conf.skip_request_compression,
-  decryptionPvk: conf.decryption_pvk_encrypted ? await decryptAuthValue(conf.decryption_pvk_encrypted) : undefined,
+  decryptionPvk: conf.decryption_pvk_encrypted && isNotEmptyField(conf.decryption_pvk_encrypted)
+    ? await decryptAuthValue(conf.decryption_pvk_encrypted) : undefined,
   ...flatExtraConf(conf.extra_conf),
 });
 
