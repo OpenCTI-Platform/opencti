@@ -80,7 +80,6 @@ const AuthLogsByIdentifierDrawerContent: React.FC<{
       title={title}
       open
       onClose={onClose}
-      disableBackdropClose
       header={(
         <Tooltip title={t_i18n('Refresh')}>
           <span>
