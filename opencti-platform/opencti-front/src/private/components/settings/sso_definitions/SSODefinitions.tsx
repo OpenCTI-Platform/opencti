@@ -153,7 +153,7 @@ const SSODefinitions = () => {
       render: (node: { type: string }) => <div>{node.type}</div>,
     },
     enabled: {
-      label: ' ',
+      label: t_i18n('Status'),
       percentWidth: 15,
       isSortable: true,
       render: (node: { enabled: boolean }) => (

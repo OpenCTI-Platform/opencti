@@ -87,7 +87,7 @@ const SSOSingletonStrategiesContent = () => {
       render: (node: StrategyRow) => node.type,
     },
     enabled: {
-      label: ' ',
+      label: t_i18n('Status'),
       percentWidth: 15,
       isSortable: false,
       render: (node: StrategyRow) => {
