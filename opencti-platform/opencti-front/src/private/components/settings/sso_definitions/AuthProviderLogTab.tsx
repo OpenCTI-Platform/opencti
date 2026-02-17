@@ -64,63 +64,73 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory 
   }
 
   return (
-    <Box sx={{ overflow: 'auto', maxHeight: 'calc(100vh - 220px)' }}>
-      <Table size="small" stickyHeader sx={{ tableLayout: 'fixed', width: '100%' }}>
-        <TableHead>
-          <TableRow>
-            <TableCell sx={{ fontWeight: 600, width: TIMESTAMP_WIDTH, minWidth: TIMESTAMP_WIDTH, backgroundColor: 'background.paper', zIndex: 1 }}>Timestamp</TableCell>
-            <TableCell sx={{ fontWeight: 600, width: LEVEL_WIDTH, minWidth: LEVEL_WIDTH, backgroundColor: 'background.paper', zIndex: 1 }}>Level</TableCell>
-            <TableCell sx={{ fontWeight: 600, width: '22%', backgroundColor: 'background.paper', zIndex: 1 }}>Message</TableCell>
-            <TableCell sx={{ fontWeight: 600, backgroundColor: 'background.paper', zIndex: 1 }}>Details</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {authLogHistory.map((entry, index) => (
-            <TableRow key={`${entry.timestamp}-${index}`} hover>
-              <TableCell sx={{ whiteSpace: 'nowrap', width: TIMESTAMP_WIDTH, minWidth: TIMESTAMP_WIDTH, fontFamily: 'monospace', fontSize: '0.8125rem' }}>
-                {formatTimestamp(entry.timestamp)}
-              </TableCell>
-              <TableCell sx={{ width: LEVEL_WIDTH, minWidth: LEVEL_WIDTH, overflow: 'visible', whiteSpace: 'nowrap' }}>
-                <Chip
-                  size="small"
-                  icon={<LevelIcon level={entry.level} />}
-                  label={entry.level}
-                  color={levelColor(entry.level) as 'error' | 'warning' | 'default'}
-                  variant="outlined"
-                  sx={{
-                    paddingTop: 0.75,
-                    paddingBottom: 0.75,
-                    paddingLeft: 0.75,
-                    paddingRight: 0.75,
-                    '& .MuiChip-icon': { marginLeft: 0, marginRight: 0.5 },
-                  }}
-                />
-              </TableCell>
-              <TableCell sx={{ maxWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {entry.message}
-              </TableCell>
-              <TableCell>
-                {entry.meta && Object.keys(entry.meta).length > 0 ? (
-                  <Box
-                    component="pre"
-                    sx={{
-                      m: 0,
-                      fontSize: '0.75rem',
-                      overflow: 'auto',
-                      maxHeight: 80,
-                      fontFamily: 'monospace',
-                    }}
-                  >
-                    {JSON.stringify(entry.meta, null, 2)}
-                  </Box>
-                ) : (
-                  '—'
-                )}
-              </TableCell>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+        minHeight: 0,
+        overflow: 'hidden',
+      }}
+    >
+      <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+        <Table size="small" stickyHeader sx={{ tableLayout: 'fixed', width: '100%' }}>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontWeight: 600, width: TIMESTAMP_WIDTH, minWidth: TIMESTAMP_WIDTH, backgroundColor: 'background.paper', zIndex: 1 }}>Timestamp</TableCell>
+              <TableCell sx={{ fontWeight: 600, width: LEVEL_WIDTH, minWidth: LEVEL_WIDTH, backgroundColor: 'background.paper', zIndex: 1 }}>Level</TableCell>
+              <TableCell sx={{ fontWeight: 600, width: '22%', backgroundColor: 'background.paper', zIndex: 1 }}>Message</TableCell>
+              <TableCell sx={{ fontWeight: 600, backgroundColor: 'background.paper', zIndex: 1 }}>Details</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHead>
+          <TableBody>
+            {authLogHistory.map((entry, index) => (
+              <TableRow key={`${entry.timestamp}-${index}`} hover>
+                <TableCell sx={{ whiteSpace: 'nowrap', width: TIMESTAMP_WIDTH, minWidth: TIMESTAMP_WIDTH, fontFamily: 'monospace', fontSize: '0.8125rem' }}>
+                  {formatTimestamp(entry.timestamp)}
+                </TableCell>
+                <TableCell sx={{ width: LEVEL_WIDTH, minWidth: LEVEL_WIDTH, overflow: 'visible', whiteSpace: 'nowrap' }}>
+                  <Chip
+                    size="small"
+                    icon={<LevelIcon level={entry.level} />}
+                    label={entry.level}
+                    color={levelColor(entry.level) as 'error' | 'warning' | 'default'}
+                    variant="outlined"
+                    sx={{
+                      paddingTop: 0.75,
+                      paddingBottom: 0.75,
+                      paddingLeft: 0.75,
+                      paddingRight: 0.75,
+                      '& .MuiChip-icon': { marginLeft: 0, marginRight: 0.5 },
+                    }}
+                  />
+                </TableCell>
+                <TableCell sx={{ maxWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {entry.message}
+                </TableCell>
+                <TableCell>
+                  {entry.meta && Object.keys(entry.meta).length > 0 ? (
+                    <Box
+                      component="pre"
+                      sx={{
+                        m: 0,
+                        fontSize: '0.75rem',
+                        overflow: 'auto',
+                        maxHeight: 80,
+                        fontFamily: 'monospace',
+                      }}
+                    >
+                      {JSON.stringify(entry.meta, null, 2)}
+                    </Box>
+                  ) : (
+                    '—'
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Box>
     </Box>
   );
 };
