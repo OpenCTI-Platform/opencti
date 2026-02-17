@@ -37,7 +37,6 @@ export const createUserMapper = (
   const lastnameExpr = lastname_expr ? resolveExpr(lastname_expr) : () => undefined;
   return async (obj: unknown) => {
     const s = await emailExpr(obj);
-    console.log('createUserMapper', { email_expr, name_expr, firstname_expr, lastname_expr, obj, s });
     return {
       email: firstElement(s)?.trim(),
       name: firstElement(await nameExpr(obj))?.trim(),
@@ -96,8 +95,6 @@ export const createMapper = (
 
   return async (userContext: unknown, groupContext = userContext, organizationContext = userContext): Promise<ProviderAuthInfo> => {
     const userMapping = await userMapper(userContext);
-
-    console.log('######## userMapping', { userMapping });
 
     const groups = await groupsMapper(groupContext);
     const organizations = await organizationsMapper(organizationContext);
