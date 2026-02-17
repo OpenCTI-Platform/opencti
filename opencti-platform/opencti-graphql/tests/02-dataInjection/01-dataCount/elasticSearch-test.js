@@ -451,7 +451,6 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('User')).toBe(entitiesCounter.User);
     expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
     expect(entityTypeMap.get('RetentionRule')).toBe(entitiesCounter.RetentionRule);
-    expect(entityTypeMap.get(ENTITY_TYPE_AUTHENTICATION_PROVIDER)).toBe(entitiesCounter.AuthenticationProvider);
     expect(data.edges.length).toEqual(entitiesCounterTotal);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
@@ -604,7 +603,6 @@ describe('Elasticsearch pagination', () => {
       { type: 'Tracking-Number', size: entitiesCounter.TrackingNumber },
       { type: 'User', size: entitiesCounter.User },
       { type: 'Vocabulary', size: entitiesCounter.Vocabulary },
-      { type: ENTITY_TYPE_AUTHENTICATION_PROVIDER, size: entitiesCounter.AuthenticationProvider },
     ];
     const mapKeys = Array.from(entityTypeMap.keys());
     expect(mapKeys.length).toBe(testingSet.length);
@@ -752,7 +750,6 @@ describe('Elasticsearch pagination', () => {
       { type: 'External-Reference', size: entitiesCounter.ExternalReference },
       { type: 'EmailTemplate', size: entitiesCounter.EmailTemplate },
       { type: 'RetentionRule', size: entitiesCounter.RetentionRule },
-      { type: ENTITY_TYPE_AUTHENTICATION_PROVIDER, size: entitiesCounter.AuthenticationProvider },
     ];
     const mapKeys = Array.from(entityTypeMap.keys());
     expect(mapKeys.length).toBe(testingSet.length);
