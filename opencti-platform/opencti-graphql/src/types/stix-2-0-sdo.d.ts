@@ -16,7 +16,7 @@ export interface StixMalware extends StixDomainObject {
   sample_refs: Array<StixId>; // optional
 }
 
-interface StixIncident extends StixDomainObject {
+export interface StixIncident extends StixDomainObject {
   name: string;
   description: string; // optional
   incident_type: string; // optional

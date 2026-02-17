@@ -44,7 +44,7 @@ export interface StixDomainObject extends StixObject {
 }
 
 // SRO
-interface StixRelationshipObject extends StixObject {
+export interface StixRelationshipObject extends StixObject {
   created_by_ref: StixId | undefined; // optional
   created: StixDate;
   modified: StixDate;
