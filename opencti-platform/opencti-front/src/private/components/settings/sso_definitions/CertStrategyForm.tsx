@@ -6,11 +6,6 @@ import { useTheme } from '@mui/styles';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import Typography from '@mui/material/Typography';
-import { ExpandMoreOutlined } from '@mui/icons-material';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
@@ -19,6 +14,7 @@ import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
 import AuthProviderGroupsFields from './AuthProviderGroupsFields';
 import AuthProviderOrganizationsFields from './AuthProviderOrganizationsFields';
+import AuthProviderUserInfoFields from './AuthProviderUserInfoFields';
 import type { CertStrategyFormQuery } from './__generated__/CertStrategyFormQuery.graphql';
 import type { CertStrategyFormMutation } from './__generated__/CertStrategyFormMutation.graphql';
 
@@ -28,6 +24,7 @@ const certStrategyFormQuery = graphql`
       id
       cert_auth {
         enabled
+        description
         button_label
         user_info_mapping {
           email_expr
@@ -68,6 +65,7 @@ const certStrategyFormMutation = graphql`
         id
         cert_auth {
           enabled
+          description
           button_label
           user_info_mapping {
             email_expr
@@ -109,6 +107,7 @@ interface MappingEntry {
 
 interface CertStrategyFormValues {
   enabled: boolean;
+  description: string;
   button_label: string;
   user_info_mapping: {
     email_expr: string;
@@ -167,6 +166,7 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
 
   const initialValues: CertStrategyFormValues = {
     enabled: certAuth?.enabled ?? false,
+    description: certAuth?.description ?? '',
     button_label: certAuth?.button_label ?? '',
     user_info_mapping: {
       email_expr: uim?.email_expr ?? 'subject.emailAddress',
@@ -201,6 +201,7 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
         id: settings.id,
         input: {
           enabled: values.enabled,
+          description: values.description || null,
           button_label: values.button_label || null,
           user_info_mapping: {
             email_expr: values.user_info_mapping.email_expr,
@@ -270,58 +271,28 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
               <Field
                 component={TextField}
                 variant="standard"
-                name="user_info_mapping.email_expr"
-                label={t_i18n('Email attribute')}
-                placeholder="subject.emailAddress"
-                required
+                name="description"
+                label={t_i18n('Description')}
                 fullWidth
+                multiline
+                rows={3}
                 style={{ marginTop: 20 }}
+              />
+              <AuthProviderUserInfoFields
+                fieldPrefix="user_info_mapping"
+                emailPlaceholder="subject.emailAddress"
+                namePlaceholder="subject.CN"
+                firstnamePlaceholder={t_i18n('Leave empty if not available')}
+                lastnamePlaceholder={t_i18n('Leave empty if not available')}
               />
               <Field
                 component={TextField}
                 variant="standard"
-                name="user_info_mapping.name_expr"
-                label={t_i18n('Name attribute')}
-                placeholder="subject.CN"
-                required
+                name="button_label"
+                label={t_i18n('Login button label')}
                 fullWidth
                 style={{ marginTop: 20 }}
               />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="user_info_mapping.firstname_expr"
-                label={t_i18n('Firstname attribute')}
-                placeholder={t_i18n('Leave empty if not available')}
-                fullWidth
-                style={{ marginTop: 20 }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="user_info_mapping.lastname_expr"
-                label={t_i18n('Lastname attribute')}
-                placeholder={t_i18n('Leave empty if not available')}
-                fullWidth
-                style={{ marginTop: 20 }}
-              />
-
-              {/* --- Display & Metadata --- */}
-              <Accordion variant="outlined" style={{ marginTop: 20 }}>
-                <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
-                  <Typography>{t_i18n('Display & Metadata')}</Typography>
-                </AccordionSummary>
-                <AccordionDetails sx={{ display: 'block', pb: 2 }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="button_label"
-                    label={t_i18n('Button label')}
-                    fullWidth
-                    style={{ marginTop: 10 }}
-                  />
-                </AccordionDetails>
-              </Accordion>
             </>
           )}
 

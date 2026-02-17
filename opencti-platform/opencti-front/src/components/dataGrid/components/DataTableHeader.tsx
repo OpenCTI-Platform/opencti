@@ -79,6 +79,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
     setColumns,
     availableFilterKeys,
     onSort,
+    disableColumnMenu,
     variant,
     formatter: { t_i18n },
     tableWidthState: [tableWidth],
@@ -97,7 +98,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
     setAnchorEl(e.currentTarget);
   };
 
-  const hasColumnMenu = column.isSortable || (availableFilterKeys ?? []).includes(column.id);
+  const hasColumnMenu = !disableColumnMenu && (column.isSortable || (availableFilterKeys ?? []).includes(column.id));
   const cellWidth = Math.round(tableWidth * (column.percentWidth / 100));
 
   return (
@@ -110,7 +111,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
         <Tooltip title={t_i18n(column.label)}>
           <span>{t_i18n(column.label)}</span>
         </Tooltip>
-        {sortBy && (orderAsc ? <ArrowDropUp /> : <ArrowDropDown />)}
+        {sortBy && column.isSortable && (orderAsc ? <ArrowDropUp /> : <ArrowDropDown />)}
       </div>
 
       {hasColumnMenu && (

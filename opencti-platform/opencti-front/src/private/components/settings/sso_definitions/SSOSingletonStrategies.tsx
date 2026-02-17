@@ -1,17 +1,13 @@
 import React, { Suspense, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { useTheme } from '@mui/styles';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import { InfoOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import Card from '../../../../components/common/card/Card';
 import Drawer from '@components/common/drawer/Drawer';
 import LocalStrategyForm from './LocalStrategyForm';
 import CertStrategyForm from './CertStrategyForm';
@@ -19,8 +15,19 @@ import HeaderStrategyForm from './HeaderStrategyForm';
 import type { SSOSingletonStrategiesQuery } from './__generated__/SSOSingletonStrategiesQuery.graphql';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '@components/common/entreprise_edition/EEChip';
+import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
+import type { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 
 type StrategyType = 'local' | 'cert' | 'header';
+
+interface StrategyRow {
+  id: string;
+  name: string;
+  type: string;
+  enabled: boolean;
+  strategy: StrategyType;
+  isClickable: boolean;
+}
 
 const ssoSingletonStrategiesQuery = graphql`
   query SSOSingletonStrategiesQuery {
@@ -40,27 +47,8 @@ const ssoSingletonStrategiesQuery = graphql`
   }
 `;
 
-const rowSx = (theme: Theme, isLast: boolean, isClickable: boolean, isDimmed = false) => ({
-  display: 'flex',
-  alignItems: 'center',
-  height: 50,
-  borderBottom: !isLast ? `1px solid ${theme.palette.divider}` : 'none',
-  cursor: isClickable ? 'pointer' : 'default',
-  opacity: isDimmed ? 0.5 : 1,
-  paddingLeft: 2,
-  paddingRight: 1,
-  ...(isClickable && {
-    '&:hover': {
-      backgroundColor: theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, .05)'
-        : 'rgba(0, 0, 0, .03)',
-    },
-  }),
-});
-
 const SSOSingletonStrategiesContent = () => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
   const [editingStrategy, setEditingStrategy] = useState<StrategyType | null>(null);
 
@@ -72,6 +60,55 @@ const SSOSingletonStrategiesContent = () => {
   const headerEnabled = settings.headers_auth?.enabled ?? false;
   const isHttpsEnabled = settings.platform_https_enabled;
 
+  const strategiesData: StrategyRow[] = [
+    { id: 'local', name: t_i18n('Local'), type: t_i18n('FORM'), enabled: localEnabled, strategy: 'local', isClickable: true },
+    { id: 'header', name: t_i18n('HTTP headers'), type: t_i18n('AUTO'), enabled: headerEnabled, strategy: 'header', isClickable: true },
+    { id: 'cert', name: t_i18n('Client Certificate'), type: t_i18n('SSO'), enabled: certEnabled, strategy: 'cert', isClickable: !!isHttpsEnabled },
+  ];
+
+  const dataColumns: DataTableProps['dataColumns'] = {
+    name: {
+      label: t_i18n('Configuration name'),
+      percentWidth: 45,
+      isSortable: false,
+      render: (node: StrategyRow) => (
+        <span style={{ opacity: node.isClickable ? 1 : 0.5 }}>{node.name}</span>
+      ),
+    },
+    type: {
+      label: t_i18n('Authentication type'),
+      percentWidth: 40,
+      isSortable: false,
+      render: (node: StrategyRow) => (
+        <span style={{ opacity: node.isClickable ? 1 : 0.5 }}>{node.type}</span>
+      ),
+    },
+    enabled: {
+      label: ' ',
+      percentWidth: 15,
+      isSortable: false,
+      render: (node: StrategyRow) => {
+        const showEE = node.strategy !== 'local' && !isEnterpriseEdition && node.isClickable;
+        const isEnabled = node.isClickable && node.enabled && (node.strategy === 'local' || isEnterpriseEdition);
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, opacity: node.isClickable ? 1 : 0.5 }}>
+            <ItemBoolean
+              label={isEnabled ? t_i18n('Enabled') : t_i18n('Disabled')}
+              status={isEnabled}
+            />
+            {showEE && <span onClick={(e) => e.stopPropagation()}><EEChip /></span>}
+          </Box>
+        );
+      },
+    },
+  };
+
+  const handleLineClick = (node: StrategyRow) => {
+    if (node.isClickable) {
+      setEditingStrategy(node.strategy);
+    }
+  };
+
   const drawerTitles: Record<StrategyType, string> = {
     local: t_i18n('Local Authentication'),
     cert: t_i18n('Client Certificate Authentication'),
@@ -80,67 +117,19 @@ const SSOSingletonStrategiesContent = () => {
 
   return (
     <div style={{ marginBottom: 30 }}>
-      <Card title={t_i18n('Authentication strategies')} padding="none">
-        {/* Local Authentication */}
-        <Box sx={rowSx(theme, false, true)} onClick={() => setEditingStrategy('local')}>
-          <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-            <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
-              {t_i18n('Local')}
-            </Typography>
-          </Box>
-          <Box sx={{ width: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-            <ItemBoolean
-              label={localEnabled ? t_i18n('Enabled') : t_i18n('Disabled')}
-              status={localEnabled}
-            />
-          </Box>
-          <Box sx={{ width: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <IconButton size="small">
-              <EditOutlined fontSize="small" />
-            </IconButton>
-          </Box>
-        </Box>
-
-        {/* HTTP Headers Authentication */}
-        <Box sx={rowSx(theme, false, true)} onClick={() => setEditingStrategy('header')}>
-          <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-            <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
-              {t_i18n('HTTP headers')}
-            </Typography>
-          </Box>
-          <Box sx={{ width: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-            <ItemBoolean
-              label={headerEnabled && isEnterpriseEdition ? t_i18n('Enabled') : t_i18n('Disabled')}
-              status={headerEnabled && isEnterpriseEdition}
-            />
-            {!isEnterpriseEdition && <span onClick={(e) => e.stopPropagation()}><EEChip /></span>}
-          </Box>
-          <Box sx={{ width: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <IconButton size="small">
-              <EditOutlined fontSize="small" />
-            </IconButton>
-          </Box>
-        </Box>
-
-        {/* Client Certificate Authentication */}
-        <Box
-          sx={rowSx(theme, true, !!isHttpsEnabled, !isHttpsEnabled)}
-          onClick={() => isHttpsEnabled && setEditingStrategy('cert')}
-        >
-          <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-            <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
-              {t_i18n('Client Certificate')}
-            </Typography>
-          </Box>
-          <Box sx={{ width: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-            <ItemBoolean
-              label={isHttpsEnabled && certEnabled && isEnterpriseEdition ? t_i18n('Enabled') : t_i18n('Disabled')}
-              status={!!(isHttpsEnabled && certEnabled && isEnterpriseEdition)}
-            />
-            {!isEnterpriseEdition && isHttpsEnabled && <span onClick={(e) => e.stopPropagation()}><EEChip /></span>}
-          </Box>
-          <Box sx={{ width: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {!isHttpsEnabled ? (
+      <DataTableWithoutFragment
+        storageKey="SSOSingletonStrategies"
+        dataColumns={dataColumns}
+        data={strategiesData}
+        globalCount={strategiesData.length}
+        onLineClick={handleLineClick}
+        disableToolBar
+        disableNavigation
+        disableLineSelection
+        isLocalStorageEnabled={false}
+        actions={(node: StrategyRow) => {
+          if (node.strategy === 'cert' && !isHttpsEnabled) {
+            return (
               <Tooltip title={t_i18n('Client certificate requires the platform to be configured with HTTPS')}>
                 <span>
                   <IconButton size="small" disabled>
@@ -148,14 +137,15 @@ const SSOSingletonStrategiesContent = () => {
                   </IconButton>
                 </span>
               </Tooltip>
-            ) : (
-              <IconButton size="small">
-                <EditOutlined fontSize="small" />
-              </IconButton>
-            )}
-          </Box>
-        </Box>
-      </Card>
+            );
+          }
+          return (
+            <IconButton size="small">
+              <EditOutlined fontSize="small" />
+            </IconButton>
+          );
+        }}
+      />
 
       {editingStrategy && (
         <Drawer title={drawerTitles[editingStrategy]} open={!!editingStrategy} onClose={() => setEditingStrategy(null)}>

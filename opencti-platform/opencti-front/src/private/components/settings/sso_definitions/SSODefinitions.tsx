@@ -197,6 +197,7 @@ const SSODefinitions = () => {
               entityTypes={['AuthenticationProvider']}
               searchContextFinal={{ entityTypes: ['AuthenticationProvider'] }}
               disableToolBar
+              disableColumnMenu
               removeSelectAll
               disableLineSelection
               disableNavigation

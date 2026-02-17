@@ -13,6 +13,7 @@ export interface BasicStoreSettingsMessage {
 
 export type CertAuthConfig = {
   enabled: boolean;
+  description: string;
   button_label: string;
   user_info_mapping: UserInfoMapping;
   groups_mapping: GroupsMapping;
@@ -25,6 +26,7 @@ export type LocalAuthConfig = {
 
 export type HeadersAuthConfig = {
   enabled: boolean;
+  description: string;
   user_info_mapping: UserInfoMapping;
   groups_mapping: GroupsMapping;
   organizations_mapping: OrganizationsMapping;

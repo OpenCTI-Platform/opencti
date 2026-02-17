@@ -453,6 +453,7 @@ export const initializeData = async (context, withMarkings = true) => {
     local_auth: { enabled: true },
     cert_auth: {
       enabled: false,
+      description: null,
       user_info_mapping: {
         email_expr: 'subject.emailAddress',
         name_expr: 'subject.CN',
@@ -475,6 +476,7 @@ export const initializeData = async (context, withMarkings = true) => {
     },
     headers_auth: {
       enabled: false,
+      description: null,
       logout_uri: null,
       headers_audit: [],
       user_info_mapping: {

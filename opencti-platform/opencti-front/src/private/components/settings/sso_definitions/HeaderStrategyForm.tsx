@@ -18,6 +18,7 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import AuthProviderGroupsFields from './AuthProviderGroupsFields';
 import AuthProviderOrganizationsFields from './AuthProviderOrganizationsFields';
+import AuthProviderUserInfoFields from './AuthProviderUserInfoFields';
 import type { HeaderStrategyFormQuery } from './__generated__/HeaderStrategyFormQuery.graphql';
 import type { HeaderStrategyFormMutation } from './__generated__/HeaderStrategyFormMutation.graphql';
 
@@ -27,6 +28,7 @@ const headerStrategyFormQuery = graphql`
       id
       headers_auth {
         enabled
+        description
         logout_uri
         headers_audit
         user_info_mapping {
@@ -68,6 +70,7 @@ const headerStrategyFormMutation = graphql`
         id
         headers_auth {
           enabled
+          description
           logout_uri
           headers_audit
           user_info_mapping {
@@ -110,6 +113,7 @@ interface MappingEntry {
 
 interface HeaderStrategyFormValues {
   enabled: boolean;
+  description: string;
   logout_uri: string;
   headers_audit: string[];
   user_info_mapping: {
@@ -169,6 +173,7 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
 
   const initialValues: HeaderStrategyFormValues = {
     enabled: headerAuth?.enabled ?? false,
+    description: headerAuth?.description ?? '',
     logout_uri: headerAuth?.logout_uri ?? '',
     headers_audit: (headerAuth?.headers_audit ?? []).filter((s): s is string => s !== null && s !== undefined),
     user_info_mapping: {
@@ -206,6 +211,7 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
         id: settings.id,
         input: {
           enabled: values.enabled,
+          description: values.description || null,
           logout_uri: values.logout_uri || null,
           headers_audit: filterStringArray(values.headers_audit),
           user_info_mapping: {
@@ -276,37 +282,14 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
               <Field
                 component={TextField}
                 variant="standard"
-                name="user_info_mapping.email_expr"
-                label={t_i18n('Email header name')}
-                required
+                name="description"
+                label={t_i18n('Description')}
                 fullWidth
+                multiline
+                rows={3}
                 style={{ marginTop: 20 }}
               />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="user_info_mapping.name_expr"
-                label={t_i18n('Name header name')}
-                required
-                fullWidth
-                style={{ marginTop: 20 }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="user_info_mapping.firstname_expr"
-                label={t_i18n('Firstname header name')}
-                fullWidth
-                style={{ marginTop: 20 }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="user_info_mapping.lastname_expr"
-                label={t_i18n('Lastname header name')}
-                fullWidth
-                style={{ marginTop: 20 }}
-              />
+              <AuthProviderUserInfoFields fieldPrefix="user_info_mapping" />
               <Field
                 component={TextField}
                 variant="standard"

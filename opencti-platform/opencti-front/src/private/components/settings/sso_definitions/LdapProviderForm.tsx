@@ -24,6 +24,7 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import AuthProviderGroupsFields from './AuthProviderGroupsFields';
 import AuthProviderOrganizationsFields from './AuthProviderOrganizationsFields';
+import AuthProviderUserInfoFields from './AuthProviderUserInfoFields';
 import type { LdapProviderFormCreateMutation } from './__generated__/LdapProviderFormCreateMutation.graphql';
 import type { LdapProviderFormEditMutation } from './__generated__/LdapProviderFormEditMutation.graphql';
 import type { SSODefinitionEditionFragment$data } from './__generated__/SSODefinitionEditionFragment.graphql';
@@ -353,6 +354,16 @@ const LdapProviderForm = ({
               <Field
                 component={TextField}
                 variant="standard"
+                name="description"
+                label={t_i18n('Description')}
+                fullWidth
+                multiline
+                rows={3}
+                style={{ marginTop: 20 }}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
                 name="url"
                 label={t_i18n('LDAP URL')}
                 fullWidth
@@ -415,23 +426,13 @@ const LdapProviderForm = ({
                 style={{ marginTop: 20 }}
               />
 
-              <Typography variant="h4" style={{ marginTop: 30 }}>{t_i18n('User information mapping')}</Typography>
+              <AuthProviderUserInfoFields />
               <Field
                 component={TextField}
                 variant="standard"
-                name="email_expr"
-                label={t_i18n('Email expression')}
+                name="button_label_override"
+                label={t_i18n('Login button label')}
                 fullWidth
-                required
-                style={{ marginTop: 20 }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name_expr"
-                label={t_i18n('Name expression')}
-                fullWidth
-                required
                 style={{ marginTop: 20 }}
               />
 
@@ -484,47 +485,6 @@ const LdapProviderForm = ({
                     variant="standard"
                     name="group_search_attributes"
                     label={t_i18n('Group search attributes (comma-separated)')}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                  />
-                </AccordionDetails>
-              </Accordion>
-
-              {/* --- Display & Metadata --- */}
-              <Accordion variant="outlined" style={{ marginTop: 10 }}>
-                <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
-                  <Typography>{t_i18n('Display & Metadata')}</Typography>
-                </AccordionSummary>
-                <AccordionDetails sx={{ display: 'block' }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="description"
-                    label={t_i18n('Description')}
-                    fullWidth
-                    style={{ marginTop: 10 }}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="button_label_override"
-                    label={t_i18n('Login button label')}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="firstname_expr"
-                    label={t_i18n('First name expression')}
-                    fullWidth
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="lastname_expr"
-                    label={t_i18n('Last name expression')}
                     fullWidth
                     style={{ marginTop: 20 }}
                   />
