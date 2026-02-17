@@ -130,7 +130,7 @@ export const registerStrategy = async (authenticationProvider: BasicStoreEntityA
       }
       registerAuthenticationProvider(
         meta.identifier,
-        authenticationProvider.type,
+        created.strategy,
         {
           name: meta.name,
           type: created.auth_type,
