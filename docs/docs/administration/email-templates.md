@@ -15,7 +15,7 @@ The use cases that this feature will enable you to reach are:
 ## Create a template
 
 
-You need the capabily to manage credentials to access this feature.
+You need the capability to manage credentials to access this feature.
 
 ![email-template-overview](./assets/email-template-overview.png)
 

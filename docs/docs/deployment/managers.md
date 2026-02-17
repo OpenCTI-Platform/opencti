@@ -22,7 +22,7 @@ It is designed to help users audit and understand the evolution of their CTI dat
 
 ## Activity manager
 
-The activity manager in OpenCTI is a component that monitors and logs the user actions in the platform such as login, settings update, and user activities if configured (read, udpate, etc.).
+The activity manager in OpenCTI is a component that monitors and logs the user actions in the platform such as login, settings update, and user activities if configured (read, update, etc.).
 
 More information can be found [here](../administration/audit/overview.md).
 

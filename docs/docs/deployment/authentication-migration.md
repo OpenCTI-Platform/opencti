@@ -4,14 +4,14 @@
 
 # Migration Process
 At platform initialization, configuration file will be read. 
-If your platform is under entreprise edition license, each strategy will be converted to UI, meaning that the configuration of the specific strategy will be stored in our database and marked as migrated. It will still exists in the configuration file.
+If your platform is under Enterprise Edition license, each strategy will be converted to UI, meaning that the configuration of the specific strategy will be stored in our database and marked as migrated. It will still exists in the configuration file.
 If a strategy cannot be migrated  or failed to be migrated, then this flag will not be applied. 
-Once a strategy is marked as migrated, when the platform will initalize, based on the presence of this flag, the configuration present in the database will be used, otherwise, the configuration from the configuration file will be used. 
+Once a strategy is marked as migrated, when the platform will initialize, based on the presence of this flag, the configuration present in the database will be used, otherwise, the configuration from the configuration file will be used. 
 
-This means that a SSO configuration defined in UI (and therefore in database) **will always have priority over the same configration in the configuration file.**
+This means that a SSO configuration defined in UI (and therefore in database) **will always have priority over the same configuration in the configuration file.**
 
 # Avoiding having an authentication strategy that keeps appearing in the UI
-Assuming you have a configration defined in your configuration file, when upgrading to version 7, your configuration will be converted to UI (stored in database). 
+Assuming you have a configuration defined in your configuration file, when upgrading to version 7, your configuration will be converted to UI (stored in database). 
 
 If for whatever reason you delete this configuration from UI, next time you will initialize your platform, you will see **the same configuration again.**
 

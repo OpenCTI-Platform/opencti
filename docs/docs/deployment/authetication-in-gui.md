@@ -10,14 +10,14 @@ All the configurations listed below require an Enterprise Edition to work, excep
 
 Under the hood, we technically use the strategies provided by [PassportJS](http://www.passportjs.org/). We integrate a subset of the strategies available with passport. If you need more, we can integrate other strategies.
 
-Via UI, you can configure the following stategies  
+Via UI, you can configure the following strategies  
 
 - LDAP
 - Local strategy
 - OpenID
 - SAML
-- Certificate (not avaiable yet)
-- Headers.
+- Certificate
+- Headers
 
 ## Create a new configuration
 
@@ -140,7 +140,7 @@ You need to specify a type, add the corresponding value that you want to send to
 
 ### Passeport List of non-supported fields 
 
-| category                                        | field name                                                                              | field type                | commment                 |
+| category                                        | field name                                                                              | field type                | comment                 |
 |-------------------------------------------------|-----------------------------------------------------------------------------------------|---------------------------|--------------------------|
 |                                                 | Identity ProviderCert                                                                   | string                    | one string only supported|
 |                                                 | Identity ProviderCertCallback                                                           | string                    | one string only supported|
@@ -260,7 +260,7 @@ To create group mapping, you first need to identify within the token, the attrib
 
 If not sufficient, in a similar way than the configuration form, you can add custom values, if you need to map multiple groups from your identity provider to OpenCTI groups clicking on the option to "add a new value".
 
-Last but not least, you can also enable an option (disbaled by default) to automatically add users to the default groups you have defined in OpenCTI, in addition to the groups you have selected. 
+Last but not least, you can also enable an option (disabled by default) to automatically add users to the default groups you have defined in OpenCTI, in addition to the groups you have selected. 
 
 ![OpenId group mapping](assets/authentication-OpenID-groupMapping.png)
 
