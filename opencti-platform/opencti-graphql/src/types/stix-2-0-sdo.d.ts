@@ -30,7 +30,7 @@ export interface StixVulnerability extends StixDomainObject {
   name: string;
   description: string; // optional
   x_opencti_cisa_kev: boolean;
-  x_opencti_first_seen_active: string;
+  x_opencti_first_seen_active: Date;
   // CVSS3
   x_opencti_cvss_vector_string: string;
   x_opencti_cvss_base_score: number;
