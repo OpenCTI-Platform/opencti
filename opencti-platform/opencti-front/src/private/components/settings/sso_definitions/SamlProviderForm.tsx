@@ -30,6 +30,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import AuthProviderGroupsFields from './AuthProviderGroupsFields';
 import AuthProviderOrganizationsFields from './AuthProviderOrganizationsFields';
 import AuthProviderUserInfoFields from './AuthProviderUserInfoFields';
+import AuthProviderLogTab from './AuthProviderLogTab';
 import type { SamlProviderFormCreateMutation } from './__generated__/SamlProviderFormCreateMutation.graphql';
 import type { SamlProviderFormEditMutation } from './__generated__/SamlProviderFormEditMutation.graphql';
 import type { SSODefinitionEditionFragment$data } from './__generated__/SSODefinitionEditionFragment.graphql';
@@ -427,6 +428,7 @@ const SamlProviderForm = ({
                 <Tab label={t_i18n('Configuration')} />
                 <Tab label={t_i18n('Groups')} />
                 <Tab label={t_i18n('Organizations')} />
+                <Tab label={t_i18n('Log')} />
               </Tabs>
             </Box>
             {currentTab === 0 && (
@@ -816,6 +818,7 @@ const SamlProviderForm = ({
             )}
             {currentTab === 1 && <AuthProviderGroupsFields />}
             {currentTab === 2 && <AuthProviderOrganizationsFields />}
+            {currentTab === 3 && <AuthProviderLogTab authLogHistory={data?.authLogHistory ?? []} />}
             <div style={{ marginTop: 20, textAlign: 'right' }}>
               <Button
                 variant="secondary"

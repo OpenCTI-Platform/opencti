@@ -20,6 +20,14 @@ export const ssoDefinitionEditionFragment = graphql`
         button_label_override
         identifier_override
         type
+        authLogHistory {
+            timestamp
+            level
+            message
+            type
+            identifier
+            meta
+        }
         configuration {
             ... on OidcConfiguration {
                 issuer
