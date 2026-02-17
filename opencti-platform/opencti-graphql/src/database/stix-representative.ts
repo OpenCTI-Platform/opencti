@@ -51,6 +51,7 @@ import {
   ENTITY_PHONE_NUMBER,
   ENTITY_PROCESS,
   ENTITY_SOFTWARE,
+  ENTITY_AI_PROMPT,
   ENTITY_SSH_KEY,
   ENTITY_TEXT,
   ENTITY_TRACKING_NUMBER,
@@ -290,6 +291,9 @@ export const extractStixRepresentative = (
   if (entityType === ENTITY_SSH_KEY) {
     const sshKey = stix as SCO.StixSSHKey;
     return sshKey.key_type ?? 'Unknown';
+  }
+  if (entityType === ENTITY_AI_PROMPT) {
+    return (stix as SCO.StixAIPrompt).value ?? 'Unknown';
   }
   // endregion
   throw UnsupportedError('No representative extractor available', { type: entityType });

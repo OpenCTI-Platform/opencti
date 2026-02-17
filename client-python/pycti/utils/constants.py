@@ -65,6 +65,7 @@ class StixCyberObservableTypes(CaseInsensitiveEnum):
     SIMPLE_OBSERVABLE = "Simple-Observable"
     PERSONA = "Persona"
     SSH_KEY = "SSH-Key"
+    AI_PROMPT = "AI-Prompt"
 
 
 class IdentityTypes(CaseInsensitiveEnum):
@@ -749,6 +750,36 @@ class CustomObservableSshKey:
     Represents an SSH key cyber observable such as public or private SSH keys.
 
     :param value: The SSH key value (required)
+    :type value: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param object_marking_refs: List of marking definition references
+    :type object_marking_refs: list
+    """
+
+    pass
+
+
+@CustomObservable(
+    "ai-prompt",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableAIPrompt:
+    """Custom STIX2 AI Prompt observable for OpenCTI.
+
+    Represents an AI prompt cyber observable used in AI-related threat intelligence.
+
+    :param value: The AI prompt value (required)
     :type value: str
     :param spec_version: STIX specification version, fixed to "2.1"
     :type spec_version: str

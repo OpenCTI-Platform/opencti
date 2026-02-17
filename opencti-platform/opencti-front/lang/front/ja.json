@@ -1495,6 +1495,8 @@
   "Entity usage": "エンティティの利用",
   "entity_Activity": "活動（監査）",
   "entity_Administrative-Area": "管理領域",
+  "entity_AI-Prompt": "AIプロンプト",
+  "entity_Ai-Prompt": "AIプロンプト",
   "entity_All": "全てのエンティティ",
   "entity_Analyses": "エンティティ_分析",
   "entity_Analysis": "解析",

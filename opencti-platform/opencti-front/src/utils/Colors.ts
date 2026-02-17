@@ -122,6 +122,7 @@ const ENTITY_TYPE_TO_FAMILY: Record<string, keyof typeof COLOR_FAMILIES> = {
   'Email-Mime-Part-Type': 'observables',
   StixFile: 'observables',
   'X509-Certificate': 'observables',
+  'AI-Prompt': 'observables',
   'IPv4-Addr': 'observables',
   'IPv6-Addr': 'observables',
   'Mac-Addr': 'observables',
@@ -143,6 +144,7 @@ const ENTITY_TYPE_TO_FAMILY: Record<string, keyof typeof COLOR_FAMILIES> = {
   'Phone-Number': 'observables',
   'Payment-Card': 'observables',
   'Media-Content': 'observables',
+  'SSH-Key': 'observables',
   Persona: 'observables',
 
   // Relationships

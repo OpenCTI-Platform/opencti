@@ -1495,6 +1495,8 @@
   "Entity usage": "Entity usage",
   "entity_Activity": "Activity (audit)",
   "entity_Administrative-Area": "Area",
+  "entity_AI-Prompt": "AI Prompt",
+  "entity_Ai-Prompt": "AI Prompt",
   "entity_All": "All entities",
   "entity_Analyses": "entity_Analyses",
   "entity_Analysis": "Analysis",

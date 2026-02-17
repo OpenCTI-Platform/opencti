@@ -200,6 +200,9 @@ SCO_PROPERTIES = """
         comment
         created
     }
+    ... on AIPrompt {
+        value
+    }
     ... on IPv4Addr {
         value
     }
@@ -534,6 +537,9 @@ SCO_PROPERTIES_WITH_FILES = """
         expiration_date
         comment
         created
+    }
+    ... on AIPrompt {
+        value
     }
     ... on IPv4Addr {
         value

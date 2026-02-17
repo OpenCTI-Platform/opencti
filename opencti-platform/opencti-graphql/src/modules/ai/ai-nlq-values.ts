@@ -412,6 +412,7 @@ enum EntityObservableEnum {
   WINDOWS_REGISTRY_VALUE_TYPE = 'Windows-Registry-Value-Type',
   X509_CERTIFICATE = 'X509-Certificate',
   SSH_KEY = 'SSH-Key',
+  AI_PROMPT = 'AI-Prompt',
 }
 
 export const entityObservableDescription = {
@@ -676,6 +677,9 @@ export const entityObservableDescription = {
   },
   [EntityObservableEnum.SSH_KEY]: {
     description: 'A key used to securely authenticate to servers and services over SSH.',
+  },
+  [EntityObservableEnum.AI_PROMPT]: {
+    description: 'A prompt used to interact with an AI model, relevant for AI-related threat intelligence.',
   },
 };
 

@@ -629,6 +629,22 @@ export interface StixPersona extends StixCyberObject {
   };
 }
 
+// Custom object extension - AI Prompt
+// value
+export interface StixAIPrompt extends StixCyberObject {
+  value: string;
+  description: string;
+  score: number;
+  labels: Array<string>;
+  created_by_ref: StixId | undefined;
+  object_marking_refs: Array<StixId>;
+  external_references: Array<StixInternalExternalReference>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' };
+  };
+}
+
 // Custom object extension - SSH key
 // key_type, public_key, fingerprint_sha256, fingerprint_md5, key_length, comment, created, expiration_date
 export interface StixSSHKey extends StixCyberObject {

@@ -22,6 +22,7 @@ import {
   ENTITY_TYPE_VULNERABILITY,
 } from '../schema/stixDomainObject';
 import {
+  ENTITY_AI_PROMPT,
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_BANK_ACCOUNT,
   ENTITY_DOMAIN_NAME,
@@ -1221,6 +1222,10 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_USER_ACCOUNT}_${ENTITY_USER_ACCOUNT}`]: [
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN },
+  ],
+  // From AI_PROMPT
+  [`${ENTITY_AI_PROMPT}_${ENTITY_SOFTWARE}`]: [
+    { name: RELATION_TARGETS, type: REL_EXTENDED },
   ],
   // endregion
   // Extended

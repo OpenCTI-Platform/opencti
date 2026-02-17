@@ -1495,6 +1495,8 @@
   "Entity usage": "엔터티 사용",
   "entity_Activity": "활동 (감사)",
   "entity_Administrative-Area": "지역",
+  "entity_AI-Prompt": "AI 프롬프트",
+  "entity_Ai-Prompt": "AI 프롬프트",
   "entity_All": "모든 엔터티",
   "entity_Analyses": "분석",
   "entity_Analysis": "분석",
