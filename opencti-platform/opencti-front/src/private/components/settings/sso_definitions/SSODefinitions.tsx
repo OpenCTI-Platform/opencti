@@ -25,7 +25,7 @@ import ListOutlined from '@mui/icons-material/ListOutlined';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import SSODefinitionEdition from '@components/settings/sso_definitions/SSODefinitionEdition';
-import { SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
+import { SSODefinitionEditionFragment$data, SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
 
 const LOCAL_STORAGE_KEY = 'SSODefinitions';
 
@@ -211,7 +211,7 @@ const SSODefinitions = () => {
               disableLineSelection
               disableNavigation
               onLineClick={handleOpenEdition}
-              actions={(node: SSODefinitionEditionFragment$key) => (
+              actions={(node: SSODefinitionEditionFragment$data) => (
                 <>
                   <Tooltip title={t_i18n('Update')}>
                     <IconButton size="small" aria-label={t_i18n('Update')}>
