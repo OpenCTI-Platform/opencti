@@ -22862,6 +22862,8 @@ export type Query = {
   auditsMultiTimeSeries?: Maybe<Array<Maybe<MultiTimeSeries>>>;
   auditsNumber?: Maybe<Number>;
   auditsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
+  /** Auth log history for a provider identified by its identifier (e.g. singleton strategies: Headers, Cert). */
+  authLogHistoryByIdentifier: Array<AuthLogEntry>;
   authenticationProvider?: Maybe<AuthenticationProvider>;
   authenticationProviderSettings?: Maybe<AuthenticationProviderSettings>;
   authenticationProviders?: Maybe<AuthenticationProviderConnection>;
@@ -23345,6 +23347,11 @@ export type QueryAuditsTimeSeriesArgs = {
   search?: InputMaybe<Scalars['String']['input']>;
   startDate: Scalars['DateTime']['input'];
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryAuthLogHistoryByIdentifierArgs = {
+  identifier: Scalars['String']['input'];
 };
 
 
@@ -46572,6 +46579,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   auditsMultiTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['MultiTimeSeries']>>>, ParentType, ContextType, RequireFields<QueryAuditsMultiTimeSeriesArgs, 'interval' | 'operation' | 'startDate'>>;
   auditsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryAuditsNumberArgs>>;
   auditsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryAuditsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
+  authLogHistoryByIdentifier?: Resolver<Array<ResolversTypes['AuthLogEntry']>, ParentType, ContextType, RequireFields<QueryAuthLogHistoryByIdentifierArgs, 'identifier'>>;
   authenticationProvider?: Resolver<Maybe<ResolversTypes['AuthenticationProvider']>, ParentType, ContextType, RequireFields<QueryAuthenticationProviderArgs, 'id'>>;
   authenticationProviderSettings?: Resolver<Maybe<ResolversTypes['AuthenticationProviderSettings']>, ParentType, ContextType>;
   authenticationProviders?: Resolver<Maybe<ResolversTypes['AuthenticationProviderConnection']>, ParentType, ContextType, Partial<QueryAuthenticationProvidersArgs>>;

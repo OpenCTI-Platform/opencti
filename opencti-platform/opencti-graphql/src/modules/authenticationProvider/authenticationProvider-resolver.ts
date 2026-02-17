@@ -1,5 +1,5 @@
 import { AuthenticationProviderType, AuthLogLevel, type Resolvers } from '../../generated/graphql';
-import { redisGetAuthLogHistory } from '../../database/redis';
+import {type AuthLogEntry, redisGetAuthLogHistory} from '../../database/redis';
 import {
   addAuthenticationProvider,
   deleteAuthenticationProvider,
@@ -26,22 +26,30 @@ const levelToLevel = (level: string) => {
   }
 };
 
+const logsToLogs = (logs: AuthLogEntry[]) => {
+  return logs.map(({ timestamp, level, ...others }) => ({
+    timestamp: new Date(timestamp),
+    level: levelToLevel(level),
+    ...others,
+  }));
+};
+
 const authenticationProviderResolver: Resolvers = {
   AuthenticationProvider: {
     authLogHistory: async (parent) => {
       const identifier = resolveProviderIdentifier(parent as BasicStoreEntityAuthenticationProvider);
       const entries = await redisGetAuthLogHistory(identifier);
-      return entries.map(({ timestamp, level, ...others }) => ({
-        timestamp: new Date(timestamp),
-        level: levelToLevel(level),
-        ...others,
-      }));
+      return logsToLogs(entries);
     },
   },
   Query: {
     authenticationProvider: (_, { id }, context) => findAuthenticationProviderById(context, context.user, id),
     authenticationProviders: (_, args, context) => findAuthenticationProviderByIdPaginated(context, context.user, args),
     authenticationProviderSettings: (_, __, ___) => getAuthenticationProviderSettings(),
+    authLogHistoryByIdentifier: async (_, { identifier }) => {
+      const entries = await redisGetAuthLogHistory(identifier);
+      return logsToLogs(entries);
+    },
   },
   AuthenticationConfiguration: {
     __resolveType(obj) {

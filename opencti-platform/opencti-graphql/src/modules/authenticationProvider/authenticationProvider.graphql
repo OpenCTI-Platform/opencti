@@ -220,9 +220,9 @@ enum AuthLogLevel {
 type AuthLogEntry {
   timestamp: DateTime!
   level: AuthLogLevel!
-  message: String!
   type: String!
   identifier: String!
+  message: String!
   meta: JSON
 }
 
@@ -258,7 +258,7 @@ type AuthenticationProvider implements InternalObject & BasicObject & Authentica
   identifier_override: String # use id if no identifier_override is provided
   type: AuthenticationProviderType!
   configuration: AuthenticationConfiguration!
-  authLogHistory: [AuthLogEntry!]!
+  authLogHistory: [AuthLogEntry!]! # since it's limited to 50 entries, no need for pagination
 }
 
 enum AuthenticationProviderOrdering {
@@ -331,6 +331,8 @@ type Query {
     search: String
   ): AuthenticationProviderConnection @auth(for: [SETTINGS_SETAUTH])
   authenticationProviderSettings: AuthenticationProviderSettings @auth
+  """Auth log history for a provider identified by its identifier (e.g. singleton strategies: Headers, Cert)."""
+  authLogHistoryByIdentifier(identifier: String!): [AuthLogEntry!]! @auth(for: [SETTINGS_SETAUTH])
 }
 
 type Mutation {

@@ -9701,6 +9701,11 @@ type Query {
   authenticationProvider(id: String!): AuthenticationProvider
   authenticationProviders(first: Int, after: ID, orderBy: AuthenticationProviderOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): AuthenticationProviderConnection
   authenticationProviderSettings: AuthenticationProviderSettings
+
+  """
+  Auth log history for a provider identified by its identifier (e.g. singleton strategies: Headers, Cert).
+  """
+  authLogHistoryByIdentifier(identifier: String!): [AuthLogEntry!]!
 }
 
 type Subscription {
@@ -15832,9 +15837,9 @@ enum AuthLogLevel {
 type AuthLogEntry {
   timestamp: DateTime!
   level: AuthLogLevel!
-  message: String!
   type: String!
   identifier: String!
+  message: String!
   meta: JSON
 }
 

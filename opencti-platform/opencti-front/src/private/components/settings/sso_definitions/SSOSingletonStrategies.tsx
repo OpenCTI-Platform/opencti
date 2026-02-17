@@ -3,6 +3,7 @@ import { graphql, useLazyLoadQuery } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import EditOutlined from '@mui/icons-material/EditOutlined';
+import ListOutlined from '@mui/icons-material/ListOutlined';
 import { InfoOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -12,6 +13,7 @@ import Drawer from '@components/common/drawer/Drawer';
 import LocalStrategyForm from './LocalStrategyForm';
 import CertStrategyForm from './CertStrategyForm';
 import HeaderStrategyForm from './HeaderStrategyForm';
+import AuthLogsByIdentifierDrawer, { AUTH_IDENTIFIER_HEADERS, AUTH_IDENTIFIER_CERT } from './AuthLogsByIdentifierDrawer';
 import type { SSOSingletonStrategiesQuery } from './__generated__/SSOSingletonStrategiesQuery.graphql';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '@components/common/entreprise_edition/EEChip';
@@ -47,10 +49,16 @@ const ssoSingletonStrategiesQuery = graphql`
   }
 `;
 
+const STRATEGY_LOG_IDENTIFIER: Record<string, string> = {
+  header: AUTH_IDENTIFIER_HEADERS,
+  cert: AUTH_IDENTIFIER_CERT,
+};
+
 const SSOSingletonStrategiesContent = () => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const [editingStrategy, setEditingStrategy] = useState<StrategyType | null>(null);
+  const [logsDrawer, setLogsDrawer] = useState<{ identifier: string; name: string } | null>(null);
 
   const data = useLazyLoadQuery<SSOSingletonStrategiesQuery>(ssoSingletonStrategiesQuery, {});
   const { settings } = data;
@@ -139,22 +147,55 @@ const SSOSingletonStrategiesContent = () => {
               </Tooltip>
             );
           }
+          const showLogs = (node.strategy === 'header' || node.strategy === 'cert') && node.isClickable;
           return (
-            <IconButton size="small">
-              <EditOutlined fontSize="small" />
-            </IconButton>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <IconButton size="small">
+                <EditOutlined fontSize="small" />
+              </IconButton>
+              {showLogs && (
+                <Tooltip title={t_i18n('Logs')}>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLogsDrawer({
+                        identifier: STRATEGY_LOG_IDENTIFIER[node.strategy],
+                        name: node.name,
+                      });
+                    }}
+                    aria-label={t_i18n('Logs')}
+                  >
+                    <ListOutlined fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
           );
         }}
       />
 
       {editingStrategy && (
-        <Drawer title={drawerTitles[editingStrategy]} open={!!editingStrategy} onClose={() => setEditingStrategy(null)}>
+        <Drawer
+          title={drawerTitles[editingStrategy]}
+          open={!!editingStrategy}
+          onClose={() => setEditingStrategy(null)}
+          disableBackdropClose
+        >
           <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             {editingStrategy === 'local' && <LocalStrategyForm onCancel={() => setEditingStrategy(null)} />}
             {editingStrategy === 'cert' && <CertStrategyForm onCancel={() => setEditingStrategy(null)} />}
             {editingStrategy === 'header' && <HeaderStrategyForm onCancel={() => setEditingStrategy(null)} />}
           </Suspense>
         </Drawer>
+      )}
+      {logsDrawer && (
+        <AuthLogsByIdentifierDrawer
+          isOpen
+          onClose={() => setLogsDrawer(null)}
+          identifier={logsDrawer.identifier}
+          name={logsDrawer.name}
+        />
       )}
     </div>
   );
