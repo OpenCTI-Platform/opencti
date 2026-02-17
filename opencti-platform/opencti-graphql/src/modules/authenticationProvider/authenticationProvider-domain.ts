@@ -59,7 +59,7 @@ export const decryptAuthValue = async (value: string) => {
   return (await keyPair.decrypt(decodedBuffer)).toString();
 };
 
-export const secretFieldsByType = {
+export const secretFieldsByType: Record<AuthenticationProviderType, { key: string; mandatory: boolean }[]> = {
   [AuthenticationProviderType.Oidc]: oidcSecretFields,
   [AuthenticationProviderType.Saml]: samlSecretFields,
   [AuthenticationProviderType.Ldap]: ldapSecretFields,
@@ -76,13 +76,14 @@ const graphQLToStoreConfiguration = async (
     .map(([key, value]) => [key, value ?? undefined]));
   output.type = type;
   // Handle secrets fields
-  for await (const fieldName of secretsFields) {
+  for await (const field of secretsFields) {
+    const { key: fieldName, mandatory } = field;
     const clearTextFieldName = `${fieldName}_cleartext`;
     const inputClearTextValue = input[clearTextFieldName] as string | undefined;
     const previousEncryptedValue = existing?.configuration?.[`${fieldName}_encrypted`] as string | undefined;
     const encryptedValue = inputClearTextValue && isNotEmptyField(inputClearTextValue)
       ? await encryptAuthValue(inputClearTextValue) : previousEncryptedValue;
-    if (!encryptedValue) {
+    if (mandatory && !encryptedValue) {
       throw FunctionalError('Secret field must be provided', { field: fieldName });
     }
     // Replace cleartext field by encrypted field

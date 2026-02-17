@@ -647,6 +647,36 @@ const SamlProviderForm = ({
                       fullWidth
                       style={{ marginTop: 20 }}
                     />
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="signing_cert"
+                      label={t_i18n('Signing certificate')}
+                      fullWidth
+                      multiline
+                      rows={4}
+                      style={{ marginTop: 20 }}
+                    />
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="decryption_pvk_cleartext"
+                      label={isEditing ? t_i18n('Decryption private key (leave empty to keep current)') : t_i18n('Decryption private key')}
+                      fullWidth
+                      multiline
+                      rows={4}
+                      style={{ marginTop: 20 }}
+                    />
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="decryption_cert"
+                      label={t_i18n('Decryption certificate')}
+                      fullWidth
+                      multiline
+                      rows={4}
+                      style={{ marginTop: 20 }}
+                    />
                   </AccordionDetails>
                 </Accordion>
 
@@ -700,45 +730,6 @@ const SamlProviderForm = ({
                       name="sso_binding_type"
                       label={t_i18n('SSO Binding type')}
                       fullWidth
-                      style={{ marginTop: 20 }}
-                    />
-                  </AccordionDetails>
-                </Accordion>
-
-                {/* --- Certificates & Keys --- */}
-                <Accordion variant="outlined" style={{ marginTop: 10 }}>
-                  <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
-                    <Typography>{t_i18n('Certificates & Keys')}</Typography>
-                  </AccordionSummary>
-                  <AccordionDetails sx={{ display: 'block' }}>
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="signing_cert"
-                      label={t_i18n('Signing certificate')}
-                      fullWidth
-                      multiline
-                      rows={4}
-                      style={{ marginTop: 10 }}
-                    />
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="decryption_pvk_cleartext"
-                      label={isEditing ? t_i18n('Decryption private key (leave empty to keep current)') : t_i18n('Decryption private key')}
-                      fullWidth
-                      multiline
-                      rows={4}
-                      style={{ marginTop: 20 }}
-                    />
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="decryption_cert"
-                      label={t_i18n('Decryption certificate')}
-                      fullWidth
-                      multiline
-                      rows={4}
                       style={{ marginTop: 20 }}
                     />
                   </AccordionDetails>

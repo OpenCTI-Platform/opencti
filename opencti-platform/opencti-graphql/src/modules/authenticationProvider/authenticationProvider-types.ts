@@ -59,7 +59,7 @@ export interface ProviderMeta {
 }
 
 // OIDC configuration
-export const oidcSecretFields = ['client_secret'];
+export const oidcSecretFields = [{ key: 'client_secret', mandatory: true }];
 
 type OidcCommonConfiguration = MappingConfiguration & {
   issuer: string;
@@ -78,7 +78,10 @@ export type OidcStoreConfiguration = OidcCommonConfiguration & {
 };
 
 // SAML configuration
-export const samlSecretFields = ['private_key', 'decryption_pvk'];
+export const samlSecretFields = [
+  { key: 'private_key', mandatory: true },
+  { key: 'decryption_pvk', mandatory: false },
+];
 
 type SamlCommonConfiguration = MappingConfiguration & {
   issuer: string;
@@ -108,7 +111,7 @@ export type SamlStoreConfiguration = SamlCommonConfiguration & {
 };
 
 // LDAP configuration
-export const ldapSecretFields = ['bind_credentials'];
+export const ldapSecretFields = [{ key: 'bind_credentials', mandatory: false }];
 
 export type LdapCommonConfiguration = MappingConfiguration & {
   url: string;
