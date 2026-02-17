@@ -29,8 +29,8 @@ export interface StixTool extends StixDomainObject {
 export interface StixVulnerability extends StixDomainObject {
   name: string;
   description: string; // optional
-  x_opencti_cisa_kev: instance.x_opencti_cisa_kev;
-  x_opencti_first_seen_active: instance.x_opencti_first_seen_active;
+  x_opencti_cisa_kev: boolean;
+  x_opencti_first_seen_active: string;
   // CVSS3
   x_opencti_cvss_vector_string: string;
   x_opencti_cvss_base_score: number;
