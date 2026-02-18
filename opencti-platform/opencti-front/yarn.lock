@@ -8715,17 +8715,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"formik-mui@npm:5.0.0-alpha.0":
-  version: 5.0.0-alpha.0
-  resolution: "formik-mui@npm:5.0.0-alpha.0"
+"formik-mui@npm:5.0.0-alpha.1":
+  version: 5.0.0-alpha.1
+  resolution: "formik-mui@npm:5.0.0-alpha.1"
   peerDependencies:
-    "@emotion/react": ">=11.5.0"
-    "@emotion/styled": ">=11.3.0"
-    "@mui/material": ">=5.2.3"
+    "@mui/material": ">5.6.0"
     formik: ">=2.2.9"
     react: ">=17.0.2"
     tiny-warning: ">=1.0.3"
-  checksum: 10c0/7c390da21643d2a04533fecad2e67d0e1811731c77b1fe5a58f62060b82fc4dcf786893d99138595911adf1abbcdd43df166631cf57010a63f1b20db9dd82483
+  checksum: 10c0/d6dbeb8e3c11ff3ee42f1596d3b8e0d75288376f06fc13574848a602cd4b32d01434c977e059b0a0182bb8a7df149d68a8acc3e47755d8e48fff5e8900fe49f3
   languageName: node
   linkType: hard
 
@@ -12281,7 +12279,7 @@ __metadata:
     extract-files: "npm:13.0.0"
     filigran-icon: "npm:0.21.0"
     formik: "npm:2.4.9"
-    formik-mui: "npm:5.0.0-alpha.0"
+    formik-mui: "npm:5.0.0-alpha.1"
     formik-mui-lab: "npm:1.0.0"
     globals: "npm:17.3.0"
     graphiql: "npm:4.1.2"
