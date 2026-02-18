@@ -276,9 +276,6 @@ const SamlProviderForm = ({
     idp_certificate: Yup.string().required(t_i18n('This field is required')),
     email_expr: Yup.string().required(t_i18n('This field is required')),
     name_expr: Yup.string().required(t_i18n('This field is required')),
-    ...(!isEditing && {
-      private_key_cleartext: Yup.string().required(t_i18n('This field is required')),
-    }),
     ...(overrideIdentifier && {
       identifier_override: Yup.string().trim(),
     }),
@@ -583,7 +580,6 @@ const SamlProviderForm = ({
                   name="private_key_cleartext"
                   label={isEditing ? t_i18n('Private key (leave empty to keep current)') : t_i18n('Private key')}
                   fullWidth
-                  required={!isEditing}
                   multiline
                   rows={4}
                   style={{ marginTop: 20 }}

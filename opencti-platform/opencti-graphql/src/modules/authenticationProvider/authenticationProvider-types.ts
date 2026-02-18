@@ -79,7 +79,7 @@ export type OidcStoreConfiguration = OidcCommonConfiguration & {
 
 // SAML configuration
 export const samlSecretFields = [
-  { key: 'private_key', mandatory: true },
+  { key: 'private_key', mandatory: false },
   { key: 'decryption_pvk', mandatory: false },
 ];
 
@@ -105,7 +105,7 @@ type SamlCommonConfiguration = MappingConfiguration & {
 };
 
 export type SamlStoreConfiguration = SamlCommonConfiguration & {
-  private_key_encrypted: string;
+  private_key_encrypted?: string;
   decryption_pvk_encrypted?: string;
   extra_conf: ExtraConfEntry[];
 };
