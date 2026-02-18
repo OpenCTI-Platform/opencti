@@ -125,7 +125,7 @@ const AuthProviderLogsDrawer: React.FC<AuthProviderLogsDrawerProps> = ({
 
   useEffect(() => {
     if (isOpen && providerId) {
-      loadQuery({ id: providerId });
+      loadQuery({ id: providerId }, { fetchPolicy: 'network-only' });
     }
   }, [isOpen, providerId]);
 

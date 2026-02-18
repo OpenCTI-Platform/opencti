@@ -114,7 +114,7 @@ const AuthLogsByIdentifierDrawer: React.FC<AuthLogsByIdentifierDrawerProps> = ({
 
   useEffect(() => {
     if (isOpen && identifier) {
-      loadQuery({ identifier });
+      loadQuery({ identifier }, { fetchPolicy: 'network-only' });
     }
   }, [isOpen, identifier]);
 
