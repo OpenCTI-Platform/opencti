@@ -148,7 +148,7 @@
     "openai": "4.104.0",
     "openid-client": "5.7.1",
     "opentelemetry-node-metrics": "3.0.0",
-    "otplib": "13.2.1",
+    "otplib": "13.3.0",
     "passport": "0.7.0",
     "passport-facebook": "3.0.0",
     "passport-github": "1.1.0",
