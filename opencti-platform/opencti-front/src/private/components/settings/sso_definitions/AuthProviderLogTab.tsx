@@ -6,18 +6,20 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Chip from '@mui/material/Chip';
-import Button from '@mui/material/Button';
-import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/styles';
+import Label from '../../../../components/common/label/Label';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import { EMPTY_VALUE } from '../../../../utils/String';
 import { CheckCircleOutlined, ErrorOutlined, InfoOutlined, WarningAmberOutlined, ContentCopyOutlined, OpenInNewOutlined } from '@mui/icons-material';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { a11yDark, coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import type { Theme } from '../../../../components/Theme';
-import Dialog from '@common/dialog/Dialog';
+import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import ButtonCommon from '@common/button/Button';
 const formatTimestamp = (ts: string | unknown): string => {
   if (!ts) return '—';
   const d = new Date(ts as string);
@@ -146,9 +148,8 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory 
   const [detailsOpen, setDetailsOpen] = useState<{ index: number; entry: AuthLogEntryShape } | null>(null);
 
   const handleCopyDetails = () => {
-    if (!detailsOpen?.entry.meta) return;
-    const text = JSON.stringify(detailsOpen.entry.meta, null, 2);
-    navigator.clipboard.writeText(text);
+    if (!detailsOpen?.entry?.meta) return;
+    navigator.clipboard.writeText(JSON.stringify(detailsOpen.entry.meta, null, 2));
   };
 
   if (!authLogHistory || authLogHistory.length === 0) {
@@ -202,7 +203,7 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory 
                       }}
                     />
                   </TableCell>
-                  <TableCell sx={{ maxWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <TableCell sx={{ maxWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {entry.message}
                   </TableCell>
                   <TableCell sx={{ maxWidth: 0 }}>
@@ -282,46 +283,107 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory 
         </Box>
       </Box>
 
-      <Dialog
+      <Drawer
+        title={t_i18n('Log details')}
         open={detailsOpen !== null}
         onClose={() => setDetailsOpen(null)}
-        title={t_i18n('Log details')}
         size="large"
-        showCloseButton
       >
-        {detailsOpen !== null && detailsOpen.entry.meta != null && (
-          <>
-            <Box sx={{ borderRadius: 1, overflow: 'hidden', '& pre': { margin: 0 } }}>
-              <SyntaxHighlighter
-                language="json"
-                style={theme.palette.mode === 'dark' ? a11yDark : coy}
-                customStyle={{
-                  margin: 0,
-                  padding: 16,
-                  fontSize: '0.8125rem',
-                  maxHeight: '70vh',
-                  borderRadius: 4,
-                }}
-                showLineNumbers={false}
-              >
-                {JSON.stringify(detailsOpen.entry.meta, null, 2)}
-              </SyntaxHighlighter>
+        {detailsOpen !== null ? (
+          <Stack
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+            gap={2}
+          >
+            <Box sx={{ flexShrink: 0 }}>
+              <Label>{t_i18n('Timestamp')}</Label>
+              <Typography variant="body1" gutterBottom fontFamily="monospace">
+                {formatTimestamp(detailsOpen.entry.timestamp) || EMPTY_VALUE}
+              </Typography>
             </Box>
-            <DialogActions sx={{ px: 0, pt: 2 }}>
-              <Button
-                size="small"
-                startIcon={<ContentCopyOutlined />}
-                onClick={handleCopyDetails}
-              >
-                {t_i18n('Copy')}
-              </Button>
-              <ButtonCommon onClick={() => setDetailsOpen(null)}>
-                {t_i18n('Close')}
-              </ButtonCommon>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
+            <Box sx={{ flexShrink: 0 }}>
+              <Label>{t_i18n('Level')}</Label>
+              <Box sx={{ mt: 0.5 }}>
+                <Chip
+                  size="small"
+                  icon={<LevelIcon level={detailsOpen.entry.level} />}
+                  label={detailsOpen.entry.level}
+                  color={levelColor(detailsOpen.entry.level) as 'error' | 'warning' | 'success' | 'default'}
+                  variant="outlined"
+                  sx={{ '& .MuiChip-icon': { marginLeft: 0, marginRight: 0.5 } }}
+                />
+              </Box>
+            </Box>
+            <Box sx={{ flexShrink: 0 }}>
+              <Label>{t_i18n('Message')}</Label>
+              <FieldOrEmpty source={detailsOpen.entry.message}>
+                <Typography variant="body1" gutterBottom sx={{ wordBreak: 'break-word' }}>
+                  {detailsOpen.entry.message}
+                </Typography>
+              </FieldOrEmpty>
+            </Box>
+            <Box
+              sx={{
+                flex: 1,
+                minHeight: 0,
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                <Label>{t_i18n('Details')}</Label>
+                <Tooltip title={t_i18n('Copy')}>
+                  <IconButton
+                    size="small"
+                    onClick={handleCopyDetails}
+                    sx={{ padding: 0.25 }}
+                    aria-label={t_i18n('Copy')}
+                    disabled={detailsOpen.entry.meta == null || Object.keys(detailsOpen.entry.meta).length === 0}
+                  >
+                    <ContentCopyOutlined sx={{ fontSize: '1rem' }} />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              {detailsOpen.entry.meta != null && Object.keys(detailsOpen.entry.meta).length > 0 ? (
+                <Box
+                  sx={{
+                    flex: 1,
+                    minHeight: 0,
+                    borderRadius: 1,
+                    overflow: 'auto',
+                    mt: 0.5,
+                    '& pre': { margin: 0 },
+                  }}
+                >
+                  <SyntaxHighlighter
+                    language="json"
+                    style={theme.palette.mode === 'dark' ? a11yDark : coy}
+                    customStyle={{
+                      margin: 0,
+                      padding: 16,
+                      fontSize: '0.8125rem',
+                      minHeight: '100%',
+                      borderRadius: 4,
+                    }}
+                    showLineNumbers={false}
+                  >
+                    {JSON.stringify(detailsOpen.entry.meta, null, 2)}
+                  </SyntaxHighlighter>
+                </Box>
+              ) : (
+                <Typography variant="body1" gutterBottom sx={{ flexShrink: 0 }}>
+                  {t_i18n('Not provided')}
+                </Typography>
+              )}
+            </Box>
+          </Stack>
+        ) : null}
+      </Drawer>
     </>
   );
 };
