@@ -35773,8 +35773,9 @@ export enum WorkflowActionMode {
 
 export type WorkflowConditionConfig = {
   __typename?: 'WorkflowConditionConfig';
-  field: Scalars['String']['output'];
-  operator: Scalars['String']['output'];
+  field?: Maybe<Scalars['String']['output']>;
+  operator?: Maybe<Scalars['String']['output']>;
+  type?: Maybe<Scalars['String']['output']>;
   value?: Maybe<Scalars['String']['output']>;
 };
 
@@ -49747,8 +49748,9 @@ export type WorkflowActionConfigResolvers<ContextType = any, ParentType extends 
 }>;
 
 export type WorkflowConditionConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowConditionConfig'] = ResolversParentTypes['WorkflowConditionConfig']> = ResolversObject<{
-  field?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  operator?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  operator?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
