@@ -39,6 +39,7 @@ export interface AuthLogEntryShape {
 }
 
 interface AuthProviderLogTabProps {
+  name: string;
   authLogHistory: ReadonlyArray<AuthLogEntryShape>;
 }
 
@@ -142,7 +143,7 @@ const jsonTokenColor = (type: JsonTokenType, theme: Theme): string => {
   }
 };
 
-const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory }) => {
+const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ name, authLogHistory }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [detailsOpen, setDetailsOpen] = useState<{ index: number; entry: AuthLogEntryShape } | null>(null);
@@ -292,7 +293,7 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory 
       </Box>
 
       <Drawer
-        title={t_i18n('Log details')}
+        title={`${t_i18n('Log details')} - ${name}`}
         open={detailsOpen !== null}
         onClose={() => setDetailsOpen(null)}
         size="large"

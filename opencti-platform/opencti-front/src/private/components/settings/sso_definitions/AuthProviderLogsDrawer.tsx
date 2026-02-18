@@ -51,7 +51,7 @@ const AuthProviderLogsDrawerBody: React.FC<{
     return null;
   }
 
-  return <AuthProviderLogTab authLogHistory={provider.authLogHistory} />;
+  return <AuthProviderLogTab name={provider.name} authLogHistory={provider.authLogHistory} />;
 };
 
 const AuthProviderLogsDrawerContent: React.FC<{

@@ -32,12 +32,13 @@ interface AuthLogsByIdentifierDrawerProps {
 
 /** Suspends until query is ready, then renders only the log tab. */
 const AuthLogsByIdentifierDrawerBody: React.FC<{
+  name: string;
   queryRef: PreloadedQuery<AuthLogsByIdentifierDrawerQuery>;
-}> = ({ queryRef }) => {
+}> = ({ name, queryRef }) => {
   const data = usePreloadedQuery(authLogsByIdentifierDrawerQuery, queryRef);
   const authLogHistory = data?.authLogHistoryByIdentifier ?? [];
 
-  return <AuthProviderLogTab authLogHistory={authLogHistory} />;
+  return <AuthProviderLogTab name={name} authLogHistory={authLogHistory} />;
 };
 
 const AuthLogsByIdentifierDrawerContent: React.FC<{
@@ -67,7 +68,7 @@ const AuthLogsByIdentifierDrawerContent: React.FC<{
         </Box>
       )}
     >
-      <AuthLogsByIdentifierDrawerBody queryRef={queryRef} />
+      <AuthLogsByIdentifierDrawerBody name={name} queryRef={queryRef} />
     </Suspense>
   ) : (
     <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
