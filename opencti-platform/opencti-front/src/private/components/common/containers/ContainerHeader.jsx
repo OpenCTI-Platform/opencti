@@ -16,7 +16,6 @@ import PopoverMenu from '../../../../components/PopoverMenu';
 import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { resolveLink } from '../../../../utils/Entity';
-import useAuth from '../../../../utils/hooks/useAuth';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useGranted, {
   AUTOMATION,
@@ -27,7 +26,6 @@ import useGranted, {
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
 } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
-import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import { DraftChip } from '../draft/DraftChip';
 import FormAuthorizedMembersDialog from '../form/FormAuthorizedMembersDialog';
 import StixCoreObjectBackgroundTasks from '../stix_core_objects/StixCoreObjectActiveBackgroundTasks';
@@ -494,8 +492,6 @@ const ContainerHeader = (props) => {
     navigate(`${entityLink}/${targetTab}?${urlParams}`);
   };
 
-  const { bannerSettings: { bannerHeightNumber } } = useAuth();
-  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   // containerDefault style
   let containerStyle = {
     display: 'flex',
@@ -503,16 +499,18 @@ const ContainerHeader = (props) => {
     alignItems: 'center',
     marginBottom: theme.spacing(1),
   };
+
   const overrideContainerStyle = knowledge || currentMode === 'graph' || currentMode === 'correlation';
+
   if (overrideContainerStyle) {
     // container knowledge / graph style
     containerStyle = {
       position: 'absolute',
-      display: 'flex',
-      top: 196 + bannerHeightNumber + settingsMessagesBannerHeight,
-      right: 24,
+      top: '-75px',
+      right: 0,
     };
   }
+
   const triggersPaginationOptions = {
     includeAuthorities: true,
     filters: {

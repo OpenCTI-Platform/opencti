@@ -304,7 +304,6 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           sx={{
             marginBottom: 2,
             padding: 0,
-            marginTop: -1,
             gap: 1,
           }}
         >

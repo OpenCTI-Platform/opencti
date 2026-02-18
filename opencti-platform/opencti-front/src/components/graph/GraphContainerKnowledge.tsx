@@ -1,26 +1,24 @@
-import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
-import { graphql, PreloadedQuery, useFragment } from 'react-relay';
-import { useTheme } from '@mui/material/styles';
-import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
 import ContainerHeader from '@components/common/containers/ContainerHeader';
 import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery } from '@components/common/containers/KnowledgeGraphQuery';
 import { ContainerHeader_container$key } from '@components/common/containers/__generated__/ContainerHeader_container.graphql';
-import { deserializeObjectB64 } from '../../utils/object';
-import { getObjectsToParse } from './utils/graphUtils';
+import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
+import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
+import { graphql, PreloadedQuery, useFragment } from 'react-relay';
+import investigationAddFromContainer from '../../utils/InvestigationUtils';
 import useDebounceCallback from '../../utils/hooks/useDebounceCallback';
 import usePreloadedPaginationFragment from '../../utils/hooks/usePreloadedPaginationFragment';
+import { deserializeObjectB64 } from '../../utils/object';
+import Graph from './Graph';
+import { GraphProvider } from './GraphContext';
+import GraphToolbar, { GraphToolbarProps } from './GraphToolbar';
+import { GraphContainerKnowledgeData_fragment$key } from './__generated__/GraphContainerKnowledgeData_fragment.graphql';
 import { GraphContainerKnowledgeObjectsQuery } from './__generated__/GraphContainerKnowledgeObjectsQuery.graphql';
 import { GraphContainerKnowledgeObjects_fragment$key } from './__generated__/GraphContainerKnowledgeObjects_fragment.graphql';
 import { GraphContainerKnowledgePositions_fragment$key } from './__generated__/GraphContainerKnowledgePositions_fragment.graphql';
-import { GraphContainerKnowledgeData_fragment$key } from './__generated__/GraphContainerKnowledgeData_fragment.graphql';
-import { GraphProvider } from './GraphContext';
-import type { Theme } from '../Theme';
-import GraphToolbar, { GraphToolbarProps } from './GraphToolbar';
-import { ObjectToParse } from './utils/useGraphParser';
-import investigationAddFromContainer from '../../utils/InvestigationUtils';
-import useGraphInteractions from './utils/useGraphInteractions';
-import Graph from './Graph';
 import { OctiGraphPositions } from './graph.types';
+import { getObjectsToParse } from './utils/graphUtils';
+import useGraphInteractions from './utils/useGraphInteractions';
+import { ObjectToParse } from './utils/useGraphParser';
 
 // region Relay queries and fragments
 
@@ -476,7 +474,6 @@ const GraphContainerKnowledgeComponent = ({
   },
 }: GraphContainerKnowledgeComponentProps) => {
   const ref = useRef(null);
-  const theme = useTheme<Theme>();
   const bannerHeight = useSettingsMessagesBannerHeight();
 
   const {
@@ -500,8 +497,8 @@ const GraphContainerKnowledgeComponent = ({
   const toolbarHeight = 54;
   const totalHeight = bannerHeight + headerHeight + paddingHeight + breadcrumbHeight + titleHeight + tabsHeight + toolbarHeight;
   const graphContainerStyle: CSSProperties = {
-    margin: `-${theme.spacing(3)}`,
     height: `calc(100vh - ${totalHeight}px)`,
+    position: 'relative',
   };
 
   return (

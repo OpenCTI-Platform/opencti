@@ -153,6 +153,7 @@ class ReportKnowledgeComponent extends Component {
         style={{
           width: '100%',
           height: '100%',
+          position: 'relative',
         }}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
         data-testid="report-knowledge"
@@ -187,7 +188,11 @@ class ReportKnowledgeComponent extends Component {
                     );
                   }
                   return (
-                    <Loader />
+                    <div style={{ height: '50vh' }}>
+                      <Loader
+                        variant={LoaderVariant.inElement}
+                      />
+                    </div>
                   );
                 }}
               />
@@ -232,10 +237,11 @@ class ReportKnowledgeComponent extends Component {
                       );
                     }
                     return (
-                      <Loader
-                        variant={LoaderVariant.inElement}
-                        withTopMargin={false}
-                      />
+                      <div style={{ height: '50vh' }}>
+                        <Loader
+                          variant={LoaderVariant.inElement}
+                        />
+                      </div>
                     );
                   }}
                 />
@@ -258,10 +264,11 @@ class ReportKnowledgeComponent extends Component {
                     );
                   }
                   return (
-                    <Loader
-                      variant={LoaderVariant.inElement}
-                      withTopMargin={false}
-                    />
+                    <div style={{ height: '50vh' }}>
+                      <Loader
+                        variant={LoaderVariant.inElement}
+                      />
+                    </div>
                   );
                 }}
               />

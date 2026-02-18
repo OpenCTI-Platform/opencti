@@ -10,11 +10,7 @@ interface HeaderMainEntityLayoutProps {
   rightActions?: ReactNode;
   leftTags?: ReactNode;
   rightTags?: ReactNode;
-  // should be removed when knowledge buttons is fixed
-  hasPlaceholderTags?: boolean;
 }
-
-const TAGS_HEIGHT = 25;
 
 const HeaderMainEntityLayout = ({
   title,
@@ -23,7 +19,6 @@ const HeaderMainEntityLayout = ({
   rightActions,
   leftTags,
   rightTags,
-  hasPlaceholderTags = true,
 }: HeaderMainEntityLayoutProps) => {
   const hasLeftTags = Boolean(leftTags);
   const hasRightTags = Boolean(rightTags);
@@ -92,7 +87,6 @@ const HeaderMainEntityLayout = ({
             alignContent="center"
             justifyContent="space-between"
             gap={3}
-            sx={{ height: hasPlaceholderTags ? TAGS_HEIGHT : 0 }}
           >
             <Stack
               direction="row"
