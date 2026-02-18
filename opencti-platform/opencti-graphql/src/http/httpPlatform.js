@@ -433,7 +433,7 @@ const createApp = async (app, schema) => {
           if (err) {
             const authLogger = strategy.logger;
             if (authLogger) {
-              authLogger.error('Error auth provider callback', {}, err);
+              authLogger.error('Callback processing error', {}, err);
             }
           }
           setCookieError(res, err?.message);
@@ -462,7 +462,7 @@ const createApp = async (app, schema) => {
           if (err || !user) {
             const authLogger = strategy.logger;
             if (authLogger) {
-              authLogger.error('Error auth provider callback', {}, err);
+              authLogger.error('Callback processing error', {}, err);
             } else {
               logApp.error('Error auth provider callback', { cause: err, provider });
             }

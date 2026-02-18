@@ -48,7 +48,10 @@ export const createAuthLogger = (type: AuthenticationProviderType | typeof HEADE
     error: (message, meta = {}, err?) => {
       const isAuthError = err instanceof AuthenticationProviderError;
       const messageText = isAuthError ? err.message : message;
-      const realMeta = isAuthError ? err.meta : meta;
+      const realMeta = {
+        ...(isAuthError ? err.meta : meta),
+        ...(err && !isAuthError ? { message: err.message } : {}),
+      };
       logApp.error(`${logPrefix}${messageText}`, { err: isAuthError ? undefined : err, meta: { ...realMeta, type, identifier } });
       forgetPromise(redisPushAuthLog({ level: 'error', type, identifier, message: messageText, meta: realMeta }));
     },

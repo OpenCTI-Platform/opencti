@@ -1,17 +1,24 @@
-import { getBaseUrl, getPlatformHttpProxyAgent } from '../../config/conf';
-import { allowInsecureRequests, buildEndSessionUrl, customFetch, discovery as oidcDiscovery, fetchUserInfo } from 'openid-client';
-import type { StrategyOptions, VerifyFunction } from 'openid-client/passport';
-import { Strategy as OpenIDStrategy } from 'openid-client/passport';
-import type { AuthenticateCallback } from 'passport';
+import {getBaseUrl, getPlatformHttpProxyAgent} from '../../config/conf';
+import {
+  allowInsecureRequests,
+  buildEndSessionUrl,
+  customFetch,
+  discovery as oidcDiscovery,
+  fetchUserInfo
+} from 'openid-client';
+import type {StrategyOptions, VerifyFunction} from 'openid-client/passport';
+import {Strategy as OpenIDStrategy} from 'openid-client/passport';
+import type {AuthenticateCallback} from 'passport';
 import * as R from 'ramda';
-import { jwtDecode } from 'jwt-decode';
-import { AuthType } from './providers-configuration';
-import type { OidcStoreConfiguration, ProviderMeta } from './authenticationProvider-types';
-import { type AuthenticationProviderLogger } from './providers-logger';
-import { memoize } from '../../utils/memoize';
-import { createMapper } from './mappings-utils';
-import { flatExtraConf, decryptAuthValue } from './authenticationProvider-domain';
-import { handleProviderLogin } from './providers';
+import {jwtDecode} from 'jwt-decode';
+import {AuthType} from './providers-configuration';
+import type {OidcStoreConfiguration, ProviderMeta} from './authenticationProvider-types';
+import {type AuthenticationProviderLogger} from './providers-logger';
+import {memoize} from '../../utils/memoize';
+import {createMapper} from './mappings-utils';
+import {decryptAuthValue, flatExtraConf} from './authenticationProvider-domain';
+import {handleProviderLogin} from './providers';
+import {skipSubjectCheck} from "oauth4webapi";
 
 const buildProxiedFetch = (issuerUrl: URL): typeof fetch => {
   const dispatcher = getPlatformHttpProxyAgent(issuerUrl.toString(), true);
@@ -61,9 +68,8 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
       });
 
       const user_info = memoize(async () => {
-        const sub = tokens.claims()?.sub;
-        const userInfo = sub ? await fetchUserInfo(config, tokens.access_token, sub) : undefined;
-        logger.info('User info fetched', { sub: sub ?? null, userInfo: userInfo ?? null });
+        const userInfo = await fetchUserInfo(config, tokens.access_token, skipSubjectCheck);
+        logger.info('User info fetched', userInfo);
         return userInfo;
       });
 
