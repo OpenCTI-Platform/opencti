@@ -150,7 +150,10 @@ const SSODefinitions = () => {
       label: t_i18n('Authentication strategy'),
       percentWidth: 40,
       isSortable: false,
-      render: (node: { type: string }) => <div>{node.type}</div>,
+      render: (node: { type: string }) => {
+        const strategyLabel = node.type === 'LDAP' ? t_i18n('FORM') : t_i18n('SSO');
+        return <div>{`${node.type} (${strategyLabel})`}</div>;
+      },
     },
     enabled: {
       label: t_i18n('Status'),
