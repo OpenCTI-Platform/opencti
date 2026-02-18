@@ -14,7 +14,7 @@ import { useTheme } from '@mui/styles';
 import Label from '../../../../components/common/label/Label';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { EMPTY_VALUE } from '../../../../utils/String';
-import { CheckCircleOutlined, ErrorOutlined, InfoOutlined, WarningAmberOutlined, ContentCopyOutlined, OpenInNewOutlined } from '@mui/icons-material';
+import { CheckCircleOutlined, ErrorOutlined, InfoOutlined, WarningAmberOutlined, ContentCopyOutlined, OpenInNewOutlined, ArrowUpward, ArrowDownward } from '@mui/icons-material';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { a11yDark, coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import type { Theme } from '../../../../components/Theme';
@@ -296,6 +296,46 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory 
         open={detailsOpen !== null}
         onClose={() => setDetailsOpen(null)}
         size="large"
+        header={
+          detailsOpen !== null && authLogHistory.length > 0 ? (
+            <Stack direction="row" alignItems="center" gap={0.5}>
+              <Tooltip title={t_i18n('Previous log')}>
+                <span>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      if (detailsOpen.index > 0) {
+                        const prevIndex = detailsOpen.index - 1;
+                        setDetailsOpen({ index: prevIndex, entry: authLogHistory[prevIndex] });
+                      }
+                    }}
+                    disabled={detailsOpen.index <= 0}
+                    aria-label={t_i18n('Previous log')}
+                  >
+                    <ArrowUpward fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip title={t_i18n('Next log')}>
+                <span>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      if (detailsOpen.index < authLogHistory.length - 1) {
+                        const nextIndex = detailsOpen.index + 1;
+                        setDetailsOpen({ index: nextIndex, entry: authLogHistory[nextIndex] });
+                      }
+                    }}
+                    disabled={detailsOpen.index >= authLogHistory.length - 1}
+                    aria-label={t_i18n('Next log')}
+                  >
+                    <ArrowDownward fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Stack>
+          ) : undefined
+        }
       >
         {detailsOpen !== null ? (
           <Stack
