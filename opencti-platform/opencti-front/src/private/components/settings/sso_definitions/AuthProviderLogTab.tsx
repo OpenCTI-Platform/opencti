@@ -5,8 +5,8 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
+import Tag from '../../../../components/common/tag/Tag';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
@@ -14,7 +14,7 @@ import { useTheme } from '@mui/styles';
 import Label from '../../../../components/common/label/Label';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { EMPTY_VALUE } from '../../../../utils/String';
-import { CheckCircleOutlined, ErrorOutlined, InfoOutlined, WarningAmberOutlined, ContentCopyOutlined, OpenInNewOutlined, ArrowUpward, ArrowDownward } from '@mui/icons-material';
+import { ContentCopyOutlined, OpenInNewOutlined, ArrowUpward, ArrowDownward } from '@mui/icons-material';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { a11yDark, coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import type { Theme } from '../../../../components/Theme';
@@ -43,29 +43,16 @@ interface AuthProviderLogTabProps {
   authLogHistory: ReadonlyArray<AuthLogEntryShape>;
 }
 
-const levelColor = (level: string) => {
+const levelTagColor = (level: string, theme: Theme) => {
   switch (level) {
     case 'error':
-      return 'error';
+      return (theme.palette.error as { main?: string })?.main ?? theme.palette.text.secondary;
     case 'warn':
-      return 'warning';
+      return (theme.palette.warning as { main?: string })?.main ?? theme.palette.text.secondary;
     case 'success':
-      return 'success';
+      return (theme.palette.success as { main?: string })?.main ?? theme.palette.text.secondary;
     default:
-      return 'default';
-  }
-};
-
-const LevelIcon = ({ level }: { level: string }) => {
-  switch (level) {
-    case 'error':
-      return <ErrorOutlined fontSize="small" color="error" />;
-    case 'warn':
-      return <WarningAmberOutlined fontSize="small" sx={{ color: 'warning.main' }} />;
-    case 'success':
-      return <CheckCircleOutlined fontSize="small" color="success" />;
-    default:
-      return <InfoOutlined fontSize="small" color="action" />;
+      return (theme.palette as { severity?: { default?: string } }).severity?.default ?? theme.palette.text.secondary;
   }
 };
 
@@ -194,19 +181,10 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ name, authLogHi
                     {formatTimestamp(entry.timestamp)}
                   </TableCell>
                   <TableCell sx={{ width: LEVEL_WIDTH, minWidth: LEVEL_WIDTH, overflow: 'visible', whiteSpace: 'nowrap' }}>
-                    <Chip
-                      size="small"
-                      icon={<LevelIcon level={entry.level} />}
+                    <Tag
                       label={entry.level}
-                      color={levelColor(entry.level) as 'error' | 'warning' | 'success' | 'default'}
-                      variant="outlined"
-                      sx={{
-                        paddingTop: 0.75,
-                        paddingBottom: 0.75,
-                        paddingLeft: 0.75,
-                        paddingRight: 0.75,
-                        '& .MuiChip-icon': { marginLeft: 0, marginRight: 0.5 },
-                      }}
+                      color={levelTagColor(entry.level, theme)}
+                      labelTextTransform="none"
                     />
                   </TableCell>
                   <TableCell sx={{ maxWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -358,13 +336,10 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ name, authLogHi
             <Box sx={{ flexShrink: 0 }}>
               <Label>{t_i18n('Level')}</Label>
               <Box sx={{ mt: 0.5 }}>
-                <Chip
-                  size="small"
-                  icon={<LevelIcon level={detailsOpen.entry.level} />}
+                <Tag
                   label={detailsOpen.entry.level}
-                  color={levelColor(detailsOpen.entry.level) as 'error' | 'warning' | 'success' | 'default'}
-                  variant="outlined"
-                  sx={{ '& .MuiChip-icon': { marginLeft: 0, marginRight: 0.5 } }}
+                  color={levelTagColor(detailsOpen.entry.level, theme)}
+                  labelTextTransform="none"
                 />
               </Box>
             </Box>
