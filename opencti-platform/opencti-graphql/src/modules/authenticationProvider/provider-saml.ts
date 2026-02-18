@@ -1,7 +1,6 @@
 import type { ProviderMeta, SamlStoreConfiguration } from './authenticationProvider-types';
-import { type AuthenticationProviderLogger } from './providers-logger';
+import { AuthenticationProviderError, type AuthenticationProviderLogger } from './providers-logger';
 import { AuthType } from './providers-configuration';
-import { ConfigurationError } from '../../config/errors';
 import type { PassportSamlConfig, VerifyWithoutRequest } from '@node-saml/passport-saml/lib/types';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml/lib/strategy';
 import { createMapper } from './mappings-utils';
@@ -15,7 +14,7 @@ export const buildSAMLOptions = async (meta: ProviderMeta, conf: SamlStoreConfig
   entryPoint: conf.entry_point,
   issuer: conf.issuer,
   idpCert: conf.idp_certificate,
-  privateKey: await decryptAuthValue(conf.private_key_encrypted),
+  privateKey: conf.private_key_encrypted ? await decryptAuthValue(conf.private_key_encrypted) : undefined,
   callbackUrl: conf.callback_url ?? `${getBaseUrl()}/auth/${meta.identifier}/callback`,
   wantAssertionsSigned: conf.want_assertions_signed,
   wantAuthnResponseSigned: conf.want_authn_response_signed,
@@ -39,12 +38,12 @@ export const createSAMLStrategy = async (logger: AuthenticationProviderLogger, m
   const mapper = createMapper(conf);
 
   const samlLoginCallback: VerifyWithoutRequest = async (profile, done) => {
-    try {
-      if (!profile) {
-        throw ConfigurationError('No profile in SAML response, please verify SAML server configuration');
-      }
-      logger.info('Successfully logged on IdP', { profile });
+    logger.info('Successfully logged on IdP', { profile });
+    if (!profile) {
+      return done(new AuthenticationProviderError('No profile in SAML response'));
+    }
 
+    try {
       const attributes = profile.attributes ?? profile;
       const loginInfo = await mapper(attributes);
       const loginInfoWithMeta = {
@@ -59,7 +58,6 @@ export const createSAMLStrategy = async (logger: AuthenticationProviderLogger, m
       return done(null, user);
     } catch (e) {
       const err = e instanceof Error ? e : Error(String(e));
-      logger.error(err.message, {}, err);
       return done(err);
     }
   };

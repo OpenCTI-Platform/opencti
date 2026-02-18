@@ -77,7 +77,6 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
       return verified(null, user);
     } catch (e) {
       const err = e instanceof Error ? e : Error(String(e));
-      logger.error(err.message, {}, err);
       return verified(err);
     }
   };

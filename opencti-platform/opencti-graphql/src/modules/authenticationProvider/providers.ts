@@ -1,5 +1,5 @@
 import { AuthenticationProviderType } from '../../generated/graphql';
-import { type AuthenticationProviderLogger, createAuthLogger } from './providers-logger';
+import { AuthenticationProviderError, type AuthenticationProviderLogger, createAuthLogger } from './providers-logger';
 import type {
   BasicStoreEntityAuthenticationProvider,
   LdapStoreConfiguration,
@@ -20,7 +20,6 @@ import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { createHeadersLoginHandler } from './provider-headers';
 import { loginFromProvider } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
-import { ForbiddenAccess } from '../../config/errors';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 
 export const CERT_PROVIDER_NAME = 'Cert';
@@ -60,13 +59,13 @@ export interface ProviderAuthInfo {
 
 const context = executionContext('authentication_providers');
 export const handleProviderLogin = async (logger: AuthenticationProviderLogger, info: ProviderAuthInfo) => {
-  logger.info('User info resolved', info);
   if (!info.userMapping.email) {
-    throw Error('No user email found, please verify provider configuration and server response');
+    throw new AuthenticationProviderError('No user email found, please verify provider configuration and server response', info);
   }
+  logger.info('User info resolved', info);
 
   if (!await isEnterpriseEdition(context)) {
-    throw ForbiddenAccess('This authentication strategy is only available with a valid Enterprise Edition license');
+    throw new AuthenticationProviderError('This authentication strategy is only available with a valid Enterprise Edition license');
   }
 
   const user = await loginFromProvider(

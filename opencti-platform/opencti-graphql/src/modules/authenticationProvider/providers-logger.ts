@@ -21,6 +21,14 @@ export interface AuthenticationProviderLogger {
   error: (message: string, meta?: any, err?: any) => void;
 }
 
+export class AuthenticationProviderError extends Error {
+  constructor(message: string, public meta?: any) {
+    super(message);
+    this.name = 'AuthenticationProviderError';
+    this.meta = meta;
+  }
+}
+
 export const createAuthLogger = (type: AuthenticationProviderType | typeof HEADERS_PROVIDER_NAME | typeof CERT_PROVIDER_NAME, identifier: string): AuthenticationProviderLogger => {
   const logPrefix = `[Auth-${type.toUpperCase()}] `;
   return ({
@@ -37,8 +45,11 @@ export const createAuthLogger = (type: AuthenticationProviderType | typeof HEADE
       forgetPromise(redisPushAuthLog({ level: 'warn', type, identifier, message, meta }));
     },
     error: (message, meta = {}, err?) => {
-      logApp.error(`${logPrefix}${message}`, { err, meta: { ...meta, type, identifier } });
-      forgetPromise(redisPushAuthLog({ level: 'error', type, identifier, message, meta }));
+      const isAuthError = err instanceof AuthenticationProviderError;
+      const messageText = isAuthError ? err.message : message;
+      const realMeta = isAuthError ? err.meta : meta;
+      logApp.error(`${logPrefix}${messageText}`, { err: isAuthError ? undefined : err, meta: { ...realMeta, type, identifier } });
+      forgetPromise(redisPushAuthLog({ level: 'error', type, identifier, message: messageText, meta }));
     },
   });
 };
