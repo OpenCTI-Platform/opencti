@@ -120,6 +120,7 @@ input DraftWorkspaceAddInput {
 
 type Mutation {
     draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace @auth(for: [KNOWLEDGE])
+    draftWorkspaceFieldPatch(id: ID!, input: [EditInput!]!): DraftWorkspace @auth(for: [KNOWLEDGE_KNUPDATE])
     draftWorkspaceValidate(id: ID!): Work @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
     draftWorkspaceDelete(id: ID!): ID @auth(for: [KNOWLEDGE])
     draftWorkspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): DraftWorkspace @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])

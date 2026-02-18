@@ -10677,6 +10677,7 @@ type Mutation {
   exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList
   exclusionListDelete(id: ID!): ID
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
+  draftWorkspaceFieldPatch(id: ID!, input: [EditInput!]!): DraftWorkspace
   draftWorkspaceValidate(id: ID!): Work
   draftWorkspaceDelete(id: ID!): ID
   draftWorkspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): DraftWorkspace

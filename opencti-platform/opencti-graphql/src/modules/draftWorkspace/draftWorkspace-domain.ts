@@ -12,6 +12,7 @@ import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HI
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import {
   type DraftWorkspaceAddInput,
+  type EditInput,
   FilterMode,
   FilterOperator,
   type MemberAccessInput,
@@ -230,6 +231,23 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
   });
 
   return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].ADDED_TOPIC, createdDraftWorkspace, user);
+};
+
+export const draftWorkspaceEditField = async (context: AuthContext, user: AuthUser, draftId: string, input: EditInput[]) => {
+  const draft = await findById(context, user, draftId);
+  if (!draft) {
+    throw FunctionalError(`Draft ${draftId} cannot be found`);
+  }
+  const { element } = await updateAttribute(context, user, draftId, ENTITY_TYPE_DRAFT_WORKSPACE, input);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for draft \`${element.name}\``,
+    context_data: { id: draftId, entity_type: ENTITY_TYPE_DRAFT_WORKSPACE, input },
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].EDIT_TOPIC, element, user);
 };
 
 export const draftWorkspaceEditAuthorizedMembers = async (
