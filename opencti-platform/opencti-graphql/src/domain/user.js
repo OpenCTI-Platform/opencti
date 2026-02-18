@@ -1484,7 +1484,7 @@ export const sessionLogin = async (context, input) => {
         if (err || info) {
           const authLogger = passport._strategy(auth.provider).logger;
           if (authLogger) {
-            authLogger.error('Authentication error', { message: err.message }, err);
+            authLogger.error('Authentication error', { message: err?.message }, err);
           } else {
             logApp.warn('Token authenticate error', { cause: err, info, provider: auth.provider });
           }
