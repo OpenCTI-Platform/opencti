@@ -126,6 +126,7 @@ export const registerStrategy = async (authenticationProvider: BasicStoreEntityA
         logger.error('Provider type is not supported, skipping');
         return;
       }
+      Object.assign(created.strategy, { logger });
       registerAuthenticationProvider(
         meta.identifier,
         created.strategy,

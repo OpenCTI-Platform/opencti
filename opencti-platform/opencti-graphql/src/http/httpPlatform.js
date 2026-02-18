@@ -418,24 +418,24 @@ const createApp = async (app, schema) => {
       const strategy = passport._strategy(provider);
       const referer = extractRefererPathFromReq(req);
 
-      if (strategy._saml) {
-        // For SAML, no session is required, referer will be send back through RelayState
-        return passport.authenticate(
-          provider,
-          { additionalParams: { RelayState: referer } },
-          (err) => {
-            setCookieError(res, err?.message);
-            next(err);
-          },
-        )(req, res, next);
+      const isSaml = strategy._saml;
+
+      if (!isSaml) {
+        // For openid / oauth, session is required so we can use it
+        req.session.referer = referer;
       }
 
-      // For openid / oauth, session is required so we can use it
-      req.session.referer = referer;
+      // For SAML, no session is required, referer will be send back through RelayState
       return passport.authenticate(
         provider,
-        {},
+        isSaml ? { additionalParams: { RelayState: referer } } : {},
         (err) => {
+          if (err) {
+            const authLogger = strategy.logger;
+            if (authLogger) {
+              authLogger.error('Error auth provider callback', { message: err.message }, err);
+            }
+          }
           setCookieError(res, err?.message);
           next(err);
         },
@@ -452,23 +452,32 @@ const createApp = async (app, schema) => {
   const urlencodedParser = AUTH_PAYLOAD_BODY_SIZE ? bodyParser.urlencoded({ extended: true, limit: AUTH_PAYLOAD_BODY_SIZE }) : bodyParser.urlencoded({ extended: true });
   app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, async (req, res, next) => {
     const { provider } = req.params;
+    const strategy = passport._strategy(provider);
 
     const callbackLogin = () => new Promise((accept, reject) => {
-      passport.authenticate(provider, {}, (err, user) => {
-        if (err || !user) {
-          reject(err);
-        } else {
-          accept(user);
-        }
-      })(req, res, next);
+      passport.authenticate(
+        provider,
+        {},
+        (err, user) => {
+          if (err || !user) {
+            const authLogger = strategy.logger;
+            if (authLogger) {
+              authLogger.error('Error auth provider callback', { message: e.message }, e);
+            } else {
+              logApp.error('Error auth provider callback', { cause: e, provider });
+            }
+            reject(err);
+          } else {
+            accept(user);
+          }
+        })(req, res, next);
     });
 
     try {
       const context = executionContext(`${provider}_strategy`);
       const logged = await callbackLogin();
       await sessionAuthenticateUser(context, req, logged, provider);
-    } catch (e) {
-      logApp.error('Error auth provider callback', { cause: e, provider });
+    } catch {
       setCookieError(res, 'Invalid authentication, please ask your administrator');
     } finally {
       const referer = req.body?.RelayState ?? req.session.referer;

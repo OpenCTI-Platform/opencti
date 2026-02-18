@@ -1482,7 +1482,12 @@ export const sessionLogin = async (context, input) => {
     const { user, provider } = await new Promise((resolve) => {
       passport.authenticate(auth.provider, {}, (err, authUser, info) => {
         if (err || info) {
-          logApp.warn('Token authenticate error', { cause: err, info, provider: auth.provider });
+          const authLogger = passport._strategy(auth.provider).logger;
+          if (authLogger) {
+            authLogger.error('Authentication error', { message: err.message }, err);
+          } else {
+            logApp.warn('Token authenticate error', { cause: err, info, provider: auth.provider });
+          }
         }
         resolve({ user: authUser, provider: auth.provider });
       })({ body });
