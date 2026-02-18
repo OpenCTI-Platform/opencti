@@ -24,8 +24,6 @@ import SecurityCoverageDeletion from './SecurityCoverageDeletion';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Button from '@mui/material/Button';
 import { OaevLogo } from '../../../../static/images/logo_oaev';
-import { useTheme } from '@mui/styles';
-import { Theme } from '@mui/material/styles/createTheme';
 import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 import { RootSecurityCoverageSubscription } from '@components/analyses/security_coverages/__generated__/RootSecurityCoverageSubscription.graphql';
 
@@ -76,7 +74,6 @@ type RootSecurityCoverageProps = {
 
 const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCoverageProps) => {
   const location = useLocation();
-  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const {
     securityCoverage,
@@ -165,7 +162,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                 <Button
                   disabled={!hasExternalUri}
                   style={{ marginBottom: 8 }}
-                  startIcon={<OaevLogo /> }
+                  startIcon={<OaevLogo />}
                   variant="outlined"
                   onClick={() => setDisplayExternalLink(true)}
                   title={hasExternalUri ? securityCoverage.external_uri : undefined}
