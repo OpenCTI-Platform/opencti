@@ -46,7 +46,7 @@ describe('Workflow Conditions Resolver', () => {
         from: 'open',
         to: 'step1',
         event: 'named_condition_event',
-        conditions: [{ type: 'is-admin' }],
+        conditions: [{ type: 'isAdmin' }],
       },
       {
         from: 'step1',
@@ -59,7 +59,7 @@ describe('Workflow Conditions Resolver', () => {
         to: 'done',
         event: 'mixed_conditions_event',
         conditions: [
-          { type: 'is-admin' },
+          { type: 'isAdmin' },
           { field: 'entity.name', operator: 'contains', value: 'Conditions' },
         ],
       },
@@ -86,7 +86,7 @@ describe('Workflow Conditions Resolver', () => {
     });
   });
 
-  it('should pass named condition (is-admin)', async () => {
+  it('should pass named condition (isAdmin)', async () => {
     const result = await adminQuery({
       query: TRIGGER_WORKFLOW_EVENT_MUTATION,
       variables: {
