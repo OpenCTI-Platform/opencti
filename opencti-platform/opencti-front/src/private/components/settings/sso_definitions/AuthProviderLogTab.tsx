@@ -10,7 +10,11 @@ import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import { useTheme } from '@mui/styles';
 import { CheckCircleOutlined, ErrorOutlined, InfoOutlined, WarningAmberOutlined, ContentCopyOutlined, OpenInNewOutlined } from '@mui/icons-material';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { a11yDark, coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import type { Theme } from '../../../../components/Theme';
 import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../../components/i18n';
 import ButtonCommon from '@common/button/Button';
@@ -78,6 +82,7 @@ const detailsPreview = (meta: unknown): string => {
 
 const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const [detailsOpen, setDetailsOpen] = useState<{ index: number; entry: AuthLogEntryShape } | null>(null);
 
   const handleCopyDetails = () => {
@@ -200,22 +205,21 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory 
       >
         {detailsOpen !== null && detailsOpen.entry.meta != null && (
           <>
-            <Box
-              component="pre"
-              sx={{
-                m: 0,
-                p: 2,
-                fontSize: '0.8125rem',
-                overflow: 'auto',
-                maxHeight: '70vh',
-                fontFamily: 'monospace',
-                backgroundColor: 'action.hover',
-                borderRadius: 1,
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
-              }}
-            >
-              {JSON.stringify(detailsOpen.entry.meta, null, 2)}
+            <Box sx={{ borderRadius: 1, overflow: 'hidden', '& pre': { margin: 0 } }}>
+              <SyntaxHighlighter
+                language="json"
+                style={theme.palette.mode === 'dark' ? a11yDark : coy}
+                customStyle={{
+                  margin: 0,
+                  padding: 16,
+                  fontSize: '0.8125rem',
+                  maxHeight: '70vh',
+                  borderRadius: 4,
+                }}
+                showLineNumbers={false}
+              >
+                {JSON.stringify(detailsOpen.entry.meta, null, 2)}
+              </SyntaxHighlighter>
             </Box>
             <DialogActions sx={{ px: 0, pt: 2 }}>
               <Button
