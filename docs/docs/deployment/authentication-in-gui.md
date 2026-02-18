@@ -8,7 +8,7 @@ All the configurations listed below require an Enterprise Edition to work, excep
 
 ## Supported Strategies
 
-Under the hood, we technically use the strategies provided by [PassportJS](http://www.passportjs.org/). We integrate a subset of the strategies available with passport. If you need more, we can integrate other strategies.
+Under the hood, we technically use the strategies provided by [PassportJS](http://www.passportjs.org/). We integrate a subset of the strategies available with passport. If you need more, we can integrate other strategies.
 
 Via UI, you can configure the following stategies  
 
