@@ -70,13 +70,73 @@ const TIMESTAMP_WIDTH = '11.5rem';
 const LEVEL_WIDTH = '8rem';
 const DETAILS_PREVIEW_MAX_LEN = 56;
 
-const detailsPreview = (meta: unknown): string => {
-  try {
-    const raw = JSON.stringify(meta);
-    if (raw.length <= DETAILS_PREVIEW_MAX_LEN) return raw;
-    return `${raw.slice(0, DETAILS_PREVIEW_MAX_LEN)}…`;
-  } catch {
-    return '—';
+type JsonTokenType = 'punctuation' | 'key' | 'string' | 'number' | 'keyword';
+type Segment = { type: JsonTokenType; value: string };
+
+const serializeToColoredSegments = (value: unknown, maxChars: number): { segments: Segment[]; truncated: boolean } => {
+  const segments: Segment[] = [];
+  let len = 0;
+  let truncated = false;
+
+  const add = (type: JsonTokenType, raw: string): void => {
+    truncated ||= (len + raw.length) > maxChars;
+    const take = Math.min(raw.length, maxChars - len);
+    if (take > 0) {
+      segments.push({ type, value: raw.slice(0, take) });
+      len += take;
+    }
+  };
+
+  const serialize = (val: unknown): void => {
+    if (val === null) {
+      add('keyword', 'null');
+    } else if (typeof val === 'boolean') {
+      add('keyword', val ? 'true' : 'false');
+    } else if (typeof val === 'number') {
+      add('number', Number.isFinite(val) ? String(val) : 'null');
+    } else if (Array.isArray(val)) {
+      add('punctuation', '[');
+      for (let i = 0; i < val.length && len < maxChars; i++) {
+        if (i > 0) add('punctuation', ',');
+        serialize(val[i]);
+      }
+      if (len < maxChars) add('punctuation', ']');
+    } else if (typeof val === 'object') {
+      add('punctuation', '{');
+      const entries = Object.entries(val);
+      for (let i = 0; i < entries.length && len < maxChars; i++) {
+        if (i > 0) add('punctuation', ',');
+        const [k, v] = entries[i];
+        add('key', JSON.stringify(k));
+        add('punctuation', ':');
+        serialize(v);
+      }
+      if (len < maxChars) add('punctuation', '}');
+    } else {
+      add('string', JSON.stringify(String(val)));
+    }
+  };
+  serialize(value);
+
+  return { segments, truncated };
+};
+
+// Align preview colors with Prism themes used in the details panel (a11yDark / coy)
+const jsonTokenColor = (type: JsonTokenType, theme: Theme): string => {
+  const isDark = theme.palette.mode === 'dark';
+  switch (type) {
+    case 'punctuation':
+      return isDark ? '#fefefe' : '#5F6364'; // a11yDark / coy
+    case 'key':
+      return isDark ? '#ffa07a' : '#c92c2c'; // property
+    case 'string':
+      return isDark ? '#abe338' : '#2f9c0a'; // string
+    case 'number':
+      return isDark ? '#00e0e0' : '#c92c2c'; // number
+    case 'keyword':
+      return isDark ? '#00e0e0' : '#1990b8'; // boolean, keyword (true/false/null)
+    default:
+      return theme.palette.text?.primary ?? '#000';
   }
 };
 
@@ -166,13 +226,40 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory 
                             whiteSpace: 'nowrap',
                             fontSize: '0.75rem',
                             fontFamily: 'monospace',
-                            color: 'text.secondary',
                             cursor: 'pointer',
                             '&:hover': { textDecoration: 'underline' },
                           }}
-                          title={detailsPreview(entry.meta)}
+                          title={(() => {
+                            try {
+                              const raw = JSON.stringify(entry.meta);
+                              return raw.length > DETAILS_PREVIEW_MAX_LEN ? `${raw.slice(0, DETAILS_PREVIEW_MAX_LEN)}…` : raw;
+                            } catch {
+                              return '—';
+                            }
+                          })()}
                         >
-                          {detailsPreview(entry.meta)}
+                          {(() => {
+                            const { segments, truncated } = serializeToColoredSegments(entry.meta, DETAILS_PREVIEW_MAX_LEN);
+                            if (segments.length === 0) return '—';
+                            return (
+                              <>
+                                {segments.map((seg, i) => (
+                                  <Box
+                                    key={i}
+                                    component="span"
+                                    sx={{ color: jsonTokenColor(seg.type, theme) }}
+                                  >
+                                    {seg.value}
+                                  </Box>
+                                ))}
+                                {truncated && (
+                                  <Box component="span" sx={{ color: 'text.secondary' }}>
+                                    …
+                                  </Box>
+                                )}
+                              </>
+                            );
+                          })()}
                         </Box>
                         <Tooltip title={t_i18n('View full details')}>
                           <IconButton
