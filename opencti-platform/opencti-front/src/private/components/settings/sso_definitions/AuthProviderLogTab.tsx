@@ -184,7 +184,7 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ name, authLogHi
                     <Tag
                       label={entry.level}
                       color={levelTagColor(entry.level, theme)}
-                      labelTextTransform="none"
+                      labelTextTransform="uppercase"
                     />
                   </TableCell>
                   <TableCell sx={{ maxWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -339,7 +339,7 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ name, authLogHi
                 <Tag
                   label={detailsOpen.entry.level}
                   color={levelTagColor(detailsOpen.entry.level, theme)}
-                  labelTextTransform="none"
+                  labelTextTransform="uppercase"
                 />
               </Box>
             </Box>
