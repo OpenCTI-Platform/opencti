@@ -2,7 +2,7 @@ import { renderToString } from 'react-dom/server';
 import { compiler } from 'markdown-to-jsx';
 import htmlToPdfmake from 'html-to-pdfmake';
 import pdfMake from 'pdfmake/build/pdfmake';
-import { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
+import { Content, ImageDefinition, TDocumentDefinitions } from 'pdfmake/interfaces';
 import { FintelDesign } from '@components/common/form/FintelDesignField';
 import { APP_BASE_PATH, fileUri } from '../../relay/environment';
 import { capitalizeWords } from '../String';
@@ -63,6 +63,40 @@ export const htmlToPdf = (fileName: string, content: string) => {
 };
 
 /**
+ * Part to handle the embedded images of a file
+ */
+const normalizeEntityBaseUrl = (url: string) =>
+  url
+    .replace(/\/content\/?$/, '')
+    .replace(/\/$/, '');
+
+const entityBaseUrl = `${window.location.origin}${window.location.pathname}`.replace(/\/$/, '');
+const resolvedEntityBaseUrl = normalizeEntityBaseUrl(entityBaseUrl);
+
+export const resolvePdfMakeEmbeddedImages = async (
+  images: TDocumentDefinitions['images'],
+  resolvedEntityBaseUrl: string,
+): Promise<Record<string, string | ImageDefinition>> => {
+  if (!images) return {};
+
+  const entries = await Promise.all(
+    Object.entries(images).map(async ([key, value]) => {
+      const strValue = typeof value === 'string' ? value : null;
+      if (!strValue?.startsWith('embedded/')) return [key, value] as const;
+
+      const fileName = strValue.slice('embedded/'.length);
+      const url = `${resolvedEntityBaseUrl}/embedded/${encodeURIComponent(fileName)}`;
+
+      const img = await getBase64ImageFromURL(url);
+      const resolved = img.startsWith('data:') ? img : `data:image/png;base64,${img}`;
+      return [key, resolved] as const;
+    }),
+  );
+
+  return Object.fromEntries(entries);
+};
+
+/**
  * Transform html file into a PDF that can be downloaded.
  * /!\ Used for outcome templates reports.
  *
@@ -119,6 +153,13 @@ export const htmlToPdfReport = async (
     },
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
 
+  const resolvedImages = entityBaseUrl && pdfMakeObject.images
+    ? await resolvePdfMakeEmbeddedImages(
+        pdfMakeObject.images,
+        resolvedEntityBaseUrl,
+      )
+    : pdfMakeObject.images;
+
   const linearGradiant = [
     fintelDesign?.gradiantFromColor || DARK,
     fintelDesign?.gradiantToColor || DARK_BLUE,
@@ -139,6 +180,7 @@ export const htmlToPdfReport = async (
       fontSize: 12,
     },
     ...pdfMakeObject,
+    images: resolvedImages,
     content: [
       {
         columns: [
