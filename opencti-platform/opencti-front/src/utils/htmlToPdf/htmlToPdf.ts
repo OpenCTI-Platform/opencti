@@ -73,27 +73,27 @@ const normalizeEntityBaseUrl = (url: string) =>
 const entityBaseUrl = `${window.location.origin}${window.location.pathname}`.replace(/\/$/, '');
 const resolvedEntityBaseUrl = normalizeEntityBaseUrl(entityBaseUrl);
 
-const resolvePdfMakeEmbeddedImages = async (
-  pdfMakeObject: TDocumentDefinitions, resolvedEntityBaseUrl: string,
-) => {
-  if (!pdfMakeObject.images) return;
+export const resolvePdfMakeEmbeddedImages = async (
+  images: TDocumentDefinitions['images'],
+  resolvedEntityBaseUrl: string,
+): Promise<Record<string, string | ImageDefinition>> => {
+  if (!images) return {};
 
-  const refs = pdfMakeObject.images as unknown as Record<string, string>;
-  const resolved: Record<string, string | ImageDefinition> | undefined = { ...refs };
+  const entries = await Promise.all(
+    Object.entries(images).map(async ([key, value]) => {
+      const strValue = typeof value === 'string' ? value : null;
+      if (!strValue?.startsWith('embedded/')) return [key, value] as const;
 
-  await Promise.all(
-    Object.entries(refs).map(async ([key, value]) => {
-      if (!value.startsWith('embedded/')) return;
-
-      const fileName = value.slice('embedded/'.length);
+      const fileName = strValue.slice('embedded/'.length);
       const url = `${resolvedEntityBaseUrl}/embedded/${encodeURIComponent(fileName)}`;
 
       const img = await getBase64ImageFromURL(url);
-      resolved[key] = img.startsWith('data:') ? img : `data:image/png;base64,${img}`;
+      const resolved = img.startsWith('data:') ? img : `data:image/png;base64,${img}`;
+      return [key, resolved] as const;
     }),
   );
 
-  pdfMakeObject.images = resolved;
+  return Object.fromEntries(entries);
 };
 
 /**
@@ -153,9 +153,12 @@ export const htmlToPdfReport = async (
     },
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
 
-  if (entityBaseUrl) {
-    await resolvePdfMakeEmbeddedImages(pdfMakeObject, resolvedEntityBaseUrl);
-  }
+  const resolvedImages = entityBaseUrl && pdfMakeObject.images
+    ? await resolvePdfMakeEmbeddedImages(
+        pdfMakeObject.images,
+        resolvedEntityBaseUrl,
+      )
+    : pdfMakeObject.images;
 
   const linearGradiant = [
     fintelDesign?.gradiantFromColor || DARK,
@@ -177,7 +180,7 @@ export const htmlToPdfReport = async (
       fontSize: 12,
     },
     ...pdfMakeObject,
-    images: pdfMakeObject.images,
+    images: resolvedImages,
     content: [
       {
         columns: [
