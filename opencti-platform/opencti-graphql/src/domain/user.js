@@ -1509,7 +1509,7 @@ export const sessionLogin = async (context, input) => {
         resolve({ user: authUser, provider: LOCAL_STRATEGY_IDENTIFIER });
       })({ body });
     });
-    if (settings.local_auth?.enabled || user.id === OPENCTI_ADMIN_UUID) {
+    if (user && (settings.local_auth?.enabled || user.id === OPENCTI_ADMIN_UUID)) {
       loggedUser = await sessionAuthenticateUser(context, context.req, user, provider);
     }
   }
