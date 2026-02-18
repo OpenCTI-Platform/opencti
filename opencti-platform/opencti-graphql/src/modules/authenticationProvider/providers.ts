@@ -12,7 +12,7 @@ import { createSAMLStrategy } from './provider-saml';
 import { createLDAPStrategy } from './provider-ldap';
 import { GraphQLError } from 'graphql/index';
 import { createOpenIdStrategy } from './provider-oidc';
-import { AuthType, EnvStrategyType, HEADERS_STRATEGY_IDENTIFIER, isAuthenticationForcedFromEnv, type ProviderConfiguration } from './providers-configuration';
+import { AuthType, EnvStrategyType, HEADERS_STRATEGY_IDENTIFIER, isAuthenticationForcedFromEnv, type ProviderConfiguration, PROVIDERS } from './providers-configuration';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { findAllAuthenticationProvider, resolveProviderIdentifier } from './authenticationProvider-domain';
 import { registerLocalStrategy } from './provider-local';
@@ -92,7 +92,9 @@ export const refreshStrategy = async (authenticationStrategy: BasicStoreEntityAu
 };
 
 export const unregisterStrategy = async (authenticationStrategy: BasicStoreEntityAuthenticationProvider) => {
-  const identifier = resolveProviderIdentifier(authenticationStrategy);
+  // when changing a provider identifier, we need to find the old identifier value in order to unregister it correctly
+  const identifierFromProviders = PROVIDERS.find((p) => p.internal_id === authenticationStrategy.internal_id)?.provider;
+  const identifier = identifierFromProviders ?? resolveProviderIdentifier(authenticationStrategy);
   unregisterAuthenticationProvider(identifier);
 };
 
@@ -130,6 +132,7 @@ export const registerStrategy = async (authenticationProvider: BasicStoreEntityA
         meta.identifier,
         created.strategy,
         {
+          internal_id: authenticationProvider.internal_id,
           name: meta.name,
           type: created.auth_type,
           strategy: authenticationProvider.type,

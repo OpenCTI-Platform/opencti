@@ -56,6 +56,7 @@ export interface ProviderConfiguration {
   reqLoginHandler?: (req: any) => Promise<unknown>;
   logout_uri?: string;
   logout_remote?: boolean;
+  internal_id?: string;
 }
 export const PROVIDERS: ProviderConfiguration[] = [];
 
