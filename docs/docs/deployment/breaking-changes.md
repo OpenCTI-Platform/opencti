@@ -65,6 +65,9 @@ All existing tokens are automatically migrated to the new system.
     - `MeUser.api_token` → `MeUser.api_tokens`
     - `token_renew()` method removed, replaced by `create_token()` / `remove_token()`
 
+#### Python 3.9 not supported anymore
+Please review any script that may use some functionalities available in this version .
+
 ## OpenCTI 6.5
 
 ### Deprecation
