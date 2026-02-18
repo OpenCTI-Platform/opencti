@@ -183,7 +183,12 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory 
             </TableHead>
             <TableBody>
               {authLogHistory.map((entry, index) => (
-                <TableRow key={`${entry.timestamp}-${index}`} hover>
+                <TableRow
+                  key={`${entry.timestamp}-${index}`}
+                  hover
+                  onClick={() => setDetailsOpen({ index, entry })}
+                  sx={{ cursor: 'pointer' }}
+                >
                   <TableCell sx={{ whiteSpace: 'nowrap', width: TIMESTAMP_WIDTH, minWidth: TIMESTAMP_WIDTH, fontFamily: 'monospace', fontSize: '0.8125rem' }}>
                     {formatTimestamp(entry.timestamp)}
                   </TableCell>
@@ -264,7 +269,10 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory 
                         <Tooltip title={t_i18n('View full details')}>
                           <IconButton
                             size="small"
-                            onClick={() => setDetailsOpen({ index, entry })}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDetailsOpen({ index, entry });
+                            }}
                             sx={{ flexShrink: 0, padding: 0.25 }}
                             aria-label={t_i18n('View full details')}
                           >
