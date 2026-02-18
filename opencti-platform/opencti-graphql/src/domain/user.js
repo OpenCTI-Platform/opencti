@@ -1474,6 +1474,8 @@ export const otpUserDeactivation = async (context, user, id) => {
 export const sessionLogin = async (context, input) => {
   // We need to iterate on each provider to find one that validated the credentials
   let loggedUser;
+  // don't send error immediately until all providers have failed
+  const deferredErrors = [];
   // Try registered providers first
   const body = { username: input.email, password: input.password };
   const formProviders = R.filter((p) => p.type === 'FORM', PROVIDERS);
@@ -1484,7 +1486,7 @@ export const sessionLogin = async (context, input) => {
         if (err || info) {
           const authLogger = passport._strategy(auth.provider).logger;
           if (authLogger) {
-            authLogger.error('Authentication error', {}, err);
+            deferredErrors.push(authLogger.deferError('Authentication error', { info }, err));
           } else {
             logApp.warn('Token authenticate error', { cause: err, info, provider: auth.provider });
           }
@@ -1515,6 +1517,8 @@ export const sessionLogin = async (context, input) => {
   }
   if (loggedUser) {
     return loggedUser.api_token;
+  } else {
+    deferredErrors.forEach((d) => d());
   }
   const auditUser = userWithOrigin(context.req, { user_email: input.email });
   await publishUserAction({

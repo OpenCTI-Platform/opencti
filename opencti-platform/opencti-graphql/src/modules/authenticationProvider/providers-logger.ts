@@ -19,6 +19,7 @@ export interface AuthenticationProviderLogger {
   info: (message: string, meta?: any) => void;
   warn: (message: string, meta?: any) => void;
   error: (message: string, meta?: any, err?: any) => void;
+  deferError: (message: string, meta?: any, err?: any) => () => void;
 }
 
 export class AuthenticationProviderError extends Error {
@@ -32,6 +33,15 @@ export class AuthenticationProviderError extends Error {
 
 export const createAuthLogger = (type: AuthenticationProviderType | typeof HEADERS_PROVIDER_NAME | typeof CERT_PROVIDER_NAME, identifier: string): AuthenticationProviderLogger => {
   const logPrefix = `[Auth-${type.toUpperCase()}] `;
+  const doLogError = (message: string, meta: any, err?: any) => {
+    const isAuthError = err instanceof AuthenticationProviderError;
+    const messageText = isAuthError ? err.message : message;
+    const realMeta = {
+      ...(isAuthError ? err.meta : meta),
+      ...(err && !isAuthError ? { message: err.message } : {}),
+    };
+    forgetPromise(redisPushAuthLog({ level: 'error', type, identifier, message: messageText, meta: realMeta }));
+  };
   return ({
     success: (message, meta = {}) => {
       logApp.info(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } });
@@ -46,14 +56,12 @@ export const createAuthLogger = (type: AuthenticationProviderType | typeof HEADE
       forgetPromise(redisPushAuthLog({ level: 'warn', type, identifier, message, meta }));
     },
     error: (message, meta = {}, err?) => {
-      const isAuthError = err instanceof AuthenticationProviderError;
-      const messageText = isAuthError ? err.message : message;
-      const realMeta = {
-        ...(isAuthError ? err.meta : meta),
-        ...(err && !isAuthError ? { message: err.message } : {}),
-      };
-      logApp.error(`${logPrefix}${messageText}`, { err: isAuthError ? undefined : err, meta: { ...realMeta, type, identifier } });
-      forgetPromise(redisPushAuthLog({ level: 'error', type, identifier, message: messageText, meta: realMeta }));
+      logApp.error(`${logPrefix}${message}`, { err, meta: { ...meta, type, identifier } });
+      doLogError(message, meta, err);
+    },
+    deferError: (message, meta = {}, err?) => {
+      logApp.error(`${logPrefix}${message}`, { err, meta: { ...meta, type, identifier } });
+      return () => doLogError(message, meta, err);
     },
   });
 };
