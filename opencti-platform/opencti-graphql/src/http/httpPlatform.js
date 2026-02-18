@@ -403,6 +403,8 @@ const createApp = async (app, schema) => {
             res.redirect(referer);
           }
         });
+      } else {
+        res.redirect(referer);
       }
     } catch (e) {
       setCookieError(res, e.message);
