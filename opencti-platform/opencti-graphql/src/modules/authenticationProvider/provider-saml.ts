@@ -44,8 +44,7 @@ export const createSAMLStrategy = async (logger: AuthenticationProviderLogger, m
     }
 
     try {
-      const attributes = profile.attributes ?? profile;
-      const loginInfo = await mapper(attributes);
+      const loginInfo = await mapper(profile);
       const loginInfoWithMeta = {
         ...loginInfo,
         userMapping: {

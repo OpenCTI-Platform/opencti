@@ -22,7 +22,8 @@ export interface AuthenticationProviderLogger {
 }
 
 export class AuthenticationProviderError extends Error {
-  constructor(message: string, public meta?: any) {
+  public readonly meta: any;
+  constructor(message: string, meta?: any) {
     super(message);
     this.name = 'AuthenticationProviderError';
     this.meta = meta;
@@ -49,7 +50,7 @@ export const createAuthLogger = (type: AuthenticationProviderType | typeof HEADE
       const messageText = isAuthError ? err.message : message;
       const realMeta = isAuthError ? err.meta : meta;
       logApp.error(`${logPrefix}${messageText}`, { err: isAuthError ? undefined : err, meta: { ...realMeta, type, identifier } });
-      forgetPromise(redisPushAuthLog({ level: 'error', type, identifier, message: messageText, meta }));
+      forgetPromise(redisPushAuthLog({ level: 'error', type, identifier, message: messageText, meta: realMeta }));
     },
   });
 };
