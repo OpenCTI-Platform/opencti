@@ -3,9 +3,25 @@ import * as R from 'ramda';
 import { pushAll } from '../../utils/arrayUtil';
 import type { ProviderAuthInfo } from './providers';
 
-export const resolvePath = ([name, ...rest]: string[]) => async <T>(obj: unknown): Promise<T | undefined> => {
-  const { [name]: value } = (obj ?? {}) as { [key: string]: unknown };
-  if (value === undefined || obj === null) {
+export const resolvePath = (path: string[]) => async (obj: unknown): Promise<any | undefined> => {
+  if (obj === undefined || obj === null) {
+    return undefined;
+  }
+
+  if (Array.isArray(obj)) {
+    const results: any[] = [];
+    for await (const v of obj) {
+      const resolved = await resolvePath(path)(v);
+      if (resolved !== undefined && resolved !== null) {
+        results.push(resolved);
+      }
+    }
+    return results;
+  }
+
+  const [name, ...rest] = path;
+  const { [name]: value } = obj as { [key: string]: unknown };
+  if (value === undefined || value === null) {
     return undefined;
   }
 
@@ -14,7 +30,7 @@ export const resolvePath = ([name, ...rest]: string[]) => async <T>(obj: unknown
   const [remaining, argValue] = functionHasArgs ? [rest.slice(1), rest[0]] : [rest];
   const resolvedValue = isFunction ? await value(argValue) : value;
   if (remaining.length === 0) {
-    return resolvedValue;
+    return resolvedValue ?? undefined; // normalize null to undefined for consistency
   }
 
   return resolvePath(remaining)(resolvedValue);
@@ -62,7 +78,8 @@ const extractSplitMapAndDeduplicate = async (
         (Array.isArray(resolved) ? resolved : [resolved])
           .map((g) => splitter ? g.split(splitter) : [g])
           .flat()
-          .map((s) => s.trim()),
+          .map((s) => s?.trim())
+          .filter(Boolean),
       );
     }
   }

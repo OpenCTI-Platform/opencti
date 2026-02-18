@@ -96,5 +96,78 @@ describe('mappings-utils', () => {
       const result = await resolvePath(['foo'])(obj);
       expect(result).toBe('bar-undefined');
     });
+
+    describe('array support', () => {
+      it('should resolve array at leaf and return array of values', async () => {
+        const obj = { items: [1, 2, 3] };
+        const result = await resolvePath(['items'])(obj);
+        expect(result).toEqual([1, 2, 3]);
+      });
+
+      it('should resolve path through array and return array of nested values', async () => {
+        const obj = {
+          list: [
+            { name: 'a' },
+            { name: 'b' },
+            { name: 'c' },
+          ],
+        };
+        const result = await resolvePath(['list', 'name'])(obj);
+        expect(result).toEqual(['a', 'b', 'c']);
+      });
+
+      it('should return empty array when array is empty', async () => {
+        const obj = { items: [] };
+        const result = await resolvePath(['items'])(obj);
+        expect(result).toEqual([]);
+      });
+
+      it('should resolve path through array of objects with deeper nesting', async () => {
+        const obj = {
+          groups: [
+            { meta: { id: 'g1' } },
+            { meta: { id: 'g2' } },
+          ],
+        };
+        const result = await resolvePath(['groups', 'meta', 'id'])(obj);
+        expect(result).toEqual(['g1', 'g2']);
+      });
+
+      it('should not include undefined for array elements missing the remaining path', async () => {
+        const obj = {
+          list: [
+            { name: 'a' },
+            {},
+            { name: 'c' },
+          ],
+        };
+        const result = await resolvePath(['list', 'name'])(obj);
+        expect(result).toEqual(['a', 'c']);
+      });
+
+      it('should handle array at root object and resolve path on each element', async () => {
+        const rootArray = [
+          { name: 'a' },
+          { name: 'b' },
+          { name: 'c' },
+        ];
+        const result = await resolvePath(['name'])(rootArray);
+        expect(result).toEqual(['a', 'b', 'c']);
+      });
+
+      it('should handle empty array at root object', async () => {
+        const result = await resolvePath(['name'])([]);
+        expect(result).toEqual([]);
+      });
+
+      it('should handle array at root with nested path', async () => {
+        const rootArray = [
+          { meta: { id: 'id1' } },
+          { meta: { id: 'id2' } },
+        ];
+        const result = await resolvePath(['meta', 'id'])(rootArray);
+        expect(result).toEqual(['id1', 'id2']);
+      });
+    });
   });
 });
