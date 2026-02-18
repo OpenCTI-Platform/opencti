@@ -5,6 +5,7 @@ import { AuthType } from './providers-configuration';
 import LdapStrategy, { type VerifyCallback, type VerifyDoneCallback } from 'passport-ldapauth';
 import { createMapper } from './mappings-utils';
 import { handleProviderLogin } from './providers';
+import { REDACTED_INFORMATION } from '../../database/utils';
 
 const createLdapOptions = async (conf: LdapStoreConfiguration): Promise<LdapStrategy.Options> => ({
   server: {
@@ -32,7 +33,15 @@ export const createLDAPStrategy = async (logger: AuthenticationProviderLogger, _
 
   const ldapLoginCallback: VerifyCallback = async (user: any, done: VerifyDoneCallback) => {
     try {
-      logger.info('Successfully logged on IdP', { user });
+      const userRedacted = Object.fromEntries(
+        Object.entries(user).map(([key, value]) => {
+          if (key === ldapOptions.passwordField || key.toLowerCase().includes('password')) {
+            return [key, REDACTED_INFORMATION];
+          }
+          return [key, value];
+        }),
+      );
+      logger.info('Successfully logged on IdP', { user: userRedacted });
       const providerLoginInfo = await mapper(user, user._groups, user);
       const loggedUser = await handleProviderLogin(logger, providerLoginInfo);
       return done(null, loggedUser);
