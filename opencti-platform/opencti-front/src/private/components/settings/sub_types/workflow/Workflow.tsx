@@ -1,195 +1,106 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import ReactFlow, { addEdge, Connection, Edge, MarkerType, Node, NodeMouseHandler, Panel, useEdgesState, useNodesState, useReactFlow } from 'reactflow';
+import { useCallback, useEffect, useState } from 'react';
+import ReactFlow, { Edge, EdgeMouseHandler, Node, NodeMouseHandler, Panel, useEdgesState, useNodesState, useReactFlow } from 'reactflow';
 // @ts-expect-error ts-migrate(7016) FIXME: Could not find a declaration file for module 'reac... Remove this comment to see the full error message
 import 'reactflow/dist/style.css';
-import { useTheme } from '@mui/styles';
-import type { Theme } from '../../../../../components/Theme';
 import WorkflowEditionDrawer from './WorkflowEditionDrawer';
 import useWorkflowLayout, { LayoutOptions } from './hooks/useWorkflowLayout';
 import nodeTypes from './NodeTypes';
 import edgeTypes from './EdgeTypes';
-import { addStatus } from './hooks/useAddStatus';
 import Button from '@common/button/Button';
 import { SaveOutlined } from '@mui/icons-material';
-import { colorPalette, transformToWorkflowDefinition } from './utils';
+import { transformToWorkflowDefinition } from './utils';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { workflowDefinitionQuery } from '../SubTypeWorkflow';
+import { SubTypeWorkflowDefinitionQuery } from '../__generated__/SubTypeWorkflowDefinitionQuery.graphql';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { useFormatter } from '../../../../../components/i18n';
+import { WorkflowDefinitionMutation } from './__generated__/WorkflowDefinitionMutation.graphql';
+import { useWorkflowInitialElements } from './hooks/useWorkflowInitialElements';
+import { usePlaceholdersSync } from './hooks/usePlaceholdersSync';
+import { useStatusConnection } from './hooks/useStatusConnection';
 
-export function generatePath(points: number[][]) {
-  const path = points.map(([x, y]) => `${x},${y}`).join(' L');
-  return `M${path} Z`;
-}
-
-// TODO remove mocked value
-const workflowDefinition = {
-  id: 'conditions-workflow',
-  name: 'Conditions Workflow',
-  initialState: 'open',
-  states: [{
-    name: 'open',
-  },
-  {
-    name: 'restricted',
-    onEnter: [
-      {
-        type: 'updateAuthorizedMembers',
-        params: {
-          authorized_members: ['admin', 'manager'],
-        },
-      },
-    ],
-  },
-  {
-    name: 'validated',
-  },
-  {
-    name: 'done',
-  }],
-  transitions: [
-    {
-      from: 'open',
-      to: 'restricted',
-      event: 'named_condition_event',
-      conditions: [{ type: 'is-admin' }],
-    },
-    {
-      from: 'restricted',
-      to: 'validated',
-      event: 'field_comparison_event',
-      conditions: [{ field: 'entity.name', operator: 'eq', value: 'workspaceName' }],
-    },
-    {
-      from: 'validated',
-      to: 'done',
-      event: 'mixed_conditions_event',
-      conditions: [
-        { type: 'is-admin' },
-        { field: 'entity.name', operator: 'contains', value: 'Conditions' },
-      ],
-    },
-  ],
-};
+const workflowDefinitionSetMutation = graphql`
+  mutation WorkflowDefinitionMutation($entityType: String!, $definition: String!) {
+    workflowDefinitionSet(entityType: $entityType, definition: $definition) {
+      id
+    }
+  }
+`;
 
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
 const fitViewOptions = {};
-const defaultEdgeOptions = {
-  type: 'straight',
-  markerEnd: { type: MarkerType.Arrow },
-  style: { strokeWidth: 2, strokeDasharray: '3 3' },
-};
+// const defaultEdgeOptions = {
+//   type: 'straight',
+//   markerEnd: { type: MarkerType.Arrow },
+//   style: { strokeWidth: 2, strokeDasharray: '3 3' },
+// };
 
-const Workflow = () => {
-  const theme = useTheme<Theme>();
+const Workflow = ({ queryRef}: { queryRef: PreloadedQuery<SubTypeWorkflowDefinitionQuery> }) => {
+  const { t_i18n } = useFormatter();
   const { fitView, getNode } = useReactFlow();
 
-  const { initialNodes, initialEdges } = useMemo(() => {
-    const statusMap = new Map();
+  const { workflowDefinition } = usePreloadedQuery<SubTypeWorkflowDefinitionQuery>(
+    workflowDefinitionQuery,
+    queryRef,
+  );
 
-    // 1. Map States to Nodes (1-to-1 relationship)
-    const stateNodes: Node[] = workflowDefinition.states.map((status, index) => {
-      statusMap.set(status.name, index);
-      return {
-        id: status.name,
-        type: 'status',
-        data: { ...status, color: colorPalette[index % colorPalette.length] },
-        position: { x: 0, y: 0 },
-      };
-    });
+  // 1. Get initial edges and nodes from workflow definition
+  const { initialNodes, initialEdges } = useWorkflowInitialElements(workflowDefinition);
 
-    // 2. Map Transitions to Transition Nodes (1-to-1 relationship)
-    const transitionNodes: Node[] = workflowDefinition.transitions.map((transition) => {
-      return {
-        id: `transition-${transition.from}-${transition.to}`,
-        type: 'transition',
-        data: { conditions: transition.conditions, event: transition.event },
-        position: { x: 0, y: 0 },
-      };
-    });
+  const [nodes, _dispatchNodes, onNodesChange] = useNodesState<Node[]>(initialNodes);
+  const [edges, _dispatchEdges, onEdgesChange] = useEdgesState<Edge[]>(initialEdges);
+  // 2. Sync Placeholders (The effect is now tucked away)
+  usePlaceholdersSync(nodes, edges);
 
-    // 3. Map Transitions to Edges (1-to-2 relationship)
-    const transitionEdges: Edge[] = workflowDefinition.transitions.flatMap((transition) => {
-      const transitionId = `transition-${transition.from}-${transition.to}`;
-      const edgeStyle = { stroke: theme.palette.chip?.main || '#ccc' };
-      return [
-        {
-          id: `e-${transition.from}->${transitionId}`,
-          type: 'transition',
-          source: transition.from,
-          target: transitionId,
-        },
-        {
-          id: `e-${transitionId}->${transition.to}`,
-          type: 'transition',
-          source: transitionId,
-          target: transition.to,
-          markerEnd: { type: MarkerType.ArrowClosed, color: edgeStyle.stroke },
-        },
-      ];
-    });
+  const layoutOptions: LayoutOptions = {
+    direction: 'TB' as LayoutOptions['direction'],
+    spacing: [50, 50],
+  };
 
-    // Add placeholder nodes for last statu
-    const placeholderNodes: Node[] = workflowDefinition.states.slice(-1).map((status) => {
-      return {
-        id: `placeholder-${status.name}`,
-        type: 'placeholder',
-        data: {},
-        position: { x: 0, y: 0 },
-      };
-    });
+  // 3. Sync layout and recenter graph
+  useWorkflowLayout(layoutOptions);
 
-    const placeholderEdges: Edge[] = workflowDefinition.states.slice(-1).map((status) => {
-      const transitionId = `placeholder-${status.name}`;
+  useEffect(() => {
+    console.log({ nodes, edges });
+    fitView();
+  }, [nodes, edges, fitView]);
 
-      return {
-        id: `e-${status.name}->${transitionId}`,
-        source: status.name,
-        target: transitionId,
-        markerEnd: { type: MarkerType.ArrowClosed, color: theme.palette.chip?.main },
-        style: {
-          strokeWidth: 0.5,
-          strokeDasharray: '3 3',
-          stroke: theme.palette.chip.main,
-          fill: 'none',
-        },
-      };
-    });
-
-    return {
-      initialNodes: [...stateNodes, ...transitionNodes, ...placeholderNodes],
-      initialEdges: [...transitionEdges, ...placeholderEdges],
-    };
-  }, [theme]);
-
-  const [nodes, _, onNodesChange] = useNodesState<Node[]>(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge[]>(initialEdges);
+  // Update workflow definition
+  const [saveWorkflowDefinition] = useApiMutation<WorkflowDefinitionMutation>(
+    workflowDefinitionSetMutation,
+    undefined,
+    { successMessage: t_i18n('Workflow successfully updated') },
+  );
 
   const onSave = () => {
     const finalSchema = transformToWorkflowDefinition(nodes, edges, workflowDefinition);
+    // TODO remove log
     console.log('Saved Schema:', JSON.stringify(finalSchema, null, 2));
-    // TODO mutation
-    return finalSchema;
+    saveWorkflowDefinition({
+      variables: { entityType: 'DraftWorkspace', definition: JSON.stringify(finalSchema) },
+    });
   };
 
-  const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges],
-  );
-
+  // Edit status and trantions
   const [selectedElement, setSelectedElement] = useState<Node | Edge | null>(null);
   const onNodeClick: NodeMouseHandler = useCallback(
     (_, node) => {
       getNode(node.id);
-      console.log('Node clicked:', node);
+      // On placeholder click we need to give the parent status
       if (node.type === 'placeholder') {
         setSelectedElement({ ...node, source: node.id.replace('placeholder-', '') });
+      } else {
+        setSelectedElement(node);
       }
-      setSelectedElement(node);
     },
     [getNode],
   );
-  const onEdgeClick = useCallback(
-    (_event, edge: Edge) => {
+
+  const onEdgeClick: EdgeMouseHandler = useCallback(
+    (_event, edge) => {
       console.log('Edge clicked:', edge);
-      const newState: Node = {
+      const newState = {
         id: edge.id,
         type: 'placeholder',
         data: { name: null, conditions: [] },
@@ -203,18 +114,7 @@ const Workflow = () => {
     [],
   );
 
-  const layoutOptions: LayoutOptions = {
-    direction: 'TB' as LayoutOptions['direction'],
-    spacing: [50, 50],
-  };
-
-  useWorkflowLayout(layoutOptions);
-
-  // every time our nodes change, we want to center the graph again
-  useEffect(() => {
-    console.log({ nodes, edges });
-    fitView();
-  }, [nodes, edges, fitView]);
+  const onConnect = useStatusConnection();
 
   return (
     <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
@@ -233,7 +133,6 @@ const Workflow = () => {
         minZoom={0.2}
         fitViewOptions={fitViewOptions}
         nodesDraggable={false}
-        // nodesConnectable={false}
         zoomOnDoubleClick={false}
         proOptions={proOptions}
       >
@@ -246,9 +145,7 @@ const Workflow = () => {
           </Button>
         </Panel>
       </ReactFlow>
-      {selectedElement && (
-        <WorkflowEditionDrawer selectedElement={selectedElement} onClose={() => setSelectedElement(null)} />
-      )}
+      <WorkflowEditionDrawer selectedElement={selectedElement} onClose={() => setSelectedElement(null)} />
     </div>
   );
 };

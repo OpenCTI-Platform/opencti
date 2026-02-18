@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Handle, NodeProps, Position } from 'reactflow';
 import { Chip } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
-
-const width = 160;
-const height = 50;
+import { NODE_SIZE } from '../utils';
 
 const PlaceholderNode = ({ id }: NodeProps) => {
   const theme = useTheme<Theme>();
@@ -23,7 +21,7 @@ const PlaceholderNode = ({ id }: NodeProps) => {
         key={id}
         style={{
           fontSize: 12,
-          height: height,
+          height: NODE_SIZE.height,
           borderRadius: 4,
           backgroundColor: theme.palette.mode === 'dark'
             ? 'rgba(255, 255, 255, 0.04)'
@@ -35,7 +33,7 @@ const PlaceholderNode = ({ id }: NodeProps) => {
           border: theme.palette.mode === 'dark'
             ? `1px dashed rgba(255, 255, 255, ${isHover ? 0.2 : 0.05})`
             : `1px dashed rgba(0, 0, 0, ${isHover ? 0.2 : 0.05})`,
-          minWidth: width,
+          minWidth: NODE_SIZE.width,
           cursor: 'pointer',
           textAlign: 'center',
         }}

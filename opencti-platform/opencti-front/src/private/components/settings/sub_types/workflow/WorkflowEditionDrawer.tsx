@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Drawer from '@components/common/drawer/Drawer';
+import * as Yup from 'yup';
 import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
@@ -12,6 +13,16 @@ import DeleteDialog from '../../../../../components/DeleteDialog';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import { useReactFlow } from 'reactflow';
 import useAddStatus from './hooks/useAddStatus';
+import useDeleteStatus from './hooks/useDeleteStatus';
+
+const statusValidation = (t: (value: string) => string) => Yup.object().shape({
+  name: Yup.string().required(t('This field is required')),
+
+});
+const transitionValidation = (t: (value: string) => string) => Yup.object().shape({
+  event: Yup.string(),
+
+});
 
 interface WorkflowEditionDrawerProps {
   selectedElement: any;
@@ -108,7 +119,9 @@ const WorkflowFields = ({
 const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDrawerProps) => {
   const { t_i18n } = useFormatter();
   const { setNodes, setEdges, getNode, getNodes } = useReactFlow();
+  console.log('WorkflowEditionDrawer', selectedElement);
   const addStatus = useAddStatus(selectedElement);
+  const deleteStatus = useDeleteStatus();
   const isStatus = selectedElement?.type === 'status' || selectedElement?.type === 'placeholder';
   const isNewStatus = selectedElement?.type === 'placeholder';
 
@@ -128,7 +141,7 @@ const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDraw
     }
     return t_i18n('Edit transition');
   }, [isStatus, isNewStatus]);
-  console.log('Selected element in drawer:', { selectedElement, isStatus, isNewStatus });
+
   const onSubmit = (values: any) => {
     if (isNewStatus) {
       if (selectedElement.id !== 'new-status') {
@@ -139,176 +152,198 @@ const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDraw
     onClose();
   };
 
+  const onDelete = () => {
+    const selectedElementCopy = { ...selectedElement };
+    if (!isNewStatus) {
+      deleteStatus(selectedElementCopy.id);
+    }
+    onClose();
+  };
+
   return (
     <Drawer title={drawerTitle} open={!!selectedElement} onClose={onClose}>
-      <Formik initialValues={selectedElement?.data || {}} onSubmit={onSubmit}>
-        {({ submitForm, isSubmitting, setFieldValue, values }) => (
-          <Form style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            {isStatus ? (
-              <>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t_i18n('Name')}
-                  fullWidth
-                />
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <Typography variant="h3" sx={{ m: 0 }}>
-                    {t_i18n('Actions on enter')}
-                  </Typography>
-                  <IconButton
-                    color="secondary"
-                    aria-label="Add"
-                    onClick={() => onAddObject('onEnter', setFieldValue, values)}
-                  >
-                    <Add fontSize="small" />
-                  </IconButton>
-                </div>
-                <FieldArray
-                  name="onEnter"
-                  render={(arrayHelpers) => (
-                    <>
-                      {values.onEnter?.map((_, idx: number) => (
-                        <div
-                          key={`onEnter-${idx}`}
-                          style={{ display: 'flex' }}
-                        >
-                          <Field
-                            component={WorkflowFields}
-                            name={`onEnter[${idx}]`}
-                            index={idx}
-                            prefixLabel="onEnter"
-                            onDelete={() => arrayHelpers.remove(idx)}
-                          />
-                        </div>
-                      ))}
-                    </>
-                  )}
-                />
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <Typography variant="h3" sx={{ m: 0 }}>
-                    {t_i18n('Actions on exit')}
-                  </Typography>
-                  <IconButton
-                    color="secondary"
-                    aria-label="Add"
-                    onClick={() => onAddObject('onExit', setFieldValue, values)}
-                  >
-                    <Add fontSize="small" />
-                  </IconButton>
-                </div>
-                <FieldArray
-                  name="onExit"
-                  render={(arrayHelpers) => (
-                    <>
-                      {values.onExit?.map((_, idx: number) => (
-                        <div
-                          key={`onExit-${idx}`}
-                          style={{ display: 'flex' }}
-                        >
-                          <Field
-                            component={WorkflowFields}
-                            name={`onExit[${idx}]`}
-                            index={idx}
-                            prefixLabel="onExit"
-                            onDelete={() => arrayHelpers.remove(idx)}
-                          />
-                        </div>
-                      ))}
-                    </>
-                  )}
-                />
-              </>
-            ) : (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <Typography variant="h3" sx={{ m: 0 }}>
-                    {t_i18n('Actions')}
-                  </Typography>
-                  <IconButton
-                    color="secondary"
-                    aria-label="Add"
-                    onClick={() => onAddObject('actions', setFieldValue, values)}
-                  >
-                    <Add fontSize="small" />
-                  </IconButton>
-                </div>
-                <FieldArray
-                  name="actions"
-                  render={(arrayHelpers) => (
-                    <>
-                      {values.actions?.map((_, idx: number) => (
-                        <div
-                          key={`action-${idx}`}
-                          style={{ display: 'flex' }}
-                        >
-                          <Field
-                            component={WorkflowFields}
-                            name={`actions[${idx}]`}
-                            index={idx}
-                            prefixLabel="action_"
-                            onDelete={() => arrayHelpers.remove(idx)}
-                          />
-                        </div>
-                      ))}
-                    </>
-                  )}
-                />
-                {/* Conditions */}
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <Typography variant="h3" sx={{ m: 0 }}>
-                    {t_i18n('Conditions')}
-                  </Typography>
-                  <IconButton
-                    color="secondary"
-                    aria-label="Add"
-                    onClick={() => onAddObject('conditions', setFieldValue, values)}
-                  >
-                    <Add fontSize="small" />
-                  </IconButton>
-                </div>
-                <FieldArray
-                  name="conditions"
-                  render={(arrayHelpers) => (
-                    <>
-                      {values.conditions?.map((_, idx: number) => (
-                        <div
-                          key={`condition-${idx}`}
-                          style={{ display: 'flex' }}
-                        >
-                          <Field
-                            component={WorkflowFields}
-                            name={`conditions[${idx}]`}
-                            index={idx}
-                            prefixLabel="condition_"
-                            onDelete={() => arrayHelpers.remove(idx)}
-                          />
-                        </div>
-                      ))}
-                    </>
-                  )}
-                />
-              </>
-            )}
+      { selectedElement && (
+        <Formik
+          initialValues={selectedElement?.data || {}}
+          onSubmit={onSubmit}
+          validationSchema={isStatus ? statusValidation(t_i18n) : transitionValidation(t_i18n)}
+          validateOnChange={true}
+          validateOnBlur={true}
+        >
+          {({ submitForm, isSubmitting, setFieldValue, values }) => (
+            <Form style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              {isStatus ? (
+                <>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="name"
+                    label={t_i18n('Name')}
+                    fullWidth
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography variant="h3" sx={{ m: 0 }}>
+                      {t_i18n('Actions on enter')}
+                    </Typography>
+                    <IconButton
+                      color="secondary"
+                      aria-label="Add"
+                      onClick={() => onAddObject('onEnter', setFieldValue, values)}
+                    >
+                      <Add fontSize="small" />
+                    </IconButton>
+                  </div>
+                  <FieldArray
+                    name="onEnter"
+                    render={(arrayHelpers) => (
+                      <>
+                        {values.onEnter?.map((_, idx: number) => (
+                          <div
+                            key={`onEnter-${idx}`}
+                            style={{ display: 'flex' }}
+                          >
+                            <Field
+                              component={WorkflowFields}
+                              name={`onEnter[${idx}]`}
+                              index={idx}
+                              prefixLabel="onEnter"
+                              onDelete={() => arrayHelpers.remove(idx)}
+                            />
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography variant="h3" sx={{ m: 0 }}>
+                      {t_i18n('Actions on exit')}
+                    </Typography>
+                    <IconButton
+                      color="secondary"
+                      aria-label="Add"
+                      onClick={() => onAddObject('onExit', setFieldValue, values)}
+                    >
+                      <Add fontSize="small" />
+                    </IconButton>
+                  </div>
+                  <FieldArray
+                    name="onExit"
+                    render={(arrayHelpers) => (
+                      <>
+                        {values.onExit?.map((_, idx: number) => (
+                          <div
+                            key={`onExit-${idx}`}
+                            style={{ display: 'flex' }}
+                          >
+                            <Field
+                              component={WorkflowFields}
+                              name={`onExit[${idx}]`}
+                              index={idx}
+                              prefixLabel="onExit"
+                              onDelete={() => arrayHelpers.remove(idx)}
+                            />
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  />
+                </>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography variant="h3" sx={{ m: 0 }}>
+                      {t_i18n('Actions')}
+                    </Typography>
+                    <IconButton
+                      color="secondary"
+                      aria-label="Add"
+                      onClick={() => onAddObject('actions', setFieldValue, values)}
+                    >
+                      <Add fontSize="small" />
+                    </IconButton>
+                  </div>
+                  <FieldArray
+                    name="actions"
+                    render={(arrayHelpers) => (
+                      <>
+                        {values.actions?.map((_, idx: number) => (
+                          <div
+                            key={`action-${idx}`}
+                            style={{ display: 'flex' }}
+                          >
+                            <Field
+                              component={WorkflowFields}
+                              name={`actions[${idx}]`}
+                              index={idx}
+                              prefixLabel="action_"
+                              onDelete={() => arrayHelpers.remove(idx)}
+                            />
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  />
+                  {/* Conditions */}
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography variant="h3" sx={{ m: 0 }}>
+                      {t_i18n('Conditions')}
+                    </Typography>
+                    <IconButton
+                      color="secondary"
+                      aria-label="Add"
+                      onClick={() => onAddObject('conditions', setFieldValue, values)}
+                    >
+                      <Add fontSize="small" />
+                    </IconButton>
+                  </div>
+                  <FieldArray
+                    name="conditions"
+                    render={(arrayHelpers) => (
+                      <>
+                        {values.conditions?.map((_, idx: number) => (
+                          <div
+                            key={`condition-${idx}`}
+                            style={{ display: 'flex' }}
+                          >
+                            <Field
+                              component={WorkflowFields}
+                              name={`conditions[${idx}]`}
+                              index={idx}
+                              prefixLabel="condition_"
+                              onDelete={() => arrayHelpers.remove(idx)}
+                            />
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  />
+                </>
+              )}
 
-            <FormButtonContainer>
-              <Button
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
-                {isNewStatus ? t_i18n('Add') : t_i18n('Update')}
-              </Button>
-            </FormButtonContainer>
+              <FormButtonContainer>
+                <Button
+                  color="secondary"
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                >
+                  {isNewStatus ? t_i18n('Add') : t_i18n('Update')}
+                </Button>
+                <Button
+                  color="secondary"
+                  onClick={onDelete}
+                  disabled={isSubmitting}
+                >
+                  {isNewStatus ? t_i18n('Cancel') : t_i18n('Delete')}
+                </Button>
+              </FormButtonContainer>
 
-            <pre style={{ fontSize: 12, marginTop: 10 }}>
-              {JSON.stringify(values, null, 2)}
-            </pre>
-          </Form>
-
-        )}
-      </Formik>
+              <pre style={{ fontSize: 12, marginTop: 10 }}>
+                {JSON.stringify(values, null, 2)}
+              </pre>
+            </Form>
+          )}
+        </Formik>
+      )}
     </Drawer>
   );
 };

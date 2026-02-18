@@ -2,9 +2,7 @@ import React from 'react';
 import { Handle, NodeProps, Position } from 'reactflow';
 import { hexToRGB } from '../../../../../../utils/Colors';
 import { Chip } from '@mui/material';
-
-const width = 160;
-const height = 50;
+import { NODE_SIZE } from '../utils';
 
 const StatusNode = ({ id, data }: NodeProps) => {
   return (
@@ -19,13 +17,13 @@ const StatusNode = ({ id, data }: NodeProps) => {
         key={id}
         style={{
           fontSize: 12,
-          height: height,
+          height: NODE_SIZE.height,
           textTransform: 'uppercase',
           borderRadius: 4,
           backgroundColor: hexToRGB(data.color),
           color: data.color,
           border: `1px solid ${data.color}`,
-          minWidth: width,
+          minWidth: NODE_SIZE.width,
           cursor: 'pointer',
         }}
         variant="outlined"

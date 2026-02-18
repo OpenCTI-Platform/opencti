@@ -1,4 +1,5 @@
 import type { Node, Edge } from 'reactflow';
+import { SubTypeWorkflowDefinitionQuery$data } from '../__generated__/SubTypeWorkflowDefinitionQuery.graphql';
 
 export type Condition = { field: string; operator: string; value: string }
   | { type: string };
@@ -17,27 +18,16 @@ export type Status = {
   onExit?: Action[];
 };
 
-export type WorkflowDefinition = {
-  id: string;
-  name: string;
-  initialState: string;
-  states: { name: string }[];
-  transitions: {
-    from: string;
-    to: string;
-    event: string;
-    conditions: object[];
-  }[];
-};
-
 const colorPalette = ['#4caf50', '#2196f3', '#ff9800', '#9c27b0', '#f44336', '#3f51b5', '#00bcd4', '#8bc34a', '#ff5722', '#673ab7'];
 
-const transformToWorkflowDefinition = (nodes: Node[], edges: Edge[], workflowDefinition: WorkflowDefinition) => {
+export const NODE_SIZE = { width: 160, height: 50 };
+
+const transformToWorkflowDefinition = (nodes: Node[], edges: Edge[], workflowDefinition: SubTypeWorkflowDefinitionQuery$data['workflowDefinition']) => {
   // 1. Extract States
   const states = nodes
     .filter((node) => node.type === 'status')
     .map((node) => {
-      const { color, ...restData } = node.data;
+      const { color: _color, ...restData } = node.data;
       return {
         name: node.id,
         ...restData,
@@ -66,9 +56,9 @@ const transformToWorkflowDefinition = (nodes: Node[], edges: Edge[], workflowDef
     .find((transitionNode) => !edges.find((e) => e.target === transitionNode.id));
 
   return {
-    id: workflowDefinition.id,
-    name: workflowDefinition.name,
-    initialState: initialState?.id || workflowDefinition.initialState,
+    id: workflowDefinition?.id,
+    name: workflowDefinition?.name,
+    initialState: initialState?.id || workflowDefinition?.initialState,
     states,
     transitions,
   };

@@ -1,4 +1,3 @@
-import React from 'react';
 import { EdgeProps, getBezierPath } from 'reactflow';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';

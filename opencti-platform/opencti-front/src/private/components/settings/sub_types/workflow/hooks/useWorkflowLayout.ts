@@ -10,7 +10,7 @@ export type LayoutOptions = {
   spacing: [number, number];
 };
 
-function getSourceHandlePosition(direction: Direction) {
+const getSourceHandlePosition = (direction: Direction) => {
   switch (direction) {
     case 'TB':
       return Position.Bottom;
@@ -21,9 +21,9 @@ function getSourceHandlePosition(direction: Direction) {
     case 'RL':
       return Position.Left;
   }
-}
+};
 
-function getTargetHandlePosition(direction: Direction) {
+const getTargetHandlePosition = (direction: Direction) => {
   switch (direction) {
     case 'TB':
       return Position.Top;
@@ -34,7 +34,7 @@ function getTargetHandlePosition(direction: Direction) {
     case 'RL':
       return Position.Right;
   }
-}
+};
 
 // Initialize the tree layout (see https://observablehq.com/@d3/tree for examples)
 const layout = tree<NodeWithPosition>()
@@ -115,7 +115,7 @@ const layoutAlgorithm = async (nodes: Node[], edges: Edge[], options = { directi
   return { nodes: nextNodes, edges };
 };
 
-function useAutoLayout(options: LayoutOptions) {
+const useAutoLayout = (options: LayoutOptions) => {
   const { setNodes, setEdges } = useReactFlow();
   const nodesInitialized = useNodesInitialized();
   // Here we are storing a map of the nodes and edges in the flow. By using a
@@ -146,8 +146,8 @@ function useAutoLayout(options: LayoutOptions) {
     // The callback passed to `useEffect` cannot be `async` itself, so instead we
     // create an async function here and call it immediately afterwards.
     const runLayout = async () => {
-      const nodes = [...elements.nodeMap.values()];
-      const edges = [...elements.edgeMap.values()];
+      const nodes = Array.from(elements.nodeMap.values());
+      const edges = Array.from(elements.edgeMap.values());
 
       const { nodes: nextNodes, edges: nextEdges } = await layoutAlgorithm(
         nodes,
@@ -173,7 +173,7 @@ function useAutoLayout(options: LayoutOptions) {
 
     runLayout();
   }, [nodesInitialized, elements, setNodes, setEdges]);
-}
+};
 
 export default useAutoLayout;
 
@@ -182,13 +182,13 @@ type Elements = {
   edgeMap: Map<string, Edge>;
 };
 
-function compareElements(xs: Elements, ys: Elements) {
+const compareElements = (xs: Elements, ys: Elements) => {
   return (
     compareNodes(xs.nodeMap, ys.nodeMap) && compareEdges(xs.edgeMap, ys.edgeMap)
   );
-}
+};
 
-function compareNodes(xs: Map<string, Node>, ys: Map<string, Node>) {
+const compareNodes = (xs: Map<string, Node>, ys: Map<string, Node>) => {
   // the number of nodes changed, so we already know that the nodes are not equal
   if (xs.size !== ys.size) return false;
 
@@ -209,9 +209,9 @@ function compareNodes(xs: Map<string, Node>, ys: Map<string, Node>) {
   }
 
   return true;
-}
+};
 
-function compareEdges(xs: Map<string, Edge>, ys: Map<string, Edge>) {
+const compareEdges = (xs: Map<string, Edge>, ys: Map<string, Edge>) => {
   // the number of edges changed, so we already know that the edges are not equal
   if (xs.size !== ys.size) return false;
 
@@ -226,4 +226,4 @@ function compareEdges(xs: Map<string, Edge>, ys: Map<string, Edge>) {
   }
 
   return true;
-}
+};

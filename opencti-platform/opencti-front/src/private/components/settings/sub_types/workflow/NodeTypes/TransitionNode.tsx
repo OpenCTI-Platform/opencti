@@ -2,18 +2,20 @@ import React from 'react';
 import { Handle, NodeProps, Position } from 'reactflow';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
-import { generatePath } from '../Workflow';
+import { NODE_SIZE } from '../utils';
 
-const width = 160;
-const height = 50;
+const generatePath = (points: number[][]) => {
+  const path = points.map(([x, y]) => `${x},${y}`).join(' L');
+  return `M${path} Z`;
+};
 
 const TransitionNode = ({ data }: NodeProps) => {
   const theme = useTheme<Theme>();
-  const skew = height * 0.2;
+  const skew = NODE_SIZE.height * 0.2;
   const strokeWidth = 1;
 
-  const innerWidth = width - 2 * strokeWidth;
-  const innerHeight = height - 2 * strokeWidth;
+  const innerWidth = NODE_SIZE.width - 2 * strokeWidth;
+  const innerHeight = NODE_SIZE.height - 2 * strokeWidth;
 
   const hexagonPath = generatePath([
     [0, innerHeight / 2],
@@ -27,7 +29,7 @@ const TransitionNode = ({ data }: NodeProps) => {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
       <Handle type="target" position={Position.Top} style={{ visibility: 'hidden', top: 1 }} />
-      <svg width={width} height={height}>
+      <svg width={NODE_SIZE.width} height={NODE_SIZE.height}>
         <g transform={`translate(${strokeWidth}, ${strokeWidth})`}>
           <path
             d={hexagonPath}
@@ -40,7 +42,7 @@ const TransitionNode = ({ data }: NodeProps) => {
             }
           />
         </g>
-        <foreignObject x="0" y="0" width={width} height={height}>
+        <foreignObject x="0" y="0" width={NODE_SIZE.width} height={NODE_SIZE.height}>
           <div style={{
             display: 'flex',
             flexDirection: 'column',
