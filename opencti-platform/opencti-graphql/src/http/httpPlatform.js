@@ -462,9 +462,9 @@ const createApp = async (app, schema) => {
           if (err || !user) {
             const authLogger = strategy.logger;
             if (authLogger) {
-              authLogger.error('Error auth provider callback', { message: e.message }, e);
+              authLogger.error('Error auth provider callback', { message: err?.message }, err);
             } else {
-              logApp.error('Error auth provider callback', { cause: e, provider });
+              logApp.error('Error auth provider callback', { cause: err, provider });
             }
             reject(err);
           } else {
