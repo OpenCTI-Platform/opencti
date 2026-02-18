@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { graphql } from 'relay-runtime';
-import { Alert, AlertTitle, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tooltip } from '@mui/material';
+import { Alert, AlertTitle, DialogActions, DialogContentText, Tooltip } from '@mui/material';
+import Dialog from '@common/dialog/Dialog';
 import { useFragment } from 'react-relay';
 import { useFormatter } from '../../../components/i18n';
 import Button from '../../../components/common/button/Button';
@@ -108,22 +109,19 @@ export const DraftApprove = ({ data }: DraftApproveProps) => {
         keepMounted={true}
         slots={{ transition: Transition }}
         onClose={() => setDisplayApprove(false)}
+        title={t_i18n('Are you sure?')}
+        size="small"
       >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to approve this draft and send it to ingestion?')}
-            {processingCount > 0 && (
-              <Alert sx={{ marginTop: 1 }} severity="warning">
-                <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
-                {t_i18n('There are processes still running that could impact the data of the draft. '
-                  + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
-              </Alert>
-            )}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to approve this draft and send it to ingestion?')}
+          {processingCount > 0 && (
+            <Alert sx={{ marginTop: 1 }} severity="warning">
+              <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
+              {t_i18n('There are processes still running that could impact the data of the draft. '
+                + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
+            </Alert>
+          )}
+        </DialogContentText>
         <DialogActions>
           <Button
             variant="secondary"
