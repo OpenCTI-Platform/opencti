@@ -23,9 +23,7 @@ import SecurityCoverageEdition from './SecurityCoverageEdition';
 import SecurityCoverageDeletion from './SecurityCoverageDeletion';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Button from '@mui/material/Button';
-import { fileUri } from '../../../../relay/environment';
-import oaevDark from '../../../../static/images/xtm/obas_dark.png';
-import oaevLight from '../../../../static/images/xtm/obas_light.png';
+import { OaevLogo } from '../../../../static/images/logo_oaev';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
@@ -167,14 +165,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                 <Button
                   disabled={!hasExternalUri}
                   style={{ marginBottom: 8 }}
-                  color="primary"
-                  startIcon={(
-                    <img
-                      style={{ width: 20 }}
-                      src={fileUri(theme.palette.mode === 'dark' ? oaevDark : oaevLight)}
-                      alt="OAEV"
-                    />
-                  )}
+                  startIcon={<OaevLogo /> }
                   variant="outlined"
                   onClick={() => setDisplayExternalLink(true)}
                   title={hasExternalUri ? securityCoverage.external_uri : undefined}
