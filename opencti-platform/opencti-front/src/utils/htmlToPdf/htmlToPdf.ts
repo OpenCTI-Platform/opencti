@@ -2,7 +2,7 @@ import { renderToString } from 'react-dom/server';
 import { compiler } from 'markdown-to-jsx';
 import htmlToPdfmake from 'html-to-pdfmake';
 import pdfMake from 'pdfmake/build/pdfmake';
-import { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
+import { Content, ImageDefinition, TDocumentDefinitions } from 'pdfmake/interfaces';
 import { FintelDesign } from '@components/common/form/FintelDesignField';
 import { APP_BASE_PATH, fileUri } from '../../relay/environment';
 import { capitalizeWords } from '../String';
@@ -79,7 +79,7 @@ const resolvePdfMakeEmbeddedImages = async (
   if (!pdfMakeObject.images) return;
 
   const refs = pdfMakeObject.images as unknown as Record<string, string>;
-  const resolved: Record<string, string> = { ...refs };
+  const resolved: Record<string, string | ImageDefinition> | undefined = { ...refs };
 
   await Promise.all(
     Object.entries(refs).map(async ([key, value]) => {
@@ -93,7 +93,7 @@ const resolvePdfMakeEmbeddedImages = async (
     }),
   );
 
-  pdfMakeObject.images = resolved as never;
+  pdfMakeObject.images = resolved;
 };
 
 /**
@@ -177,6 +177,7 @@ export const htmlToPdfReport = async (
       fontSize: 12,
     },
     ...pdfMakeObject,
+    images: pdfMakeObject.images,
     content: [
       {
         columns: [
