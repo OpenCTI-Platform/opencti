@@ -33,6 +33,7 @@ const WidgetUpsert: FunctionComponent<WidgetUpsertProps> = ({
       open={open}
       onClose={onCancel}
       className="noDrag"
+      size="large"
     >
       <WidgetConfigStepper />
 
