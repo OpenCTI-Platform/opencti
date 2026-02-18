@@ -6,8 +6,8 @@
 
      SSO configuration is under the [OpenCTI Enterprise Edition](https://docs.opencti.io/latest/administration/enterprise/?h=ente) license. Please read the information below to have all the information.
 
-With version 7.0, defining & using authentication strategies is an Entreprise Edition feature. Using local authentication will be the unique way to login for Community Edition.
-Additionally, given the introduction of the capability to define [authentications via UI](sso-in-gui.md), defining authentication via environement variable will be decomissioned after some time. 
+With version 7.0, defining & using authentication strategies is an Enterprise Edition feature. Using local authentication will be the unique way to login for Community Edition.
+Additionally, given the introduction of the capability to define [authentications via UI](sso-in-gui.md), defining authentication via environment variable will be decommissioned after some time. 
 
 ## Introduction
 

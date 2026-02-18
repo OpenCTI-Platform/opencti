@@ -26,7 +26,7 @@ Kill chain phases are used in OpenCTI to structure and analyze the data related 
 OpenCTI supports the following kill chain models:
 
 - **Lockheed Martin Cyber Kill Chain**
-- **MITRE ATT&CK Framework (Entreprise, PRE, Mobile and ICS)**
+- **MITRE ATT&CK Framework (Enterprise, PRE, Mobile and ICS)**
 - **DISARM framework**
 
 You can add, edit, or delete kill chain phases in the settings page, and assign them to indicators, attack patterns, incidents, or courses of action in the platform. You can also filter the data by kill chain phase, and view the kill chain phases in a timeline or as a matrix.

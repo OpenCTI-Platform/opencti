@@ -1,6 +1,6 @@
 # Fintel Design
 
-Fintel design are used to customize and preview your own fintel template. You can now create fintel designs to produce finished intelligence documents matching your organization's brand guidelines.
+Fintel design are used to customize and preview your own Fintel template. You can now create Fintel designs to produce finished intelligence documents matching your organization's brand guidelines.
 
 ## Create a fintel design
 Fintel designs can be configured on the "Settings > Customization > Fintel designs" menu.
@@ -41,7 +41,7 @@ Here for the example, we will check the template preview of a Report:
 
 ![Fintel design template preview](./assets/fintel-designs/fintel-design-template-preview.png)
 
-As you can see, you can select the previously created design of your choice and see the result with real datas.
+As you can see, you can select the previously created design of your choice and see the result with real data.
 
 ![Fintel design template preview 2](./assets/fintel-designs/fintel-design-template-preview-2.png)
 

@@ -65,7 +65,7 @@ For all previously explained capabilities, as they are over the HTTP protocol, 3
 
 	```
 	Username: Your platform username
-	Password: Your plafrom password
+	Password: Your platform password
 	Authorization: Basic c2FtdWVsLmhhc3NpbmVBZmlsaWdyYW4uaW86TG91aXNlMTMwNCM=
 	```
 
