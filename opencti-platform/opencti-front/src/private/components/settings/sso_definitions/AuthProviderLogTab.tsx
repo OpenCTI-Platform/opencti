@@ -227,7 +227,6 @@ const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ authLogHistory 
                             fontSize: '0.75rem',
                             fontFamily: 'monospace',
                             cursor: 'pointer',
-                            '&:hover': { textDecoration: 'underline' },
                           }}
                           title={(() => {
                             try {
