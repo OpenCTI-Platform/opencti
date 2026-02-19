@@ -61,7 +61,7 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
   const onSubmitAssignees: FormikConfig<DraftAddAssigneeInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const currentAssigneesIds = (draft.objectAssignee || []).map((assignee) => assignee.id);
     const valuesIds = values.objectAssignee.map((assignee) => assignee.value);
-    const allIds = [...new Set([...currentAssigneesIds, ...valuesIds])]; // 'new Set' to merge without duplicates
+    const allIds = Array.from(new Set(currentAssigneesIds.concat(valuesIds))); // 'new Set' to merge without duplicates
     commitMutation({
       mutation: draftEditMutation,
       variables: {
@@ -87,7 +87,7 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
   const onSubmitParticipant: FormikConfig<DraftAddParticipantInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const currentParticipantsIds = (draft.objectParticipant || []).map((participant) => participant.id);
     const valuesIds = values.objectParticipant.map((participant) => participant.value);
-    const allIds = [...new Set([...currentParticipantsIds, ...valuesIds])]; // 'new Set' to merge without duplicates
+    const allIds = Array.from(new Set(currentParticipantsIds.concat(valuesIds))); // 'new Set' to merge without duplicates
     commitMutation({
       mutation: draftEditMutation,
       variables: {
