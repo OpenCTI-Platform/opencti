@@ -183,8 +183,8 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
         const relatedMarkings = updateEvent.context.related_restrictions.markings ?? [];
         pushAll(eventMarkingRefs, relatedMarkings);
       }
-      // add changes
-      contextData.changes = updateEvent.context.changes;
+      // See GitHub issue #14537, we need to discard invalid changes events that have been generated in buggy OpenCTI versions (6.8.16, 6.8.17 and 6.9.0)
+      contextData.changes = Array.isArray(updateEvent.context.changes) ? updateEvent.context.changes : [];
     }
     if (stix.type === STIX_TYPE_RELATION) {
       const rel: StixRelation = stix as StixRelation;
