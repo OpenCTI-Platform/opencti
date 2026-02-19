@@ -29,7 +29,7 @@
     "test:e2e:ui": "E2E_TEST=true yarn playwright test --ui --workers=1",
     "generate-test-e2e": "npx playwright codegen http://localhost:3000/",
     "test:e2e:coverage": "E2E_TEST=true E2E_COVERAGE=true yarn playwright test && yarn show-report-e2e",
-    "show-report-e2e": "start \"\" test-results/report.html && start \"\" test-results/coverage/index.html",
+    "show-report-e2e": "open-cli test-results/report.html && open-cli test-results/coverage/index.html",
     "knip": "knip"
   },
   "dependencies": {
@@ -169,6 +169,7 @@
     "knip": "5.83.1",
     "license-checker-rseidelsohn": "4.4.2",
     "monocart-reporter": "2.9.23",
+    "open-cli": "8.0.0",
     "relay-compiler": "20.1.1",
     "relay-test-utils": "20.1.1",
     "typescript": "5.9.3",
