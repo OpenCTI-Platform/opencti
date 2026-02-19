@@ -30,7 +30,7 @@ interface FintelDesignFormProps {
   fintelDesign: FintelDesign_fintelDesign$data;
 }
 
-export type FintelDesignFormValues = {
+type FintelDesignFormValues = {
   file?: File | null;
   gradiantFromColor?: string | null | undefined;
   gradiantToColor?: string | null | undefined;

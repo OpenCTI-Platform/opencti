@@ -179,7 +179,7 @@ interface ContainerMappingContentComponentProps {
   currentMode: 'content' | 'editor' | 'mapping';
 }
 
-export type MappedEntityType = NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>[number];
+type MappedEntityType = NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>[number];
 
 const ContainerMappingContentComponent: FunctionComponent<
   ContainerMappingContentComponentProps

@@ -105,7 +105,7 @@ const toOptions = (
   objectMarkings: readonly DefaultMarking[] | undefined = [],
 ) => (objectMarkings ?? []).map(convertMarking);
 
-export interface NoteAddInput {
+interface NoteAddInput {
   attribute_abstract: string;
   content: string;
   confidence: number | undefined;

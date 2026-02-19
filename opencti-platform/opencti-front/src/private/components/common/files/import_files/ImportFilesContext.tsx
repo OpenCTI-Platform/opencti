@@ -153,7 +153,7 @@ const importFilesContextGuessMimeTypeQuery = graphql`
 `;
 
 export type ImportMode = 'auto' | 'manual' | 'form';
-export type UploadStatus = 'uploading' | 'success' | undefined;
+type UploadStatus = 'uploading' | 'success' | undefined;
 
 export interface InitialValues {
   entityId?: string;

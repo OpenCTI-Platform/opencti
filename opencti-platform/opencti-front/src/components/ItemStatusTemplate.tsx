@@ -5,13 +5,13 @@ import Box from '@mui/material/Box';
 import { useFormatter } from './i18n';
 import { hexToRGB } from '../utils/Colors';
 
-export interface StatusTemplateType {
+interface StatusTemplateType {
   id: string;
   color: string;
   name: string;
 }
 
-export interface StatusType {
+interface StatusType {
   template: StatusTemplateType;
   id: string;
   order: number;

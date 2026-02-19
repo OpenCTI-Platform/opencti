@@ -35,7 +35,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormData | undefined;
+type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormData | undefined;
 
 interface CsvMapperRepresentationAttributeFormProps
   extends FieldProps<RepresentationAttributeForm> {

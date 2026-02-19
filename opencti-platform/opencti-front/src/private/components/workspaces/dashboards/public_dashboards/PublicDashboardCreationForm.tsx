@@ -45,7 +45,7 @@ export const dashboardsQuery = graphql`
   }
 `;
 
-export interface PublicDashboardCreationFormData {
+interface PublicDashboardCreationFormData {
   name: string;
   enabled: boolean;
   uri_key: string;

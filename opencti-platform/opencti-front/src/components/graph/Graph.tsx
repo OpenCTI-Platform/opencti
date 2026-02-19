@@ -16,7 +16,7 @@ import type { Theme } from '../Theme';
 import RelationSelection from './components/RelationSelection';
 import GraphLoadingAlert from './components/GraphLoadingAlert';
 
-export interface GraphProps {
+interface GraphProps {
   parentRef: MutableRefObject<HTMLDivElement | null>;
   onPositionsChanged?: (positions: OctiGraphPositions) => void;
   children?: ReactNode;

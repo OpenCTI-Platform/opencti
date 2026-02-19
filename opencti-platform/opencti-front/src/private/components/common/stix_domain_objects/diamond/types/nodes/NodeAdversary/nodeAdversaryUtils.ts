@@ -12,7 +12,7 @@ export interface NodeAdversaryUtilsProps {
     entityLink: string;
   };
 }
-export interface NodeAdversaryUtilsReturns {
+interface NodeAdversaryUtilsReturns {
   entityLink: string;
   generatedFilters: string;
   aliases?: string;

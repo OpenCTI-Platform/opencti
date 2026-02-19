@@ -131,7 +131,7 @@ interface IngestionTaxiiEditionProps {
   enableReferences?: boolean;
 }
 
-export interface IngestionTaxiiEditionForm {
+interface IngestionTaxiiEditionForm {
   message?: string | null;
   references?: ExternalReferencesValues;
   name: string;

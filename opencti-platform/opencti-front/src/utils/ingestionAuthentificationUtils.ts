@@ -6,7 +6,7 @@ export const BASIC_AUTH = 'basic';
 export const CERT_AUTH = 'certificate';
 export const BEARER_AUTH = 'bearer';
 
-export interface IngestionAuthValue {
+interface IngestionAuthValue {
   authentication_type: string;
   authentication_value?: string | null;
   username?: string;

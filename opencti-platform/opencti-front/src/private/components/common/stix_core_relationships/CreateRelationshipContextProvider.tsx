@@ -10,7 +10,7 @@ interface CreateRelationshipContextStateType {
   onCreate?: () => void;
 }
 
-export interface CreateRelationshipContextType {
+interface CreateRelationshipContextType {
   state: CreateRelationshipContextStateType;
   setState: (state: CreateRelationshipContextStateType) => void;
 }

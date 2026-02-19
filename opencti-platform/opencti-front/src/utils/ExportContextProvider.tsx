@@ -1,6 +1,6 @@
 import React, { Dispatch, ReactNode, useState } from 'react';
 
-export interface ExportContextType {
+interface ExportContextType {
   selectedIds: string[];
   setSelectedIds?: Dispatch<string[]>;
 }

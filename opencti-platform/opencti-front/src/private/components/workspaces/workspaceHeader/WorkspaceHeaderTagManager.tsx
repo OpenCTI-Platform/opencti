@@ -40,7 +40,7 @@ type WorkspaceHeaderTagManagerProps = {
   canEdit: boolean;
 };
 
-export type WorkspaceHeaderTagCreatorFormValues = {
+type WorkspaceHeaderTagCreatorFormValues = {
   newTag: string;
 };
 const WorkspaceHeaderTagManager = ({ tags, workspaceId, canEdit }: WorkspaceHeaderTagManagerProps) => {
