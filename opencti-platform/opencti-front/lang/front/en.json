@@ -866,6 +866,7 @@
   "Create observables based on an indicator": "Create observables based on an indicator",
   "Create observables from all indicators in the bundle": "Create observables from all indicators in the bundle",
   "Create observables from this indicator": "Create observables from this indicator",
+  "Create OIDC": "Create OIDC",
   "Create OIDC Authentication": "Create OIDC Authentication",
   "Create OpenCTI Stream": "Create OpenCTI Stream",
   "Create OpenID": "Create OpenID",
