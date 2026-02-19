@@ -33,7 +33,7 @@ import SliderField from '../../../../components/fields/SliderField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { convertMarking } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import AddNotesFunctionalComponent from './AddNotesFunctionalComponent';
+import AddNotes from './AddNotes';
 import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import CardTitle from '../../../../components/common/card/CardTitle';
 import CardAccordion from '../../../../components/common/card/CardAccordion';
@@ -138,7 +138,7 @@ type HeaderProps = {
 const Header = ({ title, id, data, paginationOptions }: HeaderProps) => {
   const actions = (
     <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
-      <AddNotesFunctionalComponent
+      <AddNotes
         stixCoreObjectOrStixCoreRelationshipId={id}
         stixCoreObjectOrStixCoreRelationshipNotes={data}
         paginationOptions={paginationOptions}
