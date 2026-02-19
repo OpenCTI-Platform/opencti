@@ -34453,7 +34453,6 @@ export type VocabularyFieldDefinition = {
 export enum VocabularyOrdering {
   Score = '_score',
   Category = 'category',
-  Description = 'description',
   Name = 'name',
   Order = 'order'
 }

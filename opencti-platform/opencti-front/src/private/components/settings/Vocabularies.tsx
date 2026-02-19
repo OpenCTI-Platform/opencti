@@ -145,6 +145,7 @@ const Vocabularies = () => {
     description: {
       id: 'description',
       percentWidth: 25,
+      isSortable: false,
     },
     usages: {
       id: 'usages',
