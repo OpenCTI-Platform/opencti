@@ -36,6 +36,7 @@ import { getChatbotProxy } from './httpChatbotProxy';
 import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
+import { AuthenticationProviderError } from '../modules/authenticationProvider/providers-logger';
 
 export const sanitizeReferer = (refererToSanitize) => {
   // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
@@ -479,8 +480,12 @@ const createApp = async (app, schema) => {
       const context = executionContext(`${provider}_strategy`);
       const logged = await callbackLogin();
       await sessionAuthenticateUser(context, req, logged, provider);
-    } catch {
-      setCookieError(res, 'Invalid authentication, please ask your administrator');
+    } catch (err) {
+      if (err instanceof AuthenticationProviderError) {
+        setCookieError(res, err.message);
+      } else {
+        setCookieError(res, 'Invalid authentication, please ask your administrator');
+      }
     } finally {
       const referer = req.body?.RelayState ?? req.session.referer;
       const sanitizedReferer = sanitizeReferer(referer);

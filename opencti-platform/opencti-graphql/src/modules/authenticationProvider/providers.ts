@@ -57,7 +57,7 @@ export const handleProviderLogin = async (logger: AuthenticationProviderLogger, 
   logger.info('User info resolved', info);
 
   if (!await isEnterpriseEdition(context)) {
-    throw new AuthenticationProviderError('This authentication strategy is only available with a valid Enterprise Edition license');
+    throw new AuthenticationProviderError('This authentication strategy is not available, please contact your administrator');
   }
 
   const user = await loginFromProvider(
