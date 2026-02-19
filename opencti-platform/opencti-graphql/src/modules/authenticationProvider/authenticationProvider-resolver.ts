@@ -6,11 +6,17 @@ import {
   editAuthenticationProvider,
   findAuthenticationProviderById,
   findAuthenticationProviderByIdPaginated,
+  getEnvManagerSecretVarName,
+  resolveProviderIdentifier,
 } from './authenticationProvider-domain';
 import type { BasicStoreEntityAuthenticationProvider } from './authenticationProvider-types';
+import { secretFieldsByType } from './authenticationProvider-domain';
+import { getRemoteCredentialsProviderFields, getRemoteCredentialsProviderSelector } from '../../config/credentials';
 import { DatabaseError } from '../../config/errors';
 import { isProviderRegisteredByInternalId } from './providers-configuration';
 import { isProviderStarting } from './providers';
+import { isNotEmptyField } from '../../database/utils';
+import conf from '../../config/conf';
 
 const levelToLevel = (level: string) => {
   switch (level) {
@@ -48,8 +54,50 @@ const runtimeStatus = (provider: BasicStoreEntityAuthenticationProvider): Authen
     : AuthenticationProviderRuntimeStatus.Error;
 };
 
+type SecretInfoResult = { source: 'EXTERNAL' | 'STORED' | 'MISSING'; external_provider_name?: string };
+
+const buildSecretInfos = (
+  type: string,
+  identifier: string,
+  configuration: Record<string, unknown>,
+): Record<string, SecretInfoResult> => {
+  const secretFields = secretFieldsByType[type as AuthenticationProviderType];
+  if (!secretFields) {
+    return {};
+  }
+
+  const prefix = `providers:${identifier}`;
+  const remoteProvider = getRemoteCredentialsProviderSelector(prefix);
+  const remoteProviderFields = remoteProvider ? getRemoteCredentialsProviderFields(prefix, remoteProvider) : [];
+
+  const result: Record<string, SecretInfoResult> = {};
+  for (const fieldName of secretFields) {
+    const confName = getEnvManagerSecretVarName(identifier, fieldName);
+    if (remoteProviderFields.includes(fieldName)) {
+      result[fieldName] = { source: 'EXTERNAL', external_provider_name: remoteProvider };
+    } else if (isNotEmptyField(conf.get(confName))) {
+      result[fieldName] = { source: 'EXTERNAL', external_provider_name: 'env' };
+    } else if (isNotEmptyField(configuration[`${fieldName}_encrypted`])) {
+      result[fieldName] = { source: 'STORED' };
+    } else {
+      result[fieldName] = { source: 'MISSING' };
+    }
+  }
+  return result;
+};
+
 const authenticationProviderResolver: Resolvers = {
   AuthenticationProvider: {
+    configuration: (parent) => {
+      const provider = parent as BasicStoreEntityAuthenticationProvider;
+      const config = provider.configuration as Record<string, unknown>;
+      const identifier = resolveProviderIdentifier(provider);
+      const secretInfos = buildSecretInfos(provider.type, identifier, config);
+      return {
+        ...config,
+        ...secretInfos,
+      } as any;
+    },
     authLogHistory: async (parent) => {
       const id = (parent as BasicStoreEntityAuthenticationProvider).internal_id;
       const entries = await redisGetAuthLogHistory(id);

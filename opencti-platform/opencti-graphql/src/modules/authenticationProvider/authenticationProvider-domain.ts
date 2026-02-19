@@ -24,7 +24,7 @@ import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify, redisDeleteAuthLogHistory } from '../../database/redis';
-import { BUS_TOPICS } from '../../config/conf';
+import conf, { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { unregisterStrategy } from './providers';
 import { isAuthenticationForcedFromEnv } from './providers-configuration';
@@ -53,18 +53,20 @@ const decryptAuthValue = async (value: string) => {
   return (await keyPair.decrypt(decodedBuffer)).toString();
 };
 
-export const retrieveSecrets = async (identifier: string, conf: any): Promise<SecretProvider> => {
+export const getEnvManagerSecretVarName = (identifier: string, field: string) => `secrets:providers:${identifier}:${field}`;
+
+export const retrieveSecrets = async (identifier: string, config: any): Promise<SecretProvider> => {
   const externallyManagedSecrets: Record<string, string> = await enrichWithRemoteCredentials(`providers:${identifier}`, {});
   const resolve = (field: string) => {
     const externalSecret = externallyManagedSecrets[field];
     if (isNotEmptyField(externalSecret)) {
       return externalSecret;
     }
-    const envManagedSecret = conf.get(`providers:${identifier}:config:${field}`);
-    if (isNotEmptyField(externalSecret)) {
+    const envManagedSecret = conf.get(getEnvManagerSecretVarName(identifier, field));
+    if (isNotEmptyField(envManagedSecret)) {
       return envManagedSecret;
     }
-    const encryptedValue = conf[`${field}_encrypted`];
+    const encryptedValue = config[`${field}_encrypted`];
     if (isNotEmptyField(encryptedValue)) {
       return decryptAuthValue(encryptedValue);
     }
@@ -83,7 +85,7 @@ export const retrieveSecrets = async (identifier: string, conf: any): Promise<Se
   };
 };
 
-export const secretFieldsByType: Record<AuthenticationProviderType, { key: string; mandatory: boolean }[]> = {
+export const secretFieldsByType: Record<AuthenticationProviderType, string[]> = {
   [AuthenticationProviderType.Oidc]: oidcSecretFields,
   [AuthenticationProviderType.Saml]: samlSecretFields,
   [AuthenticationProviderType.Ldap]: ldapSecretFields,
@@ -95,24 +97,24 @@ const graphQLToStoreConfiguration = async (
   existing?: BasicStoreEntityAuthenticationProvider<any>,
 ) => {
   const secretsFields = secretFieldsByType[type];
-  // duplicate input -> encrypt cleartext values and normalize null/undefined value to undefined
+  // duplicate input -> remove cleartext values and normalize null/undefined value to undefined
   const output = Object.fromEntries(Object.entries(input)
     .map(([key, value]) => [key, value ?? undefined]));
   output.type = type;
-  // Handle secrets fields
-  for await (const field of secretsFields) {
-    const { key: fieldName, mandatory } = field;
-    const clearTextFieldName = `${fieldName}_cleartext`;
-    const inputClearTextValue = input[clearTextFieldName] as string | undefined;
-    const previousEncryptedValue = existing?.configuration?.[`${fieldName}_encrypted`] as string | undefined;
-    const encryptedValue = inputClearTextValue && isNotEmptyField(inputClearTextValue)
-      ? await encryptAuthValue(inputClearTextValue) : previousEncryptedValue;
-    if (mandatory && !encryptedValue) {
-      throw FunctionalError('Secret field must be provided', { field: fieldName });
+  for await (const fieldName of secretsFields) {
+    delete output[fieldName]; // remove cleartext field if provided, it should not be stored
+    const encryptedFieldName = `${fieldName}_encrypted`;
+    const overrideInput = input[fieldName];
+    if (overrideInput) {
+      const newValue = (overrideInput as { new_value_cleartext?: string | null }).new_value_cleartext;
+      if (newValue !== undefined && newValue !== null) {
+        output[encryptedFieldName] = await encryptAuthValue(newValue);
+      } else {
+        delete output[encryptedFieldName]; // should not exist anyway, but just in case
+      }
+    } else {
+      output[encryptedFieldName] = existing?.configuration?.[encryptedFieldName];
     }
-    // Replace cleartext field by encrypted field
-    delete output[clearTextFieldName];
-    output[`${fieldName}_encrypted`] = encryptedValue;
   }
   return output;
 };

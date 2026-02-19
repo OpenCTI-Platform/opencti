@@ -25,6 +25,7 @@ import IconButton from '@common/button/IconButton';
 import AuthProviderGroupsFields from './AuthProviderGroupsFields';
 import AuthProviderOrganizationsFields from './AuthProviderOrganizationsFields';
 import AuthProviderUserInfoFields from './AuthProviderUserInfoFields';
+import SecretFieldControl, { type SecretAction, type SecretInfo } from './SecretFieldControl';
 import type { LdapProviderFormCreateMutation } from './__generated__/LdapProviderFormCreateMutation.graphql';
 import type { LdapProviderFormEditMutation } from './__generated__/LdapProviderFormEditMutation.graphql';
 import type { SSODefinitionEditionFragment$data } from './__generated__/SSODefinitionEditionFragment.graphql';
@@ -70,7 +71,8 @@ interface LdapFormValues {
   button_label_override: string;
   url: string;
   bind_dn: string;
-  bind_credentials_cleartext: string;
+  bind_credentials_action: SecretAction;
+  bind_credentials_new_value: string;
   search_base: string;
   search_filter: string;
   group_base: string;
@@ -119,7 +121,8 @@ const defaultValues: LdapFormValues = {
   button_label_override: '',
   url: '',
   bind_dn: '',
-  bind_credentials_cleartext: '',
+  bind_credentials_action: 'override',
+  bind_credentials_new_value: '',
   search_base: '',
   search_filter: '',
   group_base: '',
@@ -161,7 +164,8 @@ const buildInitialValues = (data: LdapProviderData): LdapFormValues => {
     button_label_override: data.button_label_override ?? '',
     url: conf.url ?? '',
     bind_dn: conf.bind_dn ?? '',
-    bind_credentials_cleartext: '',
+    bind_credentials_action: 'keep',
+    bind_credentials_new_value: '',
     search_base: conf.search_base ?? '',
     search_filter: conf.search_filter ?? '',
     group_base: conf.group_base ?? '',
@@ -221,9 +225,6 @@ const LdapProviderForm = ({
     group_filter: Yup.string().required(t_i18n('This field is required')),
     email_expr: Yup.string().required(t_i18n('This field is required')),
     name_expr: Yup.string().required(t_i18n('This field is required')),
-    ...(!isEditing && {
-      bind_credentials_cleartext: Yup.string().required(t_i18n('This field is required')),
-    }),
   });
 
   const initialValues = data ? buildInitialValues(data) : defaultValues;
@@ -242,7 +243,9 @@ const LdapProviderForm = ({
       configuration: {
         url: values.url,
         bind_dn: values.bind_dn,
-        bind_credentials_cleartext: values.bind_credentials_cleartext || null,
+        ...(values.bind_credentials_action === 'keep'
+          ? {}
+          : { bind_credentials: { new_value_cleartext: values.bind_credentials_new_value || null } }),
         search_base: values.search_base,
         search_filter: values.search_filter,
         group_base: values.group_base,
@@ -379,15 +382,12 @@ const LdapProviderForm = ({
                 required
                 style={{ marginTop: 20 }}
               />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="bind_credentials_cleartext"
-                label={isEditing ? t_i18n('Bind credentials (leave empty to keep current)') : t_i18n('Bind credentials')}
-                fullWidth
-                required={!isEditing}
-                style={{ marginTop: 20 }}
-                type="password"
+              <SecretFieldControl
+                secretInfo={(data?.configuration?.bind_credentials ?? null) as SecretInfo | null}
+                namePrefix="bind_credentials"
+                label={t_i18n('Bind credentials')}
+                isEditing={isEditing}
+                style={{ marginTop: 2.5 }}
               />
               <Field
                 component={TextField}

@@ -30,6 +30,10 @@ export const ssoDefinitionEditionFragment = graphql`
                 logout_remote
                 logout_callback_url
                 use_proxy
+                client_secret {
+                    source
+                    external_provider_name
+                }
                 user_info_mapping {
                     email_expr
                     name_expr
@@ -82,6 +86,14 @@ export const ssoDefinitionEditionFragment = graphql`
                 disable_request_acs_url
                 skip_request_compression
                 decryption_cert
+                private_key {
+                    source
+                    external_provider_name
+                }
+                decryption_pvk {
+                    source
+                    external_provider_name
+                }
                 user_info_mapping {
                     email_expr
                     name_expr
@@ -128,6 +140,10 @@ export const ssoDefinitionEditionFragment = graphql`
                 password_field
                 credentials_lookup
                 group_search_attributes
+                bind_credentials {
+                    source
+                    external_provider_name
+                }
                 user_info_mapping {
                     email_expr
                     name_expr

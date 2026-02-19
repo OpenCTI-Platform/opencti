@@ -4,16 +4,16 @@ import { isNotEmptyField } from '../database/utils';
 
 const CYBERARK_PROVIDER = 'cyberark';
 
-const getRemoveCredentialsProviderSelector = (prefix: string) => {
+export const getRemoteCredentialsProviderSelector = (prefix: string): string | undefined => {
   return conf.get(`${prefix}:credentials_provider:selector`);
 };
 
-const getRemoteCredentialsProviderFields = (prefix: string, provider: string) => {
-  return conf.get(`${prefix}:credentials_provider:${provider}:field_targets`) || conf.get(`${prefix}:credentials_provider:field_targets`);
+export const getRemoteCredentialsProviderFields = (prefix: string, provider: string): string[] => {
+  return conf.get(`${prefix}:credentials_provider:${provider}:field_targets`) || conf.get(`${prefix}:credentials_provider:field_targets`) || [];
 };
 
 export const getRemoteCredentialsFields = (prefix: string) => {
-  const provider = getRemoveCredentialsProviderSelector(prefix);
+  const provider = getRemoteCredentialsProviderSelector(prefix);
   if (provider) {
     return getRemoteCredentialsProviderFields(prefix, provider);
   }
@@ -21,7 +21,7 @@ export const getRemoteCredentialsFields = (prefix: string) => {
 };
 
 export const enrichWithRemoteCredentials = async (prefix: string, baseConfiguration: any) => {
-  const provider = getRemoveCredentialsProviderSelector(prefix);
+  const provider = getRemoteCredentialsProviderSelector(prefix);
   if (provider) {
     logApp.info('[OPENCTI] Remote credentials configuration detected', { provider, source: prefix });
     if (provider === CYBERARK_PROVIDER) {

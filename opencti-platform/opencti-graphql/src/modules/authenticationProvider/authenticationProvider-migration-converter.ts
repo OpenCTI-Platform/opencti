@@ -460,7 +460,7 @@ export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const configuration: OidcConfigurationInput = {
     issuer,
     client_id: clientId,
-    client_secret_cleartext: clientSecret,
+    client_secret: { new_value_cleartext: clientSecret },
     callback_url: callbackUrl,
     scopes: uniqueScopes,
     audience,
@@ -574,7 +574,7 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
     issuer,
     entry_point: entryPoint,
     idp_certificate: idpCertificate,
-    private_key_cleartext: privateKey,
+    private_key: { new_value_cleartext: privateKey },
     callback_url: resolvedCallbackUrl,
     logout_remote: logoutRemote,
     want_assertions_signed: wantAssertionsSigned,
@@ -589,7 +589,7 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
     disable_requested_authn_context: disableRequestedAuthnContext,
     disable_request_acs_url: disableRequestAcsUrl,
     skip_request_compression: skipRequestCompression,
-    decryption_pvk_cleartext: decryptionPvk,
+    decryption_pvk: { new_value_cleartext: decryptionPvk },
     decryption_cert: decryptionCert,
     user_info_mapping: userInfoMapping,
     groups_mapping: groupsMapping,
@@ -672,7 +672,7 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const configuration: LdapConfigurationInput = {
     url,
     bind_dn: bindDn,
-    bind_credentials_cleartext: bindCredentials ? String(bindCredentials) : null,
+    bind_credentials: bindCredentials ? { new_value_cleartext: String(bindCredentials) } : null,
     search_base: searchBase,
     search_filter: searchFilter,
     group_base: groupSearchBase,
@@ -808,7 +808,7 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
     const configuration: OidcConfigurationInput = {
       issuer,
       client_id: clientId,
-      client_secret_cleartext: clientSecret,
+      client_secret: { new_value_cleartext: clientSecret },
       callback_url: callbackUrl,
       scopes,
       audience: null,
@@ -847,7 +847,7 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
   const configuration: OidcConfigurationInput = {
     issuer,
     client_id: clientId,
-    client_secret_cleartext: clientSecret,
+    client_secret: { new_value_cleartext: clientSecret },
     callback_url: callbackUrl,
     scopes,
     audience: null,

@@ -11,7 +11,7 @@ const createLdapOptions = async (conf: LdapStoreConfiguration, secretsProvider: 
   server: {
     url: conf.url,
     bindDN: conf.bind_dn,
-    bindCredentials: await secretsProvider.mandatory('bind_credentials'),
+    bindCredentials: await secretsProvider.optional('bind_credentials'),
     searchBase: conf.search_base,
     searchFilter: conf.search_filter,
     searchAttributes: conf.search_attributes,

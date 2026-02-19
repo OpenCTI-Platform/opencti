@@ -15703,10 +15703,26 @@ input ExtraConfEntryInput {
   value: String!
 }
 
+enum SecretSource {
+  EXTERNAL
+  STORED
+  MISSING
+}
+
+type SecretInfo {
+  source: SecretSource!
+  external_provider_name: String
+}
+
+input OverrideSecretValueInput {
+  new_value_cleartext: String
+}
+
 type OidcConfiguration {
   type: AuthenticationProviderType!
   issuer: String!
   client_id: String!
+  client_secret: SecretInfo!
   scopes: [String!]
   audience: String
   callback_url: String
@@ -15722,7 +15738,7 @@ type OidcConfiguration {
 input OidcConfigurationInput {
   issuer: String!
   client_id: String!
-  client_secret_cleartext: String
+  client_secret: OverrideSecretValueInput
   callback_url: String
   scopes: [String!]
   audience: String
@@ -15740,6 +15756,7 @@ type SamlConfiguration {
   issuer: String!
   entry_point: String!
   idp_certificate: String!
+  private_key: SecretInfo!
   callback_url: String
   logout_remote: Boolean!
   want_assertions_signed: Boolean!
@@ -15753,6 +15770,7 @@ type SamlConfiguration {
   authn_context: [String!]
   disable_requested_authn_context: Boolean!
   disable_request_acs_url: Boolean!
+  decryption_pvk: SecretInfo!
   skip_request_compression: Boolean!
   decryption_cert: String
   user_info_mapping: UserInfoMapping!
@@ -15765,7 +15783,7 @@ input SamlConfigurationInput {
   issuer: String!
   entry_point: String!
   idp_certificate: String!
-  private_key_cleartext: String
+  private_key: OverrideSecretValueInput
   callback_url: String
   logout_remote: Boolean!
   want_assertions_signed: Boolean!
@@ -15780,7 +15798,7 @@ input SamlConfigurationInput {
   disable_requested_authn_context: Boolean
   disable_request_acs_url: Boolean
   skip_request_compression: Boolean
-  decryption_pvk_cleartext: String
+  decryption_pvk: OverrideSecretValueInput
   decryption_cert: String
   user_info_mapping: UserInfoMappingInput!
   groups_mapping: GroupsMappingInput!
@@ -15792,6 +15810,7 @@ type LdapConfiguration {
   type: AuthenticationProviderType!
   url: String!
   bind_dn: String!
+  bind_credentials: SecretInfo!
   search_base: String!
   search_filter: String!
   group_base: String!
@@ -15811,7 +15830,7 @@ type LdapConfiguration {
 input LdapConfigurationInput {
   url: String!
   bind_dn: String!
-  bind_credentials_cleartext: String
+  bind_credentials: OverrideSecretValueInput
   search_base: String!
   search_filter: String!
   group_base: String!

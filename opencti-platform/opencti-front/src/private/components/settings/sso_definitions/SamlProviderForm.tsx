@@ -30,6 +30,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import AuthProviderGroupsFields from './AuthProviderGroupsFields';
 import AuthProviderOrganizationsFields from './AuthProviderOrganizationsFields';
 import AuthProviderUserInfoFields from './AuthProviderUserInfoFields';
+import SecretFieldControl, { type SecretAction, type SecretInfo } from './SecretFieldControl';
 import type { SamlProviderFormCreateMutation } from './__generated__/SamlProviderFormCreateMutation.graphql';
 import type { SamlProviderFormEditMutation } from './__generated__/SamlProviderFormEditMutation.graphql';
 import type { SSODefinitionEditionFragment$data } from './__generated__/SSODefinitionEditionFragment.graphql';
@@ -78,7 +79,8 @@ interface SamlFormValues {
   issuer: string;
   entry_point: string;
   idp_certificate: string;
-  private_key_cleartext: string;
+  private_key_action: SecretAction;
+  private_key_new_value: string;
   logout_remote: boolean;
   want_assertions_signed: boolean;
   want_authn_response_signed: boolean;
@@ -92,7 +94,8 @@ interface SamlFormValues {
   disable_requested_authn_context: boolean;
   disable_request_acs_url: boolean;
   skip_request_compression: boolean;
-  decryption_pvk_cleartext: string;
+  decryption_pvk_action: SecretAction;
+  decryption_pvk_new_value: string;
   decryption_cert: string;
   email_expr: string;
   name_expr: string;
@@ -146,7 +149,8 @@ const defaultValues: SamlFormValues = {
   issuer: '',
   entry_point: '',
   idp_certificate: '',
-  private_key_cleartext: '',
+  private_key_action: 'override',
+  private_key_new_value: '',
   logout_remote: false,
   want_assertions_signed: false,
   want_authn_response_signed: false,
@@ -160,7 +164,8 @@ const defaultValues: SamlFormValues = {
   disable_requested_authn_context: false,
   disable_request_acs_url: false,
   skip_request_compression: false,
-  decryption_pvk_cleartext: '',
+  decryption_pvk_action: 'override',
+  decryption_pvk_new_value: '',
   decryption_cert: '',
   email_expr: 'email',
   name_expr: 'name',
@@ -196,7 +201,8 @@ const buildInitialValues = (data: SamlProviderData): SamlFormValues => {
     issuer: conf.issuer ?? '',
     entry_point: conf.entry_point ?? '',
     idp_certificate: conf.idp_certificate ?? '',
-    private_key_cleartext: '',
+    private_key_action: 'keep',
+    private_key_new_value: '',
     logout_remote: conf.logout_remote ?? false,
     want_assertions_signed: conf.want_assertions_signed ?? false,
     want_authn_response_signed: conf.want_authn_response_signed ?? false,
@@ -210,7 +216,8 @@ const buildInitialValues = (data: SamlProviderData): SamlFormValues => {
     disable_requested_authn_context: conf.disable_requested_authn_context ?? false,
     disable_request_acs_url: conf.disable_request_acs_url ?? false,
     skip_request_compression: conf.skip_request_compression ?? false,
-    decryption_pvk_cleartext: '',
+    decryption_pvk_action: 'keep',
+    decryption_pvk_new_value: '',
     decryption_cert: conf.decryption_cert ?? '',
     email_expr: conf.user_info_mapping?.email_expr ?? '',
     name_expr: conf.user_info_mapping?.name_expr ?? '',
@@ -299,7 +306,9 @@ const SamlProviderForm = ({
         issuer: values.issuer,
         entry_point: values.entry_point,
         idp_certificate: values.idp_certificate,
-        private_key_cleartext: values.private_key_cleartext || null,
+        ...(values.private_key_action === 'keep'
+          ? {}
+          : { private_key: { new_value_cleartext: values.private_key_new_value || null } }),
         callback_url: overrideCallbackUrl ? (values.callback_url || null) : null,
         logout_remote: values.logout_remote,
         want_assertions_signed: values.want_assertions_signed,
@@ -314,7 +323,9 @@ const SamlProviderForm = ({
         disable_requested_authn_context: values.disable_requested_authn_context,
         disable_request_acs_url: values.disable_request_acs_url,
         skip_request_compression: values.skip_request_compression,
-        decryption_pvk_cleartext: values.decryption_pvk_cleartext || null,
+        ...(values.decryption_pvk_action === 'keep'
+          ? {}
+          : { decryption_pvk: { new_value_cleartext: values.decryption_pvk_new_value || null } }),
         decryption_cert: values.decryption_cert || null,
         user_info_mapping: {
           email_expr: values.email_expr,
@@ -574,16 +585,13 @@ const SamlProviderForm = ({
                   rows={4}
                   style={{ marginTop: 20 }}
                 />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="private_key_cleartext"
-                  label={isEditing ? t_i18n('Private key (leave empty to keep current)') : t_i18n('Private key')}
-                  fullWidth
+                <SecretFieldControl
+                  secretInfo={(data?.configuration?.private_key ?? null) as SecretInfo | null}
+                  namePrefix="private_key"
+                  label={t_i18n('Private key')}
+                  isEditing={isEditing}
                   multiline
-                  rows={4}
-                  style={{ marginTop: 20 }}
-                  type="password"
+                  style={{ marginTop: 2.5 }}
                 />
 
                 <AuthProviderUserInfoFields />
@@ -653,15 +661,13 @@ const SamlProviderForm = ({
                       rows={4}
                       style={{ marginTop: 20 }}
                     />
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="decryption_pvk_cleartext"
-                      label={isEditing ? t_i18n('Decryption private key (leave empty to keep current)') : t_i18n('Decryption private key')}
-                      fullWidth
+                    <SecretFieldControl
+                      secretInfo={(data?.configuration?.decryption_pvk ?? null) as SecretInfo | null}
+                      namePrefix="decryption_pvk"
+                      label={t_i18n('Decryption private key')}
+                      isEditing={isEditing}
                       multiline
-                      rows={4}
-                      style={{ marginTop: 20 }}
+                      style={{ marginTop: 2.5 }}
                     />
                     <Field
                       component={TextField}

@@ -30,6 +30,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import AuthProviderGroupsFields from './AuthProviderGroupsFields';
 import AuthProviderOrganizationsFields from './AuthProviderOrganizationsFields';
 import AuthProviderUserInfoFields from './AuthProviderUserInfoFields';
+import SecretFieldControl, { type SecretAction, type SecretInfo } from './SecretFieldControl';
 import type { OidcProviderFormCreateMutation } from './__generated__/OidcProviderFormCreateMutation.graphql';
 import type { OidcProviderFormEditMutation } from './__generated__/OidcProviderFormEditMutation.graphql';
 import type { SSODefinitionEditionFragment$data } from './__generated__/SSODefinitionEditionFragment.graphql';
@@ -77,7 +78,8 @@ interface OidcFormValues {
   callback_url: string;
   issuer: string;
   client_id: string;
-  client_secret_cleartext: string;
+  client_secret_action: SecretAction;
+  client_secret_new_value: string;
   scopes: string;
   audience: string;
   logout_remote: boolean;
@@ -134,7 +136,8 @@ const defaultValues: OidcFormValues = {
   callback_url: '',
   issuer: '',
   client_id: '',
-  client_secret_cleartext: '',
+  client_secret_action: 'override',
+  client_secret_new_value: '',
   scopes: '',
   audience: '',
   logout_remote: false,
@@ -173,7 +176,8 @@ const buildInitialValues = (data: OidcProviderData): OidcFormValues => {
     callback_url: conf.callback_url ?? '',
     issuer: conf.issuer ?? '',
     client_id: conf.client_id ?? '',
-    client_secret_cleartext: '',
+    client_secret_action: 'keep',
+    client_secret_new_value: '',
     scopes: (conf.scopes ?? []).join(', '),
     audience: conf.audience ?? '',
     logout_remote: conf.logout_remote ?? false,
@@ -242,9 +246,6 @@ const OidcProviderForm = ({
     client_id: Yup.string().required(t_i18n('This field is required')),
     email_expr: Yup.string().required(t_i18n('This field is required')),
     name_expr: Yup.string().required(t_i18n('This field is required')),
-    ...(!isEditing && {
-      client_secret_cleartext: Yup.string().required(t_i18n('This field is required')),
-    }),
     ...(overrideIdentifier && {
       identifier_override: Yup.string().trim(),
     }),
@@ -267,7 +268,9 @@ const OidcProviderForm = ({
       configuration: {
         issuer: values.issuer,
         client_id: values.client_id,
-        client_secret_cleartext: values.client_secret_cleartext || null,
+        ...(values.client_secret_action === 'keep'
+          ? {}
+          : { client_secret: { new_value_cleartext: values.client_secret_new_value || null } }),
         callback_url: overrideCallbackUrl ? (values.callback_url || null) : null,
         scopes: values.scopes ? values.scopes.split(',').map((s) => s.trim()).filter(Boolean) : [],
         audience: values.audience || null,
@@ -521,15 +524,12 @@ const OidcProviderForm = ({
                   required
                   style={{ marginTop: 20 }}
                 />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="client_secret_cleartext"
-                  label={isEditing ? t_i18n('Client secret (leave empty to keep current)') : t_i18n('Client secret')}
-                  fullWidth
-                  required={!isEditing}
-                  style={{ marginTop: 20 }}
-                  type="password"
+                <SecretFieldControl
+                  secretInfo={(data?.configuration?.client_secret ?? null) as SecretInfo | null}
+                  namePrefix="client_secret"
+                  label={t_i18n('Client secret')}
+                  isEditing={isEditing}
+                  style={{ marginTop: 2.5 }}
                 />
 
                 <AuthProviderUserInfoFields />

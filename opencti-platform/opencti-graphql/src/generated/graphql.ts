@@ -13893,6 +13893,7 @@ export enum LanguagesOrdering {
 export type LdapConfiguration = {
   __typename?: 'LdapConfiguration';
   allow_self_signed: Scalars['Boolean']['output'];
+  bind_credentials: SecretInfo;
   bind_dn: Scalars['String']['output'];
   credentials_lookup?: Maybe<Scalars['String']['output']>;
   extra_conf: Array<ExtraConfEntry>;
@@ -13913,7 +13914,7 @@ export type LdapConfiguration = {
 
 export type LdapConfigurationInput = {
   allow_self_signed: Scalars['Boolean']['input'];
-  bind_credentials_cleartext?: InputMaybe<Scalars['String']['input']>;
+  bind_credentials?: InputMaybe<OverrideSecretValueInput>;
   bind_dn: Scalars['String']['input'];
   credentials_lookup?: InputMaybe<Scalars['String']['input']>;
   extra_conf?: InputMaybe<Array<ExtraConfEntryInput>>;
@@ -20412,6 +20413,7 @@ export type OidcConfiguration = {
   audience?: Maybe<Scalars['String']['output']>;
   callback_url?: Maybe<Scalars['String']['output']>;
   client_id: Scalars['String']['output'];
+  client_secret: SecretInfo;
   extra_conf: Array<ExtraConfEntry>;
   groups_mapping: GroupsMapping;
   issuer: Scalars['String']['output'];
@@ -20428,7 +20430,7 @@ export type OidcConfigurationInput = {
   audience?: InputMaybe<Scalars['String']['input']>;
   callback_url?: InputMaybe<Scalars['String']['input']>;
   client_id: Scalars['String']['input'];
-  client_secret_cleartext?: InputMaybe<Scalars['String']['input']>;
+  client_secret?: InputMaybe<OverrideSecretValueInput>;
   extra_conf: Array<ExtraConfEntryInput>;
   groups_mapping: GroupsMappingInput;
   issuer: Scalars['String']['input'];
@@ -21146,6 +21148,10 @@ export type OtpElement = {
   __typename?: 'OtpElement';
   secret: Scalars['String']['output'];
   uri: Scalars['String']['output'];
+};
+
+export type OverrideSecretValueInput = {
+  new_value_cleartext?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type OverviewMetrics = {
@@ -27553,6 +27559,7 @@ export type SamlConfiguration = {
   authn_context?: Maybe<Array<Scalars['String']['output']>>;
   callback_url?: Maybe<Scalars['String']['output']>;
   decryption_cert?: Maybe<Scalars['String']['output']>;
+  decryption_pvk: SecretInfo;
   digest_algorithm?: Maybe<Scalars['String']['output']>;
   disable_request_acs_url: Scalars['Boolean']['output'];
   disable_requested_authn_context: Scalars['Boolean']['output'];
@@ -27565,6 +27572,7 @@ export type SamlConfiguration = {
   issuer: Scalars['String']['output'];
   logout_remote: Scalars['Boolean']['output'];
   organizations_mapping: OrganizationsMapping;
+  private_key: SecretInfo;
   signature_algorithm?: Maybe<Scalars['String']['output']>;
   signing_cert?: Maybe<Scalars['String']['output']>;
   skip_request_compression: Scalars['Boolean']['output'];
@@ -27579,7 +27587,7 @@ export type SamlConfigurationInput = {
   authn_context?: InputMaybe<Array<Scalars['String']['input']>>;
   callback_url?: InputMaybe<Scalars['String']['input']>;
   decryption_cert?: InputMaybe<Scalars['String']['input']>;
-  decryption_pvk_cleartext?: InputMaybe<Scalars['String']['input']>;
+  decryption_pvk?: InputMaybe<OverrideSecretValueInput>;
   digest_algorithm?: InputMaybe<Scalars['String']['input']>;
   disable_request_acs_url?: InputMaybe<Scalars['Boolean']['input']>;
   disable_requested_authn_context?: InputMaybe<Scalars['Boolean']['input']>;
@@ -27592,7 +27600,7 @@ export type SamlConfigurationInput = {
   issuer: Scalars['String']['input'];
   logout_remote: Scalars['Boolean']['input'];
   organizations_mapping: OrganizationsMappingInput;
-  private_key_cleartext?: InputMaybe<Scalars['String']['input']>;
+  private_key?: InputMaybe<OverrideSecretValueInput>;
   signature_algorithm?: InputMaybe<Scalars['String']['input']>;
   signing_cert?: InputMaybe<Scalars['String']['input']>;
   skip_request_compression?: InputMaybe<Scalars['Boolean']['input']>;
@@ -27653,6 +27661,18 @@ export type SearchMetrics = {
   fetch_total?: Maybe<Scalars['String']['output']>;
   query_total?: Maybe<Scalars['String']['output']>;
 };
+
+export type SecretInfo = {
+  __typename?: 'SecretInfo';
+  external_provider_name?: Maybe<Scalars['String']['output']>;
+  source: SecretSource;
+};
+
+export enum SecretSource {
+  External = 'EXTERNAL',
+  Missing = 'MISSING',
+  Stored = 'STORED'
+}
 
 export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Sector';
@@ -37995,6 +38015,7 @@ export type ResolversTypes = ResolversObject<{
   OrganizationsMappingInput: OrganizationsMappingInput;
   OrganizationsOrdering: OrganizationsOrdering;
   OtpElement: ResolverTypeWrapper<OtpElement>;
+  OverrideSecretValueInput: OverrideSecretValueInput;
   OverviewMetrics: ResolverTypeWrapper<OverviewMetrics>;
   OverviewWidgetCustomization: ResolverTypeWrapper<OverviewWidgetCustomization>;
   PackageStatus: PackageStatus;
@@ -38135,6 +38156,8 @@ export type ResolversTypes = ResolversObject<{
   SavedFilterOrdering: SavedFilterOrdering;
   ScaleAttribute: ResolverTypeWrapper<ScaleAttribute>;
   SearchMetrics: ResolverTypeWrapper<SearchMetrics>;
+  SecretInfo: ResolverTypeWrapper<SecretInfo>;
+  SecretSource: SecretSource;
   Sector: ResolverTypeWrapper<Omit<Sector, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentSectors' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'subSectors' | 'targetedOrganizations' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversTypes['OpenCtiFile']>, cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, parentSectors?: Maybe<ResolversTypes['SectorConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, status?: Maybe<ResolversTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, subSectors?: Maybe<ResolversTypes['SectorConnection']>, targetedOrganizations?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   SectorAddInput: SectorAddInput;
   SectorConnection: ResolverTypeWrapper<Omit<SectorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['SectorEdge']>>> }>;
@@ -38990,6 +39013,7 @@ export type ResolversParentTypes = ResolversObject<{
   OrganizationsMapping: OrganizationsMapping;
   OrganizationsMappingInput: OrganizationsMappingInput;
   OtpElement: OtpElement;
+  OverrideSecretValueInput: OverrideSecretValueInput;
   OverviewMetrics: OverviewMetrics;
   OverviewWidgetCustomization: OverviewWidgetCustomization;
   PageInfo: PageInfo;
@@ -39113,6 +39137,7 @@ export type ResolversParentTypes = ResolversObject<{
   SavedFilterEdge: Omit<SavedFilterEdge, 'node'> & { node: ResolversParentTypes['SavedFilter'] };
   ScaleAttribute: ScaleAttribute;
   SearchMetrics: SearchMetrics;
+  SecretInfo: SecretInfo;
   Sector: Omit<Sector, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentSectors' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'subSectors' | 'targetedOrganizations' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, parentSectors?: Maybe<ResolversParentTypes['SectorConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, status?: Maybe<ResolversParentTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, subSectors?: Maybe<ResolversParentTypes['SectorConnection']>, targetedOrganizations?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   SectorAddInput: SectorAddInput;
   SectorConnection: Omit<SectorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['SectorEdge']>>> };
@@ -44037,6 +44062,7 @@ export type LanguageEdgeResolvers<ContextType = any, ParentType extends Resolver
 
 export type LdapConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['LdapConfiguration'] = ResolversParentTypes['LdapConfiguration']> = ResolversObject<{
   allow_self_signed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  bind_credentials?: Resolver<ResolversTypes['SecretInfo'], ParentType, ContextType>;
   bind_dn?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   credentials_lookup?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   extra_conf?: Resolver<Array<ResolversTypes['ExtraConfEntry']>, ParentType, ContextType>;
@@ -45706,6 +45732,7 @@ export type OidcConfigurationResolvers<ContextType = any, ParentType extends Res
   audience?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   callback_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   client_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  client_secret?: Resolver<ResolversTypes['SecretInfo'], ParentType, ContextType>;
   extra_conf?: Resolver<Array<ResolversTypes['ExtraConfEntry']>, ParentType, ContextType>;
   groups_mapping?: Resolver<ResolversTypes['GroupsMapping'], ParentType, ContextType>;
   issuer?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -47423,6 +47450,7 @@ export type SamlConfigurationResolvers<ContextType = any, ParentType extends Res
   authn_context?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   callback_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   decryption_cert?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  decryption_pvk?: Resolver<ResolversTypes['SecretInfo'], ParentType, ContextType>;
   digest_algorithm?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   disable_request_acs_url?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   disable_requested_authn_context?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -47435,6 +47463,7 @@ export type SamlConfigurationResolvers<ContextType = any, ParentType extends Res
   issuer?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   logout_remote?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   organizations_mapping?: Resolver<ResolversTypes['OrganizationsMapping'], ParentType, ContextType>;
+  private_key?: Resolver<ResolversTypes['SecretInfo'], ParentType, ContextType>;
   signature_algorithm?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   signing_cert?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   skip_request_compression?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -47476,6 +47505,11 @@ export type ScaleAttributeResolvers<ContextType = any, ParentType extends Resolv
 export type SearchMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SearchMetrics'] = ResolversParentTypes['SearchMetrics']> = ResolversObject<{
   fetch_total?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   query_total?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type SecretInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['SecretInfo'] = ResolversParentTypes['SecretInfo']> = ResolversObject<{
+  external_provider_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  source?: Resolver<ResolversTypes['SecretSource'], ParentType, ContextType>;
 }>;
 
 export type SectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Sector'] = ResolversParentTypes['Sector']> = ResolversObject<{
@@ -50841,6 +50875,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   SavedFilterEdge?: SavedFilterEdgeResolvers<ContextType>;
   ScaleAttribute?: ScaleAttributeResolvers<ContextType>;
   SearchMetrics?: SearchMetricsResolvers<ContextType>;
+  SecretInfo?: SecretInfoResolvers<ContextType>;
   Sector?: SectorResolvers<ContextType>;
   SectorConnection?: SectorConnectionResolvers<ContextType>;
   SectorEdge?: SectorEdgeResolvers<ContextType>;
