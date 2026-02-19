@@ -1,7 +1,10 @@
 import { useCallback } from 'react';
 import { Connection, useReactFlow, MarkerType, Edge, Node } from 'reactflow';
+import { useTheme } from '@mui/styles';
+import type { Theme } from '../../../../../../components/Theme';
 
 export const useStatusConnection = () => {
+  const theme = useTheme<Theme>();
   const { setNodes, setEdges, getNode } = useReactFlow();
 
   const onConnect = useCallback((params: Connection) => {
@@ -37,7 +40,7 @@ export const useStatusConnection = () => {
           source: transitionId,
           target: targetNode.id!,
           type: 'transition',
-          markerEnd: { type: MarkerType.ArrowClosed },
+          markerEnd: { type: MarkerType.ArrowClosed, color: theme.palette.chip?.main },
         },
       ];
 

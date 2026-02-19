@@ -2,8 +2,12 @@ import { useMemo } from 'react';
 import { Node, Edge, MarkerType } from 'reactflow';
 import { colorPalette } from '../utils'; // Adjust path
 import { SubTypeWorkflowDefinitionQuery$data } from '../../__generated__/SubTypeWorkflowDefinitionQuery.graphql';
+import { useTheme } from '@mui/styles';
+import type { Theme } from '../../../../../../components/Theme';
 
 export const useWorkflowInitialElements = (workflowDefinition: SubTypeWorkflowDefinitionQuery$data['workflowDefinition']) => {
+  const theme = useTheme<Theme>();
+
   return useMemo(() => {
     if (!workflowDefinition) return { initialNodes: [], initialEdges: [] };
 
@@ -38,7 +42,7 @@ export const useWorkflowInitialElements = (workflowDefinition: SubTypeWorkflowDe
           type: 'transition',
           source: transitionId,
           target: transition.to,
-          markerEnd: { type: MarkerType.ArrowClosed },
+          markerEnd: { type: MarkerType.ArrowClosed, color: theme.palette.chip?.main },
         },
       ];
     });
