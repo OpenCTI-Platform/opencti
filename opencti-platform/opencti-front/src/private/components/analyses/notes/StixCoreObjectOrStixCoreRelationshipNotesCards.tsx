@@ -37,7 +37,7 @@ import SliderField from '../../../../components/fields/SliderField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { convertMarking } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import AddNotesFunctionalComponent from './AddNotesFunctionalComponent';
+import AddNotes from './AddNotes';
 import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 
 export const stixCoreObjectOrStixCoreRelationshipNotesCardsQuery = graphql`
@@ -155,7 +155,7 @@ const Header = ({ title, id, data, paginationOptions, onToggleWrite }: HeaderPro
             <EditOutlined fontSize="small" />
           </IconButton>
 
-          <AddNotesFunctionalComponent
+          <AddNotes
             stixCoreObjectOrStixCoreRelationshipId={id}
             stixCoreObjectOrStixCoreRelationshipNotes={data}
             paginationOptions={paginationOptions}
