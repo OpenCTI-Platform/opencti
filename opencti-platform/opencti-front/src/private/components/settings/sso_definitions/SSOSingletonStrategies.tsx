@@ -129,9 +129,9 @@ const SSOSingletonStrategiesContent = () => {
   };
 
   const drawerTitles: Record<StrategyType, string> = {
-    local: t_i18n('Local Authentication'),
-    cert: t_i18n('Client Certificate Authentication'),
-    header: t_i18n('HTTP Headers Authentication'),
+    local: t_i18n('Update Local Authentication'),
+    cert: t_i18n('Update Client Certificate Authentication'),
+    header: t_i18n('Update HTTP Headers Authentication'),
   };
 
   return (
