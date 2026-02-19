@@ -166,7 +166,6 @@
     "express": "5.2.1",
     "globals": "16.5.0",
     "http-proxy-middleware": "3.0.5",
-    "i18n-auto-translation": "2.2.3",
     "jsdom": "27.3.0",
     "knip": "5.83.1",
     "license-checker-rseidelsohn": "4.4.2",
