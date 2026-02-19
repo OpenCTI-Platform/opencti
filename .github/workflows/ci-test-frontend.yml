@@ -157,7 +157,7 @@ jobs:
               npm install -g corepack
               cp /home/workspace/opencti-platform/.yarnrc.yml .
               yarn install
-              npx playwright install --with-deps chromium
+              yarn dlx playwright install --with-deps chromium
               yarn build
               yarn test:e2e
             '
