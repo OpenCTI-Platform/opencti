@@ -453,8 +453,7 @@ describe('convertOidcEnvConfig', () => {
 
     const result = convertOidcEnvConfig('oic', entry);
     expect(result.configuration.callback_url).toBe('https://opencti.example.com/auth/oic/callback');
-    // callback_url is provided via redirect_uris, so identifier_override should be null
-    expect(result.base.identifier_override).toBeNull();
+    expect(result.base.identifier_override).toBe('oic');
   });
 
   it('should convert redirect_uris string to callback_url', () => {
@@ -470,7 +469,7 @@ describe('convertOidcEnvConfig', () => {
 
     const result = convertOidcEnvConfig('oic', entry);
     expect(result.configuration.callback_url).toBe('https://opencti.example.com/auth/oic/callback');
-    expect(result.base.identifier_override).toBeNull();
+    expect(result.base.identifier_override).toBe('oic');
   });
 
   it('should prefer callback_url over redirect_uris', () => {
@@ -518,7 +517,59 @@ describe('convertOidcEnvConfig', () => {
     };
 
     const result = convertOidcEnvConfig('oic', entry);
-    expect(result.warnings).toContain('roles_management is deprecated and has been ignored.');
+    expect(result.warnings).toContain('roles_management is deprecated and has been migrated as groups_management.');
+  });
+
+  it('should use roles_management as fallback when groups_management is absent (OIDC)', () => {
+    const entry: EnvProviderEntry = {
+      strategy: 'OpenIDConnectStrategy',
+      config: {
+        issuer: 'x', client_id: 'c', client_secret: 's',
+        roles_management: {
+          role_attributes: ['custom_roles'],
+          roles_mapping: ['admin:admin-group', 'editor:editor-group'],
+        },
+      },
+    };
+
+    const result = convertOidcEnvConfig('oic', entry);
+    // role_attributes maps to groups_path for OIDC
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['tokens.access_token.custom_roles']);
+    expect(result.configuration.groups_mapping.groups_mapping).toStrictEqual([
+      { provider: 'admin', platform: 'admin-group' },
+      { provider: 'editor', platform: 'editor-group' },
+    ]);
+    expect(result.warnings).toContain('roles_management is deprecated and has been migrated as groups_management.');
+    // roles_management should not leak into extra_conf
+    const extraKeys = result.configuration.extra_conf.map((e) => e.key);
+    expect(extraKeys).not.toContain('roles_management');
+  });
+
+  it('should prefer groups_management over roles_management when both are present (OIDC)', () => {
+    const entry: EnvProviderEntry = {
+      strategy: 'OpenIDConnectStrategy',
+      config: {
+        issuer: 'x', client_id: 'c', client_secret: 's',
+        groups_management: {
+          groups_path: ['real_groups'],
+          groups_mapping: ['grp1:platform1'],
+        },
+        roles_management: {
+          role_attributes: ['ignored_roles'],
+          roles_mapping: ['ignored:ignored'],
+        },
+      },
+    };
+
+    const result = convertOidcEnvConfig('oic', entry);
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['tokens.access_token.real_groups']);
+    expect(result.configuration.groups_mapping.groups_mapping).toStrictEqual([
+      { provider: 'grp1', platform: 'platform1' },
+    ]);
+    // Both consumed, neither in extra_conf
+    const extraKeys = result.configuration.extra_conf.map((e) => e.key);
+    expect(extraKeys).not.toContain('roles_management');
+    expect(extraKeys).not.toContain('groups_management');
   });
 
   it('should set advanced fields when present', () => {
@@ -551,8 +602,7 @@ describe('convertOidcEnvConfig', () => {
 
     const result = convertOidcEnvConfig('oic', entry);
     expect(result.configuration.callback_url).toBe('https://example.com/auth/oic/callback');
-    // When callback_url is provided, identifier_override should be null
-    expect(result.base.identifier_override).toBeNull();
+    expect(result.base.identifier_override).toBe('oic');
     const extraKeys = result.configuration.extra_conf.map((e) => e.key);
     expect(extraKeys).not.toContain('callback_url');
   });
@@ -602,10 +652,10 @@ describe('convertSamlEnvConfig', () => {
     expect(result.configuration.force_reauthentication).toBe(false);
     expect(result.warnings).toStrictEqual([]);
 
-    // Default mapping values are always populated (never hidden)
+    // Default mapping values — SAML defaults to nameID for email and name
     expect(result.configuration.user_info_mapping).toStrictEqual({
-      email_expr: 'email',
-      name_expr: 'name',
+      email_expr: 'nameID',
+      name_expr: 'nameID',
       firstname_expr: null,
       lastname_expr: null,
     });
@@ -685,8 +735,8 @@ describe('convertSamlEnvConfig', () => {
     };
 
     const result = convertSamlEnvConfig('saml', entry);
-    expect(result.configuration.user_info_mapping.email_expr).toBe('email');
-    expect(result.configuration.user_info_mapping.name_expr).toBe('name');
+    expect(result.configuration.user_info_mapping.email_expr).toBe('nameID');
+    expect(result.configuration.user_info_mapping.name_expr).toBe('nameID');
   });
 
   it('should convert SAML groups management with group_attributes', () => {
@@ -801,8 +851,7 @@ describe('convertSamlEnvConfig', () => {
     const result = convertSamlEnvConfig('saml', entry);
     // saml_callback_url takes priority over callback_url
     expect(result.configuration.callback_url).toBe('https://example.com/auth/saml/callback');
-    // When callback_url is provided, identifier_override should be null
-    expect(result.base.identifier_override).toBeNull();
+    expect(result.base.identifier_override).toBe('saml');
     const extraKeys = result.configuration.extra_conf.map((e) => e.key);
     expect(extraKeys).not.toContain('saml_callback_url');
     expect(extraKeys).not.toContain('callback_url');
@@ -819,8 +868,7 @@ describe('convertSamlEnvConfig', () => {
 
     const result = convertSamlEnvConfig('saml', entry);
     expect(result.configuration.callback_url).toBe('https://example.com/auth/saml/callback');
-    // When callback_url is provided, identifier_override should be null
-    expect(result.base.identifier_override).toBeNull();
+    expect(result.base.identifier_override).toBe('saml');
   });
 
   it('should emit warning for roles_management (deprecated)', () => {
@@ -833,7 +881,57 @@ describe('convertSamlEnvConfig', () => {
     };
 
     const result = convertSamlEnvConfig('saml', entry);
-    expect(result.warnings).toContain('roles_management is deprecated and has been ignored.');
+    expect(result.warnings).toContain('roles_management is deprecated and has been migrated as groups_management.');
+  });
+
+  it('should use roles_management as fallback when groups_management is absent (SAML)', () => {
+    const entry: EnvProviderEntry = {
+      strategy: 'SamlStrategy',
+      config: {
+        issuer: 'x', entry_point: 'y', cert: 'z',
+        roles_management: {
+          role_attributes: ['saml_role', 'other_role'],
+          roles_mapping: ['role_a:group_a', 'role_b:group_b'],
+        },
+      },
+    };
+
+    const result = convertSamlEnvConfig('saml', entry);
+    // role_attributes maps to group_attributes (used as groups_expr) for SAML
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['saml_role', 'other_role']);
+    expect(result.configuration.groups_mapping.groups_mapping).toStrictEqual([
+      { provider: 'role_a', platform: 'group_a' },
+      { provider: 'role_b', platform: 'group_b' },
+    ]);
+    expect(result.warnings).toContain('roles_management is deprecated and has been migrated as groups_management.');
+    const extraKeys = result.configuration.extra_conf.map((e) => e.key);
+    expect(extraKeys).not.toContain('roles_management');
+  });
+
+  it('should prefer groups_management over roles_management when both are present (SAML)', () => {
+    const entry: EnvProviderEntry = {
+      strategy: 'SamlStrategy',
+      config: {
+        issuer: 'x', entry_point: 'y', cert: 'z',
+        groups_management: {
+          group_attributes: ['real_groups'],
+          groups_mapping: ['grp1:platform1'],
+        },
+        roles_management: {
+          role_attributes: ['ignored'],
+          roles_mapping: ['ignored:ignored'],
+        },
+      },
+    };
+
+    const result = convertSamlEnvConfig('saml', entry);
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['real_groups']);
+    expect(result.configuration.groups_mapping.groups_mapping).toStrictEqual([
+      { provider: 'grp1', platform: 'platform1' },
+    ]);
+    const extraKeys = result.configuration.extra_conf.map((e) => e.key);
+    expect(extraKeys).not.toContain('roles_management');
+    expect(extraKeys).not.toContain('groups_management');
   });
 
   it('should handle disabled SAML config', () => {
@@ -1093,7 +1191,55 @@ describe('convertLdapEnvConfig', () => {
     };
 
     const result = convertLdapEnvConfig('ldap', entry);
-    expect(result.warnings).toContain('roles_management is deprecated and has been ignored.');
+    expect(result.warnings).toContain('roles_management is deprecated and has been migrated as groups_management.');
+  });
+
+  it('should use roles_management as fallback when groups_management is absent (LDAP)', () => {
+    const entry: EnvProviderEntry = {
+      strategy: 'LdapStrategy',
+      config: {
+        url: 'ldap://x:389', bind_dn: 'x', search_base: 'x',
+        roles_management: {
+          roles_mapping: ['admin_role:admin-group', 'user_role:user-group'],
+        },
+      },
+    };
+
+    const result = convertLdapEnvConfig('ldap', entry);
+    expect(result.configuration.groups_mapping.groups_mapping).toStrictEqual([
+      { provider: 'admin_role', platform: 'admin-group' },
+      { provider: 'user_role', platform: 'user-group' },
+    ]);
+    // LDAP defaults group_attribute to 'cn' when not provided
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['cn']);
+    expect(result.warnings).toContain('roles_management is deprecated and has been migrated as groups_management.');
+    const extraKeys = (result.configuration.extra_conf ?? []).map((e) => e.key);
+    expect(extraKeys).not.toContain('roles_management');
+  });
+
+  it('should prefer groups_management over roles_management when both are present (LDAP)', () => {
+    const entry: EnvProviderEntry = {
+      strategy: 'LdapStrategy',
+      config: {
+        url: 'ldap://x:389', bind_dn: 'x', search_base: 'x',
+        groups_management: {
+          group_attribute: 'memberOf',
+          groups_mapping: ['grp1:platform1'],
+        },
+        roles_management: {
+          roles_mapping: ['ignored:ignored'],
+        },
+      },
+    };
+
+    const result = convertLdapEnvConfig('ldap', entry);
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['memberOf']);
+    expect(result.configuration.groups_mapping.groups_mapping).toStrictEqual([
+      { provider: 'grp1', platform: 'platform1' },
+    ]);
+    const extraKeys = (result.configuration.extra_conf ?? []).map((e) => e.key);
+    expect(extraKeys).not.toContain('roles_management');
+    expect(extraKeys).not.toContain('groups_management');
   });
 });
 
@@ -1122,11 +1268,10 @@ describe('convertAllEnvProviders', () => {
 
     const results = convertAllSSOEnvProviders(envProviders);
 
-    expect(results).toHaveLength(4);
+    expect(results).toHaveLength(3);
     expect(results[0].envKey).toBe('oic');
     expect(results[1].envKey).toBe('saml');
     expect(results[2].envKey).toBe('ldap');
-    expect(results[3].envKey).toBe('local');
   });
 
   it('should handle empty env providers', () => {

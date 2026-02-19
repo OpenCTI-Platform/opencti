@@ -37,9 +37,62 @@ import { resolveProviderIdentifier } from './authenticationProvider-domain';
 // ---------------------------------------------------------------------------
 
 /**
+ * Reverse mapping from camelCase (passport-native) to snake_case (OpenCTI config).
+ * Users who wrote camelCase keys directly in their config files (instead of the
+ * documented snake_case) still get their values picked up during migration.
+ */
+const CAMEL_TO_SNAKE: Record<string, string> = {
+  clientID: 'client_id',
+  clientSecret: 'client_secret',
+  callbackURL: 'callback_url',
+  bindDN: 'bind_dn',
+  bindCredentials: 'bind_credentials',
+  searchBase: 'search_base',
+  searchFilter: 'search_filter',
+  searchAttributes: 'search_attributes',
+  usernameField: 'username_field',
+  passwordField: 'password_field',
+  credentialsLookup: 'credentials_lookup',
+  groupSearchBase: 'group_search_base',
+  groupSearchFilter: 'group_search_filter',
+  groupSearchAttributes: 'group_search_attributes',
+  callbackUrl: 'saml_callback_url',
+  identifierFormat: 'identifier_format',
+  entryPoint: 'entry_point',
+  privateKey: 'private_key',
+  signingCert: 'signing_cert',
+  signatureAlgorithm: 'signature_algorithm',
+  digestAlgorithm: 'digest_algorithm',
+  wantAssertionsSigned: 'want_assertions_signed',
+  wantAuthnResponseSigned: 'want_authn_response_signed',
+  authnContext: 'authn_context',
+  disableRequestedAuthnContext: 'disable_requested_authn_context',
+  forceAuthn: 'force_authn',
+  disableRequestAcsUrl: 'disable_request_acs_url',
+  skipRequestCompression: 'skip_request_compression',
+  idpCert: 'cert',
+  decryptionPvk: 'decryption_pvk',
+  decryptionCert: 'decryption_cert',
+};
+
+const buildSnakeToCamelMap = (): Record<string, string> => {
+  const result: Record<string, string> = {};
+  for (const [camel, snake] of Object.entries(CAMEL_TO_SNAKE)) {
+    result[snake] = camel;
+  }
+  return result;
+};
+
+const SNAKE_TO_CAMEL = buildSnakeToCamelMap();
+
+/**
  * Wraps a raw env config object and tracks every key access.
  * After conversion, call .getUnconsumedEntries() to collect
  * everything that should go to extra_conf.
+ *
+ * When a snake_case key is requested but not found, the extractor also
+ * checks the camelCase alias (and vice-versa) so that users who wrote
+ * camelCase keys in their config files still get migrated correctly.
  *
  * This removes the need for manually maintained CONSUMED_KEYS sets.
  */
@@ -48,22 +101,35 @@ export class ConfigExtractor {
 
   constructor(private readonly config: Record<string, any>) {}
 
-  /** Read a key and mark it as consumed. Returns the value or the default. */
+  /** Read a key and mark it as consumed. Also checks the camelCase/snake_case alias. */
   get<T = any>(key: string, defaultValue?: T): T {
     this.consumed.add(key);
-    const value = this.config[key];
-    return (value !== undefined ? value : defaultValue) as T;
+    if (key in this.config) {
+      return this.config[key] as T;
+    }
+    const alias = SNAKE_TO_CAMEL[key] ?? CAMEL_TO_SNAKE[key];
+    if (alias) {
+      this.consumed.add(alias);
+      if (alias in this.config) {
+        return this.config[alias] as T;
+      }
+    }
+    return defaultValue as T;
   }
 
-  /** Check if a key exists without consuming it. */
+  /** Check if a key exists (also checks alias). */
   has(key: string): boolean {
-    return key in this.config;
+    if (key in this.config) return true;
+    const alias = SNAKE_TO_CAMEL[key] ?? CAMEL_TO_SNAKE[key];
+    return alias ? alias in this.config : false;
   }
 
-  /** Mark a key as consumed without reading (for deprecated/ignored keys). */
+  /** Mark a key as consumed without reading (for deprecated/ignored keys). Also consumes alias. */
   consume(...keys: string[]): void {
     for (const key of keys) {
       this.consumed.add(key);
+      const alias = SNAKE_TO_CAMEL[key] ?? CAMEL_TO_SNAKE[key];
+      if (alias) this.consumed.add(alias);
     }
   }
 
@@ -92,6 +158,11 @@ interface EnvGroupsManagement {
   group_attributes?: string[];
   // LDAP-specific
   group_attribute?: string;
+}
+
+interface EnvRolesManagement {
+  roles_mapping?: EnvMappingEntry[];
+  role_attributes?: string[];
 }
 
 interface EnvOrganizationsManagement {
@@ -230,6 +301,41 @@ export const buildBaseInput = (
 };
 
 /**
+ * Resolve groups management from either `groups_management` (current) or the
+ * deprecated `roles_management` (which was the old name for the same concept).
+ * If `groups_management` is present, it takes priority and `roles_management`
+ * is consumed. Otherwise `roles_management` fields are mapped to their
+ * `groups_management` equivalents: `role_attributes` -> `group_attributes` (SAML)
+ * or `groups_path` (OIDC), `roles_mapping` -> `groups_mapping`.
+ */
+const resolveGroupsManagement = (
+  ext: ConfigExtractor,
+  strategy: 'oidc' | 'saml' | 'ldap',
+  warnings: string[],
+): EnvGroupsManagement | undefined => {
+  const gm = ext.get<EnvGroupsManagement | undefined>('groups_management', undefined);
+  const rm = ext.get<EnvRolesManagement | undefined>('roles_management', undefined);
+  if (gm) return gm;
+  if (!rm) return undefined;
+  warnings.push('roles_management is deprecated and has been migrated as groups_management.');
+  if (strategy === 'saml') {
+    return {
+      group_attributes: rm.role_attributes,
+      groups_mapping: rm.roles_mapping,
+    };
+  }
+  if (strategy === 'oidc') {
+    return {
+      groups_path: rm.role_attributes,
+      groups_mapping: rm.roles_mapping,
+    };
+  }
+  return {
+    groups_mapping: rm.roles_mapping,
+  };
+};
+
+/**
  * Collect unconsumed config entries into ExtraConfEntryInput[].
  * Keys are passed through as-is — all known fields that needed camelCase
  * remapping are now consumed as first-class fields by the converters.
@@ -307,7 +413,7 @@ export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): C
 
   // Scopes: merge default + groups_scope + organizations_scope
   const defaultScopes = ext.get<string[]>('default_scopes', ['openid', 'email', 'profile']);
-  const gm = ext.get<EnvGroupsManagement | undefined>('groups_management', undefined);
+  const gm = resolveGroupsManagement(ext, 'oidc', warnings);
   const om = ext.get<EnvOrganizationsManagement | undefined>('organizations_management', undefined);
   const scopes = [...defaultScopes];
   if (gm?.groups_scope) scopes.push(gm.groups_scope);
@@ -347,12 +453,6 @@ export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): C
     organizations_expr: buildOidcOrgsExpr(om),
     organizations_mapping: convertMappingEntries(om?.organizations_mapping),
   };
-
-  // Deprecated / consumed-but-ignored
-  if (ext.has('roles_management')) {
-    ext.consume('roles_management');
-    warnings.push('roles_management is deprecated and has been ignored.');
-  }
 
   // -- Everything unconsumed goes to extra_conf --
   const extraConf = collectExtraConf(ext, warnings);
@@ -438,10 +538,10 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   };
 
   // Groups mapping: SAML uses group_attributes (attribute names in SAML assertion)
-  // Always populate with defaults — old default: group_attributes=['groups']
+  // Falls back to roles_management if groups_management is absent (deprecated alias)
   const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
   const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
-  const gm = ext.get<EnvGroupsManagement | undefined>('groups_management', undefined);
+  const gm = resolveGroupsManagement(ext, 'saml', warnings);
   const groupsExpr = gm?.group_attributes ?? ['groups'];
   const groupsMapping: GroupsMappingInput = {
     auto_create_groups: autoCreateGroup,
@@ -467,13 +567,7 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
     organizations_mapping: convertMappingEntries(om?.organizations_mapping),
   };
 
-  // Deprecated / consumed-but-ignored
-  if (ext.has('roles_management')) {
-    ext.consume('roles_management');
-    warnings.push('roles_management is deprecated and has been ignored.');
-  }
-
-  // -- Everything unconsumed goes to extra_conf (with camelCase remapping) --
+  // -- Everything unconsumed goes to extra_conf --
   const extraConf = collectExtraConf(ext, warnings);
 
   const configuration: SamlConfigurationInput = {
@@ -548,10 +642,10 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   };
 
   // Groups mapping: LDAP uses group_attribute (attribute name in _groups entries, default 'cn')
-  // Always populate with defaults — old default: group_attribute='cn'
+  // Falls back to roles_management if groups_management is absent (deprecated alias)
   const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
   const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
-  const gm = ext.get<EnvGroupsManagement | undefined>('groups_management', undefined);
+  const gm = resolveGroupsManagement(ext, 'ldap', warnings);
   const groupsExpr = [gm?.group_attribute ?? 'cn'];
   const groupsMapping: GroupsMappingInput = {
     auto_create_groups: autoCreateGroup,
@@ -572,13 +666,7 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
     organizations_mapping: convertMappingEntries(om?.organizations_mapping),
   };
 
-  // Deprecated / consumed-but-ignored
-  if (ext.has('roles_management')) {
-    ext.consume('roles_management');
-    warnings.push('roles_management is deprecated and has been ignored.');
-  }
-
-  // -- Everything unconsumed goes to extra_conf (with camelCase remapping) --
+  // -- Everything unconsumed goes to extra_conf --
   const extraConf = collectExtraConf(ext, warnings);
 
   const configuration: LdapConfigurationInput = {
@@ -678,6 +766,28 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
   const rawRedirectUris = ext.get<string | string[] | null>('redirect_uris', null);
   const redirectUri = Array.isArray(rawRedirectUris) ? (rawRedirectUris[0] ?? null) : rawRedirectUris;
   const callbackUrl = ext.get<string | null>('callback_url', null) ?? redirectUri;
+  const gm = resolveGroupsManagement(ext, 'oidc', warnings);
+  const om = ext.get<EnvOrganizationsManagement | undefined>('organizations_management', undefined);
+
+  // Groups mapping
+  const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
+  const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
+  const groupsMapping: GroupsMappingInput = {
+    auto_create_groups: autoCreateGroup,
+    prevent_default_groups: preventDefaultGroups,
+    default_groups: [],
+    groups_expr: buildOidcGroupsExpr(gm),
+    groups_mapping: convertMappingEntries(gm?.groups_mapping),
+  };
+
+  // Organizations mapping
+  const organizationsDefault = ext.get<string[]>('organizations_default', []);
+  const organizationsMapping: OrganizationsMappingInput = {
+    auto_create_organizations: false,
+    default_organizations: organizationsDefault,
+    organizations_expr: buildOidcOrgsExpr(om),
+    organizations_mapping: convertMappingEntries(om?.organizations_mapping),
+  };
 
   // Issuer: Auth0 derives from config.domain, others use well-known URLs
   let issuer: string;
@@ -692,8 +802,6 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
     const logoutUri = ext.get<string | null>('logout_uri', null);
     const useProxy = ext.get<boolean>('use_proxy', false);
     const baseURL = ext.get<string | null>('baseURL', null);
-    // Auth0 also supports the legacy camelCase form
-    ext.consume('clientID', 'clientSecret');
 
     const scopes = scope ? scope.split(/\s+/) : (defaults?.scopes ?? ['openid', 'email', 'profile']);
 
@@ -713,8 +821,8 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
         firstname_expr: 'user_info.given_name',
         lastname_expr: 'user_info.family_name',
       },
-      groups_mapping: { auto_create_groups: false, prevent_default_groups: false, default_groups: [], groups_expr: [], groups_mapping: [] },
-      organizations_mapping: { auto_create_organizations: false, default_organizations: [], organizations_expr: [], organizations_mapping: [] },
+      groups_mapping: groupsMapping,
+      organizations_mapping: organizationsMapping,
       extra_conf: collectExtraConf(ext, warnings),
     };
 
@@ -732,32 +840,9 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
     );
   }
 
-  // Google-specific: domains restriction goes to extra_conf
-  if (entry.strategy === 'GoogleStrategy') {
-    ext.consume('domains'); // consumed, will appear in extra_conf if present via getUnconsumed
-  }
-
-  // Github-specific: organizations restriction goes to extra_conf
-  if (entry.strategy === 'GithubStrategy') {
-    ext.consume('organizations');
-  }
-
+  // domains (Google) and organizations (Github) are NOT consumed here
+  // so they flow naturally into extra_conf via collectExtraConf.
   const extraConf = collectExtraConf(ext, warnings);
-
-  // Re-add strategy-specific fields as extra_conf so administrators can see them
-  // Arrays are stored as multiple entries with the same key
-  if (entry.strategy === 'GoogleStrategy' && entry.config?.domains) {
-    const domains = Array.isArray(entry.config.domains) ? entry.config.domains : [entry.config.domains];
-    for (const d of domains) {
-      extraConf.push({ type: ExtraConfEntryType.String, key: 'domains', value: String(d) });
-    }
-  }
-  if (entry.strategy === 'GithubStrategy' && entry.config?.organizations) {
-    const orgs = Array.isArray(entry.config.organizations) ? entry.config.organizations : [entry.config.organizations];
-    for (const o of orgs) {
-      extraConf.push({ type: ExtraConfEntryType.String, key: 'organizations', value: String(o) });
-    }
-  }
 
   const configuration: OidcConfigurationInput = {
     issuer,
