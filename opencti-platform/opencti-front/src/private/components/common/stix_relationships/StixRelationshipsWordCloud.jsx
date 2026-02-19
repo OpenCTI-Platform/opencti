@@ -8,7 +8,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetWordCloud from '../../../../components/dashboard/WidgetWordCloud';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
-export const stixRelationshipsWordCloudsDistributionQuery = graphql`
+const stixRelationshipsWordCloudsDistributionQuery = graphql`
   query StixRelationshipsWordCloudDistributionQuery(
     $field: String!
     $operation: StatsOperation!

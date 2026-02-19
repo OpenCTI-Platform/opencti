@@ -39,7 +39,7 @@ export const individualsLinesQuery = graphql`
   }
 `;
 
-export const individualsLinesFragment = graphql`
+const individualsLinesFragment = graphql`
   fragment IndividualsLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }

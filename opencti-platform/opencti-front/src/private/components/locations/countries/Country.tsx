@@ -21,7 +21,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export const getCountriesQuery = graphql`
+const getCountriesQuery = graphql`
   query CountryGetAllQuery {
     countries (first:5000) {
       edges {
@@ -34,7 +34,7 @@ export const getCountriesQuery = graphql`
   }
 `;
 
-export const countryFragment = graphql`
+const countryFragment = graphql`
   fragment Country_country on Country {
     id
     standard_id

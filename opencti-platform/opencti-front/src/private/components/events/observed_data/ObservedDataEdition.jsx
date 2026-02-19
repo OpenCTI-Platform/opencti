@@ -7,7 +7,7 @@ import { observedDataEditionOverviewFocus } from './ObservedDataEditionOverview'
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-export const observedDataEditionQuery = graphql`
+const observedDataEditionQuery = graphql`
   query ObservedDataEditionContainerQuery($id: String!) {
     observedData(id: $id) {
       ...ObservedDataEditionContainer_observedData

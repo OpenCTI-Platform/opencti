@@ -218,7 +218,7 @@ export const resolveThreatActorType = (
 };
 
 const hashes = ['SHA-512', 'SHA-256', 'SHA-1', 'MD5'];
-export const hashValue = (stixCyberObservable: Record<string, never>) => {
+const hashValue = (stixCyberObservable: Record<string, never>) => {
   if (stixCyberObservable.hashes) {
     for (let index = 0; index < hashes.length; index += 1) {
       const algo = hashes[index];

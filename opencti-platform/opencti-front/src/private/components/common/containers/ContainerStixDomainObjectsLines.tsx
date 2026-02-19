@@ -53,7 +53,7 @@ export const containerStixDomainObjectsLinesQuery = graphql`
   }
 `;
 
-export const containerStixDomainObjectsLinesFragment = graphql`
+const containerStixDomainObjectsLinesFragment = graphql`
   fragment ContainerStixDomainObjectsLines_container on Query
   @argumentDefinitions(
     search: { type: "String" }

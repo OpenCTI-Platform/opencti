@@ -70,7 +70,7 @@ export const stixDomainObjectMutationFieldPatch = graphql`
   }
 `;
 
-export const stixDomainObjectEditionFocus = graphql`
+const stixDomainObjectEditionFocus = graphql`
   mutation StixDomainObjectEditionOverviewFocusMutation(
     $id: ID!
     $input: EditContext!

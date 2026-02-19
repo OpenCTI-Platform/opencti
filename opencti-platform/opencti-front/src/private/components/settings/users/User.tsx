@@ -79,13 +79,13 @@ export const userSessionKillMutation = graphql`
   }
 `;
 
-export const userUserSessionsKillMutation = graphql`
+const userUserSessionsKillMutation = graphql`
   mutation UserUserSessionsKillMutation($id: ID!) {
     userSessionsKill(id: $id)
   }
 `;
 
-export const userUserRenewTokenMutation = graphql`
+const userUserRenewTokenMutation = graphql`
   mutation UserUserRenewTokenMutation($id: ID!) {
     userEdit(id: $id) {
       tokenRenew {
@@ -96,7 +96,7 @@ export const userUserRenewTokenMutation = graphql`
   }
 `;
 
-export const userOtpDeactivationMutation = graphql`
+const userOtpDeactivationMutation = graphql`
   mutation UserOtpDeactivationMutation($id: ID!) {
     otpUserDeactivation(id: $id) {
       ...ProfileOverview_me

@@ -30,7 +30,7 @@ const publicDashboardCreateMutation = graphql`
   }
 `;
 
-export const dashboardsQuery = graphql`
+const dashboardsQuery = graphql`
   query PublicDashboardCreationFormDashboardsQuery($filters: FilterGroup) {
     workspaces(filters: $filters) {
       edges {

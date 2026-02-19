@@ -12,7 +12,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
-export const channelFragment = graphql`
+const channelFragment = graphql`
   fragment Channel_channel on Channel {
     id
     standard_id

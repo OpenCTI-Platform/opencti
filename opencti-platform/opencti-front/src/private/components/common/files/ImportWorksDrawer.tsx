@@ -28,7 +28,7 @@ import { commitMutation, defaultCommitMutation } from '../../../../relay/environ
 import Transition from '../../../../components/Transition';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
-export const importConnectorsFragment = graphql`
+const importConnectorsFragment = graphql`
   fragment ImportWorksDrawer_connectorsImport on Connector
   @relay(plural: true) {
     id

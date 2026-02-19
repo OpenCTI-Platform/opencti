@@ -7,7 +7,7 @@ import { hexToRGB } from '../utils/Colors';
 
 const EE_COLOR = '#0c7e69';
 
-export const THEME_LIGHT_DEFAULT_BACKGROUND = '#f8f8f8';
+const THEME_LIGHT_DEFAULT_BACKGROUND = '#f8f8f8';
 const THEME_LIGHT_DEFAULT_PRIMARY = '#001bda';
 const THEME_LIGHT_DEFAULT_SECONDARY = '#0c7e69';
 const THEME_LIGHT_DEFAULT_ACCENT = '#dfdfdf';

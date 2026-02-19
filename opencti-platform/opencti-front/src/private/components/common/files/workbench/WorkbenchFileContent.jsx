@@ -226,7 +226,7 @@ const inlineStyles = {
   },
 };
 
-export const workbenchFileContentAttributesQuery = graphql`
+const workbenchFileContentAttributesQuery = graphql`
   query WorkbenchFileContentAttributesQuery($elementType: [String]!) {
     schemaAttributeNames(elementType: $elementType) {
       edges {

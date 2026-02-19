@@ -48,7 +48,7 @@ const styles = () => ({
   },
 });
 
-export const StixCyberObservablesExportCreationMutation = graphql`
+const StixCyberObservablesExportCreationMutation = graphql`
   mutation StixCyberObservablesExportCreationMutation($input: StixCyberObservablesExportAskInput!) {
     stixCyberObservablesExportAsk(input: $input) {
       id
@@ -61,7 +61,7 @@ const exportValidation = (t_i18n) => Yup.object().shape({
   type: Yup.string().trim().required(t_i18n('This field is required')),
 });
 
-export const scopesConn = (exportConnectors) => {
+const scopesConn = (exportConnectors) => {
   const scopes = uniq(flatten(map((c) => c.connector_scope, exportConnectors)));
   const connectors = map((s) => {
     const filteredConnectors = filter(

@@ -18,11 +18,11 @@ interface ConnectorStatus {
   label: string;
 }
 
-export const connectorsWithTrigger = ['INTERNAL_ENRICHMENT', 'INTERNAL_IMPORT_FILE'];
+const connectorsWithTrigger = ['INTERNAL_ENRICHMENT', 'INTERNAL_IMPORT_FILE'];
 
-export const CONNECTOR_STATUS_NOT_APPLICABLE = 'Not applicable';
-export const CONNECTOR_TRIGGER_AUTO = 'Automatic';
-export const CONNECTOR_TRIGGER_MANUAL = 'Manual';
+const CONNECTOR_STATUS_NOT_APPLICABLE = 'Not applicable';
+const CONNECTOR_TRIGGER_AUTO = 'Automatic';
+const CONNECTOR_TRIGGER_MANUAL = 'Manual';
 
 export const getConnectorTriggerStatus = (connector: Connector): ConnectorStatus => {
   if (!connector.connector_type || !connectorsWithTrigger.includes(connector.connector_type)) {

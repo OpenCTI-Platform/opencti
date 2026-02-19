@@ -121,7 +121,7 @@ export const fileManagerExportMutation = graphql`
   }
 `;
 
-export const scopesConn = (exportConnectors) => {
+const scopesConn = (exportConnectors) => {
   const scopes = uniq(flatten(map((c) => c.connector_scope, exportConnectors)));
   const connectors = map((s) => {
     const filteredConnectors = filter(

@@ -10,7 +10,7 @@ import { DataTableProps, DataTableVariant } from '../../../components/dataGrid/d
 import DataTable from '../../../components/dataGrid/DataTable';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 
-export const draftTaskLineFragment = graphql`
+const draftTaskLineFragment = graphql`
     fragment DraftTasksLine_task on BackgroundTask {
         id
         initiator {
@@ -70,7 +70,7 @@ const draftTasksLinesFragment = graphql`
     }
 `;
 
-export const draftTasksQuery = graphql`
+const draftTasksQuery = graphql`
     query DraftTasksQuery(
         $count: Int,
         $cursor: ID,

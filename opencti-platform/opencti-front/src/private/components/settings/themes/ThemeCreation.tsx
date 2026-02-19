@@ -10,7 +10,7 @@ import Drawer from '../../common/drawer/Drawer';
 import { ThemeCreationCreateMutation } from './__generated__/ThemeCreationCreateMutation.graphql';
 import { insertNode } from '../../../../utils/store';
 
-export const createThemeMutation = graphql`
+const createThemeMutation = graphql`
   mutation ThemeCreationCreateMutation($input: ThemeAddInput!) {
     themeAdd(input: $input) {
       id

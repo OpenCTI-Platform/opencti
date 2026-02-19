@@ -9,7 +9,7 @@ import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizon
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
-export const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
+const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
   query StixRelationshipsHorizontalBarsDistributionQuery(
     $field: String!
     $operation: StatsOperation!

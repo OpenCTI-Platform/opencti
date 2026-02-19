@@ -20,7 +20,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import DataTableWithoutFragment from '../../../../../components/dataGrid/DataTableWithoutFragment';
 import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTypes';
 
-export const RelatedContainersFragment = graphql`
+const RelatedContainersFragment = graphql`
   fragment RelatedContainersFragment_container_connection on ContainerConnection {
     edges {
       node {

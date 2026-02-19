@@ -57,7 +57,7 @@ interface StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps {
   redirectionMode: string;
 }
 
-export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: FunctionComponent<
+const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: FunctionComponent<
   StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
 > = ({ node, dataColumns, onLabelClick, redirectionMode }) => {
   const classes = useStyles();

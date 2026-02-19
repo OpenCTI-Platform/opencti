@@ -17,7 +17,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { GenericContext } from '../model/GenericContextModel';
 import { isNotEmptyField } from '../../../../utils/utils';
 
-export const individualWeightMutation = graphql`
+const individualWeightMutation = graphql`
   mutation WeightFieldIndividualMutation($id: ID!, $input: [EditInput]!) {
     threatActorIndividualFieldPatch(id: $id, input: $input) {
       weight {

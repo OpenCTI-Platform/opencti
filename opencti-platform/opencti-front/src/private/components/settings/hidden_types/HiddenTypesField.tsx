@@ -14,7 +14,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import HiddenTypesIndicator from './HiddenTypesIndicator';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-export const groups = new Map<string, string[]>([
+const groups = new Map<string, string[]>([
   ['Analysis', ['Report', 'Grouping', 'Malware-Analysis', 'Security-Coverage', 'Note', 'External-Reference']],
   ['Cases', ['Case-Incident', 'Case-Rfi', 'Case-Rft', 'Task', 'Feedback']],
   ['Events', ['Incident', 'stix-sighting-relationship', 'Observed-Data']],
@@ -39,7 +39,7 @@ export const groups = new Map<string, string[]>([
 ]);
 const groupKeys = Array.from(groups.keys());
 
-export const findGroupKey = (value: string) => Array.from(groups.entries())
+const findGroupKey = (value: string) => Array.from(groups.entries())
   .filter(({ 1: v }) => v.includes(value))
   .map(([k]) => k)[0];
 

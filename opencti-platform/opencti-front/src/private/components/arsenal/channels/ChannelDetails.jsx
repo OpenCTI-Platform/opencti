@@ -17,7 +17,7 @@ const ChannelDetailsFragment = graphql`
   }
 `;
 
-export const ChannelDetails = ({
+const ChannelDetails = ({
   channelData,
 }) => {
   const { t_i18n } = useFormatter();

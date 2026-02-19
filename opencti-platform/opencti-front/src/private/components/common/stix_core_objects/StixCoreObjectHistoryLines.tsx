@@ -32,7 +32,7 @@ export const stixCoreObjectHistoryLinesQuery = graphql`
   }
 `;
 
-export const StixCoreObjectHistoryLinesFragment = graphql`
+const StixCoreObjectHistoryLinesFragment = graphql`
   fragment StixCoreObjectHistoryLines_data on Query
   @refetchable(queryName: "StixCoreObjectHistoryLinesRefetchQuery") {
     logs(

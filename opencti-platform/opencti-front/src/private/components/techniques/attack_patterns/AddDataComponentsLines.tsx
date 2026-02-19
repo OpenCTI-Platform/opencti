@@ -31,7 +31,7 @@ export const addDataComponentsLinesQuery = graphql`
   }
 `;
 
-export const addDataComponentsLinesFragment = graphql`
+const addDataComponentsLinesFragment = graphql`
   fragment AddDataComponentsLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }

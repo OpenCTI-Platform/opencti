@@ -22,7 +22,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export const xtmHubSettingsQuery = graphql`
+const xtmHubSettingsQuery = graphql`
   query XtmHubSettingsQuery {
     settings {
       id
@@ -37,7 +37,7 @@ export const xtmHubSettingsQuery = graphql`
   }
 `;
 
-export const checkHubConnectivity = graphql`
+const checkHubConnectivity = graphql`
   mutation XtmHubSettingsCheckConnectivityMutation {
     checkXTMHubConnectivity {
       status

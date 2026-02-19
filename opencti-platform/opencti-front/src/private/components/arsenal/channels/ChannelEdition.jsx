@@ -9,7 +9,7 @@ import { channelEditionOverviewFocus } from './ChannelEditionOverview';
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-export const channelEditionQuery = graphql`
+const channelEditionQuery = graphql`
   query ChannelEditionContainerQuery($id: String!) {
     channel(id: $id) {
       ...ChannelEditionContainer_channel

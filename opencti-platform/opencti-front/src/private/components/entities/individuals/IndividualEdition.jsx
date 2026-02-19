@@ -7,7 +7,7 @@ import { individualEditionOverviewFocus } from './IndividualEditionOverview';
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-export const individualEditionQuery = graphql`
+const individualEditionQuery = graphql`
   query IndividualEditionContainerQuery($id: String!) {
     individual(id: $id) {
       ...IndividualEditionContainer_individual

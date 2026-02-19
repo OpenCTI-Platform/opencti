@@ -18,7 +18,7 @@ const styles = () => ({
   },
 });
 
-export const ThreatActorGroupEditionQuery = graphql`
+const ThreatActorGroupEditionQuery = graphql`
   query ThreatActorGroupEditionContainerQuery($id: String!) {
     threatActorGroup(id: $id) {
       ...ThreatActorGroupEditionContainer_ThreatActorGroup

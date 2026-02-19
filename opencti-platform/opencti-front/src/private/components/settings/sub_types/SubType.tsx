@@ -32,7 +32,7 @@ const entitySettingSubscription = graphql`
   }
 `;
 
-export const subTypeQuery = graphql`
+const subTypeQuery = graphql`
   query SubTypeQuery($id: String!){
     subType(id: $id) {
       id

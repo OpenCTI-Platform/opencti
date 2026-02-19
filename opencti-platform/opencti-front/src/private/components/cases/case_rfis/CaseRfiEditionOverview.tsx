@@ -27,7 +27,7 @@ import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { StatusScopeEnum } from '../../../../utils/statusConstants';
 
-export const caseRfiMutationFieldPatch = graphql`
+const caseRfiMutationFieldPatch = graphql`
   mutation CaseRfiEditionOverviewCaseFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!

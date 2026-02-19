@@ -13,7 +13,7 @@ export const useManipulateComponentsPlaybookUpdatePositionsMutation = graphql`
   }
 `;
 
-export const useManipulateComponentsAddNodeMutation = graphql`
+const useManipulateComponentsAddNodeMutation = graphql`
   mutation useManipulateComponentsAddNodeMutation(
     $id: ID!
     $input: PlaybookAddNodeInput!
@@ -22,7 +22,7 @@ export const useManipulateComponentsAddNodeMutation = graphql`
   }
 `;
 
-export const useManipulateComponentsAddLinkMutation = graphql`
+const useManipulateComponentsAddLinkMutation = graphql`
   mutation useManipulateComponentsAddLinkMutation(
     $id: ID!
     $input: PlaybookAddLinkInput!
@@ -31,7 +31,7 @@ export const useManipulateComponentsAddLinkMutation = graphql`
   }
 `;
 
-export const useManipulateComponentsReplaceNodeMutation = graphql`
+const useManipulateComponentsReplaceNodeMutation = graphql`
   mutation useManipulateComponentsReplaceNodeMutation(
     $id: ID!
     $nodeId: ID!
@@ -41,7 +41,7 @@ export const useManipulateComponentsReplaceNodeMutation = graphql`
   }
 `;
 
-export const useManipulateComponentsInsertNodeMutation = graphql`
+const useManipulateComponentsInsertNodeMutation = graphql`
   mutation useManipulateComponentsInsertNodeMutation(
     $id: ID!
     $parentNodeId: ID!
@@ -62,7 +62,7 @@ export const useManipulateComponentsInsertNodeMutation = graphql`
   }
 `;
 
-export const useManipulateComponentsDeleteNodeMutation = graphql`
+const useManipulateComponentsDeleteNodeMutation = graphql`
   mutation useManipulateComponentsDeleteNodeMutation($id: ID!, $nodeId: ID!) {
     playbookDeleteNode(id: $id, nodeId: $nodeId) {
       id

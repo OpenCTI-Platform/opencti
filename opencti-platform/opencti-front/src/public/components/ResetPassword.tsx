@@ -22,13 +22,13 @@ interface ResetProps {
   setEmail: (value: string) => void;
 }
 
-export const AskSendOtpMutation = graphql`
+const AskSendOtpMutation = graphql`
 mutation ResetPasswordAskSendOtpMutation($input: AskSendOtpInput!){
   askSendOtp(input: $input)
 }
 `;
 
-export const VerifyOtpMutation = graphql`
+const VerifyOtpMutation = graphql`
 mutation ResetPasswordVerifyOtpMutation($input: VerifyOtpInput!){
   verifyOtp(input: $input) {
     mfa_activated
@@ -36,7 +36,7 @@ mutation ResetPasswordVerifyOtpMutation($input: VerifyOtpInput!){
 }
 `;
 
-export const ChangePasswordMutation = graphql`
+const ChangePasswordMutation = graphql`
 mutation ResetPasswordChangePasswordMutation($input: ChangePasswordInput!){
   changePassword(input: $input)
 }

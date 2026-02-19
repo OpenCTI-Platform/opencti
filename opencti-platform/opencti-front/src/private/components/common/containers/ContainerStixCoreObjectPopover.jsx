@@ -45,7 +45,7 @@ const styles = (theme) => ({
   },
 });
 
-export const containerStixCoreObjectPopoverRemoveMutation = graphql`
+const containerStixCoreObjectPopoverRemoveMutation = graphql`
   mutation ContainerStixCoreObjectPopoverRemoveMutation(
     $id: ID!
     $toId: StixRef!
@@ -61,7 +61,7 @@ export const containerStixCoreObjectPopoverRemoveMutation = graphql`
   }
 `;
 
-export const containerStixCoreObjectPopoverFieldPatchMutation = graphql`
+const containerStixCoreObjectPopoverFieldPatchMutation = graphql`
   mutation ContainerStixCoreObjectPopoverFieldPatchMutation(
     $id: ID!
     $input: [EditInput!]!
@@ -84,7 +84,7 @@ export const containerStixCoreObjectPopoverFieldPatchMutation = graphql`
   }
 `;
 
-export const containerStixCoreObjectPopoverDeleteMutation = graphql`
+const containerStixCoreObjectPopoverDeleteMutation = graphql`
   mutation ContainerStixCoreObjectPopoverDeleteMutation($id: ID!) {
     stixCoreObjectEdit(id: $id) {
       delete

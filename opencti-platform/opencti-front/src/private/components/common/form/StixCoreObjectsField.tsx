@@ -23,7 +23,7 @@ import StixCyberObservableCreation from '../../observations/stix_cyber_observabl
 import type { Theme } from '../../../../components/Theme';
 import { FieldOption } from '../../../../utils/field';
 
-export const stixCoreObjectsFieldSearchQuery = graphql`
+const stixCoreObjectsFieldSearchQuery = graphql`
   query StixCoreObjectsFieldSearchQuery($search: String, $types: [String]) {
     stixCoreObjects(search: $search, types: $types, first: 100) {
       edges {

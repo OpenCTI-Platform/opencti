@@ -31,7 +31,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
-export const stixCoreObjectOpinionsRadarDialogMyOpinionQuery = graphql`
+const stixCoreObjectOpinionsRadarDialogMyOpinionQuery = graphql`
   query StixCoreObjectOpinionsRadarDialogMyOpinionQuery($id: String!) {
     myOpinion(id: $id) {
       id

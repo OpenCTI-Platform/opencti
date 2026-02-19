@@ -65,7 +65,7 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
   }
 `;
 
-export const entityStixCoreRelationshipsEntitiesQuery = graphql`
+const entityStixCoreRelationshipsEntitiesQuery = graphql`
   query EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery(
     $search: String
     $count: Int!

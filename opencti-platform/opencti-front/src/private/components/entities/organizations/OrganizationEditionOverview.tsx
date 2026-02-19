@@ -23,7 +23,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import { useFormatter } from '../../../../components/i18n';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
-export const organizationEditionOverviewFragment = graphql`
+const organizationEditionOverviewFragment = graphql`
   fragment OrganizationEditionOverview_organization on Organization {
     id
     name

@@ -52,7 +52,7 @@ export const searchIndexedFilesLinesQuery = graphql`
   }
 `;
 
-export const searchIndexedFilesLinesFragment = graphql`
+const searchIndexedFilesLinesFragment = graphql`
   fragment SearchIndexedFilesLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }

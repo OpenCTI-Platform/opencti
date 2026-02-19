@@ -70,7 +70,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export const triggerLiveActivityCreationMutation = graphql`
+const triggerLiveActivityCreationMutation = graphql`
     mutation AlertLiveCreationActivityMutation($input: TriggerActivityLiveAddInput!) {
         triggerActivityLiveAdd(input: $input) {
             id

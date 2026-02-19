@@ -25,7 +25,7 @@ import { buildFiltersAndOptionsForWidgets } from '../../../utils/filters/filters
 import type { PirWidgetDataSelection, WidgetParameters } from '../../../utils/widget/widget';
 import { useFormatter } from '../../../components/i18n';
 
-export const pirRelationshipsDonutsDistributionQuery = graphql`
+const pirRelationshipsDonutsDistributionQuery = graphql`
   query PirRelationshipsDonutDistributionQuery(
     $pirId: ID!
     $field: String!

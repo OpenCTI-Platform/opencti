@@ -46,7 +46,7 @@ const redisStreamQuery = graphql`
   }
 `;
 
-export const threatMapQuery = graphql`
+const threatMapQuery = graphql`
   query PirOverviewThreatMapQuery($filters: FilterGroup, $pirId: ID!) {
     ...PirThreatMapFragment
   }

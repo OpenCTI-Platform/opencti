@@ -22,7 +22,7 @@ import { buildDate, formatDate } from '../../../../utils/Time';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
-export const tasksMutationFieldPatch = graphql`
+const tasksMutationFieldPatch = graphql`
   mutation TasksEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!

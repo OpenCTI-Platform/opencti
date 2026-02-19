@@ -12,7 +12,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 
-export const groupSetDefaultGroupForIngestionUsersFragment = graphql`
+const groupSetDefaultGroupForIngestionUsersFragment = graphql`
   fragment GroupSetDefaultGroupForIngestionUsersFragment on Group {
     name
     id
@@ -31,7 +31,7 @@ const groupSetDefaultGroupForIngestionUsersMutationFieldPatch = graphql`
   }
 `;
 
-export const groupSetDefaultGroupForIngestionUsersQuery = graphql`
+const groupSetDefaultGroupForIngestionUsersQuery = graphql`
   query GroupSetDefaultGroupForIngestionUsersQuery(
     $filters: FilterGroup
   ) {

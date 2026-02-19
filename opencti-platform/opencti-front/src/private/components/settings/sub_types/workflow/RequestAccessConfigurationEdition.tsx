@@ -21,7 +21,7 @@ const requestAccessConfigurationMutation = graphql`
     }
 `;
 
-export const requestAccessConfigurationFragment = graphql`
+const requestAccessConfigurationFragment = graphql`
   fragment RequestAccessConfigurationEdition_requestAccess on RequestAccessConfiguration {
     id
     approved_status {

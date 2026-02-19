@@ -142,7 +142,7 @@ export const stixNestedRefRelationshipCreationResolveQuery = graphql`
   }
 `;
 
-export const stixNestedRefRelationshipCreationQuery = graphql`
+const stixNestedRefRelationshipCreationQuery = graphql`
   query StixNestedRefRelationshipCreationQuery(
     $fromId: StixRef!
     $toId: StixRef!

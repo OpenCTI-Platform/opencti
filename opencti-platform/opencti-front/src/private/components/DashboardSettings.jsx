@@ -36,7 +36,7 @@ const useStyles = makeStyles(() => createStyles({
 
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
-export const dashboardSettingsDashboardsQuery = graphql`
+const dashboardSettingsDashboardsQuery = graphql`
   query DashboardSettingsDashboardsQuery(
     $count: Int!
     $orderBy: WorkspacesOrdering

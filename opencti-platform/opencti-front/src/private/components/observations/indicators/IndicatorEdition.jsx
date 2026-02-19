@@ -6,7 +6,7 @@ import { indicatorEditionOverviewFocus } from './IndicatorEditionOverview';
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-export const indicatorEditionQuery = graphql`
+const indicatorEditionQuery = graphql`
   query IndicatorEditionContainerQuery($id: String!) {
     indicator(id: $id) {
       ...IndicatorEditionContainer_indicator

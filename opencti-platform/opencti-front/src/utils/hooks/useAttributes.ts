@@ -198,7 +198,7 @@ export const typesWithFintelTemplates = [
   'Case-Rft',
 ];
 
-export const aliasedTypes = [
+const aliasedTypes = [
   'Attack-Pattern',
   'Campaign',
   'Infrastructure',

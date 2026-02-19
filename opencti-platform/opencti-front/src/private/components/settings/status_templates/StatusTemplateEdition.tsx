@@ -9,7 +9,7 @@ import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { StatusTemplateEdition_statusTemplate$key } from './__generated__/StatusTemplateEdition_statusTemplate.graphql';
 
-export const StatusTemplateEditionFragment = graphql`
+const StatusTemplateEditionFragment = graphql`
   fragment StatusTemplateEdition_statusTemplate on StatusTemplate {
     id
     name

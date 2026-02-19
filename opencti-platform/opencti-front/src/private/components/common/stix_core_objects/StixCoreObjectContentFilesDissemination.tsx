@@ -33,7 +33,7 @@ interface DisseminationInput {
   emailBody: string;
 }
 
-export const DisseminationListSendInputMutation = graphql`
+const DisseminationListSendInputMutation = graphql`
     mutation StixCoreObjectContentFilesDisseminationMutation(
         $id: ID!
         $input: DisseminationListSendInput!

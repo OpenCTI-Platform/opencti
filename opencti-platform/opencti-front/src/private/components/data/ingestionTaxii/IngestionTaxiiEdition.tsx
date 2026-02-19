@@ -35,7 +35,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import { adaptFieldValue } from '../../../../utils/String';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import IngestionEditionUserHandling from '@components/data/IngestionEditionUserHandling';
-export const ingestionTaxiiEditionUserHandlingPatch = graphql`
+const ingestionTaxiiEditionUserHandlingPatch = graphql`
   mutation IngestionTaxiiEditionUserHandlingMutation($id: ID!, $input: IngestionTaxiiAddAutoUserInput!) {
     ingestionTaxiiAddAutoUser(id: $id, input: $input) {
         id
@@ -48,7 +48,7 @@ export const ingestionTaxiiEditionUserHandlingPatch = graphql`
     }
   }
 `;
-export const initIngestionValue = (ingestionTaxiiData: IngestionTaxiiEditionFragment_ingestionTaxii$data) => {
+const initIngestionValue = (ingestionTaxiiData: IngestionTaxiiEditionFragment_ingestionTaxii$data) => {
   return {
     ...{
       name: ingestionTaxiiData.name,
@@ -104,7 +104,7 @@ export const ingestionTaxiiMutationFieldPatch = graphql`
   }
 `;
 
-export const ingestionTaxiiEditionFragment = graphql`
+const ingestionTaxiiEditionFragment = graphql`
   fragment IngestionTaxiiEditionFragment_ingestionTaxii on IngestionTaxii {
     id
     name

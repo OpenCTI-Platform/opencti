@@ -19,7 +19,7 @@ interface StatusTemplateFieldScopedProps {
   label: string;
 }
 
-export const StatusTemplateFieldScopedSearchQuery = graphql`
+const StatusTemplateFieldScopedSearchQuery = graphql`
   query StatusTemplateFieldScopedSearchQuery($search: String, $scope:StatusScope) {
       statusTemplatesByStatusScope(search: $search, scope:$scope) {
         id

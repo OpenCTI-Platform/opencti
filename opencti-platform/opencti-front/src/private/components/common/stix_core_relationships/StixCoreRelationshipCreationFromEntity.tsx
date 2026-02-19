@@ -336,7 +336,7 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment =
 
 `;
 
-export const stixCoreRelationshipCreationFromEntityQuery = graphql`
+const stixCoreRelationshipCreationFromEntityQuery = graphql`
   query StixCoreRelationshipCreationFromEntityQuery($id: String!) {
     stixCoreObject(id: $id) {
       id

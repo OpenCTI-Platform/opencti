@@ -40,7 +40,7 @@ export const entityStixSightingRelationshipsLinesQuery = graphql`
   }
 `;
 
-export const EntityStixSightingRelationshipsLinesFragment = graphql`
+const EntityStixSightingRelationshipsLinesFragment = graphql`
   fragment EntityStixSightingRelationshipsLines_data on Query
   @argumentDefinitions(
     fromId: { type: "StixRef" }

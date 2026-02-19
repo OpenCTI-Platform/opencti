@@ -51,7 +51,7 @@ import { ThreatActorIndividualCreationForm } from '../../threats/threat_actors_i
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 
-export const stixDomainObjectCreationAllTypesQuery = graphql`
+const stixDomainObjectCreationAllTypesQuery = graphql`
   query StixDomainObjectCreationAllTypesQuery {
     sdoTypes: subTypes(type: "Stix-Domain-Object") {
       edges {

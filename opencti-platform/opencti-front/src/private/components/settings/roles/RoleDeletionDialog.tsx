@@ -6,7 +6,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Transition from '../../../../components/Transition';
 
-export const roleDeletionMutation = graphql`
+const roleDeletionMutation = graphql`
   mutation RoleDeletionDialogMutation($id: ID!) {
     roleEdit(id: $id) {
       delete

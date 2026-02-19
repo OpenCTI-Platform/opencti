@@ -20,7 +20,7 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { IngestionEditionUserHandlingQuery$data } from '@components/data/__generated__/IngestionEditionUserHandlingQuery.graphql';
 import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
 
-export const ingestionEditionUserHandlingQuery = graphql`
+const ingestionEditionUserHandlingQuery = graphql`
   query IngestionEditionUserHandlingQuery(
     $name: String!
   ) {
@@ -30,7 +30,7 @@ export const ingestionEditionUserHandlingQuery = graphql`
   }
 `;
 
-export interface IngestionEditionAddAutoUserInput {
+interface IngestionEditionAddAutoUserInput {
   user_name: string;
   confidence_level: number;
 }

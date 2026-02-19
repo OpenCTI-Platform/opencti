@@ -22,7 +22,7 @@ import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 const LOCAL_STORAGE_KEY = 'support-packages';
 
-export const supportPackageAddMutation = graphql`
+const supportPackageAddMutation = graphql`
   mutation SupportPackagesMutation(
     $input: SupportPackageAddInput!
   ) {

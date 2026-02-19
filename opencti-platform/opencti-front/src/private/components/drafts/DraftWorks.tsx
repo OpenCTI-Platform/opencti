@@ -12,7 +12,7 @@ import DataTableWithoutFragment from '../../../components/dataGrid/DataTableWith
 import { hexToRGB } from '../../../utils/Colors';
 import type { Theme } from '../../../components/Theme';
 
-export const draftWorksFragment = graphql`
+const draftWorksFragment = graphql`
     fragment DraftWorksFragment on DraftWorkspace {
       id
       works {
@@ -30,7 +30,7 @@ export const draftWorksFragment = graphql`
     }
 `;
 
-export const draftWorksQuery = graphql`
+const draftWorksQuery = graphql`
     query DraftWorksQuery($id: String!) {
       draftWorkspace(id: $id) {
         ...DraftWorksFragment

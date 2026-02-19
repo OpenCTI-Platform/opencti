@@ -20,7 +20,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../components/DeleteDialog';
 
-export const importActionsPopoverDeleteMutation = graphql`
+const importActionsPopoverDeleteMutation = graphql`
   mutation ImportActionsPopoverDeleteMutation($fileName: String) {
     deleteImport(fileName: $fileName)
   }
