@@ -55,11 +55,11 @@ export default defineConfig({
   projects: [
     {
       name: 'setup',
-      testMatch: /.*\.setup\.ts/
+      testMatch: "**/*.setup.ts"
     },
     {
       name: 'init data',
-      testMatch: "init.data.ts",
+      testMatch: "dataForTesting/init.data.ts",
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'tests_e2e/.setup/.auth/user.json',
