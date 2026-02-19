@@ -11,7 +11,7 @@ test.describe('Drafts - Entities and background tasks', { tag: ['@ce'] }, () => 
   const malwareName = `malware in draft- ${uuid()}`;
   const labelToApply = 'background-task-filter-add-label';
 
-  test('should create a draft, add a malware entity, and verify its presence', async ({ page, request }) => {
+  test('should create a draft, add a malware in it and do a background task of update in the draft', async ({ page, request }) => {
     const Drafts = new DraftsPage(page);
     const taskPopup = new TaskPopup(page);
     const dataTable = new DataTablePage(page);
@@ -59,6 +59,9 @@ test.describe('Drafts - Entities and background tasks', { tag: ['@ce'] }, () => 
 
     // Wait for the background task to complete
     await checkBackgroundTasksCompletion(request);
+
+    // Unselect all the entities in the list
+    await dataTable.getCheckAll().click();
 
     // Check the update has been done only on the malware
     await expect(dataTable.getNumberElements(1)).toBeVisible();
