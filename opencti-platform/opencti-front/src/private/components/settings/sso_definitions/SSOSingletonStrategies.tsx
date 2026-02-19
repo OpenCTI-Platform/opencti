@@ -69,7 +69,7 @@ const SSOSingletonStrategiesContent = () => {
 
   const strategiesData: StrategyRow[] = [
     { id: 'local', name: t_i18n('Local'), type: t_i18n('FORM'), enabled: localEnabled, strategy: 'local' },
-    { id: 'header', name: t_i18n('HTTP headers'), type: t_i18n('AUTO'), enabled: headerEnabled, strategy: 'header' },
+    { id: 'header', name: t_i18n('HTTP headers'), type: t_i18n('SSO'), enabled: headerEnabled, strategy: 'header' },
     { id: 'cert', name: t_i18n('Client Certificate'), type: t_i18n('SSO'), enabled: certEnabled, strategy: 'cert' },
   ];
 
