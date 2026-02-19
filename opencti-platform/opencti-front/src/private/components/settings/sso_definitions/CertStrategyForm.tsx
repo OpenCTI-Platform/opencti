@@ -29,7 +29,7 @@ const certStrategyFormQuery = graphql`
       cert_auth {
         enabled
         description
-        button_label
+        button_label_override
         user_info_mapping {
           email_expr
           name_expr
@@ -70,7 +70,7 @@ const certStrategyFormMutation = graphql`
         cert_auth {
           enabled
           description
-          button_label
+          button_label_override
           user_info_mapping {
             email_expr
             name_expr
@@ -112,7 +112,7 @@ interface MappingEntry {
 interface CertStrategyFormValues {
   enabled: boolean;
   description: string;
-  button_label: string;
+  button_label_override: string;
   user_info_mapping: {
     email_expr: string;
     name_expr: string;
@@ -138,7 +138,7 @@ interface CertStrategyFormValues {
 
 const validationSchema = Yup.object().shape({
   enabled: Yup.boolean(),
-  button_label: Yup.string().nullable(),
+  button_label_override: Yup.string().nullable(),
   user_info_mapping: Yup.object().shape({
     email_expr: Yup.string().required('This field is required'),
     name_expr: Yup.string().required('This field is required'),
@@ -171,7 +171,7 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
   const initialValues: CertStrategyFormValues = {
     enabled: certAuth?.enabled ?? false,
     description: certAuth?.description ?? '',
-    button_label: certAuth?.button_label ?? '',
+    button_label_override: certAuth?.button_label_override ?? '',
     user_info_mapping: {
       email_expr: uim?.email_expr ?? 'subject.emailAddress',
       name_expr: uim?.name_expr ?? 'subject.CN',
@@ -206,7 +206,7 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
         input: {
           enabled: values.enabled,
           description: values.description || null,
-          button_label: values.button_label || null,
+          button_label_override: values.button_label_override || null,
           user_info_mapping: {
             email_expr: values.user_info_mapping.email_expr,
             name_expr: values.user_info_mapping.name_expr,
@@ -311,7 +311,7 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
               <Field
                 component={TextField}
                 variant="standard"
-                name="button_label"
+                name="button_label_override"
                 label={t_i18n('Login button label')}
                 fullWidth
                 style={{ marginTop: 20 }}

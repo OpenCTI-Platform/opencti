@@ -12,7 +12,7 @@ import { publishUserAction } from '../listener/UserActionListener';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { now } from '../utils/format';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { FunctionalError, UnsupportedError } from '../config/errors';
+import { UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { decodeLicensePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
@@ -22,7 +22,6 @@ import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { LOCAL_PROVIDER } from '../modules/authenticationProvider/provider-local';
 import { AuthType, EnvStrategyType, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
-import { findAllAuthenticationProvider } from '../modules/authenticationProvider/authenticationProvider-domain';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 
@@ -109,7 +108,7 @@ export const buildAvailableProviders = async (platformSettings) => {
   const availableProviders = [...PROVIDERS];
   if (platformSettings.local_auth?.enabled) {
     availableProviders.push({
-      name: platformSettings.local_auth?.button_label || 'local',
+      name: platformSettings.local_auth?.button_label_override || 'local',
       type: AuthType.AUTH_FORM,
       strategy: EnvStrategyType.STRATEGY_LOCAL,
       provider: LOCAL_PROVIDER.provider,
@@ -117,7 +116,7 @@ export const buildAvailableProviders = async (platformSettings) => {
   }
   if (platformSettings.cert_auth?.enabled) {
     availableProviders.push({
-      name: platformSettings.cert_auth?.button_label || 'cert',
+      name: platformSettings.cert_auth?.button_label_override || 'cert',
       type: AuthType.AUTH_SSO,
       strategy: EnvStrategyType.STRATEGY_CERT,
       provider: CERT_PROVIDER.provider,
@@ -125,7 +124,7 @@ export const buildAvailableProviders = async (platformSettings) => {
   }
   if (platformSettings.headers_auth?.enabled) {
     availableProviders.push({
-      name: platformSettings.headers_auth?.button_label || 'headers',
+      name: platformSettings.headers_auth?.button_label_override || 'headers',
       type: AuthType.AUTH_SSO,
       strategy: EnvStrategyType.STRATEGY_HEADER,
       provider: HEADERS_PROVIDER.provider,
@@ -316,22 +315,6 @@ export const settingDeleteMessage = async (context, user, settingsId, messageId)
 // of the corresponding authentication provider.
 
 export const updateLocalAuth = async (context, user, settingsId, input) => {
-  // Guard: prevent disabling local auth when no other provider is available
-  if (input.enabled === false) {
-    const settings = await getSettings(context);
-    const eeActive = settings.valid_enterprise_edition === true;
-    if (!eeActive) {
-      throw FunctionalError('Local authentication cannot be disabled when no other authentication provider is available');
-    }
-    const isHttpsEnabled = !!(nconf.get('app:https_cert:key') && nconf.get('app:https_cert:crt'));
-    const hasCert = settings.cert_auth?.enabled === true && isHttpsEnabled;
-    const hasHeader = settings.headers_auth?.enabled === true;
-    const dbProviders = await findAllAuthenticationProvider(context, user);
-    const hasDbProvider = dbProviders.some((p) => p.enabled === true);
-    if (!hasCert && !hasHeader && !hasDbProvider) {
-      throw FunctionalError('Local authentication cannot be disabled when no other authentication provider is enabled');
-    }
-  }
   const patch = {
     local_auth: { enabled: input.enabled },
     ...(input.password_policy_min_length !== undefined && { password_policy_min_length: input.password_policy_min_length }),

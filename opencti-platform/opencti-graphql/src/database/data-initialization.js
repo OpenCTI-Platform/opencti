@@ -477,6 +477,7 @@ export const initializeData = async (context, withMarkings = true) => {
     headers_auth: {
       enabled: false,
       description: null,
+      button_label_override: null,
       logout_uri: null,
       headers_audit: [],
       user_info_mapping: {

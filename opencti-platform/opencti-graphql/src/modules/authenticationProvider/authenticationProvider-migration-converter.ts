@@ -32,35 +32,6 @@ import {
 } from '../../generated/graphql';
 import { resolveProviderIdentifier } from './authenticationProvider-domain';
 
-// [/] default conf for LDAP user info mapping : email -> 'mail' & name -> 'givenName'
-// [/] default conf for LDAP group mapping : ['_groups/cn'] or just ['cn'] ?
-// [/] default conf for LDAP orga mapping : ['organizations'] ?
-
-// TODO default conf for SAML  conf.mail_attribute -> conf.user_info_mapping.email_expr
-// TODO default conf for SAML  conf.account_attribute -> conf.user_info_mapping.name_expr
-// TODO default conf for SAML  conf.firstname_attribute -> conf.user_info_mapping.firstname_expr
-// TODO default conf for SAML  conf.lastname_attribute -> conf.user_info_mapping.lastname_expr
-// TODO default conf for SAML  groupsManagement?.group_attributes || ['groups']  -> conf.groups_mapping.groups_expr
-// TODO default conf for SAML  orgsManagement?.organizations_path || ['organizations']; -> conf.organizations_mapping.organizations_expr
-
-// TODO groups mapping conversion
-// read_userinfo: Boolean -> TODO changed with new mechanism, to be handled in migration
-// token_reference: String -> TODO changed with new mechanism, to be handled in migration
-// groups_scope: String -> not needed here, must be configured in OpenID provider scope TODO to be handled in migration
-// groups_header: String -> TODO use mapping instead
-
-// TODO organization mapping conversion
-// organizations_scope: String -> not needed here, must be configured in OpenID provider scope TODO to be handled in migration
-// read_userinfo: Boolean -> TODO changed with new mechanism, to be handled in migration
-// token_reference: String -> TODO changed with new mechanism, to be handled in migration
-// organizations_header: String -> TODO use mapping instead
-
-// TODO certs
-// email :  subject.emailAddress
-// name  :  subject.CN or subject.emailAddress
-// groups:  subject.OU
-// orga  :  subject.O
-
 // ---------------------------------------------------------------------------
 // ConfigExtractor — tracks which keys are consumed during conversion
 // ---------------------------------------------------------------------------

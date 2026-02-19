@@ -29,6 +29,7 @@ const headerStrategyFormQuery = graphql`
       headers_auth {
         enabled
         description
+        button_label_override
         logout_uri
         headers_audit
         user_info_mapping {
@@ -71,6 +72,7 @@ const headerStrategyFormMutation = graphql`
         headers_auth {
           enabled
           description
+          button_label_override
           logout_uri
           headers_audit
           user_info_mapping {
@@ -114,6 +116,7 @@ interface MappingEntry {
 interface HeaderStrategyFormValues {
   enabled: boolean;
   description: string;
+  button_label_override: string;
   logout_uri: string;
   headers_audit: string[];
   user_info_mapping: {
@@ -174,6 +177,7 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
   const initialValues: HeaderStrategyFormValues = {
     enabled: headerAuth?.enabled ?? false,
     description: headerAuth?.description ?? '',
+    button_label_override: headerAuth?.button_label_override ?? '',
     logout_uri: headerAuth?.logout_uri ?? '',
     headers_audit: (headerAuth?.headers_audit ?? []).filter((s): s is string => s !== null && s !== undefined),
     user_info_mapping: {
@@ -212,6 +216,7 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
         input: {
           enabled: values.enabled,
           description: values.description || null,
+          button_label_override: values.button_label_override || null,
           logout_uri: values.logout_uri || null,
           headers_audit: filterStringArray(values.headers_audit),
           user_info_mapping: {
@@ -343,6 +348,14 @@ const HeaderStrategyForm = ({ onCancel }: HeaderStrategyFormProps) => {
                   );
                 }}
               </FieldArray>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="button_label_override"
+                label={t_i18n('Login button label')}
+                fullWidth
+                style={{ marginTop: 20 }}
+              />
             </>
           )}
 

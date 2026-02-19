@@ -117,7 +117,6 @@ import {
   PROVIDERS,
 } from '../modules/authenticationProvider/providers-configuration';
 import { addOrganization } from '../modules/organization/organization-domain';
-import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 import validator from 'validator';
 
 const BEARER = 'Bearer ';
@@ -1945,14 +1944,6 @@ export const authenticateUserFromRequest = async (context, req) => {
   }
   // endregion
   // region Direct authentication
-  // If user not identified, try headers authentication
-  const settings = await getSettings(context);
-  if (settings.headers_auth?.enabled) {
-    const user = await HEADERS_PROVIDER?.reqLoginHandler(req);
-    if (user) {
-      return await authenticateUserByUserId(context, req, user.id);
-    }
-  }
   // If no bearer specified, try with basic auth
   const basicAuth = await extractUserFromBasicAuth(req.headers.authorization);
   if (basicAuth) {

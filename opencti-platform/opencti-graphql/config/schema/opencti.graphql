@@ -1452,7 +1452,7 @@ type LocalAuthConfig {
 type CertAuthConfig {
   enabled: Boolean
   description: String
-  button_label: String
+  button_label_override: String
   user_info_mapping: UserInfoMapping!
   groups_mapping: GroupsMapping!
   organizations_mapping: OrganizationsMapping!
@@ -1461,6 +1461,7 @@ type CertAuthConfig {
 type HeadersAuthConfig {
   enabled: Boolean
   description: String
+  button_label_override: String
   logout_uri: String
   headers_audit: [String]
   user_info_mapping: UserInfoMapping!
@@ -1482,7 +1483,7 @@ input LocalAuthConfigInput {
 input CertAuthConfigInput {
   enabled: Boolean
   description: String
-  button_label: String
+  button_label_override: String
   user_info_mapping: UserInfoMappingInput!
   groups_mapping: GroupsMappingInput!
   organizations_mapping: OrganizationsMappingInput!
@@ -1491,6 +1492,7 @@ input CertAuthConfigInput {
 input HeadersAuthConfigInput {
   enabled: Boolean
   description: String
+  button_label_override: String
   logout_uri: String
   headers_audit: [String]
   user_info_mapping: UserInfoMappingInput!

@@ -3793,7 +3793,7 @@ export enum CatalogsOrdering {
 
 export type CertAuthConfig = {
   __typename?: 'CertAuthConfig';
-  button_label?: Maybe<Scalars['String']['output']>;
+  button_label_override?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   enabled?: Maybe<Scalars['Boolean']['output']>;
   groups_mapping: GroupsMapping;
@@ -3802,7 +3802,7 @@ export type CertAuthConfig = {
 };
 
 export type CertAuthConfigInput = {
-  button_label?: InputMaybe<Scalars['String']['input']>;
+  button_label_override?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   enabled?: InputMaybe<Scalars['Boolean']['input']>;
   groups_mapping: GroupsMappingInput;
@@ -10341,6 +10341,7 @@ export type HeaderInput = {
 
 export type HeadersAuthConfig = {
   __typename?: 'HeadersAuthConfig';
+  button_label_override?: Maybe<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   enabled?: Maybe<Scalars['Boolean']['output']>;
   groups_mapping: GroupsMapping;
@@ -10351,6 +10352,7 @@ export type HeadersAuthConfig = {
 };
 
 export type HeadersAuthConfigInput = {
+  button_label_override?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   enabled?: InputMaybe<Scalars['Boolean']['input']>;
   groups_mapping: GroupsMappingInput;
@@ -40561,7 +40563,7 @@ export type CatalogEdgeResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type CertAuthConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['CertAuthConfig'] = ResolversParentTypes['CertAuthConfig']> = ResolversObject<{
-  button_label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  button_label_override?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   groups_mapping?: Resolver<ResolversTypes['GroupsMapping'], ParentType, ContextType>;
@@ -42803,6 +42805,7 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type HeadersAuthConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['HeadersAuthConfig'] = ResolversParentTypes['HeadersAuthConfig']> = ResolversObject<{
+  button_label_override?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   groups_mapping?: Resolver<ResolversTypes['GroupsMapping'], ParentType, ContextType>;

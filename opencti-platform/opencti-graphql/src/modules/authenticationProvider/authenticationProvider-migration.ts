@@ -15,6 +15,7 @@ import { AuthRequired } from '../../config/errors';
 import { isAuthenticationProviderMigrated } from './providers-configuration';
 import nconf from 'nconf';
 import { getSettings, updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../../domain/settings';
+import type { BasicStoreSettings } from '../../types/settings';
 
 // ---------------------------------------------------------------------------
 // Provider type mapping
@@ -62,13 +63,14 @@ const parseMappingStrings = (mapping: any) => {
  * Returns true if the attribute was absent and had to be created.
  */
 const migrateLocalAuthIfNeeded = async (context: AuthContext, user: AuthUser) => {
-  const envConfigurations = nconf.get('providers') ?? {};
-  const settings = await getSettings(context);
-  const local = envConfigurations['local'];
-  logApp.info('[SINGLETON-MIGRATION] local_auth is absent, creating with defaults');
-  await updateLocalAuth(context, user, settings.id, { enabled: local?.enabled ?? true });
-  logApp.info('[SINGLETON-MIGRATION] local_auth successfully ensured');
-  return true;
+  const settings = await getSettings(context) as unknown as BasicStoreSettings;
+  if (!settings.local_auth) {
+    const envConfigurations = nconf.get('providers') ?? {};
+    const local = envConfigurations['local'];
+    logApp.info('[SINGLETON-MIGRATION] local_auth is absent, creating with defaults');
+    await updateLocalAuth(context, user, settings.id, { enabled: local?.enabled ?? true });
+    logApp.info('[SINGLETON-MIGRATION] local_auth successfully ensured');
+  }
 };
 
 /**
@@ -78,38 +80,43 @@ const migrateLocalAuthIfNeeded = async (context: AuthContext, user: AuthUser) =>
  * - If already nested: no-op
  */
 const migrateHeadersAuthIfNeeded = async (context: AuthContext, user: AuthUser) => {
-  const envConfigurations = nconf.get('providers') ?? {};
-  const certProvider: any | undefined = Object.values(envConfigurations).filter((pr: any) => pr.strategy === 'HeaderStrategy')?.[0];
-  const { config, enabled } = certProvider ?? {};
-  const settings = await getSettings(context);
-  const nested = {
-    enabled: enabled ?? false,
-    logout_uri: config?.logout_uri ?? null,
-    headers_audit: config?.headers_audit ?? [],
-    user_info_mapping: {
-      email_expr: config?.header_email || 'x-email',
-      name_expr: config?.header_name || 'x-name',
-      firstname_expr: config?.header_firstname || 'x-firstname',
-      lastname_expr: config?.header_lastname || 'x-lastname',
-    },
-    groups_mapping: {
-      default_groups: [],
-      groups_expr: config?.groups_management?.groups_header ?? [],
-      group_splitter: config?.groups_management?.groups_splitter || null,
-      groups_mapping: parseMappingStrings(config?.groups_management?.groups_mapping),
-      auto_create_groups: config?.groups_management?.auto_create_group ?? false,
-      prevent_default_groups: config?.groups_management?.prevent_default_groups ?? false,
-    },
-    organizations_mapping: {
-      default_organizations: config?.organizations_management?.organizations_default ?? [],
-      organizations_expr: config?.organizations_management?.organizations_header ?? [],
-      organizations_splitter: config?.organizations_management?.organizations_splitter || null,
-      organizations_mapping: parseMappingStrings(config?.organizations_management?.organizations_mapping),
-      auto_create_organizations: false,
-    },
-  };
-  await updateHeaderAuth(context, user, settings.id, nested);
-  logApp.info('[SINGLETON-MIGRATION] headers_auth successfully ensured in nested format');
+  const settings = await getSettings(context) as unknown as BasicStoreSettings;
+  if (!settings.headers_auth || !settings.headers_auth.button_label_override) {
+    const envConfigurations = nconf.get('providers') ?? {};
+    const certProvider: any | undefined = Object.values(envConfigurations).filter((pr: any) => pr.strategy === 'HeaderStrategy')?.[0];
+    const { config, enabled } = certProvider ?? {};
+    const groupsHeader = config?.groups_management?.groups_header;
+    const organizationsHeader = config?.organizations_management?.organizations_header;
+    const headersConfiguration = {
+      enabled: enabled ?? false,
+      button_label_override: config?.label ?? 'HEADERS',
+      logout_uri: config?.logout_uri ?? null,
+      headers_audit: config?.headers_audit ?? [],
+      user_info_mapping: {
+        email_expr: config?.header_email || 'x-email',
+        name_expr: config?.header_name || 'x-name',
+        firstname_expr: config?.header_firstname || 'x-firstname',
+        lastname_expr: config?.header_lastname || 'x-lastname',
+      },
+      groups_mapping: {
+        default_groups: [],
+        groups_expr: groupsHeader ? [groupsHeader] : [],
+        group_splitter: config?.groups_management?.groups_splitter || null,
+        groups_mapping: parseMappingStrings(config?.groups_management?.groups_mapping),
+        auto_create_groups: config?.groups_management?.auto_create_group ?? false,
+        prevent_default_groups: config?.groups_management?.prevent_default_groups ?? false,
+      },
+      organizations_mapping: {
+        default_organizations: config?.organizations_management?.organizations_default ?? [],
+        organizations_expr: organizationsHeader ? [organizationsHeader] : [],
+        organizations_splitter: config?.organizations_management?.organizations_splitter || null,
+        organizations_mapping: parseMappingStrings(config?.organizations_management?.organizations_mapping),
+        auto_create_organizations: false,
+      },
+    };
+    await updateHeaderAuth(context, user, settings.id, headersConfiguration);
+    logApp.info('[SINGLETON-MIGRATION] headers_auth successfully ensured in nested format');
+  }
 };
 
 /**
@@ -119,38 +126,39 @@ const migrateHeadersAuthIfNeeded = async (context: AuthContext, user: AuthUser) 
  * - If already nested: no-op
  */
 const migrateCertAuthIfNeeded = async (context: AuthContext, user: AuthUser) => {
-  const envConfigurations = nconf.get('providers') ?? {};
-  const certProvider: any | undefined = Object.values(envConfigurations).filter((pr: any) => pr.strategy === 'ClientCertStrategy')?.[0];
-  const settings = await getSettings(context);
-  const { config, enabled } = certProvider ?? {};
-  const nested = {
-    enabled: enabled ?? false,
-    button_label_override: config?.label ?? 'cert',
-    user_info_mapping: {
-      email_expr: 'subject.emailAddress',
-      name_expr: 'subject.CN',
-      firstname_expr: null,
-      lastname_expr: null,
-    },
-    groups_mapping: {
-      default_groups: [],
-      groups_expr: ['subject.OU'],
-      group_splitter: null,
-      groups_mapping: [],
-      auto_create_groups: false,
-      prevent_default_groups: false,
-    },
-    organizations_mapping: {
-      default_organizations: [],
-      organizations_expr: ['subject.O'],
-      organizations_splitter: null,
-      organizations_mapping: [],
-      auto_create_organizations: false,
-    },
-  };
-
-  await updateCertAuth(context, user, settings.id, nested);
-  logApp.info('[SINGLETON-MIGRATION] cert_auth successfully ensured in nested format');
+  const settings = await getSettings(context) as unknown as BasicStoreSettings;
+  if (!settings.cert_auth || !settings.cert_auth.button_label_override) {
+    const envConfigurations = nconf.get('providers') ?? {};
+    const certProvider: any | undefined = Object.values(envConfigurations).filter((pr: any) => pr.strategy === 'ClientCertStrategy')?.[0];
+    const { config, enabled } = certProvider ?? {};
+    const certAuthentication = {
+      enabled: enabled ?? false,
+      button_label_override: config?.label ?? 'CERTIFICATE',
+      user_info_mapping: {
+        email_expr: 'subject.emailAddress',
+        name_expr: 'subject.CN',
+        firstname_expr: null,
+        lastname_expr: null,
+      },
+      groups_mapping: {
+        default_groups: [],
+        groups_expr: ['subject.OU'],
+        group_splitter: null,
+        groups_mapping: [],
+        auto_create_groups: false,
+        prevent_default_groups: false,
+      },
+      organizations_mapping: {
+        default_organizations: [],
+        organizations_expr: ['subject.O'],
+        organizations_splitter: null,
+        organizations_mapping: [],
+        auto_create_organizations: false,
+      },
+    };
+    await updateCertAuth(context, user, settings.id, certAuthentication);
+    logApp.info('[SINGLETON-MIGRATION] cert_auth successfully ensured in nested format');
+  }
 };
 
 // Singleton authentications: ensure they all exist and are in the correct nested format

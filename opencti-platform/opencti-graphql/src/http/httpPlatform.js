@@ -354,6 +354,17 @@ const createApp = async (app, schema) => {
     }
   });
 
+  // -- Client HEADERS Cert login custom strategy
+  app.get(`${basePath}/auth/headers`, async (req, res) => {
+    try {
+      await HEADERS_PROVIDER.reqLoginHandler(req, res);
+    } catch (e) {
+      setCookieError(res, e.message);
+      logApp.error('Error auth by headers', { cause: e });
+      res.status(503).send({ status: 'error', error: e.message });
+    }
+  });
+
   // Logout
   app.get(`${basePath}/logout`, async (req, res) => {
     try {
