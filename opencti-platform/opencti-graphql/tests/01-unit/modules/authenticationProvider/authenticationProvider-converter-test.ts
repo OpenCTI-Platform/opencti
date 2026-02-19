@@ -2,8 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildBaseInput,
   ConfigExtractor,
-  convertAllEnvProviders,
-  convertEnvProviderEntry,
+  convertAllSSOEnvProviders,
   convertLdapEnvConfig,
   convertMappingEntries,
   convertOidcEnvConfig,
@@ -12,7 +11,7 @@ import {
   toExtraConfEntry,
   type EnvProviderEntry,
 } from '../../../../src/modules/authenticationProvider/authenticationProvider-migration-converter';
-import { ExtraConfEntryType, type OidcConfigurationInput } from '../../../../src/generated/graphql';
+import { ExtraConfEntryType } from '../../../../src/generated/graphql';
 
 // ==========================================================================
 // ConfigExtractor
@@ -1098,89 +1097,6 @@ describe('convertLdapEnvConfig', () => {
   });
 });
 
-// ==========================================================================
-// Top-level dispatcher
-// ==========================================================================
-
-describe('convertEnvProviderEntry', () => {
-  it('should dispatch OpenIDConnectStrategy to OIDC conversion', () => {
-    const entry: EnvProviderEntry = {
-      strategy: 'OpenIDConnectStrategy',
-      config: { issuer: 'x', client_id: 'c', client_secret: 's' },
-    };
-    const result = convertEnvProviderEntry('oic', entry);
-    expect(result.status).toBe('converted');
-    if (result.status === 'converted') {
-      expect(result.provider.type).toBe('OIDC');
-    }
-  });
-
-  it('should dispatch SamlStrategy to SAML conversion', () => {
-    const entry: EnvProviderEntry = {
-      strategy: 'SamlStrategy',
-      config: { issuer: 'x', entry_point: 'y', cert: 'z' },
-    };
-    const result = convertEnvProviderEntry('saml', entry);
-    expect(result.status).toBe('converted');
-    if (result.status === 'converted') {
-      expect(result.provider.type).toBe('SAML');
-    }
-  });
-
-  it('should dispatch LdapStrategy to LDAP conversion', () => {
-    const entry: EnvProviderEntry = {
-      strategy: 'LdapStrategy',
-      config: { url: 'ldap://x', bind_dn: 'x', search_base: 'x' },
-    };
-    const result = convertEnvProviderEntry('ldap', entry);
-    expect(result.status).toBe('converted');
-    if (result.status === 'converted') {
-      expect(result.provider.type).toBe('LDAP');
-    }
-  });
-
-  it('should skip disabled entries', () => {
-    const entry: EnvProviderEntry = {
-      strategy: 'OpenIDConnectStrategy',
-      config: { disabled: true, issuer: 'x', client_id: 'c', client_secret: 's' },
-    };
-    const result = convertEnvProviderEntry('oic', entry);
-    expect(result.status).toBe('skipped');
-    if (result.status === 'skipped') {
-      expect(result.reason).toContain('disabled');
-    }
-  });
-
-  it('should skip singleton strategies (Local, Cert, Header)', () => {
-    expect(convertEnvProviderEntry('local', { strategy: 'LocalStrategy' }).status).toBe('skipped');
-    expect(convertEnvProviderEntry('cert', { strategy: 'ClientCertStrategy' }).status).toBe('skipped');
-    expect(convertEnvProviderEntry('headers', { strategy: 'HeaderStrategy' }).status).toBe('skipped');
-  });
-
-  it('should convert deprecated strategies (Facebook, Google, Github, Auth0) to OIDC', () => {
-    for (const strategy of ['FacebookStrategy', 'GoogleStrategy', 'GithubStrategy', 'Auth0Strategy']) {
-      const result = convertEnvProviderEntry('x', {
-        strategy,
-        config: { client_id: 'cid', client_secret: 'cs', ...(strategy === 'Auth0Strategy' ? { domain: 'tenant.auth0.com' } : {}) },
-      });
-      expect(result.status).toBe('converted');
-      if (result.status === 'converted') {
-        expect(result.provider.type).toBe('OIDC');
-        expect(result.provider.warnings.length).toBeGreaterThan(0);
-        expect(result.provider.warnings.some((w) => w.includes('deprecated'))).toBe(true);
-      }
-    }
-  });
-
-  it('should error on unknown strategies', () => {
-    const result = convertEnvProviderEntry('x', { strategy: 'UnknownStrategy' });
-    expect(result.status).toBe('error');
-    if (result.status === 'error') {
-      expect(result.reason).toContain('Unknown strategy');
-    }
-  });
-});
-
 describe('convertAllEnvProviders', () => {
   it('should convert multiple providers in order', () => {
     const envProviders = {
@@ -1204,113 +1120,18 @@ describe('convertAllEnvProviders', () => {
       },
     };
 
-    const results = convertAllEnvProviders(envProviders);
+    const results = convertAllSSOEnvProviders(envProviders);
 
     expect(results).toHaveLength(4);
     expect(results[0].envKey).toBe('oic');
-    expect(results[0].result.status).toBe('converted');
-
     expect(results[1].envKey).toBe('saml');
-    expect(results[1].result.status).toBe('converted');
-
     expect(results[2].envKey).toBe('ldap');
-    expect(results[2].result.status).toBe('converted');
-
     expect(results[3].envKey).toBe('local');
-    expect(results[3].result.status).toBe('skipped');
   });
 
   it('should handle empty env providers', () => {
-    const results = convertAllEnvProviders({});
+    const results = convertAllSSOEnvProviders({});
     expect(results).toStrictEqual([]);
-  });
-
-  it('should deduplicate providers with the same resolved identifier', () => {
-    const envProviders = {
-      first_saml: {
-        identifier: 'saml2',
-        strategy: 'SamlStrategy',
-        config: { issuer: 'first', entry_point: 'y', cert: 'z' },
-      },
-      second_saml: {
-        identifier: 'saml2', // same identifier → duplicate
-        strategy: 'SamlStrategy',
-        config: { issuer: 'second', entry_point: 'y2', cert: 'z2' },
-      },
-    };
-
-    const results = convertAllEnvProviders(envProviders);
-    expect(results).toHaveLength(2);
-
-    // First one should be converted
-    expect(results[0].envKey).toBe('first_saml');
-    expect(results[0].result.status).toBe('converted');
-
-    // Second one should be an error (duplicate)
-    expect(results[1].envKey).toBe('second_saml');
-    expect(results[1].result.status).toBe('error');
-    if (results[1].result.status === 'error') {
-      expect(results[1].result.reason).toContain('Duplicate identifier');
-      expect(results[1].result.reason).toContain('saml2');
-      expect(results[1].result.reason).toContain('first_saml');
-    }
-  });
-
-  it('should deduplicate providers using default identifiers', () => {
-    // Two OIDC entries with no explicit identifier → both resolve to default 'oic'
-    const envProviders = {
-      oic_primary: {
-        strategy: 'OpenIDConnectStrategy',
-        config: { issuer: 'https://first.example.com', client_id: 'c1', client_secret: 's1' },
-      },
-      oic_secondary: {
-        strategy: 'OpenIDConnectStrategy',
-        config: { issuer: 'https://second.example.com', client_id: 'c2', client_secret: 's2' },
-      },
-    };
-
-    const results = convertAllEnvProviders(envProviders);
-    expect(results).toHaveLength(2);
-
-    expect(results[0].result.status).toBe('converted');
-    expect(results[1].result.status).toBe('error');
-    if (results[1].result.status === 'error') {
-      expect(results[1].result.reason).toContain('Duplicate identifier');
-      expect(results[1].result.reason).toContain('oic');
-    }
-  });
-
-  it('should not deduplicate providers with different identifiers', () => {
-    const envProviders = {
-      oic1: {
-        identifier: 'oic-keycloak',
-        strategy: 'OpenIDConnectStrategy',
-        config: { issuer: 'x', client_id: 'c', client_secret: 's' },
-      },
-      oic2: {
-        identifier: 'oic-azure',
-        strategy: 'OpenIDConnectStrategy',
-        config: { issuer: 'y', client_id: 'c2', client_secret: 's2' },
-      },
-    };
-
-    const results = convertAllEnvProviders(envProviders);
-    expect(results).toHaveLength(2);
-    expect(results[0].result.status).toBe('converted');
-    expect(results[1].result.status).toBe('converted');
-  });
-
-  it('should not deduplicate skipped entries', () => {
-    const envProviders = {
-      local1: { strategy: 'LocalStrategy' },
-      local2: { strategy: 'LocalStrategy' },
-    };
-
-    const results = convertAllEnvProviders(envProviders);
-    expect(results).toHaveLength(2);
-    // Both skipped, no deduplication error
-    expect(results[0].result.status).toBe('skipped');
-    expect(results[1].result.status).toBe('skipped');
   });
 });
 
@@ -1604,245 +1425,6 @@ describe('Real-world configuration scenarios', () => {
 // ==========================================================================
 // Edge cases
 // ==========================================================================
-
-// ==========================================================================
-// Deprecated strategies → OIDC conversion
-// ==========================================================================
-
-describe('convertDeprecatedToOidc', () => {
-  it('should convert GoogleStrategy to OIDC with well-known issuer', () => {
-    const entry: EnvProviderEntry = {
-      identifier: 'google',
-      strategy: 'GoogleStrategy',
-      config: {
-        label: 'Login with Google',
-        client_id: 'google-client-id',
-        client_secret: 'google-client-secret',
-        callback_url: 'https://opencti.example.com/auth/google/callback',
-        logout_remote: false,
-        domains: ['example.com', 'filigran.io'],
-      },
-    };
-
-    const result = convertEnvProviderEntry('google', entry);
-    expect(result.status).toBe('converted');
-    if (result.status !== 'converted') return;
-
-    const { provider } = result;
-    expect(provider.type).toBe('OIDC');
-    expect(provider.base.name).toBe('Login with Google');
-    // callback_url is provided, so identifier_override should be null
-    expect(provider.base.identifier_override).toBeNull();
-
-    const config = provider.configuration as OidcConfigurationInput;
-    expect(config.issuer).toBe('https://accounts.google.com');
-    expect(config.client_id).toBe('google-client-id');
-    expect(config.client_secret_cleartext).toBe('google-client-secret');
-    expect(config.scopes).toStrictEqual(['openid', 'email', 'profile']);
-    expect(config.logout_remote).toBe(false);
-
-    // domains should be preserved in extra_conf as multiple entries with the same key
-    const domainsExtra = config.extra_conf.filter((e) => e.key === 'domains');
-    expect(domainsExtra).toHaveLength(2);
-    expect(domainsExtra[0].value).toBe('example.com');
-    expect(domainsExtra[1].value).toBe('filigran.io');
-
-    // Should have deprecation warning
-    expect(provider.warnings.some((w) => w.includes('deprecated'))).toBe(true);
-  });
-
-  it('should convert FacebookStrategy to OIDC with placeholder issuer warning', () => {
-    const entry: EnvProviderEntry = {
-      identifier: 'facebook',
-      strategy: 'FacebookStrategy',
-      config: {
-        client_id: 'fb-client-id',
-        client_secret: 'fb-secret',
-        callback_url: 'https://opencti.example.com/auth/facebook/callback',
-      },
-    };
-
-    const result = convertEnvProviderEntry('facebook', entry);
-    expect(result.status).toBe('converted');
-    if (result.status !== 'converted') return;
-
-    const config = result.provider.configuration as OidcConfigurationInput;
-    expect(config.issuer).toBe('https://www.facebook.com');
-    expect(config.client_id).toBe('fb-client-id');
-    expect(config.scopes).toStrictEqual(['email']);
-
-    // Should warn about placeholder issuer
-    expect(result.provider.warnings.some((w) => w.includes('placeholder'))).toBe(true);
-    expect(result.provider.warnings.some((w) => w.includes('deprecated'))).toBe(true);
-  });
-
-  it('should convert GithubStrategy to OIDC with organizations in extra_conf', () => {
-    const entry: EnvProviderEntry = {
-      identifier: 'github',
-      strategy: 'GithubStrategy',
-      config: {
-        client_id: 'gh-client-id',
-        client_secret: 'gh-secret',
-        callback_url: 'https://opencti.example.com/auth/github/callback',
-        organizations: ['filigran', 'opencti'],
-      },
-    };
-
-    const result = convertEnvProviderEntry('github', entry);
-    expect(result.status).toBe('converted');
-    if (result.status !== 'converted') return;
-
-    const config = result.provider.configuration as OidcConfigurationInput;
-    expect(config.issuer).toBe('https://github.com');
-    expect(config.client_id).toBe('gh-client-id');
-    expect(config.scopes).toStrictEqual(['user:email']);
-
-    // organizations should be preserved in extra_conf as multiple entries with the same key
-    const orgsExtra = config.extra_conf.filter((e) => e.key === 'organizations');
-    expect(orgsExtra).toHaveLength(2);
-    expect(orgsExtra[0].value).toBe('filigran');
-    expect(orgsExtra[1].value).toBe('opencti');
-
-    // Should warn about placeholder issuer
-    expect(result.provider.warnings.some((w) => w.includes('placeholder'))).toBe(true);
-  });
-
-  it('should convert Auth0Strategy to OIDC with issuer derived from domain', () => {
-    const entry: EnvProviderEntry = {
-      identifier: 'auth0',
-      strategy: 'Auth0Strategy',
-      config: {
-        label: 'Login with Auth0',
-        domain: 'my-tenant.auth0.com',
-        client_id: 'auth0-client-id',
-        client_secret: 'auth0-secret',
-        callback_url: 'https://opencti.example.com/auth/auth0/callback',
-        scope: 'openid email profile groups',
-        logout_uri: 'https://opencti.example.com/logout',
-        use_proxy: true,
-      },
-    };
-
-    const result = convertEnvProviderEntry('auth0', entry);
-    expect(result.status).toBe('converted');
-    if (result.status !== 'converted') return;
-
-    const config = result.provider.configuration as OidcConfigurationInput;
-    expect(config.issuer).toBe('https://my-tenant.auth0.com');
-    expect(config.client_id).toBe('auth0-client-id');
-    expect(config.client_secret_cleartext).toBe('auth0-secret');
-    expect(config.scopes).toStrictEqual(['openid', 'email', 'profile', 'groups']);
-    expect(config.logout_callback_url).toBe('https://opencti.example.com/logout');
-    expect(config.use_proxy).toBe(true);
-
-    // Should have deprecation warning but NOT placeholder warning
-    expect(result.provider.warnings.some((w) => w.includes('deprecated'))).toBe(true);
-    expect(result.provider.warnings.some((w) => w.includes('placeholder'))).toBe(false);
-  });
-
-  it('should warn when Auth0 domain is missing', () => {
-    const entry: EnvProviderEntry = {
-      identifier: 'auth0',
-      strategy: 'Auth0Strategy',
-      config: {
-        client_id: 'auth0-client-id',
-        client_secret: 'auth0-secret',
-      },
-    };
-
-    const result = convertEnvProviderEntry('auth0', entry);
-    expect(result.status).toBe('converted');
-    if (result.status !== 'converted') return;
-
-    const config = result.provider.configuration as OidcConfigurationInput;
-    expect(config.issuer).toBe('');
-    expect(result.provider.warnings.some((w) => w.includes('domain'))).toBe(true);
-  });
-
-  it('should convert Auth0 with baseURL as logout_callback_url fallback', () => {
-    const entry: EnvProviderEntry = {
-      identifier: 'auth0',
-      strategy: 'Auth0Strategy',
-      config: {
-        domain: 'tenant.auth0.com',
-        client_id: 'cid',
-        client_secret: 'cs',
-        baseURL: 'https://opencti.example.com',
-      },
-    };
-
-    const result = convertEnvProviderEntry('auth0', entry);
-    if (result.status !== 'converted') return;
-
-    const config = result.provider.configuration as OidcConfigurationInput;
-    expect(config.logout_callback_url).toBe('https://opencti.example.com');
-  });
-
-  it('should prefer logout_uri over baseURL for Auth0', () => {
-    const entry: EnvProviderEntry = {
-      identifier: 'auth0',
-      strategy: 'Auth0Strategy',
-      config: {
-        domain: 'tenant.auth0.com',
-        client_id: 'cid',
-        client_secret: 'cs',
-        logout_uri: 'https://opencti.example.com/logout',
-        baseURL: 'https://opencti.example.com',
-      },
-    };
-
-    const result = convertEnvProviderEntry('auth0', entry);
-    if (result.status !== 'converted') return;
-
-    const config = result.provider.configuration as OidcConfigurationInput;
-    expect(config.logout_callback_url).toBe('https://opencti.example.com/logout');
-  });
-
-  it('should handle Auth0 with legacy camelCase clientID/clientSecret', () => {
-    const entry: EnvProviderEntry = {
-      identifier: 'auth0',
-      strategy: 'Auth0Strategy',
-      config: {
-        domain: 'tenant.auth0.com',
-        client_id: 'cid',
-        client_secret: 'cs',
-        clientID: 'legacy-cid',
-        clientSecret: 'legacy-cs',
-      },
-    };
-
-    const result = convertEnvProviderEntry('auth0', entry);
-    if (result.status !== 'converted') return;
-
-    // clientID/clientSecret should be consumed (not in extra_conf)
-    const config = result.provider.configuration as OidcConfigurationInput;
-    const extraKeys = config.extra_conf.map((e) => e.key);
-    expect(extraKeys).not.toContain('clientID');
-    expect(extraKeys).not.toContain('clientSecret');
-  });
-
-  it('should store callback_url as first-class field for deprecated strategies', () => {
-    const entry: EnvProviderEntry = {
-      identifier: 'google',
-      strategy: 'GoogleStrategy',
-      config: {
-        client_id: 'cid',
-        client_secret: 'cs',
-        callback_url: 'https://opencti.example.com/auth/google/callback',
-      },
-    };
-
-    const result = convertEnvProviderEntry('google', entry);
-    if (result.status !== 'converted') return;
-
-    const config = result.provider.configuration as OidcConfigurationInput;
-    expect(config.callback_url).toBe('https://opencti.example.com/auth/google/callback');
-    // When callback_url is provided, identifier_override should be null
-    expect(result.provider.base.identifier_override).toBeNull();
-    const extraKeys = config.extra_conf.map((e) => e.key);
-    expect(extraKeys).not.toContain('callback_url');
-  });
-});
 
 describe('Edge cases', () => {
   it('should handle config with no config property at all', () => {

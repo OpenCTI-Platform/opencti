@@ -1,8 +1,6 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import {
   type AuthenticationProviderBaseInput,
-  type AuthenticationProviderMigrationInput,
-  type AuthenticationProviderSettings,
   AuthenticationProviderType,
   ExtraConfEntryType,
   type LdapConfiguration,
@@ -25,20 +23,14 @@ import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, logApp } from '../../config/conf';
+import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import nconf from 'nconf';
-import { parseAuthenticationProviderConfiguration } from './authenticationProvider-migration';
 import { unregisterStrategy } from './providers';
-import { getConfigurationAdminEmail, isAuthenticationEditionLocked, isAuthenticationForcedFromEnv } from './providers-configuration';
+import { isAuthenticationForcedFromEnv } from './providers-configuration';
 import { getPlatformCrypto } from '../../utils/platformCrypto';
 import { memoize } from '../../utils/memoize';
 import { logAuthInfo } from './providers-logger';
 import { isNotEmptyField } from '../../database/utils';
-
-export const isConfigurationAdminUser = (user: AuthUser): boolean => {
-  return user.user_email === getConfigurationAdminEmail();
-};
 
 // Type for data that are encrypted
 const getKeyPair = memoize(async () => {
@@ -121,9 +113,9 @@ export const flatExtraConf = (extraConfInput: ExtraConfEntry[]) => {
 
 type ConfigurationInput = OidcConfigurationInput | SamlConfigurationInput | LdapConfigurationInput;
 
-export const checkAuthenticationEditionLocked = (user: AuthUser) => {
-  if (isAuthenticationEditionLocked() && !isConfigurationAdminUser(user)) {
-    throw UnsupportedError('Authentication edition is locked by environment variable');
+export const checkAuthenticationByEnvVariables = () => {
+  if (isAuthenticationForcedFromEnv()) {
+    throw UnsupportedError('Authentication is currently managed by env variables');
   }
 };
 
@@ -189,14 +181,11 @@ export const addAuthenticationProvider = async (
   user: AuthUser,
   { base, configuration }: { base: AuthenticationProviderBaseInput; configuration: ConfigurationInput },
   type: AuthenticationProviderType,
-  skipRegisterParam?: boolean,
 ) => {
-  checkAuthenticationEditionLocked(user);
+  checkAuthenticationByEnvVariables();
 
   // Ensure no other provider resolves to the same identifier
   await ensureUniqueIdentifier(context, user, base);
-
-  const skipRegister = skipRegisterParam ?? isAuthenticationForcedFromEnv();
 
   // Create the store object
   const input = { ...base, type, configuration: await graphQLToStoreConfiguration(type, configuration) };
@@ -223,7 +212,7 @@ export const addAuthenticationProvider = async (
     },
   });
 
-  if (created.enabled && !skipRegister) {
+  if (created.enabled) {
     logAuthInfo('Activating new provider', type, { identifier });
     await notify(BUS_TOPICS[ENTITY_TYPE_AUTHENTICATION_PROVIDER].EDIT_TOPIC, created, user);
   }
@@ -237,7 +226,7 @@ export const editAuthenticationProvider = async (
   { base, configuration }: { base: AuthenticationProviderBaseInput; configuration: ConfigurationInput },
   type: AuthenticationProviderType,
 ) => {
-  checkAuthenticationEditionLocked(user);
+  checkAuthenticationByEnvVariables();
   const existing = await findAuthenticationProviderById(context, user, id);
   if (!existing) {
     throw FunctionalError('Authentication provider cannot be found', { id });
@@ -267,16 +256,11 @@ export const editAuthenticationProvider = async (
     message: `updates Authentication \`${type}\` - \`${identifier}\``,
     context_data: { id, entity_type: ENTITY_TYPE_AUTHENTICATION_PROVIDER, input },
   });
-
-  if (!isAuthenticationForcedFromEnv()) {
-    await notify(BUS_TOPICS[ENTITY_TYPE_AUTHENTICATION_PROVIDER].EDIT_TOPIC, element, user);
-  }
-
-  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_AUTHENTICATION_PROVIDER].EDIT_TOPIC, element, user);
 };
 
 export const deleteAuthenticationProvider = async (context: AuthContext, user: AuthUser, id: string, type: AuthenticationProviderType) => {
-  checkAuthenticationEditionLocked(user);
+  checkAuthenticationByEnvVariables();
   const provider = await findAuthenticationProviderById(context, user, id);
   if (!provider) {
     throw FunctionalError('Authentication provider cannot be found', { id });
@@ -289,7 +273,7 @@ export const deleteAuthenticationProvider = async (context: AuthContext, user: A
     });
   }
 
-  if (provider.enabled && !isAuthenticationForcedFromEnv()) {
+  if (provider.enabled) {
     logAuthInfo('Disabling strategy', provider.type, { name: provider.name });
     await unregisterStrategy(provider);
   }
@@ -305,18 +289,4 @@ export const deleteAuthenticationProvider = async (context: AuthContext, user: A
   });
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, provider, user);
   return id;
-};
-
-export const runAuthenticationProviderMigration = async (context: AuthContext, user: AuthUser, input: AuthenticationProviderMigrationInput) => {
-  logApp.info(`[AUTH PROVIDER MIGRATION] Migration requested with dry_run = ${input.dry_run}`);
-  const providerConfigurationEnv = nconf.get('providers');
-  return parseAuthenticationProviderConfiguration(context, user, providerConfigurationEnv, input.dry_run);
-};
-
-export const getAuthenticationProviderSettings = async () => {
-  const settings: AuthenticationProviderSettings = {
-    is_force_env: isAuthenticationForcedFromEnv(),
-    is_edition_locked: isAuthenticationEditionLocked(),
-  };
-  return settings;
 };

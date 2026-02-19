@@ -3,8 +3,9 @@ import type { EnvStrategyType } from './providers-configuration';
 import type { AuthenticationProviderType } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
 import { redisPushAuthLog } from '../../database/redis';
-import { CERT_PROVIDER_NAME, HEADERS_PROVIDER_NAME } from './providers';
 import { forgetPromise } from '../../utils/promiseUtils';
+import type { CERT_PROVIDER_NAME } from './provider-cert';
+import type { HEADERS_PROVIDER_NAME } from './provider-headers';
 
 export const logAuthInfo = (message: string, strategyType: EnvStrategyType | AuthenticationProviderType, meta?: any) => {
   logApp.info(`[Auth][${strategyType.toUpperCase()}]${message}`, { meta });

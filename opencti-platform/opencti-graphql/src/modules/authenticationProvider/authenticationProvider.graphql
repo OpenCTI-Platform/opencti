@@ -302,11 +302,6 @@ input LdapInput {
   configuration: LdapConfigurationInput!
 }
 
-type AuthenticationProviderSettings {
-  is_force_env: Boolean!
-  is_edition_locked: Boolean!
-}
-
 input AuthenticationProviderMigrationInput {
   dry_run: Boolean!
 }
@@ -331,7 +326,6 @@ type Query {
     filters: FilterGroup
     search: String
   ): AuthenticationProviderConnection @auth(for: [SETTINGS_SETAUTH])
-  authenticationProviderSettings: AuthenticationProviderSettings @auth
   """Auth log history for a provider identified by its identifier (e.g. singleton strategies: Headers, Cert)."""
   authLogHistoryByIdentifier(identifier: String!): [AuthLogEntry!]! @auth(for: [SETTINGS_SETAUTH])
 }
@@ -348,6 +342,4 @@ type Mutation {
   ldapProviderAdd(input: LdapInput!): AuthenticationProvider @auth(for: [SETTINGS_SETAUTH])
   ldapProviderEdit(id: ID!, input: LdapInput!): AuthenticationProvider @auth(for: [SETTINGS_SETAUTH])
   ldapProviderDelete(id: ID!): ID @auth(for: [SETTINGS_SETAUTH])
-
-  authenticationProviderRunMigration(input: AuthenticationProviderMigrationInput!): [AuthenticationProviderMigrationResult] @auth(for: [BYPASS])
 }

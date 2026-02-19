@@ -1,11 +1,15 @@
 import type { BasicStoreSettings } from '../../types/settings';
 import type { AuthContext } from '../../types/user';
 import { getSettings } from '../../domain/settings';
-import { type AuthenticationProviderLogger } from './providers-logger';
+import { type AuthenticationProviderLogger, createAuthLogger } from './providers-logger';
 import { createMapper } from './mappings-utils';
 import { handleProviderLogin } from './providers';
 import { ForbiddenAccess } from '../../config/errors';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
+import { AuthType, EnvStrategyType, HEADERS_STRATEGY_IDENTIFIER, type ProviderConfiguration } from './providers-configuration';
+
+export const HEADERS_PROVIDER_NAME = 'Headers';
+export let HEADERS_PROVIDER: ProviderConfiguration | undefined = undefined;
 
 export const createHeadersLoginHandler = (logger: AuthenticationProviderLogger, context: AuthContext) => async (req: any) => {
   const settings = await getSettings(context) as unknown as BasicStoreSettings;
@@ -42,4 +46,16 @@ export const createHeadersLoginHandler = (logger: AuthenticationProviderLogger, 
   };
 
   return handleProviderLogin(logger, infoWithMeta);
+};
+
+export const registerHeadersStrategy = async (context: AuthContext) => {
+  const logger = createAuthLogger(HEADERS_PROVIDER_NAME, HEADERS_PROVIDER_NAME);
+
+  HEADERS_PROVIDER = {
+    name: HEADERS_PROVIDER_NAME,
+    reqLoginHandler: createHeadersLoginHandler(logger, context),
+    type: AuthType.AUTH_REQ,
+    strategy: EnvStrategyType.STRATEGY_HEADER,
+    provider: HEADERS_STRATEGY_IDENTIFIER,
+  };
 };

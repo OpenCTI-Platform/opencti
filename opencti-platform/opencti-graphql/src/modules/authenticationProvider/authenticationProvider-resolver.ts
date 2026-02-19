@@ -6,9 +6,7 @@ import {
   editAuthenticationProvider,
   findAuthenticationProviderById,
   findAuthenticationProviderByIdPaginated,
-  getAuthenticationProviderSettings,
   resolveProviderIdentifier,
-  runAuthenticationProviderMigration,
 } from './authenticationProvider-domain';
 import type { BasicStoreEntityAuthenticationProvider } from './authenticationProvider-types';
 import { DatabaseError } from '../../config/errors';
@@ -47,7 +45,6 @@ const authenticationProviderResolver: Resolvers = {
   Query: {
     authenticationProvider: (_, { id }, context) => findAuthenticationProviderById(context, context.user, id),
     authenticationProviders: (_, args, context) => findAuthenticationProviderByIdPaginated(context, context.user, args),
-    authenticationProviderSettings: (_, __, ___) => getAuthenticationProviderSettings(),
     authLogHistoryByIdentifier: async (_, { identifier }) => {
       const entries = await redisGetAuthLogHistory(identifier);
       return logsToLogs(entries);
@@ -94,9 +91,6 @@ const authenticationProviderResolver: Resolvers = {
     },
     ldapProviderDelete: (_, { id }, context) => {
       return deleteAuthenticationProvider(context, context.user, id, AuthenticationProviderType.Ldap);
-    },
-    authenticationProviderRunMigration: (_, { input }, context) => {
-      return runAuthenticationProviderMigration(context, context.user, input);
     },
   },
 };

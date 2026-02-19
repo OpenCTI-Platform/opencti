@@ -15,7 +15,6 @@ export const registerLocalStrategy = async () => {
     return login(username, password).then((info) => {
       logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_LOCAL, { username });
       addUserLoginCount();
-      // TODO JRI FIND A WAY FOR ROOT LOGIN
       return done(null, info);
     }).catch((err) => {
       done(err);

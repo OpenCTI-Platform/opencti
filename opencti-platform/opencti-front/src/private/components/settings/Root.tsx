@@ -20,7 +20,6 @@ import useGranted, {
   SETTINGS_SETAUTH,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
-import useAuth from '../../../utils/hooks/useAuth';
 
 const Security = lazy(() => import('../../../utils/Security'));
 const CaseTemplates = lazy(() => import('./case_templates/CaseTemplates'));
@@ -63,9 +62,6 @@ const FintelDesign = lazy(() => import('./fintel_design/FintelDesign'));
 const Experience = lazy(() => import('./Experience'));
 
 const Root = () => {
-  const { settings } = useAuth();
-  const isSsoAuthenticationLocked = settings.is_authentication_locked;
-
   const adminOrga = isOnlyOrganizationAdmin();
 
   const isGrantedToLabels = useGranted([SETTINGS_SETLABELS]);
@@ -293,11 +289,7 @@ const Root = () => {
                 needs={[SETTINGS_SETAUTH]}
                 placeholder={<Navigate to={urlWithCapabilities()} />}
               >
-                {!isSsoAuthenticationLocked ? (
-                  <SSODefinitions />
-                ) : (
-                  <Navigate to={urlWithCapabilities()} />
-                )}
+                <SSODefinitions />
               </Security>
             )}
           />

@@ -7,15 +7,12 @@ import { logAuthError, logAuthInfo } from './providers-logger';
 
 export const LOCAL_STRATEGY_IDENTIFIER = 'local';
 export const HEADERS_STRATEGY_IDENTIFIER = 'headers';
+export const CERT_STRATEGY_IDENTIFIER = 'cert';
 
+export const IS_AUTHENTICATION_FORCE_LOCAL = booleanConf('app:authentication:force_local', false);
 const IS_AUTHENTICATION_FORCE_FROM_ENV = booleanConf('app:authentication:force_env', false);
 export const isAuthenticationForcedFromEnv = () => {
   return IS_AUTHENTICATION_FORCE_FROM_ENV;
-};
-
-const IS_AUTHENTICATION_EDITION_LOCKED = booleanConf('app:authentication:edition_locked', false);
-export const isAuthenticationEditionLocked = () => {
-  return IS_AUTHENTICATION_EDITION_LOCKED;
 };
 
 export const getProvidersFromEnvironment = () => {
@@ -53,7 +50,7 @@ export interface ProviderConfiguration {
   strategy: EnvStrategyType | AuthenticationProviderType;
   // provider is also named 'identifier' or 'providerRef' in code.
   provider: string;
-  reqLoginHandler?: (req: any) => Promise<unknown>;
+  reqLoginHandler?: (req: any, res?: any) => Promise<unknown>;
   logout_uri?: string;
   logout_remote?: boolean;
   internal_id?: string;

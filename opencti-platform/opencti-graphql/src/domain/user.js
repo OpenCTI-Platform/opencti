@@ -14,7 +14,7 @@ import conf, {
   getRequestAuditHeaders,
   logApp,
 } from '../config/conf';
-import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
+import { AuthenticationFailure, ConfigurationError, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
@@ -62,6 +62,7 @@ import {
   buildUserOrganizationRestrictedFiltersOptions,
   BYPASS,
   CAPABILITIES_IN_DRAFT_NAMES,
+  DEFAULT_INVALID_CONF_VALUE,
   executionContext,
   FilterMembersMode,
   filterMembersUsersWithUsersOrgs,
@@ -108,9 +109,16 @@ import { addUserTokenByAdmin, generateTokenHmac } from '../modules/user/user-dom
 import { memoize } from '../utils/memoize';
 import { getSettings } from './settings';
 import passport from 'passport';
-import { LOCAL_STRATEGY_IDENTIFIER, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
-import { HEADERS_PROVIDER } from '../modules/authenticationProvider/providers';
+import {
+  getConfigurationAdminEmail,
+  getConfigurationAdminPassword,
+  getConfigurationAdminToken,
+  LOCAL_STRATEGY_IDENTIFIER,
+  PROVIDERS,
+} from '../modules/authenticationProvider/providers-configuration';
 import { addOrganization } from '../modules/organization/organization-domain';
+import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
+import validator from 'validator';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -1323,7 +1331,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
     await Promise.all(newGroupsToCreate);
   }
   if (providerOrganizations.length > 0) {
-    const providerOrganizationIds = providerOrganizations.map((groupName) => generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: groupName }));
+    const providerOrganizationIds = providerOrganizations.map((orgName) => generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: orgName, identity_class: 'organization' }));
     const organizationsFilters = {
       mode: 'and',
       filters: [{ key: 'standard_id', values: providerOrganizationIds }],
@@ -1335,7 +1343,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
     providerOrganizations.forEach((organizationName) => {
       if (!foundOrganizationsNames.includes(organizationName)) {
         if (!autoCreateOrganization) {
-          throw ForbiddenAccess('[SSO] Can\'t login. The user has groups that don\'t exist and auto_create_group = false.');
+          throw ForbiddenAccess('[SSO] Can\'t login. The user has organizations that don\'t exist and auto_create_organization = false.');
         } else {
           newOrganizationsToCreate.push(addOrganization(context, SYSTEM_USER, { name: organizationName }));
         }
@@ -1960,7 +1968,7 @@ export const authenticateUserFromRequest = async (context, req) => {
   return undefined;
 };
 
-export const initAdmin = async (context, email, password, tokenValue) => {
+const initAdmin = async (context, email, password, tokenValue) => {
   const isExternallyManaged = conf.get('app:admin:externally_managed') === true;
   let existingAdmin = await findById(context, SYSTEM_USER, OPENCTI_ADMIN_UUID);
   if (existingAdmin) {
@@ -2005,6 +2013,28 @@ export const initAdmin = async (context, email, password, tokenValue) => {
   tokensWithoutBaseOne.push(newToken);
   const updates = [{ key: apiTokens.name, value: tokensWithoutBaseOne, operation: UPDATE_OPERATION_REPLACE }];
   await updateAttribute(context, SYSTEM_USER, OPENCTI_ADMIN_UUID, ENTITY_TYPE_USER, updates);
+};
+
+// Admin user initialization
+export const initializeAdminUser = async (context) => {
+  const adminEmail = getConfigurationAdminEmail();
+  const adminPassword = getConfigurationAdminPassword();
+  const adminToken = getConfigurationAdminToken();
+  if (isEmptyField(adminEmail) || isEmptyField(adminPassword) || isEmptyField(adminToken)
+    || adminPassword === DEFAULT_INVALID_CONF_VALUE || adminToken === DEFAULT_INVALID_CONF_VALUE) {
+    throw ConfigurationError('You need to configure the environment vars');
+  } else {
+    // Check fields
+    if (!validator.isEmail(adminEmail)) {
+      throw ConfigurationError('Email must be a valid email address');
+    }
+    if (!validator.isUUID(adminToken)) {
+      throw ConfigurationError('Token must be a valid UUID');
+    }
+    // Initialize the admin account
+    await initAdmin(context, adminEmail, adminPassword, adminToken);
+    logApp.info('[INIT] admin user initialized');
+  }
 };
 
 export const findDefaultDashboards = async (context, user, currentUser) => {

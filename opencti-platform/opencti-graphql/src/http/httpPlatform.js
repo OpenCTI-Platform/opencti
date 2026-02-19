@@ -34,8 +34,8 @@ import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { extractRefererPathFromReq, setCookieError } from './httpUtils';
 import { getChatbotProxy } from './httpChatbotProxy';
 import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
-import { HEADERS_PROVIDER } from '../modules/authenticationProvider/providers';
-import { handleCertAuthenticationRequest } from '../modules/authenticationProvider/provider-cert';
+import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
+import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 
 export const sanitizeReferer = (refererToSanitize) => {
   // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
@@ -345,7 +345,7 @@ const createApp = async (app, schema) => {
   // -- Client HTTPS Cert login custom strategy
   app.get(`${basePath}/auth/cert`, async (req, res) => {
     try {
-      await handleCertAuthenticationRequest(req, res);
+      await CERT_PROVIDER.reqLoginHandler(req, res);
     } catch (e) {
       setCookieError(res, e.message);
       logApp.error('Error auth by cert', { cause: e });

@@ -460,8 +460,8 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
 
   // User info mapping — SAML uses attribute names directly from SAML assertions
   const userInfoMapping: UserInfoMappingInput = {
-    email_expr: ext.get<string>('mail_attribute', 'email'),
-    name_expr: ext.get<string>('account_attribute', 'name'),
+    email_expr: ext.get<string>('mail_attribute', 'nameID'),
+    name_expr: ext.get<string>('account_attribute', 'nameID'),
     firstname_expr: ext.get<string | null>('firstname_attribute', null),
     lastname_expr: ext.get<string | null>('lastname_attribute', null),
   };
@@ -812,85 +812,53 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
   return { type: 'OIDC', base, configuration, warnings };
 };
 
-// ---------------------------------------------------------------------------
-// Top-level dispatcher
-// ---------------------------------------------------------------------------
-
-export type ConversionResult
-  = | { status: 'converted'; provider: ConvertedProvider }
-    | { status: 'skipped'; reason: string }
-    | { status: 'error'; reason: string };
-
 /**
  * Convert a single env provider entry to the new GraphQL input format.
  * Pure function — no side effects.
  */
-export const convertEnvProviderEntry = (envKey: string, entry: EnvProviderEntry): ConversionResult => {
-  const { strategy, config } = entry;
-
-  // Skip disabled entries
-  if (config?.disabled === true) {
-    return { status: 'skipped', reason: `Provider "${envKey}" is disabled.` };
-  }
-
+export const convertSSOProviderEntry = (envKey: string, entry: EnvProviderEntry): ConvertedProvider | undefined => {
+  const { strategy } = entry;
   switch (strategy) {
     case 'OpenIDConnectStrategy':
-      return { status: 'converted', provider: convertOidcEnvConfig(envKey, entry) };
+      return convertOidcEnvConfig(envKey, entry);
     case 'SamlStrategy':
-      return { status: 'converted', provider: convertSamlEnvConfig(envKey, entry) };
+      return convertSamlEnvConfig(envKey, entry);
     case 'LdapStrategy':
-      return { status: 'converted', provider: convertLdapEnvConfig(envKey, entry) };
-    // Singleton strategies — handled separately via Settings
-    case 'LocalStrategy':
-    case 'ClientCertStrategy':
-    case 'HeaderStrategy':
-      return { status: 'skipped', reason: `Strategy "${strategy}" is a singleton migrated via Settings, not AuthenticationProvider.` };
-    // Deprecated strategies — migrated to OIDC with warnings
+      return convertLdapEnvConfig(envKey, entry);
     case 'FacebookStrategy':
     case 'GoogleStrategy':
     case 'GithubStrategy':
     case 'Auth0Strategy':
-      return { status: 'converted', provider: convertDeprecatedToOidc(envKey, entry) };
+      return convertDeprecatedToOidc(envKey, entry);
     default:
-      return { status: 'error', reason: `Unknown strategy "${strategy}" for provider key "${envKey}".` };
+      return undefined;
   }
 };
 
+export type EnvProvider = { envKey: string; identifier: string; provider: ConvertedProvider };
 /**
  * Convert all env providers to the new format.
  * Deduplicates by resolved identifier — if two entries resolve to the same
  * identifier, only the first is kept; the duplicate is reported as an error.
  * Pure function — no side effects.
  */
-export const convertAllEnvProviders = (
-  envProviders: Record<string, EnvProviderEntry>,
-): { envKey: string; result: ConversionResult }[] => {
-  const results: { envKey: string; result: ConversionResult }[] = [];
+export const convertAllSSOEnvProviders = (envProviders: Record<string, EnvProviderEntry>): EnvProvider[] => {
+  const results: EnvProvider[] = [];
   const seenIdentifiers = new Map<string, string>(); // identifier → first envKey
-
   for (const [envKey, entry] of Object.entries(envProviders)) {
-    const result = convertEnvProviderEntry(envKey, entry);
+    const convertedProvider = convertSSOProviderEntry(envKey, entry);
 
     // Deduplicate converted providers by resolved identifier
-    if (result.status === 'converted') {
+    if (convertedProvider) {
       // Resolve identifier the same way as resolveProviderIdentifier: override, or slugified name
-      const identifier = resolveProviderIdentifier(result.provider.base);
+      const identifier = resolveProviderIdentifier(convertedProvider.base);
       const existingEnvKey = seenIdentifiers.get(identifier);
-      if (existingEnvKey !== undefined) {
-        results.push({
-          envKey,
-          result: {
-            status: 'error',
-            reason: `Duplicate identifier "${identifier}": already used by env key "${existingEnvKey}". Only the first entry will be migrated.`,
-          },
-        });
-        continue;
+      if (existingEnvKey === undefined) {
+        console.log('Converting SSO providers... push');
+        results.push({ envKey, identifier, provider: convertedProvider });
       }
       seenIdentifiers.set(identifier, envKey);
     }
-
-    results.push({ envKey, result });
   }
-
   return results;
 };

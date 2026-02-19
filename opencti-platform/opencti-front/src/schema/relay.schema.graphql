@@ -1632,7 +1632,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_trash_enabled: Boolean!
   platform_translations: String
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
-  is_authentication_locked: Boolean
+  is_authentication_by_env: Boolean
   created_at: DateTime!
   updated_at: DateTime!
   refreshed_at: DateTime
@@ -9700,7 +9700,6 @@ type Query {
   forms(search: String, first: Int, after: ID, orderBy: FormsOrdering, orderMode: OrderingMode, filters: FilterGroup): FormConnection
   authenticationProvider(id: String!): AuthenticationProvider
   authenticationProviders(first: Int, after: ID, orderBy: AuthenticationProviderOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): AuthenticationProviderConnection
-  authenticationProviderSettings: AuthenticationProviderSettings
 
   """
   Auth log history for a provider identified by its identifier (e.g. singleton strategies: Headers, Cert).
@@ -10653,7 +10652,6 @@ type Mutation {
   ldapProviderAdd(input: LdapInput!): AuthenticationProvider
   ldapProviderEdit(id: ID!, input: LdapInput!): AuthenticationProvider
   ldapProviderDelete(id: ID!): ID
-  authenticationProviderRunMigration(input: AuthenticationProviderMigrationInput!): [AuthenticationProviderMigrationResult]
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -15916,11 +15914,6 @@ input SamlInput {
 input LdapInput {
   base: AuthenticationProviderBaseInput!
   configuration: LdapConfigurationInput!
-}
-
-type AuthenticationProviderSettings {
-  is_force_env: Boolean!
-  is_edition_locked: Boolean!
 }
 
 input AuthenticationProviderMigrationInput {

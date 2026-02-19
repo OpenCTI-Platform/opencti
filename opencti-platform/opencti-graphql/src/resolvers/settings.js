@@ -31,7 +31,7 @@ import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccess-d
 import { CguStatus, PlatformType } from '../generated/graphql';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 import { ALLOW_EMAIL_REWRITE, smtpConfiguredEmail } from '../database/smtp';
-import { isAuthenticationEditionLocked } from '../modules/authenticationProvider/providers-configuration';
+import { isAuthenticationForcedFromEnv } from '../modules/authenticationProvider/providers-configuration';
 
 const settingsResolvers = {
   Query: {
@@ -70,7 +70,7 @@ const settingsResolvers = {
     filigran_chatbot_ai_cgu_status: (settings) => settings.filigran_chatbot_ai_cgu_status ?? CguStatus.Pending,
     platform_https_enabled: () => !!(nconf.get('app:https_cert:key') && nconf.get('app:https_cert:crt')),
     metrics_definition: () => getEntityMetricsConfiguration(),
-    is_authentication_locked: () => isAuthenticationEditionLocked(),
+    is_authentication_by_env: () => isAuthenticationForcedFromEnv(),
   },
   AppInfo: {
     memory: getMemoryStatistics(),

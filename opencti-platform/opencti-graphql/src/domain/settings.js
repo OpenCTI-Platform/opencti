@@ -16,7 +16,6 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { decodeLicensePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
-import { isEnterpriseEdition } from '../enterprise-edition/ee';
 import { getClusterInformation } from '../database/cluster-module';
 import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
 import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
@@ -24,6 +23,8 @@ import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { LOCAL_PROVIDER } from '../modules/authenticationProvider/provider-local';
 import { AuthType, EnvStrategyType, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { findAllAuthenticationProvider } from '../modules/authenticationProvider/authenticationProvider-domain';
+import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
+import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -104,11 +105,7 @@ export const getProtectedSensitiveConfig = async (context, user) => {
   };
 };
 
-export const getSettings = async (context) => {
-  const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
-  const clusterInfo = await getClusterInformation();
-  const eeInfo = getEnterpriseEditionInfo(platformSettings);
-  const platformTheme = await findThemeById(context, SYSTEM_USER, platformSettings.platform_theme);
+export const buildAvailableProviders = async (platformSettings) => {
   const availableProviders = [...PROVIDERS];
   if (platformSettings.local_auth?.enabled) {
     availableProviders.push({
@@ -123,15 +120,32 @@ export const getSettings = async (context) => {
       name: platformSettings.cert_auth?.button_label || 'cert',
       type: AuthType.AUTH_SSO,
       strategy: EnvStrategyType.STRATEGY_CERT,
-      provider: 'cert',
+      provider: CERT_PROVIDER.provider,
     });
   }
+  if (platformSettings.headers_auth?.enabled) {
+    availableProviders.push({
+      name: platformSettings.headers_auth?.button_label || 'headers',
+      type: AuthType.AUTH_SSO,
+      strategy: EnvStrategyType.STRATEGY_HEADER,
+      provider: HEADERS_PROVIDER.provider,
+    });
+  }
+  return availableProviders;
+};
+
+export const getSettings = async (context) => {
+  const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
+  const clusterInfo = await getClusterInformation();
+  const eeInfo = getEnterpriseEditionInfo(platformSettings);
+  const platformTheme = await findThemeById(context, SYSTEM_USER, platformSettings.platform_theme);
+
   return {
     ...platformSettings,
     platform_url: getBaseUrl(context.req),
     platform_enterprise_edition: eeInfo,
     valid_enterprise_edition: eeInfo.license_validated,
-    platform_providers: availableProviders,
+    platform_providers: buildAvailableProviders(platformSettings),
     platform_user_statuses: Object.entries(ACCOUNT_STATUSES).map(([k, v]) => ({ status: k, message: v })),
     platform_cluster: clusterInfo.info,
     platform_demo: ENABLED_DEMO_MODE,
@@ -158,14 +172,10 @@ export const getSettings = async (context) => {
 };
 
 export const getPublicSettings = async (context) => {
-  const { platform_enterprise_edition, platform_providers, ...settings } = await getSettings(context);
-  // Use same EE check as rest of codebase (env/conf or settings).
-  const eeValidated = await isEnterpriseEdition(context);
-
+  const { platform_enterprise_edition, ...settings } = await getSettings(context);
   return {
     ...settings,
     platform_enterprise_edition_license_validated: platform_enterprise_edition.license_validated,
-    platform_providers: eeValidated ? platform_providers : platform_providers.filter((p) => p.strategy === EnvStrategyType.STRATEGY_LOCAL),
   };
 };
 

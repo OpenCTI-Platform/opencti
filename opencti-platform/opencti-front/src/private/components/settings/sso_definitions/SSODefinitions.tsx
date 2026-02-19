@@ -15,7 +15,6 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import SSODefinitionCreation from '@components/settings/sso_definitions/SSODefinitionCreation';
 import Box from '@mui/material/Box';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import AuthenticationDefinitionAlert from '@components/settings/sso_definitions/AuthenticationDefinitionAlert';
 import SSOSingletonStrategies from '@components/settings/sso_definitions/SSOSingletonStrategies';
 import AuthenticationGlobalSettings from '@components/settings/sso_definitions/AuthenticationGlobalSettings';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -26,6 +25,10 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import SSODefinitionEdition from '@components/settings/sso_definitions/SSODefinitionEdition';
 import { SSODefinitionEditionFragment$data, SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
+import useAuth from '../../../../utils/hooks/useAuth';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Typography from '@mui/material/Typography';
 
 const LOCAL_STORAGE_KEY = 'SSODefinitions';
 
@@ -98,9 +101,6 @@ const ssoDefinitionsLinesFragment = graphql`
         globalCount
       }
     }
-    authenticationProviderSettings {
-      is_force_env
-    }
   }
 `;
 
@@ -116,6 +116,7 @@ const SSODefinitions = () => {
 
   const [editingSSO, setEditingSSO] = useState<EditingSSO | null>(null);
   const [logsDrawerProviderId, setLogsDrawerProviderId] = useState<string | null>(null);
+  const { settings } = useAuth();
 
   const initialValues = {
     searchTerm: '',
@@ -192,67 +193,88 @@ const SSODefinitions = () => {
         { label: t_i18n('Authentications'), current: true }]}
       />
       <AccessesMenu />
-      <>
-        <AuthenticationGlobalSettings />
-        <SSOSingletonStrategies />
-        {queryRef && (
-          <>
-            <AuthenticationDefinitionAlert preloadedPaginationProps={preloadedPaginationProps} />
-            <DataTable
-              dataColumns={dataColumns}
-              resolvePath={(data: SSODefinitionsLines_data$data) => data.authenticationProviders?.edges?.map((e) => e?.node)}
-              storageKey={LOCAL_STORAGE_KEY}
-              initialValues={initialValues}
-              contextFilters={contextFilters}
-              lineFragment={ssoDefinitionsLineFragment}
-              preloadedPaginationProps={preloadedPaginationProps}
-              entityTypes={['AuthenticationProvider']}
-              searchContextFinal={{ entityTypes: ['AuthenticationProvider'] }}
-              disableToolBar
-              disableColumnMenu
-              removeSelectAll
-              disableLineSelection
-              disableNavigation
-              onLineClick={handleOpenEdition}
-              actionsColumnWidth={72}
-              actions={(node: SSODefinitionEditionFragment$data) => (
-                <>
-                  <Tooltip title={t_i18n('Update')}>
-                    <IconButton size="small" aria-label={t_i18n('Update')}>
-                      <EditOutlined fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title={t_i18n('Logs')}>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => handleOpenLogs(e, node)}
-                      aria-label={t_i18n('Logs')}
-                    >
-                      <ListOutlined fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </>
-              )}
-              createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
+      {settings.is_authentication_by_env && (
+        <Alert severity="error" variant="outlined" sx={{ mt: 2 }}>
+          <AlertTitle>{t_i18n('Deprecated — Authentication management is disabled by environment configuration')}</AlertTitle>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            {t_i18n('Your platform is running with the legacy authentication configuration defined through environment variables. This safeguard was enabled in your configuration because the authentication migration to the new v7 model encountered issues that needed to be resolved first.')}
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            <strong>{t_i18n('This compatibility mode is deprecated and will be permanently removed in the next major version of OpenCTI.')}</strong>{' '}
+            {t_i18n('Once removed, the platform will no longer be able to start with this configuration, and authentication providers will have to be properly migrated.')}
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            {t_i18n('While this safeguard is active, authentication providers cannot be managed from this interface. The platform continues to operate with the previous environment-based implementation.')}
+          </Typography>
+          <Typography variant="body1">
+            {t_i18n('To resolve this situation before the next version, please')}{' '}
+            <a href="https://filigran.io/contact/" target="_blank" rel="noreferrer">{t_i18n('contact the Filigran team')}</a>{' '}
+            {t_i18n('so they can assist you with the migration process.')}
+          </Typography>
+        </Alert>
+      )}
+      {!settings.is_authentication_by_env && (
+        <>
+          <AuthenticationGlobalSettings />
+          <SSOSingletonStrategies />
+          {queryRef && (
+            <>
+              <DataTable
+                dataColumns={dataColumns}
+                resolvePath={(data: SSODefinitionsLines_data$data) => data.authenticationProviders?.edges?.map((e) => e?.node)}
+                storageKey={LOCAL_STORAGE_KEY}
+                initialValues={initialValues}
+                contextFilters={contextFilters}
+                lineFragment={ssoDefinitionsLineFragment}
+                preloadedPaginationProps={preloadedPaginationProps}
+                entityTypes={['AuthenticationProvider']}
+                searchContextFinal={{ entityTypes: ['AuthenticationProvider'] }}
+                disableToolBar
+                disableColumnMenu
+                removeSelectAll
+                disableLineSelection
+                disableNavigation
+                onLineClick={handleOpenEdition}
+                actionsColumnWidth={72}
+                actions={(node: SSODefinitionEditionFragment$data) => (
+                  <>
+                    <Tooltip title={t_i18n('Update')}>
+                      <IconButton size="small" aria-label={t_i18n('Update')}>
+                        <EditOutlined fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={t_i18n('Logs')}>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => handleOpenLogs(e, node)}
+                        aria-label={t_i18n('Logs')}
+                      >
+                        <ListOutlined fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </>
+                )}
+                createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
+              />
+            </>
+          )}
+          {editingSSO && (
+            <SSODefinitionEdition
+              isOpen={!!editingSSO}
+              onClose={() => setEditingSSO(null)}
+              data={editingSSO.data}
+              paginationOptions={queryPaginationOptions}
             />
-          </>
-        )}
-        {editingSSO && (
-          <SSODefinitionEdition
-            isOpen={!!editingSSO}
-            onClose={() => setEditingSSO(null)}
-            data={editingSSO.data}
-            paginationOptions={queryPaginationOptions}
-          />
-        )}
-        {logsDrawerProviderId && (
-          <AuthProviderLogsDrawer
-            isOpen={!!logsDrawerProviderId}
-            onClose={() => setLogsDrawerProviderId(null)}
-            providerId={logsDrawerProviderId}
-          />
-        )}
-      </>
+          )}
+          {logsDrawerProviderId && (
+            <AuthProviderLogsDrawer
+              isOpen={!!logsDrawerProviderId}
+              onClose={() => setLogsDrawerProviderId(null)}
+              providerId={logsDrawerProviderId}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 };
