@@ -11,7 +11,7 @@ import { truncate } from '../utils/String';
 import { commitMutation, defaultCommitMutation } from '../relay/environment';
 
 interface ItemParticipantsProps {
-  participants: {
+  participants: readonly {
     readonly entity_type: string;
     readonly id: string;
     readonly name: string;
