@@ -23,7 +23,7 @@ import { useComputeLink, ComputeLinkNode } from '../../../../utils/hooks/useAppD
 
 const LOCAL_STORAGE_KEY = 'StixCyberObservableNestedEntitiesTable';
 
-export const stixCyberObservableNestedEntitiesTableQuery = graphql`
+const stixCyberObservableNestedEntitiesTableQuery = graphql`
   query StixCyberObservableNestedEntitiesTablePaginationQuery(
     $fromOrToId: String
     $search: String

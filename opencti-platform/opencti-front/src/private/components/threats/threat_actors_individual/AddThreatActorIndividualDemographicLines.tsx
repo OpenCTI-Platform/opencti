@@ -10,7 +10,7 @@ import {
 import { ThreatActorIndividual_ThreatActorIndividual$data } from '@components/threats/threat_actors_individual/__generated__/ThreatActorIndividual_ThreatActorIndividual.graphql';
 import { deleteNodeFromEdge } from '../../../../utils/store';
 
-export const scoRelationshipAdd = graphql`
+const scoRelationshipAdd = graphql`
   mutation AddThreatActorIndividualDemographicLinesRelationAddMutation(
     $input: StixCoreRelationshipAddInput
   ) {
@@ -40,7 +40,7 @@ export const scoRelationshipAdd = graphql`
   }
 `;
 
-export const scoRelationshipDelete = graphql`
+const scoRelationshipDelete = graphql`
   mutation AddThreatActorIndividualDemographicLinesRelationDeleteMutation(
     $fromId: StixRef!
     $toId: StixRef!

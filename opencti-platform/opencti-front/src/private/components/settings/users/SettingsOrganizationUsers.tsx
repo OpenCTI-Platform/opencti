@@ -20,7 +20,7 @@ import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePrelo
 import DataTable from '../../../../components/dataGrid/DataTable';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 
-export const settingsOrganizationUsersQuery = graphql`
+const settingsOrganizationUsersQuery = graphql`
   query SettingsOrganizationUsersPaginationQuery(
     $id: String!
     $search: String

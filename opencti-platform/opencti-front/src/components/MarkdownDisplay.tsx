@@ -9,7 +9,7 @@ import { truncate } from '../utils/String';
 import ExternalLinkPopover from './ExternalLinkPopover';
 import FieldOrEmpty from './FieldOrEmpty';
 
-export const MarkDownComponents = (
+const MarkDownComponents = (
   theme: Theme,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, FunctionComponent<any>> => ({

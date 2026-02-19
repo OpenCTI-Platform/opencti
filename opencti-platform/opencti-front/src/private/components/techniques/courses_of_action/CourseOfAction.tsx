@@ -11,7 +11,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
-export const courssOfActionFragment = graphql`
+const courssOfActionFragment = graphql`
   fragment CourseOfAction_courseOfAction on CourseOfAction {
     id
     standard_id

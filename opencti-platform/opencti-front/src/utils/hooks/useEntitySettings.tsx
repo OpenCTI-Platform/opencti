@@ -57,7 +57,7 @@ export const useIsMandatoryAttribute = (id: string) => {
   return { entitySettings, mandatoryAttributes };
 };
 
-export const useYupSchemaBuilder = (
+const useYupSchemaBuilder = (
   id: string,
   existingShape: ObjectShape,
   isCreation: boolean,

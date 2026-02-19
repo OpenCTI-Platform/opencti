@@ -12,7 +12,7 @@ const SUPPORTED_TYPES = [
   'array',
 ];
 
-export const isSupportedType = (schemaType: string | string[]): boolean => {
+const isSupportedType = (schemaType: string | string[]): boolean => {
   if (!schemaType) return false;
 
   if (typeof schemaType === 'string') {

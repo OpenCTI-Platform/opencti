@@ -19,7 +19,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Transition from '../../../../components/Transition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-export const ingestionJsonPopoverEditionPatch = graphql`
+const ingestionJsonPopoverEditionPatch = graphql`
   mutation IngestionJsonPopoverPatchMutation($id: ID!, $input: [EditInput!]!) {
     ingestionJsonFieldPatch(id: $id, input: $input) {
       ...IngestionJsonEditionFragment_ingestionJson

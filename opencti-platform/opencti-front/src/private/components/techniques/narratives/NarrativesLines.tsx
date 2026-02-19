@@ -134,4 +134,3 @@ const NarrativesLines: FunctionComponent<NarrativesLinesProps> = ({
   );
 };
 
-export default NarrativesLines;

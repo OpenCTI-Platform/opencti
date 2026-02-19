@@ -80,7 +80,7 @@ export const draftContextBannerMutation = graphql`
   }
 `;
 
-export const draftContextBannerValidateDraftMutation = graphql`
+const draftContextBannerValidateDraftMutation = graphql`
   mutation DraftContextBannerValidateDraftMutation(
     $id: ID!
   ) {
@@ -90,7 +90,7 @@ export const draftContextBannerValidateDraftMutation = graphql`
   }
 `;
 
-export const draftContextBannerDraftEditAuthorizedMembersMutation = graphql`
+const draftContextBannerDraftEditAuthorizedMembersMutation = graphql`
   mutation DraftContextBannerDraftEditAuthorizedMembersMutation(
     $id: ID!
     $input: [MemberAccessInput!]

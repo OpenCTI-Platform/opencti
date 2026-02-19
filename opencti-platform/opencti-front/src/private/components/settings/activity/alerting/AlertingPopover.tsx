@@ -36,7 +36,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export const alertingPopoverDeletionMutation = graphql`
+const alertingPopoverDeletionMutation = graphql`
   mutation AlertingPopoverDeletionMutation($id: ID!) {
     triggerActivityDelete(id: $id)
   }

@@ -76,7 +76,7 @@ export const useGetCurrentUserAccessRight = (userAccessRight: string | null | un
   return { canManage, canEdit, canUse, canView };
 };
 
-export const getMaximumUserAccessRight = (userAccessRights: Array<string | null | undefined>) => {
+const getMaximumUserAccessRight = (userAccessRights: Array<string | null | undefined>) => {
   if (userAccessRights.some((m) => m === 'admin')) {
     return 'admin';
   }

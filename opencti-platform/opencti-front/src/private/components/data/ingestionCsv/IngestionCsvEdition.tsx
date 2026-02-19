@@ -56,7 +56,7 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import { RootMe_data$data } from '../../../__generated__/RootMe_data.graphql';
 import IngestionCsvInlineWrapper from './IngestionCsvInlineWrapper';
 
-export const initIngestionValue = (ingestionCsvData: IngestionCsvEditionFragment_ingestionCsv$data, me: RootMe_data$data) => {
+const initIngestionValue = (ingestionCsvData: IngestionCsvEditionFragment_ingestionCsv$data, me: RootMe_data$data) => {
   return {
     ...{
       name: ingestionCsvData.name,

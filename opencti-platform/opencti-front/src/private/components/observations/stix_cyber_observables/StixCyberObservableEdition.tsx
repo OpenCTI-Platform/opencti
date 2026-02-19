@@ -11,7 +11,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import { StixCyberObservableEditionContainerQuery$data } from './__generated__/StixCyberObservableEditionContainerQuery.graphql';
 
-export const stixCyberObservableEditionQuery = graphql`
+const stixCyberObservableEditionQuery = graphql`
   query StixCyberObservableEditionContainerQuery($id: String!) {
     stixCyberObservable(id: $id) {
       ...StixCyberObservableEditionContainer_stixCyberObservable

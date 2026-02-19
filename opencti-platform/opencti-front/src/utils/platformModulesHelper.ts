@@ -1,21 +1,21 @@
 import { RootSettings$data } from '../private/__generated__/RootSettings.graphql';
 
-export const DISABLE_MANAGER_MESSAGE = 'To use this feature, your platform administrator must enable the according manager in the config.';
+const DISABLE_MANAGER_MESSAGE = 'To use this feature, your platform administrator must enable the according manager in the config.';
 
-export const RUNTIME_SORTING = 'RUNTIME_SORTING';
+const RUNTIME_SORTING = 'RUNTIME_SORTING';
 
-export const SUBSCRIPTION_MANAGER = 'SUBSCRIPTION_MANAGER';
+const SUBSCRIPTION_MANAGER = 'SUBSCRIPTION_MANAGER';
 export const RULE_ENGINE = 'RULE_ENGINE';
-export const HISTORY_MANAGER = 'HISTORY_MANAGER';
+const HISTORY_MANAGER = 'HISTORY_MANAGER';
 export const TASK_MANAGER = 'TASK_MANAGER';
-export const EXPIRATION_SCHEDULER = 'EXPIRATION_SCHEDULER';
+const EXPIRATION_SCHEDULER = 'EXPIRATION_SCHEDULER';
 export const SYNC_MANAGER = 'SYNC_MANAGER';
 export const INGESTION_MANAGER = 'INGESTION_MANAGER';
 export const FILE_INDEX_MANAGER = 'FILE_INDEX_MANAGER';
 export const RETENTION_MANAGER = 'RETENTION_MANAGER';
-export const PLAYBOOK_MANAGER = 'PLAYBOOK_MANAGER';
+const PLAYBOOK_MANAGER = 'PLAYBOOK_MANAGER';
 export const INDICATOR_DECAY_MANAGER = 'INDICATOR_DECAY_MANAGER';
-export const TELEMETRY_MANAGER = 'TELEMETRY_MANAGER';
+const TELEMETRY_MANAGER = 'TELEMETRY_MANAGER';
 export const GARBAGE_COLLECTION_MANAGER = 'GARBAGE_COLLECTION_MANAGER';
 
 export interface ModuleHelper {
@@ -39,7 +39,7 @@ export interface ModuleHelper {
   isChatbotAiEnabled: () => boolean;
 }
 
-export const isFeatureEnable = (
+const isFeatureEnable = (
   settings: RootSettings$data,
   id: string,
 ) => {

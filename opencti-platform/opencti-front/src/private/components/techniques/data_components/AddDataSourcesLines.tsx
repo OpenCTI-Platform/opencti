@@ -12,7 +12,7 @@ import { AddDataSourcesLinesQuery } from './__generated__/AddDataSourcesLinesQue
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-export const addDataSourcesLinesMutationAdd = graphql`
+const addDataSourcesLinesMutationAdd = graphql`
   mutation AddDataSourcesLinesAddMutation($id: ID!, $input: [EditInput]!) {
     dataComponentFieldPatch(id: $id, input: $input) {
       ...DataComponentDataSources_dataComponent

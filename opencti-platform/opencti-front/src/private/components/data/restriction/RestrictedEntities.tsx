@@ -17,7 +17,7 @@ import { RestrictedEntitiesLines_data$data } from './__generated__/RestrictedEnt
 
 const LOCAL_STORAGE_KEY = 'restrictedEntities';
 
-export const managementDefinitionsLinesPaginationQuery = graphql`
+const managementDefinitionsLinesPaginationQuery = graphql`
   query RestrictedEntitiesLinesPaginationQuery(
     $search: String
     $count: Int!

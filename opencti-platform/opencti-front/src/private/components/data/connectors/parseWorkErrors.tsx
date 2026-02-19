@@ -177,7 +177,7 @@ export const parseError = (error: NonNullable<NonNullable<WorkMessages>[number]>
   }
 };
 
-export const resolveError = (error: ParsedWorkMessage, entities: Entities): ParsedWorkMessage => {
+const resolveError = (error: ParsedWorkMessage, entities: Entities): ParsedWorkMessage => {
   if (error.isParsed) {
     const errorParsed = error;
     entities.forEach((entity) => {

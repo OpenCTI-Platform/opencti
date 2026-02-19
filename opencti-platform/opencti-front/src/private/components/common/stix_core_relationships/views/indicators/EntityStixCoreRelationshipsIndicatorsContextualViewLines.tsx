@@ -51,7 +51,7 @@ const contextualViewLinesFragment = graphql`
   }
 `;
 
-export const contextualViewLinesQuery = graphql`
+const contextualViewLinesQuery = graphql`
   query EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery(
     $search: String
     $count: Int!

@@ -9,7 +9,7 @@ import { campaignEditionOverviewFocus } from './CampaignEditionOverview';
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-export const campaignEditionQuery = graphql`
+const campaignEditionQuery = graphql`
   query CampaignEditionContainerQuery($id: String!) {
     campaign(id: $id) {
       ...CampaignEditionContainer_campaign

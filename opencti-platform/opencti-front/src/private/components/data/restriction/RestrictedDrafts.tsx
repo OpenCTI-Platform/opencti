@@ -21,7 +21,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { RestrictedDrafts_node$data } from './__generated__/RestrictedDrafts_node.graphql';
 import { RestrictedDraftsLines_data$data } from './__generated__/RestrictedDraftsLines_data.graphql';
 
-export const RestrictedDraftLineFragment = graphql`
+const RestrictedDraftLineFragment = graphql`
     fragment RestrictedDrafts_node on DraftWorkspace {
         id
         entity_type

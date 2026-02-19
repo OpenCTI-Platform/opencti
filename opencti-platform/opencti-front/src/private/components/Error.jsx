@@ -16,7 +16,7 @@ export const HighLevelError = () => (
 );
 
 // Really simple error display
-export const SimpleError = () => {
+const SimpleError = () => {
   const { t_i18n } = useFormatter();
 
   return (
@@ -36,7 +36,7 @@ export const SimpleError = () => {
   );
 };
 
-export const DedicatedWarning = ({ title, description }) => (
+const DedicatedWarning = ({ title, description }) => (
   <Alert severity="warning">
     <AlertTitle>{title}</AlertTitle>
     {description}

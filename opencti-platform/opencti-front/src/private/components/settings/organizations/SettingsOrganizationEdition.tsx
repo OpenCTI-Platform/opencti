@@ -41,7 +41,7 @@ const organizationMutationFieldPatch = graphql`
   }
 `;
 
-export const organizationEditionOverviewFocus = graphql`
+const organizationEditionOverviewFocus = graphql`
   mutation SettingsOrganizationEditionFocusMutation(
     $id: ID!
     $input: EditContext!

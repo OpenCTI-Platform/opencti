@@ -46,7 +46,7 @@ export const deleteOperationsLinesQuery = graphql`
   }
 `;
 
-export const deleteOperationsLinesFragment = graphql`
+const deleteOperationsLinesFragment = graphql`
   fragment DeleteOperationsLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }

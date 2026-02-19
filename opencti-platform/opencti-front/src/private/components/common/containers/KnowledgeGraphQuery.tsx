@@ -367,7 +367,7 @@ export const knowledgeGraphQueryCheckObjectQuery = graphql`
     }
 `;
 
-export const knowledgeGraphQueryStixRelationshipDeleteMutation = graphql`
+const knowledgeGraphQueryStixRelationshipDeleteMutation = graphql`
     mutation KnowledgeGraphQueryStixRelationshipDeleteMutation($id: ID!) {
         stixRelationshipEdit(id: $id) {
             delete
@@ -375,7 +375,7 @@ export const knowledgeGraphQueryStixRelationshipDeleteMutation = graphql`
     }
 `;
 
-export const knowledgeGraphQueryStixObjectDeleteMutation = graphql`
+const knowledgeGraphQueryStixObjectDeleteMutation = graphql`
     mutation KnowledgeGraphQueryStixCoreObjectDeleteMutation($id: ID!) {
         stixCoreObjectEdit(id: $id) {
             delete

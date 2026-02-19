@@ -25,7 +25,7 @@ import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 
-export const reportMutationFieldPatch = graphql`
+const reportMutationFieldPatch = graphql`
   mutation ReportEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!

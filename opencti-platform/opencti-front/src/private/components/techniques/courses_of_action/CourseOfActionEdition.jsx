@@ -9,7 +9,7 @@ import { courseOfActionEditionOverviewFocus } from './CourseOfActionEditionOverv
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-export const courseOfActionEditionQuery = graphql`
+const courseOfActionEditionQuery = graphql`
   query CourseOfActionEditionContainerQuery($id: String!) {
     courseOfAction(id: $id) {
       ...CourseOfActionEditionContainer_courseOfAction

@@ -694,7 +694,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
 
 export default SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine;
 
-export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
+const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem

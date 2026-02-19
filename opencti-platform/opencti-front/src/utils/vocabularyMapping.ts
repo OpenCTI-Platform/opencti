@@ -8,7 +8,7 @@ interface VocabularyMapping {
   multiple?: boolean;
 }
 
-export const OPENVOCAB_FIELD_MAPPINGS: VocabularyMapping[] = [
+const OPENVOCAB_FIELD_MAPPINGS: VocabularyMapping[] = [
   // Attack Pattern attributes
   { attribute: 'x_mitre_platforms', vocabularyType: 'platforms_ov', label: 'Platforms', multiple: true },
   { attribute: 'x_mitre_permissions_required', vocabularyType: 'permissions-ov', label: 'Required permissions', multiple: true },
@@ -104,7 +104,7 @@ export const getVocabularyMappingByAttribute = (attribute: string): VocabularyMa
 /**
  * Check if an attribute should use OpenVocabField
  */
-export const isOpenVocabAttribute = (attribute: string): boolean => {
+const isOpenVocabAttribute = (attribute: string): boolean => {
   return OPENVOCAB_FIELD_MAPPINGS.some((mapping) => mapping.attribute === attribute);
 };
 

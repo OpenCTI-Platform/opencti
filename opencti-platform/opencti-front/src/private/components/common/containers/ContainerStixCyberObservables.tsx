@@ -21,7 +21,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ContainerAddStixCoreObjectsInLine from './ContainerAddStixCoreObjectsInLine';
 
-export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
+const ContainerStixCyberObservablesLinesSearchQuery = graphql`
   query ContainerStixCyberObservablesLinesSearchQuery(
     $id: String!
     $search: String

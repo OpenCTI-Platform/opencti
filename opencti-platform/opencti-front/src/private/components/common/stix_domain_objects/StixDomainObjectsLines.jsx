@@ -214,7 +214,7 @@ StixDomainObjectsContainer.propTypes = {
   fd: PropTypes.func,
 };
 
-export const stixDomainObjectsLinesSubTypesQuery = graphql`
+const stixDomainObjectsLinesSubTypesQuery = graphql`
   query StixDomainObjectsLinesSubTypesQuery(
     $type: String!
     $includeParents: Boolean
@@ -230,7 +230,7 @@ export const stixDomainObjectsLinesSubTypesQuery = graphql`
   }
 `;
 
-export const stixDomainObjectsLinesQuery = graphql`
+const stixDomainObjectsLinesQuery = graphql`
   query StixDomainObjectsLinesQuery(
     $search: String
     $count: Int!
@@ -600,4 +600,3 @@ const StixDomainObjectsLines = createPaginationContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(StixDomainObjectsLines);

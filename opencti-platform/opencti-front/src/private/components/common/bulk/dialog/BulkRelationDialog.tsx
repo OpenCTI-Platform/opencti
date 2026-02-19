@@ -28,7 +28,7 @@ import StixCyberObservableCreation from '@components/observations/stix_cyber_obs
 import { type StixCoreResultsType } from '../utils/querySearchEntityByText';
 import { getRelationsFromOneEntityToAny, RelationsDataFromEntity, RelationsToEntity } from '../../../../../utils/Relation';
 
-export const searchStixCoreObjectsByRepresentativeQuery = graphql`
+const searchStixCoreObjectsByRepresentativeQuery = graphql`
   query BulkRelationDialogQuery(
     $types: [String]
     $filters: FilterGroup
@@ -144,7 +144,7 @@ const querySearchEntityByText = async (text: string) => {
   return { ...result, searchTerm: text };
 };
 
-export const toHeaderWidth = 180;
+const toHeaderWidth = 180;
 export const entityTypeHeaderWidth = 180;
 export const entityNameHeaderWidth = 180;
 export const matchHeaderWidth = 250;

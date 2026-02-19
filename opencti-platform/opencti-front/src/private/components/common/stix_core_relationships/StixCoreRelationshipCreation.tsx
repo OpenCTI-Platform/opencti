@@ -109,7 +109,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export const stixCoreRelationshipCreationQuery = graphql`
+const stixCoreRelationshipCreationQuery = graphql`
   query StixCoreRelationshipCreationQuery(
     $fromId: [String]!
     $toId: [String]!

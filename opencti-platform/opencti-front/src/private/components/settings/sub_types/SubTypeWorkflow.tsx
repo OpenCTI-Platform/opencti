@@ -39,7 +39,7 @@ export const subTypeWorkflowEditionQuery = graphql`
   }
 `;
 
-export const subTypeWorkflowEditionFragment = graphql`
+const subTypeWorkflowEditionFragment = graphql`
   fragment SubTypeWorkflow_subType on SubType {
     id
     label

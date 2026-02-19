@@ -16,7 +16,7 @@ import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFro
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { useInitCreateRelationshipContext } from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
 
-export const LOCAL_STORAGE_KEY = 'sightings';
+const LOCAL_STORAGE_KEY = 'sightings';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

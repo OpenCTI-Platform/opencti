@@ -50,7 +50,7 @@ const styles = () => ({
   },
 });
 
-export const StixCoreRelationshipsExportCreationMutation = graphql`
+const StixCoreRelationshipsExportCreationMutation = graphql`
   mutation StixCoreRelationshipsExportCreationMutation(
     $input: StixCoreRelationshipsExportAskInput!
   ) {
@@ -64,7 +64,7 @@ const exportValidation = (t_i18n) => Yup.object().shape({
   format: Yup.string().required(t_i18n('This field is required')),
 });
 
-export const scopesConn = (exportConnectors) => {
+const scopesConn = (exportConnectors) => {
   const scopes = R.uniq(
     R.flatten(exportConnectors.map((c) => c.connector_scope)),
   );

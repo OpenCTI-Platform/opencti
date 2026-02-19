@@ -7,7 +7,7 @@ import { systemEditionOverviewFocus } from './SystemEditionOverview';
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-export const systemEditionQuery = graphql`
+const systemEditionQuery = graphql`
   query SystemEditionContainerQuery($id: String!) {
     system(id: $id) {
       ...SystemEditionContainer_system

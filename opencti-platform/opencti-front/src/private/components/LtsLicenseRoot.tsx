@@ -46,7 +46,7 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
-export const licenseQuery = graphql`
+const licenseQuery = graphql`
   query LtsLicenseRootQuery {
     settings {
       id

@@ -33,7 +33,7 @@ export const adaptFieldValue = (value) => {
   return value.toString();
 };
 
-export const pascalize = (s) => s.replace(/(\w)(\w*)/g, (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase());
+const pascalize = (s) => s.replace(/(\w)(\w*)/g, (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase());
 
 export const convertFromStixType = (s) => {
   if (!s) {
@@ -85,11 +85,11 @@ export const isValidStixBundle = (bundle) => {
 
 export const toB64 = (str) => Base64.encodeURI(str);
 
-export const toBase64 = (str) => Base64.encode(str);
+const toBase64 = (str) => Base64.encode(str);
 
 export const fromB64 = (str) => Base64.decode(str);
 
-export const fromBase64 = (str) => Base64.encode(str);
+const fromBase64 = (str) => Base64.encode(str);
 
 export const uniqWithByFields = R.curry((fields, data) => R.uniqWith(R.allPass(R.map(R.eqProps)(fields)))(data));
 
@@ -105,7 +105,7 @@ export const toCamelCase = (str) => {
   }).replace(/\s+/g, '');
 };
 
-export const renderObservableValue = (observable) => {
+const renderObservableValue = (observable) => {
   switch (observable.entity_type) {
     case 'IPv4-Addr':
     case 'IPv6-Addr':

@@ -22,7 +22,7 @@ export const mappersQuery = graphql`
   }
 `;
 
-export const schemaAttributesQuery = graphql`
+const schemaAttributesQuery = graphql`
   query jsonMappers_SchemaAttributesQuery {
     ...JsonMapperRepresentationAttributesForm_allSchemaAttributes
   }

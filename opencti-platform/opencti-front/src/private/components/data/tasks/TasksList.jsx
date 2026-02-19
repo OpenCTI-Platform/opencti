@@ -61,7 +61,7 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-export const tasksListTaskDeletionMutation = graphql`
+const tasksListTaskDeletionMutation = graphql`
   mutation TasksListTaskDeletionMutation($id: ID!) {
     deleteBackgroundTask(id: $id)
   }

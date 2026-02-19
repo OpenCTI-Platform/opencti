@@ -88,7 +88,7 @@ export const ingestionTaxiiMutationFieldPatch = graphql`
   }
 `;
 
-export const ingestionTaxiiEditionFragment = graphql`
+const ingestionTaxiiEditionFragment = graphql`
   fragment IngestionTaxiiEditionFragment_ingestionTaxii on IngestionTaxii {
     id
     name

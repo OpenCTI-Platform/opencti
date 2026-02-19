@@ -35,7 +35,7 @@ export const tasksLinesQuery = graphql`
   }
 `;
 
-export const tasksLinesFragment = graphql`
+const tasksLinesFragment = graphql`
   fragment CaseTemplateTasksLines_data on Query
   @argumentDefinitions(
     filters: { type: "FilterGroup" }

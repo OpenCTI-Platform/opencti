@@ -81,7 +81,7 @@ const administrativeAreaMutationRelationDelete = graphql`
   }
 `;
 
-export const administrativeAreaEditionOverviewFragment = graphql`
+const administrativeAreaEditionOverviewFragment = graphql`
   fragment AdministrativeAreaEditionOverview_administrativeArea on AdministrativeArea {
     id
     name

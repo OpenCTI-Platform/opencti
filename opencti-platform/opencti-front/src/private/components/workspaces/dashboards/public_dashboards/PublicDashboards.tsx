@@ -42,7 +42,7 @@ const publicDashboardFragment = graphql`
   }
 `;
 
-export const publicDashboardsFragment = graphql`
+const publicDashboardsFragment = graphql`
   fragment PublicDashboardsFragment on Query
   @argumentDefinitions(
     search: { type: "String" }

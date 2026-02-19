@@ -52,7 +52,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-export const reportCreationMutation = graphql`
+const reportCreationMutation = graphql`
   mutation ReportCreationMutation($input: ReportAddInput!) {
     reportAdd(input: $input) {
       id

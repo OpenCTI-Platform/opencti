@@ -17,7 +17,7 @@ import useUserMetric from '../../../../utils/hooks/useUserMetric';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { isNotEmptyField } from '../../../../utils/utils';
 
-export const individualHeightMutation = graphql`
+const individualHeightMutation = graphql`
   mutation HeightFieldIndividualMutation($id: ID!, $input: [EditInput]!) {
     threatActorIndividualFieldPatch(id: $id, input: $input) {
       height {

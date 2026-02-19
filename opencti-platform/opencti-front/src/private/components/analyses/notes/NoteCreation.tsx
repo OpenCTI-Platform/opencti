@@ -70,7 +70,7 @@ export const noteCreationUserMutation = graphql`
   }
 `;
 
-export const noteCreationMutation = graphql`
+const noteCreationMutation = graphql`
   mutation NoteCreationMutation($input: NoteAddInput!) {
     noteAdd(input: $input) {
       id

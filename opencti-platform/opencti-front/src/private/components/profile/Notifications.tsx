@@ -35,7 +35,7 @@ import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { colors, getFirstOperation, iconSelector } from './notifications/notificationUtils';
 import { chipInListBasicStyle } from '../../../utils/chipStyle';
 
-export const LOCAL_STORAGE_KEY = 'notifiers';
+const LOCAL_STORAGE_KEY = 'notifiers';
 
 const notificationsLineFragment = graphql`
   fragment NotificationsLine_node on Notification {
@@ -111,7 +111,7 @@ const notificationsLinesFragment = graphql`
   }
 `;
 
-export const notificationLineNotificationMarkReadMutation = graphql`
+const notificationLineNotificationMarkReadMutation = graphql`
   mutation NotificationsNotificationMarkReadMutation(
     $id: ID!
     $read: Boolean!

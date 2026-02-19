@@ -138,4 +138,3 @@ export const ConnectedThemeProvider = createFragmentContainer(
   },
 );
 
-export default AppThemeProvider;

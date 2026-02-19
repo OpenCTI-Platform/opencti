@@ -150,7 +150,7 @@ interface TasksLineProps {
   index: number;
 }
 
-export const TasksLine: FunctionComponent<TasksLineProps> = ({
+const TasksLine: FunctionComponent<TasksLineProps> = ({
   node,
   deSelectedElements,
   onToggleEntity,
@@ -212,7 +212,7 @@ export const TasksLine: FunctionComponent<TasksLineProps> = ({
   );
 };
 
-export const TasksLineDummy = () => {
+const TasksLineDummy = () => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>

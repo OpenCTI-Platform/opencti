@@ -20,7 +20,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export const pictureManagementViewerFragment = graphql`
+const pictureManagementViewerFragment = graphql`
   fragment PictureManagementViewer_entity on StixDomainObject {
     id
     entity_type
