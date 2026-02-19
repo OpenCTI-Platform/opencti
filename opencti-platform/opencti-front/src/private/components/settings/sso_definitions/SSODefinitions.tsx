@@ -161,22 +161,24 @@ const SSODefinitions = () => {
       label: t_i18n('Status'),
       percentWidth: 15,
       isSortable: true,
-      render: (node: { runtime_status: 'ACTIVE' | 'DISABLED' | 'ERROR'; enabled: boolean }) => (
+      render: (node: { runtime_status: 'ACTIVE' | 'DISABLED' | 'ERROR' | 'STARTING'; enabled: boolean }) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <ItemBoolean
             label={
               node.runtime_status === 'ACTIVE'
                 ? t_i18n('Active')
-                : node.runtime_status === 'ERROR'
-                  ? t_i18n('Error')
-                  : t_i18n('Disabled')
+                : node.runtime_status === 'STARTING'
+                  ? t_i18n('Starting')
+                  : node.runtime_status === 'ERROR'
+                    ? t_i18n('Error')
+                    : t_i18n('Disabled')
             }
             status={
               node.runtime_status === 'ACTIVE'
                 ? true
                 : node.runtime_status === 'ERROR'
-                  ? 'error'
-                  : false
+                  ? false
+                  : undefined
             }
             tooltip={
               node.runtime_status === 'ERROR'

@@ -1477,7 +1477,8 @@ export enum AuthenticationProviderOrdering {
 export enum AuthenticationProviderRuntimeStatus {
   Active = 'ACTIVE',
   Disabled = 'DISABLED',
-  Error = 'ERROR'
+  Error = 'ERROR',
+  Starting = 'STARTING'
 }
 
 export enum AuthenticationProviderType {

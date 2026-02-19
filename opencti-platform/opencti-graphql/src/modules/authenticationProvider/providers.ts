@@ -89,6 +89,9 @@ export const unregisterStrategy = async (authenticationStrategy: BasicStoreEntit
   unregisterAuthenticationProvider(identifier);
 };
 
+const startingProviders = new Set<string>();
+export const isProviderStarting = (providerId: string) => startingProviders.has(providerId);
+
 export const registerStrategy = async (authenticationProvider: BasicStoreEntityAuthenticationProvider) => {
   const { type, name } = authenticationProvider;
   const identifier = resolveProviderIdentifier(authenticationProvider);
@@ -96,8 +99,9 @@ export const registerStrategy = async (authenticationProvider: BasicStoreEntityA
   const logger = createAuthLogger(type, identifier);
   const { configuration } = authenticationProvider;
   const { user_info_mapping, groups_mapping, organizations_mapping } = configuration as MappingConfiguration;
-  logger.info('Provider initialization', { user_info_mapping, groups_mapping, organizations_mapping });
+  logger.info('Provider is starting', { user_info_mapping, groups_mapping, organizations_mapping });
 
+  startingProviders.add(authenticationProvider.internal_id);
   try {
     const createStrategy = async () => {
       switch (authenticationProvider.type) {
@@ -132,8 +136,11 @@ export const registerStrategy = async (authenticationProvider: BasicStoreEntityA
         },
       );
     }
+    logger.success('Provider started successfully');
   } catch (e) {
-    logger.error('Provider initialization error ', {}, e);
+    logger.error('Provider failed to start', {}, e);
+  } finally {
+    startingProviders.delete(authenticationProvider.internal_id);
   }
 };
 

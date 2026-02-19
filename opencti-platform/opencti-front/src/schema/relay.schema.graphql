@@ -15859,6 +15859,7 @@ enum AuthenticationProviderRuntimeStatus {
   DISABLED
   ERROR
   ACTIVE
+  INITIALIZING
 }
 
 interface AuthenticationProviderBase {
