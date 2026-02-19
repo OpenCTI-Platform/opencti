@@ -163,7 +163,7 @@ describe('relationToRelationBuilder applyUpsert function', () => {
           {
             internal_id: existingRelationId,
             toId: existingRelationTargetId,
-            start_time: existingRelationStopTime,
+            start_time: existingRelationStartTime,
             stop_time: existingRelationStopTime,
             fromId: 'dummyId',
           } as BasicStoreRelation,
