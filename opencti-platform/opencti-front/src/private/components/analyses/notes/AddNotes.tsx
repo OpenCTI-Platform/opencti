@@ -13,14 +13,13 @@ import { AddNotesLinesQuery$data } from './__generated__/AddNotesLinesQuery.grap
 import { NoteCreationForm } from './NoteCreation';
 import { StixCoreObjectOrStixCoreRelationshipNotesCards_data$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
 
-interface AddNotesFunctionalComponentProps {
+interface AddNotesProps {
   stixCoreObjectOrStixCoreRelationshipId: string;
   stixCoreObjectOrStixCoreRelationshipNotes: StixCoreObjectOrStixCoreRelationshipNotesCards_data$data;
   paginationOptions: NotesLinesPaginationQuery$variables;
 }
 
-// TODO: Rename to AddNotes and replace AddNotes.jsx
-const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponentProps> = ({
+const AddNotes: FunctionComponent<AddNotesProps> = ({
   stixCoreObjectOrStixCoreRelationshipId,
   stixCoreObjectOrStixCoreRelationshipNotes,
   paginationOptions,
@@ -181,4 +180,4 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
   );
 };
 
-export default AddNotesFunctionalComponent;
+export default AddNotes;
