@@ -15852,14 +15852,11 @@ enum AuthenticationProviderType {
   LDAP
 }
 
-"""
-Runtime status of the provider: Disabled (off), Error (enabled but failed to start), Active (enabled and running).
-"""
 enum AuthenticationProviderRuntimeStatus {
   DISABLED
   ERROR
   ACTIVE
-  INITIALIZING
+  STARTING
 }
 
 interface AuthenticationProviderBase {
@@ -15885,10 +15882,6 @@ type AuthenticationProvider implements InternalObject & BasicObject & Authentica
   identifier_override: String
   type: AuthenticationProviderType!
   configuration: AuthenticationConfiguration!
-
-  """
-  Computed runtime status: Disabled, Error (enabled but not deployed), or Active.
-  """
   runtime_status: AuthenticationProviderRuntimeStatus!
   authLogHistory: [AuthLogEntry!]!
 }

@@ -170,6 +170,7 @@ interface SSODefinitionEditionProps {
   onClose: () => void;
   data: SSODefinitionEditionFragment$key;
   paginationOptions?: Record<string, unknown>;
+  onProviderUpdated?: () => void;
 }
 
 const SSODefinitionEdition = ({
@@ -177,9 +178,15 @@ const SSODefinitionEdition = ({
   onClose,
   data,
   paginationOptions,
+  onProviderUpdated,
 }: SSODefinitionEditionProps) => {
   const { t_i18n } = useFormatter();
   const provider = useFragment(ssoDefinitionEditionFragment, data);
+
+  const handleEditCompleted = () => {
+    onProviderUpdated?.();
+    onClose();
+  };
 
   const renderForm = () => {
     switch (provider.type) {
@@ -188,7 +195,8 @@ const SSODefinitionEdition = ({
           <OidcProviderForm
             data={provider}
             onCancel={onClose}
-            onCompleted={onClose}
+            onCompleted={handleEditCompleted}
+            paginationOptions={paginationOptions}
           />
         );
       case 'SAML':
@@ -196,7 +204,8 @@ const SSODefinitionEdition = ({
           <SamlProviderForm
             data={provider}
             onCancel={onClose}
-            onCompleted={onClose}
+            onCompleted={handleEditCompleted}
+            paginationOptions={paginationOptions}
           />
         );
       case 'LDAP':
@@ -204,7 +213,8 @@ const SSODefinitionEdition = ({
           <LdapProviderForm
             data={provider}
             onCancel={onClose}
-            onCompleted={onClose}
+            onCompleted={handleEditCompleted}
+            paginationOptions={paginationOptions}
           />
         );
       default:

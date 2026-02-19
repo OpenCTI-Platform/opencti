@@ -1,16 +1,21 @@
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import AccessesMenu from '@components/settings/AccessesMenu';
-import React, { useState } from 'react';
-import { graphql } from 'react-relay';
+import React, { useEffect, useState } from 'react';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
 import AuthProviderLogsDrawer from '@components/settings/sso_definitions/AuthProviderLogsDrawer';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../../components/dataGrid/DataTable';
+import type {
+  SSODefinitionsLinesPaginationQuery as SSODefinitionsLinesPaginationQueryType,
+  SSODefinitionsLinesPaginationQuery$variables,
+} from './__generated__/SSODefinitionsLinesPaginationQuery.graphql';
 import { SSODefinitionsLinesPaginationQuery } from './__generated__/SSODefinitionsLinesPaginationQuery.graphql';
 import { SSODefinitionsLines_data$data } from './__generated__/SSODefinitionsLines_data.graphql';
+import type { SSODefinitionsPolling_data$data } from './__generated__/SSODefinitionsPolling_data.graphql';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import SSODefinitionCreation from '@components/settings/sso_definitions/SSODefinitionCreation';
 import Box from '@mui/material/Box';
@@ -42,6 +47,15 @@ export const ssoDefinitionsLinesQuery = graphql`
     $filters: FilterGroup
   ) {
     ...SSODefinitionsLines_data
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
+    ...SSODefinitionsPolling_data
     @arguments(
       search: $search
       count: $count
@@ -105,9 +119,78 @@ const ssoDefinitionsLinesFragment = graphql`
   }
 `;
 
+const ssoDefinitionsPollingFragment = graphql`
+  fragment SSODefinitionsPolling_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "AuthenticationProviderOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "FilterGroup" }
+  ) {
+    authenticationProviders(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) {
+      edges {
+        node {
+          runtime_status
+        }
+      }
+    }
+  }
+`;
+
 interface EditingSSO {
   data: SSODefinitionEditionFragment$key;
 }
+
+const POLL_INTERVAL_FAST_MS = 1000;
+const POLL_INTERVAL_SLOW_MS = 60_000;
+const POST_UPDATE_WINDOW_MS = 5000;
+
+type SSODefinitionsPollingProps = {
+  queryRef: PreloadedQuery<SSODefinitionsLinesPaginationQueryType>;
+  loadQuery: (variables: SSODefinitionsLinesPaginationQuery$variables, opts?: { fetchPolicy?: 'store-and-network' }) => void;
+  queryPaginationOptions: SSODefinitionsLinesPaginationQuery$variables;
+  /** Timestamp (ms) when a provider was last updated; for 5s after we poll every second. */
+  lastProviderUpdateAt: number | null;
+};
+
+const SSODefinitionsPolling = ({ queryRef, loadQuery, queryPaginationOptions, lastProviderUpdateAt }: SSODefinitionsPollingProps) => {
+  const queryData = usePreloadedQuery(ssoDefinitionsLinesQuery, queryRef);
+  const pollingData = useFragment(ssoDefinitionsPollingFragment, queryData) as SSODefinitionsPolling_data$data | null;
+  const edges = pollingData?.authenticationProviders?.edges ?? [];
+  const hasAnyStarting = edges.some(
+    (e: { node: { runtime_status: string } }) => {
+      const status = e?.node?.runtime_status;
+      return status === 'STARTING' || status === 'INITIALIZING';
+    },
+  );
+  const lastSlowFetchRef = React.useRef(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const now = Date.now();
+      const inPostUpdateWindow = lastProviderUpdateAt != null && now - lastProviderUpdateAt < POST_UPDATE_WINDOW_MS;
+      const shouldFetchFast = inPostUpdateWindow || hasAnyStarting;
+      if (shouldFetchFast) {
+        lastSlowFetchRef.current = 0;
+        loadQuery(queryPaginationOptions, { fetchPolicy: 'store-and-network' });
+      } else if (lastSlowFetchRef.current === 0 || now - lastSlowFetchRef.current >= POLL_INTERVAL_SLOW_MS) {
+        lastSlowFetchRef.current = now;
+        loadQuery(queryPaginationOptions, { fetchPolicy: 'store-and-network' });
+      }
+    }, POLL_INTERVAL_FAST_MS);
+    return () => clearInterval(id);
+  }, [loadQuery, hasAnyStarting, lastProviderUpdateAt, queryPaginationOptions]);
+  return null;
+};
 
 const SSODefinitions = () => {
   const { t_i18n } = useFormatter();
@@ -117,7 +200,12 @@ const SSODefinitions = () => {
 
   const [editingSSO, setEditingSSO] = useState<EditingSSO | null>(null);
   const [logsDrawerProviderId, setLogsDrawerProviderId] = useState<string | null>(null);
+  const [lastProviderUpdateAt, setLastProviderUpdateAt] = useState<number | null>(null);
   const { settings } = useAuth();
+
+  const handleProviderUpdated = React.useCallback(() => {
+    setLastProviderUpdateAt(Date.now());
+  }, []);
 
   const initialValues = {
     searchTerm: '',
@@ -177,8 +265,10 @@ const SSODefinitions = () => {
               node.runtime_status === 'ACTIVE'
                 ? true
                 : node.runtime_status === 'ERROR'
-                  ? false
-                  : undefined
+                  ? 'error'
+                  : node.runtime_status === 'DISABLED'
+                    ? 'disabled'
+                    : undefined
             }
             tooltip={
               node.runtime_status === 'ERROR'
@@ -192,9 +282,9 @@ const SSODefinitions = () => {
     },
   };
 
-  const queryRef = useQueryLoading(
+  const [queryRef, loadQuery] = useQueryLoadingWithLoadQuery<SSODefinitionsLinesPaginationQueryType>(
     ssoDefinitionsLinesQuery,
-    queryPaginationOptions,
+    queryPaginationOptions as unknown as SSODefinitionsLinesPaginationQuery$variables,
   );
 
   const preloadedPaginationProps = {
@@ -239,6 +329,12 @@ const SSODefinitions = () => {
           <SSOSingletonStrategies />
           {queryRef && (
             <>
+              <SSODefinitionsPolling
+                queryRef={queryRef as PreloadedQuery<SSODefinitionsLinesPaginationQueryType>}
+                loadQuery={loadQuery as (vars: SSODefinitionsLinesPaginationQuery$variables, opts?: { fetchPolicy?: 'store-and-network' }) => void}
+                queryPaginationOptions={queryPaginationOptions as unknown as SSODefinitionsLinesPaginationQuery$variables}
+                lastProviderUpdateAt={lastProviderUpdateAt}
+              />
               <DataTable
                 dataColumns={dataColumns}
                 resolvePath={(data: SSODefinitionsLines_data$data) => data.authenticationProviders?.edges?.map((e) => e?.node)}
@@ -284,6 +380,7 @@ const SSODefinitions = () => {
               onClose={() => setEditingSSO(null)}
               data={editingSSO.data}
               paginationOptions={queryPaginationOptions}
+              onProviderUpdated={handleProviderUpdated}
             />
           )}
           {logsDrawerProviderId && (
