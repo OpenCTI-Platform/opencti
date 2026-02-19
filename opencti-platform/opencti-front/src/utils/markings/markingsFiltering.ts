@@ -1,4 +1,4 @@
-export type MarkingDefinition = {
+type MarkingDefinition = {
   label: string;
   value: string;
   color: string;

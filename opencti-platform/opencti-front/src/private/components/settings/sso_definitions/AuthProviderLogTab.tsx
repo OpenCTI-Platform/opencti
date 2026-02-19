@@ -29,7 +29,7 @@ const formatTimestamp = (ts: string | unknown): string => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${ms}`;
 };
 
-export interface AuthLogEntryShape {
+interface AuthLogEntryShape {
   readonly timestamp: unknown;
   readonly level: string;
   readonly message: string;

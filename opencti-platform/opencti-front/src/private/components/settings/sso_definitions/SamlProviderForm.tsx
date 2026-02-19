@@ -67,7 +67,7 @@ interface ExtraConfEntry {
   value: string;
 }
 
-export type SamlProviderData = SSODefinitionEditionFragment$data;
+type SamlProviderData = SSODefinitionEditionFragment$data;
 
 interface SamlFormValues {
   name: string;

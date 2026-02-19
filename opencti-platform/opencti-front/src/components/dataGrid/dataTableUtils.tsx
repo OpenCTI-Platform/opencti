@@ -1577,7 +1577,7 @@ export type MetricsDefinition = {
   readonly metrics: readonly MetricConf[] | null | undefined;
 };
 
-export type Metric = {
+type Metric = {
   readonly name: string;
   readonly value: string;
 };

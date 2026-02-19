@@ -5,13 +5,13 @@ import { hexToRGB } from '../utils/Colors';
 import Tag from './common/tag/Tag';
 import { useFormatter } from './i18n';
 
-export interface StatusTemplateType {
+interface StatusTemplateType {
   id: string;
   color: string;
   name: string;
 }
 
-export interface StatusType {
+interface StatusType {
   template: StatusTemplateType;
   id: string;
   order: number;

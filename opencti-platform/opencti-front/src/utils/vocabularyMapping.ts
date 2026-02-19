@@ -1,7 +1,7 @@
 // Mapping of attribute names to OpenVocab types
 // This constant is used to identify which attributes should use OpenVocabField in forms
 
-export interface VocabularyMapping {
+interface VocabularyMapping {
   attribute: string;
   vocabularyType: string;
   label?: string;

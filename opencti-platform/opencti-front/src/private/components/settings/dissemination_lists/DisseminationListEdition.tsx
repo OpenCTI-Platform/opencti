@@ -23,7 +23,7 @@ interface DisseminationListEditionComponentProps {
   onClose: () => void;
 }
 
-export interface DisseminationListEditionFormData {
+interface DisseminationListEditionFormData {
   name: string;
   emails: string;
   description: string;

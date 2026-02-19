@@ -12,7 +12,7 @@ import JsonMapperRepresentionAttributeSelectedConfigurations from './JsonMapperR
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../../../../../components/Theme';
 
-export type RepresentationAttributeForm = JsonMapperRepresentationAttributeFormData | undefined;
+type RepresentationAttributeForm = JsonMapperRepresentationAttributeFormData | undefined;
 
 interface JsonMapperRepresentationAttributeFormProps
   extends FieldProps<RepresentationAttributeForm> {

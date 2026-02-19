@@ -15,7 +15,7 @@ import { isEmptyField } from '../../../../../../utils/utils';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../../../../../components/Theme';
 
-export type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormData | undefined;
+type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormData | undefined;
 
 interface CsvMapperRepresentationAttributeFormProps
   extends FieldProps<RepresentationAttributeForm> {

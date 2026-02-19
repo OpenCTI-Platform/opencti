@@ -16,7 +16,7 @@ interface CaseRfiRequestAccessOverviewProps {
 }
 
 // see requestAccess-domain.ts in backend.
-export interface RequestAccessActionStatus {
+interface RequestAccessActionStatus {
   rfiStatusId: string;
   actionStatus: string;
 }

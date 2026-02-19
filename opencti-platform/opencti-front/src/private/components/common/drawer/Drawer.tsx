@@ -20,7 +20,7 @@ export enum DrawerVariant {
   updateWithPanel = 'updateWithPanel',
 }
 
-export type DrawerSize = 'small' | 'medium' | 'large' | 'extraLarge';
+type DrawerSize = 'small' | 'medium' | 'large' | 'extraLarge';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

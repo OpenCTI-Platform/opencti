@@ -25,12 +25,12 @@ export const groupConfidenceMutationFieldPatch = graphql`
     }
   }
 `;
-export interface OverrideFormData {
+interface OverrideFormData {
   max_confidence: string;
   entity_type: string;
 }
 
-export interface ConfidenceFormData {
+interface ConfidenceFormData {
   group_confidence_level: number | null | undefined;
   overrides: OverrideFormData[];
 }

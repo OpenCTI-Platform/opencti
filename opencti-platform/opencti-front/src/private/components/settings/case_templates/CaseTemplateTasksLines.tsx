@@ -9,7 +9,7 @@ import { CaseTemplateTasksLines_DataQuery, CaseTemplateTasksLines_DataQuery$vari
 import { CaseTemplateTasksLinesPaginationQuery } from './__generated__/CaseTemplateTasksLinesPaginationQuery.graphql';
 import { CaseTemplateTasksLine, CaseTemplateTasksLineDummy } from './CaseTemplateTasksLine';
 
-export interface TasksLinesProps {
+interface TasksLinesProps {
   paginationOptions: CaseTemplateTasksLines_DataQuery$variables;
   dataColumns: DataColumns;
   queryRef: PreloadedQuery<CaseTemplateTasksLinesPaginationQuery>;

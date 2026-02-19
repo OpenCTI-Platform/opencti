@@ -8,7 +8,7 @@ import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import { SelectProps } from '@mui/material';
 
-export type SelectFieldProps = FieldProps<string> & Omit<SelectProps<string>, 'onChange' | 'onFocus'> & {
+type SelectFieldProps = FieldProps<string> & Omit<SelectProps<string>, 'onChange' | 'onFocus'> & {
   required: boolean;
   onChange?: (name: string, value: string) => void;
   onFocus?: (name: string) => void;

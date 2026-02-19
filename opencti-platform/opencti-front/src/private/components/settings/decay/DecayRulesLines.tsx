@@ -61,7 +61,7 @@ export const decayRulesLinesFragment = graphql`
   }
 `;
 
-export interface DecayRulesLinesProps {
+interface DecayRulesLinesProps {
   paginationOptions: DecayRulesLinesPaginationQuery$variables;
   dataColumns: DataColumns;
   queryRef: PreloadedQuery<DecayRulesLinesPaginationQuery>;

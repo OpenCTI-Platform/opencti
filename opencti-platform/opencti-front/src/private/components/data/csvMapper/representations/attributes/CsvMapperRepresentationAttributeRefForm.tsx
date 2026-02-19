@@ -21,7 +21,7 @@ import { isStixCoreObjects, isStixCoreRelationships } from '../../../../../../ut
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../../../../../components/Theme';
 
-export type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormData | undefined;
+type RepresentationAttributeForm = CsvMapperRepresentationAttributeFormData | undefined;
 
 interface CsvMapperRepresentationAttributeRefFormProps
   extends FieldProps<RepresentationAttributeForm, CsvMapperFormData> {

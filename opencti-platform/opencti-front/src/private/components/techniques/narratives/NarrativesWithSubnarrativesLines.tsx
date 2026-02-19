@@ -13,7 +13,7 @@ export interface SubNarrativeNode {
   id: string;
   name: string;
 }
-export interface NarrativeNode {
+interface NarrativeNode {
   description: string | null | undefined;
   id: string;
   isSubNarrative: boolean | null | undefined;

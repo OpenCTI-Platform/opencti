@@ -24,7 +24,7 @@ export interface FilterOptionValue extends FilterOption {
   group?: string;
 }
 
-export interface FilterAutocompleteInputValue {
+interface FilterAutocompleteInputValue {
   key: string;
   values: string[];
   operator?: string;

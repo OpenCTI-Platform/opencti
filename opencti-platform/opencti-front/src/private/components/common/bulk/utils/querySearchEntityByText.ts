@@ -5,16 +5,16 @@ export type StixCoreResultsType = {
 export type EdgesType = {
   edges: NodesType[];
 };
-export type NodesType = {
+type NodesType = {
   node: StixCoreEntityType;
 };
-export type StixCoreEntityType = {
+type StixCoreEntityType = {
   entity_type: string;
   id: string;
   name: string;
   representative: StixRepresentative;
 };
 
-export type StixRepresentative = {
+type StixRepresentative = {
   main: string;
 };

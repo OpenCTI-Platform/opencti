@@ -9,7 +9,7 @@ import { SettingsOrganizationLine, SettingsOrganizationLineDummy } from './Setti
 
 const nbOfRowsToLoad = 50;
 
-export interface SettingsOrganizationsLinesProps {
+interface SettingsOrganizationsLinesProps {
   paginationOptions: SettingsOrganizationsLinesPaginationQuery$variables;
   dataColumns: DataColumns;
   queryRef: PreloadedQuery<SettingsOrganizationsLinesPaginationQuery>;

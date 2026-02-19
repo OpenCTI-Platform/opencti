@@ -95,7 +95,7 @@ interface IngestionCatalogConnectorCreationProps {
   onCreate?: (connectorId: string) => void;
 }
 
-export interface ManagedConnectorValues extends BasicUserHandlingValues {
+interface ManagedConnectorValues extends BasicUserHandlingValues {
   name: string;
   display_name: string;
   user_id: string | FieldOption;

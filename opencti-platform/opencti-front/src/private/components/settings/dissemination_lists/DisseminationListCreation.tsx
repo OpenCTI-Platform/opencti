@@ -12,7 +12,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
-export interface DisseminationListCreationFormData {
+interface DisseminationListCreationFormData {
   name: string;
   emails: string;
   description: string;

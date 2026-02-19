@@ -1,4 +1,4 @@
-export type ValidationWork = {
+type ValidationWork = {
   id?: string;
   tracking?: {
     import_expected_number?: number | null;

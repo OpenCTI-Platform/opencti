@@ -62,7 +62,7 @@ interface ExtraConfEntry {
   value: string;
 }
 
-export type LdapProviderData = SSODefinitionEditionFragment$data;
+type LdapProviderData = SSODefinitionEditionFragment$data;
 
 interface LdapFormValues {
   name: string;

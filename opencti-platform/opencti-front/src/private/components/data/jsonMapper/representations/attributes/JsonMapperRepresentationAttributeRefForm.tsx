@@ -23,7 +23,7 @@ import { useFormatter } from '../../../../../../components/i18n';
 import { isStixCoreObjects } from '../../../../../../utils/stixTypeUtils';
 import type { Theme } from '../../../../../../components/Theme';
 
-export type RepresentationAttributeForm = JsonMapperRepresentationAttributeFormData | undefined;
+type RepresentationAttributeForm = JsonMapperRepresentationAttributeFormData | undefined;
 
 interface JsonMapperRepresentationAttributeRefFormProps
   extends FieldProps<RepresentationAttributeForm, JsonMapperFormData> {

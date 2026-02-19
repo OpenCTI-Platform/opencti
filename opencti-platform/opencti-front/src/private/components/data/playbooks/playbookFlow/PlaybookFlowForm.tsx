@@ -44,7 +44,7 @@ import PlaybookFlowFieldTriggerTime from './playbookFlowFields/PlaybookFlowField
 import PlaybookFlowFieldActions from './playbookFlowFields/playbookFlowFieldsActions/PlaybookFlowFieldActions';
 import { PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
 
-export type PlaybookFlowFormData
+type PlaybookFlowFormData
   // Component: update knowledge
   = PlaybookUpdateActionsForm
     & {

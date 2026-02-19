@@ -17,7 +17,7 @@ import Security from '../../../../utils/Security';
 import type { Theme } from '../../../../components/Theme';
 import Card from '../../../../components/common/card/Card';
 
-export interface IngestionCatalogCardProps {
+interface IngestionCatalogCardProps {
   node: IngestionConnector;
   dataListId: string;
   isEnterpriseEdition: boolean;

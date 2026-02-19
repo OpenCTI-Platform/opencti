@@ -14,7 +14,7 @@ export type FilterElementsInputValue = {
   operator?: string;
 };
 
-export interface FiltersElementProps {
+interface FiltersElementProps {
   variant?: string;
   keyword: string;
   availableFilterKeys: string[];

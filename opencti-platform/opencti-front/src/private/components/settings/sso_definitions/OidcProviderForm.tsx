@@ -67,7 +67,7 @@ interface ExtraConfEntry {
   value: string;
 }
 
-export type OidcProviderData = SSODefinitionEditionFragment$data;
+type OidcProviderData = SSODefinitionEditionFragment$data;
 
 interface OidcFormValues {
   name: string;
