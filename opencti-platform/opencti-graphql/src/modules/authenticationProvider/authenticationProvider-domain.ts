@@ -54,11 +54,15 @@ const decryptAuthValue = async (value: string) => {
 };
 
 export const retrieveSecrets = async (identifier: string, conf: any): Promise<SecretProvider> => {
-  const externallyManagerSecrets: Record<string, string> = await enrichWithRemoteCredentials(`providers:${identifier}`, {});
+  const externallyManagedSecrets: Record<string, string> = await enrichWithRemoteCredentials(`providers:${identifier}`, {});
   const resolve = (field: string) => {
-    const externalSecret = externallyManagerSecrets[field];
+    const externalSecret = externallyManagedSecrets[field];
     if (isNotEmptyField(externalSecret)) {
       return externalSecret;
+    }
+    const envManagedSecret = conf.get(`providers:${identifier}:config:${field}`);
+    if (isNotEmptyField(externalSecret)) {
+      return envManagedSecret;
     }
     const encryptedValue = conf[`${field}_encrypted`];
     if (isNotEmptyField(encryptedValue)) {
