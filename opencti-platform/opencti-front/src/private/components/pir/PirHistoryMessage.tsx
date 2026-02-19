@@ -19,7 +19,7 @@ import { displayEntityTypeForTranslation } from '../../../utils/String';
 import { isNotEmptyField } from '../../../utils/utils';
 import { useFormatter } from '../../../components/i18n';
 
-export interface PirLog {
+interface PirLog {
   readonly context_data: {
     readonly entity_id: string | null | undefined;
     readonly from_id: string | null | undefined;

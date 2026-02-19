@@ -12,7 +12,7 @@ export type ComputeLinkNode = {
   type?: string;
 };
 
-export type AppDataProps = {
+type AppDataProps = {
   computeLink: (node: ComputeLinkNode) => string | undefined;
   metricsDefinition: MetricsDefinition[];
 };

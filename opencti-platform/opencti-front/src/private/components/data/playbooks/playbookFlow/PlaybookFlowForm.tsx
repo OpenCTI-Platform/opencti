@@ -45,7 +45,7 @@ import SelectField from '../../../../../components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
 import OpenVocabField from '@components/common/form/OpenVocabField';
 
-export type PlaybookFlowFormData
+type PlaybookFlowFormData
   // Component: update knowledge
   = PlaybookUpdateActionsForm
     & {

@@ -18,7 +18,7 @@ export interface OverrideFormData {
   entity_type: string;
 }
 
-export interface ConfidenceFormData {
+interface ConfidenceFormData {
   user_confidence_level_enabled: boolean;
   user_confidence_level: number | null | undefined;
   overrides: OverrideFormData[];

@@ -149,4 +149,4 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
 };
 
 export default IngestionCatalogFilters;
-export type { Contract, FilterState };
+export type {  FilterState };

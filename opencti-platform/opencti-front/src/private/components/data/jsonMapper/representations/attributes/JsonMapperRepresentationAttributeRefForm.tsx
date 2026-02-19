@@ -45,7 +45,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export type RepresentationAttributeForm = JsonMapperRepresentationAttributeFormData | undefined;
+type RepresentationAttributeForm = JsonMapperRepresentationAttributeFormData | undefined;
 
 interface JsonMapperRepresentationAttributeRefFormProps
   extends FieldProps<RepresentationAttributeForm, JsonMapperFormData> {

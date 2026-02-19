@@ -118,7 +118,7 @@ interface IngestionCsvCreationContainerProps extends IngestionCsvCreationProps {
 
 }
 
-export interface IngestionCsvAddInput extends BasicUserHandlingValues {
+interface IngestionCsvAddInput extends BasicUserHandlingValues {
   name: string;
   message?: string | null;
   references?: ExternalReferencesValues;

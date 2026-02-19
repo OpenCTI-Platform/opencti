@@ -1,6 +1,6 @@
 import { IngestionTypedProperty } from '@components/data/IngestionCatalog';
 
-export type ManagerContractProperty = [string, IngestionTypedProperty];
+type ManagerContractProperty = [string, IngestionTypedProperty];
 
 type ReconciledValue = string | number | boolean | string[] | null | undefined;
 

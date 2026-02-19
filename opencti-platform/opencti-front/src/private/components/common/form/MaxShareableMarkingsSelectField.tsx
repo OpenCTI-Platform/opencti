@@ -4,7 +4,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/fields/SelectField';
 
-export type EntityMarkingDefinition = {
+type EntityMarkingDefinition = {
   id: string;
   definition: string;
   definition_type: string;

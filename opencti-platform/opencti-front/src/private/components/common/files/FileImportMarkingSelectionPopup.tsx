@@ -17,7 +17,7 @@ type FileImportMarkingSelectionPopupProps = {
   entityId?: string;
 };
 
-export type SubmittedFormValues = {
+type SubmittedFormValues = {
   fileMarkings: FieldOption[];
   associatedEntity: AssociatedEntityOption;
 };

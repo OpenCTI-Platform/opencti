@@ -19,7 +19,7 @@ import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import type { Theme } from '../../../../components/Theme';
 
-export interface IngestionCatalogCardProps {
+interface IngestionCatalogCardProps {
   node: IngestionConnector;
   dataListId: string;
   isEnterpriseEdition: boolean;

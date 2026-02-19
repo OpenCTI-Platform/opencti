@@ -435,7 +435,7 @@ const StixCoreObjectFileExportComponent = ({
   );
 };
 
-export type StixCoreObjectFileExportProps = Omit<StixCoreObjectFileExportComponentProps, 'connectorsQueryRef'>;
+type StixCoreObjectFileExportProps = Omit<StixCoreObjectFileExportComponentProps, 'connectorsQueryRef'>;
 
 const StixCoreObjectFileExport = (props: StixCoreObjectFileExportProps) => {
   const { OpenFormComponent, scoId } = props;

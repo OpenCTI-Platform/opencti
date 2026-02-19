@@ -1,6 +1,6 @@
 import { FieldOption } from '../../../../../utils/field';
 
-export type ManagedConnectorValues = {
+type ManagedConnectorValues = {
   name: string;
   user_id?: string | FieldOption;
   automatic_user?: boolean;

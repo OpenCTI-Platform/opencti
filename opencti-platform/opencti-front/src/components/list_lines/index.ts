@@ -33,7 +33,7 @@ export interface PaginationOptions {
   pageSize?: string;
 }
 
-export type ListLines = FunctionComponent<unknown>;
+type ListLines = FunctionComponent<unknown>;
 
 export type RenderOption = (
   props: React.AllHTMLAttributes<never>,

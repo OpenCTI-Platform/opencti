@@ -216,7 +216,7 @@ const securityCoverageValidation = (t: (value: string) => string, isAutomated: b
   });
 };
 
-export interface SecurityCoverageFormProps {
+interface SecurityCoverageFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onClose?: () => void;
   inputValue?: string;

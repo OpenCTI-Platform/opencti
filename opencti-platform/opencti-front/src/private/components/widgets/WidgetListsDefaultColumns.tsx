@@ -171,7 +171,7 @@ type MetricConf = {
   name: string;
 };
 
-export type MetricsColumn = {
+type MetricsColumn = {
   readonly entity_type: string;
   readonly metrics: readonly MetricConf[] | null | undefined;
 };

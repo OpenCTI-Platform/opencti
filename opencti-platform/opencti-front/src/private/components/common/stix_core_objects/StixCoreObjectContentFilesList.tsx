@@ -42,7 +42,7 @@ const renderIcon = (mimeType: string) => {
   }
 };
 
-export interface ContentFile {
+interface ContentFile {
   id: string;
   lastModified: string;
   name: string;

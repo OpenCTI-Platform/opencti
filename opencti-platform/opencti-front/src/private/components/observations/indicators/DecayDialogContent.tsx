@@ -23,7 +23,7 @@ interface DecayDialogContentProps {
   onClose: () => void;
 }
 
-export interface LabelledDecayHistory {
+interface LabelledDecayHistory {
   updated_at: string;
   score: number;
   label: string;
