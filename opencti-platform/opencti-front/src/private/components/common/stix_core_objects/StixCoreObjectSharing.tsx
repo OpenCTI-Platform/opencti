@@ -18,7 +18,6 @@ import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
-import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
 import { truncate } from '../../../../utils/String';
@@ -109,7 +108,6 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const draftContext = useDraftContext();
   const [displaySharing, setDisplaySharing] = useState(false);
   const userIsOrganizationEditor = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
   const isEnterpriseEdition = useEnterpriseEdition();
