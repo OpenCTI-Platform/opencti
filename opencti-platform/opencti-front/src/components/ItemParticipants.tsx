@@ -8,7 +8,7 @@ import { commitMutation, defaultCommitMutation } from '../relay/environment';
 import Tag from './common/tag/Tag';
 
 interface ItemParticipantsProps {
-  participants: {
+  participants: readonly {
     readonly entity_type: string;
     readonly id: string;
     readonly name: string;
