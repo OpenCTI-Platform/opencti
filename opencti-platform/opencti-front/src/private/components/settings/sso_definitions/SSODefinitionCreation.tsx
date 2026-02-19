@@ -19,7 +19,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
 
   const CreateSSODefinitionControlledDial = (props: DrawerControlledDialProps) => (
     <CreateSplitControlledDial
-      entityType="SSODefinition"
+      entityType="SSO"
       options={['Create OIDC', 'Create SAML', 'Create LDAP']}
       onOptionClick={(option) => {
         switch (option) {

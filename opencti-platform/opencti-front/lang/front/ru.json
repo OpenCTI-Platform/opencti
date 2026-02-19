@@ -1636,7 +1636,6 @@
   "entity_Software": "Программное обеспечение",
   "entity_SSH-Key": "SSH-ключ",
   "entity_SSO": "Аутентификация",
-  "entity_SSODefinition": "Определение аутентификации",
   "entity_StatusTemplate": "Шаблон состояния",
   "entity_Stix-Core-Object": "Сущность и наблюдаемый",
   "entity_Stix-Core-Objects": "Сущности и наблюдаемые",
