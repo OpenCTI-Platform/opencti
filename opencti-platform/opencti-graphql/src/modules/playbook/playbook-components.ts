@@ -316,7 +316,7 @@ const PLAYBOOK_REDUCING_COMPONENT_SCHEMA: JSONSchemaType<ReduceConfiguration> = 
   },
   required: ['filters'],
 };
-const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
+export const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
   id: 'PLAYBOOK_REDUCING_COMPONENT',
   name: 'Reduce knowledge',
   description: 'Reduce STIX data according to the filter (keep only matching)',
