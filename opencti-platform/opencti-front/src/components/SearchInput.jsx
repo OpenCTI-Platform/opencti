@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
-import { BiotechOutlined, ContentPasteSearchOutlined, Search } from '@mui/icons-material';
+import { BiotechOutlined, ContentPasteSearchOutlined, Search, StarOutlined, WavesOutlined } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import IconButton from '@mui/material/IconButton';
 import { Link, useLocation } from 'react-router-dom';
@@ -93,6 +93,8 @@ const SearchInput = (props) => {
   const [displayEEDialog, setDisplayEEDialog] = useState(false);
   const [searchValue, setSearchValue] = useState(keyword);
   const [askAI, setAskAI] = useState(false);
+  const [wildcardSearch, setWildcardSearch] = useState(false);
+  const [fuzzySearch, setFuzzySearch] = useState(false);
 
   useEffect(() => {
     if (keyword !== searchValue) {
@@ -176,6 +178,24 @@ const SearchInput = (props) => {
               {isNLQActivated
                 ? <FiligranIcon icon={LogoXtmOneIcon} size="medium" color="ai" />
                 : <Search fontSize="small" />}
+              <Tooltip title={t_i18n('Wildcard search')}>
+                <IconButton
+                  onClick={() => setWildcardSearch(!wildcardSearch)}
+                  size="medium"
+                  color={wildcardSearch ? 'primary' : 'inherit'}
+                >
+                  <StarOutlined fontSize="medium" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title={t_i18n('Fuzzy search')}>
+                <IconButton
+                  onClick={() => setFuzzySearch(!fuzzySearch)}
+                  size="medium"
+                  color={fuzzySearch ? 'primary' : 'inherit'}
+                >
+                  <WavesOutlined fontSize="medium" />
+                </IconButton>
+              </Tooltip>
             </InputAdornment>
           ),
           endAdornment: variant === 'topBar' && (
