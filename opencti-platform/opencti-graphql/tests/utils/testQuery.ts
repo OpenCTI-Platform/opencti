@@ -90,6 +90,7 @@ interface QueryOption {
   previousStandard?: string;
   synchronizedUpsert?: string;
   applicantId?: string;
+  draftId?: string;
 }
 export const executeInternalQuery = async (client: AxiosInstance, query: unknown, variables = {}, options: QueryOption = {}) => {
   const headers: any = {};
@@ -98,6 +99,7 @@ export const executeInternalQuery = async (client: AxiosInstance, query: unknown
   if (options.previousStandard) headers['previous-standard'] = options.previousStandard;
   if (options.synchronizedUpsert) headers['synchronized-upsert'] = options.synchronizedUpsert;
   if (options.applicantId) headers['opencti-applicant-id'] = options.applicantId;
+  if (options.draftId) headers['opencti-draft-id'] = options.draftId;
   const response = await client.post(`${API_URI}/graphql`, { query, variables }, { withCredentials: true, headers });
   return response.data;
 };
