@@ -13,7 +13,7 @@ export const buildSAMLOptions = async (meta: ProviderMeta, conf: SamlStoreConfig
   entryPoint: conf.entry_point,
   issuer: conf.issuer,
   idpCert: conf.idp_certificate,
-  privateKey: await secretsProvider.mandatory('private_key'),
+  privateKey: await secretsProvider.optional('private_key'),
   callbackUrl: conf.callback_url ?? `${getBaseUrl()}/auth/${meta.identifier}/callback`,
   wantAssertionsSigned: conf.want_assertions_signed,
   wantAuthnResponseSigned: conf.want_authn_response_signed,
