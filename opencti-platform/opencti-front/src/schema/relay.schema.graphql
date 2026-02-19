@@ -10612,8 +10612,9 @@ type WorkflowActionConfig {
 }
 
 type WorkflowConditionConfig {
-  field: String!
-  operator: String!
+  type: String
+  field: String
+  operator: String
   value: String
 }
 
