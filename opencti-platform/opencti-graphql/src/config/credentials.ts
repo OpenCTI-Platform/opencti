@@ -4,8 +4,24 @@ import { isNotEmptyField } from '../database/utils';
 
 const CYBERARK_PROVIDER = 'cyberark';
 
+const getRemoveCredentialsProviderSelector = (prefix: string) => {
+  return conf.get(`${prefix}:credentials_provider:selector`);
+};
+
+const getRemoteCredentialsProviderFields = (prefix: string, provider: string) => {
+  return conf.get(`${prefix}:credentials_provider:${provider}:field_targets`) || conf.get(`${prefix}:credentials_provider:field_targets`);
+};
+
+export const getRemoteCredentialsFields = (prefix: string) => {
+  const provider = getRemoveCredentialsProviderSelector(prefix);
+  if (provider) {
+    return getRemoteCredentialsProviderFields(prefix, provider);
+  }
+  return [];
+};
+
 export const enrichWithRemoteCredentials = async (prefix: string, baseConfiguration: any) => {
-  const provider = conf.get(`${prefix}:credentials_provider:selector`);
+  const provider = getRemoveCredentialsProviderSelector(prefix);
   if (provider) {
     logApp.info('[OPENCTI] Remote credentials configuration detected', { provider, source: prefix });
     if (provider === CYBERARK_PROVIDER) {
@@ -32,8 +48,7 @@ export const enrichWithRemoteCredentials = async (prefix: string, baseConfigurat
         if (result.status === 200 && isNotEmptyField(result.data.Content)) {
           const defaultSplitter = conf.get(`${prefix}:credentials_provider:${provider}:default_splitter`) ?? ':';
           const contentValues = result.data.Content.split(defaultSplitter);
-          const fields = conf.get(`${prefix}:credentials_provider:${provider}:field_targets`)
-            || conf.get(`${prefix}:credentials_provider:field_targets`);
+          const fields = getRemoteCredentialsProviderFields(prefix, provider);
           for (let index = 0; index < fields.length; index += 1) {
             const field = fields[index];
             secretResult[field] = contentValues[index];

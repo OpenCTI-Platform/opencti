@@ -10,7 +10,7 @@ import type { OidcStoreConfiguration, ProviderMeta } from './authenticationProvi
 import { type AuthenticationProviderLogger } from './providers-logger';
 import { memoize } from '../../utils/memoize';
 import { createMapper } from './mappings-utils';
-import { decryptAuthValue, flatExtraConf } from './authenticationProvider-domain';
+import { flatExtraConf, retrieveSecrets } from './authenticationProvider-domain';
 import { handleProviderLogin } from './providers';
 import { skipSubjectCheck } from 'oauth4webapi';
 
@@ -20,7 +20,8 @@ const buildProxiedFetch = (issuerUrl: URL): typeof fetch => {
 };
 
 export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger, meta: ProviderMeta, conf: OidcStoreConfiguration) => {
-  const client_secret = await decryptAuthValue(conf.client_secret_encrypted);
+  const secretsProvider = await retrieveSecrets(meta.identifier, conf);
+  const client_secret = await secretsProvider.mandatory('client_secret');
   const callbackURL = conf.callback_url || `${getBaseUrl()}/auth/${meta.identifier}/callback`;
   const extraConf = flatExtraConf(conf.extra_conf);
   const mapper = createMapper(conf);

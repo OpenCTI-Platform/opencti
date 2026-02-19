@@ -18,6 +18,7 @@ import {
   samlSecretFields,
   ldapSecretFields,
   type ExtraConfEntry,
+  type SecretProvider,
 } from './authenticationProvider-types';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
@@ -31,6 +32,7 @@ import { getPlatformCrypto } from '../../utils/platformCrypto';
 import { memoize } from '../../utils/memoize';
 import { logAuthInfo } from './providers-logger';
 import { isNotEmptyField } from '../../database/utils';
+import { enrichWithRemoteCredentials } from '../../config/credentials';
 
 // Type for data that are encrypted
 const getKeyPair = memoize(async () => {
@@ -38,17 +40,43 @@ const getKeyPair = memoize(async () => {
   return factory.deriveAesKey(['authentication', 'elastic'], 1);
 });
 
-export const encryptAuthValue = async (value: string) => {
+const encryptAuthValue = async (value: string) => {
   const keyPair = await getKeyPair();
   const clearDataBuffer = Buffer.from(value);
   const encryptedBuffer = await keyPair.encrypt(clearDataBuffer);
   return encryptedBuffer.toString('base64');
 };
 
-export const decryptAuthValue = async (value: string) => {
+const decryptAuthValue = async (value: string) => {
   const keyPair = await getKeyPair();
   const decodedBuffer = Buffer.from(value, 'base64');
   return (await keyPair.decrypt(decodedBuffer)).toString();
+};
+
+export const retrieveSecrets = async (identifier: string, conf: any): Promise<SecretProvider> => {
+  const externallyManagerSecrets: Record<string, string> = await enrichWithRemoteCredentials(`providers:${identifier}`, {});
+  const resolve = (field: string) => {
+    const externalSecret = externallyManagerSecrets[field];
+    if (isNotEmptyField(externalSecret)) {
+      return externalSecret;
+    }
+    const encryptedValue = conf[`${field}_encrypted`];
+    if (isNotEmptyField(encryptedValue)) {
+      return decryptAuthValue(encryptedValue);
+    }
+    return undefined;
+  };
+
+  return {
+    optional: async (field) => resolve(field),
+    mandatory: async (field) => {
+      const value = resolve(field);
+      if (!isNotEmptyField(value)) {
+        throw FunctionalError('Secret field is missing', { field });
+      }
+      return value as string;
+    },
+  };
 };
 
 export const secretFieldsByType: Record<AuthenticationProviderType, { key: string; mandatory: boolean }[]> = {

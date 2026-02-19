@@ -1,5 +1,5 @@
-import type { LdapStoreConfiguration, ProviderMeta } from './authenticationProvider-types';
-import { flatExtraConf, decryptAuthValue } from './authenticationProvider-domain';
+import type { LdapStoreConfiguration, ProviderMeta, SecretProvider } from './authenticationProvider-types';
+import { flatExtraConf, retrieveSecrets } from './authenticationProvider-domain';
 import { type AuthenticationProviderLogger } from './providers-logger';
 import { AuthType } from './providers-configuration';
 import LdapStrategy, { type VerifyCallback, type VerifyDoneCallback } from 'passport-ldapauth';
@@ -7,11 +7,11 @@ import { createMapper } from './mappings-utils';
 import { handleProviderLogin } from './providers';
 import { REDACTED_INFORMATION } from '../../database/utils';
 
-const createLdapOptions = async (conf: LdapStoreConfiguration): Promise<LdapStrategy.Options> => ({
+const createLdapOptions = async (conf: LdapStoreConfiguration, secretsProvider: SecretProvider): Promise<LdapStrategy.Options> => ({
   server: {
     url: conf.url,
     bindDN: conf.bind_dn,
-    bindCredentials: await decryptAuthValue(conf.bind_credentials_encrypted),
+    bindCredentials: await secretsProvider.mandatory('bind_credentials'),
     searchBase: conf.search_base,
     searchFilter: conf.search_filter,
     searchAttributes: conf.search_attributes,
@@ -27,8 +27,9 @@ const createLdapOptions = async (conf: LdapStoreConfiguration): Promise<LdapStra
   passwordField: conf.password_field,
 });
 
-export const createLDAPStrategy = async (logger: AuthenticationProviderLogger, _meta: ProviderMeta, storeConf: LdapStoreConfiguration) => {
-  const ldapOptions = await createLdapOptions(storeConf);
+export const createLDAPStrategy = async (logger: AuthenticationProviderLogger, meta: ProviderMeta, storeConf: LdapStoreConfiguration) => {
+  const secretsProvider = await retrieveSecrets(meta.identifier, storeConf);
+  const ldapOptions = await createLdapOptions(storeConf, secretsProvider);
   const mapper = createMapper(storeConf);
 
   const ldapLoginCallback: VerifyCallback = async (user: any, done: VerifyDoneCallback) => {

@@ -133,6 +133,11 @@ export type LdapStoreConfiguration = LdapCommonConfiguration & {
   extra_conf: ExtraConfEntry[];
 };
 
+export interface SecretProvider {
+  optional: (field: string) => Promise<string | undefined>;
+  mandatory: (field: string) => Promise<string>;
+}
+
 export type AuthenticationProviderStoreConfiguration = OidcStoreConfiguration | SamlStoreConfiguration | LdapStoreConfiguration;
 
 export interface BasicStoreEntityAuthenticationProvider<T extends AuthenticationProviderStoreConfiguration | unknown = unknown> extends BasicStoreEntity {
