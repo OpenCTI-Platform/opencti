@@ -32,7 +32,11 @@ export class AuthenticationProviderError extends Error {
   }
 }
 
-export const createAuthLogger = (type: AuthenticationProviderType | typeof HEADERS_PROVIDER_NAME | typeof CERT_PROVIDER_NAME, identifier: string): AuthenticationProviderLogger => {
+export const createAuthLogger = (
+  id: string,
+  type: AuthenticationProviderType | typeof HEADERS_PROVIDER_NAME | typeof CERT_PROVIDER_NAME,
+  identifier: string,
+): AuthenticationProviderLogger => {
   const logPrefix = `[Auth-${type.toUpperCase()}] `;
   const doLogError = (message: string, meta: any, err?: any) => {
     const isAuthError = err instanceof AuthenticationProviderError;
@@ -41,20 +45,20 @@ export const createAuthLogger = (type: AuthenticationProviderType | typeof HEADE
       ...(isAuthError ? err.meta : meta),
       ...(err && !isAuthError ? { message: err.message } : {}),
     };
-    forgetPromise(redisPushAuthLog({ level: 'error', type, identifier, message: messageText, meta: realMeta }));
+    forgetPromise(redisPushAuthLog(id, { level: 'error', type, identifier, message: messageText, meta: realMeta }));
   };
   return ({
     success: (message, meta = {}) => {
       logApp.info(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } });
-      forgetPromise(redisPushAuthLog({ level: 'success', type, identifier, message, meta }));
+      forgetPromise(redisPushAuthLog(id, { level: 'success', type, identifier, message, meta }));
     },
     info: (message, meta = {}) => {
       logApp.info(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } });
-      forgetPromise(redisPushAuthLog({ level: 'info', type, identifier, message, meta }));
+      forgetPromise(redisPushAuthLog(id, { level: 'info', type, identifier, message, meta }));
     },
     warn: (message, meta = {}) => {
       logApp.warn(`${logPrefix}${message}`, { meta: { ...meta, type, identifier } });
-      forgetPromise(redisPushAuthLog({ level: 'warn', type, identifier, message, meta }));
+      forgetPromise(redisPushAuthLog(id, { level: 'warn', type, identifier, message, meta }));
     },
     error: (message, meta = {}, err?) => {
       logApp.error(`${logPrefix}${message}`, { err, meta: { ...meta, type, identifier } });

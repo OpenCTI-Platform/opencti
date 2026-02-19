@@ -23,7 +23,7 @@ import {
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { createEntity, deleteElementById, patchAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { notify } from '../../database/redis';
+import { notify, redisDeleteAuthLogHistory } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { unregisterStrategy } from './providers';
@@ -306,6 +306,7 @@ export const deleteAuthenticationProvider = async (context: AuthContext, user: A
     await unregisterStrategy(provider);
   }
 
+  await redisDeleteAuthLogHistory(provider.internal_id);
   const deleted = await deleteElementById(context, user, id, ENTITY_TYPE_AUTHENTICATION_PROVIDER);
   await publishUserAction({
     user,

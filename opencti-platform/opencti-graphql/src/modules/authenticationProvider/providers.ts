@@ -96,7 +96,7 @@ export const registerStrategy = async (authenticationProvider: BasicStoreEntityA
   const { type, name } = authenticationProvider;
   const identifier = resolveProviderIdentifier(authenticationProvider);
   const meta = { name, identifier };
-  const logger = createAuthLogger(type, identifier);
+  const logger = createAuthLogger(authenticationProvider.internal_id, type, identifier);
   const { configuration } = authenticationProvider;
   const { user_info_mapping, groups_mapping, organizations_mapping } = configuration as MappingConfiguration;
   logger.info('Provider is starting', { user_info_mapping, groups_mapping, organizations_mapping });

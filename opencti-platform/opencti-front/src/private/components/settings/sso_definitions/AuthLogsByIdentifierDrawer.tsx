@@ -11,8 +11,8 @@ import type { AuthLogsByIdentifierDrawerQuery } from './__generated__/AuthLogsBy
 import AuthProviderLogTab from './AuthProviderLogTab';
 
 export const authLogsByIdentifierDrawerQuery = graphql`
-  query AuthLogsByIdentifierDrawerQuery($identifier: String!) {
-    authLogHistoryByIdentifier(identifier: $identifier) {
+  query AuthLogsByIdentifierDrawerQuery($id: String!) {
+    authLogHistoryById(id: $id) {
       timestamp
       level
       message
@@ -26,7 +26,7 @@ export const authLogsByIdentifierDrawerQuery = graphql`
 interface AuthLogsByIdentifierDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  identifier: string | null;
+  id: string | null;
   name: string;
 }
 
@@ -36,7 +36,7 @@ const AuthLogsByIdentifierDrawerBody: React.FC<{
   queryRef: PreloadedQuery<AuthLogsByIdentifierDrawerQuery>;
 }> = ({ name, queryRef }) => {
   const data = usePreloadedQuery(authLogsByIdentifierDrawerQuery, queryRef);
-  const authLogHistory = data?.authLogHistoryByIdentifier ?? [];
+  const authLogHistory = data?.authLogHistoryById ?? [];
 
   return <AuthProviderLogTab name={name} authLogHistory={authLogHistory} />;
 };
@@ -101,31 +101,27 @@ const AuthLogsByIdentifierDrawerContent: React.FC<{
   );
 };
 
-/** Identifiers used by the backend for singleton auth strategies (must match providers.ts). */
-export const AUTH_IDENTIFIER_HEADERS = 'Headers';
-export const AUTH_IDENTIFIER_CERT = 'Cert';
-
 const AuthLogsByIdentifierDrawer: React.FC<AuthLogsByIdentifierDrawerProps> = ({
   isOpen,
   onClose,
-  identifier,
+  id,
   name,
 }) => {
   const [queryRef, loadQuery] = useQueryLoader<AuthLogsByIdentifierDrawerQuery>(authLogsByIdentifierDrawerQuery);
 
   useEffect(() => {
-    if (isOpen && identifier) {
-      loadQuery({ identifier }, { fetchPolicy: 'network-only' });
+    if (isOpen && id) {
+      loadQuery({ id }, { fetchPolicy: 'network-only' });
     }
-  }, [isOpen, identifier]);
+  }, [isOpen, id]);
 
   const handleRefresh = () => {
-    if (identifier) {
-      loadQuery({ identifier }, { fetchPolicy: 'network-only' });
+    if (id) {
+      loadQuery({ id }, { fetchPolicy: 'network-only' });
     }
   };
 
-  if (!isOpen || !identifier) {
+  if (!isOpen || !id) {
     return null;
   }
 

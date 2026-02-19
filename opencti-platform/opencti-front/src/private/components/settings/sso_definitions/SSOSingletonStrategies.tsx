@@ -13,7 +13,7 @@ import Drawer from '@components/common/drawer/Drawer';
 import LocalStrategyForm from './LocalStrategyForm';
 import CertStrategyForm from './CertStrategyForm';
 import HeaderStrategyForm from './HeaderStrategyForm';
-import AuthLogsByIdentifierDrawer, { AUTH_IDENTIFIER_HEADERS, AUTH_IDENTIFIER_CERT } from './AuthLogsByIdentifierDrawer';
+import AuthLogsByIdentifierDrawer from './AuthLogsByIdentifierDrawer';
 import type { SSOSingletonStrategiesQuery } from './__generated__/SSOSingletonStrategiesQuery.graphql';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '@components/common/entreprise_edition/EEChip';
@@ -48,16 +48,16 @@ const ssoSingletonStrategiesQuery = graphql`
   }
 `;
 
-const STRATEGY_LOG_IDENTIFIER: Record<string, string> = {
-  header: AUTH_IDENTIFIER_HEADERS,
-  cert: AUTH_IDENTIFIER_CERT,
+const STRATEGY_LOG_ID: Record<string, string> = {
+  header: 'Headers',
+  cert: 'Cert',
 };
 
 const SSOSingletonStrategiesContent = () => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const [editingStrategy, setEditingStrategy] = useState<StrategyType | null>(null);
-  const [logsDrawer, setLogsDrawer] = useState<{ identifier: string; name: string } | null>(null);
+  const [logsDrawer, setLogsDrawer] = useState<{ id: string; name: string } | null>(null);
 
   const data = useLazyLoadQuery<SSOSingletonStrategiesQuery>(ssoSingletonStrategiesQuery, {});
   const { settings } = data;
@@ -170,7 +170,7 @@ const SSOSingletonStrategiesContent = () => {
                     onClick={(e) => {
                       e.stopPropagation();
                       setLogsDrawer({
-                        identifier: STRATEGY_LOG_IDENTIFIER[node.strategy],
+                        id: STRATEGY_LOG_ID[node.strategy],
                         name: node.name,
                       });
                     }}
@@ -202,7 +202,7 @@ const SSOSingletonStrategiesContent = () => {
         <AuthLogsByIdentifierDrawer
           isOpen
           onClose={() => setLogsDrawer(null)}
-          identifier={logsDrawer.identifier}
+          id={logsDrawer.id}
           name={logsDrawer.name}
         />
       )}

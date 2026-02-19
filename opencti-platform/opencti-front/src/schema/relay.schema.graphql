@@ -9704,9 +9704,9 @@ type Query {
   authenticationProviders(first: Int, after: ID, orderBy: AuthenticationProviderOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): AuthenticationProviderConnection
 
   """
-  Auth log history for a provider identified by its identifier (e.g. singleton strategies: Headers, Cert).
+  Auth log history by provider id: internal_id for DB providers, or static id for singletons (Headers, Cert).
   """
-  authLogHistoryByIdentifier(identifier: String!): [AuthLogEntry!]!
+  authLogHistoryById(id: String!): [AuthLogEntry!]!
 }
 
 type Subscription {

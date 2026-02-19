@@ -334,8 +334,8 @@ type Query {
     filters: FilterGroup
     search: String
   ): AuthenticationProviderConnection @auth(for: [SETTINGS_SETAUTH])
-  """Auth log history for a provider identified by its identifier (e.g. singleton strategies: Headers, Cert)."""
-  authLogHistoryByIdentifier(identifier: String!): [AuthLogEntry!]! @auth(for: [SETTINGS_SETAUTH])
+  """Auth log history by provider id: internal_id for DB providers, or static id for singletons (Headers, Cert)."""
+  authLogHistoryById(id: String!): [AuthLogEntry!]! @auth(for: [SETTINGS_SETAUTH])
 }
 
 type Mutation {

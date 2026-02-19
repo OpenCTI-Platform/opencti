@@ -6,7 +6,6 @@ import {
   editAuthenticationProvider,
   findAuthenticationProviderById,
   findAuthenticationProviderByIdPaginated,
-  resolveProviderIdentifier,
 } from './authenticationProvider-domain';
 import type { BasicStoreEntityAuthenticationProvider } from './authenticationProvider-types';
 import { DatabaseError } from '../../config/errors';
@@ -52,8 +51,8 @@ const runtimeStatus = (provider: BasicStoreEntityAuthenticationProvider): Authen
 const authenticationProviderResolver: Resolvers = {
   AuthenticationProvider: {
     authLogHistory: async (parent) => {
-      const identifier = resolveProviderIdentifier(parent as BasicStoreEntityAuthenticationProvider);
-      const entries = await redisGetAuthLogHistory(identifier);
+      const id = (parent as BasicStoreEntityAuthenticationProvider).internal_id;
+      const entries = await redisGetAuthLogHistory(id);
       return logsToLogs(entries);
     },
     runtime_status: (parent) => runtimeStatus(parent as BasicStoreEntityAuthenticationProvider),
@@ -61,8 +60,8 @@ const authenticationProviderResolver: Resolvers = {
   Query: {
     authenticationProvider: (_, { id }, context) => findAuthenticationProviderById(context, context.user, id),
     authenticationProviders: (_, args, context) => findAuthenticationProviderByIdPaginated(context, context.user, args),
-    authLogHistoryByIdentifier: async (_, { identifier }) => {
-      const entries = await redisGetAuthLogHistory(identifier);
+    authLogHistoryById: async (_: unknown, { id }: { id: string }) => {
+      const entries = await redisGetAuthLogHistory(id);
       return logsToLogs(entries);
     },
   },

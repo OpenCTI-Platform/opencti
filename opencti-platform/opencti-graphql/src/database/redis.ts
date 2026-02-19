@@ -745,11 +745,11 @@ export interface AuthLogEntry {
   meta?: Record<string, unknown>;
 }
 
-const authLogListKey = (identifier: string) => `${AUTH_LOG_LIST_KEY_PREFIX}${identifier}`;
+const authLogListKey = (id: string) => `${AUTH_LOG_LIST_KEY_PREFIX}${id}`;
 
-export const redisPushAuthLog = async (entry: Omit<AuthLogEntry, 'timestamp'>) => {
+export const redisPushAuthLog = async (id: string, entry: Omit<AuthLogEntry, 'timestamp'>) => {
   try {
-    const key = authLogListKey(entry.identifier);
+    const key = authLogListKey(id);
     const value = JSON.stringify({ timestamp: Date.now(), ...entry });
     await redisTx(getClientBase(), async (tx) => {
       tx.lpush(key, value);
@@ -760,9 +760,9 @@ export const redisPushAuthLog = async (entry: Omit<AuthLogEntry, 'timestamp'>) =
   }
 };
 
-export const redisGetAuthLogHistory = async (identifier: string): Promise<AuthLogEntry[]> => {
-  const key = authLogListKey(identifier);
-  const rawList = await getClientBase().lrange(key, 0, AUTH_LOG_MAX_SIZE - 1);
+export const redisGetAuthLogHistory = async (id: string): Promise<AuthLogEntry[]> => {
+  const listKey = authLogListKey(id);
+  const rawList = await getClientBase().lrange(listKey, 0, AUTH_LOG_MAX_SIZE - 1);
   return rawList.map((s) => {
     try {
       return JSON.parse(s) as AuthLogEntry;
@@ -771,4 +771,11 @@ export const redisGetAuthLogHistory = async (identifier: string): Promise<AuthLo
     }
   }).filter((e): e is AuthLogEntry => e !== null);
 };
-// endregion
+
+export const redisDeleteAuthLogHistory = async (id: string): Promise<void> => {
+  try {
+    await getClientBase().del(authLogListKey(id));
+  } catch (err) {
+    logApp.error('Failed to delete auth log history from Redis', { cause: err });
+  }
+};
