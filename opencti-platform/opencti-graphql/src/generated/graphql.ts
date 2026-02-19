@@ -1418,6 +1418,7 @@ export type AuthenticationProvider = AuthenticationProviderBase & BasicObject & 
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
+  runtime_status: AuthenticationProviderRuntimeStatus;
   standard_id: Scalars['String']['output'];
   type: AuthenticationProviderType;
   updated_at: Scalars['DateTime']['output'];
@@ -1471,6 +1472,12 @@ export enum AuthenticationProviderOrdering {
   Enabled = 'enabled',
   Name = 'name',
   Strategy = 'strategy'
+}
+
+export enum AuthenticationProviderRuntimeStatus {
+  Active = 'ACTIVE',
+  Disabled = 'DISABLED',
+  Error = 'ERROR'
 }
 
 export enum AuthenticationProviderType {
@@ -37386,6 +37393,7 @@ export type ResolversTypes = ResolversObject<{
   AuthenticationProviderMigrationInput: AuthenticationProviderMigrationInput;
   AuthenticationProviderMigrationResult: ResolverTypeWrapper<AuthenticationProviderMigrationResult>;
   AuthenticationProviderOrdering: AuthenticationProviderOrdering;
+  AuthenticationProviderRuntimeStatus: AuthenticationProviderRuntimeStatus;
   AuthenticationProviderType: AuthenticationProviderType;
   AutoRegisterInput: AutoRegisterInput;
   AutonomousSystem: ResolverTypeWrapper<Omit<AutonomousSystem, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
@@ -39856,6 +39864,7 @@ export type AuthenticationProviderResolvers<ContextType = any, ParentType extend
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  runtime_status?: Resolver<ResolversTypes['AuthenticationProviderRuntimeStatus'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['AuthenticationProviderType'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;

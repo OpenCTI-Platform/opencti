@@ -60,6 +60,7 @@ const ssoDefinitionsLineFragment = graphql`
     name
     description
     enabled
+    runtime_status
     button_label_override
     identifier_override
     type
@@ -160,11 +161,28 @@ const SSODefinitions = () => {
       label: t_i18n('Status'),
       percentWidth: 15,
       isSortable: true,
-      render: (node: { enabled: boolean }) => (
+      render: (node: { runtime_status: 'ACTIVE' | 'DISABLED' | 'ERROR'; enabled: boolean }) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <ItemBoolean
-            label={node.enabled && isEnterpriseEdition ? t_i18n('Enabled') : t_i18n('Disabled')}
-            status={node.enabled && isEnterpriseEdition}
+            label={
+              node.runtime_status === 'ACTIVE'
+                ? t_i18n('Active')
+                : node.runtime_status === 'ERROR'
+                  ? t_i18n('Error')
+                  : t_i18n('Disabled')
+            }
+            status={
+              node.runtime_status === 'ACTIVE'
+                ? true
+                : node.runtime_status === 'ERROR'
+                  ? 'error'
+                  : false
+            }
+            tooltip={
+              node.runtime_status === 'ERROR'
+                ? t_i18n('Provider is enabled but failed to start. Check configuration or logs.')
+                : undefined
+            }
           />
           {!isEnterpriseEdition && <span onClick={(e) => e.stopPropagation()}><EEChip /></span>}
         </Box>

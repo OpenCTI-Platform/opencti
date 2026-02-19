@@ -1,4 +1,9 @@
-import { AuthenticationProviderType, AuthLogLevel, type Resolvers } from '../../generated/graphql';
+import {
+  AuthenticationProviderRuntimeStatus,
+  AuthenticationProviderType,
+  AuthLogLevel,
+  type Resolvers,
+} from '../../generated/graphql';
 import { type AuthLogEntry, redisGetAuthLogHistory } from '../../database/redis';
 import {
   addAuthenticationProvider,
@@ -10,6 +15,7 @@ import {
 } from './authenticationProvider-domain';
 import type { BasicStoreEntityAuthenticationProvider } from './authenticationProvider-types';
 import { DatabaseError } from '../../config/errors';
+import { isProviderRegisteredByInternalId } from './providers-configuration';
 
 const levelToLevel = (level: string) => {
   switch (level) {
@@ -34,6 +40,15 @@ const logsToLogs = (logs: AuthLogEntry[]) => {
   }));
 };
 
+const runtimeStatus = (provider: BasicStoreEntityAuthenticationProvider): AuthenticationProviderRuntimeStatus => {
+  if (!provider.enabled) {
+    return AuthenticationProviderRuntimeStatus.Disabled;
+  }
+  return isProviderRegisteredByInternalId(provider.internal_id)
+    ? AuthenticationProviderRuntimeStatus.Active
+    : AuthenticationProviderRuntimeStatus.Error;
+};
+
 const authenticationProviderResolver: Resolvers = {
   AuthenticationProvider: {
     authLogHistory: async (parent) => {
@@ -41,6 +56,7 @@ const authenticationProviderResolver: Resolvers = {
       const entries = await redisGetAuthLogHistory(identifier);
       return logsToLogs(entries);
     },
+    runtime_status: (parent) => runtimeStatus(parent as BasicStoreEntityAuthenticationProvider),
   },
   Query: {
     authenticationProvider: (_, { id }, context) => findAuthenticationProviderById(context, context.user, id),

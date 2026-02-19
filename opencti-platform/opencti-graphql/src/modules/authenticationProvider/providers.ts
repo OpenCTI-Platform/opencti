@@ -10,7 +10,6 @@ import type {
 import { initializeEnvAuthenticationProviders, registerAuthenticationProvider, unregisterAuthenticationProvider } from './providers-env-deprecated';
 import { createSAMLStrategy } from './provider-saml';
 import { createLDAPStrategy } from './provider-ldap';
-import { GraphQLError } from 'graphql/index';
 import { createOpenIdStrategy } from './provider-oidc';
 import { IS_AUTHENTICATION_FORCE_LOCAL, isAuthenticationForcedFromEnv } from './providers-configuration';
 import { PROVIDERS } from './providers-configuration';
@@ -99,20 +98,20 @@ export const registerStrategy = async (authenticationProvider: BasicStoreEntityA
   const { user_info_mapping, groups_mapping, organizations_mapping } = configuration as MappingConfiguration;
   logger.info('Provider initialization', { user_info_mapping, groups_mapping, organizations_mapping });
 
-  const createStrategy = async () => {
-    switch (authenticationProvider.type) {
-      case AuthenticationProviderType.Saml:
-        return createSAMLStrategy(logger, meta, configuration as SamlStoreConfiguration);
-      case AuthenticationProviderType.Oidc:
-        return createOpenIdStrategy(logger, meta, configuration as OidcStoreConfiguration);
-      case AuthenticationProviderType.Ldap:
-        return createLDAPStrategy(logger, meta, configuration as LdapStoreConfiguration);
-      default:
-        return undefined;
-    }
-  };
-
   try {
+    const createStrategy = async () => {
+      switch (authenticationProvider.type) {
+        case AuthenticationProviderType.Saml:
+          return createSAMLStrategy(logger, meta, configuration as SamlStoreConfiguration);
+        case AuthenticationProviderType.Oidc:
+          return createOpenIdStrategy(logger, meta, configuration as OidcStoreConfiguration);
+        case AuthenticationProviderType.Ldap:
+          return createLDAPStrategy(logger, meta, configuration as LdapStoreConfiguration);
+        default:
+          return undefined;
+      }
+    };
+
     if (authenticationProvider.enabled) {
       const created = await createStrategy();
       if (!created) {
@@ -134,11 +133,7 @@ export const registerStrategy = async (authenticationProvider: BasicStoreEntityA
       );
     }
   } catch (e) {
-    if (e instanceof GraphQLError) {
-      logger.error('Error when initializing provider', { message: e.message, data: e.extensions.data });
-    } else {
-      logger.error('Unknown error when initializing provider', {}, e);
-    }
+    logger.error('Provider initialization error ', {}, e);
   }
 };
 

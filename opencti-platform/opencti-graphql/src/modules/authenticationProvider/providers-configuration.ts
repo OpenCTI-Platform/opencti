@@ -98,6 +98,8 @@ export const genConfigMapper = (elements: string[]) => {
 export const isStrategyActivated = (strategy: EnvStrategyType) => PROVIDERS.map((p) => p.strategy).includes(strategy);
 export const isAuthenticationActivatedByIdentifier = (identifier: string) => PROVIDERS.some((p) => p.provider === identifier);
 
+export const isProviderRegisteredByInternalId = (internalId: string) => PROVIDERS.some((p) => p.internal_id === internalId);
+
 export const isAuthenticationProviderMigrated = (migratedIdentifiers: string[], authIdentifier: string) => {
   return migratedIdentifiers.some((strategyIdentifier) => strategyIdentifier === authIdentifier);
 };

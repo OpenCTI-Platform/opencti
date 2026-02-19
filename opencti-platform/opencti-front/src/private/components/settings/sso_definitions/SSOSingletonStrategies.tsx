@@ -97,7 +97,7 @@ const SSOSingletonStrategiesContent = () => {
         return (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, opacity: 1 }}>
             <ItemBoolean
-              label={isEnabled ? t_i18n('Enabled') : t_i18n('Disabled')}
+              label={isEnabled ? t_i18n('Active') : t_i18n('Disabled')}
               status={isEnabled}
             />
             {showEE && <span onClick={(e) => e.stopPropagation()}><EEChip /></span>}

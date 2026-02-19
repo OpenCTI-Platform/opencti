@@ -235,6 +235,12 @@ enum AuthenticationProviderType {
     LDAP
 }
 
+enum AuthenticationProviderRuntimeStatus {
+    DISABLED
+    ERROR
+    ACTIVE
+}
+
 interface AuthenticationProviderBase {
   name: String!
   description: String
@@ -259,6 +265,7 @@ type AuthenticationProvider implements InternalObject & BasicObject & Authentica
   identifier_override: String # use id if no identifier_override is provided
   type: AuthenticationProviderType!
   configuration: AuthenticationConfiguration!
+  runtime_status: AuthenticationProviderRuntimeStatus!
   authLogHistory: [AuthLogEntry!]! # since it's limited to 50 entries, no need for pagination
 }
 
