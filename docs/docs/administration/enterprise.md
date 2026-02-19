@@ -45,7 +45,7 @@ Organizations segregation is a way to segregate your data considering the organi
 
 On top of organization management and segregation, use authorized members to restrict access to a specific instance (entity/observable). This is particularly useful if a specific incident occurs and you need to hide the case tracking the resolution to all the users of the platform, or to control who can edit, who can view, and who can manage the entity. Please read [Authorized Members page](https://docs.opencti.io/latest/administration/authorized-members/) to get all information.
 
-### Override of capabilities in draft 
+### Control of capabilities in Draft mode
 
 On top of Role Based Access Control (RBAC), we have added the ability to work on drafts and control publishing access. By allowing users to have specific capabilities limited to drafts, it is possible to restrict users from editing or creating data in the main database. This provides additional control over who can do what in the platform. Please go to the [Users and RBAC page](users.md) for more information.
 
