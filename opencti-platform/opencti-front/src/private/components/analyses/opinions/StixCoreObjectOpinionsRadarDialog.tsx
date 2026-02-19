@@ -29,7 +29,7 @@ import {
   StixCoreObjectOpinionsRadarDialogMyOpinionQuery$variables,
 } from './__generated__/StixCoreObjectOpinionsRadarDialogMyOpinionQuery.graphql';
 
-export const stixCoreObjectOpinionsRadarDialogMyOpinionQuery = graphql`
+const stixCoreObjectOpinionsRadarDialogMyOpinionQuery = graphql`
   query StixCoreObjectOpinionsRadarDialogMyOpinionQuery($id: String!) {
     myOpinion(id: $id) {
       id

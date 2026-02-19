@@ -14,7 +14,7 @@ type CustomIcon = {
     label: string;
   };
 };
-export const customIcons = (fontSize: number): CustomIcon => ({
+const customIcons = (fontSize: number): CustomIcon => ({
   1: {
     icon: <SentimentVeryDissatisfiedIcon color="error" sx={{ fontSize }} />,
     label: 'Very Dissatisfied',
@@ -37,17 +37,17 @@ export const customIcons = (fontSize: number): CustomIcon => ({
   },
 });
 
-export function TinyIconContainer(props: IconContainerProps) {
+function TinyIconContainer(props: IconContainerProps) {
   const { value, ...other } = props;
   return <span {...other}>{customIcons(15)[value].icon}</span>;
 }
 
-export function SmallIconContainer(props: IconContainerProps) {
+function SmallIconContainer(props: IconContainerProps) {
   const { value, ...other } = props;
   return <span {...other}>{customIcons(30)[value].icon}</span>;
 }
 
-export function LargeIconContainer(props: IconContainerProps) {
+function LargeIconContainer(props: IconContainerProps) {
   const { value, ...other } = props;
   return <span {...other}>{customIcons(64)[value].icon}</span>;
 }

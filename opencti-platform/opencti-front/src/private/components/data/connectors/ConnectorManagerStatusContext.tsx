@@ -4,7 +4,7 @@ import { interval } from 'rxjs';
 import { ConnectorManagerStatusContextQuery } from '@components/data/connectors/__generated__/ConnectorManagerStatusContextQuery.graphql';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 
-export const connectorManagerStatusQuery = graphql`
+const connectorManagerStatusQuery = graphql`
   query ConnectorManagerStatusContextQuery {
     connectorManagers {
       id
@@ -75,4 +75,3 @@ export const useConnectorManagerStatus = (): ConnectorManagerStatusContextValue 
   return context;
 };
 
-export default useConnectorManagerStatus;

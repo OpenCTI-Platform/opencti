@@ -80,7 +80,7 @@ const cityMutationRelationDelete = graphql`
   }
 `;
 
-export const cityEditionOverviewFragment = graphql`
+const cityEditionOverviewFragment = graphql`
   fragment CityEditionOverview_city on City {
     id
     name

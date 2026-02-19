@@ -47,7 +47,7 @@ export const caseTemplateQuery = graphql`
   }
 `;
 
-export const caseTemplateFieldPatch = graphql`
+const caseTemplateFieldPatch = graphql`
   mutation CaseTemplateEditionMutation($id: ID!, $input: [EditInput!]!) {
     caseTemplateFieldPatch(id: $id, input: $input) {
       id

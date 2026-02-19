@@ -42,7 +42,7 @@ export const organizationsLinesQuery = graphql`
   }
 `;
 
-export const organizationsLinesFragment = graphql`
+const organizationsLinesFragment = graphql`
   fragment OrganizationsLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }

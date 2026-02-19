@@ -9,7 +9,7 @@ import { narrativeEditionOverviewFocus } from './NarrativeEditionOverview';
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-export const narrativeEditionQuery = graphql`
+const narrativeEditionQuery = graphql`
   query NarrativeEditionContainerQuery($id: String!) {
     narrative(id: $id) {
       ...NarrativeEditionContainer_narrative

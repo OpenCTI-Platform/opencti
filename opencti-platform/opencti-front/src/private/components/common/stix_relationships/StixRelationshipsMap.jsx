@@ -10,7 +10,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
-export const stixRelationshipsMapStixRelationshipsDistributionQuery = graphql`
+const stixRelationshipsMapStixRelationshipsDistributionQuery = graphql`
   query StixRelationshipsMapStixRelationshipsDistributionQuery(
     $field: String!
     $operation: StatsOperation!

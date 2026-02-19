@@ -56,7 +56,7 @@ import { RootMe_data$data } from '../../../__generated__/RootMe_data.graphql';
 import IngestionCsvInlineWrapper from './IngestionCsvInlineWrapper';
 import IngestionEditionUserHandling from '@components/data/IngestionEditionUserHandling';
 
-export const ingestionCsvEditionUserHandlingPatch = graphql`
+const ingestionCsvEditionUserHandlingPatch = graphql`
   mutation IngestionCsvEditionUserHandlingMutation($id: ID!, $input: IngestionCsvAddAutoUserInput!) {
     ingestionCsvAddAutoUser(id: $id, input: $input) {
         id
@@ -70,7 +70,7 @@ export const ingestionCsvEditionUserHandlingPatch = graphql`
   }
 `;
 
-export const initIngestionValue = (ingestionCsvData: IngestionCsvEditionFragment_ingestionCsv$data, me: RootMe_data$data) => {
+const initIngestionValue = (ingestionCsvData: IngestionCsvEditionFragment_ingestionCsv$data, me: RootMe_data$data) => {
   return {
     ...{
       name: ingestionCsvData.name,

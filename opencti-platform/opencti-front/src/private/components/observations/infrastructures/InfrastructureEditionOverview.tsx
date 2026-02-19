@@ -87,7 +87,7 @@ const infrastructureMutationRelationDelete = graphql`
   }
 `;
 
-export const infrastructureEditionOverviewFragment = graphql`
+const infrastructureEditionOverviewFragment = graphql`
   fragment InfrastructureEditionOverview_infrastructure on Infrastructure {
     id
     name

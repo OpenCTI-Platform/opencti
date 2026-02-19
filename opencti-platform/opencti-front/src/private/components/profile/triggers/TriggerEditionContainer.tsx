@@ -13,7 +13,7 @@ export const triggerKnowledgeEditionQuery = graphql`
   }
 `;
 
-export const triggerActivityEditionQuery = graphql`
+const triggerActivityEditionQuery = graphql`
   query TriggerEditionContainerActivityQuery($id: String!) {
     triggerActivity(id: $id) {
       ...TriggerEditionOverview_trigger

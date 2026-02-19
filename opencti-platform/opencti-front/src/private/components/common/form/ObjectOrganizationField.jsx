@@ -30,7 +30,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export const searchObjectOrganizationFieldQuery = graphql`
+const searchObjectOrganizationFieldQuery = graphql`
   query ObjectOrganizationFieldQuery($search: String, $filters: FilterGroup) {
     organizations(orderBy: name, search: $search, filters: $filters) {
       edges {

@@ -11,7 +11,7 @@ import TextField from '../../../../components/TextField';
 import { ExternalReferenceEditionOverview_externalReference$data } from './__generated__/ExternalReferenceEditionOverview_externalReference.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-export const externalReferenceMutationFieldPatch = graphql`
+const externalReferenceMutationFieldPatch = graphql`
   mutation ExternalReferenceEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!

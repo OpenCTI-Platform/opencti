@@ -21,7 +21,7 @@ interface PopoverListItemProps {
   onClick?: () => void;
 }
 
-export const PopoverListItem: React.FC<PopoverListItemProps> = ({
+const PopoverListItem: React.FC<PopoverListItemProps> = ({
   logoSrc,
   href,
   to,

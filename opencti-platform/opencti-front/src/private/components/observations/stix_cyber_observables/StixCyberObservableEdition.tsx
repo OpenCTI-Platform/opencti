@@ -10,7 +10,7 @@ import { StixCyberObservableEditionContainerQuery$data } from './__generated__/S
 import StixCyberObservableEditionContainer from './StixCyberObservableEditionContainer';
 import { stixCyberObservableEditionOverviewFocus } from './StixCyberObservableEditionOverview';
 
-export const stixCyberObservableEditionQuery = graphql`
+const stixCyberObservableEditionQuery = graphql`
   query StixCyberObservableEditionContainerQuery($id: String!) {
     stixCyberObservable(id: $id) {
       ...StixCyberObservableEditionContainer_stixCyberObservable

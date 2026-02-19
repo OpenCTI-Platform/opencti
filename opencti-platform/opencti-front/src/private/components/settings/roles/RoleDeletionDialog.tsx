@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-export const roleDeletionMutation = graphql`
+const roleDeletionMutation = graphql`
   mutation RoleDeletionDialogMutation($id: ID!) {
     roleEdit(id: $id) {
       delete

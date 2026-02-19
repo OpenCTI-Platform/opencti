@@ -63,7 +63,7 @@ const notifierValidation = (t: (value: string) => string) => Yup.object().shape(
 type NotifierFormikHelpers = Pick<FormikHelpers<NotifierAddInput>,
 'setErrors' | 'setSubmitting' | 'resetForm'>;
 
-export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
+const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
   updater,
   onClose,
   inputValue,

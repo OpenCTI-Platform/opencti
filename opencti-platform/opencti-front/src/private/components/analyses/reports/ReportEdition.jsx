@@ -9,7 +9,7 @@ import ReportEditionContainer from './ReportEditionContainer';
 import { reportEditionOverviewFocus } from './ReportEditionOverview';
 import Loader from '../../../../components/Loader';
 
-export const reportEditionQuery = graphql`
+const reportEditionQuery = graphql`
   query ReportEditionContainerQuery($id: String!) {
     report(id: $id) {
       ...ReportEditionContainer_report

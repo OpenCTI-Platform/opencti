@@ -8,7 +8,7 @@ import { csvMappers_MappersQuery, csvMappers_MappersQuery$variables } from '@com
 import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 
-export const csvMapperLinesFragment = graphql`
+const csvMapperLinesFragment = graphql`
   fragment CsvMapperLines_csvMapper on Query
   @argumentDefinitions(
     count: { type: "Int", defaultValue: 200 }

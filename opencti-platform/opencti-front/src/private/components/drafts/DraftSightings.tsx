@@ -238,7 +238,7 @@ const draftSightingsLinesQuery = graphql`
     }
 `;
 
-export const draftSightingsLinesFragment = graphql`
+const draftSightingsLinesFragment = graphql`
     fragment DraftSightingsLines_data on Query
     @argumentDefinitions(
         draftId: { type: "String!" }

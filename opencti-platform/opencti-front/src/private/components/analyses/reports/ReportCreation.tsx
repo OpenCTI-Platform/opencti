@@ -39,7 +39,7 @@ import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { ReportCreationMutation, ReportCreationMutation$variables } from './__generated__/ReportCreationMutation.graphql';
 
-export const reportCreationMutation = graphql`
+const reportCreationMutation = graphql`
   mutation ReportCreationMutation($input: ReportAddInput!) {
     reportAdd(input: $input) {
       id

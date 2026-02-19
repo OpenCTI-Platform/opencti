@@ -16,7 +16,7 @@ import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-export const notifierPopoverDeletionMutation = graphql`
+const notifierPopoverDeletionMutation = graphql`
   mutation NotifierPopoverDeletionMutation($id: ID!) {
     notifierDelete(id: $id)
   }

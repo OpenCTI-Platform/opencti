@@ -14,7 +14,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { RelayError } from '../../../../relay/relayTypes';
 import useXtmHubDownloadDocument from '../../../../utils/hooks/useXtmHubDownloadDocument';
 
-export const csvFeedImportQuery = graphql`
+const csvFeedImportQuery = graphql`
   query IngestionCsvImportQuery($file: Upload!) {
     csvFeedAddInputFromImport(file: $file) {
       authentication_type

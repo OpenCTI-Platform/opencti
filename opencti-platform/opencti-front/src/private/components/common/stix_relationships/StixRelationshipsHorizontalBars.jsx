@@ -9,7 +9,7 @@ import useDistributionGraphData from '../../../../utils/hooks/useDistributionGra
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useState } from 'react';
 
-export const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
+const stixRelationshipsHorizontalBarsDistributionQuery = graphql`
   query StixRelationshipsHorizontalBarsDistributionQuery(
     $field: String!
     $operation: StatsOperation!

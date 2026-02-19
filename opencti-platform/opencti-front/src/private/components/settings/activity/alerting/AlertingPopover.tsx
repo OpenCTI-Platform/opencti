@@ -18,7 +18,7 @@ import AlertDigestEdition from './AlertDigestEdition';
 import { alertEditionQuery } from './AlertEditionQuery';
 import AlertLiveEdition from './AlertLiveEdition';
 
-export const alertingPopoverDeletionMutation = graphql`
+const alertingPopoverDeletionMutation = graphql`
   mutation AlertingPopoverDeletionMutation($id: ID!) {
     triggerActivityDelete(id: $id)
   }

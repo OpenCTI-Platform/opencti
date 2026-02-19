@@ -7,7 +7,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../components/DeleteDialog';
 
-export const externalReferenceDeletionDeleteMutation = graphql`
+const externalReferenceDeletionDeleteMutation = graphql`
   mutation ExternalReferenceDeletionDeleteMutation($id: ID!) {
     externalReferenceEdit(id: $id) {
       delete

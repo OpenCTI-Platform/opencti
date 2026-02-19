@@ -56,7 +56,7 @@ export const addDataComponentsLinesQuery = graphql`
   }
 `;
 
-export const addDataComponentsLinesFragment = graphql`
+const addDataComponentsLinesFragment = graphql`
   fragment AddDataComponentsLinesToDataSource_data on Query
   @argumentDefinitions(
     search: { type: "String" }

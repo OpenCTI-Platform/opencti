@@ -13,7 +13,7 @@ import { PaginationOptions } from '../../../../components/list_lines';
 import { IngestionTaxiiImportQuery$data } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiImportQuery.graphql';
 import IngestionTaxiiCreation from '@components/data/ingestionTaxii/IngestionTaxiiCreation';
 
-export const taxiiFeedImportQuery = graphql`
+const taxiiFeedImportQuery = graphql`
   query IngestionTaxiiImportQuery($file: Upload!) {
     taxiiFeedAddInputFromImport(file: $file) {
         name

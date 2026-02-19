@@ -10,7 +10,7 @@ import OidcProviderForm from './OidcProviderForm';
 import SamlProviderForm from './SamlProviderForm';
 import LdapProviderForm from './LdapProviderForm';
 
-export const ssoDefinitionEditionFragment = graphql`
+const ssoDefinitionEditionFragment = graphql`
     fragment SSODefinitionEditionFragment on AuthenticationProvider {
         id
         entity_type

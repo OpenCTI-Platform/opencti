@@ -21,7 +21,7 @@ import Card from '../../../../components/common/card/Card';
 
 const LOCAL_STORAGE_KEY = 'support-packages';
 
-export const supportPackageAddMutation = graphql`
+const supportPackageAddMutation = graphql`
   mutation SupportPackagesMutation(
     $input: SupportPackageAddInput!
   ) {

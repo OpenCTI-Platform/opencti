@@ -7,7 +7,7 @@ import { positionEditionOverviewFocus } from './PositionEditionOverview';
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-export const positionEditionQuery = graphql`
+const positionEditionQuery = graphql`
   query PositionEditionContainerQuery($id: String!) {
     position(id: $id) {
       ...PositionEditionContainer_position

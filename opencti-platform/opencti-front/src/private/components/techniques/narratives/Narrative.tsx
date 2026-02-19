@@ -12,7 +12,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
-export const narrativeFragment = graphql`
+const narrativeFragment = graphql`
   fragment Narrative_narrative on Narrative {
     id
     standard_id

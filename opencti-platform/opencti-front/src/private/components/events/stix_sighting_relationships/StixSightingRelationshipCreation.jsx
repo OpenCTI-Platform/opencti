@@ -109,7 +109,7 @@ const styles = (theme) => ({
   },
 });
 
-export const stixSightingRelationshipCreationQuery = graphql`
+const stixSightingRelationshipCreationQuery = graphql`
   query StixSightingRelationshipCreationQuery(
     $fromId: StixRef!
     $toId: StixRef!

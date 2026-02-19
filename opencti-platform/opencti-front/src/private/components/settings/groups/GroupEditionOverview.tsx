@@ -19,7 +19,7 @@ import GroupHiddenTypesField from './GroupHiddenTypesField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import type { Theme } from '../../../../components/Theme';
 
-export const groupMutationFieldPatch = graphql`
+const groupMutationFieldPatch = graphql`
   mutation GroupEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!

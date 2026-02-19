@@ -26,7 +26,7 @@ import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncide
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
-export const caseIncidentMutationFieldPatch = graphql`
+const caseIncidentMutationFieldPatch = graphql`
   mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!

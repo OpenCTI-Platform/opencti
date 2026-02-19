@@ -29,7 +29,7 @@ export const decayRulesLinesQuery = graphql`
     )
   }
 `;
-export const decayRulesLinesFragment = graphql`
+const decayRulesLinesFragment = graphql`
   fragment DecayRulesLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }

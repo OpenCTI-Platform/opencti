@@ -7,7 +7,7 @@ import { environment, QueryRenderer } from '../../../../relay/environment';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
-export const securityPlatformEditionQuery = graphql`
+const securityPlatformEditionQuery = graphql`
 query SecurityPlatformEditionContainerQuery($id: String!) {
     securityPlatform(id: $id) {
         ...SecurityPlatformEditionContainer_securityPlatform

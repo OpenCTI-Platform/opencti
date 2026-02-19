@@ -11,4 +11,3 @@ export const RedirectManager = (props) => {
   return <>{props.children}</>;
 };
 
-export default RedirectManager;

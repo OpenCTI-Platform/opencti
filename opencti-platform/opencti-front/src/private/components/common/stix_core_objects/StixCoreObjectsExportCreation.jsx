@@ -19,7 +19,7 @@ import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefini
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 
-export const StixCoreObjectsExportCreationMutation = graphql`
+const StixCoreObjectsExportCreationMutation = graphql`
   mutation StixCoreObjectsExportCreationMutation(
     $input: StixCoreObjectsExportAskInput!
   ) {

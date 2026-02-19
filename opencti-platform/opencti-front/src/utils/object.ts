@@ -8,7 +8,7 @@ import { fromB64, toB64 } from './String';
  * @param path The path to access the property.
  * @returns The value of the property.
  */
-export function getObjectProperty<T extends object>(object: T, path = ''): unknown {
+function getObjectProperty<T extends object>(object: T, path = ''): unknown {
   const splitPath = path.split('.');
   const property = object[splitPath.shift() as keyof T];
 

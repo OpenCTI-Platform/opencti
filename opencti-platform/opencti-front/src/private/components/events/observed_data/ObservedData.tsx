@@ -11,7 +11,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
-export const observedDataFragment = graphql`
+const observedDataFragment = graphql`
   fragment ObservedData_observedData on ObservedData {
     id
     standard_id

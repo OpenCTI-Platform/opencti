@@ -56,7 +56,7 @@ export const positionDetailsLocationRelationshipsLinesQuery = graphql`
   }
 `;
 
-export const positionDetailsRelationshipsFragment = graphql`
+const positionDetailsRelationshipsFragment = graphql`
   fragment PositionDetails_positionRelationships on Query
   @argumentDefinitions(
     fromOrToId: { type: "[String]!" }

@@ -17,7 +17,7 @@ import { fetchQuery } from '../../../relay/environment';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 
-export const ingestionEditionUserHandlingQuery = graphql`
+const ingestionEditionUserHandlingQuery = graphql`
   query IngestionEditionUserHandlingQuery(
     $name: String!
   ) {
@@ -27,7 +27,7 @@ export const ingestionEditionUserHandlingQuery = graphql`
   }
 `;
 
-export interface IngestionEditionAddAutoUserInput {
+interface IngestionEditionAddAutoUserInput {
   user_name: string;
   confidence_level: number;
 }

@@ -75,7 +75,7 @@ export const containerAddStixCoreObjectsLinesRelationAddMutation = graphql`
   }
 `;
 
-export const containerAddStixCoreObjectsLinesRelationDeleteMutation = graphql`
+const containerAddStixCoreObjectsLinesRelationDeleteMutation = graphql`
   mutation ContainerAddStixCoreObjectsLinesRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!

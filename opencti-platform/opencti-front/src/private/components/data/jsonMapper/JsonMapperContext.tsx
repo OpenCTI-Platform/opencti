@@ -18,7 +18,7 @@ export const JsonMapperProvider: React.FC<JsonMapperProviderProps> = ({ children
     </JsonMapperContext.Provider>
   );
 };
-export const useJsonMapperContext = () => {
+const useJsonMapperContext = () => {
   const context = useContext(JsonMapperContext);
   if (!context) {
     throw new Error('useJsonMapperContext must be used within a JsonMapperProvider');

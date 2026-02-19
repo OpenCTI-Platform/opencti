@@ -285,7 +285,7 @@ const toolBarConnectorsQuery = graphql`
   }
 `;
 
-export const maxNumberOfObservablesToCopy = 1000;
+const maxNumberOfObservablesToCopy = 1000;
 
 const toolBarContainersQuery = graphql`
   query DataTableToolBarContainersQuery($search: String) {

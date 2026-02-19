@@ -13,7 +13,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-export const groupConfidenceMutationFieldPatch = graphql`
+const groupConfidenceMutationFieldPatch = graphql`
   mutation GroupEditionConfidenceFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!

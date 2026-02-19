@@ -18,7 +18,7 @@ export interface AssociatedEntityOption {
   type: string;
 }
 
-export const associatedEntityFieldQuery = graphql`
+const associatedEntityFieldQuery = graphql`
   query AssociatedEntityFieldQuery(
     $search: String
     $types: [String]

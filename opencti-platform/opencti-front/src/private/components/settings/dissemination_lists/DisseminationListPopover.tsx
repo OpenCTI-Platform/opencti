@@ -14,7 +14,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 
-export const disseminationListPopoverDeletionMutation = graphql`
+const disseminationListPopoverDeletionMutation = graphql`
   mutation DisseminationListPopoverDeletionMutation($id: ID!) {
     disseminationListDelete(id: $id)
   }

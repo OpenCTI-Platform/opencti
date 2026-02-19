@@ -23,7 +23,7 @@ export const FIELD_TYPES = [
 ];
 
 // Field type to attribute type mapping
-export const FIELD_TYPE_TO_ATTRIBUTE_TYPE: Record<string, string[]> = {
+const FIELD_TYPE_TO_ATTRIBUTE_TYPE: Record<string, string[]> = {
   text: ['string'],
   textarea: ['string', 'markdown', 'text'],
   number: ['numeric', 'integer', 'float'],
@@ -249,7 +249,7 @@ export const getAttributesForEntityType = (
  * @param t_i18n Translation function
  * @returns List of relationship type options
  */
-export const getAvailableRelationships = (
+const getAvailableRelationships = (
   mainEntityType: string,
   additionalEntityTypes: string[],
   schema: { scrs?: Array<{ id: string; label?: string }>; schemaRelationsTypesMapping?: Map<string, readonly string[]> },

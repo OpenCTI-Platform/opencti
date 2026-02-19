@@ -50,7 +50,7 @@ import { IntrusionSetCreationForm } from '../../threats/intrusion_sets/Intrusion
 import { ThreatActorGroupCreationForm } from '../../threats/threat_actors_group/ThreatActorGroupCreation';
 import { ThreatActorIndividualCreationForm } from '../../threats/threat_actors_individual/ThreatActorIndividualCreation';
 
-export const stixDomainObjectCreationAllTypesQuery = graphql`
+const stixDomainObjectCreationAllTypesQuery = graphql`
   query StixDomainObjectCreationAllTypesQuery {
     sdoTypes: subTypes(type: "Stix-Domain-Object") {
       edges {

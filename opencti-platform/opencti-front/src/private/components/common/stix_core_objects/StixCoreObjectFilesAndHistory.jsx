@@ -75,7 +75,7 @@ export const stixCoreObjectFilesAndHistoryAskJobImportMutation = graphql`
   }
 `;
 
-export const stixCoreObjectFilesAndHistoryExportMutation = graphql`
+const stixCoreObjectFilesAndHistoryExportMutation = graphql`
   mutation StixCoreObjectFilesAndHistoryExportMutation(
     $id: ID!
     $input: ExportAskInput!

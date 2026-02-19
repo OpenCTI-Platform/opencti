@@ -44,7 +44,7 @@ const styles = () => ({
   },
 });
 
-export const StixDomainObjectsExportCreationMutation = graphql`
+const StixDomainObjectsExportCreationMutation = graphql`
   mutation StixDomainObjectsExportCreationMutation(
     $format: String!
     $exportType: String!

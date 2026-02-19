@@ -19,7 +19,7 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import Card from '../../../../components/common/card/Card';
 
-export const settingsOrganizationUsersQuery = graphql`
+const settingsOrganizationUsersQuery = graphql`
   query SettingsOrganizationUsersPaginationQuery(
     $id: String!
     $search: String

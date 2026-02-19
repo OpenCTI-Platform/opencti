@@ -7,7 +7,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { ExternalReferenceEditionContainerQuery$data } from './__generated__/ExternalReferenceEditionContainerQuery.graphql';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-export const externalReferenceEditionQuery = graphql`
+const externalReferenceEditionQuery = graphql`
   query ExternalReferenceEditionContainerQuery($id: String!) {
     externalReference(id: $id) {
       ...ExternalReferenceEditionContainer_externalReference

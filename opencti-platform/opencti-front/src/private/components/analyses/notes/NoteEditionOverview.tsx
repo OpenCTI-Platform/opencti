@@ -23,7 +23,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 
-export const noteMutationFieldPatch = graphql`
+const noteMutationFieldPatch = graphql`
   mutation NoteEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!

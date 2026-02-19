@@ -9,7 +9,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../components/i18n';
 
-export const disseminationListMutationFieldPatch = graphql`
+const disseminationListMutationFieldPatch = graphql`
   mutation DisseminationListEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
     disseminationListFieldPatch(id: $id, input: $input) {
       ...DisseminationListsLine_node

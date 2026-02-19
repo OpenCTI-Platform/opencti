@@ -39,7 +39,7 @@ interface DraftApproveProps {
   data: DraftApproveFragment$key;
 }
 
-export const DraftApprove = ({ data }: DraftApproveProps) => {
+const DraftApprove = ({ data }: DraftApproveProps) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();

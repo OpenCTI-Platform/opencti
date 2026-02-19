@@ -24,7 +24,7 @@ import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeCon
 import type { Theme } from '../../../../components/Theme';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 
-export const toolMutationFieldPatch = graphql`
+const toolMutationFieldPatch = graphql`
   mutation ToolEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
@@ -53,7 +53,7 @@ export const toolEditionOverviewFocus = graphql`
   }
 `;
 
-export const toolMutationRelationAdd = graphql`
+const toolMutationRelationAdd = graphql`
   mutation ToolEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixRefRelationshipAddInput!
@@ -70,7 +70,7 @@ export const toolMutationRelationAdd = graphql`
 
 const TOOL_TYPE = 'Tool';
 
-export const toolMutationRelationDelete = graphql`
+const toolMutationRelationDelete = graphql`
   mutation ToolEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!

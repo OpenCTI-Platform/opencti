@@ -26,7 +26,7 @@ import { CaseRftEditionOverview_case$key } from './__generated__/CaseRftEditionO
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 
-export const caseRftMutationFieldPatch = graphql`
+const caseRftMutationFieldPatch = graphql`
   mutation CaseRftEditionOverviewCaseFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!

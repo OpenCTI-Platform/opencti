@@ -34,7 +34,7 @@ import { EMPTY_VALUE } from '../../../utils/String';
 import { isNotEmptyField } from '../../../utils/utils';
 import { colors, getFirstOperation, iconSelector } from './notifications/notificationUtils';
 
-export const LOCAL_STORAGE_KEY = 'notifiers';
+const LOCAL_STORAGE_KEY = 'notifiers';
 
 const notificationsLineFragment = graphql`
   fragment NotificationsLine_node on Notification {
@@ -110,7 +110,7 @@ const notificationsLinesFragment = graphql`
   }
 `;
 
-export const notificationLineNotificationMarkReadMutation = graphql`
+const notificationLineNotificationMarkReadMutation = graphql`
   mutation NotificationsNotificationMarkReadMutation(
     $id: ID!
     $read: Boolean!

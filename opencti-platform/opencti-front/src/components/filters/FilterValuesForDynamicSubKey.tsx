@@ -18,7 +18,7 @@ import { Theme } from '../../components/Theme';
 // TODO, use MAX_RUNTIME_RESOLUTION_SIZE from backend
 const MAX_NUMBER_DYNAMIC_IDS_RESULT = 5000;
 
-export const filterValuesForDynamicSubKeyQuery = graphql`
+const filterValuesForDynamicSubKeyQuery = graphql`
   query FilterValuesForDynamicSubKeyQuery(
     $filters: FilterGroup
   ) {

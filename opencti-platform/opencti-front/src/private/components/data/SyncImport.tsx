@@ -13,7 +13,7 @@ import { PaginationOptions } from '../../../components/list_lines';
 import useXtmHubDownloadDocument from '../../../utils/hooks/useXtmHubDownloadDocument';
 import { SyncImportQuery$data } from './__generated__/SyncImportQuery.graphql';
 
-export const syncImportQuery = graphql`
+const syncImportQuery = graphql`
   query SyncImportQuery($file: Upload!) {
       synchronizerAddInputFromImport(file: $file) {
         name,

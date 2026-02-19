@@ -47,7 +47,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export const indicatorMutationRelationAdd = graphql`
+const indicatorMutationRelationAdd = graphql`
   mutation IndicatorAddObservablesLinesRelationAddMutation(
     $input: StixCoreRelationshipAddInput!
   ) {
@@ -60,7 +60,7 @@ export const indicatorMutationRelationAdd = graphql`
   }
 `;
 
-export const indicatorMutationRelationDelete = graphql`
+const indicatorMutationRelationDelete = graphql`
   mutation IndicatorAddObservablesLinesRelationDeleteMutation(
     $fromId: StixRef!
     $toId: StixRef!

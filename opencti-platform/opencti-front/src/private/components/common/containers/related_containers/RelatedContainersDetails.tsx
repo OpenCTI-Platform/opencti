@@ -19,7 +19,7 @@ import ItemEntityType from '../../../../../components/ItemEntityType';
 import ItemCreators from '../../../../../components/ItemCreators';
 import ItemAuthor from '../../../../../components/ItemAuthor';
 
-export const relatedContainersDetailsQuery = graphql`
+const relatedContainersDetailsQuery = graphql`
   query RelatedContainersDetailsQuery(
     $field: String!
     $operation: StatsOperation!

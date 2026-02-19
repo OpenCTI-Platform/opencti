@@ -76,7 +76,7 @@ export interface StixCoreObjectFileExportFormProps {
   instanceType?: string | null | undefined;
 }
 
-export const renderIcon = (key: string) => {
+const renderIcon = (key: string) => {
   switch (key) {
     case 'ai':
       return <FiligranIcon icon={LogoXtmOneIcon} size="large" />;

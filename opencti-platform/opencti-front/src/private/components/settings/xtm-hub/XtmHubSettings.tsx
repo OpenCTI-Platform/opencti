@@ -12,7 +12,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Card from '../../../../components/common/card/Card';
 import ItemBoolean from '../../../../components/ItemBoolean';
 
-export const xtmHubSettingsQuery = graphql`
+const xtmHubSettingsQuery = graphql`
   query XtmHubSettingsQuery {
     settings {
       id
@@ -27,7 +27,7 @@ export const xtmHubSettingsQuery = graphql`
   }
 `;
 
-export const checkHubConnectivity = graphql`
+const checkHubConnectivity = graphql`
   mutation XtmHubSettingsCheckConnectivityMutation {
     checkXTMHubConnectivity {
       status

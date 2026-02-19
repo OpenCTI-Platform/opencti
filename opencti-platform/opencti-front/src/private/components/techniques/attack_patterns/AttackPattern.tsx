@@ -12,7 +12,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
-export const attackPatternFragment = graphql`
+const attackPatternFragment = graphql`
   fragment AttackPattern_attackPattern on AttackPattern {
     id
     standard_id

@@ -12,7 +12,7 @@ interface ArtifactFieldProps {
   onChange: (name: string, value: FieldOption) => void;
 }
 
-export const artifactQuery = graphql`
+const artifactQuery = graphql`
   query ArtifactFieldGetQuery($filters: FilterGroup) {
     stixCyberObservables(filters: $filters) {
       edges {

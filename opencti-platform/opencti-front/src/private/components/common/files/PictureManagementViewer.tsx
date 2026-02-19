@@ -8,7 +8,7 @@ import { PictureManagementViewer_entity$data, PictureManagementViewer_entity$key
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
 import Card from '../../../../components/common/card/Card';
 
-export const pictureManagementViewerFragment = graphql`
+const pictureManagementViewerFragment = graphql`
   fragment PictureManagementViewer_entity on StixDomainObject {
     id
     entity_type

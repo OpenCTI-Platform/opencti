@@ -55,7 +55,7 @@ import { createRefetchContainer, RelayRefetchProp } from 'react-relay';
 
 const interval$ = interval(FIVE_SECONDS);
 
-export const connectorUpdateTriggerMutation = graphql`
+const connectorUpdateTriggerMutation = graphql`
   mutation ConnectorUpdateTriggerMutation($id: ID!, $input: [EditInput]!) {
     updateConnectorTrigger(id: $id, input: $input) {
       id

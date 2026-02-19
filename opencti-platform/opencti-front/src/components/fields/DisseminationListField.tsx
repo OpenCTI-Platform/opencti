@@ -7,7 +7,7 @@ import { fetchQuery } from '../../relay/environment';
 import SelectField from './SelectField';
 import { useFormatter } from '../i18n';
 
-export const disseminationListFieldQuery = graphql`
+const disseminationListFieldQuery = graphql`
     query DisseminationListFieldQuery(
         $cursor: ID
         $orderBy: DisseminationListOrdering

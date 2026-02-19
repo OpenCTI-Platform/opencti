@@ -2,7 +2,7 @@ import { graphql, ConnectionHandler, Variables } from 'react-relay';
 
 export const generateConnectionId = ({ recordId, key, params }: { recordId?: string; key: string; params?: Variables }) => ConnectionHandler.getConnectionID(recordId ?? 'root', key, params ?? {});
 
-export const CaseTaskFragment = graphql`
+const CaseTaskFragment = graphql`
   fragment CaseUtilsTasksLine_data on Task {
     id
     entity_type
@@ -55,7 +55,7 @@ export const caseSetTemplateQuery = graphql`
   }
 `;
 
-export const caseMutationFieldPatch = graphql`
+const caseMutationFieldPatch = graphql`
   mutation CaseUtilsFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
@@ -77,7 +77,7 @@ export const caseMutationFieldPatch = graphql`
   }
 `;
 
-export const caseEditionOverviewFocus = graphql`
+const caseEditionOverviewFocus = graphql`
   mutation CaseUtilsFocusMutation($id: ID!, $input: EditContext!) {
     stixDomainObjectEdit(id: $id) {
       contextPatch(input: $input) {
@@ -87,7 +87,7 @@ export const caseEditionOverviewFocus = graphql`
   }
 `;
 
-export const caseMutationRelationAdd = graphql`
+const caseMutationRelationAdd = graphql`
   mutation CaseUtilsRelationAddMutation(
     $id: ID!
     $input: StixRefRelationshipAddInput!
@@ -101,7 +101,7 @@ export const caseMutationRelationAdd = graphql`
     }
   }
 `;
-export const caseMutationRelationDelete = graphql`
+const caseMutationRelationDelete = graphql`
   mutation CaseUtilsRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!

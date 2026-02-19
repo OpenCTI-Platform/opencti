@@ -26,7 +26,7 @@ import { hexToRGB } from '../../../../utils/Colors';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { ImportWorksDrawerQuery, ImportWorksDrawerQuery$variables } from './__generated__/ImportWorksDrawerQuery.graphql';
 
-export const importConnectorsFragment = graphql`
+const importConnectorsFragment = graphql`
   fragment ImportWorksDrawer_connectorsImport on Connector
   @relay(plural: true) {
     id

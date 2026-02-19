@@ -222,4 +222,3 @@ const TaskCreation = ({
   );
 };
 
-export default TaskCreation;

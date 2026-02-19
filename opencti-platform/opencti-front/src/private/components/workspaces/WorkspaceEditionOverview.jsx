@@ -48,7 +48,7 @@ export const workspaceMutationFieldPatch = graphql`
   }
 `;
 
-export const workspaceEditionOverviewFocus = graphql`
+const workspaceEditionOverviewFocus = graphql`
   mutation WorkspaceEditionOverviewFocusMutation(
     $id: ID!
     $input: EditContext!

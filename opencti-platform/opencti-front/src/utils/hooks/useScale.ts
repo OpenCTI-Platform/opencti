@@ -116,7 +116,7 @@ const useScale = (
   return scale.local_config;
 };
 
-export const buildScaleFilters = (
+const buildScaleFilters = (
   entityType: string | null,
   attributeName: string,
 ): { label: string; value: string; color: string }[] => {
@@ -177,4 +177,3 @@ export const useLevel = (
   return buildScaleLevel(value, scale);
 };
 
-export default useScale;

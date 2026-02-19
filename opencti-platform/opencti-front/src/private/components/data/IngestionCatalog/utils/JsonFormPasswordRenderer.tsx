@@ -41,4 +41,3 @@ export const jsonFormPasswordTester: RankedTester = rankWith(
     }),
   ),
 );
-export default withJsonFormsControlProps(JsonFormPasswordRenderer);

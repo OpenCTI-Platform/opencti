@@ -26,7 +26,7 @@ import { TriggersLinesPaginationQuery$variables } from '../../../profile/trigger
 import { AlertLiveCreationActivityMutation, AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiveCreationActivityMutation.graphql';
 import { useTheme } from '@mui/material/styles';
 
-export const triggerLiveActivityCreationMutation = graphql`
+const triggerLiveActivityCreationMutation = graphql`
     mutation AlertLiveCreationActivityMutation($input: TriggerActivityLiveAddInput!) {
         triggerActivityLiveAdd(input: $input) {
             id

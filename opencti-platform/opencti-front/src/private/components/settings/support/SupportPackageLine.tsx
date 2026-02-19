@@ -70,7 +70,7 @@ const SupportPackageLineDeleteMutation = graphql`
   }
 `;
 
-export const supportPackageLineFragment = graphql`
+const supportPackageLineFragment = graphql`
   fragment SupportPackageLine_node on SupportPackage {
     id
     name

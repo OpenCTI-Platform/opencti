@@ -20,7 +20,7 @@ import Label from '../../../../../components/common/label/Label';
 import { Box } from '@mui/material';
 import { EMPTY_VALUE } from '../../../../../utils/String';
 
-export const RelatedContainersFragment = graphql`
+const RelatedContainersFragment = graphql`
   fragment RelatedContainersFragment_container_connection on ContainerConnection {
     edges {
       node {

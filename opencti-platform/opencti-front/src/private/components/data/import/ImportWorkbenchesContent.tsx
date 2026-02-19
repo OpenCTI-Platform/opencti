@@ -95,7 +95,7 @@ const importWorkbenchLinesFragment = graphql`
     }
 `;
 
-export const importWorkbenchesContentQuery = graphql`
+const importWorkbenchesContentQuery = graphql`
     query ImportWorkbenchesContentQuery(
         $count: Int,
         $cursor: ID,
@@ -116,7 +116,7 @@ export const importWorkbenchesContentQuery = graphql`
     }
 `;
 
-export const LOCAL_STORAGE_KEY = 'importWorkbenches';
+const LOCAL_STORAGE_KEY = 'importWorkbenches';
 
 const ImportWorkbenchesContent = () => {
   const { t_i18n } = useFormatter();

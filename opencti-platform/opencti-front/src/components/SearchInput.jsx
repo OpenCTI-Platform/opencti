@@ -71,7 +71,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export function GradientBorderTextField({
+function GradientBorderTextField({
   isActive,
   ...props
 }) {

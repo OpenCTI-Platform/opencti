@@ -1,6 +1,6 @@
 import { pathOr } from 'ramda';
 
-export const random = (min, max) => Math.random() * (max - min) + min;
+const random = (min, max) => Math.random() * (max - min) + min;
 
 export const numberFormat = (number, digits = 2) => {
   const si = [

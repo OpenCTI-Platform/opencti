@@ -81,7 +81,7 @@ export const stixDomainObjectBookmarksQuery = graphql`
   }
 `;
 
-export const stixDomainobjectBookmarksFragment = graphql`
+const stixDomainobjectBookmarksFragment = graphql`
   fragment StixDomainObjectBookmarks_bookmarks on Query
   @argumentDefinitions(types: { type: "[String]" }) {
     bookmarks(types: $types, first: 200)

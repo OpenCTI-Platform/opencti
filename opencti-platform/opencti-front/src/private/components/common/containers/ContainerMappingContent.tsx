@@ -40,7 +40,7 @@ import Card from '../../../../components/common/card/Card';
 
 const OPEN$ = new Subject().pipe(debounce(() => timer(500)));
 
-export const contentMutationFieldPatch = graphql`
+const contentMutationFieldPatch = graphql`
   mutation ContainerMappingContentFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
@@ -67,7 +67,7 @@ export const containerContentQuery = graphql`
   }
 `;
 
-export const containerContentFragment = graphql`
+const containerContentFragment = graphql`
   fragment ContainerMappingContent_container on Container {
     id
     standard_id

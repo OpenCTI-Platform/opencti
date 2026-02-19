@@ -40,7 +40,7 @@ import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharin
 import StixCoreObjectsSuggestions from '../stix_core_objects/StixCoreObjectsSuggestions';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 
-export const containerHeaderObjectsQuery = graphql`
+const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
     container(id: $id) {
       id

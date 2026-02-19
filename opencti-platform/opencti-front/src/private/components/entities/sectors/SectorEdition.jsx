@@ -7,7 +7,7 @@ import { sectorEditionOverviewFocus } from './SectorEditionOverview';
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-export const sectorEditionQuery = graphql`
+const sectorEditionQuery = graphql`
   query SectorEditionContainerQuery($id: String!) {
     sector(id: $id) {
       ...SectorEditionContainer_sector

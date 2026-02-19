@@ -78,7 +78,7 @@ const ingestionCsvCreationMutation = graphql`
   }
 `;
 
-export const ingestionCsvCreationUsersQuery = graphql`
+const ingestionCsvCreationUsersQuery = graphql`
     query IngestionCsvCreationUsersQuery(
         $name: String!
     ) {

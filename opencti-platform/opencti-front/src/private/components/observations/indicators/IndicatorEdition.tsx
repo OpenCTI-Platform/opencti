@@ -8,7 +8,7 @@ import EditEntityControlledDial from '../../../../components/EditEntityControlle
 import { IndicatorEditionContainerQuery$data } from '@components/observations/indicators/__generated__/IndicatorEditionContainerQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-export const indicatorEditionQuery = graphql`
+const indicatorEditionQuery = graphql`
   query IndicatorEditionContainerQuery($id: String!) {
     indicator(id: $id) {
       ...IndicatorEditionContainer_indicator

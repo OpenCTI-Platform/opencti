@@ -84,7 +84,7 @@ const searchStixCoreObjectsLinesQuery = graphql`
   }
 `;
 
-export const searchStixCoreObjectsLinesFragment = graphql`
+const searchStixCoreObjectsLinesFragment = graphql`
   fragment SearchStixCoreObjectsLines_data on Query
   @argumentDefinitions(
     types: { type: "[String]" }

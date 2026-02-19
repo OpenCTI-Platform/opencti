@@ -45,7 +45,7 @@ const stixNestedRefRelationshipMutationFieldPatch = graphql`
   }
 `;
 
-export const stixRefRelationshipEditionFocus = graphql`
+const stixRefRelationshipEditionFocus = graphql`
   mutation StixNestedRefRelationshipEditionOverviewFocusMutation(
     $id: ID!
     $input: EditContext!

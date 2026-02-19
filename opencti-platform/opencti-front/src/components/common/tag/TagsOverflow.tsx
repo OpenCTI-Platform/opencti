@@ -15,7 +15,7 @@ interface TagsOverflowProps<T> {
   onTagCounterClick?: () => void;
 }
 
-export function TagsOverflow<T>({
+function TagsOverflow<T>({
   items,
   getKey,
   getLabel,

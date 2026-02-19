@@ -12,7 +12,7 @@ import TitleMainEntity from '../../../../components/common/typography/TitleMainE
 import SubTypeMenu from './SubTypeMenu';
 import useHelper from '../../../../utils/hooks/useHelper';
 
-export const subTypeQuery = graphql`
+const subTypeQuery = graphql`
   query SubTypeQuery($id: String!){
     subType(id: $id) {
       id

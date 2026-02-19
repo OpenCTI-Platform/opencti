@@ -14,7 +14,7 @@ export interface VocabularyDefinition {
   }[];
 }
 
-export const vocabCategoriesQuery = graphql`
+const vocabCategoriesQuery = graphql`
   query useVocabularyCategoryQuery {
     vocabularyCategories {
       key

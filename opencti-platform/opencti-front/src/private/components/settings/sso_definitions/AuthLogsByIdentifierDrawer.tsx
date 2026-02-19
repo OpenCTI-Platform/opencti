@@ -10,7 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 import type { AuthLogsByIdentifierDrawerQuery } from './__generated__/AuthLogsByIdentifierDrawerQuery.graphql';
 import AuthProviderLogTab from './AuthProviderLogTab';
 
-export const authLogsByIdentifierDrawerQuery = graphql`
+const authLogsByIdentifierDrawerQuery = graphql`
   query AuthLogsByIdentifierDrawerQuery($id: String!) {
     authLogHistoryById(id: $id) {
       timestamp

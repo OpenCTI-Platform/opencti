@@ -24,7 +24,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { truncate } from '../../../../utils/String';
 
-export const StixCoreObjectHistoryFragment = graphql`
+const StixCoreObjectHistoryFragment = graphql`
   fragment StixCoreObjectHistoryLine_node on Log @argumentDefinitions(
     tz: {
       type: "String",

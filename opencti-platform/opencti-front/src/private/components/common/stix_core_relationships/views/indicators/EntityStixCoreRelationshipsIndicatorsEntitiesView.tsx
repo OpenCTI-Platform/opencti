@@ -36,7 +36,7 @@ interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
   currentView: string;
 }
 
-export const entityStixCoreRelationshipsIndicatorsEntitiesViewQuery = graphql`
+const entityStixCoreRelationshipsIndicatorsEntitiesViewQuery = graphql`
   query EntityStixCoreRelationshipsIndicatorsEntitiesViewQuery(
     $search: String
     $count: Int!
@@ -57,7 +57,7 @@ export const entityStixCoreRelationshipsIndicatorsEntitiesViewQuery = graphql`
   }
 `;
 
-export const entityStixCoreRelationshipsIndicatorsEntitiesViewFragment = graphql`
+const entityStixCoreRelationshipsIndicatorsEntitiesViewFragment = graphql`
   fragment EntityStixCoreRelationshipsIndicatorsEntitiesView_data on Query
   @argumentDefinitions(
     search: { type: "String" }
@@ -91,7 +91,7 @@ export const entityStixCoreRelationshipsIndicatorsEntitiesViewFragment = graphql
   }
 `;
 
-export const entityStixCoreRelationshipsIndicatorsEntitiesViewLineFragment = graphql`
+const entityStixCoreRelationshipsIndicatorsEntitiesViewLineFragment = graphql`
   fragment EntityStixCoreRelationshipsIndicatorsEntitiesViewLine_node on Indicator {
     id
     entity_type

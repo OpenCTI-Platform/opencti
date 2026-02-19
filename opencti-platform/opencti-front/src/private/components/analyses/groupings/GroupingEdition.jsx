@@ -6,7 +6,7 @@ import { groupingEditionOverviewFocus } from './GroupingEditionOverview';
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-export const groupingEditionQuery = graphql`
+const groupingEditionQuery = graphql`
   query GroupingEditionContainerQuery($id: String!) {
     grouping(id: $id) {
       ...GroupingEditionContainer_grouping

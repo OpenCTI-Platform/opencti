@@ -8,7 +8,7 @@ import { JsonMapperLines_jsonMapper$key } from '@components/data/jsonMapper/__ge
 import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 
-export const jsonMapperLinesFragment = graphql`
+const jsonMapperLinesFragment = graphql`
   fragment JsonMapperLines_jsonMapper on Query
   @argumentDefinitions(
     count: { type: "Int", defaultValue: 200 }

@@ -3,11 +3,11 @@ import { UserContext } from '../hooks/useAuth';
 import locale from '../BrowserLanguage';
 import { aiLanguage } from '../../components/AppIntlProvider';
 
-export const aiName = 'XTM AI';
+const aiName = 'XTM AI';
 
-export const aiUrl = 'https://filigran.io';
+const aiUrl = 'https://filigran.io';
 
-export const aiRotatingTexts = [
+const aiRotatingTexts = [
   'Gathering data',
   'Computing trends and statistics',
   'Inferring facts',

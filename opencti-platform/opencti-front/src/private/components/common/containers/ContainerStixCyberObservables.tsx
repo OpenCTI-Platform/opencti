@@ -59,7 +59,7 @@ const containerStixCyberObservableLineFragment = graphql`
     }
 `;
 
-export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
+const ContainerStixCyberObservablesLinesSearchQuery = graphql`
   query ContainerStixCyberObservablesLinesSearchQuery(
     $id: String!
     $search: String
@@ -114,7 +114,7 @@ export const ContainerStixCyberObservablesLinesSearchQuery = graphql`
   }
 `;
 
-export const containerStixCyberObservablesLinesFragment = graphql`
+const containerStixCyberObservablesLinesFragment = graphql`
   fragment ContainerStixCyberObservablesLines_data on Query
   @argumentDefinitions(
     id: { type: "String!" }
@@ -158,7 +158,7 @@ export const containerStixCyberObservablesLinesFragment = graphql`
   }
 `;
 
-export const containerStixCyberObservablesLinesQuery = graphql`
+const containerStixCyberObservablesLinesQuery = graphql`
   query ContainerStixCyberObservablesLinesPaginationQuery(
     $id: String!
     $search: String

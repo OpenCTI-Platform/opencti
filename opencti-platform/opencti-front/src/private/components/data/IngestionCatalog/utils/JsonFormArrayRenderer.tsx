@@ -5,7 +5,7 @@ import { Autocomplete, Box, Chip, TextField, Typography } from '@mui/material';
 import { useFormatter } from '../../../../../components/i18n';
 import { isNotEmptyField } from '../../../../../utils/utils';
 
-export const JsonFormArrayRenderer = (props: ControlProps) => {
+const JsonFormArrayRenderer = (props: ControlProps) => {
   const {
     data,
     handleChange,

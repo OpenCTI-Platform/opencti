@@ -31,7 +31,7 @@ export const addAttackPatternsLinesQuery = graphql`
   }
 `;
 
-export const addAttackPatternsLinesFragment = graphql`
+const addAttackPatternsLinesFragment = graphql`
   fragment AddAttackPatternsLinesToDataComponent_data on Query
   @argumentDefinitions(
     search: { type: "String" }

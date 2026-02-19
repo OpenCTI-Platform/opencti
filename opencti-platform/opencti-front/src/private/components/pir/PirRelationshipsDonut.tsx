@@ -23,7 +23,7 @@ import { QueryRenderer } from '../../../relay/environment';
 import { buildFiltersAndOptionsForWidgets } from '../../../utils/filters/filtersUtils';
 import type { PirWidgetDataSelection } from '../../../utils/widget/widget';
 
-export const pirRelationshipsDonutsDistributionQuery = graphql`
+const pirRelationshipsDonutsDistributionQuery = graphql`
   query PirRelationshipsDonutDistributionQuery(
     $pirId: ID!
     $field: String!

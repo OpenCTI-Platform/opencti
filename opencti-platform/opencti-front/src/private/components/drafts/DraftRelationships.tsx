@@ -150,7 +150,7 @@ const draftRelationshipsLinesQuery = graphql`
     }
 `;
 
-export const draftRelationshipsLinesFragment = graphql`
+const draftRelationshipsLinesFragment = graphql`
     fragment DraftRelationshipsLines_data on Query
     @argumentDefinitions(
         draftId: { type: "String!" }

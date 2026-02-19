@@ -58,7 +58,7 @@ const syncMutationFieldPatch = graphql`
   }
 `;
 
-export const syncEditionUserHandlingPatch = graphql`
+const syncEditionUserHandlingPatch = graphql`
   mutation SyncEditionUserHandlingMutation($id: ID!, $input: SynchronizerAddAutoUserInput!) {
       synchronizerAddAutoUser(id: $id, input: $input) {
         id

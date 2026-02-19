@@ -286,7 +286,7 @@ export const generateGreenToRedColors = (size: number) => {
   return ns.map((n) => generateGreenToRedColor(n));
 };
 
-export const parseRGBtoHex = (rgb: string) => {
+const parseRGBtoHex = (rgb: string) => {
   const [r, g, b] = rgb.replace(/[^\d,]/g, '').split(',');
   return rgbToHex(parseInt(r, 10), parseInt(g, 10), parseInt(b, 10));
 };

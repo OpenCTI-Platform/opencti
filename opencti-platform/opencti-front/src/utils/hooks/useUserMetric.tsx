@@ -9,8 +9,8 @@ import { DEFAULT_LANG, LANGUAGES } from '../BrowserLanguage';
 import { isEmptyField } from '../utils';
 import { UnitSystem } from '../../private/__generated__/RootMe_data.graphql';
 
-export const BASE_LENGTH_TYPE: Length = 'm';
-export const BASE_WEIGHT_TYPE: Mass = 'kg';
+const BASE_LENGTH_TYPE: Length = 'm';
+const BASE_WEIGHT_TYPE: Mass = 'kg';
 
 type SupportedUnitType = 'Imperial' | 'Metric';
 
@@ -19,7 +19,7 @@ type UnitType = {
   weight: Mass;
 };
 
-export const Units: { [k in SupportedUnitType]: UnitType } = {
+const Units: { [k in SupportedUnitType]: UnitType } = {
   Imperial: {
     length: '\'',
     weight: 'lb',

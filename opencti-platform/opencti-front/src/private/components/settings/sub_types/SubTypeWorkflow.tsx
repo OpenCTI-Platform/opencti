@@ -6,7 +6,6 @@ const SubTypeWorkflow = () => {
   // const { subType } = useOutletContext<{ subType: SubTypeQuery['response']['subType'] }>();
   return (
     <Grid container spacing={3}>
-
       <Grid size={{ xs: 12 }} gap={3}>
         <Card>
           {/* TODO Workflow settings component */}

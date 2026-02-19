@@ -9,7 +9,7 @@ import { intrusionSetEditionOverviewFocus } from './IntrusionSetEditionOverview'
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-export const intrusionSetEditionQuery = graphql`
+const intrusionSetEditionQuery = graphql`
   query IntrusionSetEditionContainerQuery($id: String!) {
     intrusionSet(id: $id) {
       ...IntrusionSetEditionContainer_intrusionSet

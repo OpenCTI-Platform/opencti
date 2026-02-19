@@ -35,7 +35,7 @@ interface SecretFieldControlProps {
   style?: React.CSSProperties;
 }
 
-export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
+const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
   secretInfo,
   namePrefix,
   label,

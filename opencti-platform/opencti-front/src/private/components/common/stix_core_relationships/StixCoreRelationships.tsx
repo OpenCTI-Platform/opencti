@@ -34,7 +34,7 @@ interface StixCoreRelationshipsProps {
   defaultStopTime?: string;
 }
 
-export const stixCoreRelationshipsFragment = graphql`
+const stixCoreRelationshipsFragment = graphql`
   fragment StixCoreRelationships on StixCoreRelationship {
     id
     entity_type
@@ -159,7 +159,7 @@ export const stixCoreRelationshipsFragment = graphql`
   }
 `;
 
-export const stixCoreRelationshipsLinesQuery = graphql`
+const stixCoreRelationshipsLinesQuery = graphql`
   query StixCoreRelationshipsLinesPaginationQuery(
     $search: String
     $count: Int!
@@ -180,7 +180,7 @@ export const stixCoreRelationshipsLinesQuery = graphql`
   }
 `;
 
-export const stixCoreRelationshipsLinesFragment = graphql`
+const stixCoreRelationshipsLinesFragment = graphql`
   fragment StixCoreRelationshipsLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }

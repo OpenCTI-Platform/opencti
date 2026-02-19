@@ -9,7 +9,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetListRelationships from '../../../../components/dashboard/WidgetListRelationships';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
-export const stixRelationshipsListSearchQuery = graphql`
+const stixRelationshipsListSearchQuery = graphql`
   query StixRelationshipsListSearchQuery(
     $search: String
     $fromId: [String]

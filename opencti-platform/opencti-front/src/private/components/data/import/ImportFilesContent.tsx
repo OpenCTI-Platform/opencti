@@ -18,7 +18,7 @@ import { getFileUri } from '../../../../utils/utils';
 import UploadImport from '../../../../components/UploadImport';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 
-export const workbenchLineFragment = graphql`
+const workbenchLineFragment = graphql`
   fragment ImportFilesContentFileLine_file on File {
     id
     entity_type
@@ -89,7 +89,7 @@ const importWorkbenchLinesFragment = graphql`
   }
 `;
 
-export const importFilesContentQuery = graphql`
+const importFilesContentQuery = graphql`
   query ImportFilesContentQuery(
     $count: Int,
     $cursor: ID,

@@ -24,7 +24,7 @@ const styles = () => ({
   },
 });
 
-export const noteLinesMutationRelationAdd = graphql`
+const noteLinesMutationRelationAdd = graphql`
   mutation AddNotesLinesRelationAddMutation(
     $id: ID!
     $input: StixRefRelationshipAddInput!

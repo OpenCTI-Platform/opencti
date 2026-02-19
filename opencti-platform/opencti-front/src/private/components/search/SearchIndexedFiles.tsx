@@ -73,7 +73,7 @@ const SearchIndexedFileLineFragment = graphql`
   }
 `;
 
-export const searchIndexedFilesLinesQuery = graphql`
+const searchIndexedFilesLinesQuery = graphql`
   query SearchIndexedFilesPaginationQuery(
     $search: String
     $first: Int
@@ -88,7 +88,7 @@ export const searchIndexedFilesLinesQuery = graphql`
   }
 `;
 
-export const searchIndexedFilesLinesFragment = graphql`
+const searchIndexedFilesLinesFragment = graphql`
   fragment SearchIndexedFiles_data on Query
   @argumentDefinitions(
     search: { type: "String" }

@@ -746,7 +746,7 @@ StixCoreObjectContentComponent.propTypes = {
   currentMode: PropTypes.string,
 };
 
-export const stixCoreObjectContentRefetchQuery = graphql`
+const stixCoreObjectContentRefetchQuery = graphql`
   query StixCoreObjectContentRefetchQuery($id: String!) {
     stixCoreObject(id: $id) {
       ...StixCoreObjectContent_stixCoreObject

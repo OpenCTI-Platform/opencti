@@ -36,7 +36,7 @@ export const statusEditQuery = graphql`
   }
 `;
 
-export const statusEditFragment = graphql`
+const statusEditFragment = graphql`
   fragment SubTypeWorkflowStatusEdit_subType on Status {
     id
     order

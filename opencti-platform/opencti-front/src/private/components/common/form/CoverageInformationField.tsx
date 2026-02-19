@@ -14,7 +14,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
 
-export const coverageEntityInformationMutation = graphql`
+const coverageEntityInformationMutation = graphql`
   mutation CoverageInformationFieldEntityMutation($id: ID!, $input: [EditInput]!) {
     securityCoverageFieldPatch(id: $id, input: $input) {
       coverage_information {
@@ -25,7 +25,7 @@ export const coverageEntityInformationMutation = graphql`
   }
 `;
 
-export const coverageRelationInformationMutation = graphql`
+const coverageRelationInformationMutation = graphql`
   mutation CoverageInformationFieldRelationMutation($id: ID!, $input: [EditInput]!) {
       stixCoreRelationshipEdit(id: $id) {
           fieldPatch(input: $input) {

@@ -10,7 +10,7 @@ import ItemIcon from '../../../../../components/ItemIcon';
 import { hexToRGB } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
 
-export const requestAccessFragment = graphql`
+const requestAccessFragment = graphql`
   fragment RequestAccessStatusFragment_requestAccess on RequestAccessConfiguration {
     id
     approved_status {

@@ -1,7 +1,7 @@
 import { APIRequestContext } from '@playwright/test';
 import { getGroups } from './group.data';
 
-export const getUsers = () => `
+const getUsers = () => `
   query {
     users {
       edges {

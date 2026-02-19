@@ -47,7 +47,7 @@ const styles = () => ({
   },
 });
 
-export const StixCoreRelationshipsExportCreationMutation = graphql`
+const StixCoreRelationshipsExportCreationMutation = graphql`
   mutation StixCoreRelationshipsExportCreationMutation(
     $input: StixCoreRelationshipsExportAskInput!
   ) {

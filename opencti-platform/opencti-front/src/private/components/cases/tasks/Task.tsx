@@ -9,7 +9,7 @@ import { Tasks_tasks$key } from './__generated__/Tasks_tasks.graphql';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
-export const taskFragment = graphql`
+const taskFragment = graphql`
   fragment Tasks_tasks on Task {
     id
     standard_id

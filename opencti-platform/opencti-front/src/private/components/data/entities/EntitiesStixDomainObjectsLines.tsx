@@ -151,4 +151,3 @@ const EntitiesStixDomainObjectsLines: FunctionComponent<EntitiesStixDomainObject
   );
 };
 
-export default EntitiesStixDomainObjectsLines;

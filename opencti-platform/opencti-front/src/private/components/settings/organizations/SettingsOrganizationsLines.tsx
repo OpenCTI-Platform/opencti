@@ -36,7 +36,7 @@ export const settingsOrganizationsLinesQuery = graphql`
   }
 `;
 
-export const settingsOrganizationsLinesFragment = graphql`
+const settingsOrganizationsLinesFragment = graphql`
   fragment SettingsOrganizationsLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }

@@ -9,7 +9,7 @@ import { alpha, darken, lighten } from '@mui/material';
 const EE_COLOR = '#00BD94';
 
 export const THEME_LIGHT_DEFAULT_BACKGROUND = '#ececf2';
-export const THEME_LIGHT_DEFAULT_BODY_END_GRADIENT = '#F7F7F7';
+const THEME_LIGHT_DEFAULT_BODY_END_GRADIENT = '#F7F7F7';
 export const THEME_LIGHT_DEFAULT_PRIMARY = '#0015a8';
 const THEME_LIGHT_DEFAULT_SECONDARY = '#00BD94';
 const THEME_LIGHT_DEFAULT_ACCENT = '#dfdfdf';

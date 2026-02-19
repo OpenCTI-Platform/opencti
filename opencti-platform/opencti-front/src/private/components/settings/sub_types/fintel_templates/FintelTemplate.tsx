@@ -14,7 +14,7 @@ import Loader from '../../../../../components/Loader';
 import Security from '../../../../../utils/Security';
 import { KNOWLEDGE } from '../../../../../utils/hooks/useGranted';
 
-export const fintelTemplateQuery = graphql`
+const fintelTemplateQuery = graphql`
   query FintelTemplateQuery($id: ID!, $targetType: String!) {
     entitySettingByType(targetType: $targetType) {
       id 

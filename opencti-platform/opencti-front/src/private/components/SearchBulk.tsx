@@ -12,7 +12,7 @@ import { DataTableProps } from '../../components/dataGrid/dataTableTypes';
 
 export const BULK_SEARCH_LOCAL_STORAGE_KEY = 'searchBulk';
 
-export const searchBulkLineFragment = graphql`
+const searchBulkLineFragment = graphql`
   fragment SearchBulkLine_node on StixCoreObject {
     id
     entity_type
@@ -61,7 +61,7 @@ export const searchBulkLineFragment = graphql`
   }
 `;
 
-export const searchBulkQuery = graphql`
+const searchBulkQuery = graphql`
   query SearchBulkQuery(
     $count: Int!
     $cursor: ID
@@ -84,7 +84,7 @@ export const searchBulkQuery = graphql`
   }
 `;
 
-export const searchBulkFragment = graphql`
+const searchBulkFragment = graphql`
   fragment SearchBulkQuery_data on Query
   @argumentDefinitions(
     count: { type: "Int", defaultValue: 500 }

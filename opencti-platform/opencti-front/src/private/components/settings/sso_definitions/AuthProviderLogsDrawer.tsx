@@ -10,7 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 import type { AuthProviderLogsDrawerQuery } from './__generated__/AuthProviderLogsDrawerQuery.graphql';
 import AuthProviderLogTab from './AuthProviderLogTab';
 
-export const authProviderLogsDrawerQuery = graphql`
+const authProviderLogsDrawerQuery = graphql`
   query AuthProviderLogsDrawerQuery($id: String!) {
     authenticationProvider(id: $id) {
       id

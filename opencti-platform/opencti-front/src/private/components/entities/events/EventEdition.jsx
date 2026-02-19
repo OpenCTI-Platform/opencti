@@ -9,7 +9,7 @@ import { eventEditionOverviewFocus } from './EventEditionOverview';
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-export const eventEditionQuery = graphql`
+const eventEditionQuery = graphql`
   query EventEditionContainerQuery($id: String!) {
     event(id: $id) {
       ...EventEditionContainer_event

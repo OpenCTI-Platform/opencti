@@ -7,7 +7,7 @@ import { attackPatternEditionOverviewFocus } from './AttackPatternEditionOvervie
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
 
-export const attackPatternEditionQuery = graphql`
+const attackPatternEditionQuery = graphql`
   query AttackPatternEditionContainerQuery($id: String!) {
     attackPattern(id: $id) {
       ...AttackPatternEditionContainer_attackPattern

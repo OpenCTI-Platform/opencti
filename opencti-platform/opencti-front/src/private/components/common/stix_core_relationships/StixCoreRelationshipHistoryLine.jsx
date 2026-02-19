@@ -26,7 +26,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import Transition from '../../../../components/Transition';
 
-export const StixCoreRelationshipHistoryFragment = graphql`
+const StixCoreRelationshipHistoryFragment = graphql`
   fragment StixCoreRelationshipHistoryLine_node on Log @argumentDefinitions(
     tz: {
       type: "String",

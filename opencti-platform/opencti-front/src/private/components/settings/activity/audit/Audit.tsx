@@ -49,7 +49,7 @@ const useStyles = makeStyles<Theme>(() => ({
 
 const LOCAL_STORAGE_KEY = 'audit';
 
-export const AuditCSVQuery = graphql`
+const AuditCSVQuery = graphql`
   query AuditCSVQuery(
     $search: String
     $types: [String!]

@@ -34,7 +34,7 @@ export const userMutationFieldPatch = graphql`
   }
 `;
 
-export const userEditionOverviewFocus = graphql`
+const userEditionOverviewFocus = graphql`
   mutation UserEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     userEdit(id: $id) {
       contextPatch(input: $input) {

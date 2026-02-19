@@ -40,14 +40,14 @@ export const defaultDate = (n: any) => {
   return null;
 };
 
-export const defaultType = (n: any, t: (key: string) => string) => {
+const defaultType = (n: any, t: (key: string) => string) => {
   if (n.parent_types.includes('basic-relationship')) {
     return t(`relationship_${n.entity_type}`);
   }
   return t(`entity_${n.entity_type}`);
 };
 
-export const defaultValueMarking = (n: any) => {
+const defaultValueMarking = (n: any) => {
   let def = 'Unknown';
   if (n.definition) {
     const definition = R.toPairs(n.definition);
