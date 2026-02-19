@@ -29,7 +29,8 @@
     "test:e2e:ui": "E2E_TEST=true yarn playwright test --ui --workers=1",
     "generate-test-e2e": "npx playwright codegen http://localhost:3000/",
     "test:e2e:coverage": "E2E_TEST=true E2E_COVERAGE=true yarn playwright test && yarn show-report-e2e",
-    "show-report-e2e": "start \"\" test-results/report.html && start \"\" test-results/coverage/index.html"
+    "show-report-e2e": "start \"\" test-results/report.html && start \"\" test-results/coverage/index.html",
+    "knip": "knip"
   },
   "dependencies": {
     "@analytics/google-analytics": "1.1.0",
@@ -138,7 +139,7 @@
     "@testing-library/user-event": "14.6.1",
     "@types/d3-scale": "4.0.9",
     "@types/html-to-pdfmake": "2.4.5",
-    "@types/node": "22.19.9",
+    "@types/node": "25.2.3",
     "@types/qrcode": "1.5.6",
     "@types/ramda": "0.31.1",
     "@types/react": "19.2.13",
@@ -167,6 +168,7 @@
     "http-proxy-middleware": "3.0.5",
     "i18n-auto-translation": "2.2.3",
     "jsdom": "28.0.0",
+    "knip": "5.83.1",
     "license-checker-rseidelsohn": "4.4.2",
     "monocart-reporter": "2.10.0",
     "relay-compiler": "20.1.1",
