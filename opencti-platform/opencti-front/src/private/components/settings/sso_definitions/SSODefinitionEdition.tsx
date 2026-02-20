@@ -186,7 +186,7 @@ interface SSODefinitionEditionProps {
   onClose: () => void;
   data: SSODefinitionEditionFragment$key;
   paginationOptions?: Record<string, unknown>;
-  onProviderUpdated?: () => void;
+  onProviderUpdated?: (providerId: string) => void;
 }
 
 const SSODefinitionEdition = ({
@@ -200,7 +200,7 @@ const SSODefinitionEdition = ({
   const provider = useFragment(ssoDefinitionEditionFragment, data);
 
   const handleEditCompleted = () => {
-    onProviderUpdated?.();
+    onProviderUpdated?.(provider.id);
     onClose();
   };
 

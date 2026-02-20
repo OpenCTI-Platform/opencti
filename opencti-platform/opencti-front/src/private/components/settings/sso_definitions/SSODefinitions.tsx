@@ -158,11 +158,11 @@ type SSODefinitionsPollingProps = {
   queryRef: PreloadedQuery<SSODefinitionsLinesPaginationQueryType>;
   loadQuery: (variables: SSODefinitionsLinesPaginationQuery$variables, opts?: { fetchPolicy?: 'store-and-network' }) => void;
   queryPaginationOptions: SSODefinitionsLinesPaginationQuery$variables;
-  /** Timestamp (ms) when a provider was last updated; for 5s after we poll every second. */
   lastProviderUpdateAt: number | null;
+  onRefreshQuery: () => void;
 };
 
-const SSODefinitionsPolling = ({ queryRef, loadQuery, queryPaginationOptions, lastProviderUpdateAt }: SSODefinitionsPollingProps) => {
+const SSODefinitionsPolling = ({ queryRef, loadQuery, queryPaginationOptions, lastProviderUpdateAt, onRefreshQuery }: SSODefinitionsPollingProps) => {
   const queryData = usePreloadedQuery(ssoDefinitionsLinesQuery, queryRef);
   const pollingData = useFragment(ssoDefinitionsPollingFragment, queryData) as SSODefinitionsPolling_data$data | null;
   const edges = pollingData?.authenticationProviders?.edges ?? [];
@@ -181,14 +181,16 @@ const SSODefinitionsPolling = ({ queryRef, loadQuery, queryPaginationOptions, la
       const shouldFetchFast = inPostUpdateWindow || hasAnyStarting;
       if (shouldFetchFast) {
         lastSlowFetchRef.current = 0;
+        onRefreshQuery();
         loadQuery(queryPaginationOptions, { fetchPolicy: 'store-and-network' });
       } else if (lastSlowFetchRef.current === 0 || now - lastSlowFetchRef.current >= POLL_INTERVAL_SLOW_MS) {
         lastSlowFetchRef.current = now;
+        onRefreshQuery();
         loadQuery(queryPaginationOptions, { fetchPolicy: 'store-and-network' });
       }
     }, POLL_INTERVAL_FAST_MS);
     return () => clearInterval(id);
-  }, [loadQuery, hasAnyStarting, lastProviderUpdateAt, queryPaginationOptions]);
+  }, [loadQuery, hasAnyStarting, lastProviderUpdateAt, queryPaginationOptions, onRefreshQuery]);
   return null;
 };
 
@@ -201,10 +203,16 @@ const SSODefinitions = () => {
   const [editingSSO, setEditingSSO] = useState<EditingSSO | null>(null);
   const [logsDrawerProviderId, setLogsDrawerProviderId] = useState<string | null>(null);
   const [lastProviderUpdateAt, setLastProviderUpdateAt] = useState<number | null>(null);
+  const [providerIdsShowingAsStarting, setProviderIdsShowingAsStarting] = useState<Set<string>>(new Set());
   const { settings } = useAuth();
 
-  const handleProviderUpdated = React.useCallback(() => {
+  const handleProviderUpdated = React.useCallback((providerId: string) => {
     setLastProviderUpdateAt(Date.now());
+    setProviderIdsShowingAsStarting((prev) => new Set(prev).add(providerId));
+  }, []);
+
+  const clearProviderIdsShowingAsStarting = React.useCallback(() => {
+    setProviderIdsShowingAsStarting(new Set());
   }, []);
 
   const initialValues = {
@@ -249,36 +257,39 @@ const SSODefinitions = () => {
       label: t_i18n('Status'),
       percentWidth: 15,
       isSortable: true,
-      render: (node: { runtime_status: 'ACTIVE' | 'DISABLED' | 'ERROR' | 'STARTING'; enabled: boolean }) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <ItemBoolean
-            label={
-              node.runtime_status === 'ACTIVE'
-                ? t_i18n('Active')
-                : node.runtime_status === 'STARTING'
-                  ? t_i18n('Starting')
-                  : node.runtime_status === 'ERROR'
-                    ? t_i18n('Error')
-                    : t_i18n('Disabled')
-            }
-            status={
-              node.runtime_status === 'ACTIVE'
-                ? true
-                : node.runtime_status === 'ERROR'
-                  ? 'error'
-                  : node.runtime_status === 'DISABLED'
-                    ? 'disabled'
-                    : undefined
-            }
-            tooltip={
-              node.runtime_status === 'ERROR'
-                ? t_i18n('Provider is enabled but failed to start. Check configuration or logs.')
-                : undefined
-            }
-          />
-          {!isEnterpriseEdition && <span onClick={(e) => e.stopPropagation()}><EEChip /></span>}
-        </Box>
-      ),
+      render: (node: { id: string; runtime_status: 'ACTIVE' | 'DISABLED' | 'ERROR' | 'STARTING'; enabled: boolean }) => {
+        const status = providerIdsShowingAsStarting.has(node.id) ? 'STARTING' : node.runtime_status;
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ItemBoolean
+              label={
+                status === 'ACTIVE'
+                  ? t_i18n('Active')
+                  : status === 'STARTING'
+                    ? t_i18n('Starting')
+                    : status === 'ERROR'
+                      ? t_i18n('Error')
+                      : t_i18n('Disabled')
+              }
+              status={
+                status === 'ACTIVE'
+                  ? true
+                  : status === 'ERROR'
+                    ? 'error'
+                    : status === 'DISABLED'
+                      ? 'disabled'
+                      : undefined
+              }
+              tooltip={
+                status === 'ERROR'
+                  ? t_i18n('Provider is enabled but failed to start. Check configuration or logs.')
+                  : undefined
+              }
+            />
+            {!isEnterpriseEdition && <span onClick={(e) => e.stopPropagation()}><EEChip /></span>}
+          </Box>
+        );
+      },
     },
   };
 
@@ -334,6 +345,7 @@ const SSODefinitions = () => {
                 loadQuery={loadQuery as (vars: SSODefinitionsLinesPaginationQuery$variables, opts?: { fetchPolicy?: 'store-and-network' }) => void}
                 queryPaginationOptions={queryPaginationOptions as unknown as SSODefinitionsLinesPaginationQuery$variables}
                 lastProviderUpdateAt={lastProviderUpdateAt}
+                onRefreshQuery={clearProviderIdsShowingAsStarting}
               />
               <DataTable
                 dataColumns={dataColumns}
