@@ -88,6 +88,10 @@ export const operatorDescription = {
     description:
       'Filters for values falling within the specified boundaries or range (e.g., between two numbers or dates).',
   },
+  [FilterOperator.OnlyEqTo]: {
+    description:
+      'Filters for all values exactly matching the given criterion.',
+  },
 };
 
 export const operatorKeys = Object.values(FilterOperator);
