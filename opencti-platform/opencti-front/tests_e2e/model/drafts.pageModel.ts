@@ -59,7 +59,7 @@ export default class DraftsPage {
   }
 
   async addEntityToDraft({ type, name }: { type: string; name: string }) {
-    await this.page.getByRole('button', { name: /Create entity/i }).click();
+    await this.page.getByRole('button', { name: 'Create entity' }).click();
     await this.createEntityPage.entityTypeField.selectOption(type);
     await this.createEntityPage.nameField.fill(name);
     return this.createEntityPage.getCreateButton().click();
@@ -71,11 +71,11 @@ export default class DraftsPage {
 
   // Click the "remove from draft" icon in the dataTable toolbar
   async clickRemoveFromDraftToolbar() {
-    await this.page.getByRole('button', { name: /Remove from draft/i }).click();
+    await this.page.getByRole('button', { name: 'Remove from draft' }).click();
   }
 
   // Confirm removal in the popup by clicking "launch"
   async confirmRemoveEntities() {
-    await this.page.getByRole('button', { name: /Launch/i }).click();
+    await this.page.getByRole('button', { name: 'Launch' }).click();
   }
 }
