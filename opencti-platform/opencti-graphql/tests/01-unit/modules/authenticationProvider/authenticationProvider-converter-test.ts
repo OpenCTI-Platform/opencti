@@ -271,7 +271,7 @@ describe('convertOidcEnvConfig', () => {
 
     expect(result.configuration.issuer).toBe('https://idp.example.com');
     expect(result.configuration.client_id).toBe('my-client');
-    expect(result.configuration.client_secret_cleartext).toBe('my-secret');
+    expect(result.configuration.client_secret?.new_value_cleartext).toBe('my-secret');
     expect(result.configuration.scopes).toStrictEqual(['openid', 'email', 'profile']);
     expect(result.configuration.logout_remote).toBe(false);
     expect(result.configuration.use_proxy).toBe(false);
@@ -645,7 +645,7 @@ describe('convertSamlEnvConfig', () => {
     expect(result.configuration.issuer).toBe('openctisaml');
     expect(result.configuration.entry_point).toBe('https://idp.example.com/saml');
     expect(result.configuration.idp_certificate).toBe('MIID...cert');
-    expect(result.configuration.private_key_cleartext).toBeNull();
+    expect(result.configuration.private_key?.new_value_cleartext).toBeNull();
     expect(result.configuration.logout_remote).toBe(false);
     expect(result.configuration.want_assertions_signed).toBe(false);
     expect(result.configuration.want_authn_response_signed).toBe(false);
@@ -702,7 +702,7 @@ describe('convertSamlEnvConfig', () => {
     };
 
     const result = convertSamlEnvConfig('saml', entry);
-    expect(result.configuration.private_key_cleartext).toBe(
+    expect(result.configuration.private_key?.new_value_cleartext).toBe(
       '-----BEGIN RSA PRIVATE KEY-----\nXXX\n-----END RSA PRIVATE KEY-----',
     );
   });
@@ -823,7 +823,7 @@ describe('convertSamlEnvConfig', () => {
     expect(result.configuration.disable_requested_authn_context).toBe(true);
     expect(result.configuration.disable_request_acs_url).toBe(false);
     expect(result.configuration.skip_request_compression).toBe(false);
-    expect(result.configuration.decryption_pvk_cleartext).toContain('BEGIN PRIVATE KEY');
+    expect(result.configuration.decryption_pvk?.new_value_cleartext).toContain('BEGIN PRIVATE KEY');
     expect(result.configuration.decryption_cert).toContain('BEGIN CERTIFICATE');
 
     // Verify none of these appear in extra_conf
@@ -977,7 +977,7 @@ describe('convertLdapEnvConfig', () => {
 
     expect(result.configuration.url).toBe('ldap://myserver:389');
     expect(result.configuration.bind_dn).toBe('CN=admin,DC=example,DC=com');
-    expect(result.configuration.bind_credentials_cleartext).toBe('password123');
+    expect(result.configuration.bind_credentials?.new_value_cleartext).toBe('password123');
     expect(result.configuration.search_base).toBe('OU=users,DC=example,DC=com');
     expect(result.configuration.search_filter).toBe('(cn={{username}})');
     expect(result.configuration.allow_self_signed).toBe(false);
@@ -1007,7 +1007,7 @@ describe('convertLdapEnvConfig', () => {
     };
 
     const result = convertLdapEnvConfig('ldap', entry);
-    expect(result.configuration.bind_credentials_cleartext).toBe('12345');
+    expect(result.configuration.bind_credentials?.new_value_cleartext).toBe('12345');
   });
 
   it('should default search_filter when not provided', () => {
@@ -1381,7 +1381,7 @@ describe('Real-world configuration scenarios', () => {
     expect(result.configuration.issuer).toBe('https://opencti.example.com');
     expect(result.configuration.entry_point).toBe('https://login.microsoftonline.com/tenant-id/saml2');
     expect(result.configuration.idp_certificate).toBe('AZURE_IDP_CERT_HERE');
-    expect(result.configuration.private_key_cleartext).toBe('SP_PRIVATE_KEY');
+    expect(result.configuration.private_key?.new_value_cleartext).toBe('SP_PRIVATE_KEY');
     expect(result.configuration.signing_cert).toBe('SP_SIGNING_CERT');
     expect(result.configuration.want_assertions_signed).toBe(true);
     expect(result.configuration.want_authn_response_signed).toBe(true);
@@ -1440,7 +1440,7 @@ describe('Real-world configuration scenarios', () => {
     expect(result.base.name).toBe('Login with Active Directory');
     expect(result.configuration.url).toBe('ldaps://dc.example.com:636');
     expect(result.configuration.bind_dn).toBe('CN=ServiceAccount,OU=Service,DC=example,DC=com');
-    expect(result.configuration.bind_credentials_cleartext).toBe('ServiceAccountPassword!');
+    expect(result.configuration.bind_credentials?.new_value_cleartext).toBe('ServiceAccountPassword!');
     expect(result.configuration.search_base).toBe('OU=Users,DC=example,DC=com');
     expect(result.configuration.search_filter).toBe('(sAMAccountName={{username}})');
     expect(result.configuration.group_base).toBe('OU=Groups,DC=example,DC=com');
@@ -1507,7 +1507,7 @@ describe('Real-world configuration scenarios', () => {
     expect(result.configuration.issuer).toBe('openctisaml_all_types');
     expect(result.configuration.entry_point).toBe('http://localhost:7777/realms/master/protocol/saml');
     expect(result.configuration.idp_certificate).toBe('totallyFakeCert3');
-    expect(result.configuration.private_key_cleartext).toBe('FAKE_PRIVATE_KEY');
+    expect(result.configuration.private_key?.new_value_cleartext).toBe('FAKE_PRIVATE_KEY');
     expect(result.configuration.want_assertions_signed).toBe(true);
     expect(result.configuration.want_authn_response_signed).toBe(false);
 
@@ -1521,7 +1521,7 @@ describe('Real-world configuration scenarios', () => {
     expect(result.configuration.organizations_mapping.default_organizations).toStrictEqual(['OpenCTI']);
 
     // Promoted fields should be first-class
-    expect(result.configuration.decryption_pvk_cleartext).toContain('BEGIN PRIVATE KEY');
+    expect(result.configuration.decryption_pvk?.new_value_cleartext).toContain('BEGIN PRIVATE KEY');
     expect(result.configuration.disable_requested_authn_context).toBe(true);
     expect(result.configuration.signature_algorithm).toBe('sha256');
 
@@ -1563,7 +1563,7 @@ describe('Real-world configuration scenarios', () => {
     expect(result.configuration.issuer).toBe('http://localhost:9999/realms/master');
     expect(result.configuration.client_id).toBe('openctioid');
     // Missing secret gets a 'default' placeholder — migration must not fail on missing fields
-    expect(result.configuration.client_secret_cleartext).toBe('default');
+    expect(result.configuration.client_secret?.new_value_cleartext).toBe('default');
   });
 });
 
