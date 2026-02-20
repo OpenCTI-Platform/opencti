@@ -1,5 +1,5 @@
 import { auditsDistribution, auditsMultiTimeSeries, auditsNumber, auditsTimeSeries, findAudits, findHistory, logsWorkerConfig, findById, findAuditById } from '../domain/log';
-import { storeLoadById } from '../database/middleware-loader';
+import { internalFindByIds } from '../database/middleware-loader';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { logFrontend } from '../config/conf';
 import { loadCreator } from '../database/members';
@@ -25,12 +25,12 @@ const logResolvers = {
     event_scope: (log, _, __) => log.event_scope ?? log.event_type, // Retro compatibility
   },
   ContextData: {
-    external_references: (data, _, context) => {
-      const refPromises = Promise.all(
-        (data.references || []).map((id) => storeLoadById(context, context.user, id, ENTITY_TYPE_EXTERNAL_REFERENCE)),
-      ).then((refs) => refs.filter((element) => element !== undefined));
-      return Promise.resolve(data.external_references ?? [])
-        .then((externalReferences) => refPromises.then((refs) => externalReferences.concat(refs)));
+    external_references: async (data, _, context) => {
+      const referenceIds = data.references || [];
+      const refs = referenceIds.length > 0
+        ? await internalFindByIds(context, context.user, referenceIds, { type: ENTITY_TYPE_EXTERNAL_REFERENCE })
+        : [];
+      return [...(data.external_references ?? []), ...refs];
     },
   },
   Mutation: {

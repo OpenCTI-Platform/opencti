@@ -13,9 +13,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
-interface FeedbacksProps {
-  inputValue?: string;
-}
+type FeedbacksProps = Record<string, never>;
 
 const feedbackFragment = graphql`
   fragment FeedbacksLine_node on Feedback {
@@ -184,7 +182,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
   } as UsePreloadedPaginationFragment<FeedbacksLinesPaginationQuery>;
 
   return (
-    <span data-testid="feedback-page">
+    <div data-testid="feedback-page">
       <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Feedbacks'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -198,7 +196,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
           exportContext={{ entity_type: 'Feedback' }}
         />
       )}
-    </span>
+    </div>
   );
 };
 

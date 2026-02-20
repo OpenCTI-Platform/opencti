@@ -190,9 +190,9 @@ const SecurityCoverages: FunctionComponent = () => {
 
   return (
     <ExportContextProvider>
-      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Security coverages'), current: true }]} />
-      {queryRef && (
-        <div data-testid="security-coverages-page">
+      <div data-testid="security-coverages-page">
+        <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Security coverages'), current: true }]} />
+        {queryRef && (
           <DataTable
             dataColumns={dataColumns}
             resolvePath={(data: SecurityCoveragesLines_data$data) => data.securityCoverages?.edges?.map((n) => n.node)}
@@ -209,8 +209,8 @@ const SecurityCoverages: FunctionComponent = () => {
               </Security>
             )}
           />
-        </div>
-      )}
+        )}
+      </div>
     </ExportContextProvider>
   );
 };

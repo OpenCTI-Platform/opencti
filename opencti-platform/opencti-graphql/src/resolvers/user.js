@@ -148,6 +148,7 @@ const userResolvers = {
       const { store } = applicationSession;
       const userSessionId = id.split(store.prefix)[1]; // Prefix must be removed on this case
       const kill = await killSession(userSessionId);
+      if (!kill?.session?.user) return id;
       const { user } = kill.session;
       const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.name : user.user_email;
       await publishUserAction({
@@ -163,6 +164,7 @@ const userResolvers = {
     otpUserDeactivation: (_, { id }, context) => otpUserDeactivation(context, context.user, id),
     userSessionsKill: async (_, { id }, context) => {
       const user = await internalLoadById(context, context.user, id);
+      if (!user) return [];
       const sessions = await killUserSessions(id);
       const sessionIds = sessions.map((s) => s.sessionId);
       const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.name : user.user_email;

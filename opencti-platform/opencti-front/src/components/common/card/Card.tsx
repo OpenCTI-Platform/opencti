@@ -1,5 +1,5 @@
 import { PropsWithChildren, ReactNode } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Stack, SxProps, Card as CardMui, CardActionArea, StackProps } from '@mui/material';
 import CardTitle from './CardTitle';
 import { Theme } from '../../Theme';

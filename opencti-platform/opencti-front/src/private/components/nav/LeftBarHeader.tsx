@@ -1,7 +1,7 @@
 import IconButton from '@common/button/IconButton';
 import { ArrowDropDown, OpenInNew } from '@mui/icons-material';
 import { Box, Divider, List, ListItemButton, ListItemIcon, Popover, Tooltip } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../components/i18n';
@@ -60,6 +60,7 @@ export const PopoverListItem: React.FC<PopoverListItemProps> = ({
         >
           <img
             src={logoSrc}
+            alt="OpenCTI"
             style={{
               width: '100%',
               height: 'auto',

@@ -76,7 +76,7 @@ const Dialog = ({
         </DialogTitle>
       )}
 
-      <DialogContent {...contentProps} sx={{ pY: 0, pX: 3 }}>
+      <DialogContent {...contentProps} sx={{ py: 0, px: 3 }}>
         {children}
       </DialogContent>
     </MUIDialog>

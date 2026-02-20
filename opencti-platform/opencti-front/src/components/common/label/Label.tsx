@@ -1,6 +1,6 @@
 import { PropsWithChildren, ReactNode } from 'react';
 import { Stack, SxProps, Typography } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../../Theme';
 import { PropsWithSx } from '../../../utils/props';
 
@@ -32,7 +32,7 @@ const Label = ({
     lineHeight: '21px',
     fontSize: '12px',
     fontWeight: 400,
-    fontFamily: '"IBM Plex Sans", sans-serif',
+    fontFamily: theme.typography.fontFamily,
     ...titleStyle,
   };
 

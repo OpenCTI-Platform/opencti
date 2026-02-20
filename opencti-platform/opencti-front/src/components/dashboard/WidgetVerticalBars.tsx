@@ -44,7 +44,7 @@ const WidgetVerticalBars = ({
       hasLegend,
       interval && !['day', 'week'].includes(interval) ? 'dataPoints' : undefined,
     ) as ApexOptions;
-  }, [interval, isStacked, hasLegend]);
+  }, [interval, isStacked, hasLegend, theme]);
 
   return (
     <Chart

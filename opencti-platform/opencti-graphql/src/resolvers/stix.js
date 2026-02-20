@@ -49,7 +49,10 @@ export const loadThroughDenormalized = async (context, user, element, inputName,
       }
       return redactedData;
     }
-    return data ? { ...data, name: REDACTED_USER.name, user_email: REDACTED_USER.user_email } : data;
+    if (data && data.entity_type === ENTITY_TYPE_USER) {
+      return { ...data, name: REDACTED_USER.name, user_email: REDACTED_USER.user_email };
+    }
+    return data;
   }
   // Return sorted elements if needed
   if (args.sortBy) {

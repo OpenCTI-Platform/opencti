@@ -1,6 +1,6 @@
 import { PropsWithChildren, ReactNode } from 'react';
 import { Stack, StackProps, SxProps, Typography } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../../Theme';
 
 interface CardTitleProps extends PropsWithChildren {
@@ -31,7 +31,7 @@ const CardTitle = ({
     lineHeight: '19px',
     fontSize: '12px',
     fontWeight: 400,
-    fontFamily: '"IBM Plex Sans", sans-serif',
+    fontFamily: theme.typography.fontFamily,
   };
 
   return (

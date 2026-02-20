@@ -21,7 +21,7 @@ import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../schema/general';
-import { findById as findStatusById, getTypeStatuses } from '../domain/status';
+import { findById as findStatusById, isGlobalWorkflowEnabled } from '../domain/status';
 import { stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
 import {
@@ -86,10 +86,7 @@ const stixCoreRelationshipResolvers = {
     editContext: (rel) => fetchEditContext(rel.id),
     toStix: (rel, args, context) => stixLoadByIdStringify(context, context.user, rel.id, args),
     status: (entity, _, context) => (entity.x_opencti_workflow_id ? findStatusById(context, context.user, entity.x_opencti_workflow_id) : null),
-    workflowEnabled: async (__, _, context) => {
-      const statusesEdges = await getTypeStatuses(context, context.user, ABSTRACT_STIX_CORE_RELATIONSHIP);
-      return statusesEdges.edges.length > 0;
-    },
+    workflowEnabled: (__, _, context) => isGlobalWorkflowEnabled(context, context.user, ABSTRACT_STIX_CORE_RELATIONSHIP),
     // Figures
     containersNumber: (rel, args, context) => numberOfContainersForObject(context, context.user, { ...args, objectId: rel.id }),
   },

@@ -49,7 +49,7 @@ const WidgetDonut = ({
       false,
       chartColors,
     ) as ApexOptions;
-  }, [data, groupBy]);
+  }, [data, groupBy, theme]);
 
   return (
     <Chart

@@ -21,7 +21,7 @@ import {
   stixDomainObjectsTimeSeries,
   stixDomainObjectsTimeSeriesByAuthor,
 } from '../domain/stixDomainObject';
-import { findById as findStatusById, findByType } from '../domain/status';
+import { findById as findStatusById, isGlobalWorkflowEnabled } from '../domain/status';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { stixDomainObjectOptions as StixDomainObjectsOptions } from '../schema/stixDomainObjectOptions';
@@ -63,10 +63,7 @@ const stixDomainObjectResolvers = {
     avatar: (stixDomainObject) => stixDomainObjectAvatar(stixDomainObject),
     status: (stixDomainObject, _, context) => (stixDomainObject.x_opencti_workflow_id ? findStatusById(context, context.user, stixDomainObject.x_opencti_workflow_id) : null),
     objectAssignee: async (stixDomainObject, _, context) => loadAssignees(context, context.user, stixDomainObject),
-    workflowEnabled: async (stixDomainObject, _, context) => {
-      const statusesType = await findByType(context, context.user, stixDomainObject.entity_type);
-      return statusesType.length > 0;
-    },
+    workflowEnabled: (stixDomainObject, _, context) => isGlobalWorkflowEnabled(context, context.user, stixDomainObject.entity_type),
     pirInformation: (stixDomainObject, { pirId }, context) => stixDomainObjectPirInformation(context, context.user, stixDomainObject, pirId),
   },
   Mutation: {

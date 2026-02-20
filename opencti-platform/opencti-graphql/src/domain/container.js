@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { LRUCache } from 'lru-cache';
 import { v4 as uuidv4 } from 'uuid';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { distributionEntities, fullEntitiesOrRelationsList, timeSeriesEntities } from '../database/middleware';
@@ -42,7 +43,7 @@ import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
 import { toB64 } from '../utils/base64';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
-const aiResponseCache = {};
+const aiResponseCache = new LRUCache({ max: 500, ttl: 1000 * 60 * 60 });
 
 export const findById = async (context, user, containerId) => {
   return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);
@@ -203,7 +204,7 @@ export const containersObjectsOfObject = async (context, user, { id, types, filt
   let hasMoreThanMaxObject = false;
   let loadedReportsCount = 0;
   for (let i = 0; i < containers.length; i += 1) {
-    const currentContainer = containers[0];
+    const currentContainer = containers[i];
     const currentContainerObjectIds = currentContainer[buildRefRelationKey(RELATION_OBJECT)].flat();
     objectIds = R.uniq(objectIds.concat(...currentContainerObjectIds));
     loadedReportsCount += 1;
@@ -325,10 +326,11 @@ export const aiSummary = async (context, user, args) => {
   const types = hasTypesArgs ? args.types.filter((type) => isStixDomainObjectContainer(type)) : [ENTITY_TYPE_CONTAINER];
   const finalArgs = { ...args, first: args.first && args.first <= 10 ? args.first : 10 };
   const identifier = toB64(R.dissoc('busId', finalArgs));
-  if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
+  const cachedSummary = aiResponseCache.get(identifier);
+  if (!forceRefresh && cachedSummary && utcDate(cachedSummary.updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
     logApp.info('Response found in cache', { busId });
-    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: busId, content: aiResponseCache[identifier].result }, user);
-    return aiResponseCache[identifier];
+    await notify(BUS_TOPICS[AI_BUS].EDIT_TOPIC, { bus_id: busId, content: cachedSummary.result }, user);
+    return cachedSummary;
   }
   logApp.info('Response not found in cache, querying LLM', { busId });
   const content = [];
@@ -407,6 +409,6 @@ export const aiSummary = async (context, user, args) => {
     topics: topics.split(',').map((n) => n.trim()),
     updated_at: now(),
   };
-  aiResponseCache[identifier] = summary;
+  aiResponseCache.set(identifier, summary);
   return summary;
 };

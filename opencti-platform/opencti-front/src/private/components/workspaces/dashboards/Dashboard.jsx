@@ -320,7 +320,7 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
               key={widget.id}
               data-grid={widgetsLayouts[widget.id]}
               style={{
-                display: 'relative',
+                position: 'relative',
               }}
             >
               <ErrorBoundary>

@@ -1,6 +1,6 @@
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import { alpha, Collapse, ListItemIcon, ListItemText, MenuItem, MenuList, Popover, SxProps, Tooltip } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import React, { useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Theme } from '../../../components/Theme';
@@ -296,4 +296,4 @@ const LeftBarItem: React.FC<LeftBarItemProps> = ({
   );
 };
 
-export default LeftBarItem;
+export default React.memo(LeftBarItem);

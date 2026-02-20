@@ -3,7 +3,7 @@ import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { Box } from '@mui/material';
@@ -112,16 +112,24 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
     { value: 'delete', label: t_i18n('Deletion') },
   ];
 
+  const isInitialMount = useRef(true);
   useEffect(() => {
-    commitFieldPatch({
-      variables: {
-        id: trigger.id,
-        input: {
-          key: 'filters',
-          value: instanceTrigger ? serializeFilterGroupForBackend(instanceTriggerFilters) : serializeFilterGroupForBackend(filters),
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return undefined;
+    }
+    const timeoutId = setTimeout(() => {
+      commitFieldPatch({
+        variables: {
+          id: trigger.id,
+          input: {
+            key: 'filters',
+            value: instanceTrigger ? serializeFilterGroupForBackend(instanceTriggerFilters) : serializeFilterGroupForBackend(filters),
+          },
         },
-      },
-    });
+      });
+    }, 500);
+    return () => clearTimeout(timeoutId);
   }, [filters, instanceTriggerFilters]);
 
   const onSubmit: FormikConfig<TriggerEditionFormValues>['onSubmit'] = (

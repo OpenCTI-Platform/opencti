@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Button as MuiButton, ButtonProps as MuiButtonProps } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { ButtonColorKey, ButtonIntent, ButtonSize, GradientVariant } from './Button.types';
 import { getColorDefinitions, getGradientColors, getSizeConfig } from './Button.utils';
 import type { Theme } from '../../Theme';
@@ -86,63 +86,67 @@ const Button: React.FC<CustomButtonProps> = ({
     }
   };
 
-  const currentColorKey = determineColorKey();
-  const colors = getColorDefinitions(theme);
-  const currentColor = colors[currentColorKey];
+  const combinedSx = useMemo(() => {
+    const currentColorKey = determineColorKey();
+    const colors = getColorDefinitions(theme);
+    const currentColor = colors[currentColorKey];
 
-  const isGradient = gradient || variant === 'extra';
+    const isGradientLocal = gradient || variant === 'extra';
 
-  const gradientColors = getGradientColors(
-    theme,
-    isGradient,
-    gradientVariant,
-    currentColor,
-    gradientStartColor,
-    gradientEndColor,
-  );
+    const gradientColorsLocal = getGradientColors(
+      theme,
+      isGradientLocal,
+      gradientVariant,
+      currentColor,
+      gradientStartColor,
+      gradientEndColor,
+    );
 
-  const sizeConfig = getSizeConfig(theme, size, iconOnly);
+    const sizeConfig = getSizeConfig(theme, size, iconOnly);
 
-  const styleParams = {
-    theme,
-    currentColor,
-    gradientColors,
-    gradientAngle,
-    sizeConfig,
-    selected,
-  };
+    const styleParams = {
+      theme,
+      currentColor,
+      gradientColors: gradientColorsLocal,
+      gradientAngle,
+      sizeConfig,
+      selected,
+    };
 
-  const baseSx = createBaseStyles(styleParams);
+    const baseSx = createBaseStyles(styleParams);
 
-  const variantSx = (() => {
+    let variantSx;
     switch (variant) {
       case 'primary':
-        return gradient
+        variantSx = gradient
           ? createPrimaryGradientStyles(styleParams)
           : createPrimarySolidStyles(styleParams);
-
+        break;
       case 'secondary':
-        return gradient
+        variantSx = gradient
           ? createSecondaryGradientStyles(styleParams)
           : createSecondarySolidStyles(styleParams);
+        break;
       case 'tertiary':
-        return gradient
+        variantSx = gradient
           ? createTertiaryGradientStyles(styleParams)
           : createTertiarySolidStyles(styleParams);
-
+        break;
       case 'extra':
-        return createExtraStyles(styleParams);
-
+        variantSx = createExtraStyles(styleParams);
+        break;
       default:
-        return {};
+        variantSx = {};
     }
-  })();
 
-  const combinedSx = [
-    baseSx,
-    variantSx,
-    ...(Array.isArray(externalSx) ? externalSx : [externalSx]),
-  ];
+    return [
+      baseSx,
+      variantSx,
+      ...(Array.isArray(externalSx) ? externalSx : [externalSx]),
+    ];
+  }, [theme, variant, gradient, gradientVariant, gradientStartColor, gradientEndColor, gradientAngle, size, iconOnly, selected, externalSx]);
+
+  const isGradient = gradient || variant === 'extra';
 
   // Wrap content for gradient
   const content = isGradient && children ? (

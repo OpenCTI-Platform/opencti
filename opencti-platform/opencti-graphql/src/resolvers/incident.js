@@ -41,11 +41,10 @@ const incidentResolvers = {
       }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
-      relationDelete: ({
-        toId,
-        relationship_type: relationshipType,
-      }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
+      relationAdd: ({ input, commitMessage, references }) => stixDomainObjectAddRelation(context, context.user, id, input, { commitMessage, references }),
+      relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => {
+        return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references });
+      },
     }),
     incidentAdd: (_, { input }, context) => addIncident(context, context.user, input),
   },
