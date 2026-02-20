@@ -4,7 +4,6 @@ import React, { FunctionComponent, useMemo, useState } from 'react';
 import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import AccessesMenu from '@components/settings/AccessesMenu';
 import Typography from '@mui/material/Typography';
 import { Box, styled } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
@@ -88,7 +87,6 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
       <>
-        <AccessesMenu />
         <Breadcrumbs
           isSensitive={isSensitive}
           elements={[
