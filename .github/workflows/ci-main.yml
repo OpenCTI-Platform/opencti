@@ -12,7 +12,7 @@ jobs:
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
         dockerfile_target: testing
-        client_python_local: true
+        is_client_python_local: true
       secrets: inherit
 
   wf-backend-test:
@@ -44,4 +44,10 @@ jobs:
       uses: ./.github/workflows/ci-license-check.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
+      secrets: inherit
+
+  wf-publish-and-deploy:
+      name: Publish and deploy
+      uses: ./.github/workflows/cd-publish-and-deploy.yml
+      needs: [wf-api-test, wf-frontend-test, wf-client-python-test, wf-license-check]
       secrets: inherit
