@@ -2561,22 +2561,25 @@ export const buildLocalMustFilter = (validFilter: any) => {
               },
             });
           } else if (operator === 'only_eq_to') {
-            const matchObject = {
-              multi_match: {
-                fields: arrayKeys.map((k) => buildFieldForQuery(k)),
-                query: values[i].toString(),
-              },
-            };
             valuesFiltering.push({
-              bool: {
-                must: [matchObject],
-                must_not: [
-                  {
-                    bool: {
-                      must_not: matchObject,
-                    },
+              script: {
+                script: {
+                  source: `
+                    def fieldValues = doc['rel_object-label.internal_id.keyword'];
+                    if (fieldValues == null || fieldValues.length == 0) return false;
+                    def filterValues = params.values;
+                    if (params.mode == 'and') {
+                      return fieldValues.length == filterValues.length && fieldValues.every(v -> filterValues.contains(v));
+                    } else if (params.mode == 'or') {
+                      return fieldValues.length == 1 && filterValues.contains(fieldValues[0]);
+                    }
+                    return false;
+                  `,
+                  params: {
+                    values,
+                    mode: localFilterMode,
                   },
-                ],
+                },
               },
             });
           } else if (operator === 'match') {
