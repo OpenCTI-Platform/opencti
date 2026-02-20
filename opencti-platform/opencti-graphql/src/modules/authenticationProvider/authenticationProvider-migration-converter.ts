@@ -910,7 +910,6 @@ export const convertAllSSOEnvProviders = (envProviders: Record<string, EnvProvid
       const identifier = resolveProviderIdentifier(convertedProvider.base);
       const existingEnvKey = seenIdentifiers.get(identifier);
       if (existingEnvKey === undefined) {
-        console.log('Converting SSO providers... push');
         results.push({ envKey, identifier, provider: convertedProvider });
       }
       seenIdentifiers.set(identifier, envKey);
