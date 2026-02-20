@@ -7,11 +7,25 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import stopEvent from '../../../../utils/domEvent';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import { deleteNode } from '../../../../utils/store';
-import { SSODefinitionDeletionMutation } from '@components/settings/sso_definitions/__generated__/SSODefinitionDeletionMutation.graphql';
+import { SSODefinitionDeletionOidcMutation } from '@components/settings/sso_definitions/__generated__/SSODefinitionDeletionOidcMutation.graphql';
+import { SSODefinitionDeletionSamlMutation } from '@components/settings/sso_definitions/__generated__/SSODefinitionDeletionSamlMutation.graphql';
+import { SSODefinitionDeletionLdapMutation } from '@components/settings/sso_definitions/__generated__/SSODefinitionDeletionLdapMutation.graphql';
 
-const ssoDefinitionDeletionMutation = graphql`
-    mutation SSODefinitionDeletionMutation($id: ID!) {
-        singleSignOnDelete(id: $id)
+const oidcDeletionMutation = graphql`
+    mutation SSODefinitionDeletionOidcMutation($id: ID!) {
+        oidcProviderDelete(id: $id)
+    }
+`;
+
+const samlDeletionMutation = graphql`
+    mutation SSODefinitionDeletionSamlMutation($id: ID!) {
+        samlProviderDelete(id: $id)
+    }
+`;
+
+const ldapDeletionMutation = graphql`
+    mutation SSODefinitionDeletionLdapMutation($id: ID!) {
+        ldapProviderDelete(id: $id)
     }
 `;
 
@@ -22,18 +36,30 @@ interface ChildrenProps {
 
 interface SSODefinitionDeletionProps {
   ssoId: string;
+  providerType: string;
   paginationOptions?: Record<string, unknown>;
   onDeleteComplete?: () => void;
   children: (props: ChildrenProps) => ReactNode;
 }
 
-const SSODefinitionDeletion = ({ ssoId, paginationOptions, onDeleteComplete, children }: SSODefinitionDeletionProps) => {
+const SSODefinitionDeletion = ({ ssoId, providerType, paginationOptions, onDeleteComplete, children }: SSODefinitionDeletionProps) => {
   const { t_i18n } = useFormatter();
 
-  const [deleteMutation, deleting] = useApiMutation<SSODefinitionDeletionMutation>(
-    ssoDefinitionDeletionMutation,
+  const getMutationForType = () => {
+    switch (providerType) {
+      case 'OIDC': return oidcDeletionMutation;
+      case 'SAML': return samlDeletionMutation;
+      case 'LDAP': return ldapDeletionMutation;
+      default: return oidcDeletionMutation;
+    }
+  };
+
+  const [deleteMutation, deleting] = useApiMutation<
+    SSODefinitionDeletionOidcMutation | SSODefinitionDeletionSamlMutation | SSODefinitionDeletionLdapMutation
+  >(
+    getMutationForType(),
     undefined,
-    { successMessage: `${t_i18n('entity_SSO')} ${t_i18n('successfully deleted')}` },
+    { successMessage: `${t_i18n('Authentication')} ${t_i18n('successfully deleted')}` },
   );
 
   const deletion = useDeletion({});
@@ -45,7 +71,7 @@ const SSODefinitionDeletion = ({ ssoId, paginationOptions, onDeleteComplete, chi
       variables: { id: ssoId },
       updater: (store: RecordSourceSelectorProxy) => {
         if (paginationOptions) {
-          deleteNode(store, 'Pagination_singleSignOns', paginationOptions, ssoId);
+          deleteNode(store, 'Pagination_authenticationProviders', paginationOptions, ssoId);
         }
       },
       onCompleted: () => {

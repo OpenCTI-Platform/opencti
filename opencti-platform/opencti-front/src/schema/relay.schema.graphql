@@ -1545,25 +1545,22 @@ type LocalAuthConfig {
 
 type CertAuthConfig {
   enabled: Boolean
-  button_label: String
+  description: String
+  button_label_override: String
+  user_info_mapping: UserInfoMapping!
+  groups_mapping: GroupsMapping!
+  organizations_mapping: OrganizationsMapping!
 }
 
 type HeadersAuthConfig {
   enabled: Boolean
-  header_email: String
-  header_name: String
-  header_firstname: String
-  header_lastname: String
+  description: String
+  button_label_override: String
   logout_uri: String
-  auto_create_group: Boolean
   headers_audit: [String]
-  groups_header: String
-  groups_splitter: String
-  groups_mapping: [String]
-  organizations_default: [String]
-  organizations_header: String
-  organizations_splitter: String
-  organizations_mapping: [String]
+  user_info_mapping: UserInfoMapping!
+  groups_mapping: GroupsMapping!
+  organizations_mapping: OrganizationsMapping!
 }
 
 input LocalAuthConfigInput {
@@ -1578,26 +1575,23 @@ input LocalAuthConfigInput {
 }
 
 input CertAuthConfigInput {
-  enabled: Boolean!
-  button_label: String
+  enabled: Boolean
+  description: String
+  button_label_override: String
+  user_info_mapping: UserInfoMappingInput!
+  groups_mapping: GroupsMappingInput!
+  organizations_mapping: OrganizationsMappingInput!
 }
 
 input HeadersAuthConfigInput {
-  enabled: Boolean!
-  header_email: String!
-  header_name: String
-  header_firstname: String
-  header_lastname: String
+  enabled: Boolean
+  description: String
+  button_label_override: String
   logout_uri: String
-  auto_create_group: Boolean
   headers_audit: [String]
-  groups_header: String
-  groups_splitter: String
-  groups_mapping: [String]
-  organizations_default: [String]
-  organizations_header: String
-  organizations_splitter: String
-  organizations_mapping: [String]
+  user_info_mapping: UserInfoMappingInput!
+  groups_mapping: GroupsMappingInput!
+  organizations_mapping: OrganizationsMappingInput!
 }
 
 type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSettings {
@@ -1640,7 +1634,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_trash_enabled: Boolean!
   platform_translations: String
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
-  is_authentication_locked: Boolean
+  is_authentication_by_env: Boolean
   created_at: DateTime!
   updated_at: DateTime!
   refreshed_at: DateTime
@@ -9706,9 +9700,13 @@ type Query {
   emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
   form(id: ID!): Form
   forms(search: String, first: Int, after: ID, orderBy: FormsOrdering, orderMode: OrderingMode, filters: FilterGroup): FormConnection
-  singleSignOn(id: String!): SingleSignOn
-  singleSignOns(first: Int, after: ID, orderBy: SingleSignOnOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SingleSignOnConnection
-  singleSignOnSettings: SingleSignOnSettings
+  authenticationProvider(id: String!): AuthenticationProvider
+  authenticationProviders(first: Int, after: ID, orderBy: AuthenticationProviderOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): AuthenticationProviderConnection
+
+  """
+  Auth log history by provider id: internal_id for DB providers, or static id for singletons (Headers, Cert).
+  """
+  authLogHistoryById(id: String!): [AuthLogEntry!]!
 }
 
 type Subscription {
@@ -10647,10 +10645,15 @@ type Mutation {
   autoRegisterOpenCTI(input: AutoRegisterInput!): Success!
   contactUsXtmHub: Success!
   metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
-  singleSignOnAdd(input: SingleSignOnAddInput!): SingleSignOn
-  singleSignOnEdit(id: ID!, input: SingleSignOnEditInput!): SingleSignOn
-  singleSignOnDelete(id: ID!): ID
-  singleSignOnRunMigration(input: SingleSignMigrationInput!): [SingleSignOnMigrationResult]
+  oidcProviderAdd(input: OidcInput!): AuthenticationProvider
+  oidcProviderEdit(id: ID!, input: OidcInput!): AuthenticationProvider
+  oidcProviderDelete(id: ID!): ID
+  samlProviderAdd(input: SamlInput!): AuthenticationProvider
+  samlProviderEdit(id: ID!, input: SamlInput!): AuthenticationProvider
+  samlProviderDelete(id: ID!): ID
+  ldapProviderAdd(input: LdapInput!): AuthenticationProvider
+  ldapProviderEdit(id: ID!, input: LdapInput!): AuthenticationProvider
+  ldapProviderDelete(id: ID!): ID
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -15624,7 +15627,266 @@ input PatchMetricInput {
   value: Float!
 }
 
-type SingleSignOn implements InternalObject & BasicObject {
+type UserInfoMapping {
+  email_expr: String!
+  name_expr: String!
+  firstname_expr: String
+  lastname_expr: String
+}
+
+input UserInfoMappingInput {
+  email_expr: String!
+  name_expr: String!
+  firstname_expr: String
+  lastname_expr: String
+}
+
+type MappingEntry {
+  provider: String!
+  platform: String!
+}
+
+input MappingEntryInput {
+  provider: String!
+  platform: String!
+}
+
+type GroupsMapping {
+  default_groups: [String!]!
+  groups_expr: [String!]!
+  group_splitter: String
+  groups_mapping: [MappingEntry!]!
+  auto_create_groups: Boolean!
+  prevent_default_groups: Boolean!
+}
+
+input GroupsMappingInput {
+  default_groups: [String!]!
+  groups_expr: [String!]!
+  group_splitter: String
+  groups_mapping: [MappingEntryInput!]!
+  auto_create_groups: Boolean!
+  prevent_default_groups: Boolean!
+}
+
+type OrganizationsMapping {
+  default_organizations: [String!]!
+  organizations_expr: [String!]!
+  organizations_splitter: String
+  organizations_mapping: [MappingEntry!]!
+  auto_create_organizations: Boolean!
+}
+
+input OrganizationsMappingInput {
+  default_organizations: [String!]!
+  organizations_expr: [String!]!
+  organizations_splitter: String
+  organizations_mapping: [MappingEntryInput!]!
+  auto_create_organizations: Boolean!
+}
+
+enum ExtraConfEntryType {
+  String
+  Number
+  Boolean
+}
+
+type ExtraConfEntry {
+  type: ExtraConfEntryType!
+  key: String!
+  value: String!
+}
+
+input ExtraConfEntryInput {
+  type: ExtraConfEntryType!
+  key: String!
+  value: String!
+}
+
+enum SecretSource {
+  EXTERNAL
+  STORED
+  MISSING
+}
+
+type SecretInfo {
+  source: SecretSource!
+  external_provider_name: String
+}
+
+input OverrideSecretValueInput {
+  new_value_cleartext: String
+}
+
+type OidcConfiguration {
+  type: AuthenticationProviderType!
+  issuer: String!
+  client_id: String!
+  client_secret: SecretInfo!
+  scopes: [String!]
+  audience: String
+  callback_url: String
+  logout_remote: Boolean!
+  logout_callback_url: String
+  use_proxy: Boolean!
+  user_info_mapping: UserInfoMapping!
+  groups_mapping: GroupsMapping!
+  organizations_mapping: OrganizationsMapping!
+  extra_conf: [ExtraConfEntry!]!
+}
+
+input OidcConfigurationInput {
+  issuer: String!
+  client_id: String!
+  client_secret: OverrideSecretValueInput
+  callback_url: String
+  scopes: [String!]
+  audience: String
+  logout_remote: Boolean!
+  logout_callback_url: String
+  use_proxy: Boolean!
+  user_info_mapping: UserInfoMappingInput!
+  groups_mapping: GroupsMappingInput!
+  organizations_mapping: OrganizationsMappingInput!
+  extra_conf: [ExtraConfEntryInput!]!
+}
+
+type SamlConfiguration {
+  type: AuthenticationProviderType!
+  issuer: String!
+  entry_point: String!
+  idp_certificate: String!
+  private_key: SecretInfo!
+  callback_url: String
+  logout_remote: Boolean!
+  want_assertions_signed: Boolean!
+  want_authn_response_signed: Boolean!
+  signing_cert: String
+  sso_binding_type: String
+  force_reauthentication: Boolean!
+  identifier_format: String
+  signature_algorithm: String
+  digest_algorithm: String
+  authn_context: [String!]
+  disable_requested_authn_context: Boolean!
+  disable_request_acs_url: Boolean!
+  decryption_pvk: SecretInfo!
+  skip_request_compression: Boolean!
+  decryption_cert: String
+  user_info_mapping: UserInfoMapping!
+  groups_mapping: GroupsMapping!
+  organizations_mapping: OrganizationsMapping!
+  extra_conf: [ExtraConfEntry!]!
+}
+
+input SamlConfigurationInput {
+  issuer: String!
+  entry_point: String!
+  idp_certificate: String!
+  private_key: OverrideSecretValueInput
+  callback_url: String
+  logout_remote: Boolean!
+  want_assertions_signed: Boolean!
+  want_authn_response_signed: Boolean!
+  signing_cert: String
+  sso_binding_type: String
+  force_reauthentication: Boolean!
+  identifier_format: String
+  signature_algorithm: String
+  digest_algorithm: String
+  authn_context: [String!]
+  disable_requested_authn_context: Boolean
+  disable_request_acs_url: Boolean
+  skip_request_compression: Boolean
+  decryption_pvk: OverrideSecretValueInput
+  decryption_cert: String
+  user_info_mapping: UserInfoMappingInput!
+  groups_mapping: GroupsMappingInput!
+  organizations_mapping: OrganizationsMappingInput!
+  extra_conf: [ExtraConfEntryInput!]!
+}
+
+type LdapConfiguration {
+  type: AuthenticationProviderType!
+  url: String!
+  bind_dn: String!
+  bind_credentials: SecretInfo!
+  search_base: String!
+  search_filter: String!
+  group_base: String!
+  group_filter: String!
+  allow_self_signed: Boolean!
+  search_attributes: [String!]
+  username_field: String
+  password_field: String
+  credentials_lookup: String
+  group_search_attributes: [String!]
+  user_info_mapping: UserInfoMapping!
+  groups_mapping: GroupsMapping!
+  organizations_mapping: OrganizationsMapping!
+  extra_conf: [ExtraConfEntry!]!
+}
+
+input LdapConfigurationInput {
+  url: String!
+  bind_dn: String!
+  bind_credentials: OverrideSecretValueInput
+  search_base: String!
+  search_filter: String!
+  group_base: String!
+  group_filter: String!
+  allow_self_signed: Boolean!
+  search_attributes: [String!]
+  username_field: String
+  password_field: String
+  credentials_lookup: String
+  group_search_attributes: [String!]
+  user_info_mapping: UserInfoMappingInput!
+  groups_mapping: GroupsMappingInput!
+  organizations_mapping: OrganizationsMappingInput!
+  extra_conf: [ExtraConfEntryInput!]
+}
+
+enum AuthLogLevel {
+  success
+  info
+  warn
+  error
+}
+
+type AuthLogEntry {
+  timestamp: DateTime!
+  level: AuthLogLevel!
+  type: String!
+  identifier: String!
+  message: String!
+  meta: JSON
+}
+
+union AuthenticationConfiguration = OidcConfiguration | SamlConfiguration | LdapConfiguration
+
+enum AuthenticationProviderType {
+  OIDC
+  SAML
+  LDAP
+}
+
+enum AuthenticationProviderRuntimeStatus {
+  DISABLED
+  ERROR
+  ACTIVE
+  STARTING
+}
+
+interface AuthenticationProviderBase {
+  name: String!
+  description: String
+  enabled: Boolean!
+  button_label_override: String
+  identifier_override: String
+}
+
+type AuthenticationProvider implements InternalObject & BasicObject & AuthenticationProviderBase {
   id: ID!
   standard_id: String!
   entity_type: String!
@@ -15633,141 +15895,66 @@ type SingleSignOn implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   name: String!
-  identifier: String!
-  label: String
   description: String
   enabled: Boolean!
-  strategy: StrategyType!
-  organizations_management: OrganizationsManagement
-  groups_management: GroupsManagement
-  configuration: [ConfigurationType!]
+  button_label_override: String
+  identifier_override: String
+  type: AuthenticationProviderType!
+  configuration: AuthenticationConfiguration!
+  runtime_status: AuthenticationProviderRuntimeStatus!
+  authLogHistory: [AuthLogEntry!]!
 }
 
-type OrganizationsManagement {
-  organizations_path: [String!]
-  organizations_mapping: [String!]!
-  organizations_scope: String
-  read_userinfo: Boolean
-  token_reference: String
-  organizations_splitter: String
-  organizations_header: String
-}
-
-type GroupsManagement {
-  groups_attributes: [String!]
-  group_attributes: [String!]
-  group_attribute: String
-  groups_path: [String!]
-  groups_mapping: [String!]
-  read_userinfo: Boolean
-  token_reference: String
-  groups_scope: String
-  groups_splitter: String
-  groups_header: String
-}
-
-type ConfigurationType {
-  key: String!
-  value: String!
-  type: String!
-}
-
-enum StrategyType {
-  LocalStrategy
-  ClientCertStrategy
-  HeaderStrategy
-  LdapStrategy
-  OpenIDConnectStrategy
-  SamlStrategy
-}
-
-enum SingleSignOnOrdering {
+enum AuthenticationProviderOrdering {
   name
   enabled
   strategy
   _score
 }
 
-type SingleSignOnEdge {
+type AuthenticationProviderEdge {
   cursor: String!
-  node: SingleSignOn!
+  node: AuthenticationProvider!
 }
 
-type SingleSignOnConnection {
+type AuthenticationProviderConnection {
   pageInfo: PageInfo!
-  edges: [SingleSignOnEdge!]!
+  edges: [AuthenticationProviderEdge!]!
 }
 
-input OrganizationsManagementInput {
-  organizations_path: [String!]
-  organizations_mapping: [String!]
-  organizations_scope: String
-  read_userinfo: Boolean
-  token_reference: String
-  organizations_splitter: String
-  organizations_header: String
-}
-
-input GroupsManagementInput {
-  groups_attributes: [String!]
-  group_attributes: [String!]
-  group_attribute: String
-  groups_path: [String!]
-  groups_mapping: [String!]
-  groups_scope: String
-  read_userinfo: Boolean
-  token_reference: String
-  groups_splitter: String
-  groups_header: String
-}
-
-input ConfigurationTypeInput {
-  key: String!
-  value: String!
-  type: String!
-}
-
-input SingleSignOnAddInput {
+input AuthenticationProviderBaseInput {
   name: String!
-  identifier: String!
   description: String
   enabled: Boolean!
-  strategy: StrategyType!
-  organizations_management: OrganizationsManagementInput
-  groups_management: GroupsManagementInput
-  configuration: [ConfigurationTypeInput!]
-  label: String
+  button_label_override: String
+  identifier_override: String
 }
 
-input SingleSignOnEditInput {
-  name: String
-  identifier: String
-  description: String
-  enabled: Boolean
-  organizations_management: OrganizationsManagementInput
-  groups_management: GroupsManagementInput
-  configuration: [ConfigurationTypeInput!]
-  label: String
+input OidcInput {
+  base: AuthenticationProviderBaseInput!
+  configuration: OidcConfigurationInput!
 }
 
-type SingleSignOnMigrationResult {
-  id: ID!
-  name: String!
-  identifier: String!
-  label: String
-  description: String
-  enabled: Boolean!
-  strategy: StrategyType!
-  organizations_management: OrganizationsManagement
-  groups_management: GroupsManagement
-  configuration: [ConfigurationType!]
+input SamlInput {
+  base: AuthenticationProviderBaseInput!
+  configuration: SamlConfigurationInput!
 }
 
-input SingleSignMigrationInput {
+input LdapInput {
+  base: AuthenticationProviderBaseInput!
+  configuration: LdapConfigurationInput!
+}
+
+input AuthenticationProviderMigrationInput {
   dry_run: Boolean!
 }
 
-type SingleSignOnSettings {
-  is_force_env: Boolean!
-  is_edition_locked: Boolean!
+type AuthenticationProviderMigrationResult {
+  env_key: String!
+  name: String!
+  status: String!
+  type: String
+  identifier: String
+  reason: String
+  warnings: [String]
 }

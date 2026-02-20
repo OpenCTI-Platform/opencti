@@ -1451,27 +1451,22 @@ type LocalAuthConfig {
 
 type CertAuthConfig {
   enabled: Boolean
-  button_label: String
+  description: String
+  button_label_override: String
+  user_info_mapping: UserInfoMapping!
+  groups_mapping: GroupsMapping!
+  organizations_mapping: OrganizationsMapping!
 }
 
 type HeadersAuthConfig {
   enabled: Boolean
-  header_email: String
-  header_name: String
-  header_firstname: String
-  header_lastname: String
+  description: String
+  button_label_override: String
   logout_uri: String
-  auto_create_group: Boolean
   headers_audit: [String]
-  # Groups management
-  groups_header: String
-  groups_splitter: String
-  groups_mapping: [String]
-  # Organizations management
-  organizations_default: [String]
-  organizations_header: String
-  organizations_splitter: String
-  organizations_mapping: [String]
+  user_info_mapping: UserInfoMapping!
+  groups_mapping: GroupsMapping!
+  organizations_mapping: OrganizationsMapping!
 }
 
 input LocalAuthConfigInput {
@@ -1486,28 +1481,23 @@ input LocalAuthConfigInput {
 }
 
 input CertAuthConfigInput {
-  enabled: Boolean!
-  button_label: String
+  enabled: Boolean
+  description: String
+  button_label_override: String
+  user_info_mapping: UserInfoMappingInput!
+  groups_mapping: GroupsMappingInput!
+  organizations_mapping: OrganizationsMappingInput!
 }
 
 input HeadersAuthConfigInput {
-  enabled: Boolean!
-  header_email: String!
-  header_name: String
-  header_firstname: String
-  header_lastname: String
+  enabled: Boolean
+  description: String
+  button_label_override: String
   logout_uri: String
-  auto_create_group: Boolean
   headers_audit: [String]
-  # Groups management
-  groups_header: String
-  groups_splitter: String
-  groups_mapping: [String]
-  # Organizations management
-  organizations_default: [String]
-  organizations_header: String
-  organizations_splitter: String
-  organizations_mapping: [String]
+  user_info_mapping: UserInfoMappingInput!
+  groups_mapping: GroupsMappingInput!
+  organizations_mapping: OrganizationsMappingInput!
 }
 
 type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSettings {
@@ -1551,7 +1541,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_trash_enabled: Boolean!
   platform_translations: String
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
-  is_authentication_locked: Boolean
+  is_authentication_by_env: Boolean
   created_at: DateTime!
   updated_at: DateTime!
   refreshed_at: DateTime

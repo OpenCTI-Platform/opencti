@@ -27,7 +27,7 @@ import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 import { findRolesWithCapabilityInDraft } from '../domain/user';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
-import { EnvStrategyType, isStrategyActivated } from '../modules/singleSignOn/providers-configuration';
+import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationProvider/providers-configuration';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;

@@ -116,7 +116,7 @@ const rootSettingsFragment = graphql`
     platform_ai_has_token
     platform_trash_enabled
     filigran_chatbot_ai_cgu_status
-    is_authentication_locked
+    is_authentication_by_env
     platform_protected_sensitive_config {
       enabled
       markings {

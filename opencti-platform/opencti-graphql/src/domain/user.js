@@ -14,7 +14,7 @@ import conf, {
   getRequestAuditHeaders,
   logApp,
 } from '../config/conf';
-import { AuthenticationFailure, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
+import { AuthenticationFailure, ConfigurationError, DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { elLoadBy, elRawDeleteByQuery } from '../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../database/middleware';
@@ -62,6 +62,7 @@ import {
   buildUserOrganizationRestrictedFiltersOptions,
   BYPASS,
   CAPABILITIES_IN_DRAFT_NAMES,
+  DEFAULT_INVALID_CONF_VALUE,
   executionContext,
   FilterMembersMode,
   filterMembersUsersWithUsersOrgs,
@@ -107,9 +108,16 @@ import { getPlatformCrypto } from '../utils/platformCrypto';
 import { addUserTokenByAdmin, generateTokenHmac } from '../modules/user/user-domain';
 import { memoize } from '../utils/memoize';
 import { getSettings } from './settings';
-import { LOCAL_STRATEGY_IDENTIFIER, PROVIDERS } from '../modules/singleSignOn/providers-configuration';
-import { HEADER_PROVIDER } from '../modules/singleSignOn/singleSignOn-provider-header';
 import passport from 'passport';
+import {
+  getConfigurationAdminEmail,
+  getConfigurationAdminPassword,
+  getConfigurationAdminToken,
+  LOCAL_STRATEGY_IDENTIFIER,
+  PROVIDERS,
+} from '../modules/authenticationProvider/providers-configuration';
+import { addOrganization } from '../modules/organization/organization-domain';
+import validator from 'validator';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -1296,9 +1304,10 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
 };
 
 export const loginFromProvider = async (userInfo, opts = {}) => {
-  const { providerGroups = [], providerOrganizations = [], autoCreateGroup = false } = opts;
+  const { providerGroups = [], providerOrganizations = [], preventDefaultGroups = false } = opts;
+  const { autoCreateGroup = false, autoCreateOrganization = false } = opts;
   const context = executionContext('login_provider');
-  // region test the groups existence and eventually auto create groups
+  // region test the groups / organization existence and eventually auto create
   if (providerGroups.length > 0) {
     const providerGroupsIds = providerGroups.map((groupName) => generateStandardId(ENTITY_TYPE_GROUP, { name: groupName }));
     const groupsFilters = {
@@ -1306,8 +1315,8 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
       filters: [{ key: 'standard_id', values: providerGroupsIds }],
       filterGroups: [],
     };
-    const foundGroups = await findGroups(context, SYSTEM_USER, { filters: groupsFilters });
-    const foundGroupsNames = foundGroups.edges.map((group) => group.node.name);
+    const foundGroups = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters: groupsFilters });
+    const foundGroupsNames = foundGroups.map((group) => group.name);
     const newGroupsToCreate = [];
     providerGroups.forEach((groupName) => {
       if (!foundGroupsNames.includes(groupName)) {
@@ -1320,6 +1329,27 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
     });
     await Promise.all(newGroupsToCreate);
   }
+  if (providerOrganizations.length > 0) {
+    const providerOrganizationIds = providerOrganizations.map((orgName) => generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name: orgName, identity_class: 'organization' }));
+    const organizationsFilters = {
+      mode: 'and',
+      filters: [{ key: 'standard_id', values: providerOrganizationIds }],
+      filterGroups: [],
+    };
+    const foundOrganizations = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_ORGANIZATION], { filters: organizationsFilters });
+    const foundOrganizationsNames = foundOrganizations.map((group) => group.name);
+    const newOrganizationsToCreate = [];
+    providerOrganizations.forEach((organizationName) => {
+      if (!foundOrganizationsNames.includes(organizationName)) {
+        if (!autoCreateOrganization) {
+          throw ForbiddenAccess('[SSO] Can\'t login. The user has organizations that don\'t exist and auto_create_organization = false.');
+        } else {
+          newOrganizationsToCreate.push(addOrganization(context, SYSTEM_USER, { name: organizationName }));
+        }
+      }
+    });
+    await Promise.all(newOrganizationsToCreate);
+  }
   // endregion
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const { email, name: providedName, firstname, lastname } = userInfo;
@@ -1331,7 +1361,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   const user = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
   if (!user) {
     // If user doesn't exist, create it. Providers are trusted
-    const newUser = { name, firstname, lastname, user_email: userEmail, external: true };
+    const newUser = { name, firstname, lastname, user_email: userEmail, external: true, prevent_default_groups: preventDefaultGroups };
     return addUser(context, SYSTEM_USER, newUser).then(() => {
       // After user creation, reapply login to manage roles and groups
       return loginFromProvider(userInfo, opts);
@@ -1451,6 +1481,8 @@ export const otpUserDeactivation = async (context, user, id) => {
 export const sessionLogin = async (context, input) => {
   // We need to iterate on each provider to find one that validated the credentials
   let loggedUser;
+  // don't send error immediately until all providers have failed
+  const deferredErrors = [];
   // Try registered providers first
   const body = { username: input.email, password: input.password };
   const formProviders = R.filter((p) => p.type === 'FORM', PROVIDERS);
@@ -1459,7 +1491,12 @@ export const sessionLogin = async (context, input) => {
     const { user, provider } = await new Promise((resolve) => {
       passport.authenticate(auth.provider, {}, (err, authUser, info) => {
         if (err || info) {
-          logApp.warn('Token authenticate error', { cause: err, info, provider: auth.provider });
+          const authLogger = passport._strategy(auth.provider).logger;
+          if (authLogger) {
+            deferredErrors.push(authLogger.deferError('Authentication error', { info }, err));
+          } else {
+            logApp.warn('Token authenticate error', { cause: err, info, provider: auth.provider });
+          }
         }
         resolve({ user: authUser, provider: auth.provider });
       })({ body });
@@ -1481,12 +1518,14 @@ export const sessionLogin = async (context, input) => {
         resolve({ user: authUser, provider: LOCAL_STRATEGY_IDENTIFIER });
       })({ body });
     });
-    if (settings.local_auth?.enabled || user.id === OPENCTI_ADMIN_UUID) {
+    if (user && (settings.local_auth?.enabled || user.id === OPENCTI_ADMIN_UUID)) {
       loggedUser = await sessionAuthenticateUser(context, context.req, user, provider);
     }
   }
   if (loggedUser) {
     return loggedUser.api_token;
+  } else {
+    deferredErrors.forEach((d) => d());
   }
   const auditUser = userWithOrigin(context.req, { user_email: input.email });
   await publishUserAction({
@@ -1905,14 +1944,6 @@ export const authenticateUserFromRequest = async (context, req) => {
   }
   // endregion
   // region Direct authentication
-  // If user not identified, try headers authentication
-  const settings = await getSettings(context);
-  if (settings.headers_auth?.enabled) {
-    const user = await HEADER_PROVIDER?.reqLoginHandler(req);
-    if (user) {
-      return await authenticateUserByUserId(context, req, user.id);
-    }
-  }
   // If no bearer specified, try with basic auth
   const basicAuth = await extractUserFromBasicAuth(req.headers.authorization);
   if (basicAuth) {
@@ -1928,7 +1959,7 @@ export const authenticateUserFromRequest = async (context, req) => {
   return undefined;
 };
 
-export const initAdmin = async (context, email, password, tokenValue) => {
+const initAdmin = async (context, email, password, tokenValue) => {
   const isExternallyManaged = conf.get('app:admin:externally_managed') === true;
   let existingAdmin = await findById(context, SYSTEM_USER, OPENCTI_ADMIN_UUID);
   if (existingAdmin) {
@@ -1973,6 +2004,28 @@ export const initAdmin = async (context, email, password, tokenValue) => {
   tokensWithoutBaseOne.push(newToken);
   const updates = [{ key: apiTokens.name, value: tokensWithoutBaseOne, operation: UPDATE_OPERATION_REPLACE }];
   await updateAttribute(context, SYSTEM_USER, OPENCTI_ADMIN_UUID, ENTITY_TYPE_USER, updates);
+};
+
+// Admin user initialization
+export const initializeAdminUser = async (context) => {
+  const adminEmail = getConfigurationAdminEmail();
+  const adminPassword = getConfigurationAdminPassword();
+  const adminToken = getConfigurationAdminToken();
+  if (isEmptyField(adminEmail) || isEmptyField(adminPassword) || isEmptyField(adminToken)
+    || adminPassword === DEFAULT_INVALID_CONF_VALUE || adminToken === DEFAULT_INVALID_CONF_VALUE) {
+    throw ConfigurationError('You need to configure the environment vars');
+  } else {
+    // Check fields
+    if (!validator.isEmail(adminEmail)) {
+      throw ConfigurationError('Email must be a valid email address');
+    }
+    if (!validator.isUUID(adminToken)) {
+      throw ConfigurationError('Token must be a valid UUID');
+    }
+    // Initialize the admin account
+    await initAdmin(context, adminEmail, adminPassword, adminToken);
+    logApp.info('[INIT] admin user initialized');
+  }
 };
 
 export const findDefaultDashboards = async (context, user, currentUser) => {

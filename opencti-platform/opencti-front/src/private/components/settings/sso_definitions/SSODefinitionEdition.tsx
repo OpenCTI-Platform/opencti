@@ -2,53 +2,181 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import SSODefinitionForm from '@components/settings/sso_definitions/SSODefinitionForm';
 import SSODefinitionDeletion from '@components/settings/sso_definitions/SSODefinitionDeletion';
 import { SSODefinitionEditionFragment$key } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionFragment.graphql';
-import { SingleSignOnEditInput, SSODefinitionEditionMutation } from '@components/settings/sso_definitions/__generated__/SSODefinitionEditionMutation.graphql';
-import { getStrategyConfigSelected } from '@components/settings/sso_definitions/utils/useStrategicConfig';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import IconButton from '@mui/material/IconButton';
 import DeleteOutlined from '@mui/icons-material/DeleteOutlined';
-
-export const ssoDefinitionEditionMutation = graphql`
-    mutation SSODefinitionEditionMutation($id: ID!, $input: SingleSignOnEditInput!) {
-        singleSignOnEdit(id: $id, input: $input) {
-            ...SSODefinitionEditionFragment
-        }
-    }
-`;
+import OidcProviderForm from './OidcProviderForm';
+import SamlProviderForm from './SamlProviderForm';
+import LdapProviderForm from './LdapProviderForm';
 
 export const ssoDefinitionEditionFragment = graphql`
-    fragment SSODefinitionEditionFragment on SingleSignOn {
+    fragment SSODefinitionEditionFragment on AuthenticationProvider {
         id
+        entity_type
         name
-        identifier
-        label
         description
         enabled
-        strategy
-        organizations_management {
-            organizations_path
-            organizations_mapping
-            organizations_scope
-            read_userinfo
-            token_reference
-        }
-        groups_management {
-            group_attribute
-            group_attributes
-            groups_attributes
-            groups_path
-            groups_scope
-            groups_mapping
-            read_userinfo
-            token_reference
-        }
+        button_label_override
+        identifier_override
+        type
         configuration {
-            key
-            value
-            type
+            ... on OidcConfiguration {
+                issuer
+                client_id
+                scopes
+                audience
+                callback_url
+                logout_remote
+                logout_callback_url
+                use_proxy
+                client_secret {
+                    source
+                    external_provider_name
+                }
+                user_info_mapping {
+                    email_expr
+                    name_expr
+                    firstname_expr
+                    lastname_expr
+                }
+                groups_mapping {
+                    default_groups
+                    groups_expr
+                    group_splitter
+                    groups_mapping {
+                        provider
+                        platform
+                    }
+                    auto_create_groups
+                    prevent_default_groups
+                }
+                organizations_mapping {
+                    default_organizations
+                    organizations_expr
+                    organizations_splitter
+                    organizations_mapping {
+                        provider
+                        platform
+                    }
+                    auto_create_organizations
+                }
+                extra_conf {
+                    type
+                    key
+                    value
+                }
+            }
+            ... on SamlConfiguration {
+                issuer
+                entry_point
+                idp_certificate
+                callback_url
+                logout_remote
+                want_assertions_signed
+                want_authn_response_signed
+                signing_cert
+                sso_binding_type
+                force_reauthentication
+                identifier_format
+                signature_algorithm
+                digest_algorithm
+                authn_context
+                disable_requested_authn_context
+                disable_request_acs_url
+                skip_request_compression
+                decryption_cert
+                private_key {
+                    source
+                    external_provider_name
+                }
+                decryption_pvk {
+                    source
+                    external_provider_name
+                }
+                user_info_mapping {
+                    email_expr
+                    name_expr
+                    firstname_expr
+                    lastname_expr
+                }
+                groups_mapping {
+                    default_groups
+                    groups_expr
+                    group_splitter
+                    groups_mapping {
+                        provider
+                        platform
+                    }
+                    auto_create_groups
+                    prevent_default_groups
+                }
+                organizations_mapping {
+                    default_organizations
+                    organizations_expr
+                    organizations_splitter
+                    organizations_mapping {
+                        provider
+                        platform
+                    }
+                    auto_create_organizations
+                }
+                extra_conf {
+                    type
+                    key
+                    value
+                }
+            }
+            ... on LdapConfiguration {
+                url
+                bind_dn
+                search_base
+                search_filter
+                group_base
+                group_filter
+                allow_self_signed
+                search_attributes
+                username_field
+                password_field
+                credentials_lookup
+                group_search_attributes
+                bind_credentials {
+                    source
+                    external_provider_name
+                }
+                user_info_mapping {
+                    email_expr
+                    name_expr
+                    firstname_expr
+                    lastname_expr
+                }
+                groups_mapping {
+                    default_groups
+                    groups_expr
+                    group_splitter
+                    groups_mapping {
+                        provider
+                        platform
+                    }
+                    auto_create_groups
+                    prevent_default_groups
+                }
+                organizations_mapping {
+                    default_organizations
+                    organizations_expr
+                    organizations_splitter
+                    organizations_mapping {
+                        provider
+                        platform
+                    }
+                    auto_create_organizations
+                }
+                extra_conf {
+                    type
+                    key
+                    value
+                }
+            }
         }
     }
 `;
@@ -58,6 +186,7 @@ interface SSODefinitionEditionProps {
   onClose: () => void;
   data: SSODefinitionEditionFragment$key;
   paginationOptions?: Record<string, unknown>;
+  onProviderUpdated?: (providerId: string) => void;
 }
 
 const SSODefinitionEdition = ({
@@ -65,40 +194,63 @@ const SSODefinitionEdition = ({
   onClose,
   data,
   paginationOptions,
+  onProviderUpdated,
 }: SSODefinitionEditionProps) => {
   const { t_i18n } = useFormatter();
-  const sso = useFragment(ssoDefinitionEditionFragment, data);
+  const provider = useFragment(ssoDefinitionEditionFragment, data);
 
-  const [editMutation] = useApiMutation<SSODefinitionEditionMutation>(
-    ssoDefinitionEditionMutation,
-    undefined,
-    { successMessage: `${t_i18n('entity_SSO')} ${t_i18n('successfully updated')}` },
-  );
-
-  const onSubmit = (
-    finalValues: SingleSignOnEditInput,
-    { setSubmitting, resetForm}: { setSubmitting: (flag: boolean) => void; resetForm: () => void },
-  ) => {
-    setSubmitting(true);
-    editMutation({
-      variables: { id: sso.id, input: finalValues },
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-      },
-    });
+  const handleEditCompleted = () => {
+    onProviderUpdated?.(provider.id);
+    onClose();
   };
 
-  const strategyConfigSelected = getStrategyConfigSelected(sso.strategy);
+  const renderForm = () => {
+    switch (provider.type) {
+      case 'OIDC':
+        return (
+          <OidcProviderForm
+            data={provider}
+            onCancel={onClose}
+            onCompleted={handleEditCompleted}
+            paginationOptions={paginationOptions}
+          />
+        );
+      case 'SAML':
+        return (
+          <SamlProviderForm
+            data={provider}
+            onCancel={onClose}
+            onCompleted={handleEditCompleted}
+            paginationOptions={paginationOptions}
+          />
+        );
+      case 'LDAP':
+        return (
+          <LdapProviderForm
+            data={provider}
+            onCancel={onClose}
+            onCompleted={handleEditCompleted}
+            paginationOptions={paginationOptions}
+          />
+        );
+      default:
+        return (
+          <div style={{ padding: 20 }}>
+            {t_i18n('Unknown provider type')}: {provider.type}
+          </div>
+        );
+    }
+  };
 
   return (
     <Drawer
-      title={t_i18n(`Update a ${strategyConfigSelected} Authentication`)}
+      title={t_i18n(`Update ${provider.type} Authentication`)}
       open={isOpen}
       onClose={onClose}
       header={(
         <SSODefinitionDeletion
-          ssoId={sso.id}
+          ssoId={provider.id}
+          providerType={provider.type}
           paginationOptions={paginationOptions}
           onDeleteComplete={onClose}
         >
@@ -116,13 +268,7 @@ const SSODefinitionEdition = ({
         </SSODefinitionDeletion>
       )}
     >
-      <SSODefinitionForm
-        onCancel={onClose}
-        onSubmit={onSubmit}
-        data={sso}
-        selectedStrategy={strategyConfigSelected}
-        isEditing
-      />
+      {renderForm()}
     </Drawer>
   );
 };

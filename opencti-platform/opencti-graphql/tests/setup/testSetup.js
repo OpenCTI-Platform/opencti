@@ -6,7 +6,7 @@ import { initializeFileStorageClient } from '../../src/database/raw-file-storage
 import { initExclusionListCache } from '../../src/database/exclusionListCache';
 import { initLockFork } from '../../src/lock/master-lock';
 import { logApp } from '../../src/config/conf';
-import { registerLocalStrategy } from '../../src/modules/singleSignOn/singleSignOn-providers';
+import { registerLocalStrategy } from '../../src/modules/authenticationProvider/provider-local';
 
 const startTime = new Date().getTime();
 await initializeRedisClients();

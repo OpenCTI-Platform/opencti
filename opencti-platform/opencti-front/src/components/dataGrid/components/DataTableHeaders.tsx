@@ -34,6 +34,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     startsWithAction,
     startsWithIcon,
     endsWithAction,
+    actionsColumnWidth,
     startColumnWidth,
     useDataTablePaginationLocalStorage: {
       viewStorage: { sortBy, orderAsc },
@@ -187,7 +188,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
               />
             ))}
 
-          {(endsWithAction) && <div style={{ width: SELECT_COLUMN_SIZE, flex: '0 0 auto' }} />}
+          {(endsWithAction) && <div style={{ width: actionsColumnWidth ?? SELECT_COLUMN_SIZE, flex: '0 0 auto' }} />}
         </>
       )}
     </div>

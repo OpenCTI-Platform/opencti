@@ -779,6 +779,8 @@
   "Propagate the parents of an identity in a report.": "在报告中传播标识的父节点。",
   "Protocols": "协议",
   "Provider": "提供者",
+  "Provider Configuration": "提供程序配置",
+  "Provider identifier": "提供程序标识符",
   "Public": "公开",
   "Public feed": "公共订阅源",
   "Public key": "公钥",

@@ -151,8 +151,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/observations/observables';
     case 'AI-Prompt':
       return '/dashboard/observations/observables';
-    case 'SingleSignOn':
-      return '/dashboard/settings/accesses/authentication';
+    case 'AuthenticationProvider':
+      return '/dashboard/settings/accesses/authentications';
     default:
       return null;
   }

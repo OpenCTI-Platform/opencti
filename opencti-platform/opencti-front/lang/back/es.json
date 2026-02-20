@@ -779,6 +779,8 @@
   "Propagate the parents of an identity in a report.": "Propagar los padres de una identidad en un informe.",
   "Protocols": "Protocolos",
   "Provider": "Proveedor",
+  "Provider Configuration": "Configuración del proveedor",
+  "Provider identifier": "Identificador del proveedor",
   "Public": "Público",
   "Public feed": "Alimentación pública",
   "Public key": "Clave pública",

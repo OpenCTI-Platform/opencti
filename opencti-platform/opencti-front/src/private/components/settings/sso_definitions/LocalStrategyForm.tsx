@@ -3,6 +3,9 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Tooltip from '@mui/material/Tooltip';
+import { InfoOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
@@ -12,8 +15,6 @@ import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
 import type { LocalStrategyFormQuery } from './__generated__/LocalStrategyFormQuery.graphql';
 import type { LocalStrategyFormMutation } from './__generated__/LocalStrategyFormMutation.graphql';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-
 const localStrategyFormQuery = graphql`
   query LocalStrategyFormQuery {
     settings {
@@ -28,6 +29,19 @@ const localStrategyFormQuery = graphql`
       password_policy_min_words
       password_policy_min_lowercase
       password_policy_min_uppercase
+      platform_enterprise_edition {
+        license_validated
+      }
+      platform_providers {
+        name
+        type
+        strategy
+        provider
+      }
+      headers_auth {
+        enabled
+      }
+      platform_https_enabled
     }
   }
 `;
@@ -70,7 +84,6 @@ interface LocalStrategyFormProps {
 const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const isEnterpriseEdition = useEnterpriseEdition();
   const data = useLazyLoadQuery<LocalStrategyFormQuery>(localStrategyFormQuery, {});
   const settings = data.settings;
 
@@ -82,8 +95,16 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
 
   const localAuth = settings.local_auth;
 
+  const eeActive = settings.platform_enterprise_edition?.license_validated === true;
+  const isHttpsEnabled = settings.platform_https_enabled;
+  const hasNonLocalProvider = (settings.platform_providers ?? []).some(
+    (p) => p.provider !== 'local' && (p.provider !== 'cert' || isHttpsEnabled),
+  );
+  const hasHeaderAuth = settings.headers_auth?.enabled === true;
+  const canDisableLocal = eeActive && (hasNonLocalProvider || hasHeaderAuth);
+
   const initialValues = {
-    enabled: isEnterpriseEdition ? true : (localAuth?.enabled ?? false),
+    enabled: localAuth?.enabled ?? true,
     password_policy_min_length: settings.password_policy_min_length ?? 0,
     password_policy_max_length: settings.password_policy_max_length ?? 0,
     password_policy_min_symbols: settings.password_policy_min_symbols ?? 0,
@@ -102,7 +123,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
       variables: {
         id: settings.id,
         input: {
-          enabled: isEnterpriseEdition ? true : values.enabled,
+          enabled: values.enabled,
           password_policy_min_length: Number(values.password_policy_min_length) || 0,
           password_policy_max_length: Number(values.password_policy_max_length) || 0,
           password_policy_min_symbols: Number(values.password_policy_min_symbols) || 0,
@@ -130,18 +151,23 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
       onSubmit={handleSubmit}
       onReset={onCancel}
     >
-      {({ handleReset, submitForm, isSubmitting }) => (
+      {({ handleReset, submitForm, isSubmitting, dirty }) => (
         <Form>
-          {isEnterpriseEdition && (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Field
               component={SwitchField}
               type="checkbox"
               name="enabled"
-              disabled={!isEnterpriseEdition}
               label={t_i18n('Enable local authentication')}
+              disabled={!canDisableLocal && initialValues.enabled}
             />
-          )}
-          <Typography variant="h4" gutterBottom style={{ marginBottom: 20, marginTop: isEnterpriseEdition ? 20 : 0 }}>
+            {!canDisableLocal && initialValues.enabled && (
+              <Tooltip title={t_i18n('Local authentication cannot be disabled when no other authentication provider is enabled')}>
+                <InfoOutlined fontSize="small" color="primary" sx={{ ml: 1, cursor: 'default' }} />
+              </Tooltip>
+            )}
+          </Box>
+          <Typography variant="h4" gutterBottom style={{ marginBottom: 20, marginTop: 20 }}>
             {t_i18n('Local password policies')}
           </Typography>
           <Field
@@ -217,7 +243,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
             </Button>
             <Button
               onClick={submitForm}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !dirty}
               style={{ marginLeft: theme.spacing(1) }}
             >
               {t_i18n('Update')}

@@ -203,10 +203,12 @@ type OCTIDataTableProps = Pick<DataTableProps,
   | 'disableNavigation'
   | 'disableLineSelection'
   | 'disableToolBar'
+  | 'disableColumnMenu'
   | 'removeSelectAll'
   | 'selectOnLineClick'
   | 'createButton'
-  | 'entityTypes'> & {
+  | 'entityTypes'
+  | 'actionsColumnWidth'> & {
     lineFragment: GraphQLTaggedNode;
     preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>;
     exportContext?: { entity_type: string; entity_id?: string };

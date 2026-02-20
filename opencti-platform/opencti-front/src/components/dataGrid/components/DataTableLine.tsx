@@ -108,6 +108,7 @@ const DataTableLine = ({
     startColumnWidth,
     endsWithAction,
     endsWithNavigate,
+    actionsColumnWidth,
     useDataTableToggle: {
       selectAll,
       deSelectedElements,
@@ -238,7 +239,7 @@ const DataTableLine = ({
             key={`navigate_${data.id}`}
             style={{
               ...cellContainerStyle(theme),
-              width: SELECT_COLUMN_SIZE,
+              width: actionsColumnWidth ?? SELECT_COLUMN_SIZE,
               overflow: 'initial',
             }}
           >

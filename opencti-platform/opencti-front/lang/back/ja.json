@@ -779,6 +779,8 @@
   "Propagate the parents of an identity in a report.": "レポート内のアイデンティティの親を伝播する。",
   "Protocols": "プロトコル",
   "Provider": "プロバイダ",
+  "Provider Configuration": "プロバイダー設定",
+  "Provider identifier": "プロバイダー識別子",
   "Public": "公開",
   "Public feed": "公開フィード",
   "Public key": "公開鍵",

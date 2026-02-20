@@ -37,7 +37,7 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
   });
 
   const [open, setOpen] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(options.length > 0 ? 0 : null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const anchorRef = useRef<HTMLButtonElement | null>(null);
 
@@ -111,7 +111,7 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
                     : 'center bottom',
               }}
             >
-              <Paper>
+              <Paper sx={{ minWidth: anchorRef.current?.offsetWidth }}>
                 <ClickAwayListener onClickAway={handleClose}>
                   <MenuList
                     id="create-split-button-menu"

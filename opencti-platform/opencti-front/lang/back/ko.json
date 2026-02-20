@@ -779,6 +779,8 @@
   "Propagate the parents of an identity in a report.": "보고서에서 ID의 부모를 전파합니다.",
   "Protocols": "프로토콜",
   "Provider": "제공자",
+  "Provider Configuration": "공급자 구성",
+  "Provider identifier": "공급자 식별자",
   "Public": "공개",
   "Public feed": "공개 피드",
   "Public key": "공개 키",

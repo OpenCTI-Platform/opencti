@@ -43,7 +43,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-types';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
-import { ENTITY_TYPE_SINGLE_SIGN_ON } from '../modules/singleSignOn/singleSignOn-types';
+import { ENTITY_TYPE_AUTHENTICATION_PROVIDER } from '../modules/authenticationProvider/authenticationProvider-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -781,10 +781,10 @@ export const BUS_TOPICS = {
     DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EMAIL_TEMPLATE_DELETE_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EMAIL_TEMPLATE_ADDED_TOPIC`,
   },
-  [ENTITY_TYPE_SINGLE_SIGN_ON]: {
-    ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_SINGLE_SIGN_ON_ADDED_TOPIC`,
-    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_SINGLE_SIGN_ON_EDIT_TOPIC`,
-    DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_SINGLE_SIGN_ON_DELETE_TOPIC`,
+  [ENTITY_TYPE_AUTHENTICATION_PROVIDER]: {
+    ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_AUTHENTICATION_PROVIDER_ADDED_TOPIC`,
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_AUTHENTICATION_PROVIDER_EDIT_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_AUTHENTICATION_PROVIDER_DELETE_TOPIC`,
   },
 };
 

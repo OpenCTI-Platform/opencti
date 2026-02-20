@@ -2,6 +2,7 @@ import { URL } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import express from 'express';
+import passport from 'passport';
 import bodyParser from 'body-parser';
 import compression, { filter as compressionFilter } from 'compression';
 import helmet from 'helmet';
@@ -14,8 +15,7 @@ import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
 import { printSchema } from 'graphql/utilities';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
-import passport from '../modules/singleSignOn/providers-initialization';
-import { loginFromProvider, sessionAuthenticateUser, userWithOrigin } from '../domain/user';
+import { sessionAuthenticateUser, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, isStorageAlive } from '../database/raw-file-storage';
 import { loadFile } from '../database/file-storage';
 import { DEFAULT_INVALID_CONF_VALUE, executionContext, SYSTEM_USER } from '../utils/access';
@@ -31,11 +31,12 @@ import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
-import { setCookieError } from './httpUtils';
+import { extractRefererPathFromReq, setCookieError } from './httpUtils';
 import { getChatbotProxy } from './httpChatbotProxy';
-import { PROVIDERS } from '../modules/singleSignOn/providers-configuration';
-import { HEADER_PROVIDER } from '../modules/singleSignOn/singleSignOn-provider-header';
-import { getSettings } from '../domain/settings';
+import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
+import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
+import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
+import { AuthenticationProviderError } from '../modules/authenticationProvider/providers-logger';
 
 export const sanitizeReferer = (refererToSanitize) => {
   // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
@@ -58,21 +59,6 @@ export const sanitizeReferer = (refererToSanitize) => {
   }
   logApp.info('Error auth provider callback : url has been altered', { url: refererToSanitize });
   return base2return;
-};
-
-const extractRefererPathFromReq = (req) => {
-  if (isEmptyField(req.headers.referer)) {
-    return undefined;
-  }
-
-  try {
-    const refererUrl = new URL(req.headers.referer);
-    // Keep only the pathname and search to prevent OPEN REDIRECT CWE-601
-    return refererUrl.pathname + refererUrl.search;
-  } catch {
-    // prevent any invalid referer
-    logApp.warn('Invalid referer for redirect extraction', { referer: req.headers.referer });
-  }
 };
 
 const publishFileDownload = async (executeContext, auth, file) => {
@@ -360,40 +346,21 @@ const createApp = async (app, schema) => {
   // -- Client HTTPS Cert login custom strategy
   app.get(`${basePath}/auth/cert`, async (req, res) => {
     try {
-      const context = executionContext('cert_strategy');
-      const redirect = extractRefererPathFromReq(req) ?? '/';
-      const settings = await getSettings(context);
-      const isActivated = settings.cert_auth?.enabled;
-      if (!isActivated) {
-        setCookieError(res, 'Cert authentication is not available');
-        res.redirect(redirect);
-      } else {
-        const cert = req.socket.getPeerCertificate();
-        if (isNotEmptyField(cert) && req.client.authorized) {
-          const { CN, emailAddress } = cert.subject;
-          if (isEmptyField(emailAddress)) {
-            setCookieError(res, 'Client certificate need a correct emailAddress');
-            res.redirect(redirect);
-          } else {
-            const userInfo = { email: emailAddress, name: isEmptyField(CN) ? emailAddress : CN };
-            loginFromProvider(userInfo)
-              .then(async (user) => {
-                await sessionAuthenticateUser(context, req, user, 'cert');
-                res.redirect(redirect);
-              })
-              .catch((err) => {
-                setCookieError(res, err?.message);
-                res.redirect(redirect);
-              });
-          }
-        } else {
-          setCookieError(res, 'You must select a correct certificate');
-          res.redirect(redirect);
-        }
-      }
+      await CERT_PROVIDER.reqLoginHandler(req, res);
     } catch (e) {
       setCookieError(res, e.message);
       logApp.error('Error auth by cert', { cause: e });
+      res.status(503).send({ status: 'error', error: e.message });
+    }
+  });
+
+  // -- Client HEADERS Cert login custom strategy
+  app.get(`${basePath}/auth/headers`, async (req, res) => {
+    try {
+      await HEADERS_PROVIDER.reqLoginHandler(req, res);
+    } catch (e) {
+      setCookieError(res, e.message);
+      logApp.error('Error auth by headers', { cause: e });
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
@@ -442,12 +409,14 @@ const createApp = async (app, schema) => {
               logApp.debug('[LOGOUT] OpenCTI logout only, remote logout on IDP not requested.');
               res.redirect(referer);
             }
-          } else if (HEADER_PROVIDER && provider === HEADER_PROVIDER.provider) {
-            res.redirect(HEADER_PROVIDER.logout_uri ?? referer);
+          } else if (HEADERS_PROVIDER && provider === HEADERS_PROVIDER.provider) {
+            res.redirect(HEADERS_PROVIDER.logout_uri ?? referer);
           } else {
             res.redirect(referer);
           }
         });
+      } else {
+        res.redirect(referer);
       }
     } catch (e) {
       setCookieError(res, e.message);
@@ -463,24 +432,24 @@ const createApp = async (app, schema) => {
       const strategy = passport._strategy(provider);
       const referer = extractRefererPathFromReq(req);
 
-      if (strategy._saml) {
-        // For SAML, no session is required, referer will be send back through RelayState
-        return passport.authenticate(
-          provider,
-          { additionalParams: { RelayState: referer } },
-          (err) => {
-            setCookieError(res, err?.message);
-            next(err);
-          },
-        )(req, res, next);
+      const isSaml = strategy._saml;
+
+      if (!isSaml) {
+        // For openid / oauth, session is required so we can use it
+        req.session.referer = referer;
       }
 
-      // For openid / oauth, session is required so we can use it
-      req.session.referer = referer;
+      // For SAML, no session is required, referer will be send back through RelayState
       return passport.authenticate(
         provider,
-        {},
+        isSaml ? { additionalParams: { RelayState: referer } } : {},
         (err) => {
+          if (err) {
+            const authLogger = strategy.logger;
+            if (authLogger) {
+              authLogger.error('Callback processing error', {}, err);
+            }
+          }
           setCookieError(res, err?.message);
           next(err);
         },
@@ -497,24 +466,37 @@ const createApp = async (app, schema) => {
   const urlencodedParser = AUTH_PAYLOAD_BODY_SIZE ? bodyParser.urlencoded({ extended: true, limit: AUTH_PAYLOAD_BODY_SIZE }) : bodyParser.urlencoded({ extended: true });
   app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, async (req, res, next) => {
     const { provider } = req.params;
+    const strategy = passport._strategy(provider);
 
     const callbackLogin = () => new Promise((accept, reject) => {
-      passport.authenticate(provider, {}, (err, user) => {
-        if (err || !user) {
-          reject(err);
-        } else {
-          accept(user);
-        }
-      })(req, res, next);
+      passport.authenticate(
+        provider,
+        {},
+        (err, user) => {
+          if (err || !user) {
+            const authLogger = strategy.logger;
+            if (authLogger) {
+              authLogger.error('Callback processing error', {}, err);
+            } else {
+              logApp.error('Error auth provider callback', { cause: err, provider });
+            }
+            reject(err);
+          } else {
+            accept(user);
+          }
+        })(req, res, next);
     });
 
     try {
       const context = executionContext(`${provider}_strategy`);
       const logged = await callbackLogin();
       await sessionAuthenticateUser(context, req, logged, provider);
-    } catch (e) {
-      logApp.error('Error auth provider callback', { cause: e, provider });
-      setCookieError(res, 'Invalid authentication, please ask your administrator');
+    } catch (err) {
+      if (err instanceof AuthenticationProviderError) {
+        setCookieError(res, err.message);
+      } else {
+        setCookieError(res, 'Invalid authentication, please ask your administrator');
+      }
     } finally {
       const referer = req.body?.RelayState ?? req.session.referer;
       const sanitizedReferer = sanitizeReferer(referer);

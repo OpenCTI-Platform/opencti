@@ -1,0 +1,415 @@
+import React, { useState } from 'react';
+import Box from '@mui/material/Box';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import IconButton from '@mui/material/IconButton';
+import Tag from '../../../../components/common/tag/Tag';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
+import { useTheme } from '@mui/styles';
+import Label from '../../../../components/common/label/Label';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import { EMPTY_VALUE } from '../../../../utils/String';
+import { ContentCopyOutlined, OpenInNewOutlined, ArrowUpward, ArrowDownward } from '@mui/icons-material';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { a11yDark, coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import type { Theme } from '../../../../components/Theme';
+import Drawer from '@components/common/drawer/Drawer';
+import { useFormatter } from '../../../../components/i18n';
+const formatTimestamp = (ts: string | unknown): string => {
+  if (!ts) return '—';
+  const d = new Date(ts as string);
+  if (Number.isNaN(d.getTime())) return '—';
+  const pad = (n: number, len = 2) => String(n).padStart(len, '0');
+  const ms = String(d.getMilliseconds()).padStart(3, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${ms}`;
+};
+
+export interface AuthLogEntryShape {
+  readonly timestamp: unknown;
+  readonly level: string;
+  readonly message: string;
+  readonly type: string;
+  readonly identifier: string;
+  readonly meta?: unknown;
+}
+
+interface AuthProviderLogTabProps {
+  name: string;
+  authLogHistory: ReadonlyArray<AuthLogEntryShape>;
+}
+
+const levelTagColor = (level: string, theme: Theme) => {
+  switch (level) {
+    case 'error':
+      return (theme.palette.error as { main?: string })?.main ?? theme.palette.text.secondary;
+    case 'warn':
+      return (theme.palette.warning as { main?: string })?.main ?? theme.palette.text.secondary;
+    case 'success':
+      return (theme.palette.success as { main?: string })?.main ?? theme.palette.text.secondary;
+    default:
+      return (theme.palette as { severity?: { default?: string } }).severity?.default ?? theme.palette.text.secondary;
+  }
+};
+
+const TIMESTAMP_WIDTH = '11.5rem';
+const LEVEL_WIDTH = '8rem';
+const DETAILS_PREVIEW_MAX_LEN = 56;
+
+type JsonTokenType = 'punctuation' | 'key' | 'string' | 'number' | 'keyword';
+type Segment = { type: JsonTokenType; value: string };
+
+const serializeToColoredSegments = (value: unknown, maxChars: number): { segments: Segment[]; truncated: boolean } => {
+  const segments: Segment[] = [];
+  let len = 0;
+  let truncated = false;
+
+  const add = (type: JsonTokenType, raw: string): void => {
+    truncated ||= (len + raw.length) > maxChars;
+    const take = Math.min(raw.length, maxChars - len);
+    if (take > 0) {
+      segments.push({ type, value: raw.slice(0, take) });
+      len += take;
+    }
+  };
+
+  const serialize = (val: unknown): void => {
+    if (val === null) {
+      add('keyword', 'null');
+    } else if (typeof val === 'boolean') {
+      add('keyword', val ? 'true' : 'false');
+    } else if (typeof val === 'number') {
+      add('number', Number.isFinite(val) ? String(val) : 'null');
+    } else if (Array.isArray(val)) {
+      add('punctuation', '[');
+      for (let i = 0; i < val.length && len < maxChars; i++) {
+        if (i > 0) add('punctuation', ',');
+        serialize(val[i]);
+      }
+      if (len < maxChars) add('punctuation', ']');
+    } else if (typeof val === 'object') {
+      add('punctuation', '{');
+      const entries = Object.entries(val);
+      for (let i = 0; i < entries.length && len < maxChars; i++) {
+        if (i > 0) add('punctuation', ',');
+        const [k, v] = entries[i];
+        add('key', JSON.stringify(k));
+        add('punctuation', ':');
+        serialize(v);
+      }
+      if (len < maxChars) add('punctuation', '}');
+    } else {
+      add('string', JSON.stringify(String(val)));
+    }
+  };
+  serialize(value);
+
+  return { segments, truncated };
+};
+
+// Align preview colors with Prism themes used in the details panel (a11yDark / coy)
+const jsonTokenColor = (type: JsonTokenType, theme: Theme): string => {
+  const isDark = theme.palette.mode === 'dark';
+  switch (type) {
+    case 'punctuation':
+      return isDark ? '#fefefe' : '#5F6364'; // a11yDark / coy
+    case 'key':
+      return isDark ? '#ffa07a' : '#c92c2c'; // property
+    case 'string':
+      return isDark ? '#abe338' : '#2f9c0a'; // string
+    case 'number':
+      return isDark ? '#00e0e0' : '#c92c2c'; // number
+    case 'keyword':
+      return isDark ? '#00e0e0' : '#1990b8'; // boolean, keyword (true/false/null)
+    default:
+      return theme.palette.text?.primary ?? '#000';
+  }
+};
+
+const AuthProviderLogTab: React.FC<AuthProviderLogTabProps> = ({ name, authLogHistory }) => {
+  const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+  const [detailsOpen, setDetailsOpen] = useState<{ index: number; entry: AuthLogEntryShape } | null>(null);
+
+  const handleCopyDetails = () => {
+    if (!detailsOpen?.entry?.meta) return;
+    navigator.clipboard.writeText(JSON.stringify(detailsOpen.entry.meta, null, 2));
+  };
+
+  if (!authLogHistory || authLogHistory.length === 0) {
+    return (
+      <Box sx={{ py: 2, color: 'text.secondary' }}>
+        No log entries yet. Logs appear here when authentication attempts or provider actions occur.
+      </Box>
+    );
+  }
+
+  return (
+    <>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          minHeight: 0,
+          overflow: 'hidden',
+        }}
+      >
+        <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+          <Table size="small" stickyHeader sx={{ tableLayout: 'fixed', width: '100%' }}>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 600, width: TIMESTAMP_WIDTH, minWidth: TIMESTAMP_WIDTH, backgroundColor: 'background.paper', zIndex: 1 }}>Timestamp</TableCell>
+                <TableCell sx={{ fontWeight: 600, width: LEVEL_WIDTH, minWidth: LEVEL_WIDTH, backgroundColor: 'background.paper', zIndex: 1 }}>Level</TableCell>
+                <TableCell sx={{ fontWeight: 600, width: '22%', backgroundColor: 'background.paper', zIndex: 1 }}>Message</TableCell>
+                <TableCell sx={{ fontWeight: 600, backgroundColor: 'background.paper', zIndex: 1 }}>Details</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {authLogHistory.map((entry, index) => (
+                <TableRow
+                  key={`${entry.timestamp}-${index}`}
+                  hover
+                  onClick={() => setDetailsOpen({ index, entry })}
+                  sx={{ cursor: 'pointer' }}
+                >
+                  <TableCell sx={{ whiteSpace: 'nowrap', width: TIMESTAMP_WIDTH, minWidth: TIMESTAMP_WIDTH, fontFamily: 'monospace', fontSize: '0.8125rem' }}>
+                    {formatTimestamp(entry.timestamp)}
+                  </TableCell>
+                  <TableCell sx={{ width: LEVEL_WIDTH, minWidth: LEVEL_WIDTH, overflow: 'visible', whiteSpace: 'nowrap' }}>
+                    <Tag
+                      label={entry.level}
+                      color={levelTagColor(entry.level, theme)}
+                      labelTextTransform="uppercase"
+                    />
+                  </TableCell>
+                  <TableCell sx={{ maxWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {entry.message}
+                  </TableCell>
+                  <TableCell sx={{ maxWidth: 0 }}>
+                    {entry.meta && Object.keys(entry.meta).length > 0 ? (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.25,
+                          minWidth: 0,
+                        }}
+                      >
+                        <Box
+                          component="span"
+                          onClick={() => setDetailsOpen({ index, entry })}
+                          sx={{
+                            flex: 1,
+                            minWidth: 0,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            fontSize: '0.75rem',
+                            fontFamily: 'monospace',
+                            cursor: 'pointer',
+                          }}
+                          title={(() => {
+                            try {
+                              const raw = JSON.stringify(entry.meta);
+                              return raw.length > DETAILS_PREVIEW_MAX_LEN ? `${raw.slice(0, DETAILS_PREVIEW_MAX_LEN)}…` : raw;
+                            } catch {
+                              return '—';
+                            }
+                          })()}
+                        >
+                          {(() => {
+                            const { segments, truncated } = serializeToColoredSegments(entry.meta, DETAILS_PREVIEW_MAX_LEN);
+                            if (segments.length === 0) return '—';
+                            return (
+                              <>
+                                {segments.map((seg, i) => (
+                                  <Box
+                                    key={i}
+                                    component="span"
+                                    sx={{ color: jsonTokenColor(seg.type, theme) }}
+                                  >
+                                    {seg.value}
+                                  </Box>
+                                ))}
+                                {truncated && (
+                                  <Box component="span" sx={{ color: 'text.secondary' }}>
+                                    …
+                                  </Box>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </Box>
+                        <Tooltip title={t_i18n('View full details')}>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDetailsOpen({ index, entry });
+                            }}
+                            sx={{ flexShrink: 0, padding: 0.25 }}
+                            aria-label={t_i18n('View full details')}
+                          >
+                            <OpenInNewOutlined sx={{ fontSize: '1rem' }} />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    ) : (
+                      '—'
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Box>
+      </Box>
+
+      <Drawer
+        title={`${t_i18n('Log details')} - ${name}`}
+        open={detailsOpen !== null}
+        onClose={() => setDetailsOpen(null)}
+        size="large"
+        header={
+          detailsOpen !== null && authLogHistory.length > 0 ? (
+            <Stack direction="row" alignItems="center" gap={0.5}>
+              <Tooltip title={t_i18n('Previous log')}>
+                <span>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      if (detailsOpen.index > 0) {
+                        const prevIndex = detailsOpen.index - 1;
+                        setDetailsOpen({ index: prevIndex, entry: authLogHistory[prevIndex] });
+                      }
+                    }}
+                    disabled={detailsOpen.index <= 0}
+                    aria-label={t_i18n('Previous log')}
+                  >
+                    <ArrowUpward fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip title={t_i18n('Next log')}>
+                <span>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      if (detailsOpen.index < authLogHistory.length - 1) {
+                        const nextIndex = detailsOpen.index + 1;
+                        setDetailsOpen({ index: nextIndex, entry: authLogHistory[nextIndex] });
+                      }
+                    }}
+                    disabled={detailsOpen.index >= authLogHistory.length - 1}
+                    aria-label={t_i18n('Next log')}
+                  >
+                    <ArrowDownward fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Stack>
+          ) : undefined
+        }
+      >
+        {detailsOpen !== null ? (
+          <Stack
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+            gap={2}
+          >
+            <Box sx={{ flexShrink: 0 }}>
+              <Label>{t_i18n('Timestamp')}</Label>
+              <Typography variant="body1" gutterBottom fontFamily="monospace">
+                {formatTimestamp(detailsOpen.entry.timestamp) || EMPTY_VALUE}
+              </Typography>
+            </Box>
+            <Box sx={{ flexShrink: 0 }}>
+              <Label>{t_i18n('Level')}</Label>
+              <Box sx={{ mt: 0.5 }}>
+                <Tag
+                  label={detailsOpen.entry.level}
+                  color={levelTagColor(detailsOpen.entry.level, theme)}
+                  labelTextTransform="uppercase"
+                />
+              </Box>
+            </Box>
+            <Box sx={{ flexShrink: 0 }}>
+              <Label>{t_i18n('Message')}</Label>
+              <FieldOrEmpty source={detailsOpen.entry.message}>
+                <Typography variant="body1" gutterBottom sx={{ wordBreak: 'break-word' }}>
+                  {detailsOpen.entry.message}
+                </Typography>
+              </FieldOrEmpty>
+            </Box>
+            <Box
+              sx={{
+                flex: 1,
+                minHeight: 0,
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                <Label>{t_i18n('Details')}</Label>
+                <Tooltip title={t_i18n('Copy')}>
+                  <IconButton
+                    size="small"
+                    onClick={handleCopyDetails}
+                    sx={{ padding: 0.25 }}
+                    aria-label={t_i18n('Copy')}
+                    disabled={detailsOpen.entry.meta == null || Object.keys(detailsOpen.entry.meta).length === 0}
+                  >
+                    <ContentCopyOutlined sx={{ fontSize: '1rem' }} />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              {detailsOpen.entry.meta != null && Object.keys(detailsOpen.entry.meta).length > 0 ? (
+                <Box
+                  sx={{
+                    flex: 1,
+                    minHeight: 0,
+                    borderRadius: 1,
+                    overflow: 'auto',
+                    mt: 0.5,
+                    '& pre': { margin: 0 },
+                  }}
+                >
+                  <SyntaxHighlighter
+                    language="json"
+                    style={theme.palette.mode === 'dark' ? a11yDark : coy}
+                    customStyle={{
+                      margin: 0,
+                      padding: 16,
+                      fontSize: '0.8125rem',
+                      minHeight: '100%',
+                      borderRadius: 4,
+                    }}
+                    showLineNumbers={false}
+                  >
+                    {JSON.stringify(detailsOpen.entry.meta, null, 2)}
+                  </SyntaxHighlighter>
+                </Box>
+              ) : (
+                <Typography variant="body1" gutterBottom sx={{ flexShrink: 0 }}>
+                  {t_i18n('Not provided')}
+                </Typography>
+              )}
+            </Box>
+          </Stack>
+        ) : null}
+      </Drawer>
+    </>
+  );
+};
+
+export default AuthProviderLogTab;

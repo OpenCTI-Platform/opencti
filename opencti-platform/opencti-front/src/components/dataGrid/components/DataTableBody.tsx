@@ -24,6 +24,7 @@ const DataTableBody = ({
     resolvePath,
     tableWidthState: [tableWidth],
     actions,
+    actionsColumnWidth,
     columns,
     dataQueryArgs,
     useDataTableToggle: {
@@ -130,14 +131,15 @@ const DataTableBody = ({
     };
   }, [settingsMessagesBannerHeight, rootRef, filters]);
 
+  const endActionsWidth = actionsColumnWidth ?? SELECT_COLUMN_SIZE;
   const rowWidth = useMemo(() => (
     Math.floor(columns.reduce((acc, col) => {
       if (col.percentWidth) {
         return acc + tableWidth * (col.percentWidth / 100);
       }
       return acc + (col.id === 'icon' ? ICON_COLUMN_SIZE : SELECT_COLUMN_SIZE);
-    }, actions ? SELECT_COLUMN_SIZE + 9 : 9)) // 9 is for scrollbar.
-  ), [columns, tableWidth]);
+    }, actions ? endActionsWidth + 9 : 9)) // 9 is for scrollbar.
+  ), [columns, tableWidth, actions, endActionsWidth]);
 
   const containerLinesStyle: CSSProperties = {
     overflow: 'hidden auto',
