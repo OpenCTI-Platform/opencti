@@ -1,5 +1,6 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
+import type { StixDomainObject as StixDomainObject2 } from '../../types/stix-2-0-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 
 export const ENTITY_TYPE_CHANNEL = 'Channel';
@@ -17,7 +18,7 @@ export interface StoreEntityChannel extends StoreEntity {
 }
 // endregion
 
-// region Stix type
+// region Stix 2.1 type
 export interface StixChannel extends StixDomainObject {
   name: string;
   description: string;
@@ -26,5 +27,14 @@ export interface StixChannel extends StixDomainObject {
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
+}
+// endregion
+
+// region Stix 2.0 type
+export interface Stix2Channel extends StixDomainObject2 {
+  name: string;
+  description: string;
+  channel_types: Array<string>;
+  aliases: Array<string>;
 }
 // endregion

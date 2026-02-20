@@ -10,18 +10,42 @@ import { EXPECTED_TASK, TASK_INSTANCE } from './instances-stix-2-0-converter/con
 import { EXPECTED_IR, INCIDENT_RESPONSE_INSTANCE } from './instances-stix-2-0-converter/containers/incident_response';
 import { EXPECTED_RFT, RFT_INSTANCE } from './instances-stix-2-0-converter/containers/case_rft';
 import { EXPECTED_RFI, RFI_INSTANCE } from './instances-stix-2-0-converter/containers/case_rfi';
-import { convertMalwareToStix, convertNoteToStix, convertObservedDataToStix, convertOpinionToStix, convertReportToStix } from '../../../src/database/stix-2-0-converter';
+import { EXPECTED_TOOL, TOOL_INSTANCE } from './instances-stix-2-0-converter/tool';
+import { EXPECTED_VULNERABILITY, INSTANCE_VULNERABILITY } from './instances-stix-2-0-converter/vulnerability';
+import { CHANNEL_INSTANCE, EXPECTED_CHANNEL } from './instances-stix-2-0-converter/channel';
 import { convertGroupingToStix_2_0 } from '../../../src/modules/grouping/grouping-converter';
 import { convertFeedbackToStix_2_0 } from '../../../src/modules/case/feedback/feedback-converter';
 import { convertTaskToStix_2_0 } from '../../../src/modules/task/task-converter';
 import { convertCaseIncidentToStix_2_0 } from '../../../src/modules/case/case-incident/case-incident-converter';
 import { convertCaseRftToStix_2_0 } from '../../../src/modules/case/case-rft/case-rft-converter';
 import { convertCaseRfiToStix_2_0 } from '../../../src/modules/case/case-rfi/case-rfi-converter';
+import { convertChannelToStix_2_0 } from '../../../src/modules/channel/channel-converter';
+import {
+  convertToolToStix,
+  convertVulnerabilityToStix,
+  convertMalwareToStix,
+  convertNoteToStix,
+  convertObservedDataToStix,
+  convertOpinionToStix,
+  convertReportToStix,
+} from '../../../src/database/stix-2-0-converter';
 
 describe('Stix 2.0 opencti converter', () => {
   it('should convert Malware', async () => {
     const result = convertMalwareToStix(MALWARE_INSTANCE);
     expect(result).toEqual(EXPECTED_MALWARE);
+  });
+  it('should convert Channel', async () => {
+    const result = convertChannelToStix_2_0(CHANNEL_INSTANCE);
+    expect(result).toEqual(EXPECTED_CHANNEL);
+  });
+  it('should convert Tool', async () => {
+    const result = convertToolToStix(TOOL_INSTANCE);
+    expect(result).toEqual(EXPECTED_TOOL);
+  });
+  it('should convert Vulnerability', async () => {
+    const result = convertVulnerabilityToStix(INSTANCE_VULNERABILITY);
+    expect(result).toEqual(EXPECTED_VULNERABILITY);
   });
   it('should convert Report', async () => {
     const result = convertReportToStix(REPORT_INSTANCE);
