@@ -4100,50 +4100,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@svgdotjs/svg.draggable.js@npm:^3.0.4":
-  version: 3.0.6
-  resolution: "@svgdotjs/svg.draggable.js@npm:3.0.6"
-  peerDependencies:
-    "@svgdotjs/svg.js": ^3.2.4
-  checksum: 10c0/f70a857f776a244ab11cc7fa7f26c4d580f0236ee8fcbf02d882ed9057b37f2af57a69528a22f608495c5e191321d25a4bdc17ba33f16a562ff2f6fcd93b9c50
-  languageName: node
-  linkType: hard
-
-"@svgdotjs/svg.filter.js@npm:^3.0.8":
-  version: 3.0.9
-  resolution: "@svgdotjs/svg.filter.js@npm:3.0.9"
-  dependencies:
-    "@svgdotjs/svg.js": "npm:^3.2.4"
-  checksum: 10c0/6dd0d674e7fe2e8da49921da8762cc728b9918a0d13d38edad5567483a56d58fb53310b070b040a1982d8a03e9fda2c7e36e9b5b19fe21974976a0fd5b109b50
-  languageName: node
-  linkType: hard
-
-"@svgdotjs/svg.js@npm:^3.2.4":
-  version: 3.2.5
-  resolution: "@svgdotjs/svg.js@npm:3.2.5"
-  checksum: 10c0/c0b3b801166a3a99a6a451ccbb1230f47b6e1533697a36c3d366d6a828bffd076fa318e75a6165912f58687dc796492ce1138e350b61da7270d96d4d034cd044
-  languageName: node
-  linkType: hard
-
-"@svgdotjs/svg.resize.js@npm:^2.0.2":
-  version: 2.0.5
-  resolution: "@svgdotjs/svg.resize.js@npm:2.0.5"
-  peerDependencies:
-    "@svgdotjs/svg.js": ^3.2.4
-    "@svgdotjs/svg.select.js": ^4.0.1
-  checksum: 10c0/ed15cec857ee900c04e044391efb7b927adab20dda056b664df8b4e6409c08a84f6f150119621a65ac835d6fd6da13770f6abcef76ae78ad9f7d60bbc0f9fa94
-  languageName: node
-  linkType: hard
-
-"@svgdotjs/svg.select.js@npm:^4.0.1":
-  version: 4.0.3
-  resolution: "@svgdotjs/svg.select.js@npm:4.0.3"
-  peerDependencies:
-    "@svgdotjs/svg.js": ^3.2.4
-  checksum: 10c0/b8f253d6d6d76122e5b39347a95caefe533454148307857606a4582f319c5ed282bce30d946f827bec3d3712e237b824b820c7fda02ea44f5fe4d828ac83a59f
-  languageName: node
-  linkType: hard
-
 "@swc/helpers@npm:^0.5.0":
   version: 0.5.18
   resolution: "@swc/helpers@npm:0.5.18"
@@ -5757,17 +5713,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apexcharts@npm:4.4.0":
-  version: 4.4.0
-  resolution: "apexcharts@npm:4.4.0"
+"apexcharts@npm:5.6.0":
+  version: 5.6.0
+  resolution: "apexcharts@npm:5.6.0"
   dependencies:
-    "@svgdotjs/svg.draggable.js": "npm:^3.0.4"
-    "@svgdotjs/svg.filter.js": "npm:^3.0.8"
-    "@svgdotjs/svg.js": "npm:^3.2.4"
-    "@svgdotjs/svg.resize.js": "npm:^2.0.2"
-    "@svgdotjs/svg.select.js": "npm:^4.0.1"
     "@yr/monotone-cubic-spline": "npm:^1.0.3"
-  checksum: 10c0/e78b4e5359d9be0bb02741be9a6ee404f4eef1c9980841d18018cf61757499440e67b96d16b680e1ced3221acceb6c94f1355f50217e784a7c78894c4e0ebba2
+  checksum: 10c0/0384247e9fc9720f6d61f2b30704ba9a01d09ab5c13f6fd346a15baad1196f080ed92edf38f4bc893b8c2fafdae962bff7d9961bb1071e86868dee455fcfec36
   languageName: node
   linkType: hard
 
@@ -12256,7 +12207,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:5.1.3"
     "@vitest/coverage-v8": "npm:4.0.18"
     analytics: "npm:0.8.19"
-    apexcharts: "npm:4.4.0"
+    apexcharts: "npm:5.6.0"
     axios: "npm:1.13.5"
     babel-plugin-relay: "npm:20.1.1"
     buffer: "npm:6.0.3"
