@@ -88,8 +88,8 @@ export const SecretFieldControl: React.FC<SecretFieldControlProps> = ({
                 }}
                 label={label}
               >
-                <MenuItem value="keep">{t_i18n('Keep current')}</MenuItem>
-                <MenuItem value="override">{t_i18n('Override')}</MenuItem>
+                <MenuItem value="keep">{t_i18n('Keep existing secret')}</MenuItem>
+                <MenuItem value="override">{t_i18n('Set a new secret')}</MenuItem>
               </Select>
             </FormControl>
             {action === 'override' && (
