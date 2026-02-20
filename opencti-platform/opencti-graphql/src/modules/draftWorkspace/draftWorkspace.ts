@@ -20,6 +20,10 @@ const DRAFT_WORKSPACE_DEFINITION: ModuleDefinition<StoreEntityDraftWorkspace, St
       [ENTITY_TYPE_DRAFT_WORKSPACE]: () => uuidv4(),
     },
   },
+  overviewLayoutCustomization: [
+    { key: 'details', width: 6, label: 'Entity details' },
+    { key: 'basicInformation', width: 6, label: 'Basic information' },
+  ],
   attributes: [
     createdAt,
     { name: 'name', label: 'Draft name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },

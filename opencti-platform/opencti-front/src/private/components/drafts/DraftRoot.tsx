@@ -24,6 +24,7 @@ import { TEN_SECONDS } from '../../../utils/Time';
 import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import useSwitchDraft from './useSwitchDraft';
 import { DraftRootFragment$key } from './__generated__/DraftRootFragment.graphql';
+import DraftOverview from '@components/drafts/DraftOverview';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -35,11 +36,28 @@ const draftRootQuery = graphql`
   }
 `;
 
-const draftRootFragment = graphql`
+export const draftRootFragment = graphql`
   fragment DraftRootFragment on DraftWorkspace {
     id
     name
+    entity_type
+    description
     created_at
+    objectAssignee {
+      id
+      name
+      entity_type
+    }
+    objectParticipant {
+      id
+      name
+      entity_type
+    }
+    createdBy {
+      id
+      name
+      entity_type
+    }
     objectsCount {
       containersCount
       entitiesCount
@@ -94,17 +112,18 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
   const draftContext = useDraftContext();
   const canAskImportKnowledge = useGranted([KNOWLEDGE_KNASKIMPORT]);
 
-  const { draftWorkspace } = usePreloadedQuery<DraftRootQuery>(draftRootQuery, queryRef);
-  if (!draftWorkspace) {
+  const { draftWorkspace: draftWorkspaceFragment } = usePreloadedQuery<DraftRootQuery>(draftRootQuery, queryRef);
+  if (!draftWorkspaceFragment) {
     return (<ErrorNotFound />);
   }
 
+  const draft = useFragment<DraftRootFragment$key>(draftRootFragment, draftWorkspaceFragment);
   const {
     name,
     objectsCount,
     draft_status,
     validationWork,
-  } = useFragment<DraftRootFragment$key>(draftRootFragment, draftWorkspace);
+  } = draft;
   const isDraftReadOnly = draft_status !== 'open';
 
   // switch to draft
@@ -185,6 +204,14 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
         >
           <Tab
             component={Link}
+            to={`/dashboard/data/import/draft/${draftId}/overview`}
+            value={`/dashboard/data/import/draft/${draftId}/overview`}
+            label={
+              <span>{t_i18n('Overview')}</span>
+            }
+          />
+          <Tab
+            component={Link}
             to={`/dashboard/data/import/draft/${draftId}/entities`}
             value={`/dashboard/data/import/draft/${draftId}/entities`}
             label={
@@ -237,6 +264,10 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
         <Route
           path="/"
           element={<Navigate to={`/dashboard/data/import/draft/${draftId}/entities`} replace={true} />}
+        />
+        <Route
+          path="/overview"
+          element={<DraftOverview draft={draft} />}
         />
         <Route
           path="/entities"
