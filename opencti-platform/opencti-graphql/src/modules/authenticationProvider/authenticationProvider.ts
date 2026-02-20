@@ -3,13 +3,10 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_AUTHENTICATION_PROVIDER, type StixAuthenticationProvider, type StoreEntityAuthenticationProvider } from './authenticationProvider-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import convertAuthenticationProviderToStix from './authenticationProvider-converter';
-import { isFeatureEnabled } from '../../config/conf';
 import { AuthenticationProviderType } from '../../generated/graphql';
 import { refreshedAt } from '../../schema/attribute-definition';
 
 const AuthenticationProviderTypeList = Object.values(AuthenticationProviderType);
-
-export const AUTHENTICATION_PROVIDER_IN_UI_FF = 'AUTHENTICATION_PROVIDER_IN_UI_ENABLED';
 
 const AUTHENTICATION_PROVIDER_DEFINITION: ModuleDefinition<StoreEntityAuthenticationProvider, StixAuthenticationProvider> = {
   type: {
@@ -40,5 +37,4 @@ const AUTHENTICATION_PROVIDER_DEFINITION: ModuleDefinition<StoreEntityAuthentica
   converter_2_1: convertAuthenticationProviderToStix,
 };
 
-export const isAuthenticationProviderInGuiEnabled = isFeatureEnabled(AUTHENTICATION_PROVIDER_IN_UI_FF);
 registerDefinition(AUTHENTICATION_PROVIDER_DEFINITION);
