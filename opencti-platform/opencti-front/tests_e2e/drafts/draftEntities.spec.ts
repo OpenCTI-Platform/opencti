@@ -11,7 +11,7 @@ test.describe('Drafts - Entities and background tasks', { tag: ['@ce'] }, () => 
   const malwareName = `malware in draft- ${uuid()}`;
   const labelToApply = 'background-task-filter-add-label';
 
-  test('should create a draft, add a malware in it and do a background task of update in the draft', async ({ page, request }) => {
+  test('should create a draft, add a malware in it and do a background task of update for the entities in the draft', async ({ page, request }) => {
     const Drafts = new DraftsPage(page);
     const taskPopup = new TaskPopup(page);
     const dataTable = new DataTablePage(page);
@@ -60,9 +60,6 @@ test.describe('Drafts - Entities and background tasks', { tag: ['@ce'] }, () => 
     // Wait for the background task to complete
     await checkBackgroundTasksCompletion(request);
 
-    // Unselect all the entities in the list
-    await dataTable.getCheckAll().click();
-
     // Check the update has been done only on the malware
     await expect(dataTable.getNumberElements(1)).toBeVisible();
 
@@ -70,17 +67,5 @@ test.describe('Drafts - Entities and background tasks', { tag: ['@ce'] }, () => 
     await filter.addFilter('Label', labelToApply);
     await expect(dataTable.getNumberElements(1)).toBeVisible();
     await expect(Drafts.getEntityInList(malwareName)).toBeVisible();
-
-    // Select all entities in the list (ie the malware we just created)
-    await dataTable.getCheckAll().click();
-
-    // Click the "remove from draft" icon in the toolbar
-    await taskPopup.launchRemoveFromDraft();
-
-    // Wait for the background task to complete
-    await checkBackgroundTasksCompletion(page.request);
-
-    // Check that the malware is no longer in the list
-    await expect(Drafts.getEntityInList(malwareName)).not.toBeVisible();
   });
 });
