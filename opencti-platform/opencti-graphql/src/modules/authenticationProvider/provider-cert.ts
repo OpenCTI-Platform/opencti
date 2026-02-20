@@ -14,7 +14,7 @@ export const CERT_PROVIDER_NAME = 'Cert';
 export let CERT_PROVIDER: ProviderConfiguration | undefined = undefined;
 
 export const registerCertStrategy = async () => {
-  const logger = createAuthLogger(CERT_PROVIDER_NAME, CERT_PROVIDER_NAME);
+  const logger = createAuthLogger(CERT_PROVIDER_NAME, CERT_PROVIDER_NAME, CERT_PROVIDER_NAME);
 
   const handleCertAuthenticationRequest = async (req: Request, res: Response) => {
     const context = executionContext('cert_strategy');

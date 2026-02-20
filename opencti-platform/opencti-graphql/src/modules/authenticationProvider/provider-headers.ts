@@ -14,7 +14,7 @@ export const HEADERS_PROVIDER_NAME = 'Headers';
 export let HEADERS_PROVIDER: ProviderConfiguration | undefined = undefined;
 
 export const registerHeadersStrategy = async (context: AuthContext) => {
-  const logger = createAuthLogger(HEADERS_PROVIDER_NAME, HEADERS_PROVIDER_NAME);
+  const logger = createAuthLogger(HEADERS_PROVIDER_NAME, HEADERS_PROVIDER_NAME, HEADERS_PROVIDER_NAME);
 
   const handleHeadersAuthenticationRequest = async (req: Request, res: Response) => {
     const settings = await getSettings(context) as unknown as BasicStoreSettings;
