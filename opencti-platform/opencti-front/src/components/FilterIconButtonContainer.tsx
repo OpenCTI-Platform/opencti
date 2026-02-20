@@ -194,7 +194,7 @@ const FilterIconButtonContainer: FunctionComponent<
     display: 'flex',
     flexWrap: 'wrap',
     gap: 1,
-    overflow: 'auto',
+    overflow: 'hidden',
     backgroundColor: hasSavedFilters ? 'rgba(37, 150, 190, 0.3)' : 'transparent',
     borderRadius: hasSavedFilters ? '4px' : '0px',
   };
