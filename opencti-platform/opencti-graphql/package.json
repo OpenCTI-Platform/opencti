@@ -86,7 +86,7 @@
     "@pyroscope/nodejs": "0.4.9",
     "@sesamecare-oss/redlock": "1.4.0",
     "ae-cvss-calculator": "1.0.9",
-    "ajv": "8.17.1",
+    "ajv": "8.18.0",
     "ajv-formats": "3.0.1",
     "amqplib": "0.10.9",
     "antlr4": "4.13.2",
