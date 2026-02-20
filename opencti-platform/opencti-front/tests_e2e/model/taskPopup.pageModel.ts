@@ -20,9 +20,4 @@ export default class TaskPopup {
     await this.page.getByRole('button', { name: 'Update' }).click();
     await this.page.getByRole('button', { name: 'Launch' }).click();
   }
-
-  async launchRemoveFromDraft() {
-    await this.page.getByLabel('Remove from draft', { exact: true }).getByLabel('remove_from_draft').click();
-    await this.page.getByRole('button', { name: 'Launch' }).click();
-  }
 }
