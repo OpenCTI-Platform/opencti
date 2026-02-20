@@ -2285,6 +2285,9 @@ const buildFieldForQuery = (field: string) => {
     ? field
     : `${field}.keyword`;
 };
+const buildFieldForScriptQuery = (field: string) => {
+  return buildFieldForQuery(field).replace('*', 'internal_id');
+};
 export const buildLocalMustFilter = (validFilter: any) => {
   const valuesFiltering = [];
   const noValuesFiltering = [];
@@ -2294,7 +2297,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
   }
   const arrayKeys = Array.isArray(key) ? key : [key];
   const headKey = R.head(arrayKeys);
-  const dontHandleMultipleKeys = nested || operator === 'nil' || operator === 'not_nil';
+  const dontHandleMultipleKeys = nested || operator === 'nil' || operator === 'not_nil' || operator === 'only_eq_to';
   if (dontHandleMultipleKeys && arrayKeys.length > 1) {
     throw UnsupportedError('Filter must have only one field', { keys: arrayKeys, operator });
   }
@@ -2561,11 +2564,14 @@ export const buildLocalMustFilter = (validFilter: any) => {
               },
             });
           } else if (operator === 'only_eq_to') {
+            if (arrayKeys.length > 1) {
+              throw UnsupportedError('Filter with `only_eq_to` operator must have only one field', { keys: arrayKeys });
+            }
             valuesFiltering.push({
               script: {
                 script: {
                   source: `
-                    def fieldValues = doc['rel_object-label.internal_id.keyword'];
+                    def fieldValues = doc['${buildFieldForScriptQuery(headKey)}'];
                     if (fieldValues == null || fieldValues.length == 0) return false;
                     def filterValues = params.values;
                     if (params.mode == 'and') {
