@@ -3,7 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { StixCoreObjectSharingListDeleteMutation } from './__generated__/StixCoreObjectSharingListDeleteMutation.graphql';
 import { StixCoreObjectSharingListFragment$key } from './__generated__/StixCoreObjectSharingListFragment.graphql';
 import Tag from '@common/tag/Tag';
@@ -39,10 +38,8 @@ interface StixCoreObjectSharingListProps {
 }
 
 const StixCoreObjectSharingList = ({ data, disabled, inContainer, children }: StixCoreObjectSharingListProps) => {
-  const draftContext = useDraftContext();
   const { t_i18n } = useFormatter();
-  const disabledInDraft = !!draftContext;
-  const fullyDisabled = disabled || disabledInDraft;
+  const fullyDisabled = disabled;
   const notifySuccessMessage = (
     <span>
       {t_i18n(

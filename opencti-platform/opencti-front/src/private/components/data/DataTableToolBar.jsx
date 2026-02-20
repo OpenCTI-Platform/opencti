@@ -2490,7 +2490,7 @@ class DataTableToolBar extends Component {
                         </Tooltip>
                       </Security>
                     )}
-                    {!trashOperationsEnabled && isShareableType && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
+                    {!trashOperationsEnabled && isShareableType && !removeAuthMembersEnabled && !isUserDatatable && (
                       <>
                         <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
                           <EETooltip title={t('Share with organizations')}>
