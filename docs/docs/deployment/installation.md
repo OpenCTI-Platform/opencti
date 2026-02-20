@@ -4,9 +4,9 @@ All components of OpenCTI are shipped both as [Docker images](https://hub.docker
 
 !!! note "Production deployment"
 
-    For production deployment, we recommend to deploy all components in containers, including dependencies, using native cloud services or orchestration systems such as [Kubernetes](https://kubernetes.io).
+    For production deployment, we recommend deploying all components in containers, including dependencies, using native cloud services or orchestration systems such as [Kubernetes](https://kubernetes.io).
 
-    To have more details about deploying OpenCTI and its dependencies in cluster mode, please read the [dedicated section](clustering.md).
+    To get more details about deploying OpenCTI and its dependencies in cluster mode, please read the [dedicated section](clustering.md).
 
 <div class="grid cards" markdown>
 
@@ -15,7 +15,7 @@ All components of OpenCTI are shipped both as [Docker images](https://hub.docker
     ---
 
     Deploy OpenCTI using Docker and the default `docker-compose.yml` provided
-    in the [docker](https://github.com/OpenCTI-Platform/docker).
+    in the [docker repository](https://github.com/OpenCTI-Platform/docker).
 
     [:octicons-arrow-right-24:{ .middle } Setup](#using-docker)
 
@@ -41,7 +41,7 @@ OpenCTI can be deployed using the *docker-compose* command.
 
     We provide FIPS 140-2 compliant images. Please read the [dedicated documentation](../reference/fips.md) to understand how to deploy OpenCTI in FIPS-compliant mode.
 
-### Pre-requisites
+### Prerequisites
 
 **:material-linux:{ .middle } Linux**
 
@@ -100,7 +100,7 @@ You can either rename the file `.env.sample` as `.env` and enter the values or j
 
     The complete list of available static parameters is available in the [configuration](configuration.md) section.
 
-Here is an example to quickly generate the `.env` file under Linux, especially all the default UUIDv4:
+Here is an example to quickly generate the `.env` file on Linux, including all default UUIDv4 values:
 
 ```bash
 sudo apt install -y jq
@@ -140,7 +140,7 @@ As OpenCTI has a dependency on ElasticSearch, you have to set `vm.max_map_count`
 sudo sysctl -w vm.max_map_count=1048575
 ```
 
-To make this parameter persistent, add the following to the end of your `/etc/sysctl.conf`:
+To make this parameter persistent, add the following at the end of your `/etc/sysctl.conf`:
 
 ```bash
 vm.max_map_count=1048575
@@ -210,7 +210,7 @@ sudo apt-get install build-essential nodejs npm python3 python3-pip python3-dev
 
 #### Download the application files
 
-First, you have to [download and extract the latest release file](https://github.com/OpenCTI-Platform/opencti/releases). Then select the version to install depending of your operating system:
+First, you have to [download and extract the latest release file](https://github.com/OpenCTI-Platform/opencti/releases). Then select the version to install depending on your operating system:
 
 **For Linux:**
 
@@ -219,7 +219,7 @@ First, you have to [download and extract the latest release file](https://github
 
 **For Windows:**
 
-We don't provide any Windows release for now. However it is still possible to check the code out, manually install the dependencies and build the software.
+We currently don't provide any Windows release. However, it is still possible to check-out the code, manually install the dependencies and build the software.
 
 ```bash
 mkdir /path/to/your/app && cd /path/to/your/app
@@ -227,11 +227,11 @@ wget <https://github.com/OpenCTI-Platform/opencti/releases/download/{RELEASE_VER
 tar xvfz opencti-release-{RELEASE_VERSION}.tar.gz
 ```
 
-### Install the main platform
+### Install the platform core
 
 #### Configure the application
 
-The main application has just one JSON configuration file to change and a few Python modules to install
+The main application has just one JSON configuration file to change and a few Python modules to install.
 
 ```bash
 cd opencti
@@ -250,11 +250,11 @@ cd ../..
 
 #### Start the application
 
-The application is just a NodeJS process, the creation of the database schema and the migration will be done at starting.
+The application is a single NodeJS process. The creation of the database schema and potential data migrations happen during startup.
 
-> Please verify NodeJS version is greater or equals to v20 and corepack is installed.
-> Please note that some Node.js version are outdated in linux package manager, you can download a recent one in https://nodejs.org/en/download or alternatively nvm can help to chose a recent version of Node.js https://github.com/nvm-sh/nvm
-> To install corepack, execute the following command after the installation of nodejs: `npm install -g corepack`
+> Please verify Node.js version is greater than or equal to v20, and that corepack is installed.
+> Please note that some Node.js versions are outdated in linux package managers. You can download a recent one at https://nodejs.org/en/download. Alternatively, consider using nvm (https://github.com/nvm-sh/nvm) to help pick a recent version of Node.js.
+> To install corepack, execute the following command after the installation of Node.js: `npm install -g corepack`
 
 ```bash
 node --version
@@ -263,18 +263,19 @@ corepack --version
 #0.34.0
 ```
 
-Once Node.js is setup, you can build and run with (from inside `opencti` folder):
+Once Node.js is set up, you can build and run the application with (from inside `opencti` folder):
+
 ```bash
 yarn install
 yarn build
 yarn serv
 ```
 
-The default username and password are those you have put in the `config/production.json` file.
+The default username and password are those you have set in the `config/production.json` file.
 
 ### Install the worker
 
-The OpenCTI worker is used to write the data coming from the RabbitMQ messages broker.
+The OpenCTI worker is used to write the data coming from the RabbitMQ message brokers.
 
 #### Configure the worker
 
@@ -366,20 +367,20 @@ OpenCTI platform is based on a NodeJS runtime, with a memory limit of **8GB by d
 
 #### Workers and connectors
 
-OpenCTI workers and connectors are Python processes. If you want to limit the memory of the process, we recommend to directly use Docker to do that. You can find more information in the [official Docker documentation](https://docs.docker.com/compose/compose-file/).
+OpenCTI workers and connectors are Python processes. If you want to limit the memory of the process, we recommend directly using Docker to do that. You can find more information in the [official Docker documentation](https://docs.docker.com/compose/compose-file/).
 
 #### ElasticSearch
 
-ElasticSearch is also a JAVA process. In order to setup the JAVA memory allocation, you can use the environment variable `ES_JAVA_OPTS`. You can find more information in the [official ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html).
+ElasticSearch is also a JAVA process. In order to set up the JAVA memory allocation, you can use the `ES_JAVA_OPTS` environment variable. You can find more information in the [official ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html).
 
 #### Redis
 
-Redis has a very small footprint on keys but will consume memory for the stream. By default the size of the stream is limited to 2 millions which represents a memory footprint around `8 GB`. You can find more information in the [Redis docker hub](https://hub.docker.com/_/redis).
+Redis has a very small footprint on keys but will consume memory for the stream. By default, the size of the stream is limited to 2 million which represents a memory footprint of about `8 GB`. You can find more information in the [Redis docker hub](https://hub.docker.com/_/redis).
 
 #### MinIO / S3 Bucket
 
-MinIO is a small process and does not require a high amount of memory. More information are available for Linux here on the [Kernel tuning guide](https://github.com/minio/minio/tree/master/docs/deployment/kernel-tuning).
+MinIO is a small process and does not require a high amount of memory. More information is available for Linux in the [Kernel tuning guide](https://github.com/minio/minio/tree/master/docs/deployment/kernel-tuning).
 
 #### RabbitMQ
 
-The RabbitMQ memory configuration can be find in the [RabbitMQ official documentation](https://www.rabbitmq.com/memory.html). RabbitMQ will consumed memory until a specific threshold, therefore it should be configure along with the Docker memory limitation.
+The RabbitMQ memory configuration can be found in the [official RabbitMQ documentation](https://www.rabbitmq.com/memory.html). RabbitMQ will consume memory until it reaches a specific threshold, so it should be configured in alignment with Docker's memory limitations.
