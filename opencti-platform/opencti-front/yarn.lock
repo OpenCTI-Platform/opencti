@@ -12311,7 +12311,7 @@ __metadata:
     qrcode: "npm:1.5.4"
     ramda: "npm:0.32.0"
     react: "npm:19.2.4"
-    react-apexcharts: "npm:1.7.0"
+    react-apexcharts: "npm:2.0.1"
     react-color: "npm:2.19.3"
     react-compound-slider: "npm:3.4.0"
     react-cookie: "npm:8.0.1"
@@ -12918,15 +12918,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-apexcharts@npm:1.7.0":
-  version: 1.7.0
-  resolution: "react-apexcharts@npm:1.7.0"
+"react-apexcharts@npm:2.0.1":
+  version: 2.0.1
+  resolution: "react-apexcharts@npm:2.0.1"
   dependencies:
     prop-types: "npm:^15.8.1"
   peerDependencies:
-    apexcharts: ">=4.0.0"
-    react: ">=0.13"
-  checksum: 10c0/0533cd8b44df4d6a0b157c8a8adbcddb33a0575420b3fa1b5c90fa8553a39884bcc1122cce912252e452c8bffd1c4eaf2d9f9cfa4e515e81e7067fa36fcffe52
+    apexcharts: ">=5.6.0"
+    react: ">=16.8.0"
+  checksum: 10c0/dc44202443c2a48fbe3f65b327159862fef2cae0322a03cd860a9f315f076e258bea099e22421b0e9650faed51b1e52d4b92bcc309c294caa21e11fc82e4894f
   languageName: node
   linkType: hard
 
