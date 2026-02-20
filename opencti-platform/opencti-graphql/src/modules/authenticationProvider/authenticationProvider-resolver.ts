@@ -6,17 +6,15 @@ import {
   editAuthenticationProvider,
   findAuthenticationProviderById,
   findAuthenticationProviderByIdPaginated,
-  getEnvManagerSecretVarName,
+  getExternallyManagedSecretFieldNames,
   resolveProviderIdentifier,
 } from './authenticationProvider-domain';
 import type { BasicStoreEntityAuthenticationProvider } from './authenticationProvider-types';
 import { secretFieldsByType } from './authenticationProvider-domain';
-import { getRemoteCredentialsProviderFields, getRemoteCredentialsProviderSelector } from '../../config/credentials';
 import { DatabaseError } from '../../config/errors';
 import { isProviderRegisteredByInternalId } from './providers-configuration';
 import { isProviderStarting } from './providers';
 import { isNotEmptyField } from '../../database/utils';
-import conf from '../../config/conf';
 
 const levelToLevel = (level: string) => {
   switch (level) {
@@ -66,16 +64,13 @@ const buildSecretInfos = (
     return {};
   }
 
-  const prefix = `providers:${identifier}`;
-  const remoteProvider = getRemoteCredentialsProviderSelector(prefix);
-  const remoteProviderFields = remoteProvider ? getRemoteCredentialsProviderFields(prefix, remoteProvider) : [];
+  const { envFieldNames, secretManagerFieldNames, secretManagerName } = getExternallyManagedSecretFieldNames(identifier);
 
   const result: Record<string, SecretInfoResult> = {};
   for (const fieldName of secretFields) {
-    const confName = getEnvManagerSecretVarName(identifier, fieldName);
-    if (remoteProviderFields.includes(fieldName)) {
-      result[fieldName] = { source: 'EXTERNAL', external_provider_name: remoteProvider };
-    } else if (isNotEmptyField(conf.get(confName))) {
+    if (secretManagerFieldNames.includes(fieldName)) {
+      result[fieldName] = { source: 'EXTERNAL', external_provider_name: secretManagerName };
+    } else if (envFieldNames.includes(fieldName)) {
       result[fieldName] = { source: 'EXTERNAL', external_provider_name: 'env' };
     } else if (isNotEmptyField(configuration[`${fieldName}_encrypted`])) {
       result[fieldName] = { source: 'STORED' };

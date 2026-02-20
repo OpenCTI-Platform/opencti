@@ -32,7 +32,7 @@ import { getPlatformCrypto } from '../../utils/platformCrypto';
 import { memoize } from '../../utils/memoize';
 import { logAuthInfo } from './providers-logger';
 import { isNotEmptyField } from '../../database/utils';
-import { enrichWithRemoteCredentials } from '../../config/credentials';
+import { enrichWithRemoteCredentials, getRemoteCredentialsProviderFields, getRemoteCredentialsProviderSelector } from '../../config/credentials';
 
 // Type for data that are encrypted
 const getKeyPair = memoize(async () => {
@@ -53,18 +53,29 @@ const decryptAuthValue = async (value: string) => {
   return (await keyPair.decrypt(decodedBuffer)).toString();
 };
 
-export const getEnvManagerSecretVarName = (identifier: string, field: string) => `secrets:providers:${identifier}:${field}`;
+const getManagedSecretsConfPrefix = (identifier: string) => `secrets:providers:${identifier}`;
+
+export const getExternallyManagedSecretFieldNames = (identifier: string) => {
+  const prefix = getManagedSecretsConfPrefix(identifier);
+  const envSecretFields = Object.keys(conf.get(`${prefix}:env`) || {});
+  const remoteProvider = getRemoteCredentialsProviderSelector(prefix);
+  const remoteProviderFields = remoteProvider ? getRemoteCredentialsProviderFields(prefix, remoteProvider) : [];
+
+  return {
+    envFieldNames: envSecretFields.filter((field) => !remoteProviderFields.includes(field)),
+    secretManagerFieldNames: remoteProviderFields,
+    secretManagerName: remoteProvider,
+  };
+};
 
 export const retrieveSecrets = async (identifier: string, config: any): Promise<SecretProvider> => {
-  const externallyManagedSecrets: Record<string, string> = await enrichWithRemoteCredentials(`providers:${identifier}`, {});
+  const prefix = getManagedSecretsConfPrefix(identifier);
+  const envSecrets = conf.get(`${prefix}:env`) || {};
+  const externallyManagedSecrets: Record<string, string> = await enrichWithRemoteCredentials(prefix, envSecrets);
   const resolve = (field: string) => {
     const externalSecret = externallyManagedSecrets[field];
     if (isNotEmptyField(externalSecret)) {
       return externalSecret;
-    }
-    const envManagedSecret = conf.get(getEnvManagerSecretVarName(identifier, field));
-    if (isNotEmptyField(envManagedSecret)) {
-      return envManagedSecret;
     }
     const encryptedValue = config[`${field}_encrypted`];
     if (isNotEmptyField(encryptedValue)) {
