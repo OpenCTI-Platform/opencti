@@ -32,6 +32,7 @@ const securityCoverageFragment = graphql`
   fragment SecurityCoverage_securityCoverage on SecurityCoverage {
     id
     standard_id
+    external_uri
     entity_type
     x_opencti_stix_ids
     spec_version
@@ -116,7 +117,6 @@ const SecurityCoverageComponent = ({
   const classes = useStyles();
   const securityCoverage = useFragment(securityCoverageFragment, data);
   const dataKillChains = usePreloadedQuery(securityCoverageKillChainsQuery, killChainsQueryRef);
-
   return (
     <>
       <Grid

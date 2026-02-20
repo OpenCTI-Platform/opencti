@@ -9534,6 +9534,7 @@ type Subscription {
   workspace(id: ID!): Workspace
   managerConfiguration(id: ID!): ManagerConfiguration
   aiBus(id: ID!): AIBus
+  securityCoverage(id: ID!): SecurityCoverage
 }
 
 type WorkEditMutations {

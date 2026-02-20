@@ -42,6 +42,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-types';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -694,6 +695,10 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}ABSTRACT_STIX_REF_RELATIONSHIP_EDIT_TOPIC`,
     DELETE_TOPIC: `${TOPIC_PREFIX}ABSTRACT_STIX_REF_RELATIONSHIP_DELETE_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}ABSTRACT_STIX_REF_RELATIONSHIP_ADDED_TOPIC`,
+  },
+  [ENTITY_TYPE_SECURITY_COVERAGE]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}SECURITY_COVERAGE_EDIT_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}SECURITY_COVERAGE_ADDED_TOPIC`,
   },
   [ENTITY_TYPE_DECAY_RULE]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_RULE_EDIT_TOPIC`,
