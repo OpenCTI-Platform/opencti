@@ -13,7 +13,6 @@ import {
 import { AccountGroupOutline } from 'mdi-material-ui';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
 import useGranted, { SETTINGS_SETACCESSES, SETTINGS_SETAUTH, SETTINGS_SETDISSEMINATION, SETTINGS_SETMARKINGS, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
-import useHelper from '../../../utils/hooks/useHelper';
 
 const AccessesMenu: FunctionComponent = () => {
   const entries: MenuEntry[] = [
@@ -83,13 +82,11 @@ const AccessesMenu: FunctionComponent = () => {
   const isOrgaAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
   const setDissemination = useGranted([SETTINGS_SETDISSEMINATION]);
   const setAuthentication = useGranted([SETTINGS_SETAUTH]);
-  const { isFeatureEnable } = useHelper();
-  const featureFlagSingleSignOn = isFeatureEnable('SINGLE_SIGN_ON_ENABLED');
   const menuEntries = [];
   if (setAccess) {
     menuEntries.push(...entries);
   }
-  if (setAuthentication && featureFlagSingleSignOn) {
+  if (setAuthentication) {
     menuEntries.push(...authenticationEntries);
   }
   if (setMarkings) {
