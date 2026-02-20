@@ -244,23 +244,23 @@ export const createCryptoKeyFactory = (seed: Buffer) => {
   };
 };
 
-// best effort to handle safely the environment variable containing the master seed, remove it from env after reading so it cannot be leaked to spawned processes
+// best effort to handle safely the environment variable containing the encryption key, remove it from env after reading so it cannot be leaked to spawned processes
 // buffer will be cleaned when read
-const masterSeedConfName = 'app:crypto:master_seed';
-const masterSeedEnvBuffer = Buffer.from(nconf.get(masterSeedConfName) ?? '', 'base64');
-delete process.env[confNameToEnvName(masterSeedConfName)];
+const encryptionKeyConfName = 'app:encryption_key';
+const encryptionKeyEnvBuffer = Buffer.from(nconf.get(encryptionKeyConfName) ?? nconf.get('app:crypto:master_seed') ?? '', 'base64');
+delete process.env[confNameToEnvName(encryptionKeyConfName)];
 
 const createPlatformCrypto = async () => {
-  const { master_seed } = await enrichWithRemoteCredentials('crypto', {});
-  const seed = master_seed ? Buffer.from(master_seed, 'base64') : masterSeedEnvBuffer;
+  const { value } = await enrichWithRemoteCredentials('app:encryption_key', {});
+  const encryptionKey = value ? Buffer.from(value, 'base64') : encryptionKeyEnvBuffer;
 
-  if (seed.length < 32) {
-    throw ConfigurationError(`${masterSeedConfName} configuration is missing or invalid, please provide at least 32 bytes of base64-encoded data by using 'openssl rand -base64 32' command`, { seedLength: seed.length });
+  if (encryptionKey.length < 32) {
+    throw ConfigurationError(`${encryptionKeyConfName} configuration is missing or invalid, please provide at least 32 bytes of base64-encoded data by using 'openssl rand -base64 32' command`, { keyLength: encryptionKey.length });
   }
 
-  const promise = createCryptoKeyFactory(Buffer.from(seed)); // send a private copy of the seed
-  seed.fill(0); // clean the local seed buffer
-  masterSeedEnvBuffer.fill(0); // always clean the buffer containing the master seed from env
+  const promise = createCryptoKeyFactory(Buffer.from(encryptionKey)); // send a private copy of the encryptionKey
+  encryptionKey.fill(0); // clean the local encryptionKey buffer
+  encryptionKeyEnvBuffer.fill(0); // always clean the buffer containing the master encryptionKey from env
   return promise;
 };
 
