@@ -53,13 +53,6 @@ import { FunctionComponent, useCallback, useEffect, useMemo, useState } from 're
 import { ListItemButton, Stack, Typography } from '@mui/material';
 import { createRefetchContainer, RelayRefetchProp } from 'react-relay';
 
-// Type extension for organization node with authorized_authorities
-interface OrganizationNodeWithAuthorities {
-  id: string;
-  name: string;
-  authorized_authorities?: ReadonlyArray<string>;
-}
-
 const interval$ = interval(FIVE_SECONDS);
 
 export const connectorUpdateTriggerMutation = graphql`
@@ -482,11 +475,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                               <ListItemIcon>
                                 <ItemIcon
                                   type="Organization"
-                                  color={
-                                    ((organizationEdge.node as OrganizationNodeWithAuthorities).authorized_authorities ?? []).includes(connector.connector_user?.id ?? '')
-                                      ? theme.palette.dangerZone.main
-                                      : theme.palette.primary.main
-                                  }
+                                  color={theme.palette.primary.main}
                                 />
                               </ListItemIcon>
                               <ListItemText primary={organizationEdge.node.name} />
