@@ -2564,9 +2564,6 @@ export const buildLocalMustFilter = (validFilter: any) => {
               },
             });
           } else if (operator === 'only_eq_to') {
-            if (arrayKeys.length > 1) {
-              throw UnsupportedError('Filter with `only_eq_to` operator must have only one field', { keys: arrayKeys });
-            }
             valuesFiltering.push({
               script: {
                 script: {

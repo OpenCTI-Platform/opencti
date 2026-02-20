@@ -126,6 +126,8 @@ describe('Complex filters combinations for elastic queries', () => {
   let marking1Id;
   let marking2StixId;
   let marking2Id;
+  let marking3StixId;
+  let marking3Id;
   let locationInternalId;
   let intrusionSetInternalId;
   it('should testing environment created', async () => {
@@ -149,12 +151,20 @@ describe('Complex filters combinations for elastic queries', () => {
       definition: 'TEST:2',
       x_opencti_order: 2,
     };
+    const marking3Input = {
+      definition_type: 'TEST',
+      definition: 'TEST:3',
+      x_opencti_order: 3,
+    };
     const marking1 = await addAllowedMarkingDefinition(testContext, ADMIN_USER, marking1Input);
     marking1StixId = marking1.standard_id;
     marking1Id = marking1.id;
     const marking2 = await addAllowedMarkingDefinition(testContext, ADMIN_USER, marking2Input);
     marking2StixId = marking2.standard_id;
     marking2Id = marking2.id;
+    const marking3 = await addAllowedMarkingDefinition(testContext, ADMIN_USER, marking3Input);
+    marking3StixId = marking3.standard_id;
+    marking3Id = marking3.id;
     // Create the reports
     const REPORT1 = {
       input: {
@@ -194,7 +204,7 @@ describe('Complex filters combinations for elastic queries', () => {
         description: '', // empty string
         stix_id: report4StixId,
         published: '2023-09-15T00:51:35.000Z',
-        objectMarking: [marking2StixId],
+        objectMarking: [marking2StixId, marking1StixId, marking3StixId],
         confidence: 40,
       },
     };
@@ -204,7 +214,7 @@ describe('Complex filters combinations for elastic queries', () => {
         description: null,
         stix_id: report5StixId,
         published: '2025-09-15T00:51:35.000Z',
-        report_types: ['threat-report', 'internal-report', 'global-report'],
+        report_types: ['threat-report', 'internal-report'],
         objectMarking: [],
         confidence: 11,
       },
@@ -2398,6 +2408,107 @@ describe('Complex filters combinations for elastic queries', () => {
     });
     expect(queryResult.data.reports.edges.length).toEqual(4); // the reports published in the last 3 years: report1, report2, report4, report5
   });
+  it('should list entities according filters with only_eq_to operator', async () => {
+    // only_eq_to operator with several filter keys: not supported
+    let queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: ['report_types', 'name'],
+            values: ['internal-report'],
+            operator: 'only_eq_to',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.errors[0].message).toEqual('Filter must have only one field');
+    // report_types only_eq_to internal-report
+    queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'report_types',
+            values: ['internal-report'],
+            operator: 'only_eq_to',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(1);
+    expect(queryResult.data.reports.edges[0].node.name).toEqual('Report3');
+    // marking only_eq_to marking2 (to test only_eq_to with a relation ref filter)
+    queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'objectMarking',
+            values: [marking2Id],
+            operator: 'only_eq_to',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(2);
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy();
+    // report_types only_eq_to internal-report OR threat-report
+    // It corresponds to the reports with report_types exactly equal to ['internal-report'] or to ['threat-report']
+    queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'report_types',
+            values: ['internal-report', 'threat-report'],
+            operator: 'only_eq_to',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(3);
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeTruthy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('A demo report for testing purposes')).toBeTruthy();
+    // marking only_eq_to marking1 AND marking2
+    // It corresponds to the reports with exactly 2 markings, one being marking1 and the other being marking2
+    queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'objectMarking',
+            values: [marking1Id, marking2Id],
+            operator: 'only_eq_to',
+            mode: 'and',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(1);
+    expect(queryResult.data.reports.edges[0].node.name).toEqual('Report1');
+  });
   it('should test environment deleted', async () => {
     const DELETE_REPORT_QUERY = gql`
         mutation reportDelete($id: ID!) {
@@ -2441,6 +2552,10 @@ describe('Complex filters combinations for elastic queries', () => {
     await queryAsAdmin({
       query: DELETE_MARKING_QUERY,
       variables: { id: marking2Id },
+    });
+    await queryAsAdmin({
+      query: DELETE_MARKING_QUERY,
+      variables: { id: marking3Id },
     });
     // Verify is no longer found
     let queryResult;
