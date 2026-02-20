@@ -1,14 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { useTheme } from '@mui/styles';
-import { CancelOutlined, PersonOutline } from '@mui/icons-material';
-import Chip from '@mui/material/Chip';
 import { stixDomainObjectMutation } from '@components/common/stix_domain_objects/StixDomainObjectHeader';
 import Tooltip from '@mui/material/Tooltip';
 import FieldOrEmpty from './FieldOrEmpty';
-import type { Theme } from './Theme';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../utils/hooks/useGranted';
 import { truncate } from '../utils/String';
 import { commitMutation, defaultCommitMutation } from '../relay/environment';
+import Tag from './common/tag/Tag';
 
 interface ItemParticipantsProps {
   participants: {
@@ -20,7 +17,6 @@ interface ItemParticipantsProps {
 }
 
 const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participants, stixDomainObjectId }) => {
-  const theme = useTheme<Theme>();
   const canUpdateKnowledge = useGranted([KNOWLEDGE_KNUPDATE]);
   const handleRemoveParticipant = (removedId: string) => {
     const values = participants.filter((participant) => participant.id !== removedId);
@@ -41,23 +37,10 @@ const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participan
     <FieldOrEmpty source={participants}>
       {participants.map((participant) => (
         <Tooltip key={participant.id} title={participant.name}>
-          <Chip
+          <Tag
             key={participant.id}
-            variant="outlined"
-            icon={<PersonOutline color="primary" />}
             label={truncate(participant.name, 25)}
-            style={{
-              color: theme.palette.primary.main,
-              borderColor: theme.palette.primary.main,
-              margin: '0 7px 7px 0',
-              borderRadius: theme.borderRadius,
-            }}
             onDelete={canUpdateKnowledge ? () => (handleRemoveParticipant(participant.id)) : undefined}
-            deleteIcon={(
-              <CancelOutlined
-                style={{ color: theme.palette.primary.main }}
-              />
-            )}
           />
         </Tooltip>
       ))}
