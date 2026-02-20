@@ -51,12 +51,11 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
           await createInferredRelation(context, input, ruleContent);
         }
       };
-      const listFromArgs = {
+      await fullRelationsList(context, RULE_MANAGER_USER, leftType, {
         toId: sourceRef,
         fromTypes: leftTypesFrom,
         callback: listFromCallback,
-      };
-      await fullRelationsList(context, RULE_MANAGER_USER, leftType, listFromArgs);
+      });
     }
     // Need to discover on the from and the to if relation also exists
     // (A) -> leftType -> (B)
@@ -85,12 +84,11 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
           await createInferredRelation(context, input, ruleContent);
         }
       };
-      const listToArgs = {
+      await fullRelationsList(context, RULE_MANAGER_USER, rightType, {
         fromId: targetRef,
         toTypes: rightTypesTo,
         callback: listToCallback,
-      };
-      await fullRelationsList(context, RULE_MANAGER_USER, rightType, listToArgs);
+      });
     }
   };
   // Contract
