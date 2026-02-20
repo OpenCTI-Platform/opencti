@@ -1,0 +1,22 @@
+name: Check Pull request issue link
+on:
+  pull_request:
+    types: [edited, synchronize, opened, reopened]
+  pull_request_target:
+    types: [edited, synchronize, opened, reopened]
+
+jobs:
+  verify-linked-issue:
+    name: Verify Linked Issue
+    if: !contains(github.event.issue.labels.*.name, 'dependencies')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+    - name: Verify Linked Issue
+      uses: hattan/verify-linked-issue-action@vbea64a33e19f9de109c88aee8ef5c1657f09b049
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        message: 'Please attach at least one issue to your Pull Request'
