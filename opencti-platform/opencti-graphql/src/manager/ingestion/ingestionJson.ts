@@ -1,0 +1,60 @@
+import type { BasicStoreEntityIngestionJson, DataParam } from '../../modules/ingestion/ingestion-types';
+import { isNotEmptyField } from '../../database/utils';
+import type { AuthContext } from '../../types/user';
+import { executeJsonQuery, findAllJsonIngestion } from '../../modules/ingestion/ingestion-json-domain';
+import { now } from '../../utils/format';
+import { SYSTEM_USER } from '../../utils/access';
+import { pushBundleToConnectorQueue } from './ingestionUtils';
+import { ingestionQueueExecution } from './ingestionExecutor';
+import { buildStixBundle } from '../../database/stix-2-1-converter';
+
+// region Types
+type JsonConnectorState = { ingestion_json_state?: object };
+type JsonIngestionPatch = JsonConnectorState & { last_execution_date: string };
+type JsonConnectorInfo = { state?: JsonConnectorState };
+type HandlerResponse = { size: number; ingestionPatch: JsonIngestionPatch; connectorInfo: JsonConnectorInfo };
+type JsonHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionJson) => Promise<HandlerResponse>;
+// endregion Types
+
+const mergeQueryState = (queryParamsAttributes: Array<DataParam> | undefined, previousState: Record<string, any>, newState: Record<string, any>) => {
+  const state: Record<string, any> = {};
+  const queryParams = queryParamsAttributes ?? [];
+  for (let attrIndex = 0; attrIndex < queryParams.length; attrIndex += 1) {
+    const queryParamsAttribute = queryParams[attrIndex];
+    if (queryParamsAttribute.state_operation === 'sum') {
+      state[queryParamsAttribute.to] = parseInt(previousState[queryParamsAttribute.to] ?? 0, 10) + parseInt(newState[queryParamsAttribute.to] ?? 0, 10);
+    } else {
+      state[queryParamsAttribute.to] = isNotEmptyField(newState[queryParamsAttribute.to]) ? newState[queryParamsAttribute.to] : previousState[queryParamsAttribute.to];
+    }
+  }
+  return state;
+};
+
+const jsonDataHandler: JsonHandlerFn = async (context: AuthContext, ingestion: BasicStoreEntityIngestionJson) => {
+  const { objects, variables, nextExecutionState } = await executeJsonQuery(context, ingestion);
+  // Push the bundle to absorption queue if required
+  if (objects.length > 0) {
+    await pushBundleToConnectorQueue(context, ingestion, buildStixBundle(objects));
+  }
+  // Save new state for next execution
+  const ingestionState = mergeQueryState(ingestion.query_attributes, variables, nextExecutionState);
+  const state: JsonConnectorState = { ingestion_json_state: ingestionState };
+  return { size: objects.length, ingestionPatch: { ...state, last_execution_date: now() }, connectorInfo: { state: ingestionState } };
+};
+
+export const jsonExecutor = async (context: AuthContext) => {
+  const filters = {
+    mode: 'and',
+    filters: [{ key: 'ingestion_running', values: [true] }],
+    filterGroups: [],
+  };
+  const opts = { filters, noFiltersChecking: true };
+  const ingestions = await findAllJsonIngestion(context, SYSTEM_USER, opts);
+  const ingestionPromises = [];
+  for (let i = 0; i < ingestions.length; i += 1) {
+    const ingestion = ingestions[i];
+    const dataHandlerFn = () => jsonDataHandler(context, ingestion);
+    ingestionPromises.push(ingestionQueueExecution(context, ingestion, dataHandlerFn));
+  }
+  return Promise.all(ingestionPromises);
+};

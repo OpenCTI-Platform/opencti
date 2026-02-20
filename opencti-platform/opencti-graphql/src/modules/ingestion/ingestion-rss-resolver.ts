@@ -4,6 +4,8 @@ import { storeLoadByIds } from '../../database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import type { BasicStoreEntityMarkingDefinition } from '../../types/store';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
+import { redisGetConnectorHistory } from '../../database/redis';
+import { type BasicStoreEntityIngestionRss } from './ingestion-types';
 import { loadCreator } from '../../database/members';
 
 const ingestionRssResolvers: Resolvers = {
@@ -12,10 +14,14 @@ const ingestionRssResolvers: Resolvers = {
     ingestionRsss: (_, args, context) => findRssIngestionPaginated(context, context.user, args),
   },
   IngestionRss: {
-    defaultCreatedBy: (ingestionRss, _, context) => context.batch.idsBatchLoader.load({ id: ingestionRss.created_by_ref, type: ENTITY_TYPE_IDENTITY }),
-    // eslint-disable-next-line max-len
-    defaultMarkingDefinitions: (ingestionRss, _, context) => storeLoadByIds<BasicStoreEntityMarkingDefinition>(context, context.user, ingestionRss.object_marking_refs ?? [], ENTITY_TYPE_MARKING_DEFINITION),
-    user: (ingestionRss, _, context) => loadCreator(context, context.user, ingestionRss.user_id),
+    defaultCreatedBy: (ingestionRss: BasicStoreEntityIngestionRss, _, context) => {
+      return context.batch.idsBatchLoader.load({ id: ingestionRss.created_by_ref, type: ENTITY_TYPE_IDENTITY });
+    },
+    defaultMarkingDefinitions: (ingestionRss: BasicStoreEntityIngestionRss, _, context) => {
+      return storeLoadByIds<BasicStoreEntityMarkingDefinition>(context, context.user, ingestionRss.object_marking_refs ?? [], ENTITY_TYPE_MARKING_DEFINITION);
+    },
+    user: (ingestionRss: BasicStoreEntityIngestionRss, _, context) => loadCreator(context, context.user, ingestionRss.user_id),
+    ingestionLogs: (ingestionRss: BasicStoreEntityIngestionRss) => redisGetConnectorHistory(ingestionRss.internal_id),
   },
   Mutation: {
     ingestionRssAdd: (_, { input }, context) => {

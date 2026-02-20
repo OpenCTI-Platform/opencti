@@ -26,6 +26,8 @@ import {
   testJsonIngestionMapping,
 } from './ingestion-json-domain';
 import { connectorIdFromIngestId } from '../../domain/connector';
+import { redisGetConnectorHistory } from '../../database/redis';
+import { type BasicStoreEntityIngestionJson } from './ingestion-types';
 import { loadCreator } from '../../database/members';
 
 const ingestionJsonResolvers: Resolvers = {
@@ -34,9 +36,10 @@ const ingestionJsonResolvers: Resolvers = {
     ingestionJsons: (_, args, context) => findJsonIngestionPaginated(context, context.user, args),
   },
   IngestionJson: {
-    user: (ingestionJson, _, context) => loadCreator(context, context.user, ingestionJson.user_id),
-    connector_id: (ingestionJson) => connectorIdFromIngestId(ingestionJson.id),
-    jsonMapper: (ingestionJson, _, context) => findJsonMapperForIngestionById(context, context.user, ingestionJson.json_mapper_id),
+    user: (ingestionJson: BasicStoreEntityIngestionJson, _, context) => loadCreator(context, context.user, ingestionJson.user_id),
+    connector_id: (ingestionJson: BasicStoreEntityIngestionJson) => connectorIdFromIngestId(ingestionJson.id),
+    jsonMapper: (ingestionJson: BasicStoreEntityIngestionJson, _, context) => findJsonMapperForIngestionById(context, context.user, ingestionJson.json_mapper_id),
+    ingestionLogs: (ingestionJson: BasicStoreEntityIngestionJson) => redisGetConnectorHistory(ingestionJson.internal_id),
   },
   Mutation: {
     ingestionJsonTester: (_, { input }, context) => {

@@ -18,6 +18,7 @@ import ItemCopy from '../../../../components/ItemCopy';
 import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
+import IngestionLastRun from '@components/data/ingestion/IngestionLastRun';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -41,11 +42,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface IngestionTaxiiLineProps {
+export interface IngestionTaxiiLineProps {
   node: IngestionTaxiiLine_node$key;
   dataColumns: DataColumns;
   onLabelClick: HandleAddFilter;
   paginationOptions?: IngestionTaxiiLinesPaginationQuery$variables;
+  onOpenHistory: (id: string) => void;
 }
 
 const ingestionTaxiiLineFragment = graphql`
@@ -59,6 +61,7 @@ const ingestionTaxiiLineFragment = graphql`
         added_after_start
         current_state_cursor
         last_execution_date
+        last_execution_status
         confidence_to_score
     }
 `;
@@ -67,8 +70,9 @@ export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLi
   dataColumns,
   node,
   paginationOptions,
+  onOpenHistory,
 }) => {
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n } = useFormatter();
   const classes = useStyles();
   const data = useFragment(ingestionTaxiiLineFragment, node);
   const [stateValue, setStateValue] = useState(data.current_state_cursor ? data.current_state_cursor : '-');
@@ -119,7 +123,12 @@ export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLi
               className={classes.bodyItem}
               style={{ width: dataColumns.last_execution_date.width }}
             >
-              {fldt(data.last_execution_date) || '-'}
+              <IngestionLastRun
+                ingestion_id={data.id}
+                last_execution_date={data.last_execution_date}
+                last_execution_status={data.last_execution_status}
+                onOpenHistory={onOpenHistory}
+              />
             </div>
             <div
               className={classes.bodyItem}

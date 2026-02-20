@@ -8,6 +8,7 @@ import type { AuthorizedMember } from '../../utils/access';
 export const ENTITY_TYPE_INGESTION_RSS = 'IngestionRss';
 
 export interface BasicStoreEntityIngestionRss extends BasicStoreEntity {
+  kind: 'rss';
   name: string;
   description: string;
   scheduling_period: string;
@@ -51,6 +52,7 @@ export interface StixIngestionRss extends StixObject {
 export const ENTITY_TYPE_INGESTION_TAXII = 'IngestionTaxii';
 
 export interface BasicStoreEntityIngestionTaxii extends BasicStoreEntity {
+  kind: 'taxii';
   name: string;
   description: string;
   uri: string;
@@ -60,11 +62,11 @@ export interface BasicStoreEntityIngestionTaxii extends BasicStoreEntity {
   authentication_type: IngestionAuthType.None | IngestionAuthType.Basic | IngestionAuthType.Bearer | IngestionAuthType.Certificate;
   authentication_value: string;
   user_id: string | undefined;
-  added_after_start: Date | undefined;
+  added_after_start: string | undefined;
   current_state_cursor: string | undefined;
   ingestion_running: boolean;
   taxii_more: boolean;
-  last_execution_date: Date | undefined;
+  last_execution_date: string | undefined;
 }
 
 export interface StoreEntityIngestionTaxii extends StoreEntity {
@@ -100,6 +102,7 @@ export interface StixIngestionTaxii extends StixObject {
 export const ENTITY_TYPE_INGESTION_CSV = 'IngestionCsv';
 
 export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity {
+  kind: 'csv';
   current_state_hash: string;
   name: string;
   description: string;
@@ -143,6 +146,7 @@ export interface StixIngestionCsv extends StixObject {
 export const ENTITY_TYPE_INGESTION_JSON = 'IngestionJson';
 
 export interface BasicStoreEntityIngestionJson extends BasicStoreEntity {
+  kind: 'json';
   name: string;
   description: string;
   scheduling_period: string;
@@ -204,6 +208,7 @@ export interface StixIngestionJson extends StixObject {
 export const ENTITY_TYPE_INGESTION_TAXII_COLLECTION = 'IngestionTaxiiCollection';
 
 export interface BasicStoreEntityIngestionTaxiiCollection extends BasicStoreEntity {
+  kind: 'taxii-collection';
   name: string;
   description: string;
   user_id: string | undefined;

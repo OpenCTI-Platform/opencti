@@ -15,6 +15,8 @@ import {
   testCsvIngestionMapping,
 } from './ingestion-csv-domain';
 import { userAlreadyExists } from '../user/user-domain';
+import { redisGetConnectorHistory } from '../../database/redis';
+import { type BasicStoreEntityIngestionCsv } from './ingestion-types';
 import { loadCreator } from '../../database/members';
 
 const ingestionCsvResolvers: Resolvers = {
@@ -26,10 +28,11 @@ const ingestionCsvResolvers: Resolvers = {
     userAlreadyExists: (_, { name }, context) => userAlreadyExists(context, name),
   },
   IngestionCsv: {
-    user: (ingestionCsv, _, context) => loadCreator(context, context.user, ingestionCsv.user_id),
-    csvMapper: (ingestionCsv, _, context) => csvFeedGetCsvMapper(context, context.user, ingestionCsv),
-    toConfigurationExport: (ingestionCsv, _, context) => csvFeedMapperExport(context, context.user, ingestionCsv),
-    duplicateCsvMapper: (ingestionCsv, _, context) => csvFeedGetNewDuplicatedCsvMapper(context, context.user, ingestionCsv),
+    user: (ingestionCsv: BasicStoreEntityIngestionCsv, _, context) => loadCreator(context, context.user, ingestionCsv.user_id),
+    csvMapper: (ingestionCsv: BasicStoreEntityIngestionCsv, _, context) => csvFeedGetCsvMapper(context, context.user, ingestionCsv),
+    toConfigurationExport: (ingestionCsv: BasicStoreEntityIngestionCsv, _, context) => csvFeedMapperExport(context, context.user, ingestionCsv),
+    duplicateCsvMapper: (ingestionCsv: BasicStoreEntityIngestionCsv, _, context) => csvFeedGetNewDuplicatedCsvMapper(context, context.user, ingestionCsv),
+    ingestionLogs: (ingestionCsv: BasicStoreEntityIngestionCsv) => redisGetConnectorHistory(ingestionCsv.internal_id),
   },
   Mutation: {
     ingestionCsvTester: (_, { input }, context) => {
