@@ -619,8 +619,10 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         container.extensions[STIX_EXT_OCTI].assignee_ids = baseData.extensions[STIX_EXT_OCTI].assignee_ids;
       }
       // if the base instance is an incident and we wrap into an Incident Case, we set the same severity
-      if ((<StixIncident>baseData).severity && container_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT) {
+      if ((<StixIncident>baseData) && container_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT) {
         (<StixCaseIncident>container).severity = (<StixIncident>baseData).severity;
+        (<StixCaseIncident>container).external_references = (<StixIncident>baseData).external_references;
+        (<StixCaseIncident>container).extensions[STIX_EXT_OCTI].granted_refs = (<StixIncident>baseData).extensions[STIX_EXT_OCTI].granted_refs;
       }
       // Copy files from the main element to the container if requested
       if (copyFiles && baseData.extensions[STIX_EXT_OCTI].files && baseData.extensions[STIX_EXT_OCTI].files.length > 0) {
