@@ -5,7 +5,7 @@ import PirPage from '../model/pir.pageModel';
 import PirFormPageModel from '../model/form/pirForm.pageModel';
 import PirDetailsPageModel from '../model/pirDetails.pageModel';
 import { addRelationship, deleteRelationship } from '../dataForTesting/relationship.data';
-import { awaitUntilCondition } from '../utils';
+import { awaitUntilCondition } from '../utils/utils';
 
 /**
  * Content of the test

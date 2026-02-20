@@ -4,6 +4,7 @@ import { graphql, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import FormControl from '@mui/material/FormControl';
 import MenuItem from '@mui/material/MenuItem';
 import { Select } from '@mui/material';
 import { ConnectionHandler } from 'relay-runtime';
@@ -50,6 +51,7 @@ import { CaseRftCreationForm } from '../../cases/case_rfts/CaseRftCreation';
 import { ThreatActorIndividualCreationForm } from '../../threats/threat_actors_individual/ThreatActorIndividualCreation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
+import InputLabel from '@mui/material/InputLabel';
 
 export const stixDomainObjectCreationAllTypesQuery = graphql`
   query StixDomainObjectCreationAllTypesQuery {
@@ -788,18 +790,26 @@ const StixDomainPanel = ({
       </DialogTitle>
       <DialogContent>
         {renderUnavailableBulkMessage()}
-        <Select
-          value={type}
-          onChange={(event) => setType(event.target.value)}
-          fullWidth={true}
-          size="small"
+        <FormControl
+          style={{ width: '100%' }}
         >
-          {availableEntityTypes.map((availableType) => (
-            <MenuItem key={availableType.value} value={availableType.value}>
-              {availableType.label}
-            </MenuItem>
-          ))}
-        </Select>
+          <InputLabel id="form_create_entity_entity_type">
+            {t_i18n('Entity type')}
+          </InputLabel>
+          <Select
+            value={type}
+            onChange={(event) => setType(event.target.value)}
+            fullWidth={true}
+            size="small"
+            labelId="form_create_entity_entity_type"
+          >
+            {availableEntityTypes.map((availableType) => (
+              <MenuItem key={availableType.value} value={availableType.value}>
+                {availableType.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <div style={{ marginTop: '20px' }}>
           {renderEntityCreationInterface()}
         </div>
