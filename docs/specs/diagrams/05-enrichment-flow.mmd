@@ -1,0 +1,44 @@
+---
+title: "Flux Enrichment — Connecteurs OpenAEV multi-tenant"
+---
+sequenceDiagram
+    participant SC as SecurityCoverage<br/>(APT29)
+    participant Platform as OpenCTI Platform
+    participant RMQ as RabbitMQ
+    participant ConnA as Connector A<br/>(svc-banque-alpha)
+    participant ConnB as Connector B<br/>(svc-hopital-beta)
+    participant API as GraphQL API
+
+    Note over SC,Platform: 1. Creation ou update du SecurityCoverage
+
+    SC->>Platform: createEntity / enrichment trigger
+    Platform->>Platform: findConnectorsForElementEnrichment()<br/>scope: "Security-Coverage"
+
+    Note over Platform: Resolve connector org from<br/>connector_user_id → user.organizations[0]
+
+    Platform->>RMQ: Message Connector A<br/>{connector_organization_id: "uuid-banque-alpha",<br/>stix_objects: STIX bundle}
+    Platform->>RMQ: Message Connector B<br/>{connector_organization_id: "uuid-hopital-beta",<br/>stix_objects: STIX bundle}
+
+    Note over ConnA,ConnB: 2. Chaque connecteur execute son assessment
+
+    RMQ->>ConnA: Receive message
+    ConnA->>ConnA: Run OpenAEV assessment<br/>against Banque Alpha's<br/>security stack
+
+    RMQ->>ConnB: Receive message
+    ConnB->>ConnB: Run OpenAEV assessment<br/>against Hopital Beta's<br/>security stack
+
+    Note over ConnA,API: 3. Push results pour son org uniquement
+
+    ConnA->>API: securityCoveragePushResults(<br/>coverageId,<br/>"uuid-banque-alpha",<br/>[{Prevention:72}, {Detection:85}])
+
+    API->>API: Access control OK<br/>svc-banque-alpha ∈ Banque Alpha
+
+    API->>API: Upsert coverage_information[0]<br/>addOrganizationRestriction()
+
+    ConnB->>API: securityCoveragePushResults(<br/>coverageId,<br/>"uuid-hopital-beta",<br/>[{Prevention:38}, {Detection:52}])
+
+    API->>API: Access control OK<br/>svc-hopital-beta ∈ Hopital Beta
+
+    API->>API: Upsert coverage_information[1]<br/>addOrganizationRestriction()
+
+    Note over SC: SecurityCoverage now has<br/>2 org results + objectOrganization<br/>auto-populated

@@ -1,4 +1,5 @@
 import { addThreatActorIndividual, findThreatActorIndividualPaginated, findById } from './threatActorIndividual-domain';
+import { findSecurityCoverageByCoveredId } from '../securityCoverage/securityCoverage-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -21,6 +22,7 @@ const threatActorIndividualResolvers: Resolvers = {
   ThreatActorIndividual: {
     bornIn: (threatActorIndividual, _, context) => loadThroughDenormalized(context, context.user, threatActorIndividual, INPUT_BORN_IN),
     ethnicity: (threatActorIndividual, _, context) => loadThroughDenormalized(context, context.user, threatActorIndividual, INPUT_ETHNICITY),
+    securityCoverage: (threatActorIndividual, _, context) => findSecurityCoverageByCoveredId(context, context.user, threatActorIndividual.id),
     height: (threatActorIndividual, _, __) => (threatActorIndividual.height ?? [])
       .map((height, index) => ({ ...height, index }))
       .sort((a, b) => utcDate(a.date_seen).diff(utcDate(b.date_seen))),

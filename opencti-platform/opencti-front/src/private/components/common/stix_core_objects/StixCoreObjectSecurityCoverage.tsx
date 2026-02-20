@@ -8,6 +8,7 @@ import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { ShieldCheckOutline } from 'mdi-material-ui';
 import SecurityCoverageInformation from '../../analyses/security_coverages/SecurityCoverageInformation';
+import type { OrganizationCoverageResultData } from '../../analyses/security_coverages/SecurityCoverageInformation';
 import Drawer from '../drawer/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -28,10 +29,7 @@ const useStyles = makeStyles<Theme>(() => ({
 
 interface SecurityCoverage {
   id: string;
-  coverage_information: ReadonlyArray<{
-    readonly coverage_name: string;
-    readonly coverage_score: number;
-  }> | null | undefined;
+  coverage_information: ReadonlyArray<OrganizationCoverageResultData> | null | undefined;
 }
 
 interface StixCoreObjectSecurityCoverageProps {
@@ -100,28 +98,17 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
   };
 
   const updater = (store: RecordSourceSelectorProxy, key: string) => {
-    // Custom updater logic for handling the security coverage creation
-    // This will be called after successful creation
     const newCoverage = store.getRootField(key);
     if (newCoverage) {
       const coverageId = newCoverage.getValue('id');
       if (typeof coverageId === 'string') {
-        // Update local state to show the new coverage
-        const coverageInformation = newCoverage.getLinkedRecords('coverage_information');
-        const informationArray = coverageInformation ? coverageInformation.map((info) => ({
-          coverage_name: info?.getValue('coverage_name') as string,
-          coverage_score: info?.getValue('coverage_score') as number,
-        })) : [];
-
+        // After creation, the coverage_information is org-scoped
+        // We set a minimal representation; the page will refresh with full data
         setCoverage({
           id: coverageId,
-          coverage_information: informationArray,
+          coverage_information: [],
         });
-
-        // Close the drawer
         handleClose();
-
-        // Call the callback if provided
         if (onCoverageCreated) {
           onCoverageCreated(coverageId);
         }

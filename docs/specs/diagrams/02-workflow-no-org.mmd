@@ -1,0 +1,41 @@
+---
+title: "Workflow 1 — Utilisateur sans organisation (Admin/BYPASS)"
+---
+flowchart TD
+    USER["👤 admin@opencti.io\nOrgs: aucune\nCapabilities: BYPASS"]
+
+    USER --> QUERY["Requete GraphQL\nsecurityCoverage.coverage_information"]
+    QUERY --> FILTER["filterCoverageInformationForUser()"]
+
+    FILTER --> CHECK_BYPASS{"isBypassUser?"}
+    CHECK_BYPASS -->|"OUI"| RETURN_ALL["✅ Retourne TOUT\n3 orgs visibles"]
+
+    CHECK_BYPASS -->|"NON"| CHECK_ORGS{"userOrgIds\nvide?"}
+    CHECK_ORGS -->|"OUI (pas d'org)"| RETURN_ALL2["✅ Retourne TOUT\npas de restriction"]
+    CHECK_ORGS -->|"NON"| FILTER_ORGS["Filtre par orgs\n+ platform org"]
+
+    RETURN_ALL --> FE_HEADER
+    RETURN_ALL2 --> FE_HEADER
+
+    subgraph FRONTEND["Frontend"]
+        FE_HEADER["Vue Header\n🔵 P:60% 🔵 D:70%\n(1ere org)"]
+        FE_DETAIL["Vue Details\nToggle: Single | Compare"]
+        FE_SINGLE["Mode Single\nDropdown org selector\nDonuts pour l'org choisie"]
+        FE_COMPARE["Mode Compare\nTableau side-by-side\n3 orgs + Avg/Min/Max"]
+    end
+
+    FE_HEADER --> FE_DETAIL
+    FE_DETAIL --> FE_SINGLE
+    FE_DETAIL --> FE_COMPARE
+
+    subgraph MUTATIONS["Mutations"]
+        PUSH["pushResults:\npeut pousser pour\nN'IMPORTE quelle org\n(bypass)"]
+        REMOVE["removeOrgResults:\npeut supprimer pour\nN'IMPORTE quelle org"]
+    end
+
+    style USER fill:#fff9c4,stroke:#f9a825
+    style RETURN_ALL fill:#c8e6c9,stroke:#2e7d32
+    style RETURN_ALL2 fill:#c8e6c9,stroke:#2e7d32
+    style FE_COMPARE fill:#e3f2fd,stroke:#1565c0
+    style FRONTEND fill:#f3e5f5,stroke:#7b1fa2
+    style MUTATIONS fill:#fff3e0,stroke:#e65100

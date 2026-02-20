@@ -1,0 +1,41 @@
+---
+title: "Workflow 2 — Utilisateur MSSP (platform org)"
+---
+flowchart TD
+    USER["👤 analyst@mssp-platform.com\nOrgs: [MSSP Platform]\nMSSP Platform = platform_organization"]
+
+    USER --> QUERY["Requete GraphQL\nsecurityCoverage.coverage_information"]
+    QUERY --> FILTER["filterCoverageInformationForUser()"]
+
+    FILTER --> CHECK_BYPASS{"isBypassUser?"}
+    CHECK_BYPASS -->|"NON"| GET_ORGS["userOrgIds = [uuid-mssp-platform]"]
+
+    GET_ORGS --> GET_PLATFORM["platformOrgId = uuid-mssp-platform"]
+    GET_PLATFORM --> BUILD_ALLOWED["allowedOrgIds =\n{uuid-mssp-platform}\n∪ {uuid-mssp-platform}\n= {uuid-mssp-platform}"]
+
+    BUILD_ALLOWED --> FILTER_RESULT["Filtre: org_id ∈ allowedOrgIds"]
+    FILTER_RESULT --> RETURN["⚠️ Retourne 1 org\nMSSP Platform seulement"]
+
+    RETURN --> FE
+
+    subgraph FE["Frontend"]
+        FE_HEADER["Vue Header\n🟢 P:60% 🟢 D:70%\n(MSSP Platform)"]
+        FE_DETAIL["Vue Details\n1 seule org → pas de toggle"]
+        FE_SINGLE["Donuts MSSP Platform\nPrevention: 60%\nDetection: 70%"]
+    end
+
+    FE_HEADER --> FE_DETAIL --> FE_SINGLE
+
+    subgraph FIX["⚠️ Fix suggere"]
+        FIX_DESC["Si userOrgIds inclut platformOrgId\n→ retourner TOUTES les orgs\npour permettre la vue MSSP\ncompare across clients"]
+    end
+
+    subgraph MUTATIONS["Mutations"]
+        PUSH["pushResults:\npeut pousser SEULEMENT\npour MSSP Platform\n(access control: user.orgs)"]
+    end
+
+    style USER fill:#e8eaf6,stroke:#283593
+    style RETURN fill:#fff9c4,stroke:#f9a825
+    style FIX fill:#ffcdd2,stroke:#c62828
+    style FE fill:#f3e5f5,stroke:#7b1fa2
+    style MUTATIONS fill:#fff3e0,stroke:#e65100

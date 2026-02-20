@@ -64,8 +64,14 @@ const caseIncidentQuery = graphql`
       securityCoverage {
         id
         coverage_information {
-          coverage_name
-          coverage_score
+          organization_id
+          organization_name
+          last_result
+          auto_enrichment
+          results {
+            coverage_name
+            coverage_score
+          }
         }
       }
       ...CaseUtils_case

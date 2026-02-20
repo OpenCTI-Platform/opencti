@@ -57,7 +57,7 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '
 import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
-import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { defaultValidationMode, deleteFile, loadFile, storeFileConverter, uploadToStorage } from '../database/file-storage';
 import { getFileContent } from '../database/raw-file-storage';
 import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
@@ -382,12 +382,22 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
   let stix_objects;
   const workMessage = draftContext ? `Manual enrichment in draft ${draftContext}` : 'Manual enrichment';
   const stix_entity = JSON.stringify(convertStoreToStix_2_1(element));
+  // Resolve connector users for org context
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const works = [];
   for (let index = 0; index < connectors.length; index += 1) {
     const connector = connectors[index];
     const stixResolutionMode = connector.enrichment_resolution ?? 'stix_bundle';
     if (stixResolutionMode === 'stix_bundle' && stix_objects === undefined) {
       stix_objects = await stixBundleByIdStringify(context, user, element.entity_type, element.internal_id);
+    }
+    // Resolve the connector's organization from its service account user
+    let connector_organization_id = null;
+    if (connector.connector_user_id) {
+      const connUser = platformUsers.get(connector.connector_user_id);
+      if (connUser?.organizations?.length > 0) {
+        connector_organization_id = connUser.organizations[0].internal_id;
+      }
     }
     const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id, { draftContext });
     const message = {
@@ -397,6 +407,7 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
         draft_id: draftContext ?? null,
         mode: 'manual',
         trigger: 'update',
+        connector_organization_id, // Org context for multi-tenant enrichment (e.g. SecurityCoverage)
       },
       event: {
         event_type: CONNECTOR_INTERNAL_ENRICHMENT,

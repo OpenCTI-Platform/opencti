@@ -8867,10 +8867,6 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   workflowEnabled: Boolean
 }
 
-input SecurityCoverageExpectation {
-  coverage_name: String!
-  coverage_score: Int!
-}
 
 input StixCoreRelationshipAddInput {
   stix_id: StixId
@@ -8894,7 +8890,7 @@ input StixCoreRelationshipAddInput {
   killChainPhases: [String]
   x_opencti_workflow_id: String
   x_opencti_modified_at: DateTime
-  coverage_information: [SecurityCoverageExpectation!]
+  coverage_information: [CoverageResultInput!]
   clientMutationId: String
   update: Boolean
   upsertOperations: [EditInput!]
@@ -10422,6 +10418,8 @@ type Mutation {
   securityCoverageContextClean(id: ID!): SecurityCoverage
   securityCoverageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   securityCoverageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage
+  securityCoveragePushResults(id: ID!, organizationId: String!, results: [CoverageResultInput!]!, autoEnrichment: Boolean): SecurityCoverage
+  securityCoverageRemoveOrgResults(id: ID!, organizationId: String!): SecurityCoverage
   askSendOtp(input: AskSendOtpInput!): String
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
   verifyMfa(input: VerifyMfaInput!): Boolean
@@ -15136,6 +15134,19 @@ type CoverageResult {
   coverage_score: Int!
 }
 
+type OrganizationCoverageResult {
+  organization_id: String!
+  organization_name: String!
+  last_result: DateTime
+  auto_enrichment: Boolean
+  results: [CoverageResult!]!
+}
+
+input CoverageResultInput {
+  coverage_name: String!
+  coverage_score: Int!
+}
+
 type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
@@ -15201,7 +15212,8 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
-  coverage_information: [CoverageResult!]
+  coverage_information: [OrganizationCoverageResult!]
+  myCoverageResult: OrganizationCoverageResult
   external_uri: String
   periodicity: String
   duration: String
@@ -15268,7 +15280,7 @@ input SecurityCoverageAddInput {
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
-  coverage_information: [SecurityCoverageExpectation!]
+  coverage_information: [CoverageResultInput!]
 }
 
 input AskSendOtpInput {

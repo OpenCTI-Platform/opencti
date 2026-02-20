@@ -28,7 +28,9 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_SECURITY_COVERAGE]: [{ src: 'objectCovered' }],
+      [ENTITY_TYPE_SECURITY_COVERAGE]: [
+        { src: 'objectCovered' },
+      ],
     },
     resolvers: {
       name(data: object) {

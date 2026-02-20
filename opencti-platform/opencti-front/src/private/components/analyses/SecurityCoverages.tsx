@@ -30,8 +30,14 @@ const securityCoverageFragment = graphql`
     coverage_valid_to
     auto_enrichment_disable
     coverage_information {
-      coverage_name
-      coverage_score
+      organization_id
+      organization_name
+      last_result
+      auto_enrichment
+      results {
+        coverage_name
+        coverage_score
+      }
     }
     objectCovered {
       ... on Report {
@@ -172,16 +178,30 @@ const SecurityCoverages: FunctionComponent = () => {
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: 35,
+      percentWidth: 25,
       isSortable: true,
     },
-    coverage_last_result: { percentWidth: 15 },
-    coverage_information: { percentWidth: 15 },
+    coverage_last_result: { percentWidth: 12 },
+    coverage_information: { percentWidth: 12 },
+    organizations: {
+      id: 'organizations',
+      label: 'Organizations',
+      percentWidth: 13,
+      isSortable: false,
+      render: ({ coverage_information: covInfo }: { coverage_information?: ReadonlyArray<{ organization_name?: string }> }) => {
+        if (!covInfo || covInfo.length === 0) return <span>-</span>;
+        const orgNames = covInfo
+          .map((entry) => entry.organization_name)
+          .filter(Boolean)
+          .join(', ');
+        return <span>{orgNames || '-'}</span>;
+      },
+    },
     creator: {
-      percentWidth: 12,
+      percentWidth: 10,
       isSortable: isRuntimeSort,
     },
-    objectLabel: { percentWidth: 15 },
+    objectLabel: { percentWidth: 13 },
     objectMarking: {
       isSortable: isRuntimeSort,
       percentWidth: 8,

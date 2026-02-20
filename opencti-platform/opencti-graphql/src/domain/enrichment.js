@@ -2,9 +2,9 @@ import { Promise } from 'bluebird';
 import { map } from 'ramda';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
-import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isStixObject } from '../schema/stixCoreObject';
-import { getEntitiesListFromCache } from '../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../database/cache';
 import { CONNECTOR_INTERNAL_ENRICHMENT } from '../schema/general';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
@@ -25,6 +25,8 @@ const publishEventToConnectors = async (context, user, element, targetConnectors
       });
     }, targetConnectors),
   );
+  // Resolve connector users for org context
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   // Send message to all correct connectors queues
   for (let index = 0; index < workList.length; index += 1) {
     const workListElement = workList[index];
@@ -35,6 +37,14 @@ const publishEventToConnectors = async (context, user, element, targetConnectors
     if (stixResolutionMode === 'stix_bundle') {
       stix_objects = await stixLoaders.bundleById();
     }
+    // Resolve the connector's organization from its service account user
+    let connector_organization_id = null;
+    if (connector.connector_user_id) {
+      const connUser = platformUsers.get(connector.connector_user_id);
+      if (connUser?.organizations?.length > 0) {
+        connector_organization_id = connUser.organizations[0].internal_id;
+      }
+    }
     const message = {
       internal: {
         work_id: work.id, // Related action for history
@@ -42,6 +52,7 @@ const publishEventToConnectors = async (context, user, element, targetConnectors
         draft_id: draftContext ?? null,
         trigger, // create | update
         mode: 'auto',
+        connector_organization_id, // Org context for multi-tenant enrichment (e.g. SecurityCoverage)
       },
       event: {
         event_type: CONNECTOR_INTERNAL_ENRICHMENT,

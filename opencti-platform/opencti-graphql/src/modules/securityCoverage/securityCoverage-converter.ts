@@ -12,7 +12,14 @@ const convertSecurityCoverageToStix = (instance: StoreEntitySecurityCoverage): S
     description: instance.description,
     covered: isNotEmptyField(instance.coverage_information),
     coverage: (instance.coverage_information ?? [])
-      .map((c) => ({ name: c.coverage_name, score: c.coverage_score })),
+      .map((orgEntry) => ({
+        organization_id: orgEntry.organization_id,
+        organization_name: orgEntry.organization_name,
+        last_result: orgEntry.last_result,
+        auto_enrichment: orgEntry.auto_enrichment,
+        results: (orgEntry.results ?? [])
+          .map((r) => ({ name: r.coverage_name, score: r.coverage_score })),
+      })),
     periodicity: instance.periodicity,
     type_affinity: instance.type_affinity,
     platforms_affinity: instance.platforms_affinity,

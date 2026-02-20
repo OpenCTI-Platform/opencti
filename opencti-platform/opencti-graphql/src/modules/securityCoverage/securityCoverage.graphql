@@ -3,6 +3,19 @@ type CoverageResult {
   coverage_score: Int!
 }
 
+type OrganizationCoverageResult {
+  organization_id: String!
+  organization_name: String!
+  last_result: DateTime
+  auto_enrichment: Boolean
+  results: [CoverageResult!]!
+}
+
+input CoverageResultInput {
+  coverage_name: String!
+  coverage_score: Int!
+}
+
 type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
@@ -145,7 +158,8 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
-  coverage_information: [CoverageResult!]
+  coverage_information: [OrganizationCoverageResult!]
+  myCoverageResult: OrganizationCoverageResult
   external_uri: String
   periodicity: String
   duration: String
@@ -231,7 +245,7 @@ input SecurityCoverageAddInput {
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
-  coverage_information: [SecurityCoverageExpectation!]
+  coverage_information: [CoverageResultInput!]
 }
 
 type Mutation {
@@ -242,5 +256,6 @@ type Mutation {
   securityCoverageContextClean(id: ID!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
   securityCoverageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   securityCoverageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoveragePushResults(id: ID!, organizationId: String!, results: [CoverageResultInput!]!, autoEnrichment: Boolean): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverageRemoveOrgResults(id: ID!, organizationId: String!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
 }
-

@@ -423,6 +423,9 @@ export const errors: AttributeDefinition = {
   ],
 };
 
+// Single superset definition for coverage_information used by both StixCoreRelationship (flat) and SecurityCoverage (org-scoped).
+// ES uses a single shared mapping across indices; R.uniqBy deduplicates by name keeping only the first registration.
+// Therefore ALL fields from both usages must be present in one definition.
 export const coverageInformation: AttributeDefinition = {
   name: 'coverage_information',
   label: 'Coverage',
@@ -433,10 +436,23 @@ export const coverageInformation: AttributeDefinition = {
   multiple: true,
   upsert: true,
   upsert_force_replace: true,
-  isFilterable: false, // Filter will be done by a special key
+  isFilterable: false,
   mappings: [
+    // Flat fields (used by StixCoreRelationship and legacy SecurityCoverage data)
     { name: 'coverage_name', label: 'Coverage name', type: 'string', format: 'vocabulary', vocabularyCategory: 'coverage_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'coverage_score', label: 'Coverage score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'coverage_score', label: 'Coverage score', type: 'numeric', mandatoryType: 'no', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: false },
+    // Org-scoped fields (used by SecurityCoverage v2)
+    { name: 'organization_id', label: 'Organization ID', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'organization_name', label: 'Organization name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'last_result', label: 'Last result', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    { name: 'auto_enrichment', label: 'Auto enrichment', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    {
+      name: 'results', label: 'Results', type: 'object', format: 'nested', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, upsert_force_replace: true, isFilterable: false,
+      mappings: [
+        { name: 'coverage_name', label: 'Coverage name', type: 'string', format: 'vocabulary', vocabularyCategory: 'coverage_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+        { name: 'coverage_score', label: 'Coverage score', type: 'numeric', mandatoryType: 'no', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: false },
+      ],
+    },
   ],
 };
 

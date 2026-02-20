@@ -5,6 +5,10 @@ import {
   securityCoverageDelete,
   securityCoverageStixBundle,
   objectCovered,
+  filterCoverageInformationForUser,
+  getMyCoverageResult,
+  securityCoveragePushResults,
+  securityCoverageRemoveOrgResults,
 } from './securityCoverage-domain';
 import {
   stixDomainObjectAddRelation,
@@ -22,6 +26,12 @@ const SecurityCoverageResolvers: Resolvers = {
   },
   SecurityCoverage: {
     objectCovered: (SecurityCoverage, _, context) => objectCovered<any>(context, context.user, SecurityCoverage.id),
+    coverage_information: (SecurityCoverage, _, context) => {
+      return filterCoverageInformationForUser(context, context.user, SecurityCoverage.coverage_information);
+    },
+    myCoverageResult: (SecurityCoverage, _, context) => {
+      return getMyCoverageResult(context, context.user, SecurityCoverage.coverage_information);
+    },
     toStixBundle: (SecurityCoverage, _, context) => securityCoverageStixBundle(context, context.user, SecurityCoverage.id),
   },
   Mutation: {
@@ -35,6 +45,12 @@ const SecurityCoverageResolvers: Resolvers = {
     securityCoverageRelationAdd: (_, { id, input }, context) => stixDomainObjectAddRelation(context, context.user, id, input),
     securityCoverageRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
       return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
+    },
+    securityCoveragePushResults: (_, { id, organizationId, results, autoEnrichment }, context) => {
+      return securityCoveragePushResults(context, context.user, id, organizationId, results, autoEnrichment ?? undefined);
+    },
+    securityCoverageRemoveOrgResults: (_, { id, organizationId }, context) => {
+      return securityCoverageRemoveOrgResults(context, context.user, id, organizationId);
     },
   },
 };

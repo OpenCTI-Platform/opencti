@@ -5182,6 +5182,11 @@ export type CoverageResult = {
   coverage_score: Scalars['Int']['output'];
 };
 
+export type CoverageResultInput = {
+  coverage_name: Scalars['String']['input'];
+  coverage_score: Scalars['Int']['input'];
+};
+
 export type Creator = {
   __typename?: 'Creator';
   entity_type: Scalars['String']['output'];
@@ -15595,8 +15600,10 @@ export type Mutation = {
   securityCoverageContextPatch?: Maybe<SecurityCoverage>;
   securityCoverageDelete?: Maybe<Scalars['ID']['output']>;
   securityCoverageFieldPatch?: Maybe<SecurityCoverage>;
+  securityCoveragePushResults?: Maybe<SecurityCoverage>;
   securityCoverageRelationAdd?: Maybe<StixRefRelationship>;
   securityCoverageRelationDelete?: Maybe<SecurityCoverage>;
+  securityCoverageRemoveOrgResults?: Maybe<SecurityCoverage>;
   securityPlatformAdd?: Maybe<SecurityPlatform>;
   securityPlatformContextClean?: Maybe<SecurityPlatform>;
   securityPlatformContextPatch?: Maybe<SecurityPlatform>;
@@ -17495,6 +17502,14 @@ export type MutationSecurityCoverageFieldPatchArgs = {
 };
 
 
+export type MutationSecurityCoveragePushResultsArgs = {
+  autoEnrichment?: InputMaybe<Scalars['Boolean']['input']>;
+  id: Scalars['ID']['input'];
+  organizationId: Scalars['String']['input'];
+  results: Array<CoverageResultInput>;
+};
+
+
 export type MutationSecurityCoverageRelationAddArgs = {
   id: Scalars['ID']['input'];
   input: StixRefRelationshipAddInput;
@@ -17505,6 +17520,12 @@ export type MutationSecurityCoverageRelationDeleteArgs = {
   id: Scalars['ID']['input'];
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
+};
+
+
+export type MutationSecurityCoverageRemoveOrgResultsArgs = {
+  id: Scalars['ID']['input'];
+  organizationId: Scalars['String']['input'];
 };
 
 
@@ -20471,6 +20492,15 @@ export type OrganizationConnection = {
   __typename?: 'OrganizationConnection';
   edges: Array<OrganizationEdge>;
   pageInfo: PageInfo;
+};
+
+export type OrganizationCoverageResult = {
+  __typename?: 'OrganizationCoverageResult';
+  auto_enrichment?: Maybe<Scalars['Boolean']['output']>;
+  last_result?: Maybe<Scalars['DateTime']['output']>;
+  organization_id: Scalars['String']['output'];
+  organization_name: Scalars['String']['output'];
+  results: Array<CoverageResult>;
 };
 
 export type OrganizationEdge = {
@@ -27237,7 +27267,7 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   contact_information?: Maybe<Scalars['String']['output']>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
-  coverage_information?: Maybe<Array<CoverageResult>>;
+  coverage_information?: Maybe<Array<OrganizationCoverageResult>>;
   coverage_last_result?: Maybe<Scalars['DateTime']['output']>;
   coverage_valid_from?: Maybe<Scalars['DateTime']['output']>;
   coverage_valid_to?: Maybe<Scalars['DateTime']['output']>;
@@ -27262,6 +27292,7 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   lang?: Maybe<Scalars['String']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
+  myCoverageResult?: Maybe<OrganizationCoverageResult>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -27457,7 +27488,7 @@ export type SecurityCoverageToStixArgs = {
 export type SecurityCoverageAddInput = {
   auto_enrichment_disable: Scalars['Boolean']['input'];
   confidence?: InputMaybe<Scalars['Int']['input']>;
-  coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
+  coverage_information?: InputMaybe<Array<CoverageResultInput>>;
   coverage_last_result?: InputMaybe<Scalars['DateTime']['input']>;
   coverage_valid_from?: InputMaybe<Scalars['DateTime']['input']>;
   coverage_valid_to?: InputMaybe<Scalars['DateTime']['input']>;
@@ -36793,6 +36824,7 @@ export type ResolversTypes = ResolversObject<{
   CourseOfActionEditMutations: ResolverTypeWrapper<Omit<CourseOfActionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['CourseOfAction']>, contextPatch?: Maybe<ResolversTypes['CourseOfAction']>, fieldPatch?: Maybe<ResolversTypes['CourseOfAction']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['CourseOfAction']> }>;
   CoursesOfActionOrdering: CoursesOfActionOrdering;
   CoverageResult: ResolverTypeWrapper<CoverageResult>;
+  CoverageResultInput: CoverageResultInput;
   Creator: ResolverTypeWrapper<Creator>;
   CreatorConnection: ResolverTypeWrapper<CreatorConnection>;
   CreatorEdge: ResolverTypeWrapper<CreatorEdge>;
@@ -37242,6 +37274,7 @@ export type ResolversTypes = ResolversObject<{
   Organization: ResolverTypeWrapper<BasicStoreEntityOrganization>;
   OrganizationAddInput: OrganizationAddInput;
   OrganizationConnection: ResolverTypeWrapper<Omit<OrganizationConnection, 'edges'> & { edges: Array<ResolversTypes['OrganizationEdge']> }>;
+  OrganizationCoverageResult: ResolverTypeWrapper<OrganizationCoverageResult>;
   OrganizationEdge: ResolverTypeWrapper<Omit<OrganizationEdge, 'node'> & { node: ResolversTypes['Organization'] }>;
   OrganizationOrIndividual: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['OrganizationOrIndividual']>;
   OrganizationsManagement: ResolverTypeWrapper<OrganizationsManagement>;
@@ -37821,6 +37854,7 @@ export type ResolversParentTypes = ResolversObject<{
   CourseOfActionEdge: Omit<CourseOfActionEdge, 'node'> & { node: ResolversParentTypes['CourseOfAction'] };
   CourseOfActionEditMutations: Omit<CourseOfActionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['CourseOfAction']>, contextPatch?: Maybe<ResolversParentTypes['CourseOfAction']>, fieldPatch?: Maybe<ResolversParentTypes['CourseOfAction']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['CourseOfAction']> };
   CoverageResult: CoverageResult;
+  CoverageResultInput: CoverageResultInput;
   Creator: Creator;
   CreatorConnection: CreatorConnection;
   CreatorEdge: CreatorEdge;
@@ -38206,6 +38240,7 @@ export type ResolversParentTypes = ResolversObject<{
   Organization: BasicStoreEntityOrganization;
   OrganizationAddInput: OrganizationAddInput;
   OrganizationConnection: Omit<OrganizationConnection, 'edges'> & { edges: Array<ResolversParentTypes['OrganizationEdge']> };
+  OrganizationCoverageResult: OrganizationCoverageResult;
   OrganizationEdge: Omit<OrganizationEdge, 'node'> & { node: ResolversParentTypes['Organization'] };
   OrganizationOrIndividual: ResolversUnionTypes<ResolversParentTypes>['OrganizationOrIndividual'];
   OrganizationsManagement: OrganizationsManagement;
@@ -44057,8 +44092,10 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   securityCoverageContextPatch?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageContextPatchArgs, 'id' | 'input'>>;
   securityCoverageDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageDeleteArgs, 'id'>>;
   securityCoverageFieldPatch?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageFieldPatchArgs, 'id' | 'input'>>;
+  securityCoveragePushResults?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoveragePushResultsArgs, 'id' | 'organizationId' | 'results'>>;
   securityCoverageRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageRelationAddArgs, 'id' | 'input'>>;
   securityCoverageRelationDelete?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
+  securityCoverageRemoveOrgResults?: Resolver<Maybe<ResolversTypes['SecurityCoverage']>, ParentType, ContextType, RequireFields<MutationSecurityCoverageRemoveOrgResultsArgs, 'id' | 'organizationId'>>;
   securityPlatformAdd?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType, RequireFields<MutationSecurityPlatformAddArgs, 'input'>>;
   securityPlatformContextClean?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType, RequireFields<MutationSecurityPlatformContextCleanArgs, 'id'>>;
   securityPlatformContextPatch?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType, RequireFields<MutationSecurityPlatformContextPatchArgs, 'id' | 'input'>>;
@@ -44834,6 +44871,14 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
 export type OrganizationConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationConnection'] = ResolversParentTypes['OrganizationConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['OrganizationEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type OrganizationCoverageResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationCoverageResult'] = ResolversParentTypes['OrganizationCoverageResult']> = ResolversObject<{
+  auto_enrichment?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  last_result?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  organization_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  organization_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  results?: Resolver<Array<ResolversTypes['CoverageResult']>, ParentType, ContextType>;
 }>;
 
 export type OrganizationEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationEdge'] = ResolversParentTypes['OrganizationEdge']> = ResolversObject<{
@@ -46467,7 +46512,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   contact_information?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<SecurityCoverageContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
-  coverage_information?: Resolver<Maybe<Array<ResolversTypes['CoverageResult']>>, ParentType, ContextType>;
+  coverage_information?: Resolver<Maybe<Array<ResolversTypes['OrganizationCoverageResult']>>, ParentType, ContextType>;
   coverage_last_result?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   coverage_valid_from?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   coverage_valid_to?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -46492,6 +46537,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  myCoverageResult?: Resolver<Maybe<ResolversTypes['OrganizationCoverageResult']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<SecurityCoverageNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -49636,6 +49682,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   OpinionsMetrics?: OpinionsMetricsResolvers<ContextType>;
   Organization?: OrganizationResolvers<ContextType>;
   OrganizationConnection?: OrganizationConnectionResolvers<ContextType>;
+  OrganizationCoverageResult?: OrganizationCoverageResultResolvers<ContextType>;
   OrganizationEdge?: OrganizationEdgeResolvers<ContextType>;
   OrganizationOrIndividual?: OrganizationOrIndividualResolvers<ContextType>;
   OrganizationsManagement?: OrganizationsManagementResolvers<ContextType>;

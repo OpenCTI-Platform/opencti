@@ -7,13 +7,28 @@ export const RELATION_COVERED = 'object-covered';
 export const ATTRIBUTE_COVERED = 'covered_ref';
 export const INPUT_COVERED = 'objectCovered';
 
+// region Org-scoped coverage result types
+export interface CoverageResultEntry {
+  coverage_name: string;
+  coverage_score: number;
+}
+
+export interface OrganizationCoverageResult {
+  organization_id: string;
+  organization_name: string;
+  last_result: string | null;
+  auto_enrichment: boolean;
+  results: CoverageResultEntry[];
+}
+// endregion
+
 // region Database types
 export interface BasicStoreEntitySecurityCoverage extends BasicStoreEntity {
   periodicity: string;
   duration: string;
   type_affinity: string;
   platforms_affinity: string[];
-  coverage_information: { coverage_name: string; coverage_score: number }[];
+  coverage_information: OrganizationCoverageResult[];
 }
 
 export interface StoreEntitySecurityCoverage extends StoreEntity {
@@ -22,7 +37,7 @@ export interface StoreEntitySecurityCoverage extends StoreEntity {
   type_affinity: string;
   platforms_affinity: string[];
   [INPUT_COVERED]: BasicStoreEntity;
-  coverage_information: { coverage_name: string; coverage_score: number }[];
+  coverage_information: OrganizationCoverageResult[];
 }
 // endregion
 
@@ -36,7 +51,13 @@ export interface StixSecurityCoverage extends StixDomainObject {
   platforms_affinity: string[];
   covered_ref: string;
   covered: boolean;
-  coverage: { name: string; score: number }[];
+  coverage: {
+    organization_id: string;
+    organization_name: string;
+    last_result: string | null;
+    auto_enrichment: boolean;
+    results: { name: string; score: number }[];
+  }[];
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

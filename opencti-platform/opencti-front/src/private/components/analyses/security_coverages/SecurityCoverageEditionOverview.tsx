@@ -98,8 +98,14 @@ const securityCoverageEditionOverviewFragment = graphql`
     platforms_affinity
     auto_enrichment_disable
     coverage_information {
-      coverage_name
-      coverage_score
+      organization_id
+      organization_name
+      last_result
+      auto_enrichment
+      results {
+        coverage_name
+        coverage_score
+      }
     }
     createdBy {
       ... on Identity {
@@ -260,7 +266,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
     platforms_affinity: securityCoverageData.platforms_affinity ?? [],
     auto_enrichment_disable: securityCoverageData.auto_enrichment_disable ?? false,
     confidence: securityCoverageData.confidence ?? null,
-    coverage_information: (securityCoverageData.coverage_information ?? []).map((item) => ({
+    coverage_information: ((securityCoverageData.coverage_information ?? [])[0]?.results ?? []).map((item) => ({
       coverage_name: item.coverage_name,
       coverage_score: item.coverage_score,
     })),

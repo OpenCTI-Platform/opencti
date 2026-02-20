@@ -1,0 +1,46 @@
+---
+title: "Security Coverage v2 — Data Model"
+---
+graph TB
+    subgraph SC["SecurityCoverage (1 par entite couverte)"]
+        direction TB
+        ID["id: uuid-coverage-apt29"]
+        REF["covered_ref: IntrusionSet APT29"]
+
+        subgraph CI["coverage_information[]"]
+            direction TB
+            subgraph ORG_A["Banque Alpha"]
+                A_ID["organization_id: uuid-banque-alpha"]
+                A_DATE["last_result: 2026-02-18"]
+                A_MODE["auto_enrichment: true"]
+                A_R1["Prevention: 72%"]
+                A_R2["Detection: 85%"]
+                A_R3["Vulnerabilities: 45%"]
+            end
+            subgraph ORG_B["Hopital Beta"]
+                B_ID["organization_id: uuid-hopital-beta"]
+                B_DATE["last_result: 2026-02-15"]
+                B_MODE["auto_enrichment: true"]
+                B_R1["Prevention: 38%"]
+                B_R2["Detection: 52%"]
+                B_R3["Vulnerabilities: 67%"]
+            end
+            subgraph ORG_P["MSSP Platform (baseline)"]
+                P_ID["organization_id: uuid-mssp-platform"]
+                P_DATE["last_result: 2026-02-20"]
+                P_MODE["auto_enrichment: false"]
+                P_R1["Prevention: 60%"]
+                P_R2["Detection: 70%"]
+                P_R3["Vulnerabilities: 55%"]
+            end
+        end
+
+        OBJ_ORG["objectOrganization: auto-gere par pushResults"]
+    end
+
+    APT29["IntrusionSet: APT29"] -->|"object-covered"| SC
+
+    style ORG_A fill:#e3f2fd,stroke:#1565c0
+    style ORG_B fill:#fce4ec,stroke:#c62828
+    style ORG_P fill:#e8f5e9,stroke:#2e7d32
+    style SC fill:#fff3e0,stroke:#e65100

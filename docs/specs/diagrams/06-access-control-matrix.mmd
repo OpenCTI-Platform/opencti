@@ -1,0 +1,41 @@
+---
+title: "Matrice d'acces — Security Coverage multi-tenant"
+---
+flowchart LR
+    subgraph USERS["Types d'utilisateurs"]
+        U1["👤 Admin BYPASS\nOrgs: aucune"]
+        U2["👤 MSSP Analyst\nOrgs: [MSSP Platform]\n= platform_organization"]
+        U3["👤 Client Analyst\nOrgs: [Banque Alpha]"]
+        U4["🤖 Connector A\nOrgs: [Banque Alpha]"]
+    end
+
+    subgraph READS["Lecture coverage_information"]
+        R1["Voit: TOUTES les orgs\n(bypass)"]
+        R2["Voit: MSSP Platform\n(sa propre org uniquement)\n⚠️ fix suggere: tout voir"]
+        R3["Voit: Banque Alpha\n+ MSSP Platform\n(sa org + baseline)"]
+        R4["N/A\n(connectors ne lisent\npas via GraphQL)"]
+    end
+
+    subgraph WRITES["Ecriture pushResults"]
+        W1["Push: n'importe quelle org\n(bypass)"]
+        W2["Push: MSSP Platform only"]
+        W3["Push: Banque Alpha only"]
+        W4["Push: Banque Alpha only\n(via connector_organization_id)"]
+    end
+
+    U1 --> R1 --> W1
+    U2 --> R2 --> W2
+    U3 --> R3 --> W3
+    U4 --> R4 --> W4
+
+    style U1 fill:#fff9c4,stroke:#f9a825
+    style U2 fill:#e8eaf6,stroke:#283593
+    style U3 fill:#e3f2fd,stroke:#1565c0
+    style U4 fill:#e0f2f1,stroke:#00695c
+    style R1 fill:#c8e6c9,stroke:#2e7d32
+    style R2 fill:#fff9c4,stroke:#f9a825
+    style R3 fill:#c8e6c9,stroke:#2e7d32
+    style W1 fill:#c8e6c9,stroke:#2e7d32
+    style W2 fill:#e3f2fd,stroke:#1565c0
+    style W3 fill:#e3f2fd,stroke:#1565c0
+    style W4 fill:#e0f2f1,stroke:#00695c

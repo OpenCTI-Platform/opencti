@@ -1,0 +1,50 @@
+---
+title: "Workflow 3 — Utilisateur membre d'une org geree (Banque Alpha)"
+---
+flowchart TD
+    USER["👤 analyst@banque-alpha.com\nOrgs: [Banque Alpha]\nOrg geree par le MSSP"]
+
+    USER --> QUERY["Requete GraphQL\nsecurityCoverage.coverage_information"]
+    QUERY --> FILTER["filterCoverageInformationForUser()"]
+
+    FILTER --> CHECK_BYPASS{"isBypassUser?"}
+    CHECK_BYPASS -->|"NON"| GET_ORGS["userOrgIds = [uuid-banque-alpha]"]
+
+    GET_ORGS --> GET_PLATFORM["platformOrgId = uuid-mssp-platform"]
+    GET_PLATFORM --> BUILD_ALLOWED["allowedOrgIds =\n{uuid-banque-alpha}\n∪ {uuid-mssp-platform}\n= ses orgs + baseline"]
+
+    BUILD_ALLOWED --> FILTER_RESULT["Filtre: org_id ∈ allowedOrgIds"]
+    FILTER_RESULT --> RETURN["✅ Retourne 2 orgs\n• Banque Alpha (ses scores)\n• MSSP Platform (baseline)"]
+
+    RETURN --> FE
+
+    subgraph FE["Frontend — 2 orgs → toggle visible"]
+        FE_HEADER["Vue Header\n🟢 P:72% 🟢 D:85%\n(Banque Alpha = 1ere org)"]
+
+        FE_DETAIL["Vue Details\nToggle: Single | Compare"]
+
+        FE_SINGLE["Mode Single\n[Banque Alpha ▼]\n🟢 Prevention: 72%\n🟢 Detection: 85%\nLast: Feb 18 — Auto"]
+
+        FE_COMPARE["Mode Compare\n\nMetric        Banque  MSSP\nPrevention     72%    60%\nDetection      85%    70%\n\n→ Au-dessus du baseline ✓"]
+    end
+
+    FE_HEADER --> FE_DETAIL
+    FE_DETAIL --> FE_SINGLE
+    FE_DETAIL --> FE_COMPARE
+
+    subgraph INVISIBLE["❌ Non visible"]
+        HIDDEN["Hopital Beta: masque\nL'utilisateur Banque Alpha\nne voit PAS les scores\ndes autres clients MSSP"]
+    end
+
+    subgraph MUTATIONS["Mutations"]
+        PUSH["pushResults:\npeut pousser SEULEMENT\npour Banque Alpha"]
+        FAIL["❌ pushResults(hopital-beta)\n→ ForbiddenAccess"]
+    end
+
+    style USER fill:#e3f2fd,stroke:#1565c0
+    style RETURN fill:#c8e6c9,stroke:#2e7d32
+    style FE fill:#f3e5f5,stroke:#7b1fa2
+    style FE_COMPARE fill:#e3f2fd,stroke:#1565c0
+    style INVISIBLE fill:#ffcdd2,stroke:#c62828
+    style MUTATIONS fill:#fff3e0,stroke:#e65100
+    style FAIL fill:#ffcdd2,stroke:#c62828
