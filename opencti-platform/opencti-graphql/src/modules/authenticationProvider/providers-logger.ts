@@ -43,7 +43,7 @@ export const createAuthLogger = (
     const messageText = isAuthError ? err.message : message;
     const realMeta = {
       ...(isAuthError ? err.meta : meta),
-      ...(err && !isAuthError ? { message: err.message } : {}),
+      ...(err && !isAuthError ? { message: err.errors ? [err.message, ...err.errors.map((e: any) => e.message)].filter(Boolean) : err.message || undefined } : {}),
     };
     forgetPromise(redisPushAuthLog(id, { level: 'error', type, identifier, message: messageText, meta: realMeta }));
   };
