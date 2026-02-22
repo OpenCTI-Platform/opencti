@@ -213,7 +213,8 @@
     "timeout": 60000
   },
   "xtm": {
-    "xtm_one_url": "https://common.xtm1.filigran.io",
+    "xtm_one_url": "",
+    "xtm_one_token": "",
     "openaev_url": "",
     "openaev_token": "",
     "openaev_reject_unauthorized": false,
