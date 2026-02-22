@@ -41,24 +41,17 @@ const initClients = () => {
     return;
   }
   // Defensive check: a partially initialized state (only one of `client` or `nlqChat` is set)
-  // is unexpected and can lead to inconsistent behavior. We log a warning and reset both
+  // is unexpected and can lead to inconsistent behavior. We log a concise warning and reset both
   // so that the initialization below always starts from a clean state.
+  // Possible causes include concurrent initialization, a failure during a previous initialization
+  // attempt, or partial AI configuration changes.
   if ((client && !nlqChat) || (!client && nlqChat)) {
-    const partialInitError = new Error('Partially initialized AI clients detected');
     logApp.warn(
-      '[AI] Detected partially initialized AI clients; this indicates an unexpected or failed initialization. ' +
-        'Both clients will be reset before re-initialization. Please investigate AI client initialization and configuration.',
+      '[AI] Partially initialized AI clients detected; resetting client and nlqChat before re-initialization.',
       {
         hasClient: !!client,
         hasNlqChat: !!nlqChat,
         aiType: AI_TYPE,
-        reason:
-          'Only one of "client" or "nlqChat" was initialized. This can be caused by concurrent initialization, ' +
-          'a failure during a previous initialization attempt, or partial AI configuration changes.',
-        remediation:
-          'Review recent changes to AI configuration (type, endpoint, token, model) and any code paths that may call initClients ' +
-          'concurrently or modify AI-related state. This condition should not normally occur and may indicate a bug.',
-        stack: partialInitError.stack,
       }
     );
     resetClients();
