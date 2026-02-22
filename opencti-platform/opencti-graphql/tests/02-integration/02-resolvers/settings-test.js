@@ -7,9 +7,14 @@ import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const WAIT_FOR_SETTINGS_TIMEOUT_MS = 10000;
-const WAIT_FOR_SETTINGS_INTERVAL_MS = 250;
-const WAIT_FOR_SETTINGS_INITIAL_DELAY_MS = 250;
+// NOTE:
+// These timings are tuned for cache invalidation / settings propagation in tests:
+// - Timeout: generous upper bound to avoid flakiness under load while still failing eventually.
+// - Interval: trade-off between responsiveness and not overloading the GraphQL API with queries.
+// They can be overridden per environment using the corresponding environment variables.
+const WAIT_FOR_SETTINGS_TIMEOUT_MS = Number(process.env.WAIT_FOR_SETTINGS_TIMEOUT_MS) || 10000;
+const WAIT_FOR_SETTINGS_INTERVAL_MS = Number(process.env.WAIT_FOR_SETTINGS_INTERVAL_MS) || 250;
+const WAIT_FOR_SETTINGS_INITIAL_DELAY_MS = Number(process.env.WAIT_FOR_SETTINGS_INITIAL_DELAY_MS) || 250;
 
 const waitForPlatformAiEnabled = async (expectedEnabled) => {
   let lastValue = undefined;
