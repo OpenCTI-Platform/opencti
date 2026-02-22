@@ -1,10 +1,9 @@
-import { PLATFORM_VERSION } from '../../../config/conf';
-import { logApp } from '../../../config/conf';
+import { PLATFORM_VERSION, logApp } from '../../../config/conf';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreSettings } from '../../../types/settings';
 import { getEntityFromCache, getEntitiesListFromCache } from '../../../database/cache';
-import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
-import { ENTITY_TYPE_USER } from '../../../schema/internalObject';
+import { internalLoadById } from '../../../database/middleware-loader';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../../schema/internalObject';
 import { getEnterpriseEditionActivePem } from '../../settings/licensing';
 import { addUserTokenByAdmin } from '../../user/user-domain';
 import xtmOneClient from './xtm-one-client';
@@ -15,14 +14,14 @@ const XTM_ONE_TOKEN_NAME = 'XTM One';
 /**
  * Register this OpenCTI instance with XTM One.
  *
- * Called on every tick by the XTM One registration manager. The /register
+ * Called on every tick by the XTM One registration manager.  The /register
  * endpoint is an upsert so repeated calls are safe and serve as both
  * initial registration and periodic heartbeat.
  *
- * For each user, we check if an "XTM One" named token already exists.
- * If not, we create one and include the plaintext in the registration.
- * Users whose token was already created (and plaintext is no longer
- * available) are still included — XTM One will upsert based on email.
+ * For each user we load from the DB (not cache) to reliably check whether
+ * an "XTM One" named token already exists.  Only users who receive a
+ * newly-created token are included in the payload — their plaintext key
+ * is only available at creation time.
  */
 export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): Promise<void> => {
   if (!xtmOneClient.isConfigured()) {
@@ -42,12 +41,15 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
     const allUsers = await getEntitiesListFromCache<AuthUser>(context, user, ENTITY_TYPE_USER);
     for (const u of allUsers) {
       if (!u.user_email) continue;
-      const apiTokens = (u as any).api_tokens ?? [];
-      const existingXtmToken = apiTokens.find((t: any) => t.name === XTM_ONE_TOKEN_NAME);
-      if (existingXtmToken) {
-        continue;
-      }
       try {
+        // Load from DB (not cache) so the api_tokens check is reliable
+        // and we never accidentally create duplicate "XTM One" tokens.
+        const freshUser = await internalLoadById<AuthUser>(context, user, u.id);
+        if (!freshUser) continue;
+        const existingTokens = (freshUser as any).api_tokens ?? [];
+        if (existingTokens.some((t: any) => t.name === XTM_ONE_TOKEN_NAME)) {
+          continue;
+        }
         const newToken = await addUserTokenByAdmin(context, user, u.id, { name: XTM_ONE_TOKEN_NAME });
         users.push({
           email: u.user_email,

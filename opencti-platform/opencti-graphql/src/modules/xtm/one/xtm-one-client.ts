@@ -1,6 +1,5 @@
 import axios from 'axios';
-import conf from '../../../config/conf';
-import { logApp } from '../../../config/conf';
+import conf, { logApp } from '../../../config/conf';
 
 const XTM_ONE_URL = conf.get('xtm:xtm_one_url');
 const XTM_ONE_TOKEN = conf.get('xtm:xtm_one_token');
@@ -52,7 +51,6 @@ const xtmOneClient = {
       return null;
     }
   },
-
 };
 
 export default xtmOneClient;
