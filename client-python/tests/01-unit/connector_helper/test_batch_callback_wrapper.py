@@ -101,6 +101,51 @@ class TestBatchCallbackWrapper(TestCase):
         finally:
             wrapper.stop()
 
+    def test_batch_size_cap_and_drain(self):
+        helper = DummyHelper()
+        batches = []
+        done = threading.Event()
+
+        def callback(batch_data):
+            batches.append(batch_data)
+            if len(batches) >= 3:
+                done.set()
+
+        wrapper = BatchCallbackWrapper(helper, callback, batch_size=5, batch_timeout=0.1)
+        try:
+            for i in range(12):
+                wrapper(DummyMessage(f"{i}-0"))
+            self.assertTrue(done.wait(timeout=5))
+            self.assertEqual(len(batches), 3)
+            self.assertEqual(batches[0]["batch_metadata"]["batch_size"], 5)
+            self.assertEqual(batches[0]["batch_metadata"]["trigger_reason"], "size_limit")
+            self.assertEqual(batches[1]["batch_metadata"]["batch_size"], 5)
+            self.assertEqual(batches[1]["batch_metadata"]["trigger_reason"], "size_limit")
+            self.assertEqual(batches[2]["batch_metadata"]["batch_size"], 2)
+            self.assertEqual(batches[2]["batch_metadata"]["trigger_reason"], "timeout")
+        finally:
+            wrapper.stop()
+
+    def test_batch_size_none(self):
+        helper = DummyHelper()
+        batches = []
+        done = threading.Event()
+
+        def callback(batch_data):
+            batches.append(batch_data)
+            done.set()
+
+        wrapper = BatchCallbackWrapper(helper, callback, batch_size=None, batch_timeout=0.1)
+        try:
+            for i in range(8):
+                wrapper(DummyMessage(f"{i}-0"))
+            self.assertTrue(done.wait(timeout=5))
+            self.assertEqual(len(batches), 1)
+            self.assertEqual(batches[0]["batch_metadata"]["batch_size"], 8)
+            self.assertEqual(batches[0]["batch_metadata"]["trigger_reason"], "timeout")
+        finally:
+            wrapper.stop()
+
     def test_shutdown_processes_remaining_messages(self):
         helper = DummyHelper()
         batches = []
@@ -117,6 +162,29 @@ class TestBatchCallbackWrapper(TestCase):
         self.assertEqual(len(batches), 1)
         self.assertEqual(batches[0]["batch_metadata"]["trigger_reason"], "shutdown")
         self.assertEqual(batches[0]["batch_metadata"]["batch_size"], 1)
+
+    def test_shutdown_drains_in_chunks(self):
+        helper = DummyHelper()
+        batches = []
+
+        def callback(batch_data):
+            batches.append(batch_data)
+
+        wrapper = BatchCallbackWrapper(
+            helper, callback, batch_size=3, batch_timeout=10.0
+        )
+        for i in range(8):
+            wrapper.batch.append(DummyMessage(f"{i}-0"))
+        wrapper.batch_start_time = time.time()
+        
+        wrapper.stop()
+
+        self.assertEqual(len(batches), 3)
+        self.assertEqual(batches[0]["batch_metadata"]["batch_size"], 3)
+        self.assertEqual(batches[1]["batch_metadata"]["batch_size"], 3)
+        self.assertEqual(batches[2]["batch_metadata"]["batch_size"], 2)
+        for b in batches:
+            self.assertEqual(b["batch_metadata"]["trigger_reason"], "shutdown")
 
     def test_batch_callback_error_does_not_update_state(self):
         helper = DummyHelper()
