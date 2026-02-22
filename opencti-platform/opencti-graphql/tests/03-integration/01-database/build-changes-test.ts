@@ -553,10 +553,8 @@ describe('buildChanges standard behavior', async () => {
       ],
       changes_added: [],
     }]);
-    expect(changes).toEqual([{field:'Label',previous:['anti-sandbox', 'angie'], new: ['angie'], removed:['anti-sandbox'], added:[]}]);
   });
   it('should build changes for status replaced', async () => {
-    // we use data-initialization statuses
     const statuses = await findByType(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT);
     const inputs = [{
       key:'x_opencti_workflow_id',
@@ -564,7 +562,11 @@ describe('buildChanges standard behavior', async () => {
       value:[statuses[1].id]
     }];
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{field:'Workflow status',previous:[statuses[0].name],new:[statuses[1].name]}]);
+    expect(changes).toEqual([{
+      field: 'Report--x_opencti_workflow_id',
+      changes_removed: [{ raw: statuses[0].id, translated: JSON.stringify({ [statuses[0].id]: statuses[0].name }) }],
+      changes_added: [{ raw: statuses[1].id, translated: JSON.stringify({ [statuses[1].id]: statuses[1].name }) }],
+    }]);
   });
   it('should build changes for creator add', async () => {
     const securityId = await getUserIdByEmail(USER_SECURITY.email);
@@ -575,7 +577,11 @@ describe('buildChanges standard behavior', async () => {
       value:[securityId, editorId]
     }];
     const changes = await buildChanges(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, inputs);
-    expect(changes).toEqual([{field:'Creators',previous:['security@opencti.io'],new:['security@opencti.io','editor@opencti.io'],added:['editor@opencti.io'],removed:[]}]);
+    expect(changes).toEqual([{
+      field: 'Report--creator_id',
+      changes_added: [expect.objectContaining({ raw: editorId })],
+      changes_removed: [],
+    }]);
   });
 });
 
