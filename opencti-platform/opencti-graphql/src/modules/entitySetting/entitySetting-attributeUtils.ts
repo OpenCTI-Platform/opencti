@@ -13,7 +13,7 @@ import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../ut
 
 // ==================================================================
 // Need a specific utils file to those functions because
-// getMandatoryAttributesForSetting() is called inside middleware.js,
+// getMandatoryAttributesForSetting() is called inside middleware.ts,
 // and so we have a cycle dependency if writing it inside .-domain.ts
 // ==================================================================
 

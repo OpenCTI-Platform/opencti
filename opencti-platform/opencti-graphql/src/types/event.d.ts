@@ -62,6 +62,10 @@ interface Change {
   field: string;
   changes_added?: Array<ChangeValue>;
   changes_removed?: Array<ChangeValue>;
+  previous?: Array<string> | null;
+  new?: Array<string> | null;
+  added?: Array<string>;
+  removed?: Array<string>;
 }
 
 interface UpdateEvent extends StreamDataEvent {

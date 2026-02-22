@@ -1,6 +1,7 @@
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from './internalObject';
 import { ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP } from './general';
 import { getDraftOperations } from '../modules/draftWorkspace/draftOperations';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import type { BasicStoreIdentifier } from '../types/store';
 import type { AuthorizedMembers } from '../utils/authorizedMembers';
 import { DefaultFormating, type Formating } from '../utils/humanize';
@@ -112,7 +113,7 @@ export const draftIds: IdAttribute = {
   editDefault: false,
   upsert: false,
   isFilterable: false,
-  entityTypes: [ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP],
+  entityTypes: [ENTITY_TYPE_DRAFT_WORKSPACE],
 };
 
 export const draftContext: TextAttribute = {

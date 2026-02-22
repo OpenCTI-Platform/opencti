@@ -1676,7 +1676,11 @@ class ListenStream(threading.Thread):
                         q.put(msg.event, block=False)
                     except queue.Full:
                         pass
-                    if msg.event == "heartbeat" or msg.event == "connected":
+                    if (
+                        msg.event == "heartbeat"
+                        or msg.event == "consumer_metrics"
+                        or msg.event == "connected"
+                    ):
                         state = self.helper.get_state()
                         # state can be None if reset from the UI
                         # In this case, default parameters will be used but SSE Client needs to be restarted

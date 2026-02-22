@@ -11,7 +11,6 @@ import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import type { Gauge } from '@opentelemetry/api';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENABLED_METRICS, ENABLED_TRACING } from './conf';
-import { isNotEmptyField } from '../database/utils';
 
 class MeterManager {
   meterProvider: MeterProvider;
@@ -96,14 +95,14 @@ const metricReaders: MetricReader[] = [];
 if (ENABLED_METRICS) {
   // OTLP - JAEGER ...
   const exporterOtlp = nconf.get('app:telemetry:metrics:exporter_otlp');
-  if (isNotEmptyField(exporterOtlp)) {
+  if (exporterOtlp && exporterOtlp.length > 0) {
     const metricExporter = new OTLPMetricExporter({ url: exporterOtlp, headers: {}, concurrencyLimit: 1 });
     const metricReader = new PeriodicExportingMetricReader({ exporter: metricExporter, exportIntervalMillis: 1000 });
     metricReaders.push(metricReader);
   }
   // PROMETHEUS
   const exporterPrometheus = nconf.get('app:telemetry:metrics:exporter_prometheus');
-  if (isNotEmptyField(exporterPrometheus)) {
+  if (exporterPrometheus) {
     const prometheusExporter = new PrometheusExporter({ port: exporterPrometheus });
     metricReaders.push(prometheusExporter);
   }

@@ -1,13 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
 import { type EntityOptions, fullRelationsList, loadEntityThroughRelationsPaginated, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type BasicStoreEntitySecurityCoverage, ENTITY_TYPE_SECURITY_COVERAGE, INPUT_COVERED, RELATION_COVERED } from './securityCoverage-types';
+import { type BasicStoreEntitySecurityCoverage, ENTITY_TYPE_SECURITY_COVERAGE, INPUT_COVERED, RELATION_COVERED, type StoreEntitySecurityCoverage } from './securityCoverage-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { createEntity, deleteElementById, storeLoadByIdsWithRefs, storeLoadByIdWithRefs } from '../../database/middleware';
 import type { SecurityCoverageAddInput } from '../../generated/graphql';
-import type { BasicStoreEntity, StoreRelation } from '../../types/store';
+import type { BasicStoreEntity, StoreObject, StoreRelation } from '../../types/store';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import { RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
@@ -34,7 +34,8 @@ export const COVERED_ENTITIES_TYPE = [
 
 // region CRUD
 export const findSecurityCoverageById = (context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {
-  return storeLoadById<BasicStoreEntitySecurityCoverage>(context, user, SecurityCoverageId, ENTITY_TYPE_SECURITY_COVERAGE);
+  const store = storeLoadById<BasicStoreEntitySecurityCoverage>(context, user, SecurityCoverageId, ENTITY_TYPE_SECURITY_COVERAGE);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, store, user);
 };
 
 export const pageSecurityCoverageConnections = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntitySecurityCoverage>) => {
@@ -47,28 +48,28 @@ export const findSecurityCoverageByCoveredId = async (context: AuthContext, user
 
 export const addSecurityCoverage = async (context: AuthContext, user: AuthUser, securityCoverageInput: SecurityCoverageAddInput) => {
   const created = await createEntity(context, user, securityCoverageInput, ENTITY_TYPE_SECURITY_COVERAGE);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_SECURITY_COVERAGE].EDIT_TOPIC, created, user);
 };
 
 export const securityCoverageStixBundle = async (context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {
   const objects = [];
-  const SecurityCoverage = await storeLoadByIdWithRefs(context, user, SecurityCoverageId);
+  const SecurityCoverage = await storeLoadByIdWithRefs(context, user, SecurityCoverageId) as StoreEntitySecurityCoverage;
   const stixSecurityCoverage = convertStoreToStix_2_1(SecurityCoverage);
   objects.push(stixSecurityCoverage);
-  const objectCovered = SecurityCoverage[INPUT_COVERED] as unknown as BasicStoreEntity;
-  const assessment = await storeLoadByIdWithRefs(context, user, objectCovered.id);
+  const objectCovered = SecurityCoverage[INPUT_COVERED] as BasicStoreEntity;
+  const assessment = await storeLoadByIdWithRefs(context, user, objectCovered.id) as StoreObject;
   const stixAssessment = convertStoreToStix_2_1(assessment);
   objects.push(stixAssessment);
   const stixAssessmentRefs = stixRefsExtractor(stixAssessment);
   const refElements = await storeLoadByIdsWithRefs(context, user, stixAssessmentRefs);
-  for (let index = 0; index < refElements.length; index += 1) {
-    const refElement = refElements[index];
+  for (const element of refElements) {
+    const refElement = element;
     const stixRefElement = convertStoreToStix_2_1(refElement);
     objects.push(stixRefElement);
   }
-  const targetIds = new Set();
+  const targetIds = new Set<string>();
   const relationsCallback = async (relationships: StoreRelation[]) => {
-    const relations = await storeLoadByIdsWithRefs(context, user, relationships.map((r: StoreRelation) => r.id));
+    const relations = await storeLoadByIdsWithRefs<StoreRelation>(context, user, relationships.map((r: StoreRelation) => r.id));
     for (let index = 0; index < relations.length; index += 1) {
       const relation = relations[index];
       const stixRelation = convertStoreToStix_2_1(relation);

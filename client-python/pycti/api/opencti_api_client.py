@@ -526,6 +526,14 @@ class OpenCTIApiClient:
         self.draft_id = draft_id
         self.request_headers["opencti-draft-id"] = draft_id
 
+    def set_work_id(self, work_id):
+        """Set the work ID header for work validation
+
+        :param work_id: the ID of the work
+        :type work_id: str
+        """
+        self.request_headers["opencti-work-id"] = work_id
+
     def set_synchronized_upsert_header(self, synchronized):
         """Set the synchronized upsert header.
 

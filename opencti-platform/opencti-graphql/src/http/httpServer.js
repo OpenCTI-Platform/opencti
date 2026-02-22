@@ -17,13 +17,14 @@ import createApolloServer from '../graphql/graphql';
 import { applicationSession } from '../database/session';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { userEditField } from '../domain/user';
-import { DraftLockedError, ForbiddenAccess } from '../config/errors';
+import { DraftLockedError, ForbiddenAccess, WorkNotALiveError } from '../config/errors';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
+import { isWorkAlive } from '../domain/work';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -138,6 +139,13 @@ const createHttpServer = async () => {
       path: `${basePath}/graphql`,
       context: async ({ req, res }) => {
         const executeContext = await createAuthenticatedContext(req, res, 'api');
+        // When context is related to a work, we need to check work status
+        if (executeContext.workId) {
+          const workStillAlive = await isWorkAlive(executeContext, executeContext.user, executeContext.workId);
+          if (!workStillAlive) {
+            throw WorkNotALiveError();
+          }
+        }
         // When context is in draft, we need to check draft status: if draft is not in an open status, it means that it is no longer possible to execute requests in this draft
         if (executeContext.draft_context) {
           const draftWorkspaces = await getEntitiesMapFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);

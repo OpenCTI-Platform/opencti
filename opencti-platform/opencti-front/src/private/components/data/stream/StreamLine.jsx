@@ -6,16 +6,16 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { ListItemButton } from '@mui/material';
+import Chip from '@mui/material/Chip';
 import { MoreVert, Stream } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
 import StreamPopover from './StreamPopover';
+import StreamConsumersDrawer from './StreamConsumersDrawer';
 import inject18n from '../../../../components/i18n';
-import FilterIconButton from '../../../../components/FilterIconButton';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import Security from '../../../../utils/Security';
 import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
@@ -45,12 +45,13 @@ const styles = (theme) => ({
     textOverflow: 'ellipsis',
     paddingRight: 10,
   },
-  filtersItem: {
+  consumersItem: {
     height: 40,
     display: 'flex',
     alignItems: 'center',
     float: 'left',
     paddingRight: 10,
+    gap: 8,
   },
   goIcon: {
     position: 'absolute',
@@ -73,9 +74,43 @@ const styles = (theme) => ({
 });
 
 class StreamLineLineComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      displayConsumers: false,
+    };
+  }
+
+  handleOpenConsumers() {
+    this.setState({ displayConsumers: true });
+  }
+
+  handleCloseConsumers() {
+    this.setState({ displayConsumers: false });
+  }
+
+  computeConsumersHealth() {
+    const { node, t } = this.props;
+    const { consumers } = node;
+    if (!consumers || consumers.length === 0) {
+      return { count: 0, label: t('No consumers'), hexColor: null };
+    }
+    const ONE_HOUR = 3600;
+    const ONE_DAY = 86400;
+    const hasCritical = consumers.some((c) => c.estimatedOutOfDepth !== null && c.estimatedOutOfDepth > 0 && c.estimatedOutOfDepth < ONE_HOUR);
+    const hasWarning = consumers.some((c) => c.estimatedOutOfDepth !== null && c.estimatedOutOfDepth >= ONE_HOUR && c.estimatedOutOfDepth < ONE_DAY);
+    if (hasCritical) {
+      return { count: consumers.length, label: `${consumers.length} - ${t('At risk')}`, hexColor: '#c62828' };
+    }
+    if (hasWarning) {
+      return { count: consumers.length, label: `${consumers.length} - ${t('Degraded')}`, hexColor: '#d84315' };
+    }
+    return { count: consumers.length, label: `${consumers.length} - ${t('Healthy')}`, hexColor: '#2e7d32' };
+  }
+
   render() {
     const { classes, node, dataColumns, paginationOptions, t } = this.props;
-    const filters = deserializeFilterGroupForFrontend(node.filters);
+    const health = this.computeConsumersHealth();
     return (
       <ListItem
         divider={true}
@@ -182,6 +217,10 @@ const StreamLineFragment = createFragmentContainer(StreamLineLineComponent, {
       filters
       stream_public
       stream_live
+      consumers {
+        connectionId
+        estimatedOutOfDepth
+      }
       ...StreamCollectionEdition_streamCollection
     }
   `,
@@ -269,7 +308,7 @@ class StreamDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.filters.width }}
+                style={{ width: dataColumns.consumers.width }}
               >
                 <Skeleton
                   animation="wave"

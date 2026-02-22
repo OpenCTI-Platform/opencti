@@ -18,6 +18,12 @@ import { ContainerAddStixCoreObjectsLinesQuery, ContainerAddStixCoreObjectsLines
 import { ContainerStixCyberObservablesLinesQuery$variables } from './__generated__/ContainerStixCyberObservablesLinesQuery.graphql';
 import { ContainerStixDomainObjectsLinesQuery$variables } from './__generated__/ContainerStixDomainObjectsLinesQuery.graphql';
 import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
+import { ContainerStixDomainObjectsLinesQuery$variables } from './__generated__/ContainerStixDomainObjectsLinesQuery.graphql';
+import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
+import type { Theme } from '../../../../components/Theme';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { DataColumns } from '../../../../components/list_lines';
+import { ContainerStixCyberObservablesLinesPaginationQuery$variables } from '@components/common/containers/__generated__/ContainerStixCyberObservablesLinesPaginationQuery.graphql';
 
 interface ControlledDialProps {
   onOpen: () => void;
@@ -62,7 +68,7 @@ interface ContainerAddStixCreObjectsInLineLoaderProps {
   queryRef: PreloadedQuery<ContainerAddStixCoreObjectsLinesQuery>;
   containerId: string;
   buildColumns: () => DataColumns;
-  linesPaginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesQuery$variables;
+  linesPaginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesPaginationQuery$variables;
   knowledgeGraph?: boolean;
   selectedElements: unknown[];
   handleSelect: (o: { id: string }) => void;
@@ -108,7 +114,7 @@ const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStix
 interface ContainerAddStixCoreObjectsInLineProps {
   containerId: string;
   targetStixCoreObjectTypes: string[];
-  paginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesQuery$variables;
+  paginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesPaginationQuery$variables;
   containerStixCoreObjects: unknown[];
   onAdd?: (node: { id: string }) => void;
   onDelete?: (node: { id: string }) => void;

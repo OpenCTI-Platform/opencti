@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import { createEntity, deleteElementById, updateAttribute } from '../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
@@ -10,6 +9,10 @@ import { addFilter } from '../utils/filtering/filtering-utils';
 import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-stix/stix-filtering';
 import { authorizedMembers } from '../schema/attribute-definition';
 import { TAXIIAPI } from './user';
+import { getConsumersForCollection, getLocalConsumerMetrics } from '../graphql/streamConsumerRegistry';
+import { fetchStreamInfo } from '../database/stream/stream-handler';
+import { computeProcessingLagMetrics } from '../utils/consumer-metrics';
+import { getStreamProductionRate } from '../database/redis-stream';
 
 // Stream graphQL handlers
 export const createStreamCollection = async (context, user, input) => {
@@ -100,4 +103,39 @@ export const streamCollectionEditContext = async (context, user, collectionId, i
   return storeLoadById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then((collectionToReturn) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, collectionToReturn, user);
   });
+};
+
+// Stream consumer monitoring
+export const getStreamCollectionConsumers = async (collectionId) => {
+  // getConsumersForCollection is now async and reads from Redis (all instances)
+  const consumers = await getConsumersForCollection(collectionId);
+  if (consumers.length === 0) {
+    return [];
+  }
+  const streamInfo = await fetchStreamInfo();
+  const streamProductionRate = await getStreamProductionRate();
+  return consumers.map((consumer) => {
+    const processingLagMetrics = computeProcessingLagMetrics(consumer.lastEventId, streamInfo, consumer.deliveryRate, streamProductionRate);
+    return {
+      connectionId: consumer.connectionId,
+      userId: consumer.userId,
+      userEmail: consumer.userEmail,
+      connectedAt: consumer.connectedAt,
+      lastEventId: consumer.lastEventId,
+      productionRate: streamProductionRate,
+      deliveryRate: consumer.deliveryRate,
+      processingRate: consumer.processingRate,
+      resolutionRate: consumer.resolutionRate,
+      ...processingLagMetrics,
+    };
+  });
+};
+
+// Stream consumer information
+export const getStreamConsumerInformation = async (channelId, lastEventId) => {
+  const streamInfo = await fetchStreamInfo();
+  const consumerMetrics = getLocalConsumerMetrics(channelId);
+  const productionRate = await getStreamProductionRate();
+  const computedLagsMetrics = computeProcessingLagMetrics(lastEventId, streamInfo, consumerMetrics.deliveryRate, productionRate);
+  return { ...consumerMetrics, productionRate, ...computedLagsMetrics };
 };

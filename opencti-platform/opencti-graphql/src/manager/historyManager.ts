@@ -14,7 +14,7 @@ import { utcDate } from '../utils/format';
 import { elIndexElements } from '../database/engine';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
 import { internalFindByIds, topEntitiesList } from '../database/middleware-loader';
-import type { BasicRuleEntity, BasicStoreEntity } from '../types/store';
+import type { BasicRuleEntity, BasicStoreBase, BasicStoreEntity } from '../types/store';
 import { BASE_TYPE_ENTITY, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../schema/internalObject';
@@ -85,7 +85,7 @@ export const resolveGrantedRefsIds = async (context: AuthContext, events: Array<
     type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
     baseData: true,
     baseFields: ['standard_id', 'internal_id'],
-  });
+  }) as BasicStoreBase[];
   organizationsByIds.forEach((o) => {
     organizationByIdsMap.set(o.standard_id, o.internal_id);
   });
@@ -183,8 +183,8 @@ export const buildHistoryElementsFromEvents = async (context: AuthContext, event
         const relatedMarkings = updateEvent.context.related_restrictions.markings ?? [];
         pushAll(eventMarkingRefs, relatedMarkings);
       }
-      // add changes
-      contextData.history_changes = updateEvent.context.changes;
+      // See GitHub issue #14537, we need to discard invalid changes events that have been generated in buggy OpenCTI versions (6.8.16, 6.8.17 and 6.9.0)
+      contextData.history_changes = Array.isArray(updateEvent.context.changes) ? updateEvent.context.changes : [];
     }
     if (stix.type === STIX_TYPE_RELATION) {
       const rel: StixRelation = stix as StixRelation;

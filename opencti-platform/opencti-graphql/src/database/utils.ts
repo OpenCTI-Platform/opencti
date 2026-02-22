@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import moment, { type DurationInputArg2 } from 'moment/moment';
 import type { estypes } from '@elastic/elasticsearch';
-import { DatabaseError, UnsupportedError } from '../config/errors';
+import { DatabaseError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject, isStixDomainObjectContainer } from '../schema/stixDomainObject';
@@ -9,7 +9,7 @@ import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { isInternalRelationship, RELATION_IN_PIR } from '../schema/internalRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import conf from '../config/conf';
+import conf, { logApp } from '../config/conf';
 import { now } from '../utils/format';
 import { isStixRefRelationship, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
@@ -20,6 +20,8 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicNodeEdge, BasicStoreCommon, InternalEditInput, StoreCommon, BasicConnection } from '../types/store';
 import type { AttributeDefinition, BasicObjectDefinition } from '../schema/attribute-definition';
 import { pushAll } from '../utils/arrayUtil';
+import { lockResources } from '../lock/master-lock';
+import { redisFinishAsyncCall, redisGetAsyncCall, redisInitializeAsyncCall } from './redis';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 const rabbitmqPrefix = conf.get('rabbitmq:queue_prefix');
@@ -340,8 +342,51 @@ export const computeAverage = (numbers: number[]): number => {
   return Math.round(sum / numbers.length || 0);
 };
 
-export const wait = (ms: number): Promise<void> => {
-  return new Promise((resolve) => setTimeout(() => resolve(), ms));
+export const wait = <T> (ms: number, resolveResult?: T): Promise<void | T> => {
+  return new Promise((resolve) => setTimeout(() => resolve(resolveResult), ms));
+};
+
+// Turn a function call into a potential long running async call
+export const runFunctionAsLongRunning = async (
+  context: AuthContext,
+  user: AuthUser,
+  functionToRun: () => Promise<void>,
+  executionId: string,
+): Promise<boolean> => {
+  let lock: { unlock: () => any } | undefined;
+  try {
+    // Try to get the lock in redis
+    lock = await lockResources(executionId, { draftId: getDraftContext(context, user) });
+    const currentAsyncCall = await redisGetAsyncCall(executionId);
+    // If a call was already processed and is finished, return true
+    if (currentAsyncCall && currentAsyncCall !== '0') {
+      await lock?.unlock();
+      return true;
+    } else {
+      // Otherwise, it means that either the rule apply wasn't started yet, or the node processing it went down and that the call couldn't finish.
+      // In any case, we have to start it over
+      await redisInitializeAsyncCall(executionId);
+      const timeoutPromise = wait(10000, { timeout: true });
+      const fullFunctionRun = async () => {
+        try {
+          await functionToRun();
+        } catch (err: any) {
+          logApp.error('[OPENCTI] Error during function run', { cause: err });
+        }
+        await redisFinishAsyncCall(executionId);
+        await lock?.unlock();
+      };
+      const fullRuleApplyPromise = fullFunctionRun();
+      const raceResult = await Promise.race([fullRuleApplyPromise, timeoutPromise]) as { timeout?: boolean };
+      return !raceResult?.timeout;
+    }
+  } catch (err: any) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      return false;
+    }
+    await lock?.unlock();
+    throw err;
+  }
 };
 
 export const waitInSec = (sec: number): Promise<void> => wait(sec * 1000);

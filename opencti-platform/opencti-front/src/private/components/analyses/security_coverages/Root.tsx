@@ -1,4 +1,4 @@
-import React, { Suspense, useMemo } from 'react';
+import React, { Suspense, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -8,11 +8,8 @@ import Security from 'src/utils/Security';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import FileManager from '@components/common/files/FileManager';
 import StixCoreObjectHistory from '@components/common/stix_core_objects/StixCoreObjectHistory';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import AIInsights from '@components/common/ai/AIInsights';
 import SecurityCoverageKnowledge from '@components/analyses/security_coverages/SecurityCoverageKnowledge';
 import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
-import { RootSecurityCoverageSubscription } from '@components/analyses/security_coverages/__generated__/RootSecurityCoverageSubscription.graphql';
 import SecurityCoverage from './SecurityCoverage';
 import { RootSecurityCoverageQuery } from './__generated__/RootSecurityCoverageQuery.graphql';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -21,29 +18,30 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getCurrentTab, getPaddingRight, isNotEmptyField } from '../../../../utils/utils';
 import SecurityCoverageEdition from './SecurityCoverageEdition';
 import SecurityCoverageDeletion from './SecurityCoverageDeletion';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Button from '@mui/material/Button';
+import { OaevLogo } from '../../../../static/images/logo_oaev';
+import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
+import { RootSecurityCoverageSubscription } from '@components/analyses/security_coverages/__generated__/RootSecurityCoverageSubscription.graphql';
 
 const subscription = graphql`
-  subscription RootSecurityCoverageSubscription($id: ID!) {
-    stixDomainObject(id: $id) {
-      ... on SecurityCoverage {
-        ...SecurityCoverage_securityCoverage
-      }
-      ...FileImportViewer_entity
-      ...FileExportViewer_entity
-      ...FileExternalReferencesViewer_entity
-      ...WorkbenchFileViewer_entity
+    subscription RootSecurityCoverageSubscription($id: ID!) {
+        securityCoverage(id: $id) {
+            id
+            external_uri
+            ...SecurityCoverage_securityCoverage
+        }
     }
-  }
 `;
 
 const securityCoverageQuery = graphql`
   query RootSecurityCoverageQuery($id: String!) {
     securityCoverage(id: $id) {
       id
+      external_uri
       standard_id
       entity_type
       name
@@ -76,20 +74,25 @@ type RootSecurityCoverageProps = {
 };
 
 const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCoverageProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootSecurityCoverageSubscription>>(() => ({
-    subscription,
-    variables: { id: securityCoverageId },
-  }), [securityCoverageId]);
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  useSubscription<RootSecurityCoverageSubscription>(subConfig);
   const {
     securityCoverage,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootSecurityCoverageQuery>(securityCoverageQuery, queryRef);
-  const isOverview = location.pathname === `/dashboard/analyses/security_coverages/${securityCoverageId}`;
+
+  const subConfig = useMemo(() => ({
+    subscription,
+    variables: { id: securityCoverageId },
+  }), [securityCoverageId]);
+
+  useSubscription<RootSecurityCoverageSubscription>(subConfig);
+
+  const [displayExternalLink, setDisplayExternalLink] = useState(false);
+  const hasExternalUri = isNotEmptyField(securityCoverage?.external_uri);
   const paddingRight = getPaddingRight(location.pathname, securityCoverageId, '/dashboard/analyses/security_coverages', false);
+  const isContent = location.pathname.includes('content');
   return (
     <>
       {securityCoverage ? (
@@ -155,10 +158,24 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                 label={t_i18n('History')}
               />
             </Tabs>
-            {isOverview && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                <AIInsights id={securityCoverage.id} />
-              </div>
+            {!isContent && (
+              <>
+                <Button
+                  disabled={!hasExternalUri}
+                  style={{ marginBottom: 8 }}
+                  startIcon={<OaevLogo />}
+                  variant="outlined"
+                  onClick={() => setDisplayExternalLink(true)}
+                  title={hasExternalUri ? securityCoverage.external_uri : undefined}
+                >
+                  {hasExternalUri ? `${t_i18n('Go to OpenAEV')}` : `${t_i18n('Provisioning OpenAEV')}`}
+                </Button>
+                <ExternalLinkPopover
+                  externalLink={hasExternalUri ? securityCoverage.external_uri : undefined}
+                  displayExternalLink={displayExternalLink}
+                  setDisplayExternalLink={setDisplayExternalLink}
+                />
+              </>
             )}
           </Box>
           <Routes>
@@ -228,13 +245,11 @@ const Root = () => {
     id: securityCoverageId,
   });
   return (
-    <>
-      <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-        {queryRef && (
-          <RootSecurityCoverage queryRef={queryRef} securityCoverageId={securityCoverageId} />
-        )}
-      </Suspense>
-    </>
+    <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+      {queryRef && (
+        <RootSecurityCoverage queryRef={queryRef} securityCoverageId={securityCoverageId} />
+      )}
+    </Suspense>
   );
 };
 

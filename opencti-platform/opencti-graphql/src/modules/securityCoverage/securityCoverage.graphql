@@ -220,7 +220,8 @@ input SecurityCoverageAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
-  noTriggerImport: Boolean
+  noTriggerImport: [Boolean]
+  embedded: [Boolean]
   update: Boolean
   # coverage specific
   auto_enrichment_disable: Boolean!
@@ -244,3 +245,6 @@ type Mutation {
   securityCoverageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
+extend type Subscription {
+    securityCoverage(id: ID!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+}

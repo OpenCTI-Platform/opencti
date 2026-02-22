@@ -253,7 +253,8 @@ input CaseRfiAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
-  noTriggerImport: Boolean
+  noTriggerImport: [Boolean]
+  embedded: [Boolean]
   clientMutationId: String
   update: Boolean
   information_types: [String!]

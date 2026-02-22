@@ -62,7 +62,7 @@ Currently decay exclusion rules are taking over Decay rules: this means that if 
 
 #### Example of expected behavior that can occur
 - Decay Exclusion Rule filters on creator = [c] Sekoia
-If an IOC has been created by [c] AnotherSource and had a Decay rule associated to it and [c] Sekoia upsert this IOC, this IOC will now fall under the Decay exclsuion rule since it matches the filter.
+If an IOC has been created by [c] AnotherSource and had a Decay rule associated to it and [c] Sekoia upsert this IOC, this IOC will now fall under the Decay Exclusion rule since it matches the filter.
 
 - Decay Exclusion Rule filters on label = Test
 If an IOC is created by a source and upserted with a a new label Test, this IOC will now fall under the Decay Exclusion rule since it matches the filters. 
@@ -73,13 +73,13 @@ To be clear: assuming an IOC is under a specific Decay rule, if the update of th
 
 ## How to differentiate whether an IOC is under a Decay Rule or a Decay Exclusion Rule
 
-If your IOC is under a decay exclusion rule, you will notice that the lifecyle button next to the IOC overview differs whether yout IOC is impacted by a Decay rule or by a Decay exclusion rule.
+If your IOC is under a decay exclusion rule, you will notice that the lifecycle button next to the IOC overview differs whether your IOC is impacted by a Decay rule or by a Decay exclusion rule.
 
-![IOC impacted by a Decay exclsuion rule](./assets/decay-exclusion-rule-ioc-impact.png)
+![IOC impacted by a Decay exclusion rule](./assets/decay-exclusion-rule-ioc-impact.png)
 
 If you have the right, you can even view the rule name & be redirected to the screen of decay exclusion rule, to help you understand (and manage) which rule is impacting which IOC.
 
-![IOC impacted by a Decay exclsuion rule popup](./assets/decay-exclusion-rule-popup.png)
+![IOC impacted by a Decay exclusion rule popup](./assets/decay-exclusion-rule-popup.png)
 
 ## How do the various exclusion rules work all together
 

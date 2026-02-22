@@ -14,6 +14,9 @@ import {
   stixDomainObjectEditField,
 } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
+import { BUS_TOPICS } from '../../config/conf';
+import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
+import { ENTITY_TYPE_SECURITY_COVERAGE } from './securityCoverage-types';
 
 const SecurityCoverageResolvers: Resolvers = {
   Query: {
@@ -35,6 +38,19 @@ const SecurityCoverageResolvers: Resolvers = {
     securityCoverageRelationAdd: (_, { id, input }, context) => stixDomainObjectAddRelation(context, context.user, id, input),
     securityCoverageRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
       return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
+    },
+  },
+  Subscription: {
+    securityCoverage: {
+      resolve: (payload: any) => {
+        return payload.instance;
+      },
+      subscribe: (_: any, { id }: any, context: any) => {
+        const bus = BUS_TOPICS[ENTITY_TYPE_SECURITY_COVERAGE];
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_SECURITY_COVERAGE,
+          notifySelf: true,
+        });
+      },
     },
   },
 };

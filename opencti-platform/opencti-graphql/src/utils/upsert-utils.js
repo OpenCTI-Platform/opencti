@@ -192,17 +192,25 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
   const filesToUpload = [];
   if (!isEmptyField(updatePatch.files) && Array.isArray(updatePatch.files)) {
     const filesMarkings = updatePatch.filesMarkings || [];
+    const noTriggerImportArr = updatePatch.noTriggerImport || [];
+    const embeddedArr = updatePatch.embedded || [];
     for (let i = 0; i < updatePatch.files.length; i += 1) {
       const fileInput = updatePatch.files[i];
       // Use snake_case to match storage API parameter naming
       const file_markings = filesMarkings[i] || updatePatch.objectMarking?.map(({ id }) => id);
-      filesToUpload.push({ file: fileInput, markings: file_markings });
+      // If the array is shorter than files, reuse the last provided value (backward compat: single value applies to all)
+      const fileNoTriggerImport = noTriggerImportArr[Math.min(i, noTriggerImportArr.length - 1)] ?? false;
+      const fileEmbedded = embeddedArr[Math.min(i, embeddedArr.length - 1)] ?? false;
+      filesToUpload.push({ file: fileInput, markings: file_markings, noTriggerImport: fileNoTriggerImport, embedded: fileEmbedded });
     }
   }
   // Handle single file upload (backward compatibility)
+  // Propagate noTriggerImport/embedded from input, handling both scalar and array forms
   if (!isEmptyField(updatePatch.file)) {
     const file_markings = isNotEmptyField(updatePatch.fileMarkings) ? updatePatch.fileMarkings : updatePatch.objectMarking?.map(({ id }) => id);
-    filesToUpload.push({ file: updatePatch.file, markings: file_markings });
+    const singleNoTrigger = Array.isArray(updatePatch.noTriggerImport) ? (updatePatch.noTriggerImport[0] ?? false) : (updatePatch.noTriggerImport ?? false);
+    const singleEmbedded = Array.isArray(updatePatch.embedded) ? (updatePatch.embedded[0] ?? false) : (updatePatch.embedded ?? false);
+    filesToUpload.push({ file: updatePatch.file, markings: file_markings, noTriggerImport: singleNoTrigger, embedded: singleEmbedded });
   }
 
   if (filesToUpload.length === 0) {
@@ -213,7 +221,6 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
   const existingFiles = resolvedElement.x_opencti_files ?? [];
   const existingFilesById = new Map(existingFiles.map((f) => [f.id, f]));
 
-  const filePath = `import/${resolvedElement.entity_type}/${resolvedElement.internal_id}`;
   const newFiles = []; // Files that didn't exist on entity before
   const replacedFiles = []; // Files that replace existing ones
 
@@ -221,8 +228,11 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
   const draftContext = getDraftContext(context, user);
 
   for (let i = 0; i < filesToUpload.length; i += 1) {
-    const { file: fileInput, markings: file_markings } = filesToUpload[i];
+    const { file: fileInput, markings: file_markings, noTriggerImport, embedded } = filesToUpload[i];
     const { filename } = await fileInput;
+    // Use embedded prefix for embedded files (same as stixCoreObjectImportPush)
+    const prefix = embedded ? 'embedded' : 'import';
+    const filePath = `${prefix}/${resolvedElement.entity_type}/${resolvedElement.internal_id}`;
     // Build the exact same key that file-storage.ts uses (truncated + lowercased)
     const truncatedFileName = `${truncate(path.parse(filename).name, 200, false)}${truncate(path.parse(filename).ext, 10, false)}`;
     let fileKey = `${filePath}/${truncatedFileName.toLowerCase()}`;
@@ -247,7 +257,6 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
       continue;
     }
 
-    const noTriggerImport = updatePatch.noTriggerImport ?? false;
     const { upload: uploadedFile, untouched } = await uploadToStorage(context, user, filePath, fileInput, {
       entity: resolvedElement,
       file_markings,

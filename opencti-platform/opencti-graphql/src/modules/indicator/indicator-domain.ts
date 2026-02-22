@@ -59,6 +59,7 @@ import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../sc
 import { checkDecayExclusionRules, getActiveDecayExclusionRules } from '../decayRule/exclusions/decayExclusionRule-domain';
 import { getEntitySettingFromCache } from '../../modules/entitySetting/entitySetting-utils';
 import { pushAll } from '../../utils/arrayUtil';
+import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
 
 export const NO_DECAY_DEFAULT_VALID_PERIOD: number = dayToMs(90);
 export const NO_DECAY_DEFAULT_REVOKED_SCORE: number = 0;
@@ -296,7 +297,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 
   const activeDecayExclusionRuleList = await getActiveDecayExclusionRules(context, user);
   const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
-  const resolvedIndicator = await inputResolveRefs(context, user, baseIndicator, ENTITY_TYPE_INDICATOR, entitySetting);
+  const resolvedIndicator = await inputResolveRefs(context, user, baseIndicator, ENTITY_TYPE_INDICATOR, entitySetting as BasicStoreEntityEntitySetting);
   const exclusionRule = await checkDecayExclusionRules(context, user, resolvedIndicator, activeDecayExclusionRuleList);
   const indicatorToCreate = { ...resolvedIndicator };
 

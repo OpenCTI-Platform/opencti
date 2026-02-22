@@ -12,12 +12,13 @@ import { useFormatter } from '../../../components/i18n';
 import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import VocabularyCreation from './attributes/VocabularyCreation';
 import useVocabularyCategory, { vocabFragment } from '../../../utils/hooks/useVocabularyCategory';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
+import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 
 export const vocabulariesQuery = graphql`
   query VocabulariesLinesPaginationQuery(
@@ -104,7 +105,19 @@ const Vocabularies = () => {
   );
 
   const { filters } = viewStorage;
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Vocabulary', filters);
+  const contextFilters: FilterGroup = {
+    mode: 'and',
+    filters: [
+      { key: 'category', values: [category], operator: 'eq' },
+      {
+        key: 'entity_type',
+        values: ['Vocabulary'],
+        operator: 'eq',
+        mode: 'or',
+      },
+    ],
+    filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
+  };
 
   const queryPaginationOptions = {
     ...paginationOptions,
@@ -132,6 +145,7 @@ const Vocabularies = () => {
     description: {
       id: 'description',
       percentWidth: 25,
+      isSortable: false,
     },
     usages: {
       id: 'usages',

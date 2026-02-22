@@ -97,6 +97,7 @@ const JsonTaxiiMiddleware = express.json({
 });
 
 const initTaxiiApi = (app) => {
+  app.set('query parser', 'extended');
   // Discovery api
   app.get(`${basePath}/taxii2/`, async (req, res) => {
     try {

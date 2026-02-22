@@ -122,7 +122,7 @@ export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUs
     exclusionListCount = uploadResult.linesNumber;
   }
   const fullInput = [...(input ?? []), { key: 'exclusion_list_file_size', value: [fileSize] }, { key: 'exclusion_list_values_count', value: [exclusionListCount] }];
-  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_EXCLUSION_LIST, fullInput);
+  const { element } = await updateAttribute<StoreEntityExclusionList>(context, user, id, ENTITY_TYPE_EXCLUSION_LIST, fullInput);
 
   if (file || fullInput.some((i) => i.key === 'enabled')) {
     await refreshExclusionListStatus();

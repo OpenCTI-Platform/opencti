@@ -3,7 +3,7 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useSubscription } from 'react-relay';
 import { AnalyticsProvider } from 'use-analytics';
 import Analytics from 'analytics';
-import { LICENSE_OPTION_TRIAL } from '@components/LicenceBanner';
+import { LICENSE_OPTION_TRIAL } from '@components/LicenseBanner';
 import { availableLanguage, ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';

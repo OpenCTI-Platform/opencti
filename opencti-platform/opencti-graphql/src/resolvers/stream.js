@@ -6,6 +6,7 @@ import {
   streamCollectionEditField,
   streamCollectionEditContext,
   streamCollectionCleanContext,
+  getStreamCollectionConsumers,
 } from '../domain/stream';
 import { getAuthorizedMembers } from '../utils/authorizedMembers';
 import { fetchStreamInfo } from '../database/stream/stream-handler';
@@ -18,6 +19,7 @@ const streamResolvers = {
   },
   StreamCollection: {
     authorized_members: (stream, _, context) => getAuthorizedMembers(context, context.user, stream),
+    consumers: (stream) => getStreamCollectionConsumers(stream.id),
   },
   Mutation: {
     streamCollectionAdd: (_, { input }, context) => createStreamCollection(context, context.user, input),

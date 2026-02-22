@@ -1,0 +1,25 @@
+!!! tip "Enterprise edition"
+
+     SSO configuration is under the [OpenCTI Enterprise Edition](https://docs.opencti.io/latest/administration/enterprise/?h=ente) license. Please read the information below to have all the information.
+
+# Migration Process
+At platform initialization, configuration file will be read. 
+If your platform is under Enterprise Edition license, each strategy will be converted to UI, meaning that the configuration of the specific strategy will be stored in our database and marked as migrated. It will still exists in the configuration file.
+If a strategy cannot be migrated  or failed to be migrated, then this flag will not be applied. 
+Once a strategy is marked as migrated, when the platform will initialize, based on the presence of this flag, the configuration present in the database will be used, otherwise, the configuration from the configuration file will be used. 
+
+This means that a SSO configuration defined in UI (and therefore in database) **will always have priority over the same configuration in the configuration file.**
+
+# Avoiding having an authentication strategy that keeps appearing in the UI
+Assuming you have a configuration defined in your configuration file, when upgrading to version 7, your configuration will be converted to UI (stored in database). 
+
+If for whatever reason you delete this configuration from UI, next time you will initialize your platform, you will see **the same configuration again.**
+
+This is due to the above process. To prevent this unwanted behavior, you need to delete from your configuration file the authentication strategy of that needs to be removed. This way it will stop re-appearing.
+
+# Authentications that will be migrated
+Existing LDAP, SAML, OpenID, Certificate & Headers configurations will be migrated to be managed via UI.
+Auth0 authentication will not be migrated, so as Github, Facebook & Google. 
+These being created using OpenID framework, users will have to manually create these via UI. 
+
+In the meantime, given they will not be migrated, users will still be able to login using one these methods since authentication via SSO defined in a configuration file will still be possible during a grace period.

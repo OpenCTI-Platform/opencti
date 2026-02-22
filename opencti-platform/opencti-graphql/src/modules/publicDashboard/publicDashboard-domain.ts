@@ -1,7 +1,7 @@
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from './publicDashboard-types';
+import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached, type StoreEntityPublicDashboard } from './publicDashboard-types';
 import { createEntity, deleteElementById, loadEntity, updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntityWorkspace } from '../workspace/workspace-types';
 import { isNotEmptyField } from '../../database/utils';
@@ -269,7 +269,7 @@ export const publicDashboardEditField = async (
 
 export const publicDashboardDelete = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkUserIsAdminOnDashboard(context, user, id);
-  const deleted = await deleteElementById(
+  const deleted = await deleteElementById<StoreEntityPublicDashboard>(
     context,
     user,
     id,
@@ -494,7 +494,7 @@ export const publicStixRelationshipsDistribution = async (
   };
 
   // Use standard API
-  const mainDistribution = await stixRelationshipsDistribution(context, user, parameters);
+  const mainDistribution = await stixRelationshipsDistribution(context, user, parameters) as any[];
   if (!breakdownSelection) {
     // Stop here if there is no breakdown to make with a second selection.
     return mainDistribution;

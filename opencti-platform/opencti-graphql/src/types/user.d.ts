@@ -21,6 +21,7 @@ interface UserOrigin {
   playbook_id?: string;
   referer?: string;
   user_metadata?: object;
+  call_retry_number?: number;
 }
 
 interface UserApiToken {
@@ -70,12 +71,15 @@ interface AuthContext {
   tracing: TracingContext;
   user: AuthUser | undefined;
   draft_context?: string | undefined;
+  workId?: string;
   batch?: Record<string, any>;
   changeDraftContext?: (draftId: string) => void;
   eventId?: string | undefined;
   user_inside_platform_organization: boolean;
   user_otp_validated?: boolean;
   user_with_session?: boolean;
+  synchronizedUpsert?: boolean;
+  previousStandard?: string;
   req?: Express.Request;
   blocked_for_lts_validation?: boolean;
 }

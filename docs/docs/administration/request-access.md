@@ -60,7 +60,7 @@ The knowledge that is requested to be shared, can be found in related entities.
 There is two dedicated button "Validate" and "Decline": with one click on Validate, the knowledge will be shared as requested.
 
 User that are allowed to see the dedicated Request for Information and allowed to share the knowledge, will also be notified on dedicated Request for Information creation.
-![Exemple of notification](assets/request-access/request-access-notifications.png)
+![Example of notification](assets/request-access/request-access-notifications.png)
 
 ## Disabling request access feature
 

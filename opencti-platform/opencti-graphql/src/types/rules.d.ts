@@ -24,6 +24,8 @@ interface RelationTypes {
   rightType: string;
   creationType: string;
   isSource?: boolean;
+  leftTypesFrom?: string[]; // the types of the source of the left relationship (in case leftType is a relationship and not enough to identify the relations of interest)
+  rightTypesTo?: string[]; // the types of the target of the right relationship (in case rightType is a relationship and not enough to identify the relations of interest)
 }
 
 interface StepDefinition {

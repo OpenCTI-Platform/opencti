@@ -811,6 +811,17 @@ class StixCoreObject:
                             mimetype
                             version
                         }
+                        objectMarking {
+                            id
+                            standard_id
+                            entity_type
+                            definition_type
+                            definition
+                            created
+                            modified
+                            x_opencti_order
+                            x_opencti_color
+                        }
                     }
                 }
             }
@@ -1867,6 +1878,47 @@ class StixCoreObject:
                 }
             """
             self.opencti.query(query, {"elementId": element_id, "ruleId": rule_id})
+        else:
+            self.opencti.app_logger.error(
+                "[stix_core_object] Cannot apply rule, missing parameters: id"
+            )
+            return None
+
+    def rule_apply_async(self, **kwargs):
+        """Apply rule to Stix-Core-Object object.
+
+        :param element_id: the Stix-Core-Object id
+        :type element_id: str
+        :param rule_id: the rule to apply
+        :type rule_id: str
+        """
+        rule_id = kwargs.get("rule_id", None)
+        element_id = kwargs.get("element_id", None)
+        execution_id = kwargs.get("execution_id", None)
+        rule_apply_complete = False
+        if element_id is not None and rule_id is not None and execution_id is not None:
+            while not rule_apply_complete:
+                self.opencti.app_logger.info(
+                    "Apply rule async stix_core_object",
+                    {"id": element_id, "execution_id": execution_id},
+                )
+                query = """
+                        mutation StixCoreApplyRule($elementId: ID!, $ruleId: ID!, $executionId: ID!) {
+                            ruleApplyAsync(elementId: $elementId, ruleId: $ruleId, executionId: $executionId)
+                        }
+                    """
+                result = self.opencti.query(
+                    query,
+                    {
+                        "elementId": element_id,
+                        "ruleId": rule_id,
+                        "executionId": execution_id,
+                    },
+                )
+                rule_apply_complete = result["data"]["ruleApplyAsync"]
+            self.opencti.app_logger.info(
+                "Apply rule async stix_core_object complete", {"id": element_id}
+            )
         else:
             self.opencti.app_logger.error(
                 "[stix_core_object] Cannot apply rule, missing parameters: id"

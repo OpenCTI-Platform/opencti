@@ -47,7 +47,7 @@ In addition, the available statuses are defined by a collection of status templa
 <a id="fintelTemplates-section"></a>
 ## Fintel templates
 
-In Entreprise Edition, you can now define templates for your containers.
+In Enterprise Edition, you can now define templates for your containers.
 You can access this feature via the Customization page (Setting/Customization/Entity types). As a result, you are required to have the Manage customization capability (or the Bypass capability) to either create, update, view, export or delete a template.
 
 ![Fintel templates](./assets/fintelTemplates-list.png)

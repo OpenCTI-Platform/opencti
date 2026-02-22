@@ -72,6 +72,7 @@ import pjson from '../../package.json';
 import { ConnectorPriorityGroup } from '../generated/graphql';
 import { assessConnectorMigration, migrateConnectorToManaged } from '../domain/connector-migration';
 import { loadCreator } from '../database/members';
+import { readSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 
 export const PLATFORM_VERSION = pjson.version;
 
@@ -142,6 +143,7 @@ const connectorResolvers = {
     user: (sync, _, context) => loadCreator(context, context.user, sync.user_id),
     queue_messages: async (sync, _, context) => getConnectorQueueSize(context, context.user, sync.id),
     toConfigurationExport: (synchronizer) => synchronizerExport(synchronizer),
+    consumer_metrics: (sync) => readSyncConsumerMetrics(sync.id),
   },
   Mutation: {
     deleteConnector: (_, { id }, context) => connectorDelete(context, context.user, id),

@@ -62,9 +62,9 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
   securityCoverage,
 }) => {
   const theme = useTheme<Theme>();
+  const classes = useStyles();
   const { t_i18n, fndt } = useFormatter();
   const data = useFragment(securityCoverageDetailsFragment, securityCoverage);
-
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
 
   return (
@@ -84,6 +84,10 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             <ExpandableMarkdown source={data.description} limit={300} />
           </Grid>
           <Grid item xs={12}>
+            <Typography variant="h3" gutterBottom={true}>
+              {t_i18n('Coverage information')}
+            </Typography>
+            <Paper variant="outlined" style={{ padding: 20, marginTop: 10 }}>
             <Stack direction="row" gap={1} mb={1} alignItems="center">
               <Label>
                 {t_i18n('Coverage information')}

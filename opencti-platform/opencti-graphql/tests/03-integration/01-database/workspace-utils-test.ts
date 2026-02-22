@@ -6,6 +6,7 @@ import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 import { internalFindByIds } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
+import type {BasicStoreBase} from '../../../src/types/store';
 
 describe('Workspace utils', () => {
   it('should convert widget filters ids', async () => {
@@ -14,7 +15,7 @@ describe('Workspace utils', () => {
     const malwareId = 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c';
     const softwareId = 'software--b0debdba-74e7-4463-ad2a-34334ee66d8d';
     const resolveOpts = { baseData: true, mapWithAllIds: true };
-    const objects = await internalFindByIds(testContext, ADMIN_USER, [reportId, malwareId, softwareId], resolveOpts);
+    const objects = await internalFindByIds(testContext, ADMIN_USER, [reportId, malwareId, softwareId], resolveOpts) as BasicStoreBase[];
     const reportInternalId = objects.find((o) => o.entity_type === ENTITY_TYPE_CONTAINER_REPORT)?.internal_id;
     const reportStandardId = objects.find((o) => o.entity_type === ENTITY_TYPE_CONTAINER_REPORT)?.standard_id;
     const malwareInternalId = objects.find((o) => o.entity_type === ENTITY_TYPE_MALWARE)?.internal_id;

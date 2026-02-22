@@ -74,10 +74,3 @@ Depending on the size of the attachment or the email itself and your configurati
 ### Email address used as sender
 
 In settings/parameters, you can define the **sender email address". This is the email that will be used to send the email to your list.
-
-
-
-
-
-
-
