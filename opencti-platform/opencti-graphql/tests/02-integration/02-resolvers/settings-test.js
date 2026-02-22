@@ -178,7 +178,13 @@ describe('Settings resolver standard behavior', () => {
   it('should block AI operations when platform AI is disabled', async () => {
     const settingsInternalId = await settingsId();
     const initialSettingsResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
-    const initialAiEnabled = initialSettingsResult.data.settings.platform_ai_enabled ?? true;
+    const platformAiEnabled = initialSettingsResult.data.settings.platform_ai_enabled;
+    if (platformAiEnabled === null || platformAiEnabled === undefined) {
+      throw new Error(
+        'settings.platform_ai_enabled is not initialized; ensure the corresponding migration and configuration are applied.'
+      );
+    }
+    const initialAiEnabled = platformAiEnabled;
     if (!initialAiEnabled) {
       await queryAsAdmin({
         query: UPDATE_SETTINGS_QUERY,
