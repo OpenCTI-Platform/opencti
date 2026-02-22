@@ -17,7 +17,7 @@ const waitForPlatformAiEnabled = async (expectedEnabled) => {
   const startTime = Date.now();
   while (Date.now() - startTime < WAIT_FOR_SETTINGS_TIMEOUT_MS) {
     const settingsResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
-    lastValue = settingsResult.data.settings.platform_ai_enabled !== false;
+    lastValue = !!settingsResult.data.settings.platform_ai_enabled;
     if (lastValue === expectedEnabled) {
       return;
     }
