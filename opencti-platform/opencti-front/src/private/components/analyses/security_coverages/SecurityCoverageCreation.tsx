@@ -38,10 +38,6 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SecurityCoverageEntityLine from './SecurityCoverageEntityLine';
-import SwitchField from '../../../../components/fields/SwitchField';
-import OpenVocabField from '@components/common/form/OpenVocabField';
-import SelectField from '../../../../components/fields/SelectField';
-import MenuItem from '@mui/material/MenuItem';
 import { useNavigate } from 'react-router-dom';
 import { SecurityCoverageCreationMutation } from '@components/analyses/security_coverages/__generated__/SecurityCoverageCreationMutation.graphql';
 

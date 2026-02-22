@@ -7,6 +7,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
+import Typography from '@mui/material/Typography';
 import { Theme } from '@mui/material/styles/createTheme';
 import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
 import { Link } from 'react-router-dom';
@@ -62,7 +63,6 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
   securityCoverage,
 }) => {
   const theme = useTheme<Theme>();
-  const classes = useStyles();
   const { t_i18n, fndt } = useFormatter();
   const data = useFragment(securityCoverageDetailsFragment, securityCoverage);
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
@@ -88,29 +88,30 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
               {t_i18n('Coverage information')}
             </Typography>
             <Paper variant="outlined" style={{ padding: 20, marginTop: 10 }}>
-            <Stack direction="row" gap={1} mb={1} alignItems="center">
-              <Label>
-                {t_i18n('Coverage information')}
-              </Label>
-              {isNotEmptyField(data.external_uri) && (
-                <Button
-                  startIcon={(
-                    <img
-                      style={{ width: 20 }}
-                      src={fileUri(theme.palette.mode === 'dark' ? oaevDark : oaevLight)}
-                      alt="OAEV"
-                    />
-                  )}
-                  variant="secondary"
-                  onClick={() => setDisplayExternalLink(true)}
-                  title={data.external_uri} // tooltip on hover
-                >
-                  {t_i18n('Exposure validation')}
-                </Button>
-              )}
-            </Stack>
-            <Paper variant="outlined" sx={{ padding: 2 }}>
-              <SecurityCoverageInformation coverage_information={data.coverage_information ?? []} variant="details" />
+              <Stack direction="row" gap={1} mb={1} alignItems="center">
+                <Label>
+                  {t_i18n('Coverage information')}
+                </Label>
+                {isNotEmptyField(data.external_uri) && (
+                  <Button
+                    startIcon={(
+                      <img
+                        style={{ width: 20 }}
+                        src={fileUri(theme.palette.mode === 'dark' ? oaevDark : oaevLight)}
+                        alt="OAEV"
+                      />
+                    )}
+                    variant="secondary"
+                    onClick={() => setDisplayExternalLink(true)}
+                    title={data.external_uri}
+                  >
+                    {t_i18n('Exposure validation')}
+                  </Button>
+                )}
+              </Stack>
+              <Paper variant="outlined" sx={{ padding: 2 }}>
+                <SecurityCoverageInformation coverage_information={data.coverage_information ?? []} variant="details" />
+              </Paper>
             </Paper>
           </Grid>
           <Grid item xs={6}>

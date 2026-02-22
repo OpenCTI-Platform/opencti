@@ -64,7 +64,6 @@ import {
   elUpdateRelationConnections,
   ES_MAX_CONCURRENCY,
   ES_MAX_PAGINATION,
-  type HistogramCountOpts,
   isImpactedTypeAndSide,
   MAX_BULK_OPERATIONS,
   type RepaginateOpts,
@@ -213,7 +212,7 @@ import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
-import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified,type RefAttribute, updatedAt } from '../schema/attribute-definition';
+import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified, type RefAttribute, updatedAt } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { type EditInput, EditOperation, FilterMode, FilterOperator, Version, type Vulnerability } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
@@ -261,7 +260,6 @@ import type {
   StoreCommon,
   StoreEntity,
   StoreFile,
-  StoreMarkingDefinition,
   StoreObject,
   StoreProxyRelation,
   StoreRelation,
@@ -270,7 +268,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import type * as S from '../types/stix-2-1-common';
 import type { StixId } from '../types/stix-2-1-common';
 import type * as S2 from '../types/stix-2-0-common';
-import type { Change, CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
+import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -767,7 +765,7 @@ const convertAggregateDistributions = async (
       };
     });
 };
-export const timeSeriesHistory = async (context, user, args) => {
+export const timeSeriesHistory = async (context: AuthContext, user: AuthUser, args: any) => {
   const { startDate, endDate, interval } = args;
   const argsWithTypes = { ...args, types: args.types ?? [ENTITY_TYPE_HISTORY] };
   const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, argsWithTypes);
@@ -795,7 +793,7 @@ export const timeSeriesRelations = async (
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
-export const distributionHistory = async (context, user, args) => {
+export const distributionHistory = async (context: AuthContext, user: AuthUser, args: any) => {
   const { limit = 10, order = 'desc', field } = args;
   if (field.includes('.') && (!field.endsWith('internal_id') && !field.includes('context_data') && !field.includes('opinions_metrics'))) {
     throw FunctionalError('Distribution entities does not support relation aggregation field', { field });
@@ -1296,9 +1294,9 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
           const toRemove = Array.isArray(value) ? value : [value];
           // Filter out items in current that match items in toRemove
           const newValues = current.filter((c) => !toRemove.some((r) => r.id === c.id || R.equals(r, c)));
-          patch = [{ op: UPDATE_OPERATION_REPLACE, path: preparedPath, value: newValues }];
+          patch = [{ op: 'replace' as const, path: preparedPath, value: newValues }];
         } else {
-          patch = [{ op: 'remove' as const, path: preparedPath, value: null }];
+          patch = [{ op: 'remove' as const, path: preparedPath }];
         }
         const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
@@ -2328,161 +2326,6 @@ const updateAttributeRaw = async (
     impactedInputs, // All inputs that need to be re-indexed. (so without meta relationships)
     updatedInstance: mergeInstanceWithInputs(instance, impactedInputs),
   };
-};
-
-const resolveRefsForInputs = async (context, user, type, updateInputs) => {
-export const generateUpdateMessage = async (
-  context: AuthContext,
-  user: AuthUser,
-  entityType: string,
-  inputs: EditInput[],
-): Promise<string> => {
-  const isWorkflowChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
-  const platformStatuses = isWorkflowChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
-  const resolvedInputs = inputs.map((i) => {
-    if (i.key === X_WORKFLOW_ID) {
-      // workflow_id is not a relation but message must contain the name and not the internal id
-      const workflowId = R.head(i.value);
-      const workflowStatus = workflowId ? platformStatuses.find((p) => p.id === workflowId) : workflowId;
-      return ({
-        ...i,
-        value: [workflowStatus ? workflowStatus.name : null],
-      });
-    }
-    return i;
-  });
-
-  const inputsByOperations = R.groupBy((m) => m.operation ?? UPDATE_OPERATION_REPLACE, resolvedInputs);
-  const patchElements = Object.entries(inputsByOperations);
-  if (patchElements.length === 0) {
-    throw UnsupportedError('Generating update message with empty inputs fail');
-  }
-
-  const authorizedMembersIds = getKeyValuesFromPatchElements(patchElements, authorizedMembers.name).map(({ id }: { id: string }) => id);
-  let members: BasicStoreBase[] = [];
-  if (authorizedMembersIds.length > 0) {
-    members = await internalFindByIds(context, SYSTEM_USER, authorizedMembersIds, {
-      baseData: true,
-      baseFields: ['internal_id', 'name'],
-    }) as BasicStoreBase[];
-  }
-
-  const creatorsIds = getKeyValuesFromPatchElements(patchElements, creatorsAttribute.name);
-  let creators = [];
-  if (creatorsIds.length > 0 && !(creatorsIds.length === 1 && creatorsIds.includes(user.id))) {
-    // get creators only if it's not the current user (which will be 'itself')
-    const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-    creators = creatorsIds.map((id: string) => platformUsers.get(id));
-  }
-
-  // Extract file_markings from x_opencti_files updates to resolve marking names
-  const fileObjects = getKeyValuesFromPatchElements(patchElements, files.name);
-  const fileMarkingIds: string[] = R.uniq(fileObjects.flatMap((f: any) => f?.file_markings ?? []));
-  let markings: StoreMarkingDefinition[] = [];
-  if (fileMarkingIds.length > 0) {
-    const markingsMap = await getEntitiesMapFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-    markings = fileMarkingIds.map((id) => markingsMap.get(id)).filter((m) => m) as StoreMarkingDefinition[];
-  }
-
-  return generateUpdatePatchMessage(patchElements, entityType, { members, creators, markings });
-};
-const buildAttribute = async (context: AuthContext, user: AuthUser, key: string, array: any[]) => {
-  const results = await Promise.all(array.map(async (item) => {
-    if (!item) {
-      return item;
-    }
-    if (typeof item === 'object') {
-      if (item?.entity_type !== undefined) {
-        return extractEntityRepresentativeName(item);
-      } else {
-        return item?.toString();
-      }
-    } else if (typeof item === 'string' && key === creatorsAttribute.name) {
-      const users = await getEntitiesMapFromCache(context, user, ENTITY_TYPE_USER);
-      const creator = users.get(item);
-      if (creator) {
-        return extractEntityRepresentativeName(creator);
-      }
-    }
-    return item;
-  }));
-  return results.filter((item) => item !== null && item !== undefined);
-};
-export const buildChanges = async (
-  context: AuthContext,
-  user: AuthUser,
-  entityType: string,
-  inputs: (EditInput & { previous?: any })[],
-): Promise<Change[]> => {
-  const changes: Change[] = [];
-  for (const input of inputs) {
-    const { key, previous, value, operation } = input;
-    if (!key) continue;
-    const field = getKeyName(entityType, key);
-    const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
-    const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
-    let isMultiple = false;
-    if (attributeDefinition) {
-      isMultiple = schemaAttributesDefinition.isMultipleAttribute(entityType, (attributeDefinition?.name ?? ''));
-    } else if (relationsRefDefinition) {
-      isMultiple = relationsRefDefinition.multiple;
-    }
-
-    const previousArrayFull = Array.isArray(previous) ? previous : [previous];
-    const valueArrayFull = Array.isArray(value) ? value : [value];
-    const previousArray = await buildAttribute(context, user, key, previousArrayFull);
-    const valueArray = await buildAttribute(context, user, key, valueArrayFull);
-
-    if (isMultiple) {
-      let added = [];
-      let removed = [];
-      let newValues = [];
-      if (operation === UPDATE_OPERATION_ADD) {
-        added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
-        newValues = previousArray.concat(valueArray);
-      } else if (operation === UPDATE_OPERATION_REMOVE) {
-        removed = valueArray;
-        newValues = previousArray.filter((valueItem) => !valueArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
-      } else {
-        // UPDATE_OPERATION_REPLACE or no operation is the same
-        removed = previousArray.filter((previousItem) => !valueArray.find((valueItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
-        added = valueArray.filter((valueItem) => !previousArray.find((previousItem) => JSON.stringify(previousItem) === JSON.stringify(valueItem)));
-        newValues = valueArray;
-      }
-
-      if (added.length > 0 || removed.length > 0) {
-        changes.push({
-          field,
-          previous: previousArray,
-          new: newValues,
-          added,
-          removed,
-        });
-      }
-    } else if (isMultiple === false) {
-      const isStatusChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
-      const platformStatuses = isStatusChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
-      const resolvedValue = (array: any[]) => {
-        if (field === 'Workflow status') {
-          // we want the status name and not its internal id
-          const statusId = array[0];
-          const status = statusId ? platformStatuses.find((p) => p.id === statusId) : statusId;
-          return status ? [status.name] : null;
-        }
-        return array;
-      };
-
-      changes.push({
-        field,
-        previous: resolvedValue(previousArray),
-        new: resolvedValue(valueArray),
-      });
-    } else {
-      // This should not happen so better at least log at info level to be able to debug.
-      logApp.info('Changes cannot be computed', { inputs, entityType });
-    }
-  }
-  return changes;
 };
 
 const resolveRefsForInputs = async (

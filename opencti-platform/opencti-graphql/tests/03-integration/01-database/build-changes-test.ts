@@ -1,8 +1,9 @@
 import {describe, expect, it} from 'vitest';
 import {ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, getUserIdByEmail, testContext, USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
 import { buildChanges} from '../../../src/database/data-changes';
 import {EditOperation} from '../../../src/generated/graphql';
+import { findByType } from '../../../src/domain/status';
 
 describe('buildChanges standard behavior', async () => {
 

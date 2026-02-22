@@ -292,7 +292,7 @@ export const editAuthenticationProvider = async (
 
   const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_AUTHENTICATION_PROVIDER, input);
 
-  const identifier = resolveProviderIdentifier(element as BasicStoreEntityAuthenticationProvider);
+  const identifier = resolveProviderIdentifier(element as unknown as BasicStoreEntityAuthenticationProvider);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -324,13 +324,14 @@ export const deleteAuthenticationProvider = async (context: AuthContext, user: A
   }
 
   await redisDeleteAuthLogHistory(provider.internal_id);
-  const deleted = await deleteElementById(context, user, id, ENTITY_TYPE_AUTHENTICATION_PROVIDER);
+  const deleted = await deleteElementById(context, user, id, ENTITY_TYPE_AUTHENTICATION_PROVIDER) as unknown as BasicStoreEntityAuthenticationProvider;
+  const deletedIdentifier = resolveProviderIdentifier(deleted);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'delete',
     event_access: 'administration',
-    message: `deletes Authentication \`${deleted.strategy}\` - \`${deleted.identifier}\``,
+    message: `deletes Authentication \`${deleted.type}\` - \`${deletedIdentifier}\``,
     context_data: { id, entity_type: ENTITY_TYPE_AUTHENTICATION_PROVIDER, input: deleted },
   });
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, provider, user);

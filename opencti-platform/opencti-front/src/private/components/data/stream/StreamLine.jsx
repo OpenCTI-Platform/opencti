@@ -6,14 +6,14 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { ListItemButton } from '@mui/material';
-import Chip from '@mui/material/Chip';
 import { MoreVert, Stream } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
 import StreamPopover from './StreamPopover';
-import StreamConsumersDrawer from './StreamConsumersDrawer';
 import inject18n from '../../../../components/i18n';
+import FilterIconButton from '../../../../components/FilterIconButton';
+import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Security from '../../../../utils/Security';
@@ -110,7 +110,8 @@ class StreamLineLineComponent extends Component {
 
   render() {
     const { classes, node, dataColumns, paginationOptions, t } = this.props;
-    const health = this.computeConsumersHealth();
+    const _health = this.computeConsumersHealth();
+    const filters = deserializeFilterGroupForFrontend(node.filters);
     return (
       <ListItem
         divider={true}

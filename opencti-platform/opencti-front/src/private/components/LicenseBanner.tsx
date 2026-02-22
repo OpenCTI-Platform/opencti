@@ -1,28 +1,22 @@
-import Button from '@common/button/Button';
-import Dialog from '@common/dialog/Dialog';
-import DialogActions from '@mui/material/DialogActions';
 import moment from 'moment/moment';
 import React, { useContext, useState } from 'react';
 import { graphql } from 'react-relay';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import * as Yup from 'yup';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
+import { SxProps } from '@mui/material';
 import { useFormatter } from '../../components/i18n';
 import TopBanner, { TopBannerColor } from '../../components/TopBanner';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import { UserContext } from '../../utils/hooks/useAuth';
 import { daysBetweenDates, now } from '../../utils/Time';
 import { RootSettings$data } from '../__generated__/RootSettings.graphql';
-import { graphql } from 'react-relay';
-import useApiMutation from '../../utils/hooks/useApiMutation';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import * as Yup from 'yup';
-import { Field, Form, Formik } from 'formik';
 import TextField from '../../components/TextField';
-import { FormikConfig } from 'formik/dist/types';
-import { SxProps } from '@mui/material';
 
 export const LICENSE_OPTION_TRIAL = 'trial';
 
@@ -197,7 +191,7 @@ const LicenseBanner = () => {
       >
         <span>{t_i18n("Thank you for reaching out, we'll get back to you shortly.")}</span>
         <DialogActions>
-          <Button onClick={() => setShowThankYouDialog(false)} variant="primary">
+          <Button onClick={() => setShowThankYouDialog(false)} variant="contained">
             {t_i18n('Close')}
           </Button>
         </DialogActions>

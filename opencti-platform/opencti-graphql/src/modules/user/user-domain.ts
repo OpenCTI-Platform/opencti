@@ -7,7 +7,7 @@ import { SYSTEM_USER } from '../../utils/access';
 import type { BasicGroupEntity } from '../../types/store';
 import { findDefaultIngestionGroups } from '../../domain/group';
 import { FunctionalError, ValidationError } from '../../config/errors';
-import { TokenDuration, type UserAddInput, type UserTokenAddInput } from '../../generated/graphql';
+import { EditOperation, TokenDuration, type UserAddInput, type UserTokenAddInput } from '../../generated/graphql';
 import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -111,7 +111,7 @@ const addToken = async (context: AuthContext, user: AuthUser, targetUser: AuthUs
     expires_at,
     masked_token,
   };
-  const updates = [{ key: apiTokens.name, value: [newToken], operation: UPDATE_OPERATION_ADD }];
+  const updates = [{ key: apiTokens.name, value: [newToken], operation: UPDATE_OPERATION_ADD as EditOperation }];
   const { element } = await updateAttribute(context, user, targetUser.id, ENTITY_TYPE_USER, updates);
   await publishUserAction({
     user,
@@ -157,7 +157,7 @@ const revokeToken = async (context: AuthContext, user: AuthUser, targetUser: Aut
   if (!tokenToRemove) {
     throw FunctionalError('Token not found', { tokenId });
   }
-  const updates = [{ key: apiTokens.name, value: [tokenToRemove], operation: UPDATE_OPERATION_REMOVE }];
+  const updates = [{ key: apiTokens.name, value: [tokenToRemove], operation: UPDATE_OPERATION_REMOVE as EditOperation }];
   const { element } = await updateAttribute(context, user, targetUser.id, ENTITY_TYPE_USER, updates);
   await publishUserAction({
     user,
