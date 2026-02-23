@@ -197,7 +197,7 @@ export const getWorkflowInstance = async (
   const effectiveEntityId = entity.internal_id || entity.id;
   const instanceEntity = await findWorkflowInstanceEntity(context, user, effectiveEntityId);
   const currentState = instanceEntity?.currentState ?? definitionData.initialState;
-  
+
   const allowedTransitions = await getAllowedTransitions(context, user, entityId);
   const id = instanceEntity?.internal_id ?? instanceEntity?.id ?? `initial-${effectiveEntityId}`;
   return {
