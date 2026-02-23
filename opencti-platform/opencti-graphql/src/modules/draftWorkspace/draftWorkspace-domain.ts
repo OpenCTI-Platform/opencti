@@ -6,12 +6,12 @@ import { elAggregationCount, elCount, elList, elLoadById, loadDraftElement } fro
 import { createEntity, deleteElementById, stixLoadByIds, updateAttribute } from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRelationsConnection, storeLoadById } from '../../database/middleware-loader';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
-import { notify } from '../../database/redis';
+import { notify, setEditContext } from '../../database/redis';
 import { buildStixBundle } from '../../database/stix-2-1-converter';
 import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import {
-  type DraftWorkspaceAddInput,
+  type DraftWorkspaceAddInput, type EditContext,
   type EditInput,
   FilterMode,
   FilterOperator,
@@ -24,7 +24,7 @@ import {
 import { publishUserAction } from '../../listener/UserActionListener';
 import { addDraftCreationCount, addDraftValidationCount } from '../../manager/telemetryManager';
 import { authorizedMembers } from '../../schema/attribute-definition';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
+import { ABSTRACT_BASIC_OBJECT, ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { isStixRefRelationship } from '../../schema/stixRefRelationship';
@@ -46,6 +46,7 @@ import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE 
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
 import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
+import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
@@ -408,4 +409,14 @@ export const validateDraftWorkspace = async (context: AuthContext, user: AuthUse
   await addDraftValidationCount();
 
   return work;
+};
+
+export const draftWorkspaceEditContext = async (context: AuthContext, user: AuthUser, draftId: string, input?: EditContext) => {
+  await checkEnterpriseEdition(context);
+  if (input) {
+    await setEditContext(user, draftId, input);
+  }
+  return storeLoadById(context, user, draftId, ENTITY_TYPE_DRAFT_WORKSPACE).then((fintelDesign) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].CONTEXT_TOPIC, fintelDesign, user);
+  });
 };
