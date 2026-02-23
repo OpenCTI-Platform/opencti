@@ -167,7 +167,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                   title={hasExternalUri ? securityCoverage.external_uri : undefined}
                   variant="tertiary"
                   size="small"
-                  sx={{ marginTop: '16px' }}
+                  sx={{ mt: 2 }}
                 >
                   {hasExternalUri ? `${t_i18n('Go to OpenAEV')}` : `${t_i18n('Provisioning OpenAEV')}`}
                 </Button>

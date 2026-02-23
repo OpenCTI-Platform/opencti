@@ -74,7 +74,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             <ExpandableMarkdown source={data.description} limit={300} />
           </Grid>
           <Grid item xs={12}>
-            <Label sx={{ marginBottom: '8px' }}>
+            <Label sx={{ mb: 1 }}>
               {t_i18n('Coverage information')}
             </Label>
             <SecurityCoverageInformation coverage_information={data.coverage_information ?? []} variant="details" />
