@@ -31,6 +31,7 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const { keyword } = useParams() as { keyword: string };
+  const encodedKeyword = encodeURIComponent(keyword);
   const location = useLocation();
   let searchType = 'knowledge';
   if (location.pathname.includes('/files')) {
@@ -50,13 +51,13 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
         <Tabs id="tabs-container" value={searchType}>
           <Tab
             component={Link}
-            to={`/dashboard/search/knowledge/${keyword ?? ''}`}
+            to={`/dashboard/search/knowledge/${encodedKeyword ?? ''}`}
             value="knowledge"
             label={t_i18n('Knowledge search')}
           />
           <Tab
             component={Link}
-            to={`/dashboard/search/files/${keyword ?? ''}`}
+            to={`/dashboard/search/files/${encodedKeyword ?? ''}`}
             value="files"
             label={(
               <Badge badgeContent={filesCount} color="primary">
