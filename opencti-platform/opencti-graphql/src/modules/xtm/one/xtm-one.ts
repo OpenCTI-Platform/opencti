@@ -4,12 +4,16 @@ import type { BasicStoreSettings } from '../../../types/settings';
 import { getEntityFromCache, getEntitiesListFromCache } from '../../../database/cache';
 import { internalLoadById } from '../../../database/middleware-loader';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../../schema/internalObject';
-import { getEnterpriseEditionActivePem } from '../../settings/licensing';
+import { decodeLicensePem, getEnterpriseEditionActivePem } from '../../settings/licensing';
 import { addUserTokenByAdmin } from '../../user/user-domain';
 import xtmOneClient from './xtm-one-client';
 import type { XtmOneUserEntry } from './xtm-one-client';
 
 const XTM_ONE_TOKEN_NAME = 'XTM One';
+
+let discoveredChatWebToken: string | null = null;
+
+export const getDiscoveredChatWebToken = (): string | null => discoveredChatWebToken;
 
 /**
  * Register this OpenCTI instance with XTM One.
@@ -35,6 +39,16 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
   }
 
   const { pem } = getEnterpriseEditionActivePem(settings);
+
+  let licenseType: string | undefined;
+  try {
+    const licenseInfo = decodeLicensePem(settings);
+    if (licenseInfo.license_validated && licenseInfo.license_type) {
+      licenseType = licenseInfo.license_type;
+    }
+  } catch {
+    // license info not available — CE or invalid PEM
+  }
 
   const users: XtmOneUserEntry[] = [];
   try {
@@ -73,11 +87,16 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
     platform_version: PLATFORM_VERSION,
     platform_id: settings.internal_id || settings.id,
     enterprise_license_pem: pem,
+    license_type: licenseType,
     admin_api_key: adminToken,
     users,
   });
 
   if (result) {
+    if (result.chat_web_token) {
+      discoveredChatWebToken = result.chat_web_token;
+      logApp.info('[XTM One] Chat web token discovered from registration');
+    }
     logApp.info('[XTM One] Registration successful', {
       status: result.status,
       ee_enabled: result.ee_enabled,
