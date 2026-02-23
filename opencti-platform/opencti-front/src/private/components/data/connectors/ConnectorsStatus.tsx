@@ -430,7 +430,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                             </div>
                             <div
                               className={classes.bodyItem}
-                              style={{ justifyContent: 'center' }}
+                              style={{ justifyContent: 'flex-start' }}
                             >
                               <BooleanStatusIcon status={connector.is_managed} />
                             </div>
