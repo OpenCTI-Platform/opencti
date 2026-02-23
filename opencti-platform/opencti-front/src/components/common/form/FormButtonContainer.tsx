@@ -6,8 +6,7 @@ const FormButtonContainer = ({ children }: PropsWithChildren) => {
     <Stack
       direction="row"
       gap={1}
-      justifySelf="flex-end"
-      sx={{ mt: 4 }}
+      sx={{ mt: 4, justifyContent: 'flex-end' }}
     >
       {children}
     </Stack>
