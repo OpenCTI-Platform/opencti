@@ -15,19 +15,6 @@ This table regroups all the breaking changes introduced, with the corresponding 
 | [Promote Observable API](#change-to-the-observable-promote-API)                                                        | 6.2           | 6.8        |
 | [SAML authentication parameters](#change-to-SAML-authentication)                                                       |               | 6.2        |
 | [Major changes to Filtering API](#new-filtering-API)                                                                   |               | 5.12       |
-| [Update license for SSO (& migration to UI)](#SSO-update-license)                                                |               | 7.0.0      |
-
-
-## OpenCTI 7.0.0
-
-### Breaking change
-
-<a id="SSO-update-license"></a>
-
-SSO becomes an [Entreprise edition](../administration/entreprise.md) feature. 
-Using SSO defined in configuration file (environement variable) to login will not be possible anymore for**Community Edition** platforms. Additionnally, for Entrerprise Edition users, Authentication Strategies will be converted to UI. For more information about the [conversion](authentication-migration.md) & the [new associated feature (Define Authentication via UI)](authetication-in-gui.md) please browse the provided links.
-
-For more details regarding the change of license, see [the change of license](7.0-SSO-Entreprise-license.md).
 
 ## OpenCTI 6.5
 

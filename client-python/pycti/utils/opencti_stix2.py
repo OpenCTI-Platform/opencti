@@ -1869,7 +1869,10 @@ class OpenCTIStix2:
                 ):
                     external_reference["x_opencti_files"] = []
                     for file in entity_external_reference["importFiles"]:
-                        url = self.opencti.api_url.replace("/graphql", file["uri"])
+                        url = (
+                            self.opencti.api_url.replace("graphql", "storage/get/")
+                            + file["id"]
+                        )
                         data = self.opencti.fetch_opencti_file(
                             url, binary=True, serialize=True
                         )
