@@ -868,7 +868,7 @@ jobs:
     steps:
       - checkout
       - kubernetes/install-kubectl
-      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing rollout restart deployment -l app=opencti
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN -n customer-testing-octi rollout restart deployment -l app=opencti
 
   deploy_prerelease:
     docker:
@@ -892,7 +892,7 @@ jobs:
     steps:
       - checkout
       - kubernetes/install-kubectl
-      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN_DEV -n customer-dev rollout restart deployment -l app=opencti
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN_DEV -n customer-dev-octi rollout restart deployment -l app=opencti
 
   notify_rolling:
     docker:
