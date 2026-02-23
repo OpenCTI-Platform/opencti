@@ -338,10 +338,10 @@ export const triggerWorkflowEvent = async (
       ]);
 
       const workflowInstance = await getWorkflowInstance(context, user, entityId);
-      return { success: true, newState, instance: workflowInstance };
+      return { success: true, newState, instance: workflowInstance, entity };
     }
 
-    return result;
+    return { ...result, entity };
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'Unknown error';
     return {

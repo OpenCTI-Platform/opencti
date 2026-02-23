@@ -64,16 +64,17 @@ const workflowStatusTriggerMutation = graphql`
           }
         }
       }
+      entity {
+        ... on DraftWorkspace {
+          ...WorkflowStatus_data
+        }
+      }
     }
   }
 `;
 
-interface WorkflowStatusProps {
+interface WorkflowTransitionsProps {
   data: WorkflowStatus_data$key;
-}
-
-interface WorkflowTransitionsProps extends WorkflowStatusProps {
-  refetch: () => void;
 }
 
 const WorkflowStatus: FunctionComponent<WorkflowStatusProps> = ({ data }) => {
@@ -91,7 +92,7 @@ const WorkflowStatus: FunctionComponent<WorkflowStatusProps> = ({ data }) => {
   );
 };
 
-export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = ({ data, refetch }) => {
+export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = ({ data }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -120,7 +121,6 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
       },
       onCompleted: () => {
         handleClose();
-        refetch();
       },
     });
   };

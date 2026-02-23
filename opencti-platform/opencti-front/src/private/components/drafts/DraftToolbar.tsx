@@ -74,7 +74,7 @@ const DraftToolbarComponent = ({
       <div style={{ flex: 1 }} />
 
       <WorkflowStatus data={draft} />
-      <WorkflowTransitions data={draft} refetch={refetch} />
+      <WorkflowTransitions data={draft} />
       <DraftAuthorizedMembers data={draft} />
       <DraftExit data={draft} />
       <DraftApprove data={draft} />

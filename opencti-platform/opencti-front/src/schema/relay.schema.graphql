@@ -10671,6 +10671,8 @@ type WorkflowTriggerResult {
   newState: String
   reason: String
   status: Status
+  instance: WorkflowInstance
+  entity: BasicObject
 }
 
 type WorkflowTransition {
