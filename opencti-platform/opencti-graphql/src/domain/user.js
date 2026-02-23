@@ -1930,7 +1930,15 @@ export const authenticateUserFromRequest = async (context, req) => {
     try {
       return await authenticateUserByToken(context, req, bearerToken);
     } catch (err) {
-      logApp.warn('Error resolving user by token', { cause: err });
+      const tokenPrefix = bearerToken.substring(0, 20);
+      const userAgent = req.headers['user-agent'] || 'unknown';
+      const origin = req.headers.origin || req.headers.referer || 'unknown';
+      logApp.warn('Error resolving user by token', {
+        cause: err,
+        token_prefix: `${tokenPrefix}...`,
+        user_agent: userAgent,
+        origin,
+      });
       return undefined;
     }
   }
