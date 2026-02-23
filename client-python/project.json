@@ -2,7 +2,7 @@
   "name": "client-python",
   "$schema": "../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "client-python",
-  "projectType": "application",
+  "projectType": "library",
   "types": ["python"],
   "targets": {
     "install": {

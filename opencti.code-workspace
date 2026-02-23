@@ -1,0 +1,20 @@
+{
+  "folders": [
+    {
+      "name": "OpenCTI Monorepo",
+      "path": "."
+    },
+    {
+      "name": "Connectors",
+      "path": "../connectors"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      ".pytest_cache": true,
+      ".python-venv": true,
+    },
+    "search.followSymlinks": false,
+    "search.useIgnoreFiles": true
+  }
+}

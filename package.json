@@ -2,7 +2,10 @@
   "name": "opencti",
   "packageManager": "yarn@4.12.0+sha512.f45ab632439a67f8bc759bf32ead036a1f413287b9042726b7cc4818b7b49e14e9423ba49b18f9e06ea4941c1ad062385b1d8760a8d5091a1a31e5f6219afca8",
   "devDependencies": {
-    "nx": "22.2.5"
+    "@types/node": "^25.3.0",
+    "knip": "^5.84.1",
+    "nx": "22.2.5",
+    "typescript": "^5.9.3"
   },
   "scripts": {
     "deps": "nx run-many --tuiAutoExit --target install",
@@ -15,6 +18,7 @@
     "deps:venv": "yarn with-python-venv yarn deps",
     "build:venv": "yarn with-python-venv yarn build",
     "dev:venv": "yarn with-python-venv yarn dev",
-    "test:venv": "yarn with-python-venv yarn test"
+    "test:venv": "yarn with-python-venv yarn test",
+    "knip": "knip"
   }
 }

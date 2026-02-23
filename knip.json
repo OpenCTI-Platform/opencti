@@ -3,8 +3,13 @@
   "tags": [
     "-lintignore"
   ],
+  "playwright": true,
   "workspaces": {
     ".": {
+      "entry": [],
+      "project": []
+    },
+    "./opencti-platform/opencti-front": {
       "entry": [
         "src/static/ext/pdf.worker.mjs"
       ]
