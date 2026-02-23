@@ -1,18 +1,13 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
-import Typography from '@mui/material/Typography';
-import { Theme } from '@mui/material/styles/createTheme';
 import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
 import { Link } from 'react-router-dom';
-import Button from '@common/button/Button';
-import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -21,14 +16,10 @@ import { SecurityCoverageDetails_securityCoverage$key } from './__generated__/Se
 import SecurityCoverageSecurityPlatforms from './SecurityCoverageSecurityPlatforms';
 import SecurityCoverageVulnerabilities from './SecurityCoverageVulnerabilities';
 import { isNotEmptyField } from '../../../../utils/utils';
-import { fileUri } from '../../../../relay/environment';
-import oaevDark from '../../../../static/images/xtm/oaev_dark.png';
-import oaevLight from '../../../../static/images/xtm/oaev_light.png';
 import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import { EMPTY_VALUE } from '../../../../utils/String';
-import { Stack } from '@mui/material';
 
 const securityCoverageDetailsFragment = graphql`
   fragment SecurityCoverageDetails_securityCoverage on SecurityCoverage {
@@ -62,7 +53,6 @@ interface SecurityCoverageDetailsProps {
 const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> = ({
   securityCoverage,
 }) => {
-  const theme = useTheme<Theme>();
   const { t_i18n, fndt } = useFormatter();
   const data = useFragment(securityCoverageDetailsFragment, securityCoverage);
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
@@ -84,35 +74,10 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             <ExpandableMarkdown source={data.description} limit={300} />
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom={true}>
+            <Label sx={{ mb: 1 }}>
               {t_i18n('Coverage information')}
-            </Typography>
-            <Paper variant="outlined" style={{ padding: 20, marginTop: 10 }}>
-              <Stack direction="row" gap={1} mb={1} alignItems="center">
-                <Label>
-                  {t_i18n('Coverage information')}
-                </Label>
-                {isNotEmptyField(data.external_uri) && (
-                  <Button
-                    startIcon={(
-                      <img
-                        style={{ width: 20 }}
-                        src={fileUri(theme.palette.mode === 'dark' ? oaevDark : oaevLight)}
-                        alt="OAEV"
-                      />
-                    )}
-                    variant="secondary"
-                    onClick={() => setDisplayExternalLink(true)}
-                    title={data.external_uri}
-                  >
-                    {t_i18n('Exposure validation')}
-                  </Button>
-                )}
-              </Stack>
-              <Paper variant="outlined" sx={{ padding: 2 }}>
-                <SecurityCoverageInformation coverage_information={data.coverage_information ?? []} variant="details" />
-              </Paper>
-            </Paper>
+            </Label>
+            <SecurityCoverageInformation coverage_information={data.coverage_information ?? []} variant="details" />
           </Grid>
           <Grid item xs={6}>
             <Label>
