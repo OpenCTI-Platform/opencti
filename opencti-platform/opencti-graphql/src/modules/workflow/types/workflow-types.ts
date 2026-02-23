@@ -89,6 +89,7 @@ export interface TriggerResult {
   reason?: string;
   newState?: string;
   status?: any;
+  instance?: any;
 }
 
 /**
