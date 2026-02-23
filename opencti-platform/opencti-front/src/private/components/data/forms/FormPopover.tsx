@@ -9,7 +9,7 @@ import { FormLinesPaginationQuery$variables } from '@components/data/forms/__gen
 import { ConnectionHandler } from 'relay-runtime';
 import { FormEditionContainerQuery } from './__generated__/FormEditionContainerQuery.graphql';
 import FormEditionContainer, { formEditionContainerQuery } from './FormEditionContainer';
-import { FormCreationContainer } from './FormCreationContainer';
+import FormCreationContainer from './FormCreationContainer';
 import { useFormatter } from '../../../../components/i18n';
 import { deleteNode } from '../../../../utils/store';
 import Loader, { LoaderVariant } from '../../../../components/Loader';

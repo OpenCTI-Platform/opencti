@@ -110,7 +110,7 @@ const CreateFormControlledDial = (props: CreateFormControlledDialProps) => {
   );
 };
 
-export const FormCreationContainer: FunctionComponent<FormCreationContainerProps> = ({
+const FormCreationContainer: FunctionComponent<FormCreationContainerProps> = ({
   queryRef,
   handleClose,
   open = false,
