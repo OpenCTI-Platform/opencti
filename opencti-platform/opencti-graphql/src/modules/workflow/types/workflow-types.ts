@@ -90,6 +90,7 @@ export interface TriggerResult {
   newState?: string;
   status?: any;
   instance?: any;
+  entity?: any;
 }
 
 /**
