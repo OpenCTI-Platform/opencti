@@ -1,4 +1,4 @@
-import { PLATFORM_VERSION, logApp } from '../../../config/conf';
+import conf, { PLATFORM_VERSION, logApp } from '../../../config/conf';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreSettings } from '../../../types/settings';
 import { getEntityFromCache, getEntitiesListFromCache } from '../../../database/cache';
@@ -64,6 +64,8 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
     logApp.warn('[XTM One] Failed to collect users', { error: err.message });
   }
 
+  const adminToken = conf.get('app:admin:token') || '';
+
   const result = await xtmOneClient.register({
     platform_identifier: 'opencti',
     platform_url: settings.platform_url || '',
@@ -71,6 +73,7 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
     platform_version: PLATFORM_VERSION,
     platform_id: settings.internal_id || settings.id,
     enterprise_license_pem: pem,
+    admin_api_key: adminToken,
     users,
   });
 

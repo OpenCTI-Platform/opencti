@@ -17,6 +17,7 @@ export interface XtmOneRegistrationInput {
   platform_version: string;
   platform_id: string;
   enterprise_license_pem: string | undefined;
+  admin_api_key: string;
   users: XtmOneUserEntry[];
 }
 
