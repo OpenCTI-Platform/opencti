@@ -22,7 +22,7 @@ import { getCurrentTab, getPaddingRight, isNotEmptyField } from '../../../../uti
 import SecurityCoverageEdition from './SecurityCoverageEdition';
 import SecurityCoverageDeletion from './SecurityCoverageDeletion';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Button from '@mui/material/Button';
+import Button from '@common/button/Button';
 import { OaevLogo } from '../../../../static/images/logo_oaev';
 import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 import { RootSecurityCoverageSubscription } from '@components/analyses/security_coverages/__generated__/RootSecurityCoverageSubscription.graphql';
@@ -162,11 +162,10 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
               <>
                 <Button
                   disabled={!hasExternalUri}
-                  style={{ marginBottom: 8 }}
                   startIcon={<OaevLogo />}
-                  variant="outlined"
                   onClick={() => setDisplayExternalLink(true)}
                   title={hasExternalUri ? securityCoverage.external_uri : undefined}
+                  variant="secondary"
                 >
                   {hasExternalUri ? `${t_i18n('Go to OpenAEV')}` : `${t_i18n('Provisioning OpenAEV')}`}
                 </Button>
