@@ -36417,6 +36417,7 @@ export type WorkflowInstance = {
   __typename?: 'WorkflowInstance';
   allowedTransitions: Array<WorkflowTransition>;
   currentState: Scalars['String']['output'];
+  currentStatus?: Maybe<Status>;
   id: Scalars['ID']['output'];
 };
 
@@ -36431,9 +36432,9 @@ export type WorkflowSchema = {
 
 export type WorkflowSerializedState = {
   __typename?: 'WorkflowSerializedState';
-  name: Scalars['String']['output'];
   onEnter?: Maybe<Array<WorkflowActionConfig>>;
   onExit?: Maybe<Array<WorkflowActionConfig>>;
+  statusId: Scalars['String']['output'];
 };
 
 export type WorkflowSerializedTransition = {
@@ -38750,7 +38751,7 @@ export type ResolversTypes = ResolversObject<{
   WorkflowActionConfig: ResolverTypeWrapper<WorkflowActionConfig>;
   WorkflowActionMode: WorkflowActionMode;
   WorkflowConditionConfig: ResolverTypeWrapper<WorkflowConditionConfig>;
-  WorkflowInstance: ResolverTypeWrapper<Omit<WorkflowInstance, 'allowedTransitions'> & { allowedTransitions: Array<ResolversTypes['WorkflowTransition']> }>;
+  WorkflowInstance: ResolverTypeWrapper<Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversTypes['Status']> }>;
   WorkflowSchema: ResolverTypeWrapper<WorkflowSchema>;
   WorkflowSerializedState: ResolverTypeWrapper<WorkflowSerializedState>;
   WorkflowSerializedTransition: ResolverTypeWrapper<WorkflowSerializedTransition>;
@@ -39697,7 +39698,7 @@ export type ResolversParentTypes = ResolversObject<{
   WorkTracking: WorkTracking;
   WorkflowActionConfig: WorkflowActionConfig;
   WorkflowConditionConfig: WorkflowConditionConfig;
-  WorkflowInstance: Omit<WorkflowInstance, 'allowedTransitions'> & { allowedTransitions: Array<ResolversParentTypes['WorkflowTransition']> };
+  WorkflowInstance: Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversParentTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversParentTypes['Status']> };
   WorkflowSchema: WorkflowSchema;
   WorkflowSerializedState: WorkflowSerializedState;
   WorkflowSerializedTransition: WorkflowSerializedTransition;
@@ -50666,6 +50667,7 @@ export type WorkflowConditionConfigResolvers<ContextType = any, ParentType exten
 export type WorkflowInstanceResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowInstance'] = ResolversParentTypes['WorkflowInstance']> = ResolversObject<{
   allowedTransitions?: Resolver<Array<ResolversTypes['WorkflowTransition']>, ParentType, ContextType>;
   currentState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  currentStatus?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
 }>;
 
@@ -50678,9 +50680,9 @@ export type WorkflowSchemaResolvers<ContextType = any, ParentType extends Resolv
 }>;
 
 export type WorkflowSerializedStateResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSerializedState'] = ResolversParentTypes['WorkflowSerializedState']> = ResolversObject<{
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   onEnter?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
   onExit?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
+  statusId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type WorkflowSerializedTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSerializedTransition'] = ResolversParentTypes['WorkflowSerializedTransition']> = ResolversObject<{

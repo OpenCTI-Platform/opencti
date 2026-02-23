@@ -10774,7 +10774,7 @@ type WorkflowConditionConfig {
 }
 
 type WorkflowSerializedState {
-  name: String!
+  statusId: String!
   onEnter: [WorkflowActionConfig!]
   onExit: [WorkflowActionConfig!]
 }
@@ -10837,6 +10837,7 @@ type WorkflowTransition {
 type WorkflowInstance {
   id: ID!
   currentState: String!
+  currentStatus: Status
   allowedTransitions: [WorkflowTransition!]!
 }
 
