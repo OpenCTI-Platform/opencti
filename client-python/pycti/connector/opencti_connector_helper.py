@@ -1388,8 +1388,8 @@ class BatchCallbackWrapper:
         :return: Dictionary containing events and batch metadata
         """
         if self.batch_size:
-            extracted = self.batch[:self.batch_size]
-            self.batch = self.batch[self.batch_size:]
+            extracted = self.batch[: self.batch_size]
+            self.batch = self.batch[self.batch_size :]
         else:
             extracted = self.batch.copy()
             self.batch = []

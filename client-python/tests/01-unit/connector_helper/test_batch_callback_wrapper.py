@@ -111,16 +111,22 @@ class TestBatchCallbackWrapper(TestCase):
             if len(batches) >= 3:
                 done.set()
 
-        wrapper = BatchCallbackWrapper(helper, callback, batch_size=5, batch_timeout=0.1)
+        wrapper = BatchCallbackWrapper(
+            helper, callback, batch_size=5, batch_timeout=0.1
+        )
         try:
             for i in range(12):
                 wrapper(DummyMessage(f"{i}-0"))
             self.assertTrue(done.wait(timeout=5))
             self.assertEqual(len(batches), 3)
             self.assertEqual(batches[0]["batch_metadata"]["batch_size"], 5)
-            self.assertEqual(batches[0]["batch_metadata"]["trigger_reason"], "size_limit")
+            self.assertEqual(
+                batches[0]["batch_metadata"]["trigger_reason"], "size_limit"
+            )
             self.assertEqual(batches[1]["batch_metadata"]["batch_size"], 5)
-            self.assertEqual(batches[1]["batch_metadata"]["trigger_reason"], "size_limit")
+            self.assertEqual(
+                batches[1]["batch_metadata"]["trigger_reason"], "size_limit"
+            )
             self.assertEqual(batches[2]["batch_metadata"]["batch_size"], 2)
             self.assertEqual(batches[2]["batch_metadata"]["trigger_reason"], "timeout")
         finally:
@@ -135,7 +141,9 @@ class TestBatchCallbackWrapper(TestCase):
             batches.append(batch_data)
             done.set()
 
-        wrapper = BatchCallbackWrapper(helper, callback, batch_size=None, batch_timeout=0.1)
+        wrapper = BatchCallbackWrapper(
+            helper, callback, batch_size=None, batch_timeout=0.1
+        )
         try:
             for i in range(8):
                 wrapper(DummyMessage(f"{i}-0"))
@@ -176,7 +184,7 @@ class TestBatchCallbackWrapper(TestCase):
         for i in range(8):
             wrapper.batch.append(DummyMessage(f"{i}-0"))
         wrapper.batch_start_time = time.time()
-        
+
         wrapper.stop()
 
         self.assertEqual(len(batches), 3)
