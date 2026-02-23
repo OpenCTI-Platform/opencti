@@ -90,7 +90,7 @@ const SettingsMessages = ({
       },
     },
     recipients: {
-      label: 'recipients',
+      label: 'Recipients',
       width: '15%',
       isSortable: false,
       render: (data: SettingsMessagesLine_settingsMessage$data) => (
