@@ -123,6 +123,7 @@
     "remark-parse": "11.0.0",
     "rxjs": "7.8.2",
     "three-spritetext": "1.10.0",
+    "tippy.js": "6.3.7",
     "use-analytics": "1.1.0",
     "uuid": "13.0.0",
     "yup": "1.7.1"
@@ -130,6 +131,7 @@
   "devDependencies": {
     "@eslint/js": "9.39.2",
     "@faker-js/faker": "10.3.0",
+    "@mui/types": "7.4.10",
     "@playwright/test": "1.58.2",
     "@stylistic/eslint-plugin": "5.7.1",
     "@testing-library/dom": "10.4.1",
@@ -170,6 +172,7 @@
     "license-checker-rseidelsohn": "4.4.2",
     "monocart-reporter": "2.10.0",
     "open-cli": "8.0.0",
+    "react-router": "6.30.3",
     "relay-compiler": "20.1.1",
     "relay-test-utils": "20.1.1",
     "typescript": "5.9.3",
