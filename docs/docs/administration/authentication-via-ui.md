@@ -7,7 +7,7 @@
 All the configurations listed below require an Enterprise Edition to work, except the Local strategy.
 
 ## Capability required to manage authentication strategies
-To access the new Authentication screen, you need to have the  [Manage Authentication capability](https://docs.opencti.io/latest/administration/users/). 
+To access the Authentication screen, you need to have the  [Manage Authentication capability](https://docs.opencti.io/latest/administration/users/). 
 
 
 ## Supported Strategies
@@ -19,7 +19,7 @@ Via UI, you can configure the following stategies
 - OpenID
 - SAML
 - Certificate
-- Query headers.
+- Query headers
 
 Under the hood, we technically use the strategies provided by [PassportJS](http://www.passportjs.org/). We integrate a subset of the strategies available with passport. If you need more, we can integrate other strategies
 
@@ -47,23 +47,56 @@ By default, a created authentication will be enabled, meaning it will be visible
 
 #### OpenID
 
-For OpenID, the following fields are mandatory:
+For OpenID, the following fields are mandatory (indicated with a "*" in the form):
 
-- A configuration name, allowing you to differentiate between two configurations of the same type
+- A configuration name, allowing you to differentiate between two configurations of the same type. Please note that the configuration name will also be used as the name on present on the **Login button**.
 - A login button name, allowing you to customize the name of the button present on the login screen
 - Client ID: The ID of your Identity Provider client entity
 - Client secret: The secret of your Identity Provider client
 - OpenID issuer: The root URI of your platform
 
+Additionnal not mandatory fields are present in the **Protocal and Scopes** section.
+
+##### Using Cyberark along with OpenID
+To use Cybrark with OpenID you will still need to use at least partially, your environnement variables. Follow these steps:
+
+
+- Create OpenID configuration in UI, note the identifier (eg: "oic") it will need to match environment varaible name
+- For the field that will be overrided by cyberark configuration, you can put any string it will be ignored (to pass the mandatory field checks)
+- You will need to keep the cyberark configuration in environment variable such as:
+
+```json
+{
+ "providers": {
+   "oic": {
+     "credentials_provider": {
+       "selector": "cyberark",
+       "cyberark": {
+         "uri": "https://<cyberark-url>",
+         "field_targets": [
+           "client_secret"
+         ],
+         "app_id": "cyberark",
+         "safe": "safe",
+         "object": "secret"
+       },
+       "https_cert": {
+         "reject_unauthorized": false
+       }
+     }
+   }
+ }
+}
+```
+
 
 #### SAML
 
-For SAML, the following fields are mandatory:
+For SAML, the following fields are mandatory (indicated with a "*" in the form):
 
-- A configuration name, allowing you to differentiate between two configurations of the same type
-- A login button name, allowing you to customize the name of the button present on the login screen
-- SAML Entity ID/Issuer: the equivalent of the base_url attribute, your actual OpenCTI URL
-- SAML URL callback: the Identity Provider’s login endpoint where users are sent to authenticate
+- A configuration name, allowing you to differentiate between two configurations of the same type. Please note that the configuration name will also be used as the name on present on the **Login button**.
+- Issuer: the equivalent of the base_url attribute, your actual OpenCTI URL
+- Call back URL: the Identity Provider’s login endpoint where users are sent to authenticate
 - Identity provider encryption certificate: a mandatory parameter (PEM format) because it is used to validate the SAML response. Depending on the certificate format, it may include the header, footer, and newline (\n) characters
 - SAML URL (entry point)
 
@@ -77,13 +110,14 @@ The private_key (PEM format) is optional and is only required if you want to sig
     ```bash
     openssl pkcs12 -in keystore.p12 -out newfile.pem -nodes
     ```
+  
+  Additionnal not mandatory fields are present in the **Security & Signing** and **Request behavior** sections.
 
 
 #### LDAP
 For LDAP, the following fields are mandatory:
 
-- A configuration name, allowing you to differentiate between two configurations of the same type
-- A login button name, allowing you to customize the name of the button present on the login screen
+- A configuration name, allowing you to differentiate between two configurations of the same type. Please note that the configuration name will also be used as the name on present on the **Login button**.
 - URL: the LDAP server URL
 - Bind DN: distinguished name of the user to bind to
 - Search base
@@ -91,15 +125,19 @@ For LDAP, the following fields are mandatory:
 - Group search base
 - Group search filter
 
+Additionnal not mandatory fields are present in the **Search & Authentication** section.
 
-### Add a custom field not present in SAML, LDAP, OpenID forms
+### Add a custom field not present in SAML, LDAP, OpenID 
 
-The list of fields present in the graphical interface are the main fields that we have seen being used. However, it is important to be able to support additional fields that are needed for various authentications.
-In this regard, there is the possibility to add more custom values that will be used by our Passport/Node OpenID library.
+The list of fields present in the graphical interface are the main fields that we have seen being used. 
+However, it is important to be able to support additional fields that are needed for various authentications.
 
-You need to specify a type, add the corresponding value that you want to send to Passport, and the key it will match in Passport so that you can send the correct value with the right field.
+In each form, you can use the **Extra Configuration** section to add a new custom field:
+- Click on the "+" to add a new field
+- Specify a field type 
+- Add a key (the field in passport library that this field needs to map with)
+- Add a value .
 
-![custom fields](assets/authentication-creation-addMoreFields.png)
 
 #### All passport fields
 [This Github page](https://github.com/node-saml/node-saml/blob/25c434a3ccada8777e13a1e6b34c42bbd5b9ef4b/src/types.ts#L144-L211) represents the list of fields that are supported by our passport library. It's fairly technical information, but will give you the full picture of all custom fields you can add in your authentication, on the top of the already provided fields. 
@@ -134,141 +172,109 @@ You need to specify a type, add the corresponding value that you want to send to
 | metadataOrganization?: {OrganizationURL:        | #text                                                                                   | string                    |                          |
 
 
-#### Passeport List supported fields
-
-| category                          | field name                      | field type    | commment |
-|-----------------------------------|---------------------------------|---------------|----------|
-| Mandatory                         | Identity ProviderCert           | string        |          |
-| Mandatory                         | issuer                          | string        |          |
-| Mandatory                         | callbackUrl                     | string        |          |
-| Core                              | entryPoint?                     | string        |          |
-| Core                              | decryptionPvk?                  | string        |          |
-| Additional SAML behaviors         | identifierFormat                | string, null  |          |
-| Additional SAML behaviors         | allowCreate                     | bolean        |          |
-| Additional SAML behaviors         | spNameQualifier?                | string, null  |          |
-| Additional SAML behaviors         | acceptedClockSkewMs             | number        |          |
-| Additional SAML behaviors         | attributeConsumingServiceIndex?:| string        |          |
-| Additional SAML behaviors         | disableRequestedAuthnContext    | boolean       |          |
-| Additional SAML behaviors         | authnContext                    | string        |          |
-| Additional SAML behaviors         | forceAuthn                      | boolean       |          |
-| Additional SAML behaviors         | skipRequestCompression          | boolean       |          |
-| Additional SAML behaviors         | authnRequestBinding?            | string        |          |
-| Additional SAML behaviors         | providerName?                   | string        |          |
-| Additional SAML behaviors         | passive                         | boolean       |          |
-| Additional SAML behaviors         | Identity ProviderIssuer?        | string        |          |
-| Additional SAML behaviors         | audience                        | string, false |          |
-| Additional SAML behaviors         | wantAssertionsSigned            | boolean       |          |
-| Additional SAML behaviors         | wantAuthnResponseSigned         | boolean       |          |
-| Additional SAML behaviors         | maxAssertionAgeMs               | boolean       |          |
-| Additional SAML behaviors         | generateUniqueId                | string        |          |
-| Additional SAML behaviors         | signMetadata                    | boolean       |          |
-| InResponseTo Validation           | requestIdExpirationPeriodMs     | number        |          |
-| Logout                            | logoutUrl                       | string        |          |
-| Logout                            | logoutCallbackUrl?              | string        |          |
-| extras                            | disableRequestAcsUrl            | boolean       |          |
 
 #### Deprecated for all strategies
 The following field is deprecated for all strategies: `roles_management`.
 `credentials_provider` from CyberArk is not migrated either. 
 
-### Using Cyberark along with OpenID
-To use Cybrark with OpenID, you can follow these steps: 
-
-- Create OpenID configuration in UI, note the identifier (eg: "oic") it will need to match environment varaible name
-- For the field that will be overrided by cyberark configuration, you can put any string it will be ignored (to pass the mandatory field checks)
-- You will need to keep the cyberark configuration in environment variable such as:
-
-```json
-{
- "providers": {
-   "oic": {
-     "credentials_provider": {
-       "selector": "cyberark",
-       "cyberark": {
-         "uri": "https://<cyberark-url>",
-         "field_targets": [
-           "client_secret"
-         ],
-         "app_id": "cyberark",
-         "safe": "safe",
-         "object": "secret"
-       },
-       "https_cert": {
-         "reject_unauthorized": false
-       }
-     }
-   }
- }
-}
-```
 
 ## Group mapping
 
-Now that a configuration is defined, you can define the group mapping (if applicable) for authentications that support this functionality.
+Now that a configuration is defined, you can define the group mapping all for authentications (except Local).
 
-You can choose whether your users inherit the default groups defined within OpenCTI. Any new user will be created with the groups and associated roles defined by default — in addition to the mapping provided in the configuration — or not.
 
-## Common behavior for all authentications supporting group mapping: automatically create a new group
+All authentications alwyas have these two option: 
+- **Prevent platform default group association:** in OpenCTI you can allow some groups to be granted by default at user creation. This option allows you to define whether you want any new user created through the defined authentication to get these default groups granted by default. **By default, users will be granted platform default group**.
+- **Auto create groups:** you can decide to automatically create the group that you have mapped. Please be aware that a group requires a role for a user to be able to have some rights [(more information)](../administration/users.md)
 When performing group mapping, you can always enable an option to automatically create specific groups within OpenCTI.
-The groups of a user who logs in will be automatically created if they don't exist.
 
-More precisely, if the user who tries to authenticate has groups that don't exist in OpenCTI but exist in the SSO configuration, there are two cases:
-
-If the "automatically create a new group" option is enabled in the configuration: the groups are created at platform initialization, and the user will be mapped to them.
-Otherwise, an error is raised.
-
-
-### OpenID group mapping 
-
-To create group mapping, you first need to identify within the token, the attribute that will be used to identify group. Additional data can be used to help you defining group mapping, such as the 'group path', 'group scope' & 'access token'.
-**Please be aware that data needs to be added with a specific format: add square bracket & each value between single quotes (even for unique value). For example: ['value1', 'value2']**
-
-If not sufficient, in a similar way than the configuration form, you can add custom values, if you need to map multiple groups from your identity provider to OpenCTI groups clicking on the option to "add a new value".
-
-Last but not least, you can also enable an option (disbaled by default) to automatically add users to the default groups you have defined in OpenCTI, in addition to the groups you have selected. 
-
-### SAML group mapping
-
-To create group mapping, you first need to identify within the token, the attribute that will be used to identify group.
-**Please be aware that data needs to be added with a specific format: add square bracket & each value between single quotes (even for unique value). For example: ['value1', 'value2']**
-
-Then, in a similar way than the configuration form, to add your mapping from your identity provider to OpenCTI groups, click on the option to "add a new value".
-
-### LDAP group mapping 
-To create group mapping, you first need to identify within the token, the attribute that will be used to identify group.
-
-Then, in a similar way than the configuration form, to add your mapping from your identity provider to OpenCTI groups, click on the option to "add a new value".
-
-### Headers group mapping
-To create group mapping, you first need to identify within the token, the attribute that will be used to identify group.
-
-Then, in a similar way than the configuration form, to add your mapping from your identity provider to OpenCTI groups, click on the option to "add a new value".
-
-### Certificate group mapping
-To create group mapping, you first need to identify within the token, the attribute that will be used to identify group.
-
-Then, in a similar way than the configuration form, to add your mapping from your identity provider to OpenCTI groups, click on the option to "add a new value".
+Then for each authentications, you need to provide: 
+- the group expression: identification of where to find the group information 
+- the group splitter: if mutliple groups are present, the character that will be used to parse the various groups 
+- the group mapping: the mapping between the value of the group in your provider and the groups that exist in the platform. Be sure to type the exact same group name as it exists in the platform to avoid group duplication. 
 
 
 ## Organization mapping
-For any Authentication Strategy, you can define the organization mapping, meaning to which organization in OpenCTI you want your users to belong when they will log in.
+For any authentication strategy (except Local), you can define the organization mapping, meaning to which organization in OpenCTI you want your users to belong when they will log in.
 
-### OpenID organization mapping 
-First define, the path in token.
+Organization mapping allow you to create automatically the organization you have mapped. **This option is disabled by default**.
 
-Then, you can add organization scope & access token & provide mapping by clicking on add new value.
-
-###  All other strategies
-For all other strategies, you only need to define the path in the token that should be used to define the organization mapping & define the mapping via the Add a new value button.
+The bahvior is really similar to the group mapping, since you need to provide
+- the organization expression: identification of where to find the organization information 
+- the organization splitter: if mutliple organizations are present, the character that will be used to parse the various organizations 
+- the organization mapping: the mapping between the value of the organization in your provider and the organizations that exist in the platform. Be sure to type the exact same organization name as it exists in the platform to avoid organization duplication. 
 
 
 ## Troubleshooting an authentication
+
+### Use logs provided through UI
 When setting up an authentication, it might be difficult to have it right at first try.
 
-In the configuration drawer, a tab "Log" is present: this tab will allow you to view the most recent logs when you attempt to login.
-The goal is to give you some tool in order to help you understand if something went wrong in the group mapping for instance. 
+For each authentication except Local, the last 50 logs are available to help you troubleshoot any configurations (next to the edit button).
+Each log will have the following information:
+- Timestamp: when did the log occur
+- Level: Info, Success or Error.
+- Message: the message indicating the error
+- Details: you can view the full log by clicking on the button on the right handside (and copy paste it).
+
+### In case you are locked out
+It could be possible to lock yourself out of the platform. 
+We have a few safeguard to avoid this situation, but it is possible: for instance local authentication **cannot be disabled if you don't have any other authentication enabled**.
+
+#### Failed migration
+
+In case your authentication used to work prior the [migration](../deployment/breaking-changes/7.0-SSO-authentication-migration.md), there is a solution: 
+
+Steps to unblock yourself: 
+1. In your configuration file, add the variable **app:authentication:force_env**.
+2. Set the value to **true**.
+3. Restart your platform again.
+
+This will allow you to use your configuration file to login instead of the configurations stored in database. 
+
+However, you won't be able to edit any authentication in UI, given you have stated that you wish to use your variables to login.
+
+Enabling the **app:authentication:force_env** variable will remove any stored authnitcation in your Database. When the platform will be restarted without this configuration [all compatible](../deployment/breaking-changes/7.0-SSO-authentication-migration.md) authentications will be migrated once more. 
+
+#### Locked out of the platform, but a local account or administrator exists
+
+In case you have locked yourself out of the application, by disabling local authentication without verifying that you have another working strategy, there is a solution.
+
+This solution however relies on one of the following pre-requesites: 
+- a local account, with the capability to [Manage Authentication](administration/users.md) exists, and you know its credentials.
+- you have access to the administrator credentials defined in your configuration file.
+
+Steps to unblock yourself:
+1. Go into your configuration file and add the variable **app:authentication:force_local**.
+2. Set the value to TRUE
+3. Restart your platform using this configuration
+
+
+You should be able to login via username & password. Once logged in, you should enable once more the local authentication in the authentication menu & then remove this variable from your configuration file.
+
+
+#### Locked out of the platform, no platfrom administrator or local account
+
+This is the exact same situation than above, but you don't have any local account, and you have disabled the administrator defined in the configuration file. 
+
+Steps to unblock yourself:
+1. Go into your configuration file and add the variable **app:admin:externally_managed**.
+2. Set the value to TRUE
+3. Add the variable **app:authentication:force_local**
+4. Set the value to FALSE
+5. Restart your platform using this configuration
+
+You should be able to login via username & password. Once logged in, you should enable once more the local authentication in the authentication menu & then remove the added variables from your configuration file.
+
 
 ## Manage authentications 
+
+Any authentication can be edited, enabled, disabled or even deleted (except Local, HTTP Headers and Client Certificate).
+
+**Given editing an authentication is a complex action that can require mutliple fields update in one go, it is important to click on update to save your updates**.
+
+## Specificities per authentication
+
 
 ### Local Authentication 
 
@@ -298,14 +304,18 @@ By clicking on the local authentication you can manage your local password polic
 | `Number of lowercase chars must be greater or equals to`                | Specify the minimum number of lowercase characters.           |
 | `Number of uppercase chars must be greater or equals to`                | Specify the minimum number of uppercase characters.           |
 
-
-### Query headers
+### HTTP headers
 Unless this authentication strategy was defined before migrating, it should be disabled by default.
-
 To enable it, simply toggle it on via the toggle present in the drawer and edit all the fields according to your needs.
 
+### Client Certificate
+Unless this authentication strategy was defined before migrating, it should be disabled by default.
+
+To enable it, you need your platform to be set up to work with HTTPS.
 
 ## Manage platform authentication policies
+
+Any configuration related to authentication policy is now managed in the authentication screen. 
 
 ### 2 factor authentication
  "Enforce Two-Factor Authentication" button is available, allowing administrators to mandate 2FA activation for users, enhancing overall account security.
@@ -314,10 +324,6 @@ To enable it, simply toggle it on via the toggle present in the drawer and edit 
 It is possible to specify the amount of concurrent sessions allowed on your platform. 
 By default, there is no limitations (0 means that there is no maximum sessions). If you want to restrict it, simply replace this value by the amount of concurrent sessions you want to allow on OpenCTI.
 
-
-## Disable UI configuration panel.
-
-It is possible to disable the configuration panel, please go in [configuration, section **Functional customization**](confiugration.md) to see which variable to use.
 
 
 
