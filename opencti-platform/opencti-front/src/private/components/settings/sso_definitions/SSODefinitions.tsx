@@ -2,7 +2,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import AccessesMenu from '@components/settings/AccessesMenu';
 import React, { useEffect, useState } from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, useLazyLoadQuery, usePreloadedQuery } from 'react-relay';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
@@ -34,8 +34,18 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Typography from '@mui/material/Typography';
+import { SSODefinitionsAvailableSecretsQuery } from '@components/settings/sso_definitions/__generated__/SSODefinitionsAvailableSecretsQuery.graphql';
 
 const LOCAL_STORAGE_KEY = 'SSODefinitions';
+
+const availableSecretsQuery = graphql`
+  query SSODefinitionsAvailableSecretsQuery {
+    availableSecrets {
+      provider_name
+      secret_name
+    }
+  }
+`;
 
 export const ssoDefinitionsLinesQuery = graphql`
   query SSODefinitionsLinesPaginationQuery(
@@ -298,6 +308,9 @@ const SSODefinitions = () => {
     queryPaginationOptions as unknown as SSODefinitionsLinesPaginationQuery$variables,
   );
 
+  const availableSecretsData = useLazyLoadQuery<SSODefinitionsAvailableSecretsQuery>(availableSecretsQuery, {}, { fetchPolicy: 'store-or-network' });
+  const availableSecrets = availableSecretsData?.availableSecrets ?? [];
+
   const preloadedPaginationProps = {
     linesQuery: ssoDefinitionsLinesQuery,
     linesFragment: ssoDefinitionsLinesFragment,
@@ -382,7 +395,7 @@ const SSODefinitions = () => {
                     </Tooltip>
                   </>
                 )}
-                createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} />}
+                createButton={<SSODefinitionCreation paginationOptions={queryPaginationOptions} availableSecrets={availableSecrets} />}
               />
             </>
           )}
@@ -393,6 +406,7 @@ const SSODefinitions = () => {
               data={editingSSO.data}
               paginationOptions={queryPaginationOptions}
               onProviderUpdated={handleProviderUpdated}
+              availableSecrets={availableSecrets}
             />
           )}
           {logsDrawerProviderId && (

@@ -32,7 +32,7 @@ export const buildSAMLOptions = async (meta: ProviderMeta, conf: SamlStoreConfig
 });
 
 export const createSAMLStrategy = async (logger: AuthenticationProviderLogger, meta: ProviderMeta, conf: SamlStoreConfiguration) => {
-  const secretsProvider = await retrieveSecrets(meta.identifier, conf);
+  const secretsProvider = await retrieveSecrets(conf);
   const samlOptions = await buildSAMLOptions(meta, conf, secretsProvider);
   const mapper = createMapper(conf);
 

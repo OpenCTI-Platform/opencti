@@ -2,6 +2,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import {
   type AuthenticationProviderBaseInput,
   AuthenticationProviderType,
+  type AvailableSecretInfo,
   ExtraConfEntryType,
   type LdapConfiguration,
   type LdapConfigurationInput,
@@ -9,15 +10,17 @@ import {
   type OidcConfigurationInput,
   type SamlConfiguration,
   type SamlConfigurationInput,
+  type SecretInfo,
+  SecretSource,
 } from '../../generated/graphql';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import {
   type BasicStoreEntityAuthenticationProvider,
   ENTITY_TYPE_AUTHENTICATION_PROVIDER,
+  type ExtraConfEntry,
+  ldapSecretFields,
   oidcSecretFields,
   samlSecretFields,
-  ldapSecretFields,
-  type ExtraConfEntry,
   type SecretProvider,
 } from './authenticationProvider-types';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
@@ -32,7 +35,7 @@ import { getPlatformCrypto } from '../../utils/platformCrypto';
 import { memoize } from '../../utils/memoize';
 import { logAuthInfo } from './providers-logger';
 import { isNotEmptyField } from '../../database/utils';
-import { enrichWithRemoteCredentials, getRemoteCredentialsProviderFields, getRemoteCredentialsProviderSelector } from '../../config/credentials';
+import { enrichWithRemoteCredentials, getRemoteCredentialsProviderSelector } from '../../config/credentials';
 
 // Type for data that are encrypted
 const getKeyPair = memoize(async () => {
@@ -53,29 +56,60 @@ const decryptAuthValue = async (value: string) => {
   return (await keyPair.decrypt(decodedBuffer)).toString();
 };
 
-const getManagedSecretsConfPrefix = (identifier: string) => `secrets:providers:${identifier}`;
+export const buildSecretInfos = (
+  type: string,
+  configuration: Record<string, unknown>,
+): Record<string, SecretInfo> => {
+  const secretFields = secretFieldsByType[type as AuthenticationProviderType];
+  if (!secretFields) {
+    return {};
+  }
 
-export const getExternallyManagedSecretFieldNames = (identifier: string) => {
-  const prefix = getManagedSecretsConfPrefix(identifier);
-  const envSecretFields = Object.keys(conf.get(`${prefix}:env`) || {});
-  const remoteProvider = getRemoteCredentialsProviderSelector(prefix);
-  const remoteProviderFields = remoteProvider ? getRemoteCredentialsProviderFields(prefix, remoteProvider) : [];
-
-  return {
-    envFieldNames: envSecretFields.filter((field) => !remoteProviderFields.includes(field)),
-    secretManagerFieldNames: remoteProviderFields,
-    secretManagerName: remoteProvider,
-  };
+  const result: Record<string, SecretInfo> = {};
+  for (const fieldName of secretFields) {
+    const secretName = configuration[`${fieldName}_ref`] as string;
+    if (isNotEmptyField(secretName)) {
+      result[fieldName] = { source: SecretSource.External, external_secret_name: secretName };
+    } else if (isNotEmptyField(configuration[`${fieldName}_encrypted`])) {
+      result[fieldName] = { source: SecretSource.Stored };
+    } else {
+      result[fieldName] = { source: SecretSource.Missing };
+    }
+  }
+  return result;
 };
 
-export const retrieveSecrets = async (identifier: string, config: any): Promise<SecretProvider> => {
-  const prefix = getManagedSecretsConfPrefix(identifier);
-  const envSecrets = conf.get(`${prefix}:env`) || {};
-  const externallyManagedSecrets: Record<string, string> = await enrichWithRemoteCredentials(prefix, envSecrets);
-  const resolve = (field: string) => {
-    const externalSecret = externallyManagedSecrets[field];
-    if (isNotEmptyField(externalSecret)) {
-      return externalSecret;
+export const getAvailableSecrets = (): AvailableSecretInfo[] => {
+  const secrets = conf.get('secrets');
+  if (!secrets || typeof secrets !== 'object') {
+    return [];
+  }
+  return Object.keys(secrets).flatMap((name) => {
+    const provider = getRemoteCredentialsProviderSelector(`secrets:${name}`);
+    if (provider) {
+      return { provider_name: provider, secret_name: name };
+    }
+    if (conf.get(`secrets:${name}:value`)) {
+      return { provider_name: 'env', secret_name: name };
+    }
+    return [];
+  });
+};
+
+const getSecretValueByName = async (secretName: string, fieldName: string): Promise<string | undefined> => {
+  const prefix = `secrets:${secretName}`;
+  if (getRemoteCredentialsProviderSelector(prefix)) {
+    const enriched = await enrichWithRemoteCredentials(prefix, {});
+    return enriched[fieldName];
+  }
+  return conf.get(`${prefix}:value`);
+};
+
+export const retrieveSecrets = async (config: any): Promise<SecretProvider> => {
+  const resolve = async (field: string): Promise<string | undefined> => {
+    const secretName = config[`${field}_ref`];
+    if (isNotEmptyField(secretName)) {
+      return getSecretValueByName(secretName, field);
     }
     const encryptedValue = config[`${field}_encrypted`];
     if (isNotEmptyField(encryptedValue)) {
@@ -87,7 +121,7 @@ export const retrieveSecrets = async (identifier: string, config: any): Promise<
   return {
     optional: async (field) => resolve(field),
     mandatory: async (field) => {
-      const value = resolve(field);
+      const value = await resolve(field);
       if (!isNotEmptyField(value)) {
         throw FunctionalError('Secret field is missing', { field });
       }
@@ -115,16 +149,24 @@ const graphQLToStoreConfiguration = async (
   for await (const fieldName of secretsFields) {
     delete output[fieldName]; // remove cleartext field if provided, it should not be stored
     const encryptedFieldName = `${fieldName}_encrypted`;
-    const overrideInput = input[fieldName];
+    const refFieldName = `${fieldName}_ref`;
+    const overrideInput = input[fieldName] as { new_value_cleartext?: string | null; external_secret_name?: string | null } | undefined;
     if (overrideInput) {
-      const newValue = (overrideInput as { new_value_cleartext?: string | null }).new_value_cleartext;
-      if (newValue !== undefined && newValue !== null) {
+      const newValue = overrideInput.new_value_cleartext;
+      const secretName = overrideInput.external_secret_name;
+      if (secretName !== undefined && secretName !== null && secretName !== '') {
+        output[refFieldName] = secretName;
+        delete output[encryptedFieldName];
+      } else if (newValue !== undefined && newValue !== null && newValue !== '') {
         output[encryptedFieldName] = await encryptAuthValue(newValue);
+        delete output[refFieldName];
       } else {
-        delete output[encryptedFieldName]; // should not exist anyway, but just in case
+        delete output[encryptedFieldName];
+        delete output[refFieldName];
       }
     } else {
       output[encryptedFieldName] = existing?.configuration?.[encryptedFieldName];
+      output[refFieldName] = existing?.configuration?.[refFieldName];
     }
   }
   return output;

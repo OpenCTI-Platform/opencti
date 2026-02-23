@@ -9775,6 +9775,7 @@ type Query {
   emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
   form(id: ID!): Form
   forms(search: String, first: Int, after: ID, orderBy: FormsOrdering, orderMode: OrderingMode, filters: FilterGroup): FormConnection
+  availableSecrets: [AvailableSecretInfo!]!
   authenticationProvider(id: String!): AuthenticationProvider
   authenticationProviders(first: Int, after: ID, orderBy: AuthenticationProviderOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): AuthenticationProviderConnection
 
@@ -15806,11 +15807,12 @@ enum SecretSource {
 
 type SecretInfo {
   source: SecretSource!
-  external_provider_name: String
+  external_secret_name: String
 }
 
 input OverrideSecretValueInput {
   new_value_cleartext: String
+  external_secret_name: String
 }
 
 type OidcConfiguration {
@@ -16052,4 +16054,9 @@ type AuthenticationProviderMigrationResult {
   identifier: String
   reason: String
   warnings: [String]
+}
+
+type AvailableSecretInfo {
+  provider_name: String!
+  secret_name: String!
 }

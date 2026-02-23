@@ -80,6 +80,7 @@ interface OidcFormValues {
   client_id: string;
   client_secret_action: SecretAction;
   client_secret_new_value: string;
+  client_secret_secret_name: string;
   scopes: string;
   audience: string;
   logout_remote: boolean;
@@ -112,6 +113,7 @@ interface OidcProviderFormProps {
   onCancel: () => void;
   onCompleted: () => void;
   paginationOptions?: PaginationOptions;
+  availableSecrets: ReadonlyArray<{ readonly provider_name: string; readonly secret_name: string }>;
 }
 
 // --- Helpers ---
@@ -136,8 +138,9 @@ const defaultValues: OidcFormValues = {
   callback_url: '',
   issuer: '',
   client_id: '',
-  client_secret_action: 'override',
+  client_secret_action: 'store',
   client_secret_new_value: '',
+  client_secret_secret_name: '',
   scopes: '',
   audience: '',
   logout_remote: false,
@@ -176,8 +179,11 @@ const buildInitialValues = (data: OidcProviderData): OidcFormValues => {
     callback_url: conf.callback_url ?? '',
     issuer: conf.issuer ?? '',
     client_id: conf.client_id ?? '',
-    client_secret_action: 'keep',
+    client_secret_action: (conf.client_secret as SecretInfo)?.source === 'EXTERNAL' && (conf.client_secret as SecretInfo)?.external_secret_name
+      ? 'use_external_secret'
+      : 'keep',
     client_secret_new_value: '',
+    client_secret_secret_name: ((conf.client_secret as SecretInfo)?.external_secret_name as string) ?? '',
     scopes: (conf.scopes ?? []).join(', '),
     audience: conf.audience ?? '',
     logout_remote: conf.logout_remote ?? false,
@@ -228,6 +234,7 @@ const OidcProviderForm = ({
   onCancel,
   onCompleted,
   paginationOptions,
+  availableSecrets,
 }: OidcProviderFormProps) => {
   const { t_i18n } = useFormatter();
   const { settings } = useAuth();
@@ -270,7 +277,9 @@ const OidcProviderForm = ({
         client_id: values.client_id,
         ...(values.client_secret_action === 'keep'
           ? {}
-          : { client_secret: { new_value_cleartext: values.client_secret_new_value || null } }),
+          : values.client_secret_action === 'use_external_secret'
+            ? { client_secret: { external_secret_name: values.client_secret_secret_name || null } }
+            : { client_secret: { new_value_cleartext: values.client_secret_new_value || null } }),
         callback_url: overrideCallbackUrl ? (values.callback_url || null) : null,
         scopes: values.scopes ? values.scopes.split(',').map((s) => s.trim()).filter(Boolean) : [],
         audience: values.audience || null,
@@ -529,6 +538,7 @@ const OidcProviderForm = ({
                   namePrefix="client_secret"
                   label={t_i18n('Client secret')}
                   isEditing={isEditing}
+                  availableSecrets={availableSecrets}
                   style={{ marginTop: 2.5 }}
                 />
 

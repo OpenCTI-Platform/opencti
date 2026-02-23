@@ -81,6 +81,7 @@ interface SamlFormValues {
   idp_certificate: string;
   private_key_action: SecretAction;
   private_key_new_value: string;
+  private_key_secret_name: string;
   logout_remote: boolean;
   want_assertions_signed: boolean;
   want_authn_response_signed: boolean;
@@ -96,6 +97,7 @@ interface SamlFormValues {
   skip_request_compression: boolean;
   decryption_pvk_action: SecretAction;
   decryption_pvk_new_value: string;
+  decryption_pvk_secret_name: string;
   decryption_cert: string;
   email_expr: string;
   name_expr: string;
@@ -124,6 +126,7 @@ interface SamlProviderFormProps {
   onCancel: () => void;
   onCompleted: () => void;
   paginationOptions?: PaginationOptions;
+  availableSecrets: ReadonlyArray<{ readonly provider_name: string; readonly secret_name: string }>;
 }
 
 // --- Helpers ---
@@ -149,8 +152,9 @@ const defaultValues: SamlFormValues = {
   issuer: '',
   entry_point: '',
   idp_certificate: '',
-  private_key_action: 'override',
+  private_key_action: 'store',
   private_key_new_value: '',
+  private_key_secret_name: '',
   logout_remote: false,
   want_assertions_signed: false,
   want_authn_response_signed: false,
@@ -164,8 +168,9 @@ const defaultValues: SamlFormValues = {
   disable_requested_authn_context: false,
   disable_request_acs_url: false,
   skip_request_compression: false,
-  decryption_pvk_action: 'override',
+  decryption_pvk_action: 'store',
   decryption_pvk_new_value: '',
+  decryption_pvk_secret_name: '',
   decryption_cert: '',
   email_expr: 'email',
   name_expr: 'name',
@@ -201,8 +206,9 @@ const buildInitialValues = (data: SamlProviderData): SamlFormValues => {
     issuer: conf.issuer ?? '',
     entry_point: conf.entry_point ?? '',
     idp_certificate: conf.idp_certificate ?? '',
-    private_key_action: 'keep',
+    private_key_action: (conf.private_key as SecretInfo)?.source === 'EXTERNAL' && (conf.private_key as SecretInfo)?.external_secret_name ? 'use_external_secret' : 'keep',
     private_key_new_value: '',
+    private_key_secret_name: ((conf.private_key as SecretInfo)?.external_secret_name as string) ?? '',
     logout_remote: conf.logout_remote ?? false,
     want_assertions_signed: conf.want_assertions_signed ?? false,
     want_authn_response_signed: conf.want_authn_response_signed ?? false,
@@ -216,8 +222,9 @@ const buildInitialValues = (data: SamlProviderData): SamlFormValues => {
     disable_requested_authn_context: conf.disable_requested_authn_context ?? false,
     disable_request_acs_url: conf.disable_request_acs_url ?? false,
     skip_request_compression: conf.skip_request_compression ?? false,
-    decryption_pvk_action: 'keep',
+    decryption_pvk_action: (conf.decryption_pvk as SecretInfo)?.source === 'EXTERNAL' && (conf.decryption_pvk as SecretInfo)?.external_secret_name ? 'use_external_secret' : 'keep',
     decryption_pvk_new_value: '',
+    decryption_pvk_secret_name: ((conf.decryption_pvk as SecretInfo)?.external_secret_name as string) ?? '',
     decryption_cert: conf.decryption_cert ?? '',
     email_expr: conf.user_info_mapping?.email_expr ?? '',
     name_expr: conf.user_info_mapping?.name_expr ?? '',
@@ -264,6 +271,7 @@ const SamlProviderForm = ({
   onCancel,
   onCompleted,
   paginationOptions,
+  availableSecrets,
 }: SamlProviderFormProps) => {
   const { t_i18n } = useFormatter();
   const { settings } = useAuth();
@@ -308,7 +316,9 @@ const SamlProviderForm = ({
         idp_certificate: values.idp_certificate,
         ...(values.private_key_action === 'keep'
           ? {}
-          : { private_key: { new_value_cleartext: values.private_key_new_value || null } }),
+          : values.private_key_action === 'use_external_secret'
+            ? { private_key: { external_secret_name: values.private_key_secret_name || null } }
+            : { private_key: { new_value_cleartext: values.private_key_new_value || null } }),
         callback_url: overrideCallbackUrl ? (values.callback_url || null) : null,
         logout_remote: values.logout_remote,
         want_assertions_signed: values.want_assertions_signed,
@@ -325,7 +335,9 @@ const SamlProviderForm = ({
         skip_request_compression: values.skip_request_compression,
         ...(values.decryption_pvk_action === 'keep'
           ? {}
-          : { decryption_pvk: { new_value_cleartext: values.decryption_pvk_new_value || null } }),
+          : values.decryption_pvk_action === 'use_external_secret'
+            ? { decryption_pvk: { external_secret_name: values.decryption_pvk_secret_name || null } }
+            : { decryption_pvk: { new_value_cleartext: values.decryption_pvk_new_value || null } }),
         decryption_cert: values.decryption_cert || null,
         user_info_mapping: {
           email_expr: values.email_expr,
@@ -590,6 +602,7 @@ const SamlProviderForm = ({
                   namePrefix="private_key"
                   label={t_i18n('Private key')}
                   isEditing={isEditing}
+                  availableSecrets={availableSecrets}
                   multiline
                   style={{ marginTop: 2.5 }}
                 />
@@ -666,6 +679,7 @@ const SamlProviderForm = ({
                       namePrefix="decryption_pvk"
                       label={t_i18n('Decryption private key')}
                       isEditing={isEditing}
+                      availableSecrets={availableSecrets}
                       multiline
                       style={{ marginTop: 2.5 }}
                     />

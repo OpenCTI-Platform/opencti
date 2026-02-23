@@ -20,7 +20,7 @@ const buildProxiedFetch = (issuerUrl: URL): typeof fetch => {
 };
 
 export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger, meta: ProviderMeta, conf: OidcStoreConfiguration) => {
-  const secretsProvider = await retrieveSecrets(meta.identifier, conf);
+  const secretsProvider = await retrieveSecrets(conf);
   const client_secret = await secretsProvider.mandatory('client_secret');
   const callbackURL = conf.callback_url || `${getBaseUrl()}/auth/${meta.identifier}/callback`;
   const extraConf = flatExtraConf(conf.extra_conf);

@@ -73,6 +73,7 @@ interface LdapFormValues {
   bind_dn: string;
   bind_credentials_action: SecretAction;
   bind_credentials_new_value: string;
+  bind_credentials_secret_name: string;
   search_base: string;
   search_filter: string;
   group_base: string;
@@ -110,6 +111,7 @@ interface LdapProviderFormProps {
   onCancel: () => void;
   onCompleted: () => void;
   paginationOptions?: PaginationOptions;
+  availableSecrets: ReadonlyArray<{ readonly provider_name: string; readonly secret_name: string }>;
 }
 
 // --- Helpers ---
@@ -121,8 +123,9 @@ const defaultValues: LdapFormValues = {
   button_label_override: '',
   url: '',
   bind_dn: '',
-  bind_credentials_action: 'override',
+  bind_credentials_action: 'store',
   bind_credentials_new_value: '',
+  bind_credentials_secret_name: '',
   search_base: '',
   search_filter: '',
   group_base: '',
@@ -164,8 +167,9 @@ const buildInitialValues = (data: LdapProviderData): LdapFormValues => {
     button_label_override: data.button_label_override ?? '',
     url: conf.url ?? '',
     bind_dn: conf.bind_dn ?? '',
-    bind_credentials_action: 'keep',
+    bind_credentials_action: (conf.bind_credentials as SecretInfo)?.source === 'EXTERNAL' && (conf.bind_credentials as SecretInfo)?.external_secret_name ? 'use_external_secret' : 'keep',
     bind_credentials_new_value: '',
+    bind_credentials_secret_name: ((conf.bind_credentials as SecretInfo)?.external_secret_name as string) ?? '',
     search_base: conf.search_base ?? '',
     search_filter: conf.search_filter ?? '',
     group_base: conf.group_base ?? '',
@@ -206,6 +210,7 @@ const LdapProviderForm = ({
   onCancel,
   onCompleted,
   paginationOptions,
+  availableSecrets,
 }: LdapProviderFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -245,7 +250,9 @@ const LdapProviderForm = ({
         bind_dn: values.bind_dn,
         ...(values.bind_credentials_action === 'keep'
           ? {}
-          : { bind_credentials: { new_value_cleartext: values.bind_credentials_new_value || null } }),
+          : values.bind_credentials_action === 'use_external_secret'
+            ? { bind_credentials: { external_secret_name: values.bind_credentials_secret_name || null } }
+            : { bind_credentials: { new_value_cleartext: values.bind_credentials_new_value || null } }),
         search_base: values.search_base,
         search_filter: values.search_filter,
         group_base: values.group_base,
@@ -385,6 +392,7 @@ const LdapProviderForm = ({
               <SecretFieldControl
                 secretInfo={(data?.configuration?.bind_credentials ?? null) as SecretInfo | null}
                 namePrefix="bind_credentials"
+                availableSecrets={availableSecrets}
                 label={t_i18n('Bind credentials')}
                 isEditing={isEditing}
                 style={{ marginTop: 2.5 }}

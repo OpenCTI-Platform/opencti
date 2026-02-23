@@ -86,11 +86,12 @@ enum SecretSource {
 
 type SecretInfo {
     source: SecretSource!
-    external_provider_name: String
+    external_secret_name: String
 }
 
 input OverrideSecretValueInput {
     new_value_cleartext: String
+    external_secret_name: String
 }
 
 ### OIDC
@@ -343,7 +344,13 @@ type AuthenticationProviderMigrationResult {
   warnings: [String]
 }
 
+type AvailableSecretInfo {
+  provider_name: String!
+  secret_name: String!
+}
+
 type Query {
+  availableSecrets: [AvailableSecretInfo!]! @auth(for: [SETTINGS_SETAUTH])
   authenticationProvider(id: String!): AuthenticationProvider @auth(for: [SETTINGS_SETAUTH])
   authenticationProviders(
     first: Int

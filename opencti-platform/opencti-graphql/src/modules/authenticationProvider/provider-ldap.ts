@@ -27,8 +27,8 @@ const createLdapOptions = async (conf: LdapStoreConfiguration, secretsProvider: 
   passwordField: conf.password_field,
 });
 
-export const createLDAPStrategy = async (logger: AuthenticationProviderLogger, meta: ProviderMeta, storeConf: LdapStoreConfiguration) => {
-  const secretsProvider = await retrieveSecrets(meta.identifier, storeConf);
+export const createLDAPStrategy = async (logger: AuthenticationProviderLogger, _meta: ProviderMeta, storeConf: LdapStoreConfiguration) => {
+  const secretsProvider = await retrieveSecrets(storeConf);
   const ldapOptions = await createLdapOptions(storeConf, secretsProvider);
   const mapper = createMapper(storeConf);
 

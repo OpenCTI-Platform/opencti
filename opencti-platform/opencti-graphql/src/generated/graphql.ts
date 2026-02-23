@@ -1710,6 +1710,12 @@ export type AutonomousSystemAddInput = {
   upsertOperations?: InputMaybe<Array<EditInput>>;
 };
 
+export type AvailableSecretInfo = {
+  __typename?: 'AvailableSecretInfo';
+  provider_name: Scalars['String']['output'];
+  secret_name: Scalars['String']['output'];
+};
+
 export type BackgroundTask = {
   actions?: Maybe<Array<Maybe<BackgroundTaskAction>>>;
   completed?: Maybe<Scalars['Boolean']['output']>;
@@ -21213,6 +21219,7 @@ export type OtpElement = {
 };
 
 export type OverrideSecretValueInput = {
+  external_secret_name?: InputMaybe<Scalars['String']['input']>;
   new_value_cleartext?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -22938,6 +22945,7 @@ export type Query = {
   authLogHistoryById: Array<AuthLogEntry>;
   authenticationProvider?: Maybe<AuthenticationProvider>;
   authenticationProviders?: Maybe<AuthenticationProviderConnection>;
+  availableSecrets: Array<AvailableSecretInfo>;
   backgroundTask?: Maybe<BackgroundTask>;
   backgroundTasks?: Maybe<BackgroundTaskConnection>;
   bookmarks?: Maybe<StixDomainObjectConnection>;
@@ -27734,7 +27742,7 @@ export type SearchMetrics = {
 
 export type SecretInfo = {
   __typename?: 'SecretInfo';
-  external_provider_name?: Maybe<Scalars['String']['output']>;
+  external_secret_name?: Maybe<Scalars['String']['output']>;
   source: SecretSource;
 };
 
@@ -37532,6 +37540,7 @@ export type ResolversTypes = ResolversObject<{
   AutoRegisterInput: AutoRegisterInput;
   AutonomousSystem: ResolverTypeWrapper<Omit<AutonomousSystem, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   AutonomousSystemAddInput: AutonomousSystemAddInput;
+  AvailableSecretInfo: ResolverTypeWrapper<AvailableSecretInfo>;
   BackgroundTask: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['BackgroundTask']>;
   BackgroundTaskAction: ResolverTypeWrapper<BackgroundTaskAction>;
   BackgroundTaskActionInput: BackgroundTaskActionInput;
@@ -38620,6 +38629,7 @@ export type ResolversParentTypes = ResolversObject<{
   AutoRegisterInput: AutoRegisterInput;
   AutonomousSystem: Omit<AutonomousSystem, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   AutonomousSystemAddInput: AutonomousSystemAddInput;
+  AvailableSecretInfo: AvailableSecretInfo;
   BackgroundTask: ResolversInterfaceTypes<ResolversParentTypes>['BackgroundTask'];
   BackgroundTaskAction: BackgroundTaskAction;
   BackgroundTaskActionInput: BackgroundTaskActionInput;
@@ -40092,6 +40102,11 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AvailableSecretInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['AvailableSecretInfo'] = ResolversParentTypes['AvailableSecretInfo']> = ResolversObject<{
+  provider_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  secret_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type BackgroundTaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['BackgroundTask'] = ResolversParentTypes['BackgroundTask']> = ResolversObject<{
@@ -46718,6 +46733,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   authLogHistoryById?: Resolver<Array<ResolversTypes['AuthLogEntry']>, ParentType, ContextType, RequireFields<QueryAuthLogHistoryByIdArgs, 'id'>>;
   authenticationProvider?: Resolver<Maybe<ResolversTypes['AuthenticationProvider']>, ParentType, ContextType, RequireFields<QueryAuthenticationProviderArgs, 'id'>>;
   authenticationProviders?: Resolver<Maybe<ResolversTypes['AuthenticationProviderConnection']>, ParentType, ContextType, Partial<QueryAuthenticationProvidersArgs>>;
+  availableSecrets?: Resolver<Array<ResolversTypes['AvailableSecretInfo']>, ParentType, ContextType>;
   backgroundTask?: Resolver<Maybe<ResolversTypes['BackgroundTask']>, ParentType, ContextType, RequireFields<QueryBackgroundTaskArgs, 'id'>>;
   backgroundTasks?: Resolver<Maybe<ResolversTypes['BackgroundTaskConnection']>, ParentType, ContextType, Partial<QueryBackgroundTasksArgs>>;
   bookmarks?: Resolver<Maybe<ResolversTypes['StixDomainObjectConnection']>, ParentType, ContextType, Partial<QueryBookmarksArgs>>;
@@ -47624,7 +47640,7 @@ export type SearchMetricsResolvers<ContextType = any, ParentType extends Resolve
 }>;
 
 export type SecretInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['SecretInfo'] = ResolversParentTypes['SecretInfo']> = ResolversObject<{
-  external_provider_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  external_secret_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   source?: Resolver<ResolversTypes['SecretSource'], ParentType, ContextType>;
 }>;
 
@@ -50543,6 +50559,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   AuthenticationProviderEdge?: AuthenticationProviderEdgeResolvers<ContextType>;
   AuthenticationProviderMigrationResult?: AuthenticationProviderMigrationResultResolvers<ContextType>;
   AutonomousSystem?: AutonomousSystemResolvers<ContextType>;
+  AvailableSecretInfo?: AvailableSecretInfoResolvers<ContextType>;
   BackgroundTask?: BackgroundTaskResolvers<ContextType>;
   BackgroundTaskAction?: BackgroundTaskActionResolvers<ContextType>;
   BackgroundTaskConnection?: BackgroundTaskConnectionResolvers<ContextType>;

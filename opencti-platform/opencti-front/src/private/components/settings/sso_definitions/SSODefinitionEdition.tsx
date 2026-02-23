@@ -32,7 +32,7 @@ export const ssoDefinitionEditionFragment = graphql`
                 use_proxy
                 client_secret {
                     source
-                    external_provider_name
+                    external_secret_name
                 }
                 user_info_mapping {
                     email_expr
@@ -88,11 +88,11 @@ export const ssoDefinitionEditionFragment = graphql`
                 decryption_cert
                 private_key {
                     source
-                    external_provider_name
+                    external_secret_name
                 }
                 decryption_pvk {
                     source
-                    external_provider_name
+                    external_secret_name
                 }
                 user_info_mapping {
                     email_expr
@@ -142,7 +142,7 @@ export const ssoDefinitionEditionFragment = graphql`
                 group_search_attributes
                 bind_credentials {
                     source
-                    external_provider_name
+                    external_secret_name
                 }
                 user_info_mapping {
                     email_expr
@@ -187,6 +187,7 @@ interface SSODefinitionEditionProps {
   data: SSODefinitionEditionFragment$key;
   paginationOptions?: Record<string, unknown>;
   onProviderUpdated?: (providerId: string) => void;
+  availableSecrets: ReadonlyArray<{ readonly provider_name: string; readonly secret_name: string }>;
 }
 
 const SSODefinitionEdition = ({
@@ -195,6 +196,7 @@ const SSODefinitionEdition = ({
   data,
   paginationOptions,
   onProviderUpdated,
+  availableSecrets,
 }: SSODefinitionEditionProps) => {
   const { t_i18n } = useFormatter();
   const provider = useFragment(ssoDefinitionEditionFragment, data);
@@ -213,6 +215,7 @@ const SSODefinitionEdition = ({
             onCancel={onClose}
             onCompleted={handleEditCompleted}
             paginationOptions={paginationOptions}
+            availableSecrets={availableSecrets}
           />
         );
       case 'SAML':
@@ -222,6 +225,7 @@ const SSODefinitionEdition = ({
             onCancel={onClose}
             onCompleted={handleEditCompleted}
             paginationOptions={paginationOptions}
+            availableSecrets={availableSecrets}
           />
         );
       case 'LDAP':
@@ -231,6 +235,7 @@ const SSODefinitionEdition = ({
             onCancel={onClose}
             onCompleted={handleEditCompleted}
             paginationOptions={paginationOptions}
+            availableSecrets={availableSecrets}
           />
         );
       default:

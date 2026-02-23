@@ -9,10 +9,12 @@ import LdapProviderForm from './LdapProviderForm';
 
 interface SSODefinitionCreationProps {
   paginationOptions: PaginationOptions;
+  availableSecrets: ReadonlyArray<{ readonly provider_name: string; readonly secret_name: string }>;
 }
 
 const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
   paginationOptions,
+  availableSecrets,
 }) => {
   const { t_i18n } = useFormatter();
   const [selectedStrategy, setSelectedStrategy] = useState<string>('');
@@ -72,6 +74,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
                 onCancel={handleCancel}
                 onCompleted={handleCompleted}
                 paginationOptions={paginationOptions}
+                availableSecrets={availableSecrets}
               />
             );
           case 'SAML':
@@ -80,6 +83,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
                 onCancel={handleCancel}
                 onCompleted={handleCompleted}
                 paginationOptions={paginationOptions}
+                availableSecrets={availableSecrets}
               />
             );
           case 'LDAP':
@@ -88,6 +92,7 @@ const SSODefinitionCreation: FunctionComponent<SSODefinitionCreationProps> = ({
                 onCancel={handleCancel}
                 onCompleted={handleCompleted}
                 paginationOptions={paginationOptions}
+                availableSecrets={availableSecrets}
               />
             );
           default:
