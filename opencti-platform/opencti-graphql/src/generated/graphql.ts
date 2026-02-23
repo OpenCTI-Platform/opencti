@@ -9538,6 +9538,7 @@ export enum FilterOperator {
   NotEndsWith = 'not_ends_with',
   NotEq = 'not_eq',
   NotNil = 'not_nil',
+  NotOnlyEqTo = 'not_only_eq_to',
   NotStartsWith = 'not_starts_with',
   OnlyEqTo = 'only_eq_to',
   Script = 'script',

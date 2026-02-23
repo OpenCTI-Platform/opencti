@@ -154,6 +154,7 @@ enum FilterOperator {
   search
   within
   only_eq_to
+  not_only_eq_to
 }
 
 enum XTMHubRegistrationStatus {

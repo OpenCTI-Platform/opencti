@@ -2297,7 +2297,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
   }
   const arrayKeys = Array.isArray(key) ? key : [key];
   const headKey = R.head(arrayKeys);
-  const dontHandleMultipleKeys = nested || operator === 'nil' || operator === 'not_nil' || operator === 'only_eq_to';
+  const dontHandleMultipleKeys = nested || operator === 'nil' || operator === 'not_nil' || operator === 'only_eq_to' || operator === 'not_only_eq_to';
   if (dontHandleMultipleKeys && arrayKeys.length > 1) {
     throw UnsupportedError('Filter must have only one field', { keys: arrayKeys, operator });
   }
@@ -2563,8 +2563,9 @@ export const buildLocalMustFilter = (validFilter: any) => {
                 query: values[i].toString(),
               },
             });
-          } else if (operator === 'only_eq_to') {
-            valuesFiltering.push({
+          } else if (operator === 'only_eq_to' || operator === 'not_only_eq_to') {
+            const targets = operator === 'only_eq_to' ? valuesFiltering : noValuesFiltering;
+            targets.push({
               script: {
                 script: {
                   source: `

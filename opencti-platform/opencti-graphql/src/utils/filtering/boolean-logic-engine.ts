@@ -61,8 +61,9 @@ export const testGenericFilter = <T extends string | number | boolean>(
       || (op === 'ends_with' && adaptedFilterValues.every((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.endsWith(v))))
       || (op === 'not_ends_with' && adaptedFilterValues.every((v) => !stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.endsWith(v))))
       || (op === 'only_eq_to' && adaptedFilterValues.every((v) => stixCandidates.every((c) => c === v)))
+      || (op === 'not_only_eq_to' && !adaptedFilterValues.every((v) => stixCandidates.every((c) => c === v)))
       || (op === 'search' && adaptedFilterValues.every((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string'
-        && (v.split(' ').some((word) => c.includes(word)))))) // a stix candidate should contains at least one of the filter values words
+        && (v.split(' ').some((word) => c.includes(word)))))) // a stix candidate should contain at least one of the filter values words
 
     // In real cases, there is only 1 filter value with the next operators (not much sense otherwise)
         || (op === 'lt' && adaptedFilterValues.every((v) => stixCandidates.some((c) => c < v)))
@@ -82,6 +83,7 @@ export const testGenericFilter = <T extends string | number | boolean>(
       || (op === 'ends_with' && adaptedFilterValues.some((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.endsWith(v))))
       || (op === 'not_ends_with' && adaptedFilterValues.some((v) => !stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string' && c.endsWith(v))))
       || (op === 'only_eq_to' && adaptedFilterValues.some((v) => stixCandidates.every((c) => c === v)))
+      || (op === 'not_only_eq_to' && !adaptedFilterValues.some((v) => stixCandidates.every((c) => c === v)))
       || (op === 'search' && adaptedFilterValues.some((v) => stixCandidates.some((c) => typeof c === 'string' && typeof v === 'string'
         && (v.split(' ').some((word) => c.includes(word)))))) // a stix candidate should contains at least one of the filter values words
 

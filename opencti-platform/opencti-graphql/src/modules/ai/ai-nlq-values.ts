@@ -92,6 +92,10 @@ export const operatorDescription = {
     description:
       'Filters for all values exactly matching the given criterion.',
   },
+  [FilterOperator.NotOnlyEqTo]: {
+    description:
+      'Filters for all values that do not exactly match the given criterion.',
+  },
 };
 
 export const operatorKeys = Object.values(FilterOperator);
