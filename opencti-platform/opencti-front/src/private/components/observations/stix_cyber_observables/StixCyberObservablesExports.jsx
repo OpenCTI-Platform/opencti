@@ -36,6 +36,7 @@ class StixCyberObservablesExports extends Component {
         elevation={1}
         onClose={handleToggle.bind(this)}
         title={t('Exports list')}
+        size="medium"
       >
         <QueryRenderer
           query={stixCyberObservablesExportsContentQuery}

@@ -1,8 +1,7 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import { Add, InfoOutlined } from '@mui/icons-material';
+import { InfoOutlined } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
-import Fab from '@mui/material/Fab';
 import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
@@ -79,19 +78,11 @@ export const scopesConn = (exportConnectors) => {
 class StixCoreRelationshipsExportCreationComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false, selectedContentMaxMarkingsIds: [] };
+    this.state = { selectedContentMaxMarkingsIds: [] };
   }
 
   handleSelectedContentMaxMarkingsChange(values) {
     this.setState({ selectedContentMaxMarkingsIds: values.map(({ value }) => value) });
-  }
-
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
-    this.setState({ open: false });
   }
 
   onSubmit(selectedIds, availableFilterKeys, values, { setSubmitting, resetForm }) {
@@ -121,14 +112,14 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
         setSubmitting(false);
         resetForm();
         if (this.props.onExportAsk) this.props.onExportAsk();
-        this.handleClose();
+        this.props.onClose();
         MESSAGING$.notifySuccess('Export successfully started');
       },
     });
   }
 
   render() {
-    const { classes, t, data } = this.props;
+    const { t, data, open, onClose } = this.props;
     const connectorsExport = data?.connectorsForExport ?? [];
     const exportScopes = R.uniq(
       R.flatten(R.map((c) => c.connector_scope, connectorsExport)),
@@ -136,7 +127,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
     const exportConnsPerFormat = scopesConn(connectorsExport);
 
     const isExportActive = (format) => exportConnsPerFormat[format].filter((x) => x.data.active).length > 0;
-    const isExportPossible = exportScopes.filter((x) => isExportActive(x)).length > 0;
+
     return (
       <UserContext.Consumer>
         {({ schema }) => {
@@ -146,25 +137,6 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
               {({ selectedIds }) => {
                 return (
                   <div>
-                    <Tooltip
-                      title={
-                        isExportPossible
-                          ? t('Generate an export')
-                          : t('No export connector available to generate an export')
-                      }
-                      aria-label="generate-export"
-                    >
-                      <Fab
-                        data-testid="StixCoreRelationshipsExportCreationAddButton"
-                        onClick={this.handleOpen.bind(this)}
-                        color="secondary"
-                        aria-label="Add"
-                        className={classes.createButton}
-                        disabled={!isExportPossible}
-                      >
-                        <Add />
-                      </Fab>
-                    </Tooltip>
                     <Formik
                       enableReinitialize={true}
                       initialValues={{
@@ -174,16 +146,16 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                       }}
                       validationSchema={exportValidation(t)}
                       onSubmit={this.onSubmit.bind(this, selectedIds, availableFilterKeys)}
-                      onReset={this.handleClose.bind(this)}
+                      onReset={onClose}
                     >
                       {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
                         <Form>
                           <Dialog
                             data-testid="StixCoreRelationshipsExportCreationDialog"
-                            open={this.state.open}
+                            open={open}
                             onClose={() => {
                               resetForm();
-                              this.handleClose();
+                              onClose();
                             }}
                             title={(
                               <>
@@ -242,7 +214,14 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                               }}
                             />
                             <DialogActions>
-                              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
+                              <Button
+                                variant="secondary"
+                                onClick={() => {
+                                  handleReset();
+                                  onClose();
+                                }}
+                                disabled={isSubmitting}
+                              >
                                 {t('Cancel')}
                               </Button>
                               <Button
@@ -291,6 +270,8 @@ StixCoreRelationshipsExportCreations.propTypes = {
   exportContext: PropTypes.object,
   paginationOptions: PropTypes.object,
   onExportAsk: PropTypes.func,
+  open: PropTypes.boolean,
+  onClose: PropTypes.func,
 };
 
 export default R.compose(

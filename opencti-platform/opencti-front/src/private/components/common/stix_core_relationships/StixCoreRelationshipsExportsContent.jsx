@@ -1,20 +1,19 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import Slide from '@mui/material/Slide';
-import { graphql, createRefetchContainer } from 'react-relay';
 import List from '@mui/material/List';
+import Slide from '@mui/material/Slide';
+import withStyles from '@mui/styles/withStyles';
+import * as PropTypes from 'prop-types';
+import { compose, pathOr, uniq, flatten, map } from 'ramda';
+import React, { Component } from 'react';
+import { createRefetchContainer, graphql } from 'react-relay';
 import { interval } from 'rxjs';
-import IconButton from '@common/button/IconButton';
-import { Close } from '@mui/icons-material';
-import Typography from '@mui/material/Typography';
-import StixCoreRelationshipsExportCreation from './StixCoreRelationshipsExportCreation';
-import { FIVE_SECONDS } from '../../../../utils/Time';
-import FileLine from '../files/FileLine';
 import inject18n from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
+import { FIVE_SECONDS } from '../../../../utils/Time';
 import { KNOWLEDGE_KNGETEXPORT_KNASKEXPORT } from '../../../../utils/hooks/useGranted';
+import FileLine from '../files/FileLine';
+import StixCoreRelationshipsExportCreation, { scopesConn } from './StixCoreRelationshipsExportCreation';
+import { Stack, Tooltip } from '@mui/material';
+import Button from '@common/button/Button';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -46,6 +45,13 @@ const styles = (theme) => ({
 });
 
 class StixCoreRelationshipsExportsContentComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      open: false,
+    };
+  }
+
   componentDidMount() {
     this.subscription = interval$.subscribe(() => {
       if (this.props.isOpen) {
@@ -61,33 +67,60 @@ class StixCoreRelationshipsExportsContentComponent extends Component {
     this.subscription.unsubscribe();
   }
 
+  handleOpen() {
+    this.setState({ open: true });
+  }
+
+  handleClose() {
+    this.setState({ open: false });
+  }
+
   render() {
     const {
-      classes,
       t,
       data,
       exportContext,
       paginationOptions,
-      handleToggle,
     } = this.props;
     const stixCoreRelationshipsExportFiles = pathOr(
       [],
       ['stixCoreRelationshipsExportFiles', 'edges'],
       data,
     );
+
+    const connectorsExport = data?.connectorsForExport ?? [];
+    const exportScopes = uniq(
+      flatten(map((c) => c.connector_scope, connectorsExport)),
+    );
+    const exportConnsPerFormat = scopesConn(connectorsExport);
+
+    const isExportActive = (format) => exportConnsPerFormat[format].filter((x) => x.data.active).length > 0;
+    const isExportPossible = exportScopes.filter((x) => isExportActive(x)).length > 0;
+
     return (
-      <div>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleToggle.bind(this)}
-            color="primary"
+      <Stack gap={2}>
+        <Stack
+          direction="row"
+          justifyContent="flex-end"
+          gap={1}
+        >
+          <Tooltip
+            title={
+              isExportPossible
+                ? t('Generate an export')
+                : t('No export connector available to generate an export')
+            }
+            aria-label="generate-export"
           >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t('Exports list')}</Typography>
-        </div>
+            <Button
+              onClick={this.handleOpen.bind(this)}
+              disabled={!isExportPossible}
+            >
+              {t('Generate an export')}
+            </Button>
+          </Tooltip>
+        </Stack>
+
         <List>
           {stixCoreRelationshipsExportFiles.length > 0 ? (
             stixCoreRelationshipsExportFiles.map((file) => file?.node && (
@@ -119,9 +152,11 @@ class StixCoreRelationshipsExportsContentComponent extends Component {
             exportContext={exportContext}
             paginationOptions={paginationOptions}
             onExportAsk={() => this.props.relay.refetch({ count: 25, exportContext: this.props.exportContext })}
+            open={this.state.open}
+            onClose={this.handleClose.bind(this)}
           />
         </Security>
-      </div>
+      </Stack>
     );
   }
 }
@@ -154,6 +189,13 @@ const StixCoreRelationshipsExportsContent = createRefetchContainer(
             }
           }
         }
+        connectorsForExport {
+          id
+          name
+          active
+          connector_scope
+          updated_at
+        }
         ...StixCoreRelationshipsExportCreation_data
       }
     `,
@@ -170,6 +212,9 @@ StixCoreRelationshipsExportsContent.propTypes = {
   paginationOptions: PropTypes.object,
   handleApplyListArgs: PropTypes.func,
   isOpen: PropTypes.bool,
+
+  open: PropTypes.bool,
+  setOpen: PropTypes.func,
 };
 
 export default compose(

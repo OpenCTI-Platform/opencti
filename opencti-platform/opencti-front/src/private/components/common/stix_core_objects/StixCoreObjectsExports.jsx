@@ -18,6 +18,7 @@ const StixCoreObjectsExports = ({
       open={open}
       title={t_i18n('Exports list')}
       onClose={handleToggle}
+      size="medium"
     >
       <QueryRenderer
         query={stixCoreObjectsExportsContentQuery}

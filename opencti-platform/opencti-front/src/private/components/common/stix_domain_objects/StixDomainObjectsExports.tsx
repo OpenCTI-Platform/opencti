@@ -24,6 +24,7 @@ const StixDomainObjectsExports: FunctionComponent<
       open={open}
       onClose={handleToggle}
       title={t_i18n('Exports list')}
+      size="medium"
     >
       <QueryRenderer
         query={stixDomainObjectsExportsContentQuery}

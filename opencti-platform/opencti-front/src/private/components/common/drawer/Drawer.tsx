@@ -177,7 +177,13 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
 
   return (
     <>
-      {controlledDial ? controlledDial({ onOpen: () => setOpen(true), onClose: handleClose }) : undefined }
+      {controlledDial && (
+        // issue with calling controlledDial as function, so all hooks inside controlledDial func are counted
+        // as Drawer hook list, when undefined, the hooks disapear, breaks the rules of hooks
+        // -> creating new element will separate component with isolated hooks tree
+        React.createElement(controlledDial, { onOpen: () => setOpen(true), onClose: handleClose })
+      )}
+
       {variant && (
         <Fab
           onClick={() => setOpen(true)}
