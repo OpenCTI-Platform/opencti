@@ -245,6 +245,7 @@ export const getAllowedTransitions = async (
     return {
       event: t.event,
       toState: t.to,
+      actions: t.actionTypes || [],
     };
   });
 

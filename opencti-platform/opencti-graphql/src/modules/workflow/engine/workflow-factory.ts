@@ -105,6 +105,7 @@ export class WorkflowFactory {
       definition.addTransition(t.from, t.to, t.event, {
         conditions: this.createConditions<TContext>(t.conditions),
         onTransition: this.createSideEffects<TContext>(t.actions),
+        actionTypes: t.actions?.map((a) => a.type) || [],
       });
     });
 
