@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -75,12 +74,10 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             <ExpandableMarkdown source={data.description} limit={300} />
           </Grid>
           <Grid item xs={12}>
-            <Label>
+            <Label sx={{ marginBottom: '8px' }}>
               {t_i18n('Coverage information')}
             </Label>
-            <Paper variant="outlined" sx={{ padding: 2 }}>
-              <SecurityCoverageInformation coverage_information={data.coverage_information ?? []} variant="details" />
-            </Paper>
+            <SecurityCoverageInformation coverage_information={data.coverage_information ?? []} variant="details" />
           </Grid>
           <Grid item xs={6}>
             <Label>

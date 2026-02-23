@@ -165,7 +165,9 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                   startIcon={<OaevLogo />}
                   onClick={() => setDisplayExternalLink(true)}
                   title={hasExternalUri ? securityCoverage.external_uri : undefined}
-                  variant="secondary"
+                  variant="tertiary"
+                  size="small"
+                  sx={{ marginTop: '16px' }}
                 >
                   {hasExternalUri ? `${t_i18n('Go to OpenAEV')}` : `${t_i18n('Provisioning OpenAEV')}`}
                 </Button>
