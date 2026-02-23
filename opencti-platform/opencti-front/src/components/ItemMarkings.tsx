@@ -82,6 +82,7 @@ const ChipMarking = ({
           onClick?.(markingDefinition);
         },
       }}
+      maxWidth={100}
     />
   );
 };
