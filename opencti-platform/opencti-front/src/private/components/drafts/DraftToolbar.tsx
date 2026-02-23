@@ -8,7 +8,6 @@ import { Theme } from '../../../components/Theme';
 import DraftProcessingStatus from './DraftProcessingStatus';
 import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
 import ErrorNotFound from '../../../components/ErrorNotFound';
-import DraftApprove from './DraftApprove';
 import DraftExit from './DraftExit';
 import { THIRTY_SECONDS } from '../../../utils/Time';
 import useInterval from '../../../utils/hooks/useInterval';
@@ -20,7 +19,6 @@ import { DraftToolbarFragment$key } from '@components/drafts/__generated__/Draft
 const draftFragment = graphql`
   fragment DraftToolbarFragment on DraftWorkspace {
     name
-    ...DraftApproveFragment
     ...DraftExitFragment
     ...DraftAuthorizedMembersFragment
     ...WorkflowStatus_data
@@ -77,7 +75,6 @@ const DraftToolbarComponent = ({
       <WorkflowTransitions data={draft} />
       <DraftAuthorizedMembers data={draft} />
       <DraftExit data={draft} />
-      <DraftApprove data={draft} />
     </Stack>
   );
 };

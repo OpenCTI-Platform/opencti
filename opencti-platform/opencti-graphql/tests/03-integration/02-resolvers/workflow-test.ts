@@ -46,6 +46,7 @@ const WORKFLOW_INSTANCE_QUERY = gql`
       allowedTransitions {
         event
         toState
+        actions
       }
     }
   }
@@ -59,6 +60,7 @@ const WORKFLOW_INSTANCE_NESTED_QUERY = gql`
         allowedTransitions {
           event
           toState
+          actions
         }
       }
     }
@@ -91,7 +93,12 @@ describe('Workflow Resolver', () => {
     name: 'Draft Workflow',
     initialState: 'open',
     states: [{ statusId: 'open' }, { statusId: 'validated' }],
-    transitions: [{ from: 'open', to: 'validated', event: 'validate_event' }],
+    transitions: [{
+      from: 'open',
+      to: 'validated',
+      event: 'validate_event',
+      actions: [{ type: 'validateDraft' }],
+    }],
   });
 
   beforeAll(async () => {
@@ -141,6 +148,7 @@ describe('Workflow Resolver', () => {
     expect(instanceResult.data.workflowInstance.currentState).toBe('open');
     expect(instanceResult.data.workflowInstance.allowedTransitions.length).toBe(1);
     expect(instanceResult.data.workflowInstance.allowedTransitions[0].event).toBe('validate_event');
+    expect(instanceResult.data.workflowInstance.allowedTransitions[0].actions).toContain('validateDraft');
   });
 
   it('should query a workflow instance via nested draftWorkspace', async () => {
