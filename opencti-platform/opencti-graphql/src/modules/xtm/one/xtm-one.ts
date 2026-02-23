@@ -4,6 +4,7 @@ import type { BasicStoreSettings } from '../../../types/settings';
 import { getEntityFromCache, getEntitiesListFromCache } from '../../../database/cache';
 import { internalLoadById } from '../../../database/middleware-loader';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../../schema/internalObject';
+import { TokenDuration } from '../../../generated/graphql';
 import { decodeLicensePem, getEnterpriseEditionActivePem } from '../../settings/licensing';
 import { addUserTokenByAdmin } from '../../user/user-domain';
 import xtmOneClient from './xtm-one-client';
@@ -58,13 +59,13 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
       try {
         // Load from DB (not cache) so the api_tokens check is reliable
         // and we never accidentally create duplicate "XTM One" tokens.
-        const freshUser = await internalLoadById<AuthUser>(context, user, u.id);
+        const freshUser = await internalLoadById(context, user, u.id) as unknown as AuthUser;
         if (!freshUser) continue;
         const existingTokens = (freshUser as any).api_tokens ?? [];
         if (existingTokens.some((t: any) => t.name === XTM_ONE_TOKEN_NAME)) {
           continue;
         }
-        const newToken = await addUserTokenByAdmin(context, user, u.id, { name: XTM_ONE_TOKEN_NAME });
+        const newToken = await addUserTokenByAdmin(context, user, u.id, { name: XTM_ONE_TOKEN_NAME, duration: TokenDuration.Unlimited });
         users.push({
           email: u.user_email,
           display_name: u.name || u.user_email,
