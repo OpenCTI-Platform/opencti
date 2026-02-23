@@ -129,7 +129,7 @@ const filterContentFromEntityTypeAndNodeType = {
   },
 };
 
-export const getFilterFromEntityTypeAndNodeType = (entity_type: DiamondEntityEnum, nodeType: DiamondNodeEnum) => {
+const getFilterFromEntityTypeAndNodeType = (entity_type: DiamondEntityEnum, nodeType: DiamondNodeEnum) => {
   const filterContent = filterContentFromEntityTypeAndNodeType[entity_type][nodeType];
 
   const filterGroups = {
