@@ -79,9 +79,9 @@ describe('Workflow Actions Resolver', () => {
       name: 'Draft Workflow with Action',
       initialState: 'open',
       states: [
-        { name: 'open' },
+        { statusId: 'open' },
         {
-          name: 'restricted',
+          statusId: 'restricted',
           onEnter: [
             {
               type: 'updateAuthorizedMembers',
