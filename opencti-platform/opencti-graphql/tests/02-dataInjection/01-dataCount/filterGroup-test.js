@@ -26,6 +26,8 @@ import { getFakeAuthUser } from '../../utils/domainQueryHelper';
 import { SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../../../src/modules/malwareAnalysis/malwareAnalysis-types';
 
+// File to test dynamic filtering with different keys, operators, modes, combinations
+
 // test queries involving dynamic filters
 
 const REPORT_LIST_QUERY = gql`
@@ -2510,6 +2512,88 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.reports.edges.length).toEqual(1);
     expect(queryResult.data.reports.edges[0].node.name).toEqual('Report1');
   });
+  it('should list entities according filters with not_only_eq_to operator', async () => {
+    // not_only_eq_to operator with several filter keys: not supported
+    let queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: ['report_types', 'name'],
+            values: ['internal-report'],
+            operator: 'not_only_eq_to',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.errors[0].message).toEqual('Filter must have only one field');
+    // reports with report_types not_only_eq_to internal-report
+    queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'report_types',
+            values: ['internal-report'],
+            operator: 'not_only_eq_to',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(5); // 6 reports - 1 report with report_types only equal to internal-report (report3)
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeFalsy();
+    // report_types not_only_eq_to internal-report OR threat-report
+    // It corresponds to the reports WITHOUT report_types exactly equal to ['internal-report'] or to ['threat-report']
+    queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'report_types',
+            values: ['internal-report', 'threat-report'],
+            operator: 'not_only_eq_to',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(3); // 6 reports - 3 reports with report_types only equal to ['internal-report'] or to ['threat-report']
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeFalsy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeFalsy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('A demo report for testing purposes')).toBeFalsy();
+    // marking not_only_eq_to marking1 AND marking2
+    // It corresponds to the reports WITHOUT exactly 2 markings, one being marking1 and the other being marking2
+    queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'objectMarking',
+            values: [marking1Id, marking2Id],
+            operator: 'not_only_eq_to',
+            mode: 'and',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(5); // 6 reports - 1 report matching only_eq_to marking1 AND and marking2 (report1)
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeFalsy();
+  });
+
   it('should test environment deleted', async () => {
     const DELETE_REPORT_QUERY = gql`
         mutation reportDelete($id: ID!) {
