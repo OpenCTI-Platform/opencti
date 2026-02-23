@@ -48,6 +48,7 @@ const workflowResolvers = {
   WorkflowTriggerResult: {
     status: (result: any) => (result.newState ? { id: result.newState, template_id: result.newState } : null),
     instance: (result: any) => result.instance,
+    entity: (result: any) => result.entity,
   },
   DraftWorkspace: {
     workflowInstance: (draft: any, _: any, context: AuthContext) => {
