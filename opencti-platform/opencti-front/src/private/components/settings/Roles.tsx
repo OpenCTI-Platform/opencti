@@ -5,7 +5,6 @@ import { useFormatter } from '../../../components/i18n';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import ListLines from '../../../components/list_lines/ListLines';
 import RolesLines, { rolesLinesQuery } from './roles/RolesLines';
-import AccessesMenu from './AccessesMenu';
 import { OrderMode, PaginationOptions } from '../../../components/list_lines';
 import RoleCreation from './roles/RoleCreation';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -122,7 +121,6 @@ const Role = () => {
   return (
     <div className={classes.container} data-testid="roles-settings-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Roles'), current: true }]} />
-      <AccessesMenu />
       {rolesState.view === 'lines' ? renderLines(paginationOptions) : ''}
     </div>
   );

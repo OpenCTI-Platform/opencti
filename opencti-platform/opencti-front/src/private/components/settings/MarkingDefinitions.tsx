@@ -6,7 +6,6 @@ import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';
 import { useTheme } from '@mui/material/styles';
 import { MarkingDefinitionsLinesPaginationQuery } from './__generated__/MarkingDefinitionsLinesPaginationQuery.graphql';
 import MarkingDefinitionPopover from './marking_definitions/MarkingDefinitionPopover';
-import AccessesMenu from './AccessesMenu';
 import { MarkingDefinitionsLines_data$data } from './__generated__/MarkingDefinitionsLines_data.graphql';
 import { useFormatter } from '../../../components/i18n';
 import MarkingDefinitionCreation from './marking_definitions/MarkingDefinitionCreation';
@@ -173,7 +172,6 @@ const MarkingDefinitions = () => {
         { label: t_i18n('Marking definitions'), current: true },
       ]}
       />
-      <AccessesMenu />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
