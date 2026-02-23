@@ -2286,7 +2286,7 @@ const buildFieldForQuery = (field: string) => {
     : `${field}.keyword`;
 };
 const buildFieldForScriptQuery = (field: string) => {
-  return buildFieldForQuery(field).replace('*', 'internal_id');
+  return buildFieldForQuery(field).replaceAll('*', 'internal_id');
 };
 export const buildLocalMustFilter = (validFilter: any) => {
   const valuesFiltering = [];
