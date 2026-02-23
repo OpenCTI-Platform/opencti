@@ -152,8 +152,8 @@ describe('Complex filters combinations for elastic queries', () => {
       x_opencti_order: 2,
     };
     const marking3Input = {
-      definition_type: 'TEST',
-      definition: 'TEST:3',
+      definition_type: 'PAP',
+      definition: 'PAP:NEW',
       x_opencti_order: 3,
     };
     const marking1 = await addAllowedMarkingDefinition(testContext, ADMIN_USER, marking1Input);
@@ -561,9 +561,10 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(3);
+    expect(queryResult.data.reports.edges.length).toEqual(4);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
   });
   it('should list entities according to filters: complex filter combination with groups and filters imbrication', async () => {
@@ -881,11 +882,12 @@ describe('Complex filters combinations for elastic queries', () => {
       toTypes: [ENTITY_TYPE_MARKING_DEFINITION],
     };
     const distribution = await distributionRelations(testContext, ADMIN_USER, distributionArgs);
-    // there are 3 markings involved in a relationship with a report: the 2 markings created + the marking of the report in DATA-TEST-STIX2_v2
-    expect(distribution.length).toEqual(3);
+    // there are 4 markings involved in a relationship with a report: the 3 markings created + the marking of the report in DATA-TEST-STIX2_v2
+    expect(distribution.length).toEqual(4);
     const distributionCount = new Map(distribution.map((n) => [n.label, n.value])); // Map<marking internal_id, count>
-    expect(distributionCount.get(marking1Id)).toEqual(1); // marking1 is used 1 time (in Report1)
+    expect(distributionCount.get(marking1Id)).toEqual(2); // marking1 is used 2 times (in Report1 and Report4)
     expect(distributionCount.get(marking2Id)).toEqual(3); // marking2 is used 3 times
+    expect(distributionCount.get(marking3Id)).toEqual(1); // marking3 is used 1 time (in Report4)
   });
   it('should list entities according to filters: filters with multi keys', async () => {
     // (name = Report1) OR (description = Report1)
@@ -2463,9 +2465,8 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(2);
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy();
+    expect(queryResult.data.reports.edges.length).toEqual(1);
+    expect(queryResult.data.reports.edges[0].node.name).toEqual('Report2');
     // report_types only_eq_to internal-report OR threat-report
     // It corresponds to the reports with report_types exactly equal to ['internal-report'] or to ['threat-report']
     queryResult = await queryAsAdmin({
@@ -2578,6 +2579,9 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.markingDefinition).toBeNull();
     queryResult = await queryAsAdmin({ query: READ_MARKING_QUERY, variables: { id: marking2StixId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.markingDefinition).toBeNull();
+    queryResult = await queryAsAdmin({ query: READ_MARKING_QUERY, variables: { id: marking3StixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.markingDefinition).toBeNull();
   });
