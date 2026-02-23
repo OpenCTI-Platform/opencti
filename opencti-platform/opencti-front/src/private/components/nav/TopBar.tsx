@@ -36,7 +36,7 @@ import { CGUStatus } from '../settings/Experience';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
-import { THEME_DARK_DEFAULT_BACKGROUND, THEME_DARK_DEFAULT_BODY_END_GRADIENT } from '../../../components/ThemeDark';
+import { THEME_DARK_DEFAULT_BACKGROUND } from '../../../components/ThemeDark';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -196,9 +196,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const keyword = decodeSearchKeyword(location.pathname.match(/(?:\/dashboard\/search\/(?:knowledge|files)\/(.*))/)?.[1] ?? '');
 
   const getAppTopBarGradient = (): string => {
-    const defaultGradientDark = `${alpha(THEME_DARK_DEFAULT_BACKGROUND, 0.9)} 0%, ${alpha(THEME_DARK_DEFAULT_BODY_END_GRADIENT, 0.9)}`;
-    if (theme.palette.background.gradient?.start && theme.palette.background.gradient?.start) {
-      return `${alpha(theme.palette.background.gradient?.start, 0.9)} 0%, ${alpha(theme.palette.background.gradient?.end, 0.9)}`;
+    const defaultGradientDark = `${alpha(THEME_DARK_DEFAULT_BACKGROUND, 0.9)} 0%, ${alpha(theme.palette.designSystem.background.bg1, 0.9)}`;
+    if (theme.palette.background.gradient?.start && theme.palette.background.gradient?.end) {
+      return `${alpha(theme.palette.background.gradient.start, 0.9)} 0%, ${alpha(theme.palette.background.gradient.end, 0.9)}`;
     }
     return defaultGradientDark;
   };
