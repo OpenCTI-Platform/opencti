@@ -112,7 +112,6 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
         setSubmitting(false);
         resetForm();
         if (this.props.onExportAsk) this.props.onExportAsk();
-        // this.handleClose();
         this.props.onClose();
         MESSAGING$.notifySuccess('Export successfully started');
       },
