@@ -337,7 +337,8 @@ export const triggerWorkflowEvent = async (
         { key: 'history', value: [JSON.stringify(history)] },
       ]);
 
-      return { success: true, newState };
+      const workflowInstance = await getWorkflowInstance(context, user, entityId);
+      return { success: true, newState, instance: workflowInstance };
     }
 
     return result;

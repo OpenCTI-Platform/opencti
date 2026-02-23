@@ -17,7 +17,7 @@ type WorkflowConditionConfig {
 }
 
 type WorkflowSerializedState {
-    name: String!
+    statusId: String!
     onEnter: [WorkflowActionConfig!]
     onExit: [WorkflowActionConfig!]
 }
@@ -48,6 +48,7 @@ type WorkflowTriggerResult {
     newState: String
     reason: String
     status: Status
+    instance: WorkflowInstance
 }
 
 type WorkflowTransition {
@@ -59,6 +60,7 @@ type WorkflowTransition {
 type WorkflowInstance {
     id: ID!
     currentState: String!
+    currentStatus: Status
     allowedTransitions: [WorkflowTransition!]!
 }
 
