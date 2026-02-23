@@ -116,7 +116,7 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
   return (
     <>
       <div style={{ height: '100%' }}>
-        <Card title={t_i18n('Overview')}>
+        <Card title={t_i18n('Basic information')}>
           <Grid container={true} spacing={3}>
             <Grid item xs={6}>
 

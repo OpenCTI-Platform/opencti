@@ -3,7 +3,8 @@ import { DraftRootFragment$data } from '@components/drafts/__generated__/DraftRo
 import { Grid } from '@mui/material';
 import useOverviewLayoutCustomization from '../../../utils/hooks/useOverviewLayoutCustomization';
 import DraftBasicInformation from './DraftBasicInformation';
-import DraftDetails from '@components/drafts/Draftdetails';
+import DraftDetails from '@components/drafts/DraftDetails';
+import DraftEdition from '@components/drafts/DraftEdition';
 
 interface DraftOverviewProps {
   draft: DraftRootFragment$data;
@@ -39,6 +40,7 @@ const DraftOverview: FunctionComponent<DraftOverviewProps> = ({ draft }) => {
           })
         }
       </Grid>
+      <DraftEdition draftId={draft.id} overviewData={draft} />
     </>
   );
 };
