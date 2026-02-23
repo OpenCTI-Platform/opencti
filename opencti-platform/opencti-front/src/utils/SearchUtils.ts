@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { NavigateFunction } from 'react-router/dist/lib/hooks';
+import type { NavigateFunction } from 'react-router';
 import { emptyFilterGroup } from './filters/filtersUtils';
 
 export const handleSearchByKeyword = (searchKeyword: string, searchScope: string, navigate: NavigateFunction) => {
