@@ -15949,6 +15949,7 @@ export type Mutation = {
   disseminationListFieldPatch?: Maybe<DisseminationList>;
   disseminationListSend?: Maybe<Scalars['Boolean']['output']>;
   draftWorkspaceAdd?: Maybe<DraftWorkspace>;
+  draftWorkspaceContextPatch?: Maybe<DraftWorkspace>;
   draftWorkspaceDelete?: Maybe<Scalars['ID']['output']>;
   draftWorkspaceEditAuthorizedMembers?: Maybe<DraftWorkspace>;
   draftWorkspaceFieldPatch?: Maybe<DraftWorkspace>;
@@ -16900,6 +16901,12 @@ export type MutationDisseminationListSendArgs = {
 
 export type MutationDraftWorkspaceAddArgs = {
   input: DraftWorkspaceAddInput;
+};
+
+
+export type MutationDraftWorkspaceContextPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: EditContext;
 };
 
 
@@ -45042,6 +45049,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   disseminationListFieldPatch?: Resolver<Maybe<ResolversTypes['DisseminationList']>, ParentType, ContextType, RequireFields<MutationDisseminationListFieldPatchArgs, 'id' | 'input'>>;
   disseminationListSend?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDisseminationListSendArgs, 'id' | 'input'>>;
   draftWorkspaceAdd?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceAddArgs, 'input'>>;
+  draftWorkspaceContextPatch?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceContextPatchArgs, 'id' | 'input'>>;
   draftWorkspaceDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceDeleteArgs, 'id'>>;
   draftWorkspaceEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceEditAuthorizedMembersArgs, 'id'>>;
   draftWorkspaceFieldPatch?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceFieldPatchArgs, 'id' | 'input'>>;

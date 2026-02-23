@@ -10670,6 +10670,7 @@ type Mutation {
   draftWorkspaceValidate(id: ID!): Work
   draftWorkspaceDelete(id: ID!): ID
   draftWorkspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): DraftWorkspace
+  draftWorkspaceContextPatch(id: ID!, input: EditContext!): DraftWorkspace
   fintelTemplateAdd(input: FintelTemplateAddInput!): FintelTemplate
   fintelTemplateDelete(id: ID!): ID
   fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate
