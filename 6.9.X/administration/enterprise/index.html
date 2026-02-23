@@ -240,95 +240,11 @@
   
 
   <script type="text/javascript"> !function(){var e,t,n;e="58d967e3f3ca784",t=function(){Reo.init({clientID:"58d967e3f3ca784"})},(n=document.createElement("script")).src="https://static.reo.dev/"+e+"/reo.js",n.async=!0,n.onload=t,document.head.appendChild(n)}(); </script>
-
-  <script type="module">
-    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
-    Chatbot.init({
-      chatflowid: "46a94d00-5058-4550-bf5f-39f908919836",
-      apiHost: "https://platform.filigran.ai",
-      chatflowConfig: {
-        "startState": "[{ \"key\": \"username\", \"value\": \"Anonymous User\" }, { \"key\": \"context\", \"value\": \"OpenCTI Documentation\" }]",
-      },
-      observersConfig: {
-        /* Observers Config */
-      },
-      theme: {
-        button: {
-          backgroundColor: '#001BDA',
-          right: 20,
-          bottom: 20,
-          size: 48,
-          dragAndDrop: true,
-          iconColor: 'white',
-          customIconSrc: 'https://filigran.io/app/uploads/2025/05/ai-chat.png',
-          autoWindowOpen: {
-            autoOpen: false,
-            openDelay: 2,
-            autoOpenOnMobile: false
-          }
-        },
-        tooltip: {
-          showTooltip: false,
-        },
-        customCSS: `
-          * {
-            font-family: "IBM Plex Sans" !important;
-          }
-        `,
-        chatWindow: {
-          showTitle: true,
-          showAgentMessages: false,
-          title: 'Ariane Docs Assistant',
-          titleAvatarSrc: 'https://filigran.io/app/uploads/2025/05/embleme_filigran_blanc.png',
-          welcomeMessage: 'Hi there 👋 You\'re speaking with an AI Agent. I\'m here to answer your questions, so what brings you here today?',
-          errorMessage: 'Sorry, an error has occurred, please try again later.',
-          backgroundColor: '#ffffff',
-          height: 700,
-          width: 400,
-          fontSize: 14,
-          starterPromptFontSize: 13,
-          clearChatOnReload: false,
-          sourceDocsTitle: 'Sources:',
-          renderHTML: true,
-          botMessage: {
-            backgroundColor: '#f7f8ff',
-            textColor: '#000000',
-            showAvatar: true,
-            avatarSrc: 'https://filigran.io/app/uploads/2025/05/embleme_filigran_background.png'
-          },
-          userMessage: {
-            backgroundColor: '#001BDA',
-            textColor: '#ffffff',
-            showAvatar: false,
-          },
-          textInput: {
-            placeholder: 'Ask a question...',
-            backgroundColor: '#ffffff',
-            textColor: '#303235',
-            sendButtonColor: '#001BDA',
-            maxChars: 100,
-            maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 50 characters.',
-            autoFocus: true,
-            sendMessageSound: false,
-            receiveMessageSound: false,
-          },
-          feedback: {
-            color: '#303235'
-          },
-          dateTimeToggle: {
-            date: true,
-            time: true
-          },
-          footer: {
-            textColor: '#303235',
-            text: 'Powered by',
-            company: 'Filigran Ariane AI',
-            companyLink: 'https://filigran.io'
-          }
-        }
-      }
-    })
-  </script>
+  <script
+    src="https://copilot.filigran.ai/api/v1/public/widget.js"
+    data-token="jNJu1JTbbPwNqk1tqEOw-WjsKU4dEcgn"
+    data-context='{"page":"docs","product":"OpenCTI"}'
+  ></script>
 </header>
     
     <div class="md-container" data-md-component="container">
@@ -734,110 +650,6 @@
   
   
   
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_1_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_1_4" id="__nav_2_1_4_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    
-  
-    Authentication
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_1_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Authentication
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../deployment/authetication-in-gui/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Authentication via GUI configuration
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../deployment/authentication-migration/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Migration from environement variable to UI
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
       <a href="../../deployment/authentication/" class="md-nav__link">
         
@@ -845,7 +657,7 @@
   <span class="md-ellipsis">
     
   
-    Authentication via environment variables
+    Authentication
   
 
     
@@ -854,14 +666,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -1784,33 +1588,6 @@
     
   
     New filter API
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../deployment/breaking-changes/7.0-SSO-Entreprise-license.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    SSO License update
   
 
     
@@ -4073,6 +3850,17 @@
     <span class="md-ellipsis">
       
         Authorized Members
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#override-of-capabilities-in-draft" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Override of capabilities in draft
       
     </span>
   </a>
@@ -6481,6 +6269,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#override-of-capabilities-in-draft" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Override of capabilities in draft
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#full-text-indexing" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -6708,6 +6507,8 @@
 <p>Organizations segregation is a way to segregate your data considering the organization associated to the users. Useful when your platform aims to share data to multiple organizations that have access to the same OpenCTI platform. Please read <a href="../organization-segregation/">Organizations RBAC</a> to get more information.</p>
 <h3 id="authorized-members">Authorized Members</h3>
 <p>On top of organization management and segregation, use authorized members to restrict access to a specific instance (entity/observable). This is particularly useful if a specific incident occurs and you need to hide the case tracking the resolution to all the users of the platform, or to control who can edit, who can view, and who can manage the entity. Please read <a href="https://docs.opencti.io/latest/administration/authorized-members/">Authorized Members page</a> to get all information.</p>
+<h3 id="override-of-capabilities-in-draft">Override of capabilities in draft</h3>
+<p>On top of Role Based Access Control (RBAC), we have added the ability to work on drafts and control publishing access. By allowing users to have specific capabilities limited to drafts, it is possible to restrict users from editing or creating data in the main database. This provides additional control over who can do what in the platform. Please go to the <a href="../users/">Users and RBAC page</a> for more information.</p>
 <h3 id="full-text-indexing">Full text indexing</h3>
 <p>Full text indexing grants improved searches across structured and unstructured data. OpenCTI classic searches are based on metadata fields (e.g. title, description, type) while advanced indexing capability  enables  searches  to  be  extended  to  the document’s contents. Please read <a href="../file-indexing/">File indexing</a> to get all information.</p>
 <h3 id="ai-insights">AI Insights</h3>
@@ -6725,7 +6526,7 @@
 <h3 id="priority-intelligence-requirement">Priority Intelligence Requirement</h3>
 <p>Priority Intelligence Requirements (PIRs) gather and prioritize the most relevant and crucial information based on the user's focus, helping them analyze key insights needed for effective decision-making and risk assessment (please read <a href="../../usage/pir/">Priority Intelligence Requirement</a>).</p>
 <h3 id="sso-definition-usage">SSO definition &amp; usage</h3>
-<p>Defining and using SSO (OpenID, LDAP, SAML, Certificate, Headers) requires an entreprise license. This feature allow you to define, from UI, any of these authentications. For more information, please read <a href="../../deployment/authetication-in-gui/">Authentication via GUI configuration</a></p>
+<p>Defining and using SSO (OpenID, LDAP, SAML, Certificate, Headers) requires an entreprise license. This feature allow you to define, from UI, any of these authentications. For more information, please read <a href="../deployment/authetication-in-gui.md">Authentication via GUI configuration</a></p>
 <h2 id="more-to-come">More to come</h2>
 <p>More features will be available in OpenCTI in the future. Features like:</p>
 <ul>
@@ -6754,7 +6555,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 11, 2026 14:49:55"><span class="timeago" datetime="2026-02-11T14:49:55+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 11, 2026 14:49:55">2026-02-11</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 13, 2026 08:15:22"><span class="timeago" datetime="2026-02-13T08:15:22+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 13, 2026 08:15:22">2026-02-13</span>
   </span>
 
     
@@ -6835,7 +6636,7 @@
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      © 2025 Filigran. All rights reserved
+      © 2026 Filigran. All rights reserved
     </div>
   
   

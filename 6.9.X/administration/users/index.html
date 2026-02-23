@@ -240,95 +240,11 @@
   
 
   <script type="text/javascript"> !function(){var e,t,n;e="58d967e3f3ca784",t=function(){Reo.init({clientID:"58d967e3f3ca784"})},(n=document.createElement("script")).src="https://static.reo.dev/"+e+"/reo.js",n.async=!0,n.onload=t,document.head.appendChild(n)}(); </script>
-
-  <script type="module">
-    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
-    Chatbot.init({
-      chatflowid: "46a94d00-5058-4550-bf5f-39f908919836",
-      apiHost: "https://platform.filigran.ai",
-      chatflowConfig: {
-        "startState": "[{ \"key\": \"username\", \"value\": \"Anonymous User\" }, { \"key\": \"context\", \"value\": \"OpenCTI Documentation\" }]",
-      },
-      observersConfig: {
-        /* Observers Config */
-      },
-      theme: {
-        button: {
-          backgroundColor: '#001BDA',
-          right: 20,
-          bottom: 20,
-          size: 48,
-          dragAndDrop: true,
-          iconColor: 'white',
-          customIconSrc: 'https://filigran.io/app/uploads/2025/05/ai-chat.png',
-          autoWindowOpen: {
-            autoOpen: false,
-            openDelay: 2,
-            autoOpenOnMobile: false
-          }
-        },
-        tooltip: {
-          showTooltip: false,
-        },
-        customCSS: `
-          * {
-            font-family: "IBM Plex Sans" !important;
-          }
-        `,
-        chatWindow: {
-          showTitle: true,
-          showAgentMessages: false,
-          title: 'Ariane Docs Assistant',
-          titleAvatarSrc: 'https://filigran.io/app/uploads/2025/05/embleme_filigran_blanc.png',
-          welcomeMessage: 'Hi there 👋 You\'re speaking with an AI Agent. I\'m here to answer your questions, so what brings you here today?',
-          errorMessage: 'Sorry, an error has occurred, please try again later.',
-          backgroundColor: '#ffffff',
-          height: 700,
-          width: 400,
-          fontSize: 14,
-          starterPromptFontSize: 13,
-          clearChatOnReload: false,
-          sourceDocsTitle: 'Sources:',
-          renderHTML: true,
-          botMessage: {
-            backgroundColor: '#f7f8ff',
-            textColor: '#000000',
-            showAvatar: true,
-            avatarSrc: 'https://filigran.io/app/uploads/2025/05/embleme_filigran_background.png'
-          },
-          userMessage: {
-            backgroundColor: '#001BDA',
-            textColor: '#ffffff',
-            showAvatar: false,
-          },
-          textInput: {
-            placeholder: 'Ask a question...',
-            backgroundColor: '#ffffff',
-            textColor: '#303235',
-            sendButtonColor: '#001BDA',
-            maxChars: 100,
-            maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 50 characters.',
-            autoFocus: true,
-            sendMessageSound: false,
-            receiveMessageSound: false,
-          },
-          feedback: {
-            color: '#303235'
-          },
-          dateTimeToggle: {
-            date: true,
-            time: true
-          },
-          footer: {
-            textColor: '#303235',
-            text: 'Powered by',
-            company: 'Filigran Ariane AI',
-            companyLink: 'https://filigran.io'
-          }
-        }
-      }
-    })
-  </script>
+  <script
+    src="https://copilot.filigran.ai/api/v1/public/widget.js"
+    data-token="jNJu1JTbbPwNqk1tqEOw-WjsKU4dEcgn"
+    data-context='{"page":"docs","product":"OpenCTI"}'
+  ></script>
 </header>
     
     <div class="md-container" data-md-component="container">
@@ -734,110 +650,6 @@
   
   
   
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_1_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_1_4" id="__nav_2_1_4_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    
-  
-    Authentication
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_1_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Authentication
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../deployment/authetication-in-gui/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Authentication via GUI configuration
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../deployment/authentication-migration/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Migration from environement variable to UI
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
       <a href="../../deployment/authentication/" class="md-nav__link">
         
@@ -845,7 +657,7 @@
   <span class="md-ellipsis">
     
   
-    Authentication via environment variables
+    Authentication
   
 
     
@@ -854,14 +666,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -1784,33 +1588,6 @@
     
   
     New filter API
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../deployment/breaking-changes/7.0-SSO-Entreprise-license.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    SSO License update
   
 
     
@@ -4410,13 +4187,41 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#list-of-capabilities" class="md-nav__link">
+  <a href="#list-of-capabilities-in-main-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        List of capabilities
+        List of capabilities in main context
       
     </span>
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#override-of-capabilities-in-draft" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Override of capabilities in draft
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Override of capabilities in draft">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -6473,13 +6278,41 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#list-of-capabilities" class="md-nav__link">
+  <a href="#list-of-capabilities-in-main-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        List of capabilities
+        List of capabilities in main context
       
     </span>
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#override-of-capabilities-in-draft" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Override of capabilities in draft
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Override of capabilities in draft">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -6798,7 +6631,8 @@
 <p><a class="glightbox" href="../assets/rbac.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="RBAC" src="../assets/rbac.png" /></a></p>
 <h2 id="roles">Roles</h2>
 <p>Roles are used in the platform to grant the given groups with some <strong>capabilities</strong> to define what users in those groups can do or cannot do.</p>
-<h3 id="list-of-capabilities">List of capabilities</h3>
+<h3 id="list-of-capabilities-in-main-context">List of capabilities in main context</h3>
+<p>The below capabilities are applicable to the whole application. </p>
 <table>
 <thead>
 <tr>
@@ -6837,7 +6671,7 @@
 </tr>
 <tr>
 <td style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;<code>Delete knowledge</code></td>
-<td style="text-align: left;">Delete entities and relationships (and merge data).</td>
+<td style="text-align: left;">Delete entities and relationships (and merge data). <strong>Capability needed to validate a draft</strong></td>
 </tr>
 <tr>
 <td style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;<code>Manage authorized members</code></td>
@@ -6960,12 +6794,32 @@
 <td style="text-align: left;">Update and delete marking definitions.</td>
 </tr>
 <tr>
-<td style="text-align: left;">&nbsp;&nbsp;<code>Manage customization</code></td>
-<td style="text-align: left;">Customize entity types, rules, notifiers retention policies and decays rules.</td>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Manage dissemination lists</code></td>
+<td style="text-align: left;">Update and manage dissemination lists</td>
 </tr>
 <tr>
-<td style="text-align: left;">&nbsp;&nbsp;<code>Manage taxonomies</code></td>
-<td style="text-align: left;">Manage labels, kill chain phases, vocabularies, status templates, cases templates.</td>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Manage customization</code></td>
+<td style="text-align: left;">Customize entity types</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Manage labels</code></td>
+<td style="text-align: left;">Manage labels (create/update/delete)</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Manage vocabularies</code></td>
+<td style="text-align: left;">Manage vocabularies (create/update/delete)</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Manage case templates</code></td>
+<td style="text-align: left;">Manage case templates (create/update/delete)</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Manage status template</code></td>
+<td style="text-align: left;">Manage status templates (create/update/delete).</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Manage kill chain phases</code></td>
+<td style="text-align: left;">Manage kill chain phases (create/update/delete).</td>
 </tr>
 <tr>
 <td style="text-align: left;">&nbsp;&nbsp;<code>Manage XTM hub</code></td>
@@ -6985,12 +6839,129 @@
 </tr>
 </tbody>
 </table>
+<h3 id="override-of-capabilities-in-draft">Override of capabilities in draft</h3>
+<div class="admonition tip">
+<p class="admonition-title">Enterprise edition</p>
+<p>Override of capabilities in draft is under the "OpenCTI Enterprise Edition" license. </p>
+<p><a href="../enterprise/">Please read the dedicated page to have all information</a></p>
+</div>
+<p>The override of capabilities in drafts allows you to differentiate capabilities that your users have in a draft from the ones they have in the main context. This is useful when you want your analysts to work only in a draft environment, without impacting your main database. 
+It is not possible to have fewer capabilities in draft than you have in the main context.</p>
+<p>The below capabilities are applicable to the draft mode only: </p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Capability</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>Access knowledge</code></td>
+<td style="text-align: left;">Access in read-only to all the knowledge in the platform.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Access to collaborative creation</code></td>
+<td style="text-align: left;">Create notes and opinions (and modify their own) on entities and relations.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Create / Update knowledge</code></td>
+<td style="text-align: left;"><strong>Required capability to create a draft manually</strong>: a user with this capability will be able to create a draft manually (not from file import), and manually create or edit data in draft.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;<code>Delete knowledge</code></td>
+<td style="text-align: left;">Delete entities and relationships (and merge data): a user with this capability will be able to delete data within a draft.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;<code>Bypass enforced reference</code></td>
+<td style="text-align: left;">If external references are enforced in a type of entity, be able to bypass the enforcement within a draft.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;<code>Bypass mandatory fields</code></td>
+<td style="text-align: left;">Bypass any custom fields marked as mandatory in entity customization in draft.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Upload knowledge files</code></td>
+<td style="text-align: left;">Upload files in the <code>Data</code> and <code>Content</code> sections of entities in a draft.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Import knowledge</code></td>
+<td style="text-align: left;">Trigger the ingestion of an uploaded file. <strong>Required capability to be able to create a draft from a file upload</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Ask for knowledge enrichment</code></td>
+<td style="text-align: left;">Trigger an enrichment for a given entity in a draft.</td>
+</tr>
+<tr>
+<td style="text-align: left;">&nbsp;&nbsp;<code>Manage labels</code></td>
+<td style="text-align: left;">Ability for users to create labels. Created labels will exist in the main database.</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../assets/draft_override.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="New tab to manage draft capabilities" src="../assets/draft_override.png" /></a></p>
+<h4 id="examples">Examples</h4>
+<p>To clarify these two layers of capabilities, the table below provides an example of a set of actions that you can perform based on your capabilities.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Action</th>
+<th style="text-align: left;">Context</th>
+<th style="text-align: left;">Capability in Main</th>
+<th style="text-align: left;">Capability in Draft</th>
+<th style="text-align: left;">Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Create a draft manually</td>
+<td style="text-align: left;">From main context</td>
+<td style="text-align: left;">Access knowledge</td>
+<td style="text-align: left;">Access knowledge ; create/update knowledge</td>
+<td style="text-align: left;">User is able to create a draft manually &amp; create/edit data in it.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Create a draft via file upload</td>
+<td style="text-align: left;">From main context</td>
+<td style="text-align: left;">Access knowledge</td>
+<td style="text-align: left;">Access knowledge ; create/update knowledge</td>
+<td style="text-align: left;">Cannot create a draft with file upload.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Create a draft via file upload</td>
+<td style="text-align: left;">From main context</td>
+<td style="text-align: left;">Access knowledge</td>
+<td style="text-align: left;">Access knowledge ; create/update knowledge ; import knowledge</td>
+<td style="text-align: left;">Allowed, but only step-by-step or form intake are allowed, and forced to draft.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Validate a draft</td>
+<td style="text-align: left;">In draft mode</td>
+<td style="text-align: left;">Access knowledge</td>
+<td style="text-align: left;">Access knowledge ; create/update knowledge ; delete knowledge</td>
+<td style="text-align: left;">User is not able to validate the draft.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Validate a draft</td>
+<td style="text-align: left;">In draft mode</td>
+<td style="text-align: left;">Access knowledge, Delete knowledge</td>
+<td style="text-align: left;">Access knowledge ; create/update knowledge</td>
+<td style="text-align: left;">User is able to validate the draft.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Manage authorized members on draft</td>
+<td style="text-align: left;">In draft mode</td>
+<td style="text-align: left;">Access knowledge, Delete knowledge, Manage authorized members</td>
+<td style="text-align: left;">Access knowledge ; create/update knowledge ; Manage authorized members</td>
+<td style="text-align: left;">User is able to manage authorized members.</td>
+</tr>
+</tbody>
+</table>
 <h3 id="manage-roles">Manage roles</h3>
 <p>You can manage the roles in <code>Settings &gt; Security &gt; Roles</code>.</p>
 <p>To create a role, just click on the <code>+</code> button:</p>
 <p><a class="glightbox" href="../assets/create-role.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Create role" src="../assets/create-role.png" /></a></p>
 <p>Then you will be able to define the capabilities of the role:</p>
-<p><a class="glightbox" href="../assets/update-role.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Update role" src="../assets/update-role.png" /></a></p>
+<p><a class="glightbox" href="../assets/capabilities_new.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Update role" src="../assets/capabilities_new.png" /></a></p>
 <h2 id="users">Users</h2>
 <p>You can manage the users in <code>Settings &gt; Security &gt; Users</code>. If you are using <a href="../../deployment/authentication/">Single-Sign-On (SSO)</a>, the users in OpenCTI are automatically created upon login.</p>
 <p>To create a user, just click on the <code>+</code> button:</p>
@@ -7164,7 +7135,7 @@ For instance, if a user is part of group A (max confidence level = 100) and grou
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="January 26, 2026 15:43:45"><span class="timeago" datetime="2026-01-26T15:43:45+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="January 26, 2026 15:43:45">2026-01-26</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 13, 2026 08:15:22"><span class="timeago" datetime="2026-02-13T08:15:22+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 13, 2026 08:15:22">2026-02-13</span>
   </span>
 
     
@@ -7245,7 +7216,7 @@ For instance, if a user is part of group A (max confidence level = 100) and grou
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      © 2025 Filigran. All rights reserved
+      © 2026 Filigran. All rights reserved
     </div>
   
   

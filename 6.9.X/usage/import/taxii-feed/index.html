@@ -240,95 +240,11 @@
   
 
   <script type="text/javascript"> !function(){var e,t,n;e="58d967e3f3ca784",t=function(){Reo.init({clientID:"58d967e3f3ca784"})},(n=document.createElement("script")).src="https://static.reo.dev/"+e+"/reo.js",n.async=!0,n.onload=t,document.head.appendChild(n)}(); </script>
-
-  <script type="module">
-    import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
-    Chatbot.init({
-      chatflowid: "46a94d00-5058-4550-bf5f-39f908919836",
-      apiHost: "https://platform.filigran.ai",
-      chatflowConfig: {
-        "startState": "[{ \"key\": \"username\", \"value\": \"Anonymous User\" }, { \"key\": \"context\", \"value\": \"OpenCTI Documentation\" }]",
-      },
-      observersConfig: {
-        /* Observers Config */
-      },
-      theme: {
-        button: {
-          backgroundColor: '#001BDA',
-          right: 20,
-          bottom: 20,
-          size: 48,
-          dragAndDrop: true,
-          iconColor: 'white',
-          customIconSrc: 'https://filigran.io/app/uploads/2025/05/ai-chat.png',
-          autoWindowOpen: {
-            autoOpen: false,
-            openDelay: 2,
-            autoOpenOnMobile: false
-          }
-        },
-        tooltip: {
-          showTooltip: false,
-        },
-        customCSS: `
-          * {
-            font-family: "IBM Plex Sans" !important;
-          }
-        `,
-        chatWindow: {
-          showTitle: true,
-          showAgentMessages: false,
-          title: 'Ariane Docs Assistant',
-          titleAvatarSrc: 'https://filigran.io/app/uploads/2025/05/embleme_filigran_blanc.png',
-          welcomeMessage: 'Hi there 👋 You\'re speaking with an AI Agent. I\'m here to answer your questions, so what brings you here today?',
-          errorMessage: 'Sorry, an error has occurred, please try again later.',
-          backgroundColor: '#ffffff',
-          height: 700,
-          width: 400,
-          fontSize: 14,
-          starterPromptFontSize: 13,
-          clearChatOnReload: false,
-          sourceDocsTitle: 'Sources:',
-          renderHTML: true,
-          botMessage: {
-            backgroundColor: '#f7f8ff',
-            textColor: '#000000',
-            showAvatar: true,
-            avatarSrc: 'https://filigran.io/app/uploads/2025/05/embleme_filigran_background.png'
-          },
-          userMessage: {
-            backgroundColor: '#001BDA',
-            textColor: '#ffffff',
-            showAvatar: false,
-          },
-          textInput: {
-            placeholder: 'Ask a question...',
-            backgroundColor: '#ffffff',
-            textColor: '#303235',
-            sendButtonColor: '#001BDA',
-            maxChars: 100,
-            maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 50 characters.',
-            autoFocus: true,
-            sendMessageSound: false,
-            receiveMessageSound: false,
-          },
-          feedback: {
-            color: '#303235'
-          },
-          dateTimeToggle: {
-            date: true,
-            time: true
-          },
-          footer: {
-            textColor: '#303235',
-            text: 'Powered by',
-            company: 'Filigran Ariane AI',
-            companyLink: 'https://filigran.io'
-          }
-        }
-      }
-    })
-  </script>
+  <script
+    src="https://copilot.filigran.ai/api/v1/public/widget.js"
+    data-token="jNJu1JTbbPwNqk1tqEOw-WjsKU4dEcgn"
+    data-context='{"page":"docs","product":"OpenCTI"}'
+  ></script>
 </header>
     
     <div class="md-container" data-md-component="container">
@@ -734,110 +650,6 @@
   
   
   
-    
-    
-    
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_1_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_1_4" id="__nav_2_1_4_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    
-  
-    Authentication
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_2_1_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_1_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Authentication
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../deployment/authetication-in-gui/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Authentication via GUI configuration
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../deployment/authentication-migration/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    Migration from environement variable to UI
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
       <a href="../../../deployment/authentication/" class="md-nav__link">
         
@@ -845,7 +657,7 @@
   <span class="md-ellipsis">
     
   
-    Authentication via environment variables
+    Authentication
   
 
     
@@ -854,14 +666,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -1784,33 +1588,6 @@
     
   
     New filter API
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../../deployment/breaking-changes/7.0-SSO-Entreprise-license.md" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    
-  
-    SSO License update
   
 
     
@@ -6581,7 +6358,7 @@ If necessary, configure the authentication type. By default, a user is already p
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      © 2025 Filigran. All rights reserved
+      © 2026 Filigran. All rights reserved
     </div>
   
   
