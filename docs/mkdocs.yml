@@ -2,7 +2,7 @@ site_name: OpenCTI Documentation
 site_description: Documentation about OpenCTI, the next-generation Cyber Threat Intelligence platform.
 site_author: Filigran
 site_url: https://docs.opencti.io
-copyright: © 2025 Filigran. All rights reserved
+copyright: © 2026 Filigran. All rights reserved
 repo_name: GitHub
 repo_url: https://github.com/OpenCTI-Platform/opencti
 edit_uri: https://github.com/OpenCTI-Platform/opencti/blob/master/docs/docs
@@ -115,10 +115,7 @@ nav:
       - Overview: deployment/overview.md
       - Installation: deployment/installation.md
       - Configuration: deployment/configuration.md
-      - Authentication: 
-        - Authentication via GUI configuration: deployment/authetication-in-gui.md
-        - Migration from environement variable to UI: deployment/authentication-migration.md
-        - Authentication via environment variables: deployment/authentication.md
+      - Authentication: deployment/authentication.md
       - Telemetry: deployment/telemetry.md
       - Upgrade: deployment/upgrade.md
     - Ecosystem:
@@ -148,7 +145,6 @@ nav:
             - Promote to Indicator: deployment/breaking-changes/6.2-promote-to-indicator.md
             - SAML authentication: deployment/breaking-changes/6.2-saml-authentication.md
             - New filter API: deployment/breaking-changes/5.12-filters.md
-            - SSO License update: deployment/breaking-changes/7.0-SSO-Entreprise-license.md
   - User Guide:
     - Getting started: usage/getting-started.md
     - Foundations:

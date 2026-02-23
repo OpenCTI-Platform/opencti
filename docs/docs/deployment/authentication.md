@@ -2,12 +2,13 @@
 
 ## Warning
 
-!!! tip "Enterprise edition"
+!!! warning "Authentication Strategies – Enterprise Edition Starting v7.X"
 
-     SSO configuration is under the [OpenCTI Enterprise Edition](https://docs.opencti.io/latest/administration/enterprise/?h=ente) license. Please read the information below to have all the information.
+    Starting from version 7.X, defining and using external authentication strategies (such as SSO, SAML, LDAP, or OpenID Connect) is now exclusively available in the Enterprise Edition of OpenCTI.
 
-With version 7.0, defining & using authentication strategies is an Enterprise Edition feature. Using local authentication will be the unique way to login for Community Edition.
-Additionally, given the introduction of the capability to define [authentications via UI](sso-in-gui.md), defining authentication via environment variable will be decommissioned after some time. 
+    Users on the Community Edition will only be able to log in using local authentication. Existing configurations relying on external identity providers will no longer be functional after upgrading to v7.X without an Enterprise license.
+
+    We recommend reviewing your current authentication setup before upgrading. If you rely on SSO or any external authentication provider, please consider upgrading to Enterprise Edition or contact us for more information.
 
 ## Introduction
 
