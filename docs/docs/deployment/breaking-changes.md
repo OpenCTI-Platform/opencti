@@ -51,8 +51,8 @@ openssl rand -base64 32
 
 !!! warning "Cryptography configuration"
 
-    - Env variable: APP__ENCRYPTION_KEY=yK***************************************N0=
-    - Configuration file: app { encryption_key = "yK***************************************N0=" }
+    - Env variable: `APP__ENCRYPTION_KEY=yK***************************************N0=`
+    - Configuration file: `app { encryption_key = "yK***************************************N0=" }`
 
 #### Tokens management
 
