@@ -3642,13 +3642,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self._send_bundle_to_s3(json.dumps(message_bundle), bundle_file)
 
         stix2_splitter = OpenCTIStix2Splitter()
-        (expectations_number, _, bundles) = (
-            stix2_splitter.split_bundle_with_expectations(
-                bundle=bundle,
-                use_json=True,
-                event_version=event_version,
-                cleanup_inconsistent_bundle=cleanup_inconsistent_bundle,
-            )
+        expectations_number, _, bundles = stix2_splitter.split_bundle_with_expectations(
+            bundle=bundle,
+            use_json=True,
+            event_version=event_version,
+            cleanup_inconsistent_bundle=cleanup_inconsistent_bundle,
         )
 
         if len(bundles) == 0:
