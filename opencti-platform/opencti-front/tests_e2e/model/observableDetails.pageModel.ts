@@ -20,4 +20,10 @@ export default class ObservableDetailsPage {
   closeEnrichment() {
     return this.page.getByRole('button', { name: 'Close' }).click();
   }
+
+  async delete() {
+    await this.page.getByRole('button', { name: 'Popover of actions' }).click();
+    await this.page.getByRole('menuitem', { name: 'Delete' }).click();
+    return this.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
+  }
 }
