@@ -2,7 +2,7 @@
 
 !!! tip "Enterprise edition"
 
-     Please read the information below to have all the information.The ability to log in via SSO is under the [OpenCTI Enterprise Edition license](https://docs.opencti.io/latest/administration/enterprise/?h=ente).
+     Please read the information below. The ability to log in via SSO is covered by the [OpenCTI Enterprise Edition license](https://docs.opencti.io/latest/administration/enterprise/?h=ente).
  
 All the configurations listed below require an Enterprise Edition to work, except the Local strategy.
 
@@ -12,10 +12,10 @@ To access the Authentication screen, you need to have the  [Manage Authenticatio
 
 ## Supported Strategies
 
-Via UI, you can configure the following strategies  
+Via the UI, you can configure the following strategies:
 
 - Local with login/password
-- Query headers
+- HTTP headers
 - Certificate
 - LDAP (multiple instances are possible)
 - OpenID (multiple instances are possible)
@@ -24,8 +24,8 @@ Via UI, you can configure the following strategies
 The Authentication screen will allow you to create new strategies, but some will already be present on your screen:
 
 - Local Strategy
-- Query Headers
-- Certificate (disabled by default since it requires that you define your platform with HTPS)
+- HTTP Headers
+- Certificate (disabled by default since it requires that your platform expose directly an HTTPS endpoint)
 
 Any authentication can be edited, enabled, disabled or even deleted (except Local, HTTP Headers and Certificate).
 
@@ -33,12 +33,12 @@ Any authentication can be edited, enabled, disabled or even deleted (except Loca
 
 Any configuration related to authentication policy is now managed in the authentication screen.
 
-### 2 factor authentication
-"Enforce Two-Factor Authentication" button is available, allowing administrators to mandate 2FA activation for users, enhancing overall account security.
+### Two-factor authentication
+The "Enforce Two-Factor Authentication" button is available, allowing administrators to mandate 2FA activation for users, enhancing overall account security.
 
 ### Max concurrent sessions
 It is possible to specify the amount of concurrent sessions allowed on your platform.
-By default, there is no limitations (0 means that there is no maximum sessions). If you want to restrict it, simply replace this value by the amount of concurrent sessions you want to allow on OpenCTI.
+By default, there is no limit (0 means that there is no maximum number of sessions). If you want to restrict it, simply replace this value by the amount of concurrent sessions you want to allow on OpenCTI.
 
 ## Create a new configuration
 
@@ -97,7 +97,7 @@ To enable it, you need your platform to be set up to work with HTTPS.
 
 For OpenID, the following fields are mandatory (indicated with a "*" in the form):
 
-- A configuration name, allowing you to differentiate between two configurations of the same type. Please note that the configuration name will also be used as the name on present on the **Login button**.
+- A configuration name, allowing you to differentiate between two configurations of the same type. Please note that the configuration name will also be used as the name present on the **Login button**.
 - Issuer: the issuer of the OpenID response, generally the URI of your Identity Provider
 - Client ID: The ID of your client access on the Identity Provider
 - Client secret: The secret of your client access on the Identity Provider
@@ -106,18 +106,18 @@ For OpenID, the following fields are mandatory (indicated with a "*" in the form
 
 For SAML, the following fields are mandatory (indicated with a "*" in the form):
 
-- A configuration name, allowing you to differentiate between two configurations of the same type. Please note that the configuration name will also be used as the name on present on the **Login button**.
+- A configuration name, allowing you to differentiate between two configurations of the same type. Please note that the configuration name will also be used as the name present on the **Login button**.
 - Issuer: the issuer of the SAML response, generally the URI of your Identity Provider
 - IdP certificate: using PEM format, it is used to validate the SAML response. Depending on the certificate format, it may include the header, footer, and newline (\n) characters
-- SAML URL (entry point): the URL of your Identity Provider where the SAML request will be sent to. Depending on the IdP
+- SAML URL (entry point): the URL of your Identity Provider where the SAML request will be sent to (format may vary depending on the IdP)
 
 
 The Private key (PEM format) is optional and is only required if you want to sign the SAML client request.
 
 !!! note "Certificates"
 
-    Be careful to specify the `IdP certificate` and `Private key` using PEM format. Indeed, a lot of systems generally export the keys in X509 / PCKS12 formats and so you will need to convert them. 
-    Here is an example to extract PEM from PCKS12:
+    Be careful to specify the `IdP certificate` and `Private key` using PEM format. Many systems export keys in X.509 or PKCS12 format, so you may need to convert them.
+    Here is an example to extract PEM from PKCS12:
     ```bash
     openssl pkcs12 -in keystore.p12 -out newfile.pem -nodes
     ```
@@ -125,7 +125,7 @@ The Private key (PEM format) is optional and is only required if you want to sig
 #### LDAP
 For LDAP, the following fields are mandatory:
 
-- A configuration name, allowing you to differentiate between two configurations of the same type. Please note that the configuration name will also be used as the name on present on the **Login button**.
+- A configuration name, allowing you to differentiate between two configurations of the same type. Please note that the configuration name will also be used as the name present on the **Login button**.
 - LDAP URL: the LDAP server URL
 - Bind DN: distinguished name of the user to bind to
 - Bind credentials: the password of the user to bind to
@@ -136,13 +136,13 @@ For LDAP, the following fields are mandatory:
 
 ### Add a custom field not present in SAML, LDAP, OpenID 
 
-The UI cover the most commonly used configuration. However for specific use cases, you might need to add a custom field that is not present in the UI.
-Custom field are directly bind to the underlying authentication library we are using (passport). This means that any field supported by the passport library can be added as a custom field in the UI.
+The UI covers the most commonly used configuration. However, for specific use cases, you might need to add a custom field that is not present in the UI.
+Custom fields are directly bound to the underlying authentication library we use (passport). This means that any field supported by the passport library can be added as a custom field in the UI.
 
 In each form, you can use the **Extra Configuration** section to add a new custom field:
 - Click on the "+" to add a new field
-- Specify a field type 
-- Add a key (the name of the field in passport library to map with)
+- Specify a field type
+- Add a key (the name of the field in the passport library to map to)
 - Add a value
 
 ## Secrets management
@@ -155,7 +155,7 @@ When you choose **"Set a new secret"** in the UI, the value is saved in the data
 
 ### External secrets (environment or external provider)
 
-Instead of storing a value, you can **reference a secret by name** from a global secrets registry defined in your configuration. In the UI this is **"Use external secret"**: you pick a name from the list of available secrets. The provider then stores only that name, the secret is not stored in the database (neither encrypted, neither in cleartext).
+Instead of storing a value, you can **reference a secret by name** from a global secrets registry defined in your configuration. In the UI this is **"Use external secret"**: you pick a name from the list of available secrets. The provider then stores only that name; the secret is not stored in the database (neither encrypted nor in cleartext).
 
 The registry is defined under the `secrets` key in your configuration file (or via the corresponding environment variables). Each entry is a named secret that can be supplied in one of two ways:
 
@@ -188,12 +188,11 @@ The secret name (`oidc_client_secret` in this example) will appear in the **Use 
 
 ## Group mapping
 
-Now that a configuration is defined, you can define the group mapping all for authentications (except Local).
+Now that a configuration is defined, you can define the group mapping for all authentications (except Local).
 
-All authentications always have these two option: 
+All authentications have these two options: 
 - **Prevent platform default group association:** in OpenCTI you can allow some groups to be granted by default at user creation. This option allows you to define whether you want any new user created through the defined authentication to get these default groups granted by default. **By default, users will be granted platform default group**.
-- **Auto create groups:** you can decide to automatically create the group that you have mapped. Please be aware that a group requires a role for a user to be able to have some rights [(more information)](../administration/users.md)
-When performing group mapping, you can always enable an option to automatically create specific groups within OpenCTI.
+- **Auto create groups:** you can decide to automatically create the groups that you have mapped. Please be aware that a group requires a role for a user to have rights [(more information)](../administration/users.md). When performing group mapping, you can enable an option to automatically create specific groups within OpenCTI.
 
 Then for each authentication, you need to provide: 
 - the group expression: identification of where to find the group information 
@@ -204,9 +203,9 @@ Then for each authentication, you need to provide:
 ## Organization mapping
 For any authentication strategy (except Local), you can define the organization mapping, meaning to which organization in OpenCTI you want your users to belong when they will log in.
 
-Organization mapping allow you to create automatically the organization you have mapped. **This option is disabled by default**.
+Organization mapping allows you to automatically create the organizations you have mapped. **This option is disabled by default**.
 
-The behavior is really similar to the group mapping, since you need to provide
+The behavior is similar to group mapping: you need to provide
 - the organization expression: identification of where to find the organization information 
 - the organization splitter: if the organization information contains multiple organizations,  this splitter character will be used to extract the individual organization names 
 - the organization mapping: the mapping between the value of the organization in your provider and the organizations that exist in the platform. Be sure to type the exact same organization name as it exists in the platform to avoid organization duplication. 
@@ -222,15 +221,15 @@ Each log will have the following information:
 - Timestamp: when did the log occur
 - Level: Info, Success, Warning or Error.
 - Message: the message indicating the error
-- Details: you can view the full log by clicking on the button on the right handside.
+- Details: you can view the full log by clicking on the button on the right-hand side.
 
 ### In case you are locked out
-It could be possible to lock yourself out of the platform. 
-We have a few safeguard to avoid this situation, but it is possible: for instance local authentication **cannot be disabled if you don't have any other authentication enabled**.
+It is possible to lock yourself out of the platform.
+We have a few safeguards to avoid this situation, but it can still happen: for instance, local authentication **cannot be disabled if you do not have any other authentication enabled**.
 
 #### Failed migration
 
-In case your authentication used to work prior the [migration](../deployment/breaking-changes/7.0-SSO-authentication-migration.md), there is a solution: 
+In case your authentication used to work prior to the [migration](../deployment/breaking-changes/7.0-SSO-authentication-migration.md), there is a solution: 
 
 Steps to unblock yourself: 
 1. In your configuration file, add the variable **app:authentication:force_env**.
@@ -241,34 +240,33 @@ This will allow you to use your configuration file to login instead of the confi
 
 However, you won't be able to edit any authentication in UI, given you have stated that you wish to use your variables to login.
 
-Enabling the **app:authentication:force_env** variable will remove any stored authentication in your Database. When the platform will be restarted without this configuration [all compatible](../deployment/breaking-changes/7.0-SSO-authentication-migration.md) authentications will be migrated once more. 
+Enabling the **app:authentication:force_env** variable will remove any stored authentication in your database. When the platform is restarted without this configuration, [all compatible](../deployment/breaking-changes/7.0-SSO-authentication-migration.md) authentications will be migrated once more. 
 
 #### Locked out of the platform, but a local account or administrator exists
 
 In case you have locked yourself out of the application, by disabling local authentication without verifying that you have another working strategy, there is a solution.
 
 This solution however relies on one of the following pre-requisites: 
-- a local account, with the capability to [Manage Authentication](administration/users.md) exists, and you know its credentials.
+- a local account with the capability to [Manage Authentication](users.md) exists, and you know its credentials.
 - you have access to the administrator credentials defined in your configuration file.
 
 Steps to unblock yourself:
 1. Go into your configuration file and add the variable **app:authentication:force_local**.
-2. Set the value to TRUE
-3. Restart your platform using this configuration
+2. Set the value to **true**.
+3. Restart your platform using this configuration.
 
-
-You should be able to login via username & password. Once logged in, you should enable once more the local authentication in the authentication menu & then remove this variable from your configuration file.
+You should be able to log in via username and password. Once logged in, enable local authentication again in the authentication menu, then remove this variable from your configuration file.
 
 
 #### Locked out of the platform, no platform administrator or local account
 
-This is the exact same situation than above, but you don't have any local account, and you have disabled the administrator defined in the configuration file. 
+This is the exact same situation as above, but you do not have any local account and you have disabled the administrator defined in the configuration file.
 
 Steps to unblock yourself:
 1. Go into your configuration file and add the variable **app:admin:externally_managed**.
-2. Set the value to TRUE
-3. Add the variable **app:authentication:force_local**
-4. Set the value to FALSE
-5. Restart your platform using this configuration
+2. Set the value to **true**.
+3. Add the variable **app:authentication:force_local**.
+4. Set the value to **false**.
+5. Restart your platform using this configuration.
 
-You should be able to login via username & password. Once logged in, you should enable once more the local authentication in the authentication menu & then remove the added variables from your configuration file.
+You should be able to log in via username and password. Once logged in, enable local authentication again in the authentication menu, then remove the added variables from your configuration file.
