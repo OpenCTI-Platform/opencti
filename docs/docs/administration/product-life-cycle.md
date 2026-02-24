@@ -30,10 +30,6 @@ OpenCTI has adopted a date-based versioning scheme that reflects our continuous 
 - **7.260201.0-lts.1** — First hotfix for the 7.260201-lts release
 - **7.260201.0-lts.2** — Second hotfix for the 7.260201-lts release
 
-!!! info "Note on Major Version Numbers"
-
-    The major version number `x` is used to indicate important evolutions within the product that might imply breaking changes or major architectural shifts.
-
 ### Release Frequency
 
 Non-LTS releases are delivered when ready, which can range from daily to weekly depending on the urgency of fixes, new features, and quality assurance requirements. This flexible approach ensures:
@@ -59,10 +55,6 @@ Many organizations operate within strict internal processes for testing, validat
 !!! warning "Important"
 
     LTS is not a mandatory path. It is an option for organizations that prefer stability over rapid adoption of new features. Organizations comfortable with frequent updates may continue using non-LTS releases to access the latest capabilities. 
-
-!!! warning "Important"
-
-    LTS is only available for On-Prem customers. LTS is not available for SaaS customers, as Filigran is handling deployment and maintenance. 
 
 ### LTS Program Characteristics ?
 
@@ -135,7 +127,7 @@ Non-LTS releases are recommended if your organization:
 
 ### How to Access LTS Releases
 
-LTS releases are distributed as protected container images. Everyone can run such images but you need a specific LTS license key to effectively use OpenCTI.
+LTS releases are distributed as container images like for regular release. However, LTS releases requires a specific LTS license key to effectively use OpenCTI.
 
 To activate LTS for your organization:
 
@@ -143,107 +135,3 @@ To activate LTS for your organization:
 2. Request an LTS license for your deployment
 3. Receive your license key and deployment instructions
 4. Configure your deployment with the provided license key
-
-## Deprecation & Breaking change Policy
-
-!!! info "" 
-
-    As long as the code is doing no harm, we only deprecate. Breaking change only occurs if the code is problematic for technical, business or legal reasons.
-
-A breaking change is any modification that causes:
-
-- Existing features to become non-functional or behave differently
-- API integrations to fail or return different results
-- Configuration files to become invalid or incompatible
-- Data models to change in ways that require a manual migration
-- Workflows or automations to stop executing as expected
-
-
-## External dependencies
-
-OpenCTI relies on various external dependencies including databases, message queues, programming language runtimes, and third-party libraries. This section outlines how we manage the lifecycle of these dependencies to ensure stability, security, and compatibility across all release types.
-
-
-### Dependency Management Principles
-
-OpenCTI enforces strict dependency management practices to ensure consistency and reliability:
-
-**Fixed Versioning**
-
-- All dependencies use fixed version numbers in configuration files
-- No semantic versioning syntax like `2.5.x` or `~2.5.4` — only explicit versions such as `2.5.7`
-- Lock files are committed to the repository and shared across all installations
-- This ensures everyone using the same version of OpenCTI has the same fixed set of packages
-
-**Automated Monitoring**
-
-- Automated tooling (Renovate bot) continuously monitors dependency releases
-- Pull requests are automatically generated when new versions become available
-- Security scanning tools (Dependabot, Snyk) identify vulnerable dependencies
-- The development team reviews and merges updates regularly
-
-### Deprecation Timeline and Communication
-
-When dependencies, feature or API endpoints are deprecated (or reach end-of-life), Filigran follows a structured communication and migration process:
-
-**Advance Notice Period**
-
-- Deprecation notices are provided **at least 6 months** before a dependency is removed
-- For LTS versions, notices align with the LTS support windows to avoid mid-cycle disruptions
-
-**Communication Channels**
-
-- Release notes for affected versions
-- Updated technical documentation with migration guidance
-- Direct notifications to LTS customers via Customer Success Managers
-
-**Migration Support**
-
-- Comprehensive migration guides documenting all required changes
-- Code examples and configuration updates where applicable
-- Testing guidelines to validate compatibility before production deployment
-- Technical support for customers with complex deployment scenarios
-
-## Connector Compatibility
-
-OpenCTI connectors are essential integrations that enable data exchange with external systems. Connector compatibility follows specific rules to ensure stable and reliable operations.
-
-### LTS Connector Compatibility
-
-For connectors managed by XTM Composer:
-
-- Each connector version is **aligned with and tied to its corresponding LTS version**
-- Connector updates for LTS releases include only critical fixes, mirroring the LTS philosophy
-
-For manually managed connectors:
-
-- **Only connectors with versions matching the LTS version are officially supported**
-- Using mismatched connector versions may result in compatibility issues or unsupported configurations
-
-
-!!! tip "Best Practice"
-
-    Always ensure your connectors are updated to match your OpenCTI LTS version. Check connector version compatibility before upgrading your OpenCTI platform.
-
-
-### Breaking Changes and Connector API
-
-!!! tip "Under construction"
-
-    This section is under construction
-
-
-## Additional Information
-
-### LTS Upgrade Paths
-
-!!! tip "Under construction"
-
-    This section is under construction
-
-### SaaS Deployments
-
-OpenCTI SaaS customers do not use the LTS program. The primary benefit of SaaS is managed updates and access to the latest version of OpenCTI at all times. SaaS deployments automatically receive:
-
-- Critical bug fixes and Security fixes as soon as they are available
-- New features and improvements continuously
