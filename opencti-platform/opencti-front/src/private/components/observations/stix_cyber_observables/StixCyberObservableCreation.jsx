@@ -600,7 +600,7 @@ const StixCyberObservableCreation = ({
                   ['hashes_SHA-512', 'name'],
                 ];
               } else if (status.type === 'IMEI') {
-                const imeiRegex = /(^[0-9]{15,16})$/i;
+                const imeiRegex = /^([0-9]{15,16}\n*)+$/i;
                 extraFieldsToValidate = {
                   [attribute.value]: Yup.string()
                     .required(t_i18n('This field is required'))
@@ -610,7 +610,7 @@ const StixCyberObservableCreation = ({
                   [attribute.value],
                 ];
               } else if (status.type === 'ICCID') {
-                const iccidRegex = /(^[0-9]{18,22})$/i;
+                const iccidRegex = /^([0-9]{18,22}\n*)+$/i;
                 extraFieldsToValidate = {
                   [attribute.value]: Yup.string()
                     .required(t_i18n('This field is required'))
@@ -620,7 +620,7 @@ const StixCyberObservableCreation = ({
                   [attribute.value],
                 ];
               } else if (status.type === 'IMSI') {
-                const imsiRegex = /(^[0-9]{14,15})$/i;
+                const imsiRegex = /^([0-9]{14,15}\n*)+$/i;
                 extraFieldsToValidate = {
                   [attribute.value]: Yup.string()
                     .required(t_i18n('This field is required'))
