@@ -451,7 +451,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
     expect(entityTypeMap.get('RetentionRule')).toBe(entitiesCounter.RetentionRule);
     expect(data.edges.length).toEqual(entitiesCounterTotal);
-    const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
+    const filterBaseTypes = R.uniq(data.edges.map((e) => e.node.base_type));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
   });
@@ -507,7 +507,7 @@ describe('Elasticsearch pagination', () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { types: ['Malware'] });
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(entitiesCounter.Malware);
-    const nodes = R.map((e) => e.node, data.edges);
+    const nodes = data.edges.map((e) => e.node);
     const malware = nodes.find((n) => (n.x_opencti_stix_ids ?? []).includes('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c'));
     expect(malware).not.toBeUndefined();
     expect(malware.internal_id).not.toBeNull();
@@ -756,7 +756,7 @@ describe('Elasticsearch pagination', () => {
       const { type, size } = testingSet[index];
       expect(entityTypeMap.get(type)).toBe(size);
     }
-    const createdDates = R.map((e) => e.node.created, data.edges);
+    const createdDates = data.edges.map((e) => e.node.created);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
       const createdDate = createdDates[index];
@@ -783,7 +783,7 @@ describe('Elasticsearch pagination', () => {
       orderMode: 'desc',
     });
     expect(data.edges.length).toEqual(11);
-    const markings = R.map((e) => e.node.definition, data.edges);
+    const markings = data.edges.map((e) => e.node.definition);
     expect(markings[0]).toEqual('TLP:TEST');
     expect(markings[1]).toEqual('TLP:RED');
     expect(markings[2]).toEqual('TLP:GREEN');
@@ -898,7 +898,7 @@ describe('Elasticsearch pagination', () => {
     expect(metaByEntityType['kill-chain-phase'].length).toEqual(relationsCounter['kill-chain-phase']);
     expect(metaByEntityType['operating-system'].length).toEqual(relationsCounter['operating-system']);
     expect(data.edges.length).toEqual(totalCountRelations);
-    let filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
+    let filterBaseTypes = R.uniq(data.edges.map((e) => e.node.base_type));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');
     // Same query with no pagination
@@ -927,7 +927,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('operating-system')).toBe(relationsCounter['operating-system']);
     expect(entityTypeMap.get('stix-sighting-relationship')).toBe(relationsCounter['stix-sighting-relationship']);
     expect(data.length).toEqual(totalCountRelations);
-    filterBaseTypes = R.uniq(R.map((e) => e.base_type, data));
+    filterBaseTypes = R.uniq(data.map((e) => e.base_type));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');
   });
