@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from './Theme';
 import Tag from '@common/tag/Tag';
+import { EMPTY_VALUE } from '../utils/String';
 
 interface ItemPriorityProps {
   label: string;
@@ -15,7 +16,7 @@ const ItemPriority: FunctionComponent<ItemPriorityProps> = ({
 }) => {
   const theme = useTheme<Theme>();
   if (!priority) {
-    return <>-</>;
+    return <>{EMPTY_VALUE}</>;
   }
 
   let priorityColor: string;

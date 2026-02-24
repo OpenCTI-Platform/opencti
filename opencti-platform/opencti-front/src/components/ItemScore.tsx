@@ -1,15 +1,17 @@
-import React from 'react';
-import { compose } from 'ramda';
-import * as PropTypes from 'prop-types';
-import withTheme from '@mui/styles/withTheme';
+import React, { FunctionComponent } from 'react';
 import Typography from '@mui/material/Typography';
-import inject18n from './i18n';
 import { isEmptyField } from '../utils/utils';
 import { useTheme } from '@mui/styles';
 import Tag from '@common/tag/Tag';
+import { EMPTY_VALUE } from '../utils/String';
+import { Theme } from './Theme';
 
-const ItemScore = ({ score }) => {
-  const theme = useTheme();
+interface ItemScoreProps {
+  score?: number | null;
+}
+
+const ItemScore: FunctionComponent<ItemScoreProps> = ({ score }) => {
+  const theme = useTheme<Theme>();
 
   if (isEmptyField(score)) {
     return (
@@ -18,7 +20,7 @@ const ItemScore = ({ score }) => {
         gutterBottom={true}
         style={{ marginTop: 8, width: '100%' }}
       >
-        -
+        {EMPTY_VALUE}
       </Typography>
     );
   }
@@ -62,10 +64,4 @@ const ItemScore = ({ score }) => {
   );
 };
 
-ItemScore.propTypes = {
-  classes: PropTypes.object.isRequired,
-  variant: PropTypes.string,
-  score: PropTypes.number,
-};
-
-export default compose(withTheme, inject18n)(ItemScore);
+export default ItemScore;
