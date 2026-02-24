@@ -27,7 +27,7 @@ import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
     marginTop: theme.spacing(1),
-    padding: '15px',
+    padding: theme.spacing(2),
     borderRadius: 4,
     position: 'relative',
     display: 'flex',
