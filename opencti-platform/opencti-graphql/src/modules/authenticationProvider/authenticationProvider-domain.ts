@@ -35,7 +35,7 @@ import { getPlatformCrypto } from '../../utils/platformCrypto';
 import { memoize } from '../../utils/memoize';
 import { logAuthInfo } from './providers-logger';
 import { isNotEmptyField } from '../../database/utils';
-import { enrichWithRemoteCredentials, getRemoteCredentialsProviderSelector } from '../../config/credentials';
+import { enrichWithRemoteCredentials, getRemoteCredentialsFields, getRemoteCredentialsProviderSelector } from '../../config/credentials';
 
 // Type for data that are encrypted
 const getKeyPair = memoize(async () => {
@@ -79,15 +79,22 @@ export const buildSecretInfos = (
   return result;
 };
 
+const secretFieldNameSeparator = ':';
+
 export const getAvailableSecrets = (): AvailableSecretInfo[] => {
   const secrets = conf.get('secrets');
   if (!secrets || typeof secrets !== 'object') {
     return [];
   }
   return Object.keys(secrets).flatMap((name) => {
-    const provider = getRemoteCredentialsProviderSelector(`secrets:${name}`);
+    const prefix = `secrets:${name}`;
+    const provider = getRemoteCredentialsProviderSelector(prefix);
     if (provider) {
-      return { provider_name: provider, secret_name: name };
+      const secretFields = getRemoteCredentialsFields(prefix);
+      return secretFields.map((field) => ({
+        provider_name: provider,
+        secret_name: `${name}${secretFieldNameSeparator}${field}`,
+      }));
     }
     if (conf.get(`secrets:${name}:value`)) {
       return { provider_name: 'env', secret_name: name };
@@ -96,8 +103,9 @@ export const getAvailableSecrets = (): AvailableSecretInfo[] => {
   });
 };
 
-const getSecretValueByName = async (secretName: string, fieldName: string): Promise<string | undefined> => {
-  const prefix = `secrets:${secretName}`;
+const getSecretValueByName = async (secretName: string): Promise<string | undefined> => {
+  const [name, fieldName] = secretName.split(secretFieldNameSeparator);
+  const prefix = `secrets:${name}`;
   if (getRemoteCredentialsProviderSelector(prefix)) {
     const enriched = await enrichWithRemoteCredentials(prefix, {});
     return enriched[fieldName];
@@ -109,7 +117,7 @@ export const retrieveSecrets = async (config: any): Promise<SecretProvider> => {
   const resolve = async (field: string): Promise<string | undefined> => {
     const secretName = config[`${field}_ref`];
     if (isNotEmptyField(secretName)) {
-      return getSecretValueByName(secretName, field);
+      return getSecretValueByName(secretName);
     }
     const encryptedValue = config[`${field}_encrypted`];
     if (isNotEmptyField(encryptedValue)) {
