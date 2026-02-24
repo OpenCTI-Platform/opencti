@@ -62,7 +62,7 @@ const SearchScopeElement = ({
 
   return (
     <InputAdornment position="end" style={{ position: 'absolute', right: 5 }}>
-      <IconButton disabled={disabled} onClick={handleOpenSearchScope} size="small" edge="end">
+      <IconButton disabled={disabled} onClick={handleOpenSearchScope} size="small">
         <PaletteOutlined fontSize="small" color={disabled ? undefined : color} />
       </IconButton>
       <Popover
