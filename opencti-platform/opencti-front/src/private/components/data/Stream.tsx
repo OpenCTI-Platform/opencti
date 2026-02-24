@@ -99,6 +99,7 @@ const Stream = () => {
     };
     return (
       <ListLines
+        iconExtension
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
