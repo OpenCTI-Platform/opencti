@@ -12,7 +12,6 @@ const ItemDueDate = ({ due_date, variant }: { due_date: string | null; variant: 
   if (due_date) {
     return (
       <Tag
-        variant="outlined"
         label={label}
         color={due_date < isoDate ? theme.palette.error.main : theme.palette.primary.main}
       />
