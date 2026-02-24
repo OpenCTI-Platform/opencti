@@ -10,17 +10,17 @@ This table regroups all the breaking changes introduced, with the corresponding 
 
 | Change                                                                                                              | Deprecated in | Changed in |
 |:--------------------------------------------------------------------------------------------------------------------|:--------------|:-----------|
-| [SSO, cryptography and tokens management](#cryptography-and-tokens-management)                                      | -             | 7.x        |
+| [SSO, cryptography and tokens management](#cryptography-and-tokens-management)                                      | -             | 7.260224.0 |
+| [Update license for SSO (& migration to UI)](#SSO-update-license)                                                |               | 7.260224.0        |
 | [GenerationScenario Mutations in OpenCTI - OpenBAS](#generation-scenario-mutation-openti-openbas-with-placeholders) | 6.5           | 6.8        |
 | [Removing bi-directional stream connectors](#removing-some-stream-connectors)                                       | 6.3           | 6.6        |
 | [Promote Observable API](#change-to-the-observable-promote-API)                                                     | 6.2           | 6.8        |
 | [SAML authentication parameters](#change-to-SAML-authentication)                                                    |               | 6.2        |
 | [Major changes to Filtering API](#new-filtering-API)                                                                |               | 5.12       |
-| [Update license for SSO (& migration to UI)](#SSO-update-license)                                                |               | 7.0.0      |
 
 
 <a id="cryptography-and-tokens-management"></a>
-## OpenCTI 7.{date}.0
+## OpenCTI 7.260224.0
 
 <a id="SSO-update-license"></a>
 ### Licensing change for SSO
