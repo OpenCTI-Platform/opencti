@@ -29,15 +29,12 @@ const ListFiltersWithoutLocalStorage = ({
   const { t_i18n } = useFormatter();
   let icon = <FilterListOutlined fontSize="medium" />;
   let tooltip = t_i18n('Filters');
-  // let color: 'primary' | 'warning' | 'success' = 'primary';
   if (type === 'from') {
     icon = <RayStartArrow fontSize="medium" />;
     tooltip = t_i18n('Dynamic source filters');
-    // color = 'warning';
   } else if (type === 'to') {
     icon = <RayEndArrow fontSize="medium" />;
     tooltip = t_i18n('Dynamic target filters');
-    // color = 'success';
   }
   return (
     <div

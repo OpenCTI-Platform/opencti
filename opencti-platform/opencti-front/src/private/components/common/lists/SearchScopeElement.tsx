@@ -56,7 +56,7 @@ const SearchScopeElement = ({
     }));
   };
 
-  const color: 'secondary' | 'primary' = searchScope[name] && searchScope[name].length > 0
+  const color = searchScope[name] && searchScope[name].length > 0
     ? 'secondary'
     : 'primary';
 
