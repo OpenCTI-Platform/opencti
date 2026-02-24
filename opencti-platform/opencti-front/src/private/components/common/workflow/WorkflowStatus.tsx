@@ -84,7 +84,7 @@ interface WorkflowTransitionsProps {
   data: WorkflowStatus_data$key;
 }
 
-const WorkflowStatus: FunctionComponent<WorkflowStatusProps> = ({ data }) => {
+const WorkflowStatus: FunctionComponent<WorkflowTransitionsProps> = ({ data }) => {
   const draft = useFragment(workflowStatusFragment, data);
 
   if (!draft.workflowInstance) {
@@ -180,7 +180,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
         {workflowInstance.allowedTransitions.map((transition) => (
           <MenuItem
             key={transition.event}
-            onClick={() => handleTransition(transition.event, transition.actions)}
+            onClick={() => handleTransition(transition.event, transition.actions ?? [])}
           >
             {transition.event}
           </MenuItem>
@@ -190,15 +190,15 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
         open={Boolean(validationTransition)}
         onClose={() => setValidationTransition(null)}
       >
-        <DialogTitle>{t_i18n('Approve draft workspace')}</DialogTitle>
+        <DialogTitle>{t_i18n('Approve draft')}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {t_i18n('Are you sure you want to approve this draft workspace?')}
+            {t_i18n('Are you sure you want to approve this draft?')}
             {draft.processingCount > 0 && (
               <div style={{ marginTop: 20 }}>
                 <Alert severity="warning">
                   <AlertTitle>{t_i18n('Information')}</AlertTitle>
-                  {t_i18n('Some background tasks are still running for this workspace. Confirming might lead to inconsistent data.')}
+                  {t_i18n('Some background tasks are still running for this draft. Confirming might lead to inconsistent data.')}
                 </Alert>
               </div>
             )}
