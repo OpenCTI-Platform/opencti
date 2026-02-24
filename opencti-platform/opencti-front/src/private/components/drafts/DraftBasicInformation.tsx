@@ -21,6 +21,7 @@ import { commitMutation } from '../../../relay/environment';
 import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
+import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 
 const draftEditMutation = graphql`
   mutation DraftBasicInformationMutation(
@@ -49,6 +50,7 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
   const { t_i18n } = useFormatter();
   const [openAddAssignee, setOpenAddAssignee] = useState(false);
   const [openAddParticipant, setOpenAddParticipant] = useState(false);
+  const currentAccessRight = useGetCurrentUserAccessRight(draft.currentUserAccessRight);
 
   const handleToggleAddAssignee = () => {
     setOpenAddAssignee(!openAddAssignee);
@@ -125,7 +127,7 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
 
               <Label
                 sx={{ marginTop: 2 }}
-                action={(
+                action={currentAccessRight.canEdit && (
                   <Security needs={[KNOWLEDGE_KNUPDATE]}>
                     <IconButton
                       variant="tertiary"
@@ -144,6 +146,7 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
               <ItemAssignees
                 assignees={draft.objectAssignee ?? []}
                 stixDomainObjectId={draft.id}
+                removeMutation={draftEditMutation}
               />
 
               <Label
@@ -167,6 +170,7 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
               <ItemParticipants
                 participants={draft.objectParticipant ?? []}
                 stixDomainObjectId={draft.id}
+                removeMutation={draftEditMutation}
               />
 
             </Grid>

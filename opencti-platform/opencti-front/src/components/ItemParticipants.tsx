@@ -5,6 +5,7 @@ import FieldOrEmpty from './FieldOrEmpty';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../utils/hooks/useGranted';
 import { truncate } from '../utils/String';
 import { commitMutation, defaultCommitMutation } from '../relay/environment';
+import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
 import Tag from './common/tag/Tag';
 
 interface ItemParticipantsProps {
@@ -14,15 +15,16 @@ interface ItemParticipantsProps {
     readonly name: string;
   }[];
   stixDomainObjectId: string;
+  removeMutation?: GraphQLTaggedNode;
 }
 
-const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participants, stixDomainObjectId }) => {
+const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participants, stixDomainObjectId, removeMutation = stixDomainObjectMutation }) => {
   const canUpdateKnowledge = useGranted([KNOWLEDGE_KNUPDATE]);
   const handleRemoveParticipant = (removedId: string) => {
     const values = participants.filter((participant) => participant.id !== removedId);
     const valuesIds = values.map((value) => value.id);
     commitMutation({
-      mutation: stixDomainObjectMutation,
+      mutation: removeMutation,
       variables: {
         id: stixDomainObjectId,
         input: {
