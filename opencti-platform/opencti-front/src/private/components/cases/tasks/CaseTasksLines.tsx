@@ -210,6 +210,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           dataColumns={tasksDataColumns}
           inline={true}
           secondaryAction={true}
+          iconExtension
         >
           <ListLinesContent
             dataColumns={tasksDataColumns}
