@@ -222,7 +222,7 @@
     "cookie": "1.1.1",
     "cross-fetch": "4.1.0",
     "ioredis": "5.8.2",
-    "openid-clientv5/jose": "5.10.0",
+    "openid-clientv5/jose": "6.1.3",
     "json5": "2.2.3",
     "@datadog/pprof": "patch:@datadog/pprof@5.13.3#./patch/@datadog-pprof.patch",
     "eventsource": "patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch",
