@@ -176,8 +176,8 @@ class StreamLineLineComponent extends Component {
                   />
                 </div>
                 <div
-                  className={classes.filtersItem}
-                  style={{ width: dataColumns.filters.width }}
+                  className={classes.consumersItem}
+                  style={{ width: dataColumns.consumers.width }}
                 >
                   {isFilterGroupNotEmpty(filters)
                     ? (
