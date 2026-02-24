@@ -15,6 +15,7 @@ import { useReactFlow } from 'reactflow';
 import useAddStatus from './hooks/useAddStatus';
 import useDeleteElement from './hooks/useDeleteElement';
 import StatusTemplateField from '@components/common/form/StatusTemplateField';
+import type { Transition, Status, Action, Condition } from './utils';
 
 const statusValidation = (t: (value: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
@@ -30,32 +31,35 @@ interface WorkflowEditionDrawerProps {
 }
 
 const WorkflowFields = ({
-  form,
+  // form,
   field,
-  index,
-  availableTypes = [],
-  handleRepresentationErrors,
-  prefixLabel,
+  // index,
+  // availableTypes = [],
+  // handleRepresentationErrors,
+  // prefixLabel,
   onDelete,
-  attributes,
+  // attributes,
+}: {
+  field: { name: string; value: Action | Condition };
+  onDelete: () => void;
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { name, value } = field;
-  const { setFieldValue } = form;
+  const { value } = field;
+  // const { setFieldValue } = form;
 
   const deletion = useDeletion({});
   const { setDeleting, handleCloseDelete, handleOpenDelete } = deletion;
 
   // -- ERRORS --
-  const [hasError, setHasError] = useState<boolean>(false);
-  let errors: Map<string, string> = new Map();
-  const handleErrors = (key: string, val: string | null) => {
-    errors = { ...errors, [key]: val };
-    const hasErrors = Object.values(errors).filter((v) => v !== null).length > 0;
-    setHasError(hasErrors);
-    handleRepresentationErrors(value.id, hasErrors);
-  };
+  const [hasError, _setHasError] = useState<boolean>(false);
+  // let errors: Map<string, string> = new Map();
+  // const handleErrors = (key: string, val: string | null) => {
+  //   errors = { ...errors, [key]: val };
+  //   const hasErrors = Object.values(errors).filter((v) => v !== null).length > 0;
+  //   setHasError(hasErrors);
+  //   handleRepresentationErrors(value.id, hasErrors);
+  // };
 
   // -- ACCORDION --
   const [open, setOpen] = useState<boolean>(false);
@@ -116,6 +120,8 @@ const WorkflowFields = ({
   );
 };
 
+type WorkflowEditionFormValues = Status & Transition;
+
 const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDrawerProps) => {
   const { t_i18n } = useFormatter();
   const { setNodes } = useReactFlow();
@@ -127,8 +133,8 @@ const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDraw
 
   const onAddObject = (
     type: 'conditions' | 'actions' | 'onEnter' | 'onExit',
-    setFieldValue: FormikHelpers<any>['setFieldValue'],
-    values: any,
+    setFieldValue: FormikHelpers<WorkflowEditionFormValues>['setFieldValue'],
+    values: WorkflowEditionFormValues,
   ) => {
     setFieldValue(type, [
       ...values[type] || [],
@@ -142,7 +148,7 @@ const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDraw
     return t_i18n('Edit transition');
   }, [isStatus, isNewStatus]);
 
-  const onSubmit = (values: any) => {
+  const onSubmit = (values: WorkflowEditionFormValues) => {
     if (isNewStatus) {
       if (selectedElement.id !== 'new-status') {
         addStatus(values);
@@ -183,7 +189,7 @@ const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDraw
   return (
     <Drawer title={drawerTitle} open={!!selectedElement} onClose={onClose}>
       { selectedElement && (
-        <Formik
+        <Formik<WorkflowEditionFormValues>
           initialValues={selectedElement?.data || {}}
           onSubmit={onSubmit}
           validationSchema={isStatus ? statusValidation(t_i18n) : transitionValidation(t_i18n)}

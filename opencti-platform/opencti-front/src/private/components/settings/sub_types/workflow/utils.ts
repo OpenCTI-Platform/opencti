@@ -18,6 +18,12 @@ export type Status = {
   onExit?: Action[];
 };
 
+export type Transition = {
+  event: string;
+  actions?: Action[];
+  conditions?: Action[];
+};
+
 const colorPalette = ['#4caf50', '#2196f3', '#ff9800', '#9c27b0', '#f44336', '#3f51b5', '#00bcd4', '#8bc34a', '#ff5722', '#673ab7'];
 
 export const NODE_SIZE = { width: 160, height: 50 };
