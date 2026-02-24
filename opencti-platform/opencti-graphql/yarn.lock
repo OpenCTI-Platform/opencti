@@ -7482,14 +7482,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-import-newlines@npm:1.4.0":
-  version: 1.4.0
-  resolution: "eslint-plugin-import-newlines@npm:1.4.0"
+"eslint-plugin-import-newlines@npm:2.0.0":
+  version: 2.0.0
+  resolution: "eslint-plugin-import-newlines@npm:2.0.0"
   peerDependencies:
-    eslint: ">=6.0.0"
+    eslint: ">=10.0.0"
   bin:
     import-linter: lib/index.js
-  checksum: 10c0/f0d4a3ef5303215a276bd762c38c6394d49979e9d519202bb9aae90db012901df8f404a99149232836abbf46825d12051c1b4d0b7a961fa7f7916f406bbd91c2
+  checksum: 10c0/eedc39fa67bd6a64152d90ed5593a0a3c48a55f473527ad2365373552fcecbfb583c9a2982d59f74a7608f56e4622c996bcc2f3370c2b03d98bcff348ee587b7
   languageName: node
   linkType: hard
 
@@ -10830,7 +10830,7 @@ __metadata:
     eslint: "npm:9.39.2"
     eslint-import-resolver-typescript: "npm:4.4.4"
     eslint-plugin-import: "npm:2.32.0"
-    eslint-plugin-import-newlines: "npm:1.4.0"
+    eslint-plugin-import-newlines: "npm:2.0.0"
     eventsource: "npm:2.0.2"
     eventsource-parser: "npm:3.0.6"
     express: "npm:5.2.1"
