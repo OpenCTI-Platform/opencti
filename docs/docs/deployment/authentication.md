@@ -2,13 +2,13 @@
 
 ## Warning
 
-!!! warning "Authentication Strategies – Enterprise Edition Starting v7.X"
+!!! warning "Authentication Strategies – Enterprise Edition Starting v7.260224.0"
 
      SSO configuration is under the [OpenCTI Enterprise Edition](https://docs.opencti.io/latest/administration/enterprise/?h=ente) license. 
 
-With version 7.0, defining & using authentication strategies is an Entreprise Edition feature. Using local authentication will be the unique way to login for Community Edition. More information in [this page](../deployment/breaking-changes/7.0-SSO-authentication-migration.md)
+With version 7.260224.0, defining & using authentication strategies is an Entreprise Edition feature. Using local authentication will be the unique way to login for Community Edition. More information in [this page](breaking-changes/7.260224.0-SSO-authentication-migration.md)
 
-Additionally, given the introduction of the capability to define [authentications via UI](../administration/authentication-via-ui.md), **defining authentication via environement variable will be decomissioned after some time (you will be warned before this change will be effective with enough time to ensure all needed actions are taken)** 
+Additionally, given the introduction of the capability to define [authentications via UI](../administration/authentication-via-ui.md), **defining authentication via environment variable will be decommissioned after some time (you will be warned before this change will be effective with enough time to ensure all needed actions are taken)** 
 
 ## Introduction
 

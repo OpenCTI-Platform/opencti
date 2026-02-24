@@ -229,7 +229,7 @@ We have a few safeguards to avoid this situation, but it can still happen: for i
 
 #### Failed migration
 
-In case your authentication used to work prior to the [migration](../deployment/breaking-changes/7.0-SSO-authentication-migration.md), there is a solution: 
+In case your authentication used to work prior to the [migration](../deployment/breaking-changes/7.260224.0-SSO-authentication-migration.md), there is a solution: 
 
 Steps to unblock yourself: 
 1. In your configuration file, add the variable **app:authentication:force_env**.
@@ -240,7 +240,7 @@ This will allow you to use your configuration file to login instead of the confi
 
 However, you won't be able to edit any authentication in UI, given you have stated that you wish to use your variables to login.
 
-Enabling the **app:authentication:force_env** variable will remove any stored authentication in your database. When the platform is restarted without this configuration, [all compatible](../deployment/breaking-changes/7.0-SSO-authentication-migration.md) authentications will be migrated once more. 
+Enabling the **app:authentication:force_env** variable will remove any stored authentication in your database. When the platform is restarted without this configuration, [all compatible](../deployment/breaking-changes/7.260224.0-SSO-authentication-migration.md) authentications will be migrated once more. 
 
 #### Locked out of the platform, but a local account or administrator exists
 
