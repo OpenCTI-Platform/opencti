@@ -147,39 +147,44 @@ In each form, you can use the **Extra Configuration** section to add a new custo
 
 ## Secrets management
 
+Authentication providers may need secrets (e.g. OIDC client secret, SAML private key, LDAP bind credentials, ...). You can either store the value in the database (with encryption) or reference an external secret by name.
 
-##### Using Cyberark along with OpenID
-To use Cyberark with OpenID you will still need to use at least partially, your environnement variables. Follow these steps:
+### Stored secrets (database)
 
+When you choose **"Set a new secret"** in the UI, the value is saved in the database and **encrypted at rest**. The platform global encryption key is used to encrypt and decrypt; the cleartext is never stored.
 
-- Create OpenID configuration in UI, note the identifier (eg: "oic") it will need to match environment varaible name
-- For the field that will be overrided by cyberark configuration, you can put any string it will be ignored (to pass the mandatory field checks)
-- You will need to keep the cyberark configuration in environment variable such as:
+### External secrets (environment or external provider)
 
-```json
-{
- "providers": {
-   "oic": {
-     "credentials_provider": {
-       "selector": "cyberark",
-       "cyberark": {
-         "uri": "https://<cyberark-url>",
-         "field_targets": [
-           "client_secret"
-         ],
-         "app_id": "cyberark",
-         "safe": "safe",
-         "object": "secret"
-       },
-       "https_cert": {
-         "reject_unauthorized": false
-       }
-     }
-   }
- }
-}
+Instead of storing a value, you can **reference a secret by name** from a global secrets registry defined in your configuration. In the UI this is **"Use external secret"**: you pick a name from the list of available secrets. The provider then stores only that name, the secret is not stored in the database (neither encrypted, neither in cleartext).
+
+The registry is defined under the `secrets` key in your configuration file (or via the corresponding environment variables). Each entry is a named secret that can be supplied in one of two ways:
+
+1. **Direct value (environment)**  
+   Set the environment variable `SECRETS__<NAME>__VALUE`. The platform will list this in the UI with provider name **"env"**.
+
+2. **External credentials provider**  
+   Set the environment variable `SECRETS__<NAME>__CREDENTIALS_PROVIDER__SELECTOR` to a supported provider identifier (e.g. **`cyberark`**). The UI shows the provider name (e.g. **"cyberark"**) next to the secret name.
+
+#### Example: external secret with Cyberark
+
+To use a secret stored in Cyberark (e.g. for an OIDC client secret), define a named secret via environment variables and point it to Cyberark. You can then choose that secret in the UI when configuring the provider (**Use external secret**).
+
+```bash
+# Use Cyberark as the source for the secret named "oidc_client_secret"
+SECRETS__OIDC_CLIENT_SECRET__CREDENTIALS_PROVIDER__SELECTOR=cyberark
+SECRETS__OIDC_CLIENT_SECRET__CREDENTIALS_PROVIDER__CYBERARK__URI=https://your-cyberark-api/Account/GetPassword
+SECRETS__OIDC_CLIENT_SECRET__CREDENTIALS_PROVIDER__CYBERARK__APP_ID=your-app-id
+SECRETS__OIDC_CLIENT_SECRET__CREDENTIALS_PROVIDER__CYBERARK__SAFE=your-safe
+SECRETS__OIDC_CLIENT_SECRET__CREDENTIALS_PROVIDER__CYBERARK__OBJECT=your-object
+
+# Map the first (and only) value returned by Cyberark to the provider field "client_secret"
+SECRETS__OIDC_CLIENT_SECRET__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS=client_secret
+
+# Optional: separator used to split the value returned by Cyberark (default is ":")
+# SECRETS__OIDC_CLIENT_SECRET__CREDENTIALS_PROVIDER__CYBERARK__DEFAULT_SPLITTER=:
 ```
 
+The secret name (`oidc_client_secret` in this example) will appear in the **Use external secret** dropdown. After selecting it for your provider, the platform fetches the value from Cyberark at runtime when the strategy is loaded.
 
 ## Group mapping
 
