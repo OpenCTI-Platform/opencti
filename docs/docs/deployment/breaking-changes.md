@@ -35,6 +35,10 @@ For more information read the [migration process](./breaking-changes/7.0-SSO-aut
 
 ### Breaking changes
 
+#### OpenAEV and OpenCTI version compatibility
+
+Upgrading to OpenCTI 7.0 requires you to upgrade OpenAEV to version 2.2.
+
 #### Mandatory Cryptography configuration
 
 Upgrading to OpenCTI 7.x requires configuring the cryptography key in the application configuration.
