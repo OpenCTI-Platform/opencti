@@ -67,5 +67,10 @@ test.describe('Drafts - Entities and background tasks', { tag: ['@ce'] }, () => 
     await filter.addFilter('Label', labelToApply);
     await expect(dataTable.getNumberElements(1)).toBeVisible();
     await expect(Drafts.getEntityInList(malwareName)).toBeVisible();
+
+    // clean up by deleting the created draft
+    await Drafts.deleteDraft(draftName);
+    await page.reload();
+    await expect(Drafts.getDraft(draftName)).not.toBeVisible();
   });
 });
