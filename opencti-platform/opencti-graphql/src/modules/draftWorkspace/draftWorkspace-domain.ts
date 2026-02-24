@@ -11,7 +11,8 @@ import { buildStixBundle } from '../../database/stix-2-1-converter';
 import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import {
-  type DraftWorkspaceAddInput, type EditContext,
+  type DraftWorkspaceAddInput,
+  type EditContext,
   type EditInput,
   FilterMode,
   FilterOperator,
@@ -24,7 +25,7 @@ import {
 import { publishUserAction } from '../../listener/UserActionListener';
 import { addDraftCreationCount, addDraftValidationCount } from '../../manager/telemetryManager';
 import { authorizedMembers } from '../../schema/attribute-definition';
-import { ABSTRACT_BASIC_OBJECT, ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { isStixRefRelationship } from '../../schema/stixRefRelationship';

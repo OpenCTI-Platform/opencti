@@ -2,7 +2,8 @@ import type { Resolvers } from '../../generated/graphql';
 import {
   addDraftWorkspace,
   deleteDraftWorkspace,
-  draftWorkspaceEditAuthorizedMembers, draftWorkspaceEditContext,
+  draftWorkspaceEditAuthorizedMembers,
+  draftWorkspaceEditContext,
   draftWorkspaceEditField,
   findById,
   findDraftWorkspacePaginated,
@@ -20,7 +21,6 @@ import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 import { loadAssignees, loadCreators, loadParticipants } from '../../database/members';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import { INPUT_CREATED_BY } from '../../schema/general';
-import { fintelDesignEditContext } from '../fintelDesign/fintelDesign-domain';
 
 const draftWorkspaceResolvers: Resolvers = {
   Query: {

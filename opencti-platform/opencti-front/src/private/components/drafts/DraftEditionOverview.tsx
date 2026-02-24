@@ -18,21 +18,7 @@ import { draftEditionFocus } from '@components/drafts/DraftEdition';
 const draftEditionPatchMutation = graphql`
   mutation DraftEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
     draftWorkspaceFieldPatch(id: $id, input: $input) {
-      ...DraftEditionOverview_draft
       ...DraftRootFragment
-    }
-  }
-`;
-
-const DraftEditionOverviewFragment = graphql`
-  fragment DraftEditionOverview_draft on DraftWorkspace {
-    id
-    name
-    description
-    createdBy {
-      id
-      name
-      entity_type
     }
   }
 `;
