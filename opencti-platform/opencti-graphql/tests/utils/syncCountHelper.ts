@@ -29,7 +29,10 @@ testCreatedCounter['external-reference'] = 17;
 testCreatedCounter.feedback = 2;
 testCreatedCounter.file = 10;
 testCreatedCounter.grouping = 2;
+testCreatedCounter.iccid = 1;
 testCreatedCounter.identity = 49;
+testCreatedCounter.imei = 1;
+testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 3;
 testCreatedCounter.indicator = 47;
 testCreatedCounter.infrastructure = 1;
@@ -93,6 +96,9 @@ testUpdatedCounter.sighting = 5;
 testUpdatedCounter['threat-actor'] = 18;
 testUpdatedCounter.vocabulary = 3;
 testUpdatedCounter.vulnerability = 3;
+testUpdatedCounter.iccid = 1;
+testUpdatedCounter.imei = 1;
+testUpdatedCounter.imsi = 1;
 
 export const testMergedCounter: Record<string, number> = {};
 testMergedCounter['threat-actor'] = 1;
@@ -143,6 +149,9 @@ testDeletedCounter['threat-actor'] = 12;
 testDeletedCounter.tool = 5;
 testDeletedCounter.vulnerability = 3;
 testDeletedCounter.software = 1;
+testDeletedCounter.iccid = 1;
+testDeletedCounter.imei = 1;
+testDeletedCounter.imsi = 1;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);
