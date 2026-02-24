@@ -15,7 +15,7 @@ import type { Theme } from '../../../../components/Theme';
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
     marginTop: theme.spacing(1),
-    padding: '15px',
+    padding: theme.spacing(2),
     borderRadius: 4,
   },
 }));
