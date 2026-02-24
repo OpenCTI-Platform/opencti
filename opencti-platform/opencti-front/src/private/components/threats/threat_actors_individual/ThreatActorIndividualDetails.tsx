@@ -29,7 +29,7 @@ import CardLabel from '../../../../components/CardLabel';
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
     marginTop: theme.spacing(1),
-    padding: '15px',
+    padding: theme.spacing(2),
     borderRadius: 4,
   },
   chip: {

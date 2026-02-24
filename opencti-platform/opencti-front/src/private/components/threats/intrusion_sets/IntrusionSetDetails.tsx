@@ -43,7 +43,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
       <Paper
         sx={{
           marginTop: theme.spacing(1),
-          padding: '15px',
+          padding: theme.spacing(2),
           borderRadius: '4px',
         }}
         className="paper-for-grid"
