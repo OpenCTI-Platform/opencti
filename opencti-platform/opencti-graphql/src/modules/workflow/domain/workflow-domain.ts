@@ -1,22 +1,37 @@
 import { FunctionalError } from '../../../config/errors';
-import { createEntity, createRelation, updateAttribute } from '../../../database/middleware';
-import { fullRelationsList, storeLoadById } from '../../../database/middleware-loader';
-import { findById as findStatusById } from '../../../domain/status';
+import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../database/middleware';
+import { storeLoadById } from '../../../database/middleware-loader';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
 import { WorkflowFactory } from '../engine/workflow-factory';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE, type TriggerResult } from '../types/workflow-types';
+import type { BasicStoreEntity } from '../../../types/store';
+
+interface WorkflowInstanceStoreEntity extends BasicStoreEntity {
+  currentState: string;
+  history: string;
+}
+
+const bypassDraftContext = (context: AuthContext): AuthContext => {
+  return {
+    ...context,
+    draft_context: undefined,
+    user: context.user ? { ...context.user, draft_context: undefined } : undefined,
+  };
+};
 
 const getWorkflowConfig = async (context: AuthContext, user: AuthUser, targetType: string) => {
-  return findEntitySettingByType(context, user, targetType);
+  const executionContext = bypassDraftContext(context);
+  return findEntitySettingByType(executionContext, executionContext.user!, targetType);
 };
 
 const getDefinitionData = async (context: AuthContext, user: AuthUser, entitySetting: any) => {
   if (!entitySetting) return null;
 
   if (entitySetting.workflow_id) {
-    const workflowDefinitionEntity = await storeLoadById(context, user, entitySetting.workflow_id, ENTITY_TYPE_WORKFLOW_DEFINITION) as any;
+    const executionContext = bypassDraftContext(context);
+    const workflowDefinitionEntity = await storeLoadById(executionContext, executionContext.user!, entitySetting.workflow_id, ENTITY_TYPE_WORKFLOW_DEFINITION) as any;
     if (workflowDefinitionEntity) {
       return typeof workflowDefinitionEntity.workflow_content === 'string'
         ? JSON.parse(workflowDefinitionEntity.workflow_content)
@@ -31,18 +46,16 @@ const findWorkflowInstanceEntity = async (
   context: AuthContext,
   user: AuthUser,
   entityId: string,
-) => {
-  // Find existing instance via relationship
-  const relations = await fullRelationsList(context, user, RELATION_HAS_WORKFLOW, {
-    fromId: entityId,
-    toTypes: [ENTITY_TYPE_WORKFLOW_INSTANCE],
-  });
-
-  if (relations.length > 0) {
-    return await storeLoadById(context, user, (relations[0] as any).toId, ENTITY_TYPE_WORKFLOW_INSTANCE) as any;
-  }
-
-  return null;
+): Promise<WorkflowInstanceStoreEntity | null> => {
+  // Find existing instance via entity_id attribute directly (more robust than relationship)
+  const executionContext = bypassDraftContext(context);
+  return await loadEntity(executionContext, executionContext.user!, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+    filters: {
+      mode: 'and',
+      filters: [{ key: 'entity_id', values: [entityId] }],
+      filterGroups: [],
+    },
+  }) as WorkflowInstanceStoreEntity;
 };
 
 const initializeWorkflowInstance = async (
@@ -51,7 +64,7 @@ const initializeWorkflowInstance = async (
   entity: any,
   entitySetting: any,
   definitionData: any,
-) => {
+): Promise<WorkflowInstanceStoreEntity> => {
   const initialState = definitionData.initialState;
   const entityId = entity.id || entity.internal_id;
   const instanceInput = {
@@ -65,9 +78,11 @@ const initializeWorkflowInstance = async (
       event: 'initialization',
     }]),
   };
-  const instance = await createEntity(context, user, instanceInput, ENTITY_TYPE_WORKFLOW_INSTANCE);
+  const executionContext = bypassDraftContext(context);
+  const executionUser = executionContext.user!;
+  const instance = await createEntity(executionContext, executionUser, instanceInput, ENTITY_TYPE_WORKFLOW_INSTANCE) as WorkflowInstanceStoreEntity;
 
-  await createRelation(context, user, {
+  await createRelation(executionContext, executionUser, {
     fromId: entityId,
     toId: instance.id || instance.internal_id,
     relationship_type: RELATION_HAS_WORKFLOW,
@@ -112,11 +127,14 @@ export const setWorkflowDefinition = async (
 
   const workflowName = definitionObj.name || `Workflow for ${entityType}`;
 
+  const executionContext = bypassDraftContext(context);
+  const executionUser = executionContext.user!;
+
   // 1. Check if we have an existing workflow linked
   if (entitySetting.workflow_id) {
-    const existingWorkflow = await storeLoadById(context, user, entitySetting.workflow_id, ENTITY_TYPE_WORKFLOW_DEFINITION);
+    const existingWorkflow = await storeLoadById(executionContext, executionUser, entitySetting.workflow_id, ENTITY_TYPE_WORKFLOW_DEFINITION);
     if (existingWorkflow) {
-      await updateAttribute(context, user, existingWorkflow.id, ENTITY_TYPE_WORKFLOW_DEFINITION, [
+      await updateAttribute(executionContext, executionUser, existingWorkflow.id, ENTITY_TYPE_WORKFLOW_DEFINITION, [
         { key: 'workflow_content', value: [definition] },
         { key: 'name', value: [workflowName] },
       ]);
@@ -129,10 +147,10 @@ export const setWorkflowDefinition = async (
     name: workflowName,
     workflow_content: definition,
   };
-  const workflowDefinition = await createEntity(context, user, workflowDefinitionInput, ENTITY_TYPE_WORKFLOW_DEFINITION);
+  const workflowDefinition = await createEntity(executionContext, executionUser, workflowDefinitionInput, ENTITY_TYPE_WORKFLOW_DEFINITION);
 
   // 3. Link it to the EntitySetting
-  const { element } = await updateAttribute(context, user, entitySetting.id, 'EntitySetting', [
+  const { element } = await updateAttribute(executionContext, executionUser, entitySetting.id, 'EntitySetting', [
     { key: 'workflow_id', value: [workflowDefinition.id] },
   ]);
   return element;
@@ -148,7 +166,8 @@ export const deleteWorkflowDefinition = async (
 ): Promise<any> => {
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   if (entitySetting?.workflow_id) {
-    const { element } = await updateAttribute(context, user, entitySetting.id, 'EntitySetting', [
+    const executionContext = bypassDraftContext(context);
+    const { element } = await updateAttribute(executionContext, executionContext.user!, entitySetting.id, 'EntitySetting', [
       { key: 'workflow_id', value: [null] },
     ]);
     return element;
@@ -175,11 +194,12 @@ export const getWorkflowInstance = async (
     return null;
   }
 
-  const instanceEntity = await findWorkflowInstanceEntity(context, user, entity.id || entity.internal_id);
+  const effectiveEntityId = entity.internal_id || entity.id;
+  const instanceEntity = await findWorkflowInstanceEntity(context, user, effectiveEntityId);
   const currentState = instanceEntity?.currentState ?? definitionData.initialState;
 
   const allowedTransitions = await getAllowedTransitions(context, user, entityId);
-  const id = instanceEntity?.id ?? instanceEntity?.internal_id ?? `initial-${entity.id || entity.internal_id}`;
+  const id = instanceEntity?.internal_id ?? instanceEntity?.id ?? `initial-${effectiveEntityId}`;
   return {
     id,
     internal_id: id,
@@ -209,7 +229,8 @@ export const getAllowedTransitions = async (
     return [];
   }
 
-  const instanceEntity = await findWorkflowInstanceEntity(context, user, entity.id || entity.internal_id);
+  const effectiveEntityId = entity.internal_id || entity.id;
+  const instanceEntity = await findWorkflowInstanceEntity(context, user, effectiveEntityId);
   const currentStateId = instanceEntity?.currentState ?? definitionData.initialState;
 
   const definition = WorkflowFactory.createDefinition(definitionData);
@@ -220,14 +241,13 @@ export const getAllowedTransitions = async (
 
   const transitions = definition.getTransitions(effectiveStateId);
 
-  const resolvedTransitions = await Promise.all(transitions.map(async (t) => {
-    const status = await findStatusById(context, user, t.to);
+  const resolvedTransitions = transitions.map((t) => {
     return {
       event: t.event,
       toState: t.to,
-      toStatus: status,
+      actions: t.actionTypes || [],
     };
-  }));
+  });
 
   return resolvedTransitions;
 };
@@ -278,16 +298,19 @@ export const triggerWorkflowEvent = async (
   }
 
   try {
+    const executionContext = bypassDraftContext(context);
+    const executionUser = executionContext.user!;
+
     const workflowContext = {
       entity,
-      user,
-      context,
+      user: executionUser,
+      context: executionContext,
     };
 
-    const entityIdToUse = entity.id || entity.internal_id;
-    let instanceEntity = await findWorkflowInstanceEntity(context, user, entityIdToUse);
+    const effectiveEntityId = entity.internal_id || entity.id;
+    let instanceEntity = await findWorkflowInstanceEntity(executionContext, executionUser, effectiveEntityId);
     if (!instanceEntity) {
-      instanceEntity = await initializeWorkflowInstance(context, user, entity, entitySetting, definitionData);
+      instanceEntity = await initializeWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
     }
     const currentStateId = instanceEntity.currentState;
 
@@ -298,7 +321,7 @@ export const triggerWorkflowEvent = async (
     const result = await instance.trigger(eventName);
 
     // 6. If successful, update the database
-    if (result.success) {
+    if (result.success && instanceEntity) {
       const newState = instance.getCurrentState();
 
       // Update the instance entity
@@ -309,16 +332,17 @@ export const triggerWorkflowEvent = async (
         timestamp: new Date().toISOString(),
         event: eventName,
       });
-      await updateAttribute(context, user, instanceEntity.id || instanceEntity.internal_id, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+      const instanceId = instanceEntity.internal_id || instanceEntity.id;
+      await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
         { key: 'currentState', value: [newState] },
         { key: 'history', value: [JSON.stringify(history)] },
       ]);
 
-      const status = await findStatusById(context, user, newState);
-      return { success: true, newState, status };
+      const workflowInstance = await getWorkflowInstance(context, user, entityId);
+      return { success: true, newState, instance: workflowInstance, entity };
     }
 
-    return result;
+    return { ...result, entity };
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'Unknown error';
     return {

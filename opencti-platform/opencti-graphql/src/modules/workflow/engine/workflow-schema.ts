@@ -22,9 +22,10 @@ export interface ConditionConfig {
 
 /**
  * Serialized representation of a workflow state.
+ * Tied to a global StatusTemplate entity.
  */
 export interface SerializedState {
-  name: string;
+  statusId: string; // Refers to the internal ID of a StatusTemplate entity
   onEnter?: ActionConfig[];
   onExit?: ActionConfig[];
 }
@@ -33,8 +34,8 @@ export interface SerializedState {
  * Serialized representation of a transition between states.
  */
 export interface SerializedTransition {
-  from: string;
-  to: string;
+  from: string; // ID of the source StatusTemplate
+  to: string; // ID of the destination StatusTemplate
   event: string;
   actions?: ActionConfig[];
   conditions?: ConditionConfig[];
