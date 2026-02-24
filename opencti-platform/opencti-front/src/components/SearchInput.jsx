@@ -205,7 +205,6 @@ const SearchInput = (props) => {
       setAskAI(false);
     }
   };
-
   return (
     <>
       <GradientBorderTextField
@@ -228,33 +227,31 @@ const SearchInput = (props) => {
         slotProps={{
           input: {
             startAdornment: (
-            <div>
-              <Search
-                fontSize="small"
-                sx={{
-                  color: isNLQActivated ? theme.palette.ai.main : 'inherit',
-                  mr: 0.5,
-                }}
-              />
+              <InputAdornment position="start" style={{ color: isNLQActivated ? theme.palette.ai.main : undefined }}>
+                <Search
+                  fontSize="small"
+                  sx={{
+                    color: isNLQActivated ? theme.palette.ai.main : 'inherit',
+                    mr: 0.5,
+                  }}
+                />
                 <Tooltip title={t_i18n('Wildcard search')}>
-                <IconButton
+                  <IconButton
                     onClick={() => setWildcardSearch(!wildcardSearch)}
-                    size="medium"
-                    color={wildcardSearch ? 'primary' : 'inherit'}
-                >
+                    color={wildcardSearch ? 'primary' : 'warn'}
+                  >
                     <StarOutlined fontSize="medium" />
-                </IconButton>
-            </Tooltip>
-                <Tooltip title={t_i18n('Fuzzy search')}>
-                    <IconButton
-                        onClick={() => setFuzzySearch(!fuzzySearch)}
-                        size="medium"
-                        color={fuzzySearch ? 'primary' : 'inherit'}
-                    >
-                        <WavesOutlined fontSize="medium" />
-                    </IconButton>
+                  </IconButton>
                 </Tooltip>
-            </div>
+                <Tooltip title={t_i18n('Fuzzy search')}>
+                  <IconButton
+                    onClick={() => setFuzzySearch(!fuzzySearch)}
+                    color={fuzzySearch ? 'primary' : 'warn'}
+                  >
+                    <WavesOutlined fontSize="medium" />
+                  </IconButton>
+                </Tooltip>
+              </InputAdornment>
             ),
 
             endAdornment: variant === 'topBar' ? (
