@@ -18,7 +18,7 @@ import { CaseIncidentDetails_case$key } from './__generated__/CaseIncidentDetail
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
     marginTop: theme.spacing(1),
-    padding: '15px',
+    padding: theme.spacing(2),
     borderRadius: 4,
     position: 'relative',
     display: 'flex',

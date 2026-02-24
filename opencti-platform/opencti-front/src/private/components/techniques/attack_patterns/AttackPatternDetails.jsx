@@ -24,7 +24,7 @@ import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/St
 const styles = (theme) => ({
   paper: {
     marginTop: theme.spacing(1),
-    padding: '15px',
+    padding: theme.spacing(2),
     borderRadius: 4,
   },
   chip: {

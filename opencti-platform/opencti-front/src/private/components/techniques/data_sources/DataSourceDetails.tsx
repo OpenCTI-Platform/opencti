@@ -50,7 +50,7 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
       <Paper
         style={{
           marginTop: theme.spacing(1),
-          padding: '15px',
+          padding: theme.spacing(2),
           borderRadius: 4,
         }}
         className="paper-for-grid"

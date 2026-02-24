@@ -44,7 +44,7 @@ const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> 
       <Paper
         style={{
           marginTop: theme.spacing(1),
-          padding: '15px',
+          padding: theme.spacing(2),
           borderRadius: 6,
         }}
         className="paper-for-grid"

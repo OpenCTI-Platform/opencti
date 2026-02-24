@@ -12,7 +12,7 @@ import inject18n from '../../../../components/i18n';
 const styles = (theme) => ({
   paper: {
     marginTop: theme.spacing(1),
-    padding: '15px',
+    padding: theme.spacing(2),
     borderRadius: 4,
   },
 });

@@ -428,7 +428,7 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
       <Typography variant="h4" gutterBottom={true}>{t_i18n('Details')}</Typography>
 
       <Paper
-        sx={{ padding: '15px', marginTop: theme.spacing(1) }}
+        sx={{ padding: theme.spacing(2), marginTop: theme.spacing(1) }}
         className="paper-for-grid"
         variant="outlined"
       >

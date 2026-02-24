@@ -14,6 +14,8 @@ import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/St
 import { truncate } from '../../../../utils/String';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
+import { useTheme } from '@mui/styles';
+import type { Theme } from '../../../../components/Theme';
 
 const ToolDetailsFragment = graphql`
  fragment ToolDetails_tool on Tool {
@@ -37,6 +39,7 @@ interface ToolDetailsProps {
 
 const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const tool = useFragment(
     ToolDetailsFragment,
     tools,
@@ -50,8 +53,8 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
         className="paper-for-grid"
         variant="outlined"
         style={{
-          marginTop: '8px',
-          padding: '15px',
+          marginTop: theme.spacing(1),
+          padding: theme.spacing(2),
           borderRadius: 4,
         }}
       >
