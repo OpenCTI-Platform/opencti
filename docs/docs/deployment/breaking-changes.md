@@ -42,11 +42,17 @@ Upgrading to OpenCTI 7.260224.0 requires you to upgrade OpenAEV to version 2.2.
 #### Mandatory Cryptography configuration
 
 Upgrading to OpenCTI 7.260224.0 requires configuring the cryptography key in the application configuration.
+Encryption keys must be randomly generated and kept secret. They should be at least 32 bytes longs and encoded in base 64 to ensure strong security.
+To generate a secure random key, you can use the following command in a terminal:
+
+```bash
+openssl rand -base64 32
+```
 
 !!! warning "Cryptography configuration"
 
-    - Env variable: APP__CRYPTOGRAPHY_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    - Configuration file: app { cryptography_key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" }
+    - Env variable: APP__ENCRYPTION_KEY=yK***************************************N0=
+    - Configuration file: app { encryption_key = "yK***************************************N0=" }
 
 #### Tokens management
 
