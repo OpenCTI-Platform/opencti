@@ -5,7 +5,6 @@ import { TasksLines_data$data } from '@components/cases/__generated__/TasksLines
 import { TasksLine_node$data } from '@components/cases/tasks/__generated__/TasksLine_node.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { TaskFragment } from './tasks/TasksLine';
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -14,6 +13,43 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import ItemDueDate from '../../../components/ItemDueDate';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+
+const TaskFragment = graphql`
+  fragment TasksLine_node on Task {
+    id
+    standard_id
+    name
+    due_date
+    description
+    workflowEnabled
+    entity_type
+    draftVersion {
+      draft_id
+      draft_operation
+    }
+    objectMarking {
+      definition
+      definition_type
+      id
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    objectAssignee {
+      entity_type
+      id
+      name
+    }
+    status {
+      template {
+        name
+        color
+      }
+    }
+  }
+`;
 
 const tasksLinesQuery = graphql`
   query TasksLinesPaginationQuery(

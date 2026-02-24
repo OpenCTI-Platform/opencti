@@ -15,7 +15,7 @@ import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
 import CaseIncidentDetails from './CaseIncidentDetails';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { tasksDataColumns } from '../tasks/TasksLine';
+import { tasksDataColumns } from '../tasks/tasksDataColumns';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';

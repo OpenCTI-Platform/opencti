@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { SxProps, useTheme } from '@mui/material/styles';
 import Tag from '@common/tag/Tag';
 import type { Theme } from './Theme';
+import { EMPTY_VALUE } from '../utils/String';
 
 interface ItemSeverityProps {
   label?: string | null;
@@ -15,7 +16,7 @@ const ItemSeverity: FunctionComponent<ItemSeverityProps> = ({
 }) => {
   const theme = useTheme<Theme>();
   if (!severity) {
-    return <>-</>;
+    return <>{EMPTY_VALUE}</>;
   }
 
   let severityColor: string;

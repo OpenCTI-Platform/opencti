@@ -14,7 +14,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
 import ListLines from '../../../../components/list_lines/ListLines';
-import { tasksDataColumns } from '../tasks/TasksLine';
+import { tasksDataColumns } from '../tasks/tasksDataColumns';
 import { CaseTasksLineDummy } from '../tasks/CaseTasksLine';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';

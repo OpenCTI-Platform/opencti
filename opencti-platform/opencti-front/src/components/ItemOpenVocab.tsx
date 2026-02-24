@@ -3,6 +3,7 @@ import { InformationOutline } from 'mdi-material-ui';
 import ItemSeverity from './ItemSeverity';
 import ItemPriority from './ItemPriority';
 import Tag from '@common/tag/Tag';
+import { EMPTY_VALUE } from '../utils/String';
 
 interface ItemOpenVocabProps {
   type: string;
@@ -20,7 +21,7 @@ const ItemOpenVocab: FunctionComponent<ItemOpenVocabProps> = ({
   displayMode = 'span',
 }) => {
   if (!value) {
-    return <>-</>;
+    return <>{EMPTY_VALUE}</>;
   }
 
   let tag = (
