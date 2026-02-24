@@ -116,7 +116,6 @@ nav:
       - Installation: deployment/installation.md
       - Configuration: deployment/configuration.md
       - Authentication: 
-        - Authentication via GUI configuration: deployment/authetication-in-gui.md
         - Authentication via environment variables: deployment/authentication.md
       - Telemetry: deployment/telemetry.md
       - Upgrade: deployment/upgrade.md
@@ -220,6 +219,7 @@ nav:
     - Platform settings:
       - Parameters: administration/parameters.md
       - Security:
+        - Authentication: administration/authentication-via-ui.md
         - Policies: administration/policies.md
         - Users and RBAC:
           - Users and RBAC: administration/users.md
