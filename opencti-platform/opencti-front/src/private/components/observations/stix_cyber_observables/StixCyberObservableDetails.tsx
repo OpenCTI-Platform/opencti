@@ -288,6 +288,15 @@ const stixCyberObservableDetailsFragment = graphql`
     ... on AIPrompt {
       value
     }
+    ... on IMEI {
+      value
+    }
+    ... on ICCID {
+      value
+    }
+    ... on IMSI {
+      value
+    }
     ...StixCyberObservableIndicators_stixCyberObservable
   }
 `;
