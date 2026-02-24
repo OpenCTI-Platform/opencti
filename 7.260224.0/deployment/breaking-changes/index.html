@@ -7203,12 +7203,16 @@ For more information read the <a href="7.260224.0-SSO-authentication-migration/"
 <h4 id="openaev-and-opencti-version-compatibility">OpenAEV and OpenCTI version compatibility</h4>
 <p>Upgrading to OpenCTI 7.260224.0 requires you to upgrade OpenAEV to version 2.2.</p>
 <h4 id="mandatory-cryptography-configuration">Mandatory Cryptography configuration</h4>
-<p>Upgrading to OpenCTI 7.260224.0 requires configuring the cryptography key in the application configuration.</p>
+<p>Upgrading to OpenCTI 7.260224.0 requires configuring the cryptography key in the application configuration.
+Encryption keys must be randomly generated and kept secret. They should be at least 32 bytes longs and encoded in base 64 to ensure strong security.
+To generate a secure random key, you can use the following command in a terminal:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span>
+</span></code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Cryptography configuration</p>
 <ul>
-<li>Env variable: APP__CRYPTOGRAPHY_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</li>
-<li>Configuration file: app { cryptography_key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" }</li>
+<li>Env variable: APP__ENCRYPTION_KEY=yK<strong><em>**</em></strong><strong><em>**</em></strong><strong><em>**</em></strong><strong><em>**</em></strong><strong><em>*</em></strong>N0=</li>
+<li>Configuration file: app { encryption_key = "yK<strong><em>**</em></strong><strong><em>**</em></strong><strong><em>**</em></strong><strong><em>**</em></strong><strong><em>*</em></strong>N0=" }</li>
 </ul>
 </div>
 <h4 id="tokens-management">Tokens management</h4>
@@ -7249,7 +7253,7 @@ passthrough to <strong>JWT-based mutual authentication</strong> using platform-d
 A new template cannot be created if it contains unauthorized function, and existing templates cannot be updated with unauthorized functions.</p>
 <p>In case a function is required in webhook template in addition of default safe list, it can be added to your own risk by overriding APP__NOTIFIER_AUTHORIZED_FUNCTIONS.</p>
 <p>For example:
-</p><div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nv">APP__NOTIFIER_AUTHORIZED_FUNCTIONS</span><span class="o">=</span><span class="s2">"[\"if\", \"for\", \"forEach\", \"while\", \"stringify\", \"Date\", \"toLocaleString\"]"</span>
+</p><div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nv">APP__NOTIFIER_AUTHORIZED_FUNCTIONS</span><span class="o">=</span><span class="s2">"[\"if\", \"for\", \"forEach\", \"while\", \"stringify\", \"Date\", \"toLocaleString\"]"</span>
 </span></code></pre></div><p></p>
 <h2 id="opencti-63">OpenCTI 6.3</h2>
 <h3 id="deprecation_1">Deprecation</h3>
@@ -7302,7 +7306,7 @@ A <a href="https://blog.filigran.io/introducing-advanced-filtering-possibilities
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 24, 2026 19:55:42 UTC"><span class="timeago" datetime="2026-02-24T19:55:42+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 24, 2026 19:55:42 UTC">2026-02-24</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 24, 2026 20:02:28 UTC"><span class="timeago" datetime="2026-02-24T20:02:28+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 24, 2026 20:02:28 UTC">2026-02-24</span>
   </span>
 
     
