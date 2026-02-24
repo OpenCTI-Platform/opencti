@@ -31,7 +31,7 @@ Local authentication will still be available with complex policies and 2FA. If y
 
 #### UI configuration authentication
 Additionally, authentication strategies will be converted to UI.
-For more information read the [migration process](breaking-changes/7.260224.0-SSO-authentication-migration.md) and the [new associated feature (Define Authentication via UI)](authentication-in-gui.md) pages.
+For more information read the [migration process](breaking-changes/7.260224.0-SSO-authentication-migration.md) and the new associated feature (Define Authentication via UI) pages.
 
 ### Breaking changes
 

@@ -47,7 +47,7 @@ The decay rule is a mathematical computation based on:
 - indicator score
 - being revoked or not
 
-There is two ways to update an indicator: either through an update, or ingesting an indicator that already exists in the platform upsert, [more information on deduplication page](../deduplication).
+There is two ways to update an indicator: either through an update, or ingesting an indicator that already exists in the platform upsert, [more information on deduplication page](deduplication.md).
 
 ### Upating score
 
