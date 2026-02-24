@@ -331,7 +331,7 @@ For detailed information about contributing to XTM Composer, including:
 - Testing requirements
 - GPG signing setup
 
-Please refer to our [**Contributing Guide**](../CONTRIBUTING.md).
+Please refer to our [**Contributing Guide**](https://github.com/OpenCTI-Platform/opencti/blob/master/CONTRIBUTING.md).
 
 ## Resources
 

@@ -83,7 +83,7 @@ Priority Intelligence Requirements (PIRs) gather and prioritize the most relevan
 
 ### SSO definition & usage
 
-Defining and using SSO (OpenID, LDAP, SAML, Certificate, Headers) requires an entreprise license. This feature allow you to define, from UI, any of these authentications. For more information, please read [Authentication via GUI configuration](../deployment/authetication-in-gui.md)
+Defining and using SSO (OpenID, LDAP, SAML, Certificate, Headers) requires an entreprise license. This feature allow you to define, from UI, any of these authentications. For more information, please read the Authentication via GUI configuration section in the deployment documentation.
 
 
 ## More to come

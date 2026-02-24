@@ -15,7 +15,6 @@ The OpenCTI Integration Manager is a deployment tool that simplifies the managem
     - [Proxy Support](integration-manager/proxy-configuration.md) - Configure system proxy and HTTPS proxy certificates
     - [Installation guide](integration-manager/installation.md) - System requirements and installation methods
     - [Configuration reference](integration-manager/configuration.md) - Complete configuration documentation
-    - [Security deep dive](integration-manager/security.md) - Database, encryption, and access control documentation
     - [Development guide](../development/integration-manager.md) - Setup for development and contribution
     - [Troubleshooting guide](integration-manager/troubleshooting.md) - Solutions to common issues
 
