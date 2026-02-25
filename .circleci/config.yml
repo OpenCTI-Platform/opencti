@@ -968,13 +968,13 @@ workflows:
                 - master
           requires:
             - build_frontend            
-      - build_platform_prerelease:
-          filters:
-            branches:
-              only:
-                - /release\/.*/
-          requires:
-            - build_frontend                        
+#      - build_platform_prerelease:
+#          filters:
+#            branches:
+#              only:
+#                - /release\/.*/
+#          requires:
+#            - build_frontend
       - build_platform_musl:
           filters:
             tags:
@@ -991,13 +991,13 @@ workflows:
                 - master
           requires:
             - build_frontend
-      - build_platform_musl_prerelease:
-          filters:
-            branches:
-              only:
-                - /release\/.*/
-          requires:
-            - build_frontend                        
+#      - build_platform_musl_prerelease:
+#          filters:
+#            branches:
+#              only:
+#                - /release\/.*/
+#          requires:
+#            - build_frontend
       - package_rolling:
           requires:
             - build_platform_rolling
@@ -1042,20 +1042,20 @@ workflows:
             branches:
               only:
                 - master
-      - docker_build_platform_prerelease:
-          requires:
-            - build_frontend
-          filters:
-            branches:
-              only:
-                - /release\/.*/
-      - docker_build_worker_prerelease:
-          requires:
-            - build_frontend
-          filters:
-            branches:
-              only:
-                - /release\/.*/
+#      - docker_build_platform_prerelease:
+#          requires:
+#            - build_frontend
+#          filters:
+#            branches:
+#              only:
+#                - /release\/.*/
+#      - docker_build_worker_prerelease:
+#          requires:
+#            - build_frontend
+#          filters:
+#            branches:
+#              only:
+#                - /release\/.*/
       - docker_build_platform_fips_rolling:
           requires:
             - build_frontend
@@ -1110,19 +1110,19 @@ workflows:
           requires:
             - docker_build_platform_rolling
             - docker_build_worker_rolling
-      - deploy_prerelease:
-          requires:
-            - docker_build_platform_prerelease
-            - docker_build_worker_prerelease
-      - deploy_dev:
-          requires:
-            - docker_build_platform_prerelease
-            - docker_build_worker_prerelease
+#      - deploy_prerelease:
+#          requires:
+#            - docker_build_platform_prerelease
+#            - docker_build_worker_prerelease
+#      - deploy_dev:
+#          requires:
+#            - docker_build_platform_prerelease
+#            - docker_build_worker_prerelease
       - notify_rolling:
           requires:
             - deploy_testing
-            - deploy_prerelease
-            - deploy_dev
+#            - deploy_prerelease
+#            - deploy_dev
             - docker_build_platform_fips_rolling
             - docker_build_worker_fips_rolling
             - package_rolling
