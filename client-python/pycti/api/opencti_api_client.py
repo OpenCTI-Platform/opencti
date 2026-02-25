@@ -799,15 +799,13 @@ class OpenCTIApiClient:
         """
         try:
             self.app_logger.info("Health check (platform version)...")
-            test = self.query(
-                """
+            test = self.query("""
                   query healthCheck {
                     about {
                       version
                     }
                   }
-                """
-            )
+                """)
             if test is not None:
                 return True
         except Exception as err:  # pylint: disable=broad-except
