@@ -449,6 +449,11 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   }
   // END Region Validation
 
+  const isDecayExcluded = indicatorBeforeUpdate.decay_exclusion_applied_rule !== undefined;
+  // If indicator is under decay exclusion, we just send the input as is for the update
+  if (isDecayExcluded) {
+    return stixDomainObjectEditField(context, user, id, input, opts);
+  }
   // Region Decay and {Score, Valid until, Revoke} computation
   // We keep everything EXCEPT fields that can be changed by decay computation
   const finalInput = input.filter((editInput) => {
