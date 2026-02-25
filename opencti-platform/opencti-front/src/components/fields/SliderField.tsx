@@ -4,7 +4,6 @@ import Slider, { SliderProps } from '@mui/material/Slider';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import * as R from 'ramda';
-import inject18n from '../i18n';
 
 export type SliderFieldProps = FieldProps<string> & Omit<SliderProps, 'onChange' | 'onFocus'> & {
   required: boolean;
@@ -58,11 +57,10 @@ const SliderField = (muiProps: SliderFieldProps) => {
       </InputLabel>
       <Slider
         value={parseInt(field.value, 10)}
-        readOnly={disabled}
         onChange={(_, value) => setFieldValue(name, String(value))}
         aria-labelledby="input-slider"
         marks={true}
-        required={required}
+        disabled={disabled}
       />
       {!R.isNil(meta.error) && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
@@ -71,4 +69,4 @@ const SliderField = (muiProps: SliderFieldProps) => {
   );
 };
 
-export default inject18n(SliderField);
+export default SliderField;
