@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   check-pr-title-convention:
-    name: Check that title follow convention
+    name: Check that title follows convention
     runs-on: ubuntu-latest
     permissions:
       contents: read
