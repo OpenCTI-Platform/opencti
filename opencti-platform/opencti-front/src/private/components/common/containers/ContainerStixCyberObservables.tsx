@@ -337,7 +337,6 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
             exportContext={{ entity_id: container.id, entity_type: 'Stix-Cyber-Observable' }}
             availableEntityTypes={['Stix-Cyber-Observable']}
             searchContextFinal={{ entityTypes: ['Stix-Cyber-Observable'] }}
-            container={container}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <ContainerAddStixCoreObjectsInLine
