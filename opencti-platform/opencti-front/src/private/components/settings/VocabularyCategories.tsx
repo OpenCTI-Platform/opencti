@@ -57,7 +57,7 @@ const VocabularyCategories = () => {
       isSortable: true,
     },
     description: {
-      id: t_i18n('description'),
+      id: 'description',
       percentWidth: 60,
       isSortable: false,
       render: (data: { category: VocabularyDefinition }) => {
