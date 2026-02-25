@@ -123,6 +123,7 @@ type DataTableInternalToolbarProps = Pick<DataTableProps,
   taskScope?: string;
   globalSearch?: string;
   displayEditButtons?: boolean;
+  container?: { id: string } | null;
 };
 
 const DataTableInternalToolbar = ({
@@ -137,6 +138,7 @@ const DataTableInternalToolbar = ({
   displayEditButtons,
   trashOperationsEnabled,
   deleteDisable,
+  container,
 }: DataTableInternalToolbarProps) => {
   const theme = useTheme<Theme>();
 
@@ -178,6 +180,7 @@ const DataTableInternalToolbar = ({
         displayEditButtons={displayEditButtons}
         trashOperationsEnabled={trashOperationsEnabled}
         deleteDisable={deleteDisable}
+        container={container}
       />
     </div>
   );
@@ -242,6 +245,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     markAsReadEnabled,
     trashOperationsEnabled,
     deleteDisable,
+    container,
   } = props;
 
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
@@ -300,6 +304,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             displayEditButtons={hasAuthorizedMembersCanEdit}
             trashOperationsEnabled={trashOperationsEnabled}
             deleteDisable={deleteDisable}
+            container={container}
           />
         )}
       />
