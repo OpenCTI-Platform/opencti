@@ -149,7 +149,7 @@ export const themeImport = async (context: AuthContext, user: AuthUser, file: Pr
   const validationResult = themeImportSchema.safeParse(parsedData);
 
   if (!validationResult.success) {
-    const errors = validationResult.error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
+    const errors = validationResult.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
     throw FunctionalError('Invalid theme file', errors);
   }
 
