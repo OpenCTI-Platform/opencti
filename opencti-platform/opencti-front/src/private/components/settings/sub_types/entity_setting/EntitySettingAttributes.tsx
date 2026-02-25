@@ -129,8 +129,7 @@ const EntitySettingAttributes = ({
         entitySetting={entitySetting}
       />
     </ListLines>
-  )
-  ;
+  );
 };
 
 export default EntitySettingAttributes;
