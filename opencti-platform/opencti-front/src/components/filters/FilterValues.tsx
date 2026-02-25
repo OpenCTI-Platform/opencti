@@ -286,6 +286,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                           />
                         )}
                         color={chipColor}
+                        sx={{ height: 26, alignSelf: 'center' }}
                       />
                     </Box>
                   </Tooltip>
