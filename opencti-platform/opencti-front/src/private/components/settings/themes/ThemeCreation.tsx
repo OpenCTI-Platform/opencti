@@ -1,14 +1,15 @@
-import React, { FunctionComponent } from 'react';
-import { Formik, FormikHelpers } from 'formik';
-import { Disposable, graphql, RecordSourceSelectorProxy } from 'relay-runtime';
+import { ThemeManagerQuery$variables } from '@components/settings/themes/__generated__/ThemeManagerQuery.graphql';
 import ThemeForm from '@components/settings/themes/ThemeForm';
 import themeValidationSchema from '@components/settings/themes/themeValidation';
-import { ThemeManagerQuery$variables } from '@components/settings/themes/__generated__/ThemeManagerQuery.graphql';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { Formik, FormikHelpers } from 'formik';
+import { FunctionComponent } from 'react';
+import { Disposable, graphql, RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { insertNode } from '../../../../utils/store';
 import Drawer from '../../common/drawer/Drawer';
 import { ThemeCreationCreateMutation } from './__generated__/ThemeCreationCreateMutation.graphql';
-import { insertNode } from '../../../../utils/store';
+import { LoginAsideType, ThemeCreationInput } from './ThemeType';
 
 export const createThemeMutation = graphql`
   mutation ThemeCreationCreateMutation($input: ThemeAddInput!) {
@@ -42,7 +43,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
 
   const validator = themeValidationSchema(t_i18n);
 
-  const initialValues = {
+  const initialValues: ThemeCreationInput = {
     name: '',
     theme_background: '',
     theme_paper: '',
@@ -54,11 +55,16 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
     theme_logo: '',
     theme_logo_collapsed: '',
     theme_logo_login: '',
+    theme_login_aside_type: '' as LoginAsideType,
+    theme_login_aside_color: '',
+    theme_login_aside_gradient_start: '',
+    theme_login_aside_gradient_end: '',
+    theme_login_aside_image: '',
   };
 
   const handleSubmit = async (
-    values: typeof initialValues,
-    { setSubmitting, resetForm }: FormikHelpers<typeof initialValues>,
+    values: ThemeCreationInput,
+    { setSubmitting, resetForm }: FormikHelpers<ThemeCreationInput>,
   ) => {
     try {
       await validator.validate(values);
@@ -76,6 +82,10 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
             theme_logo_collapsed: values.theme_logo_collapsed,
             theme_logo_login: values.theme_logo_login,
             theme_text_color: values.theme_text_color,
+            theme_login_aside_color: values.theme_login_aside_color || null,
+            theme_login_aside_gradient_start: values.theme_login_aside_gradient_start || null,
+            theme_login_aside_gradient_end: values.theme_login_aside_gradient_end || null,
+            theme_login_aside_image: values.theme_login_aside_image || null,
           },
         },
         updater: (store: RecordSourceSelectorProxy) => insertNode(
@@ -102,7 +112,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
       open={open}
       onClose={handleClose}
     >
-      <Formik
+      <Formik<ThemeCreationInput>
         onSubmit={handleSubmit}
         initialValues={initialValues}
         validationSchema={validator}

@@ -105,7 +105,9 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
     resetForm: (nextState?: Partial<FormikState<ThemeType>>) => void,
   ) => {
     try {
-      await validator.validate(values);
+      await validator.validate(values, {
+        stripUnknown: true,
+      });
       await updateTheme(values);
       setSubmitting(false);
     } catch (error) {
@@ -144,7 +146,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
             themeId={theme.id}
             onSubmit={submitForm}
             onCancel={handleClose}
-            onChange={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
+            onChange={(updatedValues) => handleOnChange(updatedValues ?? values, setSubmitting, setErrors, resetForm)}
             withButtons={false}
           />
         )}

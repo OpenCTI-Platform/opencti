@@ -20,6 +20,8 @@ interface ThemeType {
   theme_login_aside_type: LoginAsideType;
 }
 
+export type ThemeCreationInput = Omit<ThemeType, 'id' | 'system_default'>;
+
 export type LoginAsideType = '' | 'color' | 'gradient' | 'image';
 
 export default ThemeType;

@@ -1,7 +1,7 @@
 import Button from '@common/button/Button';
 import { MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import { Field, Form, useFormikContext } from 'formik';
-import { FunctionComponent } from 'react';
+import { FunctionComponent, useState } from 'react';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import { useFormatter } from '../../../../components/i18n';
@@ -34,7 +34,7 @@ interface ThemeFormProps {
   themeId?: string;
   onSubmit: () => void;
   onCancel: () => void;
-  onChange?: () => void;
+  onChange?: (values?: ThemeType) => void;
   submitLabel?: string;
   withButtons?: boolean;
 }
@@ -54,26 +54,34 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
   const { t_i18n } = useFormatter();
   const { setFieldValue, values: formikValues } = useFormikContext<ThemeType>();
 
-  const loginAsideType = formikValues.theme_login_aside_type;
+  const [loginAsideType, setLoginAsideType] = useState(
+    formikValues.theme_login_aside_type || '',
+  );
 
   const handleFieldSubmit = () => {
-    onChange?.();
+    onChange?.(formikValues);
   };
 
-  const handleLoginAsideTypeChange = (
-    event: SelectChangeEvent<string>,
-  ) => {
-    const type = event.target.value as ThemeType['theme_login_aside_type'];
+  const handleLoginAsideTypeChange = (event: SelectChangeEvent<string>) => {
+    const type = event.target.value as '' | 'color' | 'gradient' | 'image';
+    setLoginAsideType(type);
 
-    // update formik source of truth
-    setFieldValue('theme_login_aside_type', type, true);
+    const clearedValues: ThemeType = {
+      ...formikValues,
+      theme_login_aside_type: type,
+      theme_login_aside_color: '',
+      theme_login_aside_gradient_start: '',
+      theme_login_aside_gradient_end: '',
+      theme_login_aside_image: '',
+    };
 
+    setFieldValue('theme_login_aside_type', type);
     setFieldValue('theme_login_aside_color', '');
     setFieldValue('theme_login_aside_gradient_start', '');
     setFieldValue('theme_login_aside_gradient_end', '');
     setFieldValue('theme_login_aside_image', '');
 
-    onChange?.();
+    onChange?.(clearedValues);
   };
 
   return (
