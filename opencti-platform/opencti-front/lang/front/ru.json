@@ -255,6 +255,7 @@
   "An entity has left a selected PIR": "Сущность покинула выбранный PIR",
   "An entity is linked to an entity from a selected PIR": "Сущность связана с сущностью из выбранного PIR",
   "An enumeration of security platform type": "Перечисление типа платформы безопасности",
+  "An enumeration of SSH key types": "Перечисление типов ключей SSH",
   "An enumeration of Windows service start types": "Перечисление типов запуска служб Windows",
   "An enumeration of Windows service statuses": "Перечисление статусов служб Windows",
   "An enumeration of Windows service types": "Перечисление типов служб Windows",

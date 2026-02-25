@@ -57,10 +57,15 @@ const VocabularyCategories = () => {
       isSortable: true,
     },
     description: {
-      id: 'description',
+      id: t_i18n('description'),
       percentWidth: 60,
       isSortable: false,
-      render: (data: { category: VocabularyDefinition }) => defaultRender(data.category.description),
+      render: (data: { category: VocabularyDefinition }) => {
+        if (data.category.description) {
+          return defaultRender(t_i18n(`${data.category.description}`));
+        }
+        return '-';
+      },
     },
   };
 
