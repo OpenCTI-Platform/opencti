@@ -80,7 +80,7 @@ An icon and a number count will be visible when there are ongoing processes in t
 
 Once the content of the draft is deemed acceptable, the draft can be approved. Doing so will send the content of the draft for ingestion into the main knowledge base. The draft status will also be updated: the draft will no longer be considered opened, but validated.
 
-Drafts can be approved even if there are ongoing processes still ongoing, but please note that the modifications that would have been applied by these processess will be lost.
+Drafts can be approved even if there are still ongoing processes, but please note that the modifications that would have been applied by these processes will be lost.
 
 Depending on the draft operation of the data, the ingestion process will be slightly different. Only Create, Update and Delete operations are sent for ingestion. Created entities will be fully sent for ingestion. But updated entities will not be fully sent for ingestion and upserted: instead, only the updates applied in the draft will be applied on the main knowledge version. For deletions, only deleted entities will have a delete action applied, and not delete linked entities.
 

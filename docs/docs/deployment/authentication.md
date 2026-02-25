@@ -6,7 +6,7 @@
 
      SSO configuration is under the [OpenCTI Enterprise Edition](https://docs.opencti.io/latest/administration/enterprise/?h=ente) license. 
 
-With version 7.260224.0, defining & using authentication strategies is an Entreprise Edition feature. Using local authentication will be the unique way to login for Community Edition. More information in [this page](breaking-changes/7.260224.0-SSO-authentication-migration.md)
+With version 7.260224.0, defining & using authentication strategies is an Enterprise Edition feature. Using local authentication will be the unique way to login for Community Edition. More information in [this page](breaking-changes/7.260224.0-SSO-authentication-migration.md)
 
 Additionally, given the introduction of the capability to define [authentications via UI](../administration/authentication-via-ui.md), **defining authentication via environment variable will be decommissioned after some time (you will be warned before this change will be effective with enough time to ensure all needed actions are taken)** 
 
@@ -31,7 +31,7 @@ Under the hood, we technically use the strategies provided by [PassportJS](http:
 
 This strategy uses the OpenCTI database as a user management.
 
-OpenCTI use this strategy as the default, but it's not the one we recommend for security reasons.
+OpenCTI uses this strategy as the default, but it's not the one we recommend for security reasons.
 
 ```json
 "local": {
@@ -234,7 +234,7 @@ Here is an example of OpenID configuration using environment variables:
 - PROVIDERS__OPENID__CONFIG__LOGOUT_REMOTE=false
 ```
 
-OpenCTI support mapping OpenID Claims on OpenCTI Groups (everything is tied to a group in the platform). Here is an example:
+OpenCTI supports mapping OpenID Claims on OpenCTI Groups (everything is tied to a group in the platform). Here is an example:
 
 ```json
 "oic": {

@@ -7,7 +7,7 @@ From the `Arsenal` section, users can access the following tabs:
 - `Malware`: `Malware` represents any piece of code specifically designed to damage, disrupt, or gain unauthorized access to computer systems, networks, or user data.
 - `Channels`: `Channels`, in the context of cybersecurity, refer to places or means through which actors disseminate information. This category is used in particular in the context of FIMI (Foreign Information Manipulation Interference). 
 - `Tools`: `Tools` represent legitimate, installed software or hardware applications on an operating system that can be misused by attackers for malicious purposes. (e.g. LOLBAS).
-- `Vulnerabilities`: `Vulnerabilities` are weaknesses or that can be exploited by attackers to compromise the security, integrity, or availability of a computer system or network.
+- `Vulnerabilities`: `Vulnerabilities` are weaknesses that can be exploited by attackers to compromise the security, integrity, or availability of a computer system or network.
 
 
 ## Malware
@@ -30,7 +30,7 @@ When clicking on an `Malware` card you land on its Overview tab. For a Malware, 
 
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Malware. Different thematic views are proposed to easily see the victimology, the threat actors and intrusion sets using the Malware, etc. As described [here](overview.md#knowledge-section).
-- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Malware. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
+- Content: This specific tab allows to preview, manage and write deliverable associated with the Malware. For example an analytical report to share with other teams, a markdown file to feed a collaborative wiki, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
@@ -54,7 +54,7 @@ When clicking on a `Channel` in the list, you land on its Overview tab. For a Ch
 
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Channel. Different thematic views are proposed to easily see the victimology, the threat actors and intrusion sets using the Malware, etc. As described [here](overview.md#knowledge-section).
-- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Channel. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
+- Content: This specific tab allows to preview, manage and write deliverable associated with the Channel. For example an analytical report to share with other teams, a markdown file to feed a collaborative wiki, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
@@ -70,13 +70,13 @@ When clicking on the `Tools` tab at the top left, you see the list of all the `T
 
 ![Tools list](assets/tools_list_view.png)
 
-### Visualizing Knowledge associated with an Observed Data
+### Visualizing Knowledge associated with a Tool
 
 When clicking on a `Tool` in the list, you land on its Overview tab. For a Tool, the following tabs are accessible:
 
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Tool. Different thematic views are proposed to easily see the threat actors, the intrusion sets and the malware using the Tool. As described [here](overview.md#knowledge-section).
-- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Tool. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
+- Content: This specific tab allows to preview, manage and write deliverable associated with the Tool. For example an analytical report to share with other teams, a markdown file to feed a collaborative wiki, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
@@ -92,13 +92,13 @@ When clicking on the `Vulnerabilities` tab at the top left, you see the list of 
 
 ![Vulnerabilities list](assets/vulnerabilities_list_view.png)
 
-### Visualizing Knowledge associated with an Observed Data
+### Visualizing Knowledge associated with a Vulnerability
 
 When clicking on a `Vulnerabilities` in the list, you land on its Overview tab. For a Vulnerability, the following tabs are accessible:
 
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge linked to the Vulnerability. Different thematic views are proposed to easily see the threat actors, the intrusion sets and the malware exploiting the Vulnerability. As described [here](overview.md#knowledge-section).
-- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Vulnerability. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
+- Content: This specific tab allows to preview, manage and write deliverable associated with the Vulnerability. For example an analytical report to share with other teams, a markdown file to feed a collaborative wiki, etc. As described [here](overview.md#content-section).
 - Analyses: as described [here](overview.md#analyses-section).
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
