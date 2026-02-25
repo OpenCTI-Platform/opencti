@@ -8,11 +8,10 @@ coverage:
         target: 80%
         informational: true
       critical_back:
-          target: 100%
-          paths: "src/opencti-platform/opencti-graphql/src/database"
-          informational: true
+        target: 100%
+        paths: ["src/opencti-platform/opencti-graphql/src/database"]
+        informational: true
       critical_front:
         target: 100%
-        paths: "src/opencti-platform/opencti-front/src/utils/hooks"
+        paths: ["src/opencti-platform/opencti-front/src/utils/hooks"]
         informational: true
-
