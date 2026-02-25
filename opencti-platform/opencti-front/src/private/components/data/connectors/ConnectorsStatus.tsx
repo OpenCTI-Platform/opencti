@@ -314,7 +314,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                   <SortConnectorsHeader field="messages" label="Messages" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                   <SortConnectorsHeader field="active" label="Status" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                   <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
-                  <SortConnectorsHeader field="is_managed" label={t_i18n('Manager deployment')} isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
+                  <SortConnectorsHeader field="is_managed" label={t_i18n('Manager deployment')} isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} textAlign="center" />
                 </div>
               )}
             />
@@ -430,7 +430,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                             </div>
                             <div
                               className={classes.bodyItem}
-                              style={{ justifyContent: 'flex-start' }}
+                              style={{ justifyContent: 'center' }}
                             >
                               <BooleanStatusIcon status={connector.is_managed} />
                             </div>

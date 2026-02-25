@@ -1,7 +1,6 @@
 import React, { CSSProperties } from 'react';
 import { ArrowDropDownOutlined, ArrowDropUpOutlined } from '@mui/icons-material';
 import Box from '@mui/material/Box';
-
 import { useFormatter } from '../../../../components/i18n';
 
 const sortHeaderStyle: Record<string, CSSProperties> = {
@@ -57,9 +56,10 @@ interface SortConnectorsHeaderProps {
   orderAsc: boolean;
   sortBy: string;
   reverseBy: (field: string) => void;
+  textAlign?: CSSProperties['textAlign'];
 }
 
-const SortConnectorsHeader: React.FC<SortConnectorsHeaderProps> = ({ field, label, isSortable, orderAsc, sortBy, reverseBy }) => {
+const SortConnectorsHeader: React.FC<SortConnectorsHeaderProps> = ({ field, label, isSortable, orderAsc, sortBy, reverseBy, textAlign = 'left' }) => {
   const { t_i18n } = useFormatter();
 
   const sortComponent = orderAsc ? (
@@ -71,7 +71,7 @@ const SortConnectorsHeader: React.FC<SortConnectorsHeaderProps> = ({ field, labe
   if (isSortable) {
     return (
       <Box
-        sx={sortHeaderStyle[field]}
+        sx={{ ...sortHeaderStyle[field], textAlign }}
         onClick={() => reverseBy(field)}
       >
         <span>{t_i18n(label)}</span>
@@ -81,7 +81,7 @@ const SortConnectorsHeader: React.FC<SortConnectorsHeaderProps> = ({ field, labe
   }
 
   return (
-    <div style={sortHeaderStyle[field]}>
+    <div style={{ ...sortHeaderStyle[field], textAlign }}>
       <span>{t_i18n(label)}</span>
     </div>
   );
