@@ -25,10 +25,37 @@ class ListLinesContent extends Component {
     this.listRef = React.createRef();
     this.state = {
       loadingRowCount: 0,
+      computedScrollElement: null,
     };
   }
 
+  componentDidMount() {
+    this.updateScrollElement();
+    if (this._windowScroller) {
+      this._windowScroller.updatePosition();
+    }
+  }
+
+  updateScrollElement() {
+    if (!this.props.height && !this.props.containerRef && this.containerRef.current) {
+      let node = this.containerRef.current.parentNode;
+      while (node && node !== document.body && node !== document.documentElement) {
+        if (node instanceof HTMLElement) {
+          const { overflowY } = window.getComputedStyle(node);
+          if (overflowY === 'auto' || overflowY === 'scroll') {
+            this.setState({ computedScrollElement: node });
+            return;
+          }
+        }
+        node = node.parentNode;
+      }
+    }
+  }
+
   componentDidUpdate(prevProps) {
+    if (!this.state.computedScrollElement) {
+      this.updateScrollElement();
+    }
     const diff = !R.equals(this.props.dataList, prevProps.dataList)
       || !R.equals(this.props.bookmarkList, prevProps.bookmarkList);
     let selection = false;
@@ -49,6 +76,9 @@ class ListLinesContent extends Component {
     }
     if (diff || selection) {
       this.listRef.forceUpdateGrid();
+      if (this._windowScroller) {
+        this._windowScroller.updatePosition();
+      }
     }
   }
 
@@ -244,6 +274,8 @@ class ListLinesContent extends Component {
       scrollElement = this.containerRef.current;
     } else if (propContainerRef && propContainerRef.current) {
       scrollElement = propContainerRef.current;
+    } else if (this.state.computedScrollElement) {
+      scrollElement = this.state.computedScrollElement;
     }
     return (
       <div
@@ -258,7 +290,11 @@ class ListLinesContent extends Component {
         }}
         ref={this.containerRef}
       >
-        <WindowScroller ref={this._setRef} scrollElement={scrollElement}>
+        <WindowScroller
+          key={scrollElement === window ? 'window' : 'element'}
+          ref={this._setRef}
+          scrollElement={scrollElement}
+        >
           {({ height, isScrolling, onChildScroll, scrollTop }) => (
             <div className={classes.windowScrollerWrapper}>
               <InfiniteLoader
