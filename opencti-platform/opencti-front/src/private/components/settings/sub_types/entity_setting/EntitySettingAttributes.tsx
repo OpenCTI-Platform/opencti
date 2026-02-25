@@ -121,16 +121,14 @@ const EntitySettingAttributes = ({
     (attr: AttributeNode) => ({ node: attr }),
   );
   return (
-    <div style={{ margin: 0 }}>
-      <ListLines dataColumns={dataColumns} noFilters={true} iconExtension>
-        <EntitySettingAttributeLines
-          datas={datas}
-          dataColumns={dataColumns}
-          keyword={searchTerm}
-          entitySetting={entitySetting}
-        />
-      </ListLines>
-    </div>
+    <ListLines dataColumns={dataColumns} noFilters={true} iconExtension>
+      <EntitySettingAttributeLines
+        datas={datas}
+        dataColumns={dataColumns}
+        keyword={searchTerm}
+        entitySetting={entitySetting}
+      />
+    </ListLines>
   )
   ;
 };

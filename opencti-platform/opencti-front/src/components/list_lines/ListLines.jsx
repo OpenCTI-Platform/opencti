@@ -57,7 +57,7 @@ const styles = (theme) => ({
     display: 'flex',
     alignItems: 'center',
     gap: 10,
-    paddingBottom: 0,
+    paddingBottom: 10,
     flexWrap: 'wrap',
   },
   parametersWithPadding: {
