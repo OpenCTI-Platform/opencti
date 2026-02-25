@@ -19,7 +19,7 @@ export const tasksDataColumns: DataColumns = {
   },
   due_date: {
     label: 'Due Date',
-    width: '12%',
+    width: '19%',
     isSortable: true,
     render: (task: TasksLine_node$data) => (
       <ItemDueDate due_date={task.due_date} variant="inList" />
@@ -27,7 +27,7 @@ export const tasksDataColumns: DataColumns = {
   },
   objectAssignee: {
     label: 'Assignees',
-    width: '18%',
+    width: '17%',
     isSortable: true,
 
     render: (task: TasksLine_node$data) => ((task.objectAssignee ?? []).length > 0
@@ -36,7 +36,7 @@ export const tasksDataColumns: DataColumns = {
   },
   objectLabel: {
     label: 'Labels',
-    width: '18%',
+    width: '17%',
     isSortable: false,
     render: (task: TasksLine_node$data) => (
       <StixCoreObjectLabels variant="inList" labels={task.objectLabel} />
@@ -44,7 +44,7 @@ export const tasksDataColumns: DataColumns = {
   },
   x_opencti_workflow_id: {
     label: 'Status',
-    width: '15%',
+    width: '12%',
     isSortable: true,
     render: (task: TasksLine_node$data) => (
       <ItemStatus
