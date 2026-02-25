@@ -353,12 +353,16 @@
     "interval": 10000
   },
   "redis": {
-    "mode": "single",
+    "mode": "cluster",
+    "hostnames": ["localhost:6379", "localhost:6380", "localhost:6381"],
+    "nat_map": [
+      "host.docker.internal:6379>localhost:6379",
+      "host.docker.internal:6380>localhost:6380",
+      "host.docker.internal:6381>localhost:6381"
+    ],
     "namespace": "",
-    "hostname": "localhost",
     "use_ssl": false,
     "ca": [],
-    "port": 6379,
     "host_ip_family": 4,
     "trimming": 2000000
   },
