@@ -10,6 +10,7 @@ import SystemBanners from '../SystemBanners';
 import { LoginRootPublicQuery$data } from '../../__generated__/LoginRootPublicQuery.graphql';
 import LoginLogo from './LoginLogo';
 import { hasCustomColor } from '../../../utils/theme';
+import { getLoginAsideType } from '../../../private/components/settings/themes/theme-utils';
 
 const LogoBaseline = () => {
   const theme = useTheme<Theme>();
@@ -66,6 +67,31 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
   const isEnterpriseEdition = settings.platform_enterprise_edition_license_validated;
   const isWhitemarkEnable = settings.platform_whitemark && isEnterpriseEdition;
 
+  const loginAsideType = getLoginAsideType({
+    theme_login_aside_color: settings.platform_theme?.theme_login_aside_color,
+    theme_login_aside_gradient_start: settings.platform_theme?.theme_login_aside_gradient_start,
+    theme_login_aside_gradient_end: settings.platform_theme?.theme_login_aside_gradient_end,
+    theme_login_aside_image: settings.platform_theme?.theme_login_aside_image,
+  });
+
+  const getAsideBackground = () => {
+    if (loginAsideType === 'color') {
+      return settings.platform_theme?.theme_login_aside_color;
+    }
+
+    if (loginAsideType === 'gradient') {
+      return `linear-gradient(135deg, ${settings.platform_theme?.theme_login_aside_gradient_start} 0%, ${settings.platform_theme?.theme_login_aside_gradient_end} 100%)`;
+    }
+
+    if (loginAsideType === 'image') {
+      return `url(${settings.platform_theme?.theme_login_aside_image})`;
+    }
+    // fallback to default
+    return theme.palette.mode === 'dark'
+      ? 'linear-gradient(100deg, #050A14 0%, #0C1728 100%)'
+      : 'linear-gradient(100deg, #EAEAED 0%, #FEFEFF 100%)';
+  };
+
   const hasCustomBackground = hasCustomColor(theme, 'theme_background');
   const backgroundContent = hasCustomBackground
     ? theme.palette.background.default
@@ -79,15 +105,24 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
     zIndex: 2,
   };
 
-  const background = theme.palette.mode === 'dark'
-    ? 'linear-gradient(100deg, #050A14 0%, #0C1728 100%);'
-    : 'linear-gradient(100deg, #EAEAED 0%, #FEFEFF 100%)';
+  console.log('settings.platform_theme?', settings.platform_theme);
 
   const asideSx: SxProps = {
-    background,
+    background: getAsideBackground(),
+    backgroundSize: loginAsideType === 'image' ? 'cover' : undefined,
+    backgroundPosition: loginAsideType === 'image' ? 'center' : undefined,
     position: 'relative',
     overflow: 'hidden',
   };
+  // const background = theme.palette.mode === 'dark'
+  //   ? 'linear-gradient(100deg, #050A14 0%, #0C1728 100%);'
+  //   : 'linear-gradient(100deg, #EAEAED 0%, #FEFEFF 100%)';
+
+  // const asideSx: SxProps = {
+  //   background,
+  //   position: 'relative',
+  //   overflow: 'hidden',
+  // };
 
   return (
     <>
@@ -104,7 +139,7 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
           {children}
         </Stack>
         <Box flex={1} sx={asideSx}>
-          {!isWhitemarkEnable && (
+          {!isWhitemarkEnable && loginAsideType === '' && (
             <>
               <LogoBaseline />
               <LogoFiligran />
