@@ -11,6 +11,7 @@ import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
+import AIInsights from '@components/common/ai/AIInsights';
 import { QueryRenderer } from '../../../../relay/environment';
 import Report from './Report';
 import { RootReportSubscription } from './__generated__/RootReportSubscription.graphql';
@@ -132,7 +133,6 @@ const RootReport = () => {
                     enableQuickSubscription={true}
                     enableQuickExport={true}
                     enableEnrollPlaybook={true}
-                    enableAskAi={false}
                     overview={isOverview}
                     redirectToContent={true}
                     enableEnricher={true}
@@ -187,6 +187,7 @@ const RootReport = () => {
                     </Tabs>
                     {!isKnowledgeOrContent && (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                        <AIInsights id={report.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
                         <StixCoreObjectSecurityCoverage id={report.id} coverage={report.securityCoverage} />
                       </div>
                     )}
