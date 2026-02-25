@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 import * as R from 'ramda';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import { useTheme } from '@mui/styles';
@@ -9,7 +9,6 @@ import { radarChartOptions } from '../../../../utils/Charts';
 import { generateGreenToRedColors } from '../../../../utils/Colors';
 import { StixCoreObjectOpinionsRadarDistributionQuery } from './__generated__/StixCoreObjectOpinionsRadarDistributionQuery.graphql';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import { MESSAGING$ } from '../../../../relay/environment';
 
 export const stixCoreObjectOpinionsRadarDistributionQuery = graphql`
   query StixCoreObjectOpinionsRadarDistributionQuery(
@@ -43,9 +42,10 @@ interface StixCoreObjectOpinionsRadarProps {
   height: number;
   opinionOptions: { label: string; value: number }[];
   handleOpen: () => void;
+  onHasDataChange?: (hasData: boolean) => void;
 }
 
-const StixCoreObjectOpinionsRadar: FunctionComponent<StixCoreObjectOpinionsRadarProps> = ({ queryRef, opinionOptions, height, handleOpen }) => {
+const StixCoreObjectOpinionsRadar: FunctionComponent<StixCoreObjectOpinionsRadarProps> = ({ queryRef, opinionOptions, height, handleOpen, onHasDataChange }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const { opinionsDistribution } = usePreloadedQuery<StixCoreObjectOpinionsRadarDistributionQuery>(stixCoreObjectOpinionsRadarDistributionQuery, queryRef);
@@ -64,17 +64,14 @@ const StixCoreObjectOpinionsRadar: FunctionComponent<StixCoreObjectOpinionsRadar
   ];
   const labels = opinionOptions.map((m) => m.label);
   const colors = generateGreenToRedColors(opinionOptions.length);
+  const hasData = !!opinionsDistribution && opinionsDistribution.length > 0;
+
+  useEffect(() => {
+    onHasDataChange?.(hasData);
+  }, [hasData]);
 
   const handleRadarOpen = () => {
-    if (opinionsDistribution && opinionsDistribution.length > 0) {
-      handleOpen();
-    } else {
-      MESSAGING$.notifyError(
-        <span>
-          {t_i18n('No opinions have been added for this entity.')}
-        </span>,
-      );
-    }
+    if (hasData) handleOpen();
   };
 
   if (opinionOptions.length === 0) {

@@ -43,6 +43,7 @@ const StixCoreObjectOpinionsComponent: FunctionComponent<StixCoreObjectOpinionsP
   const [deleteActionTrigger, setDeleteActionTrigger] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const [radarHasData, setRadarHasData] = useState(false);
   const handleDelete = () => {
     setDeleteActionTrigger((prev) => !prev);
   };
@@ -127,7 +128,7 @@ const StixCoreObjectOpinionsComponent: FunctionComponent<StixCoreObjectOpinionsP
           />
         </React.Suspense>
       )}
-      <div style={{ height, cursor: 'pointer' }}>
+      <div style={{ height, cursor: radarHasData ? 'pointer' : 'default' }}>
         {distributionQueryRef && (
           <React.Suspense
             fallback={<span />}
@@ -137,6 +138,7 @@ const StixCoreObjectOpinionsComponent: FunctionComponent<StixCoreObjectOpinionsP
               height={height}
               opinionOptions={opinionOptions}
               handleOpen={handleOpen}
+              onHasDataChange={setRadarHasData}
             />
           </React.Suspense>
         )}
