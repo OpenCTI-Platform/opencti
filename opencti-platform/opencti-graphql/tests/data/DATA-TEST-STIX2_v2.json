@@ -8,7 +8,7 @@
       "spec_version": "2.1",
       "name": "ANSSI",
       "identity_class": "organization",
-      "labels": ["identity"],
+      "labels": ["identity", "organization"],
       "created": "2020-02-23T23:40:53.575Z",
       "modified": "2020-02-27T08:45:39.351Z",
       "x_opencti_organization_type": "CSIRT",
