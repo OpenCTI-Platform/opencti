@@ -1,25 +1,23 @@
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@common/button/IconButton';
 import { PaletteOutlined } from '@mui/icons-material';
-import Popover from '@mui/material/Popover';
+import Popover, { PopoverProps } from '@mui/material/Popover';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import React, { useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { displayEntityTypeForTranslation } from '../../../../utils/String';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles({
-  container2: {
-    width: 300,
-    padding: 0,
-  },
-});
+interface SearchScopeElementProps {
+  name: string;
+  disabled?: boolean;
+  searchScope: Record<string, string[]>;
+  setSearchScope: React.Dispatch<React.SetStateAction<Record<string, string[]>>>;
+  availableRelationFilterTypes?: Record<string, string[]>;
+}
 
 const SearchScopeElement = ({
   name,
@@ -27,10 +25,9 @@ const SearchScopeElement = ({
   searchScope,
   setSearchScope,
   availableRelationFilterTypes,
-}) => {
+}: SearchScopeElementProps) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
-  const [anchorElSearchScope, setAnchorElSearchScope] = useState();
+  const [anchorElSearchScope, setAnchorElSearchScope] = useState<PopoverProps['anchorEl']>();
   const { stixCoreObjectTypes: entityTypes } = useAttributes();
   if (name === 'contextEntityId') {
     entityTypes.push('User');
@@ -48,9 +45,9 @@ const SearchScopeElement = ({
       };
     })
     .sort((a, b) => a.label.localeCompare(b.label));
-  const handleOpenSearchScope = (event) => setAnchorElSearchScope(event.currentTarget);
+  const handleOpenSearchScope = (event: React.SyntheticEvent) => setAnchorElSearchScope(event.currentTarget);
   const handleCloseSearchScope = () => setAnchorElSearchScope(undefined);
-  const handleToggleSearchScope = (key, value) => {
+  const handleToggleSearchScope = (key: string, value: string) => {
     setSearchScope((c) => ({
       ...c,
       [key]: (searchScope[key] || []).includes(value)
@@ -59,18 +56,22 @@ const SearchScopeElement = ({
     }));
   };
 
-  let color = searchScope[name] && searchScope[name].length > 0
+  const color = searchScope[name] && searchScope[name].length > 0
     ? 'secondary'
     : 'primary';
-  if (disabled) color = undefined;
 
   return (
     <InputAdornment position="end" style={{ position: 'absolute', right: 5 }}>
-      <IconButton disabled={disabled} onClick={handleOpenSearchScope} size="small" edge="end">
-        <PaletteOutlined fontSize="small" color={color} />
+      <IconButton disabled={disabled} onClick={handleOpenSearchScope} size="small">
+        <PaletteOutlined fontSize="small" color={disabled ? undefined : color} />
       </IconButton>
       <Popover
-        classes={{ paper: classes.container2 }}
+        sx={{
+          '& .MuiPaper-root': {
+            width: 300,
+            padding: 0,
+          },
+        }}
         open={Boolean(anchorElSearchScope)}
         anchorEl={anchorElSearchScope}
         onClose={() => handleCloseSearchScope()}
