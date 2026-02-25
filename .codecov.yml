@@ -12,7 +12,7 @@ coverage:
       opencti-graphql-mandatory:
         target: 80%
         informational: false
-        paths: 
+        paths:
           - opencti-platform/opencti-graphql/src/modules
           - opencti-platform/opencti-graphql/src/domain
           - opencti-platform/opencti-graphql/src/resolvers
@@ -21,10 +21,14 @@ coverage:
       opencti-graphql-info:
         target: 80%
         informational: true
-        paths: 
+        paths:
           - opencti-platform
       client-python:
         target: 80%
         informational: true
         paths:
           - client-python
+fixes:
+  - "/home/runner/work/opencti/opencti/frontend-e2e-test/opencti-platform/opencti-front/::opencti-platform/opencti-front/"
+  - "frontend-e2e-test/::"
+  - "localhost-3000/::src"

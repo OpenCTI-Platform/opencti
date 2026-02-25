@@ -1,6 +1,7 @@
 // fixtures.js for v8 coverage
 import { test as testBase, expect } from '@playwright/test';
 import { addCoverageReport } from 'monocart-reporter';
+import { readdirSync, readFileSync } from 'node:fs';
 
 const test = testBase.extend({
   autoTestFixture: [async ({ page }, use) => {
@@ -28,6 +29,13 @@ const test = testBase.extend({
         page.coverage.stopJSCoverage(),
         page.coverage.stopCSSCoverage(),
       ]);
+      if (!!process.env.CI) {
+        jsCoverage.forEach((entry) => {
+          if (entry.url.endsWith('front.js')) {
+            entry.sourceMap = JSON.parse(readFileSync('builder/prod/build/static/js/front.js.map').toString('utf-8'));
+          }
+        });
+      }
       const coverageList = [...jsCoverage, ...cssCoverage];
       // console.log(coverageList.map((item) => item.url));
       await addCoverageReport(coverageList, test.info());

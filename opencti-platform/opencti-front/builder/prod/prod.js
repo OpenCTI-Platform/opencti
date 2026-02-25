@@ -3,7 +3,7 @@ const { cp, rename, rm, readdir, writeFile } = require("node:fs/promises")
 const { RelayPlugin } = require("../plugin/esbuild-relay");
 
 // Define args options
-const keep = process.argv.slice(2).includes('--keep');
+const keep = true;
 
 const buildPath = "./builder/prod/build";
 

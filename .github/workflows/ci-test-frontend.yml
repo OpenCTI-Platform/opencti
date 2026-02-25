@@ -161,8 +161,10 @@ jobs:
           -v ${{ github.workspace }}/frontend-e2e-test:/home/workspace \
           -e BACK_END_URL=http://opencti-e2e-start:4100 \
           -e E2E_TEST=true \
+          -e E2E_COVERAGE=true \
           -e TEAMS_WEBHOOK="teams-webhook-url" \
           -e NODE_OPTIONS=--max_old_space_size=8192 \
+          -e CI=true \
           node:22.21.0 \
           sh -c 'set -ex;
               echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
@@ -174,7 +176,7 @@ jobs:
               cp /home/workspace/opencti-platform/.yarnrc.yml .
               yarn install
               yarn playwright install --with-deps chromium
-              yarn build
+              yarn build:standalone
               yarn test:e2e
             '
 
@@ -187,6 +189,16 @@ jobs:
         path: ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-front/test-results
         retention-days: 15
 
+    - name: Upload e2e coverage to Codecov
+      if: always()
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-front/test-results/lcov.info
+        fail_ci_if_error: true
+        flags: opencti-front-e2e
+        override_branch: ${{ github.head_ref || github.ref_name }}
+        override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
 
     - name: Logs opencti-e2e-start
       if: always()

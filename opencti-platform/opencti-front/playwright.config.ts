@@ -27,8 +27,23 @@ export default defineConfig({
       outputFile: './test-results/report.html',
       // global coverage report options
       coverage: {
-        entryFilter: (entry) => true,
-        sourceFilter: (sourcePath) => sourcePath.startsWith('src'),
+        entryFilter: (entry) => entry.url.endsWith('.js') && !entry.url.includes('.css') && !entry.url.includes('.map') && !entry.url.includes('node_modules'),
+        sourceFilter: (sourcePath) => !sourcePath.includes('.css') && !sourcePath.includes('.map') && !sourcePath.includes('node_modules'),
+        sourcePath: (sourcePath) => {
+          // if (sourcePath.startsWith('/home/workspace/')) {
+          //   return sourcePath.replace('/home/workspace/', '');
+          // }
+          // if (sourcePath.startsWith('localhost-3000') || sourcePath.startsWith('http://localhost:3000') || sourcePath.startsWith('https://localhost:3000')) {
+          //   return sourcePath.replace(/^(localhost-3000|https?:\/\/localhost:3000)/, '');
+          // }
+          // return sourcePath;
+        },
+        reports: [
+          // LCOV for Codecov upload
+          ['lcovonly', { file: 'lcov.info' }],
+          // V8 HTML report for local viewing
+          ['v8'],
+        ],
       },
     }]
   ],
