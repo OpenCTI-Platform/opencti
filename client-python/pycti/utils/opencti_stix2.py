@@ -3544,6 +3544,9 @@ class OpenCTIStix2:
         # Import every element in a specific order
         imported_elements = []
         too_large_elements_bundles = []
+        original_bundle_id = stix_bundle["id"]
+        bundle_tracking = 0
+        self.opencti.set_bundle_id(original_bundle_id)
         for bundle in bundles:
             bundle_id = bundle["id"]
             for item in bundle["objects"]:
@@ -3567,6 +3570,8 @@ class OpenCTIStix2:
                     )
                     too_large_elements_bundles.append(item)
                 else:
+                    bundle_tracking = bundle_tracking + 1
+                    self.opencti.set_bundle_tracking(original_bundle_id)
                     failed_item = self.import_item_with_retries(
                         item, update, types, work_id, bundle_id
                     )

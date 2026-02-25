@@ -534,6 +534,12 @@ class OpenCTIApiClient:
         """
         self.request_headers["opencti-work-id"] = work_id
 
+    def set_bundle_id(self, bundle_id):
+        self.request_headers["opencti-bundle-id"] = bundle_id
+
+    def set_bundle_tracking(self, bundle_tracking):
+        self.request_headers["opencti-bundle-tracking"] = bundle_tracking
+
     def set_synchronized_upsert_header(self, synchronized):
         """Set the synchronized upsert header.
 
