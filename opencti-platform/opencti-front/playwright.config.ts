@@ -33,7 +33,7 @@ export default defineConfig({
         sourceFilter: (sourcePath) => sourcePath.startsWith('src'),
         reports: [
           ['v8'],
-          ['lcovonly'],
+          ['codecov'],
         ],
       },
       /*

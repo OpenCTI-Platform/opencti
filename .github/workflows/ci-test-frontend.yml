@@ -189,7 +189,7 @@ jobs:
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        files: ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-front/test-results/coverage/lcov.info
+        files: ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-front/test-results/coverage/codecov.json
         flags: opencti-front-e2e
         fail_ci_if_error: true
         override_branch: ${{ github.head_ref || github.ref_name }}
