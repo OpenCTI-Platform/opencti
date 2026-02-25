@@ -1,5 +1,6 @@
 import Button from '@common/button/Button';
-import { Field, Form } from 'formik';
+import { MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Field, Form, useFormikContext } from 'formik';
 import { FunctionComponent } from 'react';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
@@ -7,8 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ThemeDetectDuplicate from './ThemeDetectDuplicate';
-import SelectField from '../../../../components/fields/SelectField';
-import { MenuItem } from '@mui/material';
+import ThemeType from './ThemeType';
 
 interface ThemeFormProps {
   values: {
@@ -23,7 +23,6 @@ interface ThemeFormProps {
     theme_logo?: string | null;
     theme_logo_collapsed?: string | null;
     theme_logo_login?: string | null;
-    theme_login_aside_type?: string | null;
     theme_login_aside_color?: string | null;
     theme_login_aside_gradient_start?: string | null;
     theme_login_aside_gradient_end?: string | null;
@@ -53,11 +52,28 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
   withButtons = true,
 }) => {
   const { t_i18n } = useFormatter();
+  const { setFieldValue, values: formikValues } = useFormikContext<ThemeType>();
+
+  const loginAsideType = formikValues.theme_login_aside_type;
 
   const handleFieldSubmit = () => {
-    if (onChange) {
-      onChange();
-    }
+    onChange?.();
+  };
+
+  const handleLoginAsideTypeChange = (
+    event: SelectChangeEvent<string>,
+  ) => {
+    const type = event.target.value as ThemeType['theme_login_aside_type'];
+
+    // update formik source of truth
+    setFieldValue('theme_login_aside_type', type, true);
+
+    setFieldValue('theme_login_aside_color', '');
+    setFieldValue('theme_login_aside_gradient_start', '');
+    setFieldValue('theme_login_aside_gradient_end', '');
+    setFieldValue('theme_login_aside_image', '');
+
+    onChange?.();
   };
 
   return (
@@ -81,6 +97,8 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
         required
         onSubmit={handleFieldSubmit}
       />
+
+      {/* ===== COLORS ===== */}
 
       <Field
         component={ColorPickerField}
@@ -152,12 +170,14 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
         component={ColorPickerField}
         name="theme_text_color"
         label={t_i18n('Text color')}
-        style={fieldSpacingContainerStyle}
         fullWidth
+        style={fieldSpacingContainerStyle}
         variant="standard"
         required
         onSubmit={handleFieldSubmit}
       />
+
+      {/* ===== LOGOS ===== */}
 
       <Field
         component={TextField}
@@ -189,22 +209,25 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
         onSubmit={handleFieldSubmit}
       />
 
-      <Field
-        component={SelectField}
-        name="theme_login_aside_type"
-        label={t_i18n('Login aside type')}
+      {/* ===== LOGIN ASIDE TYPE ===== */}
+
+      <Select
+        value={loginAsideType}
+        onChange={handleLoginAsideTypeChange}
         fullWidth
-        style={fieldSpacingContainerStyle}
         variant="standard"
-        onSubmit={handleFieldSubmit}
+        style={fieldSpacingContainerStyle}
+        displayEmpty
       >
         <MenuItem value="">{t_i18n('None')}</MenuItem>
         <MenuItem value="color">{t_i18n('Color')}</MenuItem>
         <MenuItem value="gradient">{t_i18n('Gradient')}</MenuItem>
         <MenuItem value="image">{t_i18n('Image')}</MenuItem>
-      </Field>
+      </Select>
 
-      {values.theme_login_aside_type === 'color' && (
+      {/* ===== CONDITIONAL FIELDS ===== */}
+
+      {loginAsideType === 'color' && (
         <Field
           component={ColorPickerField}
           name="theme_login_aside_color"
@@ -216,7 +239,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
         />
       )}
 
-      {values.theme_login_aside_type === 'gradient' && (
+      {loginAsideType === 'gradient' && (
         <>
           <Field
             component={ColorPickerField}
@@ -227,6 +250,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
             variant="standard"
             onSubmit={handleFieldSubmit}
           />
+
           <Field
             component={ColorPickerField}
             name="theme_login_aside_gradient_end"
@@ -239,7 +263,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
         </>
       )}
 
-      {values.theme_login_aside_type === 'image' && (
+      {loginAsideType === 'image' && (
         <Field
           component={TextField}
           variant="standard"
@@ -251,25 +275,23 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
         />
       )}
 
-      {
-        withButtons && (
-          <FormButtonContainer>
-            <Button
-              variant="secondary"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
-              {t_i18n('Cancel')}
-            </Button>
-            <Button
-              onClick={onSubmit}
-              disabled={isSubmitting}
-            >
-              {t_i18n(submitLabel)}
-            </Button>
-          </FormButtonContainer>
-        )
-      }
+      {/* ===== BUTTONS ===== */}
+
+      {withButtons && (
+        <FormButtonContainer>
+          <Button
+            variant="secondary"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+
+          <Button onClick={onSubmit} disabled={isSubmitting}>
+            {t_i18n(submitLabel)}
+          </Button>
+        </FormButtonContainer>
+      )}
     </Form>
   );
 };

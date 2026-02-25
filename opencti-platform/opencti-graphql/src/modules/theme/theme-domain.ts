@@ -4,7 +4,7 @@ import { BUS_TOPICS, logApp } from '../../config/conf';
 import { updateAttribute } from '../../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
-import { type EditInput, FilterMode, FilterOperator, type QueryThemesArgs, type ThemeAddInput, ThemeLoginAsideType } from '../../generated/graphql';
+import { type EditInput, FilterMode, FilterOperator, type QueryThemesArgs, type ThemeAddInput } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { ENTITY_TYPE_THEME } from '../../schema/internalObject';
 import type { AuthContext, AuthUser } from '../../types/user';
