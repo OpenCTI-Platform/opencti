@@ -1,5 +1,4 @@
 import React from 'react';
-import { TasksLine_node$data } from './__generated__/TasksLine_node.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemStatus from '../../../../components/ItemStatus';
@@ -7,6 +6,7 @@ import ItemDueDate from '../../../../components/ItemDueDate';
 import { EMPTY_VALUE } from '../../../../utils/String';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
+import { TasksLine_node$data } from '@components/cases/__generated__/TasksLine_node.graphql';
 
 export const tasksDataColumns: DataColumns = {
   name: {
