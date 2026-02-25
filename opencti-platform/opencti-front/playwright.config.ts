@@ -30,11 +30,11 @@ export default defineConfig({
       coverage: {
         entryFilter: (entry) => true,
         sourceFilter: (sourcePath) => sourcePath.startsWith('src'),
+        reports: [
+          ['v8'],
+          ['lcovonly', { outputFile: './test-results/coverage/lcov.info' }],
+        ],
       },
-      reports: [
-        ['v8'],
-        ['lcovonly', { outputFile: './test-results/coverage/lcov.info' }],
-      ],
       /*
       onEnd: async (reportData) => {
         // teams integration with webhook
