@@ -7,6 +7,7 @@ import { isStixMatchFilterGroup_MockableForUnitTests } from '../../../src/utils/
 
 // -- File to test stix filtering (filters on events: in the context of playbooks, streams, triggers)
 // -- with different keys, operators, modes, combinations
+// -- applied on data of the file DATA-TEST-FILTERS.json
 
 const WHITE_TLP = { standard_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9', internal_id: null };
 
@@ -180,7 +181,7 @@ describe('Filters testing', () => {
       mode: 'and',
       filters: [{
         key: ['objectLabel'],
-        values: ['attack-pattern'],
+        values: ['identity'],
         operator: 'not_only_eq_to',
         mode: 'or',
       }],
@@ -200,6 +201,8 @@ describe('Filters testing', () => {
       filterGroups: [],
     };
     filteredObjects = await applyFilters(filters);
+    expect(filteredObjects.length).toBe(1);
+    expect(filteredObjects[0].name).toBe('ANSSI');
     // With not_only_eq_to & AND local mode
     filtersNot = {
       mode: 'and',
@@ -213,7 +216,7 @@ describe('Filters testing', () => {
     };
     filteredObjectsNot = await applyFilters(filtersNot);
     expect(stixBundle.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
-    expect(filteredObjects.map((n) => n.node.name).includes('ANSSI')).toBeFalsy();
+    expect(filteredObjectsNot.map((n) => n.name).includes('ANSSI')).toBeFalsy();
     // With only_eq_to & OR local mode
     filters = {
       mode: 'and',
@@ -227,6 +230,18 @@ describe('Filters testing', () => {
     };
     filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(10);
+    filters = {
+      mode: 'and',
+      filters: [{
+        key: ['objectLabel'],
+        values: ['identity', 'note'],
+        operator: 'only_eq_to',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
+    filteredObjects = await applyFilters(filters);
+    expect(filteredObjects.length).toBe(11);
   });
 
   // revoked
