@@ -35,10 +35,10 @@ const notificationDataSchema = z.object({
   notification: notificationSchema.optional().catch(undefined),
 
   // Arrays - accept any structure (business data)
-  content: z.array(z.record(z.unknown())).optional().catch(undefined),
-  notification_content: z.array(z.record(z.unknown())).optional().catch(undefined),
-  data: z.array(z.record(z.unknown())).optional().catch(undefined),
-  users: z.array(z.record(z.unknown())).optional().catch(undefined),
+  content: z.array(z.record(z.string(), z.unknown())).optional().catch(undefined),
+  notification_content: z.array(z.record(z.string(), z.unknown())).optional().catch(undefined),
+  data: z.array(z.record(z.string(), z.unknown())).optional().catch(undefined),
+  users: z.array(z.record(z.string(), z.unknown())).optional().catch(undefined),
 
   // Simple string fields
   platform_uri: z.string().optional().catch(undefined),
@@ -49,7 +49,7 @@ const notificationDataSchema = z.object({
   description: z.string().optional().catch(undefined),
 
   // Report and other business objects - permissive
-  report: z.record(z.unknown()).optional().catch(undefined),
+  report: z.record(z.string(), z.unknown()).optional().catch(undefined),
 
   // Root level fields
   id: z.string().optional().catch(undefined),
