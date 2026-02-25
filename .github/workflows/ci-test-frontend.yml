@@ -110,6 +110,8 @@ jobs:
           -e EXPIRATION_SCHEDULER__ENABLED=false \
           -e SUBSCRIPTION_SCHEDULER__ENABLED=false \
           -e PUBLISHER_MANAGER__ENABLED=false \
+          -e E2E_TEST=true \
+          -e E2E_COVERAGE=true \
           -e SMTP__ENABLED=false \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
           sh -c 'set -eux
@@ -183,6 +185,16 @@ jobs:
         path: ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-front/test-results
         retention-days: 15
 
+    - name: Upload e2e coverage to Codecov
+      if: always()
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-front/test-results/coverage/lcov.info
+        flags: opencti-front-e2e
+        fail_ci_if_error: false
+        override_branch: ${{ github.head_ref || github.ref_name }}
+        override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
 
     - name: Logs opencti-e2e-start
       if: always()
