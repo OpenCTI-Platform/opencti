@@ -4,7 +4,7 @@ import { BUS_TOPICS, logApp } from '../../config/conf';
 import { updateAttribute } from '../../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
-import { type EditInput, FilterMode, FilterOperator, type QueryThemesArgs, type ThemeAddInput } from '../../generated/graphql';
+import { type EditInput, FilterMode, FilterOperator, type QueryThemesArgs, type ThemeAddInput, ThemeLoginAsideType } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { ENTITY_TYPE_THEME } from '../../schema/internalObject';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -52,6 +52,10 @@ export const addTheme = async (context: AuthContext, user: AuthUser, input: Them
     theme_logo_collapsed: input.theme_logo_collapsed,
     theme_logo_login: input.theme_logo_login,
     theme_text_color: input.theme_text_color,
+    theme_login_aside_color: input.theme_login_aside_color ?? null,
+    theme_login_aside_gradient_start: input.theme_login_aside_gradient_start ?? null,
+    theme_login_aside_gradient_end: input.theme_login_aside_gradient_end ?? null,
+    theme_login_aside_image: input.theme_login_aside_image ?? null,
     built_in: input.built_in ?? false,
   };
 
@@ -141,6 +145,10 @@ const themeImportSchema = z.object({
   theme_logo: z.string().optional().default(''),
   theme_logo_collapsed: z.string().optional().default(''),
   theme_logo_login: z.string().optional().default(''),
+  theme_login_aside_color: z.string().nullable().optional().default(null),
+  theme_login_aside_gradient_start: z.string().nullable().optional().default(null),
+  theme_login_aside_gradient_end: z.string().nullable().optional().default(null),
+  theme_login_aside_image: z.string().nullable().optional().default(null),
 });
 
 export const themeImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {

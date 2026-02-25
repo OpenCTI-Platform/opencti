@@ -7,6 +7,8 @@ import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ThemeDetectDuplicate from './ThemeDetectDuplicate';
+import SelectField from '../../../../components/fields/SelectField';
+import { MenuItem } from '@mui/material';
 
 interface ThemeFormProps {
   values: {
@@ -21,6 +23,11 @@ interface ThemeFormProps {
     theme_logo?: string | null;
     theme_logo_collapsed?: string | null;
     theme_logo_login?: string | null;
+    theme_login_aside_type?: string | null;
+    theme_login_aside_color?: string | null;
+    theme_login_aside_gradient_start?: string | null;
+    theme_login_aside_gradient_end?: string | null;
+    theme_login_aside_image?: string | null;
   };
   errors?: Record<string, string>;
   isSubmitting: boolean;
@@ -181,6 +188,68 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
         style={fieldSpacingContainerStyle}
         onSubmit={handleFieldSubmit}
       />
+
+      <Field
+        component={SelectField}
+        name="theme_login_aside_type"
+        label={t_i18n('Login aside type')}
+        fullWidth
+        style={fieldSpacingContainerStyle}
+        variant="standard"
+        onSubmit={handleFieldSubmit}
+      >
+        <MenuItem value="">{t_i18n('None')}</MenuItem>
+        <MenuItem value="color">{t_i18n('Color')}</MenuItem>
+        <MenuItem value="gradient">{t_i18n('Gradient')}</MenuItem>
+        <MenuItem value="image">{t_i18n('Image')}</MenuItem>
+      </Field>
+
+      {values.theme_login_aside_type === 'color' && (
+        <Field
+          component={ColorPickerField}
+          name="theme_login_aside_color"
+          label={t_i18n('Login aside color')}
+          fullWidth
+          style={fieldSpacingContainerStyle}
+          variant="standard"
+          onSubmit={handleFieldSubmit}
+        />
+      )}
+
+      {values.theme_login_aside_type === 'gradient' && (
+        <>
+          <Field
+            component={ColorPickerField}
+            name="theme_login_aside_gradient_start"
+            label={t_i18n('Login aside gradient start')}
+            fullWidth
+            style={fieldSpacingContainerStyle}
+            variant="standard"
+            onSubmit={handleFieldSubmit}
+          />
+          <Field
+            component={ColorPickerField}
+            name="theme_login_aside_gradient_end"
+            label={t_i18n('Login aside gradient end')}
+            fullWidth
+            style={fieldSpacingContainerStyle}
+            variant="standard"
+            onSubmit={handleFieldSubmit}
+          />
+        </>
+      )}
+
+      {values.theme_login_aside_type === 'image' && (
+        <Field
+          component={TextField}
+          variant="standard"
+          name="theme_login_aside_image"
+          label={t_i18n('Login aside image URL')}
+          fullWidth
+          style={fieldSpacingContainerStyle}
+          onSubmit={handleFieldSubmit}
+        />
+      )}
 
       {
         withButtons && (

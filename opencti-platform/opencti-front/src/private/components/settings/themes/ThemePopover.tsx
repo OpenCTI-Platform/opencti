@@ -69,6 +69,11 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
     theme_logo_login: themeData.theme_logo_login,
     theme_text_color: themeData.theme_text_color,
     system_default: themeData.built_in,
+    theme_login_aside_type: themeData.theme_login_aside_type,
+    theme_login_aside_color: themeData.theme_login_aside_color,
+    theme_login_aside_gradient_end: themeData.theme_login_aside_gradient_end,
+    theme_login_aside_gradient_start: themeData.theme_login_aside_gradient_start,
+    theme_login_aside_image: themeData.theme_login_aside_image,
   };
 
   const deleteSuccessMessage = t_i18n('', {

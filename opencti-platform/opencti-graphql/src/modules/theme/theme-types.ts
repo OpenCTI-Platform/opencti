@@ -15,6 +15,10 @@ export interface BasicStoreEntityTheme extends BasicStoreEntity {
   theme_logo_collapsed: string;
   theme_logo_login: string;
   theme_text_color: string;
+  theme_login_aside_color: string;
+  theme_login_aside_gradient_start: string;
+  theme_login_aside_gradient_end: string;
+  theme_login_aside_image: string;
   built_in: boolean;
 }
 
@@ -30,6 +34,10 @@ export interface StoreEntityTheme extends StoreEntity {
   theme_logo_collapsed: string;
   theme_logo_login: string;
   theme_text_color: string;
+  theme_login_aside_color: string;
+  theme_login_aside_gradient_start: string;
+  theme_login_aside_gradient_end: string;
+  theme_login_aside_image: string;
   built_in: boolean;
 }
 // endregion
@@ -47,6 +55,10 @@ export interface StixTheme extends StixObject {
   theme_logo_collapsed: string;
   theme_logo_login: string;
   theme_text_color: string;
+  theme_login_aside_color: string;
+  theme_login_aside_gradient_start: string;
+  theme_login_aside_gradient_end: string;
+  theme_login_aside_image: string;
   built_in: boolean;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;

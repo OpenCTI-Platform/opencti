@@ -37,6 +37,11 @@ export const refetchableThemesQuery = graphql`
           theme_logo
           theme_logo_collapsed
           theme_logo_login
+          theme_login_aside_type
+          theme_login_aside_color
+          theme_login_aside_gradient_end
+          theme_login_aside_gradient_start
+          theme_login_aside_image
         }
       }
     }
@@ -103,6 +108,11 @@ const themesLineFragment = graphql`
     theme_logo_collapsed
     theme_logo_login
     theme_text_color
+    theme_login_aside_type
+    theme_login_aside_color
+    theme_login_aside_gradient_end
+    theme_login_aside_gradient_start
+    theme_login_aside_image
     built_in
   }
 `;
