@@ -7,6 +7,7 @@ permissions:
   contents: read
 jobs:
   check-pr-title-convention:
+    if: ! contains( github.event.pull_request.labels.*.name, 'dependencies')
     name: Check that title follows convention
     runs-on: ubuntu-latest
     permissions:
@@ -14,6 +15,6 @@ jobs:
     steps:
       - uses: Slashgear/action-check-pr-title@161cede0311ec624ae3ee76a2c27522f7b6fa2d8
         with:
-          regexp: "[[a-z]]+.+(#[0-9]+)"
+          regexp: "^\[[a-z]+.+\].+\((#[0-9]+)\)$"
           flags: "gm"
           helpMessage: "Format: '[component] Message (#issuenumber)', see https://github.com/OpenCTI-Platform/opencti/blob/master/CONTRIBUTING.md#how-can-you-contribute"
