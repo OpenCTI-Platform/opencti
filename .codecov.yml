@@ -6,7 +6,6 @@ coverage:
     project:
       default:
         target: 80%
-        informational: true
       critical_back:
         target: 100%
         paths: ["src/opencti-platform/opencti-graphql/src/database"]

@@ -32,7 +32,6 @@ export default defineConfig({
         entryFilter: (entry) => true,
         sourceFilter: (sourcePath) => sourcePath.startsWith('src'),
         reports: [
-          ['v8'],
           ['codecov'],
         ],
       },
