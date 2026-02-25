@@ -300,6 +300,7 @@ const FilterIconButtonContainer: FunctionComponent<
                       sx={{
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
+                        display: 'flex',
                       }}
                     >
                       <FilterValues
