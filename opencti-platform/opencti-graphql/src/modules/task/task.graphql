@@ -229,6 +229,7 @@ input TaskAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
+filesVersions: [DateTime]
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   upsertOperations: [EditInput!]

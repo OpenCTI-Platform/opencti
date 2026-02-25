@@ -496,6 +496,7 @@ class DataSource:
         update = kwargs.get("update", False)
         files = kwargs.get("files", None)
         files_markings = kwargs.get("filesMarkings", None)
+        files_versions = kwargs.get("filesVersions", None)
         no_trigger_import = kwargs.get("noTriggerImport", None)
         embedded = kwargs.get("embedded", None)
         upsert_operations = kwargs.get("upsert_operations", None)
@@ -535,6 +536,7 @@ class DataSource:
                 "update": update,
                 "files": files,
                 "filesMarkings": files_markings,
+                "filesVersions": files_versions,
                 "noTriggerImport": no_trigger_import,
                 "embedded": embedded,
                 "upsertOperations": upsert_operations,
@@ -664,6 +666,7 @@ class DataSource:
                 update=update,
                 files=extras.get("files"),
                 filesMarkings=extras.get("filesMarkings"),
+                filesVersions=extras.get("filesVersions"),
                 noTriggerImport=extras.get("noTriggerImport", None),
                 embedded=extras.get("embedded", None),
                 upsert_operations=(

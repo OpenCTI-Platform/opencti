@@ -327,6 +327,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
         resolve_result_indicators = kwargs.get("resolve_result_indicators", True)
         files = kwargs.get("files", None)
         files_markings = kwargs.get("filesMarkings", None)
+        files_versions = kwargs.get("filesVersions", None)
         no_trigger_import = kwargs.get("noTriggerImport", None)
         embedded = kwargs.get("embedded", None)
         upsert_operations = kwargs.get("upsert_operations", None)
@@ -583,6 +584,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "rir": observable_data["rir"] if "rir" in observable_data else None,
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -605,6 +607,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -613,6 +616,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "value": observable_data["value"],
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -628,6 +632,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -661,6 +666,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -681,6 +687,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -722,6 +729,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -777,6 +785,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -920,6 +929,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -967,6 +977,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -977,6 +988,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -987,6 +999,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -997,6 +1010,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1007,6 +1021,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1068,6 +1083,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1097,6 +1113,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1143,6 +1160,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1153,6 +1171,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1230,6 +1249,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1250,6 +1270,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1268,6 +1289,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1278,6 +1300,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1288,6 +1311,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1298,6 +1322,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1308,6 +1333,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                 }
             elif type == "Text":
@@ -1317,6 +1343,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1333,6 +1360,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1343,6 +1371,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1366,6 +1395,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1392,6 +1422,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1409,6 +1440,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1432,6 +1464,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1445,6 +1478,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1455,6 +1489,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
@@ -1467,6 +1502,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     ),
                     "files": files,
                     "filesMarkings": files_markings,
+                    "filesVersions": files_versions,
                     "noTriggerImport": no_trigger_import,
                     "embedded": embedded,
                 }
