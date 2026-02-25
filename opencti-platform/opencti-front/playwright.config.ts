@@ -28,11 +28,12 @@ export default defineConfig({
       outputFile: './test-results/report.html',
       // global coverage report options
       coverage: {
+        outputDir: './test-results/coverage',
         entryFilter: (entry) => true,
         sourceFilter: (sourcePath) => sourcePath.startsWith('src'),
         reports: [
           ['v8'],
-          ['lcovonly', { outputFile: './test-results/coverage/lcov.info' }],
+          ['lcovonly'],
         ],
       },
       /*

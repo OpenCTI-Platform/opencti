@@ -110,8 +110,6 @@ jobs:
           -e EXPIRATION_SCHEDULER__ENABLED=false \
           -e SUBSCRIPTION_SCHEDULER__ENABLED=false \
           -e PUBLISHER_MANAGER__ENABLED=false \
-          -e E2E_TEST=true \
-          -e E2E_COVERAGE=true \
           -e SMTP__ENABLED=false \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
           sh -c 'set -eux
@@ -161,6 +159,7 @@ jobs:
           -v ${{ github.workspace }}/frontend-e2e-test:/home/workspace \
           -e BACK_END_URL=http://opencti-e2e-start:4100 \
           -e E2E_TEST=true \
+          -e E2E_COVERAGE=true \
           -e TEAMS_WEBHOOK="teams-webhook-url" \
           node:22.21.0 \
           sh -c 'set -ex;
@@ -192,7 +191,7 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-front/test-results/coverage/lcov.info
         flags: opencti-front-e2e
-        fail_ci_if_error: false
+        fail_ci_if_error: true
         override_branch: ${{ github.head_ref || github.ref_name }}
         override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
 
