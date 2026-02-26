@@ -128,12 +128,8 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
           {children}
         </Stack>
         <Box flex={1} sx={asideSx}>
-          {!isWhitemarkEnable && loginAsideType === '' && (
-            <>
-              <LogoBaseline />
-              <LogoFiligran />
-            </>
-          )}
+          {loginAsideType === '' && <LogoFiligran />}
+          {!isWhitemarkEnable && <LogoBaseline />}
         </Box>
       </Stack>
     </>

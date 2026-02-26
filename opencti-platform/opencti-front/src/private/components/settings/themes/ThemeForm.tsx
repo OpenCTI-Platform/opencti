@@ -1,18 +1,18 @@
 import Button from '@common/button/Button';
 import { InputAdornment, MenuItem, Select, SelectChangeEvent, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
+import { ClearIcon } from '@mui/x-date-pickers';
 import { Field, Form, useFormikContext } from 'formik';
 import { FunctionComponent, useRef, useState } from 'react';
 import ColorPickerField from '../../../../components/ColorPickerField';
+import IconButton from '../../../../components/common/button/IconButton';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import Label from '../../../../components/common/label/Label';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { Theme } from '../../../../components/Theme';
 import ThemeDetectDuplicate from './ThemeDetectDuplicate';
 import ThemeType from './ThemeType';
-import Label from '../../../../components/common/label/Label';
-import IconButton from '../../../../components/common/button/IconButton';
-import { ClearIcon } from '@mui/x-date-pickers';
 
 interface ThemeFormProps {
   values: {
@@ -42,7 +42,6 @@ interface ThemeFormProps {
   submitLabel?: string;
   withButtons?: boolean;
 }
-
 const asideFields = [
   'theme_login_aside_type',
   'theme_login_aside_color',
@@ -65,6 +64,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+
   const fieldRef = useRef<HTMLDivElement>(null);
   const { setFieldValue, initialValues, values: formikValues } = useFormikContext<ThemeType>();
 
@@ -278,7 +278,6 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
               )
             }
           >
-            {/* <MenuItem value="" sx={{ textTransform: 'capitalize' }}>{t_i18n('None')}</MenuItem> */}
             <MenuItem value="color" sx={{ textTransform: 'capitalize' }}>{t_i18n('Add background color')}</MenuItem>
             <MenuItem value="gradient" sx={{ textTransform: 'capitalize' }}>{t_i18n('Add background gradient')}</MenuItem>
             <MenuItem value="image" sx={{ textTransform: 'capitalize' }}>{t_i18n('Image URL')}</MenuItem>

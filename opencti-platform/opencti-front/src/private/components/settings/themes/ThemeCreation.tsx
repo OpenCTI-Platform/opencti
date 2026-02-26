@@ -111,6 +111,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
       title={t_i18n('Create a custom theme')}
       open={open}
       onClose={handleClose}
+      size="medium"
     >
       <Formik<ThemeCreationInput>
         onSubmit={handleSubmit}
