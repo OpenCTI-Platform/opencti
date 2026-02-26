@@ -222,7 +222,7 @@ const TasksList = ({ data, options }) => {
       <Stack spacing={2}>
         {tasks.map((taskEdge) => {
           const task = taskEdge.node;
-          let status = '';
+          let status;
           if (task.completed) {
             status = 'complete';
           } else if (task.task_processed_number > 0) {
@@ -252,7 +252,7 @@ const TasksList = ({ data, options }) => {
             ? ` (Provisioning: ${task.task_processed_number}/${task.task_expected_number})`
             : '';
           const progressFullText = `${t_i18n('Progress')}${progressNumberDisplay}${provisioningNumberDisplay}`;
-          let progressValue = 0;
+          let progressValue;
           if (task.work) {
             if (task.work.status === 'complete') {
               progressValue = 100;

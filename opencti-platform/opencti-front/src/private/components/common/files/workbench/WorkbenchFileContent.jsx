@@ -1575,7 +1575,7 @@ const WorkbenchFileContentComponent = ({
       ...R.indexBy(R.prop('id'), stixCoreRelationships),
       ...R.indexBy(R.prop('id'), stixSightings),
     };
-    let containerElementsIds = [];
+    let containerElementsIds;
     if (containerSelectAll) {
       containerElementsIds = R.uniq(
         R.values(indexedStixObjects)

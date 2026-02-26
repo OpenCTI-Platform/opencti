@@ -204,7 +204,7 @@ const useLocalStorage = <T extends LocalStorage = LocalStorage>(
         return initialState;
       }
       return value;
-    } catch (_error) {
+    } catch {
       // If error also return initialValue
       throw Error('Error while initializing values in local storage');
     }
@@ -234,7 +234,7 @@ const useLocalStorage = <T extends LocalStorage = LocalStorage>(
           setStoredValueToHistory(initialValue, valueToStore);
         }
       }
-    } catch (_error) {
+    } catch {
       // A more advanced implementation would handle the error case
       throw Error('Error while setting values in local storage');
     }

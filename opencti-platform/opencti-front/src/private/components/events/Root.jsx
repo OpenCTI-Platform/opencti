@@ -12,7 +12,7 @@ const StixSightingRelationships = lazy(() => import('./StixSightingRelationships
 const StixSightingRelationship = lazy(() => import('./stix_sighting_relationships/StixSightingRelationship'));
 
 const Root = () => {
-  let redirect = null;
+  let redirect;
   if (!useIsHiddenEntity('Incident')) {
     redirect = 'incidents';
   } else if (!useIsHiddenEntity('stix-sighting-relationship')) {

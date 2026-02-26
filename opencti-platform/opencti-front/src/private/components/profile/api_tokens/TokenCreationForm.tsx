@@ -48,7 +48,7 @@ const TokenCreationForm: FunctionComponent<TokenCreationFormProps> = ({
   });
 
   const onSubmit = (values: typeof initialValues, { setSubmitting }: FormikHelpers<typeof initialValues>) => {
-    let durationInput = 'UNLIMITED';
+    let durationInput;
     switch (values.duration) {
       case '30':
         durationInput = 'DAYS_30';

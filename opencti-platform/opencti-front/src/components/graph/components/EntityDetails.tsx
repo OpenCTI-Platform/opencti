@@ -482,7 +482,7 @@ const EntityDetailsComponent: FunctionComponent<
                 const externalReferenceId = externalReference.node.external_id
                   ? `(${externalReference.node.external_id})`
                   : '';
-                let externalReferenceSecondary = '';
+                let externalReferenceSecondary: string;
                 if (
                   externalReference.node.url
                   && externalReference.node.url.length > 0

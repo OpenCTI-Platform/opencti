@@ -36,7 +36,7 @@ import { isStixRelationshipExceptRef } from '../../../schema/stixRelationship';
 import { isStixObject } from '../../../schema/stixCoreObject';
 
 export const parseJsonMapper = (mapper: any): JsonMapperParsed => {
-  let representations: JsonMapperRepresentation[] = [];
+  let representations: JsonMapperRepresentation[];
   if (typeof mapper?.representations === 'string') {
     try {
       representations = JSON.parse(mapper.representations);

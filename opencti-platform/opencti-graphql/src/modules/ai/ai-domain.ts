@@ -181,7 +181,7 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
   const container = await storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER) as BasicStoreEntity;
   const { relationshipsSentences, entitiesInvolved } = await getContainerKnowledge(context, user, containerId);
   // Meaningful type
-  let meaningfulType = '';
+  let meaningfulType: string;
   if (container.entity_type === ENTITY_TYPE_CONTAINER_REPORT) {
     meaningfulType = `cyber threat intelligence report published on ${container.published}`;
   } else if (container.entity_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT) {
