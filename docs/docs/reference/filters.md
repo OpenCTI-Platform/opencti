@@ -124,7 +124,7 @@ filters = {
 };
 ```
 
-- The operators `only_eq_to` differs from `eq` operator for attributes that can have several `values`. It indicates a field values are all equal to the provided filter values, and no other values. With the `or` local operator, the field should have only one value, equal to one of the filter values. With the `and` local mode, the field should have exactly all the filter values, and no other values.
+- The operator `only_eq_to` differs from `eq` operator for attributes that can have several `values`. It indicates a field values are all equal to the provided filter values, and no other values. With the `or` local operator, the field should have only one value, equal to one of the filter values. With the `and` local mode, the field should have exactly all the filter values, and no other values.
 
   The operator `not_only_eq_to` is the opposite of `only_eq_to` and returns the values that don't match the same filter with `only_eq_to` instead of `not_only_eq_to`.
 
