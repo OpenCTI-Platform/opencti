@@ -5,7 +5,7 @@ export const TASK_INSTANCE = {
   _id: 'd4e02a21-0dda-4295-be80-3c81503b69c8',
   id: 'd4e02a21-0dda-4295-be80-3c81503b69c8',
   sort: [
-    1750960529409
+    1750960529409,
   ],
   name: 'task STIX 2.0',
   description: 'Description',
@@ -15,7 +15,7 @@ export const TASK_INSTANCE = {
   internal_id: 'd4e02a21-0dda-4295-be80-3c81503b69c8',
   standard_id: 'task--8788511e-974c-571d-9a47-381299785038',
   creator_id: [
-    '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+    '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
   ],
   x_opencti_stix_ids: [],
   created_at: '2025-06-26T17:55:29.409Z',
@@ -29,57 +29,57 @@ export const TASK_INSTANCE = {
     'Stix-Object',
     'Stix-Core-Object',
     'Stix-Domain-Object',
-    'Container'
+    'Container',
   ],
   i_attributes: [
     {
       updated_at: '2025-06-26T18:03:23.571Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'description'
+      name: 'description',
     },
     {
       updated_at: '2025-06-26T18:03:25.894Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'objectAssignee'
+      name: 'objectAssignee',
     },
     {
       updated_at: '2025-06-26T18:03:28.096Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'objectParticipant'
+      name: 'objectParticipant',
     },
     {
       updated_at: '2025-06-26T18:03:43.146Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'objectOrganization'
+      name: 'objectOrganization',
     },
     {
       updated_at: '2025-06-26T18:03:54.113Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'due_date'
+      name: 'due_date',
     },
     {
       updated_at: '2025-06-26T18:04:32.619Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'name'
+      name: 'name',
     },
     {
       updated_at: '2025-06-26T18:04:32.619Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'standard_id'
+      name: 'standard_id',
     },
     {
       updated_at: '2025-07-02T15:46:34.278Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'objectLabel'
-    }
+      name: 'objectLabel',
+    },
   ],
   due_date: '2025-06-27T22:00:00.000Z',
   x_opencti_files: [
@@ -88,11 +88,11 @@ export const TASK_INSTANCE = {
       mime_type: 'application/json',
       name: 'ipv4_example.json',
       id: 'import/Task/d4e02a21-0dda-4295-be80-3c81503b69c8/ipv4_example.json',
-      version: '2025-07-02T15:47:23.032Z'
-    }
+      version: '2025-07-02T15:47:23.032Z',
+    },
   ],
   'object-assignee': [
-    '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+    '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
   ],
   objectAssignee: [
     {
@@ -100,7 +100,7 @@ export const TASK_INSTANCE = {
       _id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       sort: [
-        1749546768092
+        1749546768092,
       ],
       internal_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       external: true,
@@ -114,46 +114,46 @@ export const TASK_INSTANCE = {
       password: '$2a$10$akF3LCkuTuU4C3o1DKmFeOEXWhdUL0WyBO9740MNbD9I8osQbFzEq',
       user_confidence_level: {
         max_confidence: 100,
-        overrides: []
+        overrides: [],
       },
       theme: 'default',
       language: 'en-us',
       personal_notifiers: [
         'f4ee7b33-006a-4b0d-b57d-411ad288653d',
-        '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822'
+        '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822',
       ],
       confidence: 100,
       entity_type: 'User',
       standard_id: 'user--12ea8141-dc6d-5031-9a1b-c28aeac7198b',
       creator_id: [
-        '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505'
+        '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
       ],
       created_at: '2025-06-10T09:12:48.092Z',
       updated_at: '2025-07-02T15:50:29.209Z',
       base_type: 'ENTITY',
       parent_types: [
         'Basic-Object',
-        'Internal-Object'
+        'Internal-Object',
       ],
       i_attributes: [
         {
           updated_at: '2025-06-10T09:38:27.289Z',
           user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
           confidence: 100,
-          name: 'language'
+          name: 'language',
         },
         {
           updated_at: '2025-07-02T15:50:29.218Z',
           user_id: '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
           confidence: 100,
-          name: 'password'
+          name: 'password',
         },
         {
           updated_at: '2025-06-19T08:59:42.526Z',
           user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
           confidence: 100,
-          name: 'draft_context'
-        }
+          name: 'draft_context',
+        },
       ],
       draft_context: '',
       i_relation: {
@@ -161,7 +161,7 @@ export const TASK_INSTANCE = {
         _id: 'a3a83dcd-47c0-4afc-9c9a-53fa45734697',
         id: 'a3a83dcd-47c0-4afc-9c9a-53fa45734697',
         sort: [
-          'relationship-meta--21dc3717-ddb7-42bc-835b-4b2bd11cc7f8'
+          'relationship-meta--21dc3717-ddb7-42bc-835b-4b2bd11cc7f8',
         ],
         standard_id: 'relationship-meta--21dc3717-ddb7-42bc-835b-4b2bd11cc7f8',
         base_type: 'RELATION',
@@ -179,12 +179,12 @@ export const TASK_INSTANCE = {
         toName: 'admin',
         toType: 'User',
         target_ref: 'user--temporary',
-        relationship_type: 'object-assignee'
-      }
-    }
+        relationship_type: 'object-assignee',
+      },
+    },
   ],
   granted: [
-    'c2d8a20f-879a-4d22-b4ad-b850c757eb75'
+    'c2d8a20f-879a-4d22-b4ad-b850c757eb75',
   ],
   objectOrganization: [
     {
@@ -192,7 +192,7 @@ export const TASK_INSTANCE = {
       _id: 'c2d8a20f-879a-4d22-b4ad-b850c757eb75',
       id: 'c2d8a20f-879a-4d22-b4ad-b850c757eb75',
       sort: [
-        1750324075757
+        1750324075757,
       ],
       identity_class: 'organization',
       name: 'Filigran',
@@ -202,7 +202,7 @@ export const TASK_INSTANCE = {
       internal_id: 'c2d8a20f-879a-4d22-b4ad-b850c757eb75',
       standard_id: 'identity--8cb00c79-ab20-5ed4-b37d-337241b96a29',
       creator_id: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       ],
       x_opencti_stix_ids: [],
       created_at: '2025-06-19T09:07:55.757Z',
@@ -218,14 +218,14 @@ export const TASK_INSTANCE = {
         'Stix-Object',
         'Stix-Core-Object',
         'Stix-Domain-Object',
-        'Identity'
+        'Identity',
       ],
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: 'e34b69f8-b2b9-4161-9cbe-e2d44ef81c54',
         id: 'e34b69f8-b2b9-4161-9cbe-e2d44ef81c54',
         sort: [
-          'relationship-meta--61d01089-afe9-471d-aeef-7e8e1bb41bcc'
+          'relationship-meta--61d01089-afe9-471d-aeef-7e8e1bb41bcc',
         ],
         standard_id: 'relationship-meta--61d01089-afe9-471d-aeef-7e8e1bb41bcc',
         base_type: 'RELATION',
@@ -243,12 +243,12 @@ export const TASK_INSTANCE = {
         toName: 'Filigran',
         toType: 'Organization',
         target_ref: 'identity--temporary',
-        relationship_type: 'granted'
-      }
-    }
+        relationship_type: 'granted',
+      },
+    },
   ],
   'object-marking': [
-    '2cc876e4-ae90-497b-a4ae-16c762f0d03f'
+    '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
   ],
   objectMarking: [
     {
@@ -256,7 +256,7 @@ export const TASK_INSTANCE = {
       _id: '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
       id: '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
       sort: [
-        1749546753947
+        1749546753947,
       ],
       definition_type: 'PAP',
       definition: 'PAP:CLEAR',
@@ -267,7 +267,7 @@ export const TASK_INSTANCE = {
       internal_id: '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
       standard_id: 'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34',
       creator_id: [
-        '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505'
+        '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
       ],
       x_opencti_stix_ids: [],
       created_at: '2025-06-10T09:12:33.947Z',
@@ -278,14 +278,14 @@ export const TASK_INSTANCE = {
       parent_types: [
         'Basic-Object',
         'Stix-Object',
-        'Stix-Meta-Object'
+        'Stix-Meta-Object',
       ],
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: '9bf41d01-be91-47fc-8d0f-03ed0d64a562',
         id: '9bf41d01-be91-47fc-8d0f-03ed0d64a562',
         sort: [
-          'relationship-meta--70cf96da-2889-42f7-afd0-7c06a01d2133'
+          'relationship-meta--70cf96da-2889-42f7-afd0-7c06a01d2133',
         ],
         standard_id: 'relationship-meta--70cf96da-2889-42f7-afd0-7c06a01d2133',
         base_type: 'RELATION',
@@ -303,12 +303,12 @@ export const TASK_INSTANCE = {
         toName: 'PAP:CLEAR',
         toType: 'Marking-Definition',
         target_ref: 'marking-definition--temporary',
-        relationship_type: 'object-marking'
-      }
-    }
+        relationship_type: 'object-marking',
+      },
+    },
   ],
   'object-label': [
-    'd6d10328-9d53-4da8-af37-fb859cbbc693'
+    'd6d10328-9d53-4da8-af37-fb859cbbc693',
   ],
   objectLabel: [
     {
@@ -316,7 +316,7 @@ export const TASK_INSTANCE = {
       _id: 'd6d10328-9d53-4da8-af37-fb859cbbc693',
       id: 'd6d10328-9d53-4da8-af37-fb859cbbc693',
       sort: [
-        1749547953634
+        1749547953634,
       ],
       x_opencti_stix_ids: [],
       value: 'ryuk',
@@ -326,7 +326,7 @@ export const TASK_INSTANCE = {
       internal_id: 'd6d10328-9d53-4da8-af37-fb859cbbc693',
       standard_id: 'label--66b4d95f-ba1a-54b3-b5a3-74c7fb93142b',
       creator_id: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       ],
       created_at: '2025-06-10T09:32:33.634Z',
       updated_at: '2025-06-10T09:32:33.634Z',
@@ -336,14 +336,14 @@ export const TASK_INSTANCE = {
       parent_types: [
         'Basic-Object',
         'Stix-Object',
-        'Stix-Meta-Object'
+        'Stix-Meta-Object',
       ],
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: 'b4d809b1-844d-4239-9e9e-0f55066ac3e9',
         id: 'b4d809b1-844d-4239-9e9e-0f55066ac3e9',
         sort: [
-          'relationship-meta--969bd487-81c2-4b0b-a5cf-fa1a09736ff2'
+          'relationship-meta--969bd487-81c2-4b0b-a5cf-fa1a09736ff2',
         ],
         base_type: 'RELATION',
         internal_id: 'b4d809b1-844d-4239-9e9e-0f55066ac3e9',
@@ -361,12 +361,12 @@ export const TASK_INSTANCE = {
         toName: 'ryuk',
         toType: 'Label',
         target_ref: 'label--temporary',
-        relationship_type: 'object-label'
-      }
-    }
+        relationship_type: 'object-label',
+      },
+    },
   ],
   'object-participant': [
-    '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+    '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
   ],
   objectParticipant: [
     {
@@ -374,7 +374,7 @@ export const TASK_INSTANCE = {
       _id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       sort: [
-        1749546768092
+        1749546768092,
       ],
       internal_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       external: true,
@@ -388,46 +388,46 @@ export const TASK_INSTANCE = {
       password: '$2a$10$akF3LCkuTuU4C3o1DKmFeOEXWhdUL0WyBO9740MNbD9I8osQbFzEq',
       user_confidence_level: {
         max_confidence: 100,
-        overrides: []
+        overrides: [],
       },
       theme: 'default',
       language: 'en-us',
       personal_notifiers: [
         'f4ee7b33-006a-4b0d-b57d-411ad288653d',
-        '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822'
+        '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822',
       ],
       confidence: 100,
       entity_type: 'User',
       standard_id: 'user--12ea8141-dc6d-5031-9a1b-c28aeac7198b',
       creator_id: [
-        '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505'
+        '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
       ],
       created_at: '2025-06-10T09:12:48.092Z',
       updated_at: '2025-07-02T15:50:29.209Z',
       base_type: 'ENTITY',
       parent_types: [
         'Basic-Object',
-        'Internal-Object'
+        'Internal-Object',
       ],
       i_attributes: [
         {
           updated_at: '2025-06-10T09:38:27.289Z',
           user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
           confidence: 100,
-          name: 'language'
+          name: 'language',
         },
         {
           updated_at: '2025-07-02T15:50:29.218Z',
           user_id: '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
           confidence: 100,
-          name: 'password'
+          name: 'password',
         },
         {
           updated_at: '2025-06-19T08:59:42.526Z',
           user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
           confidence: 100,
-          name: 'draft_context'
-        }
+          name: 'draft_context',
+        },
       ],
       draft_context: '',
       i_relation: {
@@ -435,7 +435,7 @@ export const TASK_INSTANCE = {
         _id: '4e06ad55-0926-422c-a6da-c2653262b718',
         id: '4e06ad55-0926-422c-a6da-c2653262b718',
         sort: [
-          'relationship-meta--bca0c9f3-a39d-4386-954f-73011ac81e80'
+          'relationship-meta--bca0c9f3-a39d-4386-954f-73011ac81e80',
         ],
         standard_id: 'relationship-meta--bca0c9f3-a39d-4386-954f-73011ac81e80',
         base_type: 'RELATION',
@@ -453,12 +453,12 @@ export const TASK_INSTANCE = {
         toName: 'admin',
         toType: 'User',
         target_ref: 'user--temporary',
-        relationship_type: 'object-participant'
-      }
-    }
+        relationship_type: 'object-participant',
+      },
+    },
   ],
   object: [
-    'ae110ba9-34a7-44ef-86b9-7b52def4b4aa'
+    'ae110ba9-34a7-44ef-86b9-7b52def4b4aa',
   ],
   objects: [
     {
@@ -466,7 +466,7 @@ export const TASK_INSTANCE = {
       _id: 'ae110ba9-34a7-44ef-86b9-7b52def4b4aa',
       id: 'ae110ba9-34a7-44ef-86b9-7b52def4b4aa',
       sort: [
-        1750960528869
+        1750960528869,
       ],
       name: 'RFT STIX 2.0',
       description: 'description',
@@ -476,13 +476,13 @@ export const TASK_INSTANCE = {
       confidence: 100,
       created: '2025-06-26T17:54:43.000Z',
       takedown_types: [
-        'brand-abuse'
+        'brand-abuse',
       ],
       entity_type: 'Case-Rft',
       internal_id: 'ae110ba9-34a7-44ef-86b9-7b52def4b4aa',
       standard_id: 'case-rft--8456f0c2-0308-578b-b90c-1dd6e0440763',
       creator_id: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       ],
       x_opencti_stix_ids: [],
       created_at: '2025-06-26T17:55:28.869Z',
@@ -497,7 +497,7 @@ export const TASK_INSTANCE = {
         'Stix-Core-Object',
         'Stix-Domain-Object',
         'Container',
-        'Case'
+        'Case',
       ],
       x_opencti_files: [
         {
@@ -506,49 +506,49 @@ export const TASK_INSTANCE = {
           version: '2025-06-26T17:55:28.870Z',
           mime_type: 'application/json',
           file_markings: [
-            '2cc876e4-ae90-497b-a4ae-16c762f0d03f'
-          ]
-        }
+            '2cc876e4-ae90-497b-a4ae-16c762f0d03f',
+          ],
+        },
       ],
       i_attributes: [
         {
           updated_at: '2025-06-26T17:55:59.113Z',
           user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
           confidence: 100,
-          name: 'content'
+          name: 'content',
         },
         {
           updated_at: '2025-06-26T17:56:21.251Z',
           user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
           confidence: 100,
-          name: 'objects'
+          name: 'objects',
         },
         {
           updated_at: '2025-06-26T17:56:06.869Z',
           user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
           confidence: 100,
-          name: 'content_mapping'
+          name: 'content_mapping',
         },
         {
           updated_at: '2025-06-26T17:56:37.719Z',
           user_id: '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
           confidence: 100,
-          name: 'opinions_metrics'
-        }
+          name: 'opinions_metrics',
+        },
       ],
       content_mapping: 'eyJkaXNjbyB0ZWFtIHRocmVhdCBhY3RvciBncm91cCI6InRocmVhdC1hY3Rvci0tZmQ2YjBlNmYtOTZlMC01NjhkLWJhMjQtOGExNDBkMDQyOGNkIn0',
       opinions_metrics: {
         total: 1,
         min: 2,
         max: 2,
-        mean: 2
+        mean: 2,
       },
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: '51b96841-9076-4215-8dee-0d89e1f42d4d',
         id: '51b96841-9076-4215-8dee-0d89e1f42d4d',
         sort: [
-          'relationship-meta--f88f82fd-a295-4a3f-a6d3-e8e70708307e'
+          'relationship-meta--f88f82fd-a295-4a3f-a6d3-e8e70708307e',
         ],
         standard_id: 'relationship-meta--f88f82fd-a295-4a3f-a6d3-e8e70708307e',
         base_type: 'RELATION',
@@ -566,10 +566,10 @@ export const TASK_INSTANCE = {
         toName: 'RFT STIX 2.0',
         toType: 'Case-Rft',
         target_ref: 'case-rft--temporary',
-        relationship_type: 'object'
-      }
-    }
-  ]
+        relationship_type: 'object',
+      },
+    },
+  ],
 } as unknown as StoreEntityTask;
 
 export const EXPECTED_TASK = {
@@ -583,16 +583,16 @@ export const EXPECTED_TASK = {
   description: 'Description',
   due_date: '2025-06-27T22:00:00.000Z',
   labels: [
-    'ryuk'
+    'ryuk',
   ],
   x_opencti_id: 'd4e02a21-0dda-4295-be80-3c81503b69c8',
   x_opencti_type: 'Task',
   type: 'x-opencti-task',
   object_marking_refs: [
-    'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34'
+    'marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34',
   ],
   object_refs: [
-    'case-rft--8456f0c2-0308-578b-b90c-1dd6e0440763'
+    'case-rft--8456f0c2-0308-578b-b90c-1dd6e0440763',
   ],
   created_by_ref: undefined,
   x_opencti_files: [{
