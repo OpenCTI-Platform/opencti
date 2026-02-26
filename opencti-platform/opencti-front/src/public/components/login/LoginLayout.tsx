@@ -105,8 +105,6 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
     zIndex: 2,
   };
 
-  console.log('settings.platform_theme?', settings.platform_theme);
-
   const asideSx: SxProps = {
     background: getAsideBackground(),
     backgroundSize: loginAsideType === 'image' ? 'cover' : undefined,
@@ -114,15 +112,6 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
     position: 'relative',
     overflow: 'hidden',
   };
-  // const background = theme.palette.mode === 'dark'
-  //   ? 'linear-gradient(100deg, #050A14 0%, #0C1728 100%);'
-  //   : 'linear-gradient(100deg, #EAEAED 0%, #FEFEFF 100%)';
-
-  // const asideSx: SxProps = {
-  //   background,
-  //   position: 'relative',
-  //   overflow: 'hidden',
-  // };
 
   return (
     <>
