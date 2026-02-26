@@ -394,7 +394,7 @@ export const parseCvssVector = (
   const { codeToOpencti } = config;
   if (isEmptyField(vector)) {
     const nullFields: CvssFieldUpdate[] = Object.values(codeToOpencti).map((key) => ({ key, value: [null] }));
-    let result: CvssFieldUpdate[] = [];
+    let result: CvssFieldUpdate[];
     if (version === 'cvss2') {
       result = [
         { key: config.baseVectorKey, value: [null] },
@@ -438,7 +438,7 @@ export const parseCvssVector = (
   } else if (version === 'cvss4') {
     scores = new Cvss4P0(vector!).calculateScores();
   }
-  let result: CvssFieldUpdate[] = [];
+  let result: CvssFieldUpdate[];
   if (version === 'cvss2') {
     if (isEmptyField(initialScore)) {
       result = [
@@ -517,7 +517,7 @@ export const updateCvssVector = (
   } else if (version === 'cvss4') {
     scores = new Cvss4P0(updatedVector).calculateScores();
   }
-  let result: CvssFieldUpdate[] = [];
+  let result: CvssFieldUpdate[];
   if (version === 'cvss2') {
     if (isEmptyField(initialScore)) {
       result = [

@@ -53,7 +53,7 @@ export const isCsvValidRepresentationType = (representation: CsvMapperRepresenta
 };
 
 export const parseCsvMapper = (mapper: any): CsvMapperParsed => {
-  let representations: CsvMapperRepresentation[] = [];
+  let representations: CsvMapperRepresentation[];
   if (typeof mapper?.representations === 'string') {
     try {
       representations = JSON.parse(mapper.representations);

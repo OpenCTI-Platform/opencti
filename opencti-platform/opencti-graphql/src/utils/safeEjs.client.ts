@@ -99,10 +99,10 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
   } catch (error) {
     // Enhance error messages
     if (!(error instanceof Error)) {
-      throw new Error('Unknown rendering error');
+      throw new Error('Unknown rendering error', { cause: error });
     }
     if (error.message.includes('Worker terminated')) {
-      throw new Error('Rendering exceeded memory limits');
+      throw new Error('Rendering exceeded memory limits', { cause: error });
     }
     throw error;
   } finally {

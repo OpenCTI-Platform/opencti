@@ -74,7 +74,7 @@ export const sendDisseminationEmail = async (
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const sentFiles = [];
   const attachmentListForSendMail = [];
-  let generatedEmailBody = '';
+  let generatedEmailBody: string;
   const allowedTypesInAttachment = ['application/pdf', 'text/html'];
   const allowedTypesInBody = ['text/html'];
   const emailTemplate = opts.useOctiTemplate ? OCTI_EMAIL_TEMPLATE : BASIC_EMAIL_TEMPLATE;

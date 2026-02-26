@@ -169,7 +169,7 @@ export const extractFilterGroupValues = (
     pushAll(keysToKeep, [INSTANCE_DYNAMIC_REGARDING_OF, RELATION_DYNAMIC_TO_FILTER, RELATION_DYNAMIC_FROM_FILTER]);
   }
   const { filters = [], filterGroups = [] } = inputFilters;
-  let filteredFilters = [];
+  let filteredFilters: Filter[];
   if (key) {
     filteredFilters = reverse
       // we prefer to handle single key and multi keys here, but theoretically it should be arrays every time
@@ -216,7 +216,7 @@ export const extractFilterGroupValues = (
 export const extractDynamicFilterGroupValues = (inputFilters: FilterGroup, key: string | string[] | null = null, reverse = false): FilterGroup[] => {
   const keysToKeep = Array.isArray(key) ? key : [key];
   const { filters = [], filterGroups = [] } = inputFilters;
-  let filteredFilters = [];
+  let filteredFilters: Filter[];
   if (key) {
     filteredFilters = reverse
     // we prefer to handle single key and multi keys here, but theoretically it should be arrays every time
