@@ -7,6 +7,7 @@ import ChangesTable, { Change } from '../../../../components/common/table/Change
 import Loader from '../../../../components/Loader';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { HistoryDrawerQuery } from './__generated__/HistoryDrawerQuery.graphql';
+import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 interface HistoryDrawerProps {
   open: boolean;
@@ -58,7 +59,11 @@ const HistoryDrawerContent: FunctionComponent<HistoryDrawerContentProps> = ({ lo
       <Alert
         content={(
           <>
-            <strong>{data?.log?.user?.name}</strong> {data?.log?.context_data?.message ?? ''}
+            <MarkdownDisplay
+              content={data?.log?.context_data?.message ?? ''}
+              remarkGfmPlugin={true}
+              commonmark={true}
+            />
           </>
         )}
       />

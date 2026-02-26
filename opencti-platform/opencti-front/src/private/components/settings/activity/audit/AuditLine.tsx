@@ -16,6 +16,7 @@ import { useGenerateAuditMessage } from '../../../../../utils/history';
 import { HandleAddFilter } from '../../../../../utils/hooks/useLocalStorage';
 import AuditDrawer from './AuditDrawer';
 import { EMPTY_VALUE } from '../../../../../utils/String';
+import MarkdownDisplay from '../../../../../components/MarkdownDisplay';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -135,7 +136,11 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                 style={{ width: dataColumns.message.width }}
               >
                 <span style={{ color }}>
-                  <b>{data.user?.name}</b> {message}
+                  <MarkdownDisplay
+                    content={`\`${data.user?.name}\` ${message}`}
+                    remarkGfmPlugin={true}
+                    commonmark={true}
+                  />
                 </span>
               </div>
             </div>
