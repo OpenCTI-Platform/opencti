@@ -24,6 +24,10 @@ export default class ReportDetailsPage {
     return this.page.getByLabel('Update', { exact: true });
   }
 
+  getAiInsightsButton() {
+    return this.page.getByLabel('AI Insights', { exact: true });
+  }
+
   getContentFile(fileName: string) {
     return this.page.getByLabel(fileName);
   }
