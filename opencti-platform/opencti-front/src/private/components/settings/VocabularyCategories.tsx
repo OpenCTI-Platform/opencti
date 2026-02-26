@@ -61,10 +61,7 @@ const VocabularyCategories = () => {
       percentWidth: 60,
       isSortable: false,
       render: (data: { category: VocabularyDefinition }) => {
-        if (data.category.description) {
-          return defaultRender(t_i18n(`${data.category.description}`));
-        }
-        return '-';
+        return defaultRender(data.category.description ? t_i18n(data.category.description) : undefined);
       },
     },
   };
