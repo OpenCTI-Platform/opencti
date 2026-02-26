@@ -17,7 +17,7 @@ import ReactMde from 'react-mde';
 import { graphql, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 
-import CKEditor from '../../components/CKEditor';
+import RichTextEditor from '../../components/RichTextEditor';
 import { useFormatter } from '../../components/i18n';
 import MarkdownDisplay from '../../components/MarkdownDisplay';
 import { isNotEmptyField } from '../utils';
@@ -251,10 +251,10 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         markdownFieldRef.current.scrollTop = markdownFieldRef.current.scrollHeight;
       }
     } else if (format === 'html') {
-      const elementCkEditor = document.querySelector(
-        '.ck-content.ck-editor__editable.ck-editor__editable_inline',
+      const elementEditor = document.querySelector(
+        '.tiptap-editor-content.ProseMirror',
       );
-      elementCkEditor?.lastElementChild?.scrollIntoView();
+      elementEditor?.lastElementChild?.scrollIntoView();
     }
     return setContent(newContent ?? '');
   };
@@ -356,14 +356,13 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         />
       )}
       {format === 'html' && (
-        <CKEditor
+        <RichTextEditor
           id="response-dialog-editor"
           data={content}
-          onChange={(_, editor) => {
-            setContent(editor.getData());
+          onChange={(_, adapter) => {
+            setContent(adapter.getData());
           }}
           disabled={effectiveDisabled}
-          disableWatchdog={true}
         />
       )}
       {format === 'markdown' && (

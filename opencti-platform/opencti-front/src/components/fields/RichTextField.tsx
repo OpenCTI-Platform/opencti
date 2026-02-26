@@ -5,13 +5,12 @@ import { FullscreenOutlined } from '@mui/icons-material';
 import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
 import { useTheme } from '@mui/styles';
-import { ClassicEditor } from 'ckeditor5';
+import type { Editor } from '@tiptap/react';
 import { FieldProps, useField } from 'formik';
 import { isNil } from 'ramda';
 import { CSSProperties, useRef, useState } from 'react';
 import useAI from '../../utils/hooks/useAI';
-import { getHtmlTextContent } from '../../utils/html';
-import CKEditor from '../CKEditor';
+import RichTextEditor from '../RichTextEditor';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
 
@@ -46,33 +45,30 @@ const RichTextField = ({
 }: RichTextFieldProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const editorReference = useRef<ClassicEditor>(undefined);
+  const editorReference = useRef<Editor | null>(null);
   const [fullScreen, setFullScreen] = useState(false);
   const [, meta] = useField(name);
   const { fullyActive } = useAI();
 
   const fieldErrors = errors[name] as string;
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
-  const CKEditorInstance = (
-    <CKEditor
+  const RichTextEditorInstance = (
+    <RichTextEditor
       onReady={(editor) => {
         editorReference.current = editor;
-        editorReference.current.model.document.selection.on('change', () => {
-          if (editorReference.current && onTextSelection && editorReference.current.isReadOnly && !fullScreen) {
-            const htmlContent = editorReference.current.data.stringify(
-              editorReference.current.model.getSelectedContent(
-                editorReference.current.model.document.selection,
-              ),
-            );
-            const text = getHtmlTextContent(htmlContent).trim();
+        editor.on('selectionUpdate', () => {
+          if (editorReference.current && onTextSelection && !editorReference.current.isEditable && !fullScreen) {
+            const { from, to } = editorReference.current.state.selection;
+            const text = editorReference.current.state.doc.textBetween(from, to).trim();
             if (text.length > 2) onTextSelection(text);
           }
         });
       }}
       data={value}
-      onChange={(_, editor) => {
-        setFieldValue(name, editor.getData());
-        onChange?.(name, editor.getData());
+      onChange={(_, adapter) => {
+        const html = adapter.getData();
+        setFieldValue(name, html);
+        onChange?.(name, html);
       }}
       onBlur={() => {
         setFieldTouched(name, true);
@@ -136,10 +132,10 @@ const RichTextField = ({
                 showCloseButton
                 title={t_i18n('Content')}
               >
-                {CKEditorInstance}
+                {RichTextEditorInstance}
               </Dialog>
             )
-          : CKEditorInstance
+          : RichTextEditorInstance
       }
 
       {fieldErrors && showError && (

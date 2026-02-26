@@ -23,7 +23,7 @@ import { isEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import withRouter from '../../../../utils/compat_router/withRouter';
-import CKEditor from '../../../../components/CKEditor';
+import RichTextEditor from '../../../../components/RichTextEditor';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import HtmlDisplay from '../../../../components/HtmlDisplay';
 import useAttributes from '../../../../utils/hooks/useAttributes';
@@ -590,13 +590,13 @@ class StixCoreObjectContentComponent extends Component {
                   className={classes.editorContainer}
                   style={{ minHeight: height, height }}
                 >
-                  <CKEditor
+                  <RichTextEditor
                     data={currentContent ?? ''}
-                    onChange={(_, editor) => {
-                      this.setState({ currentContent: editor.getData(), changed: true });
+                    onChange={(_, adapter) => {
+                      this.setState({ currentContent: adapter.getData(), changed: true });
                     }}
-                    onBlur={(_, editor) => {
-                      this.onHtmlFieldChange(editor.getData());
+                    onBlur={(_, adapter) => {
+                      this.onHtmlFieldChange(adapter.getData());
                     }}
                   />
                   <TextFieldAskAI
