@@ -15,6 +15,7 @@ import { Filter } from '../../utils/filters/filtersHelpers-types';
 import useSchema from '../../utils/hooks/useSchema';
 import FilterValuesForDynamicSubKey from './FilterValuesForDynamicSubKey';
 import { useTheme } from '@mui/material/styles';
+import { Stack } from '@mui/material';
 
 interface FilterValuesProps {
   label: string | React.JSX.Element;
@@ -204,7 +205,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     const isWarning = isRegardingOfFilterWarning(currentFilter, scos.map((n) => n.id), filtersRepresentativesMap);
 
     return (
-      <>
+      <Stack direction="row">
         {isWarning && (
           <Tooltip title={
             t_i18n('', {
@@ -269,23 +270,17 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                   >
                     <Box
                       sx={{
-                        padding: '0 4px',
-                        display: 'flex',
+                        px: 0.5,
                       }}
                     >
-                      <Chip
-                        label={(
-                          <FilterValues
-                            label={keyLabel}
-                            tooltip={false}
-                            parentFilter={currentFilter}
-                            currentFilter={val}
-                            filtersRepresentativesMap={filtersRepresentativesMap}
-                            redirection
-                            noLabelDisplay={true}
-                          />
-                        )}
-                        color={chipColor}
+                      <FilterValues
+                        label={keyLabel}
+                        tooltip={false}
+                        parentFilter={currentFilter}
+                        currentFilter={val}
+                        filtersRepresentativesMap={filtersRepresentativesMap}
+                        redirection
+                        noLabelDisplay={true}
                       />
                     </Box>
                   </Tooltip>
@@ -294,7 +289,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
             })
           }
         </Box>
-      </>
+      </Stack>
     );
   }
   if (noLabelDisplay) {
