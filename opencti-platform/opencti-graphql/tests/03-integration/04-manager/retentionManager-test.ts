@@ -286,7 +286,7 @@ describe('Retention Manager tests ', () => {
   it('should fetch the correct files to be deleted by a retention rule on files', async () => {
     // check the number of files imported in Data/import
     const files = await allFilesForPaths(testContext, ADMIN_USER, [globalPath]);
-    expect(files.length).toEqual(9); // 7 files from index-file-test + the 2 created files
+    expect(files.length).toEqual(10); // 8 files from index-file-test + the 2 created files
     // retention rule on files not modified since 2023-07-01
     const before = utcDate('2023-07-01T00:00:00.000Z');
     filesToDelete = await getElementsToDelete(context, 'file', before);
