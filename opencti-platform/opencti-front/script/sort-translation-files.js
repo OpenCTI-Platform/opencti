@@ -33,7 +33,7 @@ const sortAllJSONFiles = async (dirPath) => {
     const files = await readdir(dirPath);
     
     // Iterate through files
-    files.forEach((file) => {
+    for await (const file of files) {
       const filePath = path.join(dirPath, file);
       
       // Skip if not a JSON file or if it's en.json
@@ -42,8 +42,8 @@ const sortAllJSONFiles = async (dirPath) => {
       }
       
       // Sort JSON file
-      sortJSONFile(filePath);
-    });
+      await sortJSONFile(filePath);
+    }
   } catch (err) {
     console.error('Error reading directory:', err);
   }
