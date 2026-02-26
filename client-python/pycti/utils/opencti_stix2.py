@@ -6,7 +6,6 @@ import random
 import time
 import traceback
 import uuid
-from logging import ERROR
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import datefinder
