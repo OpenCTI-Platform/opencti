@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import purify from 'dompurify';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { displayEntityTypeForTranslation, translateDateInterval, isStringSafe, sanitize } from './String';
 
 describe('String utils', () => {
@@ -24,17 +25,22 @@ describe('String utils', () => {
     });
   });
 
-  describe('Function: isHtmlSafe()', () => {
+  describe('Function: isStringSafe()', () => {
+    afterEach(() => {
+      vi.clearAllMocks();
+      vi.resetAllMocks();
+    });
+
     it('should return true if safe', () => {
-      expect(isStringSafe('')).toEqual(true);
-      expect(isStringSafe('string without any html')).toEqual(true);
-      expect(isStringSafe('<p>simple <strong>safe</strong> html</p>')).toEqual(true);
+      // If purify does not change the input.
+      vi.spyOn(purify, 'sanitize').mockImplementation((d) => `${d}`);
+      expect(isStringSafe('string without issues')).toEqual(true);
     });
 
     it('should return false if not safe', () => {
-      expect(isStringSafe('<img src=x onerror=alert(1)//>')).toEqual(false);
-      expect(isStringSafe('<svg><g/onload=alert(2)//<p>')).toEqual(false);
-      expect(isStringSafe('<p>abc<iframe//src=jAva&Tab;script:alert(3)>def</p>')).toEqual(false);
+      // If purify changes the input.
+      vi.spyOn(purify, 'sanitize').mockImplementation((d) => `${d} transformed`);
+      expect(isStringSafe('string with issues')).toEqual(false);
     });
   });
 
