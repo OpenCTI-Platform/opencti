@@ -42,7 +42,7 @@ interface ThemeFormProps {
   submitLabel?: string;
   withButtons?: boolean;
 }
-const asideFields = [
+const loginAsideFields = [
   'theme_login_aside_type',
   'theme_login_aside_color',
   'theme_login_aside_gradient_start',
@@ -96,9 +96,9 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
       theme_login_aside_image: '',
     };
 
-    asideFields.forEach((field) => setFieldValue(field, clearedValues[field]));
+    loginAsideFields.forEach((field) => setFieldValue(field, clearedValues[field]));
 
-    const hadSavedValues = asideFields.some((field) => !!initialValues[field])
+    const hadSavedValues = loginAsideFields.some((field) => !!initialValues[field])
       || !!initialValues.theme_login_aside_type;
 
     if (type || hadSavedValues) {

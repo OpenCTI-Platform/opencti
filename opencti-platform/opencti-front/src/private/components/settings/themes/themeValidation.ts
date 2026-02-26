@@ -44,7 +44,8 @@ const themeValidationSchema = (t_i18n: (key: string) => string) => {
     theme_logo_collapsed: Yup.string().nullable(),
     theme_logo_login: Yup.string().nullable(),
 
-    // ✅ IMPORTANT : champ discriminant
+    // the theme login aside validation is based on the type of aside selected,
+    // because depeding on the type, the required fields are different
     theme_login_aside_type: Yup.mixed<
       '' | 'color' | 'gradient' | 'image'
     >().oneOf(['', 'color', 'gradient', 'image']),
@@ -64,7 +65,7 @@ const themeValidationSchema = (t_i18n: (key: string) => string) => {
       }),
 
     /**
-     * GRADIENT START
+     * GRADIENT START & END
      */
     theme_login_aside_gradient_start: Yup.string()
       .nullable()
@@ -76,10 +77,6 @@ const themeValidationSchema = (t_i18n: (key: string) => string) => {
             .required(requiredMsg),
         otherwise: (schema) => schema.strip(),
       }),
-
-    /**
-     * GRADIENT END
-     */
     theme_login_aside_gradient_end: Yup.string()
       .nullable()
       .when('theme_login_aside_type', {
