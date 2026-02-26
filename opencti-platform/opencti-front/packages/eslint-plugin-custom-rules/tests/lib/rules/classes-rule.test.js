@@ -3,8 +3,8 @@ import { RuleTester } from 'eslint';
 import parser from '@typescript-eslint/parser';
 
 const ruleTester = new RuleTester({
-  parser,
-  parserOptions: {
+  languageOptions: {
+    parser,
     ecmaVersion: 2020,
   }
 });
