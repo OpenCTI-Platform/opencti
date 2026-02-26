@@ -38,8 +38,6 @@ const handleExportJson = async (theme: themeToExport) => {
 
   const themeData = { ...result.theme };
 
-  console.log('themeda', themeData);
-
   const jsonString = JSON.stringify(themeData, null, 2);
   const blob = new Blob([jsonString], { type: 'application/json' });
   const todayDate = new Date().toISOString().split('T')[0].replaceAll('-', '');

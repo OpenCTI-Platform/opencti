@@ -78,6 +78,10 @@ export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER)
     theme_logo: DARK_DEFAULTS.theme_logo,
     theme_logo_collapsed: DARK_DEFAULTS.theme_logo_collapsed,
     theme_logo_login: DARK_DEFAULTS.theme_logo_login,
+    theme_login_aside_color: DARK_DEFAULTS.theme_login_aside_color,
+    theme_login_aside_gradient_start: DARK_DEFAULTS.theme_login_aside_gradient_start,
+    theme_login_aside_gradient_end: DARK_DEFAULTS.theme_login_aside_gradient_end,
+    theme_login_aside_image: DARK_DEFAULTS.theme_login_aside_image,
     built_in: true,
   };
 
@@ -95,6 +99,10 @@ export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER)
     theme_logo: LIGHT_DEFAULTS.theme_logo,
     theme_logo_collapsed: LIGHT_DEFAULTS.theme_logo_collapsed,
     theme_logo_login: LIGHT_DEFAULTS.theme_logo_login,
+    theme_login_aside_color: LIGHT_DEFAULTS.theme_login_aside_color,
+    theme_login_aside_gradient_start: LIGHT_DEFAULTS.theme_login_aside_gradient_start,
+    theme_login_aside_gradient_end: LIGHT_DEFAULTS.theme_login_aside_gradient_end,
+    theme_login_aside_image: LIGHT_DEFAULTS.theme_login_aside_image,
     built_in: true,
   };
 
