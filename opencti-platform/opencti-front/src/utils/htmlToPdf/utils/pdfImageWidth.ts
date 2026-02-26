@@ -1,4 +1,4 @@
-import { CKEDITOR_CONTAINER_SELECTOR, MAX_WIDTH_PORTRAIT } from './constants';
+import { TIPTAP_EDITOR_SELECTOR, MAX_WIDTH_PORTRAIT } from './constants';
 
 /**
  * Find images and apply a width in pixels on it.
@@ -15,8 +15,8 @@ import { CKEDITOR_CONTAINER_SELECTOR, MAX_WIDTH_PORTRAIT } from './constants';
  */
 const setImagesWidth = (content: string, maxWidth = MAX_WIDTH_PORTRAIT) => {
   let updatedContent = content;
-  const elementCkEditor = document.querySelector(CKEDITOR_CONTAINER_SELECTOR);
-  const fullWidth = elementCkEditor ? elementCkEditor.clientWidth : maxWidth;
+  const elementEditor = document.querySelector(TIPTAP_EDITOR_SELECTOR);
+  const fullWidth = elementEditor ? (elementEditor as HTMLElement).clientWidth : maxWidth;
 
   // 1. In case of images with width in pixels.
   // Find the value of the width and max sure it is not higher than maximum possible.
