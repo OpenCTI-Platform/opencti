@@ -20,7 +20,7 @@ const ExternalReferences = lazy(() => import('./ExternalReferences'));
 const RootExternalReference = lazy(() => import('./external_references/Root'));
 
 const Root = () => {
-  let redirect = null;
+  let redirect;
   if (!useIsHiddenEntity('Report')) {
     redirect = 'reports';
   } else if (!useIsHiddenEntity('Grouping')) {

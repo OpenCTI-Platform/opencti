@@ -198,7 +198,7 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
                   const externalReferenceId = externalReference.external_id
                     ? `(${externalReference.external_id})`
                     : '';
-                  let externalReferenceSecondary = '';
+                  let externalReferenceSecondary;
                   if (
                     externalReference.url
                     && externalReference.url.length > 0

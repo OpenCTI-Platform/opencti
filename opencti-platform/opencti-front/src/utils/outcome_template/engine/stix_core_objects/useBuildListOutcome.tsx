@@ -28,7 +28,7 @@ const useBuildListOutcome = () => {
       filters: dataSelection.filters,
     };
 
-    let nodes: ListItem[] = [];
+    let nodes: ListItem[];
     if (widgetPerspective === 'entities') {
       const types = ['Stix-Core-Object'];
       const data = await fetchQuery(stixCoreObjectsListQuery, { ...variables, types }).toPromise() as StixCoreObjectsListQuery$data;

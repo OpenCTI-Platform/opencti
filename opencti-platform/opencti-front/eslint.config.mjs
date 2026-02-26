@@ -43,7 +43,8 @@ export default defineConfig([
     },
     settings: {
       react: {
-        version: 'detect',
+        // temporary workaround for https://github.com/jsx-eslint/eslint-plugin-react/issues/3977
+        version: '19.2',
       },
     },
   },
