@@ -184,7 +184,7 @@ In SSO configuration:
 "ldap": {
       "strategy": "LdapStrategy",
       "config": {
-        "url": "ldap://localhost:389",
+        "url": "ldap://localhost:1389",
         "bind_dn": "dc=mokapi,dc=io",
         "search_base": "ou=people,dc=mokapi,dc=io",
         "group_search_base": "ou=groups,dc=mokapi,dc=io",

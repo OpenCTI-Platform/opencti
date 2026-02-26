@@ -182,7 +182,7 @@ services:
       - "./mock-api:/share"
     ports:
       - "8090:80"
-      - "389:389"
+      - "1389:389"
       - "9080:8080"
 
 volumes:
