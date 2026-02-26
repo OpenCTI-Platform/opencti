@@ -12,14 +12,6 @@ export const getRemoteCredentialsProviderFields = (prefix: string, provider: str
   return conf.get(`${prefix}:credentials_provider:${provider}:field_targets`) || conf.get(`${prefix}:credentials_provider:field_targets`) || [];
 };
 
-export const getRemoteCredentialsFields = (prefix: string) => {
-  const provider = getRemoteCredentialsProviderSelector(prefix);
-  if (provider) {
-    return getRemoteCredentialsProviderFields(prefix, provider);
-  }
-  return [];
-};
-
 export const enrichWithRemoteCredentials = async (prefix: string, baseConfiguration: any) => {
   const provider = getRemoteCredentialsProviderSelector(prefix);
   if (provider) {

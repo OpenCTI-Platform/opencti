@@ -35,7 +35,7 @@ import { getPlatformCrypto } from '../../utils/platformCrypto';
 import { memoize } from '../../utils/memoize';
 import { logAuthInfo } from './providers-logger';
 import { isNotEmptyField } from '../../database/utils';
-import { enrichWithRemoteCredentials, getRemoteCredentialsFields, getRemoteCredentialsProviderSelector } from '../../config/credentials';
+import { enrichWithRemoteCredentials, getRemoteCredentialsProviderFields, getRemoteCredentialsProviderSelector } from '../../config/credentials';
 
 // Type for data that are encrypted
 const getKeyPair = memoize(async () => {
@@ -90,7 +90,7 @@ export const getAvailableSecrets = (): AvailableSecretInfo[] => {
     const prefix = `secrets:${name}`;
     const provider = getRemoteCredentialsProviderSelector(prefix);
     if (provider) {
-      const secretFields = getRemoteCredentialsFields(prefix);
+      const secretFields = getRemoteCredentialsProviderFields(prefix, provider);
       return secretFields.map((field) => ({
         provider_name: provider,
         secret_name: `${name}${secretFieldNameSeparator}${field}`,
