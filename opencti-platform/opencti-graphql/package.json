@@ -64,7 +64,7 @@
     "@jorgeferrero/stream-to-buffer": "2.0.6",
     "@langchain/core": "0.3.59",
     "@langchain/mistralai": "0.2.0",
-    "@langchain/openai": "0.5.5",
+    "@langchain/openai": "0.6.17",
     "@lezer/javascript": "1.5.4",
     "@mistralai/mistralai": "1.7.2",
     "@noble/ed25519": "3.0.0",
