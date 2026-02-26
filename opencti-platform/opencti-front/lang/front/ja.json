@@ -255,6 +255,7 @@
   "An entity has left a selected PIR": "選択したPIRからエンティティが離脱した",
   "An entity is linked to an entity from a selected PIR": "エンティティは、選択されたPIRのエンティティにリンクされている。",
   "An enumeration of security platform type": "セキュリティ・プラットフォーム型の列挙",
+  "An enumeration of SSH key types": "SSH鍵タイプの列挙",
   "An enumeration of Windows service start types": "Windows サービス開始タイプの列挙",
   "An enumeration of Windows service statuses": "Windowsサービスステータスの列挙",
   "An enumeration of Windows service types": "Windows サービスタイプの列挙",

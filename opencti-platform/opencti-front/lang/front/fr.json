@@ -255,6 +255,7 @@
   "An entity has left a selected PIR": "Une entité a quitté un PIR sélectionné",
   "An entity is linked to an entity from a selected PIR": "Une entité est liée à une entité d'un PIR sélectionné",
   "An enumeration of security platform type": "Une énumération de types de plates-formes de sécurité",
+  "An enumeration of SSH key types": "Une énumération de types de clés SSH",
   "An enumeration of Windows service start types": "Une énumération des types de démarrage des services Windows",
   "An enumeration of Windows service statuses": "Une énumération de statuts de services Windows",
   "An enumeration of Windows service types": "Une énumération des types de services Windows",

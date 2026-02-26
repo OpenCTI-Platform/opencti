@@ -255,6 +255,7 @@
   "An entity has left a selected PIR": "엔티티가 선택한 PIR을 떠났습니다",
   "An entity is linked to an entity from a selected PIR": "엔티티가 선택한 PIR의 엔티티에 연결됩니다",
   "An enumeration of security platform type": "보안 플랫폼 유형의 열거",
+  "An enumeration of SSH key types": "SSH 키 유형 열거",
   "An enumeration of Windows service start types": "Windows 서비스 시작 유형 열거",
   "An enumeration of Windows service statuses": "Windows 서비스 상태의 열거형",
   "An enumeration of Windows service types": "Windows 서비스 유형 열거",

@@ -255,6 +255,7 @@
   "An entity has left a selected PIR": "一个实体离开了选定的 PIR",
   "An entity is linked to an entity from a selected PIR": "实体与所选 PIR 中的实体建立链接",
   "An enumeration of security platform type": "安全平台类型枚举",
+  "An enumeration of SSH key types": "SSH 密钥类型枚举",
   "An enumeration of Windows service start types": "Windows 服务启动类型枚举",
   "An enumeration of Windows service statuses": "Windows 服务状态枚举",
   "An enumeration of Windows service types": "Windows 服务类型枚举",
