@@ -3,7 +3,7 @@ import { dateFormat, jsDate } from '../../../utils/Time';
 import { isNone, useFormatter } from '../../i18n';
 import { defaultDate, getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import type { OctiGraphPositions, GraphLink, GraphNode } from '../graph.types';
-import { EMPTY_VALUE, truncate } from '../../../utils/String';
+import { EMPTY_VALUE, truncate, sanitize } from '../../../utils/String';
 import GRAPH_IMAGES from './graphImages';
 import { itemColor } from '../../../utils/Colors';
 
@@ -175,7 +175,7 @@ const useGraphParser = () => {
       isObservable: !!data.observable_value,
       numberOfConnectedElement: numberOfConnectedElement ?? data.numberOfConnectedElement,
       ...getNodeImg(data),
-      name: getNodeName(data),
+      name: sanitize(getNodeName(data), true),
       label: getNodeLabel(data),
       markedBy: getMarkings(data),
       createdBy: getCreatedBy(data),
@@ -198,7 +198,7 @@ const useGraphParser = () => {
       relationship_type: data.relationship_type,
       label: t_i18n(`relationship_${data.entity_type}`),
       markedBy: getMarkings(data),
-      name: getRelationshipName(data),
+      name: sanitize(getRelationshipName(data), true),
       createdBy: getCreatedBy(data),
       defaultDate: jsDate(defaultDate(data)),
       isNestedInferred: getIsNestedInferred(data),
