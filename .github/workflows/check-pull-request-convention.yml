@@ -12,7 +12,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: Slashgear/action-check-pr-title@161cede0311ec624ae3ee76a2c27522f7b6fa2d8
+      - uses: Slashgear/action-check-pr-title@e753197e320ff2d8440c5c146e0e50d8a76bc90a
         with:
           regexp: '^\[[a-z]+.+\].+\((#[0-9]+)\)$|^\[deps\].+'
           flags: "gm"
