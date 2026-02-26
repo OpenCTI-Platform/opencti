@@ -1,4 +1,4 @@
-import type { AttachmentProcessorExtractedProp } from '../../../database/engine';
+import type { AttachmentProcessorExtractedProp } from '../../../database/attachment-processor-props';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import {
@@ -40,12 +40,19 @@ export const ATTACHMENT_MAPPINGS = [
   name: AttachmentProcessorExtractedProp;
 } & MappingDefinition<BasicStoreAttribute>)[];
 
-type KeysInArray = typeof ATTACHMENT_MAPPINGS[number]['name'];
-type AttributesDefinitionWithCheck = Exclude<AttachmentProcessorExtractedProp, KeysInArray> extends never
-  ? Array<AttributeDefinition>
+// Compile-time shenanigans to make sure we don't forget to update
+// ATTACHMENT_MAPPINGS when/if we start extracting new fields
+// via the ES/OS attachment ingest pipeline.
+type AttachmentMappingsWithCheck = Exclude<
+  AttachmentProcessorExtractedProp,
+  typeof ATTACHMENT_MAPPINGS[number]['name']
+> extends never
+  ? MappingDefinition<BasicStoreAttribute>[]
   : 'Make sure ATTACHMENT_MAPPINGS defines one mapping for each AttachmentProcessorExtractedProp';
 
-const attributes: AttributesDefinitionWithCheck = [
+const TYPE_CHECKED_ATTACHMENT_MAPPINGS: AttachmentMappingsWithCheck = ATTACHMENT_MAPPINGS;
+
+const attributes: Array<AttributeDefinition> = [
   id,
   internalId,
   standardId,
@@ -110,7 +117,7 @@ const attributes: AttributesDefinitionWithCheck = [
     multiple: false,
     upsert: false,
     isFilterable: false,
-    mappings: ATTACHMENT_MAPPINGS,
+    mappings: TYPE_CHECKED_ATTACHMENT_MAPPINGS,
   },
   { name: 'uploaded_at', label: 'Upload date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'file_id', label: 'File identifier', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
