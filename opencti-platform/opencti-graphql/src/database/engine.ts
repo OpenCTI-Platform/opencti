@@ -192,6 +192,7 @@ import type {
   StoreRelation,
 } from '../types/store';
 import type { BasicStoreSettings } from '../types/settings';
+import type { Mutable } from '../types/type-utils';
 import { completeSpecialFilterKeys } from '../utils/filtering/filtering-completeSpecialFilterKeys';
 import { IDS_ATTRIBUTES } from '../domain/attribute-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -298,6 +299,59 @@ const oebp = (queryResult: any): any => {
   return queryResult.body;
 };
 
+// List of fields extracted by the attachment ingest processor.
+// The full list is available in the Elasticsearch docs:
+// (https://www.elastic.co/guide/en/elasticsearch/reference/8.19/attachment.html#attachment-fields).
+const ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_ELASTICSEARCH = [
+  'content',
+  'title',
+  'author',
+  'keywords',
+  'date',
+  'content_type',
+  'content_length',
+  'language',
+  'modified',
+  'format',
+  // identifier,     NOT EXTRACTED
+  // contributor,    NOT EXTRACTED
+  // coverage,       NOT EXTRACTED
+  'modifier',
+  'creator_tool',
+  // publisher,      NOT EXTRACTED
+  // relation,       NOT EXTRACTED
+  // rights,         NOT EXTRACTED
+  // source,         NOT EXTRACTED
+  // type,           NOT EXTRACTED
+  'description',
+  'print_date',
+  'metadata_date',
+  // latitude,       NOT EXTRACTED
+  // longitude,      NOT EXTRACTED
+  // altitude,       NOT EXTRACTED
+  // rating,         NOT EXTRACTED
+  'comments',
+] as const;
+
+// List of fields extracted by the attachment ingest processor, for OpenSearch.
+// The full list is available in the OS docs:
+// (https://docs.opensearch.org/latest/install-and-configure/additional-plugins/ingest-attachment-plugin/#extracted-information),
+// and code shows the check rejects unknown fields with an exception:
+// https://github.com/opensearch-project/OpenSearch/blob/315481148edaa43410e2e9f1801ec903fd62ec20/plugins/ingest-attachment/src/main/java/org/opensearch/ingest/attachment/AttachmentProcessor.java#L277
+const ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_OPENSEARCH = [
+  'content',
+  'title',
+  'author',
+  'keywords',
+  'date',
+  'content_type',
+  'content_length',
+  'language',
+] as const;
+
+export type AttachmentProcessorExtractedProp = Mutable<typeof ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_ELASTICSEARCH>[number]
+  & Mutable<typeof ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_OPENSEARCH>[number];
+
 export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
   let success = true;
   if (engine instanceof ElkClient) {
@@ -309,6 +363,7 @@ export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
           attachment: {
             field: 'file_data',
             remove_binary: true,
+            properties: ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_ELASTICSEARCH as Mutable<typeof ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_ELASTICSEARCH>,
           },
         },
       ],
@@ -325,6 +380,7 @@ export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
           {
             attachment: {
               field: 'file_data',
+              properties: ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_OPENSEARCH as Mutable<typeof ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_OPENSEARCH>,
             },
           },
           {
