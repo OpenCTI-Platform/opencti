@@ -12,6 +12,7 @@ This table regroups all the breaking changes introduced, with the corresponding 
 |:--------------------------------------------------------------------------------------------------------------------|:--------------|:-----------|
 | [SSO, cryptography and tokens management](#cryptography-and-tokens-management)                                      | -             | 7.260224.0 |
 | [Update license for SSO (& migration to UI)](#SSO-update-license)                                                |               | 7.260224.0        |
+| [XTM Composer version compatibility](#xtm-composer-version-compatibility)                                           | -             | 7.260224.0 |
 | [GenerationScenario Mutations in OpenCTI - OpenBAS](#generation-scenario-mutation-openti-openbas-with-placeholders) | 6.5           | 6.8        |
 | [Removing bi-directional stream connectors](#removing-some-stream-connectors)                                       | 6.3           | 6.6        |
 | [Promote Observable API](#change-to-the-observable-promote-API)                                                     | 6.2           | 6.8        |
@@ -38,6 +39,12 @@ For more information read the [migration process](breaking-changes/7.260224.0-SS
 #### OpenAEV and OpenCTI version compatibility
 
 Upgrading to OpenCTI 7.260224.0 requires you to upgrade OpenAEV to version 2.2.
+
+<a id="xtm-composer-version-compatibility"></a>
+#### XTM Composer and OpenCTI version compatibility
+
+Upgrading to OpenCTI 7.260224.0 requires you to upgrade XTM Composer to version >=2. 
+This new version is required to support the security improvements introduced in OpenCTI 7, including the new token management and JWT-based authentication mechanisms.
 
 #### Mandatory Cryptography configuration
 
