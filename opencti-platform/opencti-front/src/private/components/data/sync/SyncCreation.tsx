@@ -241,7 +241,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
 
   return (
     <Drawer
-      title={t_i18n('Create OpenCTI Stream')}
+      title={t_i18n('Create an OpenCTI Stream')}
       open={open}
       onClose={handleClose}
       controlledDial={triggerButton ? CreateSynchronizerControlledDial : undefined}
@@ -474,7 +474,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                     </div>
                     <div>
                       {t_i18n(
-                        'Every data fetched from this synchronizer will be written as the only source of truth',
+                        'Every data fetched from this OpenCTI stream will be written as the only source of truth',
                       )}
                     </div>
                   </AccordionDetails>

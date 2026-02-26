@@ -322,7 +322,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
                 onChange={handleSubmitField}
               />
               <div>{t_i18n('Use this option only in case of platform to platform replication')}</div>
-              <div>{t_i18n('Every data fetched from this synchronizer will be written as the only source of truth')}</div>
+              <div>{t_i18n('Every data fetched from this OpenCTI stream will be written as the only source of truth')}</div>
             </AccordionDetails>
           </Accordion>
           <div className={classes.buttons}>

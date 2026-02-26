@@ -295,7 +295,7 @@ class SyncPopover extends Component {
         <Drawer
           open={this.state.displayUpdate}
           onClose={this.handleCloseUpdate.bind(this)}
-          title={t('Update a synchronizer')}
+          title={t('Update an OpenCTI stream')}
         >
           <QueryRenderer
             query={syncEditionQuery}
@@ -319,7 +319,7 @@ class SyncPopover extends Component {
           size="small"
         >
           <DialogContentText>
-            {t('Do you want to delete this synchronizer?')}
+            {t('Do you want to delete this OpenCTI stream?')}
           </DialogContentText>
           <DialogActions>
             <Button
@@ -346,7 +346,7 @@ class SyncPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to start this synchronizer?')}
+              {t('Do you want to start this OpenCTI stream?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -374,7 +374,7 @@ class SyncPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to stop this synchronizer?')}
+              {t('Do you want to stop this OpenCTI stream?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
