@@ -98,6 +98,7 @@ export interface DataTableProps {
   redirectionModeEnabled?: boolean;
   additionalFilterKeys?: string[];
   entityTypes?: string[];
+  container?: any;
   settingsMessagesBannerHeight?: number;
   storageHelpers?: UseLocalStorageHelpers;
   redirectionMode?: string | undefined;

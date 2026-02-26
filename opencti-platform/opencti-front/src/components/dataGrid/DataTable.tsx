@@ -119,6 +119,7 @@ type DataTableInternalToolbarProps = Pick<DataTableProps,
   | 'entityTypes'
   | 'trashOperationsEnabled'
   | 'deleteDisable'
+  | 'container'
 > & {
   taskScope?: string;
   globalSearch?: string;
@@ -137,6 +138,7 @@ const DataTableInternalToolbar = ({
   displayEditButtons,
   trashOperationsEnabled,
   deleteDisable,
+  container,
 }: DataTableInternalToolbarProps) => {
   const theme = useTheme<Theme>();
 
@@ -178,6 +180,7 @@ const DataTableInternalToolbar = ({
         displayEditButtons={displayEditButtons}
         trashOperationsEnabled={trashOperationsEnabled}
         deleteDisable={deleteDisable}
+        container={container}
       />
     </div>
   );
@@ -208,7 +211,8 @@ type OCTIDataTableProps = Pick<DataTableProps,
   | 'selectOnLineClick'
   | 'createButton'
   | 'entityTypes'
-  | 'actionsColumnWidth'> & {
+  | 'actionsColumnWidth'
+  | 'container'> & {
     lineFragment: GraphQLTaggedNode;
     preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>;
     exportContext?: { entity_type: string; entity_id?: string };
@@ -242,6 +246,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     markAsReadEnabled,
     trashOperationsEnabled,
     deleteDisable,
+    container,
   } = props;
 
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
@@ -289,6 +294,7 @@ const DataTable = (props: OCTIDataTableProps) => {
         )}
         dataTableToolBarComponent={(
           <DataTableInternalToolbar
+            container={container}
             entityTypes={entityTypes}
             handleCopy={handleCopy}
             taskScope={taskScope}
