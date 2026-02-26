@@ -132,9 +132,10 @@ const AiInsightButton = ({ onlyIcon = false, floating = false, onClick }: AiInsi
   const { t_i18n } = useFormatter();
   const { bannerSettings: { bannerHeightNumber } } = useAuth();
   const classes = useStyles({ bannerHeightNumber });
+  const buttonLabel = t_i18n('AI Insights');
 
   return (
-    <Tooltip title={t_i18n('AI Insights')}>
+    <Tooltip title={buttonLabel}>
       {onlyIcon ? (
         <IconButton
           size="small"
@@ -149,9 +150,10 @@ const AiInsightButton = ({ onlyIcon = false, floating = false, onClick }: AiInsi
           size="small"
           onClick={onClick}
           intent="ai"
+          aria-label={buttonLabel}
           startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
         >
-          {t_i18n('AI Insights')}
+          {buttonLabel}
         </Button>
       )}
     </Tooltip>

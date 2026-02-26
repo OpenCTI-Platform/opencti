@@ -30,6 +30,7 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import ReportEdition from './ReportEdition';
 import ReportDeletion from './ReportDeletion';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import AIInsights from '@components/common/ai/AIInsights';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -187,6 +188,7 @@ const RootReport = () => {
                     </Tabs>
                     {!isKnowledgeOrContent && (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                        <AIInsights id={report.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
                         <StixCoreObjectSecurityCoverage id={report.id} coverage={report.securityCoverage} />
                       </div>
                     )}
