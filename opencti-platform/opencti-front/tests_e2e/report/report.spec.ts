@@ -129,6 +129,9 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, asyn
   // region Control data on report details page
   // ------------------------------------------
 
+  const aiInsightsButton = reportDetailsPage.getAiInsightsButton();
+  await expect(aiInsightsButton).toBeVisible();
+
   let description = reportDetailsPage.getTextForHeading('Description', 'Test e2e Description');
   await expect(description).toBeVisible();
 

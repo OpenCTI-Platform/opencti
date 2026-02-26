@@ -145,6 +145,7 @@ const AIInsights = ({
   const [containersBusId] = useState(uuid());
   const [loading, setLoading] = useState(false);
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
+  const buttonLabel = t_i18n('AI Insights');
 
   const { fullyActive, enabled } = useAI();
   const handleClose = () => {
@@ -180,7 +181,7 @@ const AIInsights = ({
   if (!isEnterpriseEdition && enabled) {
     return (
       <>
-        <Tooltip title={t_i18n('AI Insights')}>
+        <Tooltip title={buttonLabel}>
           {onlyIcon ? (
             <IconButton
               size="small"
@@ -197,7 +198,7 @@ const AIInsights = ({
               className={floating ? classes.chipFloating : classes.chip}
               startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
             >
-              {t_i18n('AI Insights')}
+              {buttonLabel}
             </Button>
           )}
         </Tooltip>
@@ -222,7 +223,7 @@ const AIInsights = ({
   if (isEnterpriseEdition && !fullyActive) {
     return (
       <>
-        <Tooltip title={t_i18n('AI Insights')}>
+        <Tooltip title={buttonLabel}>
           {onlyIcon ? (
             <IconButton
               size="small"
@@ -237,9 +238,10 @@ const AIInsights = ({
               size="small"
               onClick={() => setDisplayAIDialog(true)}
               className={floating ? classes.chipFloating : classes.chip}
+              aria-label={buttonLabel}
               startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
             >
-              {t_i18n('AI Insights')}
+              {buttonLabel}
             </Button>
           )}
         </Tooltip>
@@ -265,7 +267,7 @@ const AIInsights = ({
   }
   return (
     <>
-      <Tooltip title={t_i18n('AI Insights')}>
+      <Tooltip title={buttonLabel}>
         {onlyIcon ? (
           <IconButton
             size="small"
@@ -282,7 +284,7 @@ const AIInsights = ({
             className={floating ? classes.chipFloating : classes.chip}
             startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
           >
-            {t_i18n('AI Insights')}
+            {buttonLabel}
           </Button>
         )}
       </Tooltip>
@@ -305,7 +307,7 @@ const AIInsights = ({
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="subtitle2" style={{ textWrap: 'nowrap' }}>
-            {t_i18n('AI Insights')}
+            {buttonLabel}
           </Typography>
           <Button
             variant="outlined"
