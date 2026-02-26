@@ -2926,17 +2926,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/mistralai@npm:0.2.0":
-  version: 0.2.0
-  resolution: "@langchain/mistralai@npm:0.2.0"
+"@langchain/mistralai@npm:1.0.5":
+  version: 1.0.5
+  resolution: "@langchain/mistralai@npm:1.0.5"
   dependencies:
     "@mistralai/mistralai": "npm:^1.3.1"
-    uuid: "npm:^10.0.0"
-    zod: "npm:^3.23.8"
-    zod-to-json-schema: "npm:^3.22.4"
+    uuid: "npm:^13.0.0"
   peerDependencies:
-    "@langchain/core": ">=0.3.7 <0.4.0"
-  checksum: 10c0/34ed43fef7e5a1e7042da05fa03d5ed927c631c83b325cf453226399665b15cd96ce1581dd0c16077893f9645a485cecf49d607631504b298c6436750a6d5aa4
+    "@langchain/core": ^1.0.0
+  checksum: 10c0/4e28017a0d1996989405890a373c3e81dc1ab03e62a7d0a884d4db17c242dd1a2fb360797bfadc3e42ee6ca36fb4b84b6dec2030dbfb61830aace7005f18f07a
   languageName: node
   linkType: hard
 
@@ -10758,7 +10756,7 @@ __metadata:
     "@graphql-tools/utils": "npm:11.0.0"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
     "@langchain/core": "npm:0.3.59"
-    "@langchain/mistralai": "npm:0.2.0"
+    "@langchain/mistralai": "npm:1.0.5"
     "@langchain/openai": "npm:0.5.5"
     "@lezer/javascript": "npm:1.5.4"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
@@ -13401,7 +13399,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:13.0.0":
+"uuid@npm:13.0.0, uuid@npm:^13.0.0":
   version: 13.0.0
   resolution: "uuid@npm:13.0.0"
   bin:
@@ -14046,7 +14044,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod-to-json-schema@npm:^3.22.3, zod-to-json-schema@npm:^3.22.4, zod-to-json-schema@npm:^3.24.1":
+"zod-to-json-schema@npm:^3.22.3, zod-to-json-schema@npm:^3.24.1":
   version: 3.25.1
   resolution: "zod-to-json-schema@npm:3.25.1"
   peerDependencies:
@@ -14062,7 +14060,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.22.4, zod@npm:^3.23.8, zod@npm:^3.25.32":
+"zod@npm:^3.22.4, zod@npm:^3.25.32":
   version: 3.25.76
   resolution: "zod@npm:3.25.76"
   checksum: 10c0/5718ec35e3c40b600316c5b4c5e4976f7fee68151bc8f8d90ec18a469be9571f072e1bbaace10f1e85cf8892ea12d90821b200e980ab46916a6166a4260a983c
