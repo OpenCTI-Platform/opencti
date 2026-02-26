@@ -1,13 +1,13 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { useFormatter } from '../../../../components/i18n';
-import SubTypeLine from './SubTypesLine';
-import { SubTypesLinesQuery } from './__generated__/SubTypesLinesQuery.graphql';
-import { SubTypesLines_subTypes$key } from './__generated__/SubTypesLines_subTypes.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
+import SubTypeLine from './SubTypesLine';
+import { SubTypesLinesQuery } from './__generated__/SubTypesLinesQuery.graphql';
+import { SubTypesLines_subTypes$key } from './__generated__/SubTypesLines_subTypes.graphql';
 
 export const subTypesLinesQuery = graphql`
   query SubTypesLinesQuery {
@@ -80,11 +80,13 @@ const SubTypesLines: FunctionComponent<SubTypesLinesProps> = ({
   const subTypes = (data?.subTypes?.edges ?? [])
     .filter(filterOnSubType)
     .sort(sortOnSubType);
-  setNumberOfElements({
-    number: subTypes.length,
-    symbol: '',
-    original: subTypes.length,
-  });
+  React.useEffect(() => {
+    setNumberOfElements({
+      number: subTypes.length,
+      symbol: '',
+      original: subTypes.length,
+    });
+  }, [subTypes.length, setNumberOfElements]);
   return (
     <ListLinesContent
       initialLoading={false}
