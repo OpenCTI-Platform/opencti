@@ -51,7 +51,7 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
   executeContext.previousStandard = req.headers['previous-standard']; // Previous standard id
   executeContext.synchronizedUpsert = req.headers['synchronized-upsert'] === 'true'; // If full sync needs to be done
   executeContext.bundleId = req.headers['opencti-bundle-id'];
-  executeContext.bundleExecution = req.headers['opencti-bundle-tracking'];
+  executeContext.bundleTracking = req.headers['opencti-bundle-tracking'];
   // region handle user
   try {
     const user = await authenticateUserFromRequest(executeContext, req);

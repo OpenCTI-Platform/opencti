@@ -6,6 +6,7 @@ import random
 import time
 import traceback
 import uuid
+from logging import ERROR
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import datefinder
@@ -48,6 +49,7 @@ ERROR_TYPE_MISSING_REFERENCE = "MISSING_REFERENCE_ERROR"
 ERROR_TYPE_BAD_GATEWAY = "Bad Gateway"
 ERROR_TYPE_DRAFT_LOCK = "DRAFT_LOCKED"
 ERROR_TYPE_WORK_NOT_ALIVE = "WORK_NOT_ALIVE"
+ERROR_TYPE_BUNDLE_ALREADY_PROCESSED = "BUNDLE_ALREADY_PROCESSED"
 ERROR_TYPE_TIMEOUT = "Request timed out"
 
 #: STIX Extension ID for OpenCTI custom objects and properties
@@ -3443,6 +3445,11 @@ class OpenCTIStix2:
                         "Message skipped because work is no longer alive",
                     )
                     return None
+                elif ERROR_TYPE_BUNDLE_ALREADY_PROCESSED in error_msg:
+                    worker_logger.info(
+                        "Message skipped because current item has already been processed",
+                    )
+                    return None
                 # Platform does not know what to do and raises an error:
                 # That also works for missing reference with too much execution
                 else:
@@ -3575,6 +3582,7 @@ class OpenCTIStix2:
                     failed_item = self.import_item_with_retries(
                         item, update, types, work_id, bundle_id
                     )
+                    self.opencti.set_bundle_tracking(None)
                     if failed_item is not None:
                         too_large_elements_bundles.append(failed_item)
                     else:
@@ -3582,6 +3590,7 @@ class OpenCTIStix2:
                             {"id": item["id"], "type": item["type"]}
                         )
 
+        self.opencti.set_bundle_id(None)
         return imported_elements, too_large_elements_bundles
 
     @staticmethod

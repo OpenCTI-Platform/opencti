@@ -532,24 +532,13 @@ export const redisFinishAsyncCall = async (asyncCallId: string) => {
 // region bundle split tracking
 const BUNDLE_TRACKING_TTL = 300;
 const bundleTrackingKey = (id: string) => `bundle_tracking:${id}`;
-export const redisAddBundleTracking = async (bundleId: string) => {
-  const currentCountStr = await redisGetBundleTracking(bundleId);
-  if (currentCountStr) {
-    const currentCount: number = +currentCountStr;
-    await getClientBase().set(
-      bundleTrackingKey(bundleId),
-      currentCount + 1,
-      'EX',
-      BUNDLE_TRACKING_TTL,
-    );
-  } else {
-    await getClientBase().set(
-      bundleTrackingKey(bundleId),
-      1,
-      'EX',
-      BUNDLE_TRACKING_TTL,
-    );
-  }
+export const redisSetBundleTracking = async (bundleId: string, currentTracking: number) => {
+  await getClientBase().set(
+    bundleTrackingKey(bundleId),
+    currentTracking,
+    'EX',
+    BUNDLE_TRACKING_TTL,
+  );
 };
 export const redisGetBundleTracking = async (bundleId: string) => {
   return getClientBase().get(bundleTrackingKey(bundleId));
