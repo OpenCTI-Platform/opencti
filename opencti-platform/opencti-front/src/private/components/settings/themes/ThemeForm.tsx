@@ -77,9 +77,9 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
   };
 
   const getAsideTypeLabel = (value: string) => {
-    if (value === 'color') return t_i18n('Add Background Color');
-    if (value === 'gradient') return t_i18n('Add Background Gradient');
-    if (value === 'image') return t_i18n('Add Background Image');
+    if (value === 'color') return t_i18n('Add background color');
+    if (value === 'gradient') return t_i18n('Add background gradient');
+    if (value === 'image') return t_i18n('Add background image');
     return null;
   };
 
