@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 
@@ -11,9 +11,27 @@ const READ_QUERY = gql`
   }
 `;
 
+const CREATE_REL_QUERY = gql`
+  mutation StixDomainRelationAdd($input: StixCoreRelationshipAddInput!) {
+    stixCoreRelationshipAdd(input: $input) {
+      id
+      fromType
+      toType
+    }
+  }
+`;
+
 const CREATE_MUTATION = gql`
-  mutation StixCyberObservableAdd($type: String!, $input: ICCIDAddInput) {
-    stixCyberObservableAdd(type: $type, ICCID: $input) {
+  mutation StixCyberObservableAdd(
+    $type: String!, 
+    $iccid: ICCIDAddInput,
+    $phoneNumber: PhoneNumberAddInput,
+  ) {
+    stixCyberObservableAdd(
+      type: $type, 
+      ICCID: $iccid,
+      PhoneNumber: $phoneNumber,
+    ) {
       id
       observable_value
     }
@@ -43,49 +61,87 @@ describe('SCO ICCID resolver standard behavior', () => {
   let internalId: string;
 
   it('should not create invalid ICCID', async () => {
-    const response = await queryAsAdmin({
+    const { errors } = await queryAsAdmin({
       query: CREATE_MUTATION,
       variables: {
         type: 'ICCID',
-        input: { value: 'ABC123' },
+        iccid: { value: 'ABC123' },
       },
     });
-    expect(response?.errors?.[0].message).toEqual('Observable is not correctly formatted');
+    expect(errors?.[0].message).toEqual('Observable is not correctly formatted');
   });
 
   it('should create ICCID', async () => {
-    const response = await queryAsAdmin({
+    const { data } = await queryAsAdmin({
       query: CREATE_MUTATION,
       variables: {
         type: 'ICCID',
-        input: { value: '123456789012345678' },
+        iccid: { value: '123456789012345678' },
       },
     });
-    expect(response.data?.stixCyberObservableAdd).not.toBeNull();
-    expect(response.data?.stixCyberObservableAdd.observable_value).toEqual('123456789012345678');
-    internalId = response.data?.stixCyberObservableAdd.id ?? '';
+    expect(data?.stixCyberObservableAdd).not.toBeNull();
+    expect(data?.stixCyberObservableAdd.observable_value).toEqual('123456789012345678');
+    internalId = data?.stixCyberObservableAdd.id ?? '';
   });
 
   it('should not update invalid ICCID', async () => {
-    const response = await queryAsAdmin({
+    const { errors } = await queryAsAdmin({
       query: UPDATE_MUTATION,
       variables: {
         id: internalId,
         input: { key: 'value', value: 'ABC123' },
       },
     });
-    expect(response.errors?.[0].message).toEqual('Observable of is not correctly formatted');
+    expect(errors?.[0].message).toEqual('Observable of is not correctly formatted');
   });
 
   it('should update ICCID', async () => {
-    const response = await queryAsAdminWithSuccess({
+    const { data } = await queryAsAdminWithSuccess({
       query: UPDATE_MUTATION,
       variables: {
         id: internalId,
         input: { key: 'value', value: '1234567890123456789' },
       },
     });
-    expect(response.data?.stixCyberObservableEdit.fieldPatch.observable_value).toEqual('1234567890123456789');
+    expect(data?.stixCyberObservableEdit.fieldPatch.observable_value).toEqual('1234567890123456789');
+  });
+
+  describe('Relationships section', () => {
+    let phoneInternalId: string;
+
+    beforeAll(async () => {
+      const { data: dataPhoneNumber } = await queryAsAdmin({
+        query: CREATE_MUTATION,
+        variables: {
+          type: 'Phone-Number',
+          phoneNumber: { value: '0606060606' },
+        },
+      });
+      phoneInternalId = dataPhoneNumber?.stixCyberObservableAdd.id ?? '';
+    });
+
+    afterAll(async () => {
+      await queryAsAdmin({
+        query: DELETE_MUTATION,
+        variables: { id: phoneInternalId },
+      });
+    });
+
+    it('should create a rel "resolves-to" between ICCID and Phone-Number', async () => {
+      const { data } = await queryAsAdminWithSuccess({
+        query: CREATE_REL_QUERY,
+        variables: {
+          input: {
+            fromId: internalId,
+            toId: phoneInternalId,
+            relationship_type: 'resolves-to',
+          },
+        },
+      });
+      expect(data?.stixCoreRelationshipAdd).not.toBeNull();
+      expect(data?.stixCoreRelationshipAdd.fromType).toEqual('ICCID');
+      expect(data?.stixCoreRelationshipAdd.toType).toEqual('Phone-Number');
+    });
   });
 
   it('should delete ICCID', async () => {
