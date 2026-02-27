@@ -21,7 +21,11 @@ const ThemeExportHandlerQuery = graphql`
       theme_text_color
       theme_logo
       theme_logo_collapsed
-      theme_logo_login      
+      theme_logo_login     
+      theme_login_aside_color
+      theme_login_aside_gradient_end
+      theme_login_aside_gradient_start
+      theme_login_aside_image 
     }
   }
 `;

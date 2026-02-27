@@ -30,7 +30,10 @@ const THEME_DEFINITION: ModuleDefinition<StoreEntityTheme, StixTheme> = {
     { name: 'theme_logo_login', label: 'Theme logo login', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'theme_text_color', label: 'Theme text color', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'built_in', label: 'Built-in', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-
+    { name: 'theme_login_aside_color', label: 'Theme login aside color', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'theme_login_aside_gradient_start', label: 'Theme login aside gradient start', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'theme_login_aside_gradient_end', label: 'Theme login aside gradient end', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'theme_login_aside_image', label: 'Theme login aside image', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
   representative: (stix: StixTheme) => {

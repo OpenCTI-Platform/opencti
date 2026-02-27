@@ -52,6 +52,10 @@ export const addTheme = async (context: AuthContext, user: AuthUser, input: Them
     theme_logo_collapsed: input.theme_logo_collapsed,
     theme_logo_login: input.theme_logo_login,
     theme_text_color: input.theme_text_color,
+    theme_login_aside_color: input.theme_login_aside_color ?? null,
+    theme_login_aside_gradient_start: input.theme_login_aside_gradient_start ?? null,
+    theme_login_aside_gradient_end: input.theme_login_aside_gradient_end ?? null,
+    theme_login_aside_image: input.theme_login_aside_image ?? null,
     built_in: input.built_in ?? false,
   };
 
@@ -74,6 +78,10 @@ export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER)
     theme_logo: DARK_DEFAULTS.theme_logo,
     theme_logo_collapsed: DARK_DEFAULTS.theme_logo_collapsed,
     theme_logo_login: DARK_DEFAULTS.theme_logo_login,
+    theme_login_aside_color: DARK_DEFAULTS.theme_login_aside_color,
+    theme_login_aside_gradient_start: DARK_DEFAULTS.theme_login_aside_gradient_start,
+    theme_login_aside_gradient_end: DARK_DEFAULTS.theme_login_aside_gradient_end,
+    theme_login_aside_image: DARK_DEFAULTS.theme_login_aside_image,
     built_in: true,
   };
 
@@ -91,6 +99,10 @@ export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER)
     theme_logo: LIGHT_DEFAULTS.theme_logo,
     theme_logo_collapsed: LIGHT_DEFAULTS.theme_logo_collapsed,
     theme_logo_login: LIGHT_DEFAULTS.theme_logo_login,
+    theme_login_aside_color: LIGHT_DEFAULTS.theme_login_aside_color,
+    theme_login_aside_gradient_start: LIGHT_DEFAULTS.theme_login_aside_gradient_start,
+    theme_login_aside_gradient_end: LIGHT_DEFAULTS.theme_login_aside_gradient_end,
+    theme_login_aside_image: LIGHT_DEFAULTS.theme_login_aside_image,
     built_in: true,
   };
 
@@ -141,6 +153,10 @@ const themeImportSchema = z.object({
   theme_logo: z.string().optional().default(''),
   theme_logo_collapsed: z.string().optional().default(''),
   theme_logo_login: z.string().optional().default(''),
+  theme_login_aside_color: z.string().nullable().optional().default(null),
+  theme_login_aside_gradient_start: z.string().nullable().optional().default(null),
+  theme_login_aside_gradient_end: z.string().nullable().optional().default(null),
+  theme_login_aside_image: z.string().nullable().optional().default(null),
 });
 
 export const themeImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {

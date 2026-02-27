@@ -24,6 +24,10 @@ const editThemeMutation = graphql`
       theme_logo
       theme_logo_collapsed
       theme_logo_login
+      theme_login_aside_color
+      theme_login_aside_gradient_start
+      theme_login_aside_gradient_end
+      theme_login_aside_image
     }
   }
 `;
@@ -69,6 +73,10 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
             { key: 'theme_logo_collapsed', value: values.theme_logo_collapsed },
             { key: 'theme_logo_login', value: values.theme_logo_login },
             { key: 'theme_text_color', value: values.theme_text_color },
+            { key: 'theme_login_aside_color', value: values.theme_login_aside_color ?? '' },
+            { key: 'theme_login_aside_gradient_start', value: values.theme_login_aside_gradient_start ?? '' },
+            { key: 'theme_login_aside_gradient_end', value: values.theme_login_aside_gradient_end ?? '' },
+            { key: 'theme_login_aside_image', value: values.theme_login_aside_image ?? '' },
           ],
         },
         onCompleted: () => resolve(),
@@ -97,7 +105,9 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
     resetForm: (nextState?: Partial<FormikState<ThemeType>>) => void,
   ) => {
     try {
-      await validator.validate(values);
+      await validator.validate(values, {
+        stripUnknown: true,
+      });
       await updateTheme(values);
       setSubmitting(false);
     } catch (error) {
@@ -118,13 +128,13 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
       title={t_i18n('Update a theme')}
       open={open}
       onClose={handleClose}
+      size="medium"
     >
-      <Formik
+      <Formik<ThemeType>
         initialValues={theme}
         onSubmit={handleSubmit}
         validationSchema={validator}
         validateOnChange
-        validateOnSubmit
         enableReinitialize
       >
         {({ values, setSubmitting, setErrors, resetForm, errors, isSubmitting, submitForm }) => (
@@ -136,7 +146,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
             themeId={theme.id}
             onSubmit={submitForm}
             onCancel={handleClose}
-            onChange={() => handleOnChange(values, setSubmitting, setErrors, resetForm)}
+            onChange={(updatedValues) => handleOnChange(updatedValues ?? values, setSubmitting, setErrors, resetForm)}
             withButtons={false}
           />
         )}

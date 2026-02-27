@@ -15,6 +15,10 @@ type Theme implements InternalObject & BasicObject {
   theme_logo_collapsed: String
   theme_logo_login: String
   theme_text_color: String!
+  theme_login_aside_color: String         
+  theme_login_aside_gradient_start: String 
+  theme_login_aside_gradient_end: String   
+  theme_login_aside_image: String          
   toConfigurationExport: String!
   built_in: Boolean
   metrics:[Metric]
@@ -65,6 +69,10 @@ input ThemeAddInput {
   theme_logo_collapsed: String
   theme_logo_login: String
   theme_text_color: String!
+  theme_login_aside_color: String
+  theme_login_aside_gradient_start: String
+  theme_login_aside_gradient_end: String
+  theme_login_aside_image: String
   built_in: Boolean
 }
 

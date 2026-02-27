@@ -18,6 +18,10 @@ const CREATE_THEME_MUTATION = gql`
       theme_logo
       theme_logo_collapsed
       theme_logo_login
+      theme_login_aside_color
+      theme_login_aside_gradient_start
+      theme_login_aside_gradient_end
+      theme_login_aside_image
       built_in
     }
   }
@@ -35,6 +39,10 @@ const UPDATE_THEME_MUTATION = gql`
       theme_secondary
       theme_accent
       theme_text_color
+      theme_login_aside_color
+      theme_login_aside_gradient_start
+      theme_login_aside_gradient_end
+      theme_login_aside_image
     }
   }
 `;
@@ -60,6 +68,10 @@ const READ_THEME_QUERY = gql`
       theme_logo
       theme_logo_collapsed
       theme_logo_login
+      theme_login_aside_color
+      theme_login_aside_gradient_start
+      theme_login_aside_gradient_end
+      theme_login_aside_image
       built_in
     }
   }
@@ -120,6 +132,10 @@ const IMPORT_THEME_MUTATION = gql`
       theme_logo
       theme_logo_collapsed
       theme_logo_login
+      theme_login_aside_color
+      theme_login_aside_gradient_start
+      theme_login_aside_gradient_end
+      theme_login_aside_image
       built_in
     }
   }
@@ -133,16 +149,16 @@ describe('Themes resolver testing', () => {
   beforeAll(async () => {
     const themes = await queryAsAdmin({
       query: LIST_THEMES_QUERY,
-      variables: { first: 10 }
+      variables: { first: 10 },
     });
 
     const darkTheme = themes.data?.themes.edges.find(
-      (edge: any) => edge.node.name === 'Dark'
+      (edge: any) => edge.node.name === 'Dark',
     );
     darkThemeId = darkTheme?.node.id;
 
     const lightTheme = themes.data?.themes.edges.find(
-      (edge: any) => edge.node.name === 'Light'
+      (edge: any) => edge.node.name === 'Light',
     );
     lightThemeId = lightTheme?.node.id;
 
@@ -154,7 +170,7 @@ describe('Themes resolver testing', () => {
   it('should list default themes', async () => {
     const queryResult = await queryAsAdmin({
       query: LIST_THEMES_QUERY,
-      variables: { first: 10 }
+      variables: { first: 10 },
     });
 
     expect(queryResult.data?.themes.edges.length).toBeGreaterThanOrEqual(2);
@@ -167,7 +183,7 @@ describe('Themes resolver testing', () => {
   it('should read a specific theme', async () => {
     const queryResult = await queryAsAdminWithSuccess({
       query: READ_THEME_QUERY,
-      variables: { id: darkThemeId }
+      variables: { id: darkThemeId },
     });
 
     expect(queryResult.data?.theme).toBeDefined();
@@ -191,12 +207,14 @@ describe('Themes resolver testing', () => {
         theme_logo: 'https://example.com/logo.png',
         theme_logo_collapsed: 'https://example.com/logo-small.png',
         theme_logo_login: 'https://example.com/logo-login.png',
+        theme_login_aside_gradient_start: '#050A14',
+        theme_login_aside_gradient_end: '#0C1728',
       },
     };
 
     const theme = await queryAsAdmin({
       query: CREATE_THEME_MUTATION,
-      variables: THEME_TO_CREATE
+      variables: THEME_TO_CREATE,
     });
 
     customThemeId = theme.data?.themeAdd.id;
@@ -206,12 +224,14 @@ describe('Themes resolver testing', () => {
     expect(theme.data?.themeAdd.theme_background).toBe('#1a1a1a');
     expect(theme.data?.themeAdd.theme_primary).toBe('#ff6b6b');
     expect(theme.data?.themeAdd.built_in).toBe(false);
+    expect(theme.data?.themeAdd.theme_login_aside_gradient_start).toBe('#050A14');
+    expect(theme.data?.themeAdd.theme_login_aside_gradient_end).toBe('#0C1728');
   });
 
   it('should not create a theme with duplicate name', async () => {
     const DUPLICATE_THEME = {
       input: {
-        name: 'Custom Test Theme', // Same name as above
+        name: 'Custom Test Theme',
         theme_background: '#000000',
         theme_paper: '#111111',
         theme_nav: '#000000',
@@ -224,7 +244,7 @@ describe('Themes resolver testing', () => {
 
     const result = await queryAsAdmin({
       query: CREATE_THEME_MUTATION,
-      variables: DUPLICATE_THEME
+      variables: DUPLICATE_THEME,
     });
 
     expect(result.errors).toBeDefined();
@@ -242,7 +262,7 @@ describe('Themes resolver testing', () => {
 
     const updated = await queryAsAdmin({
       query: UPDATE_THEME_MUTATION,
-      variables: UPDATE_INPUT
+      variables: UPDATE_INPUT,
     });
 
     expect(updated.data?.themeFieldPatch.id).toBe(customThemeId);
@@ -250,13 +270,49 @@ describe('Themes resolver testing', () => {
     expect(updated.data?.themeFieldPatch.theme_primary).toBe('#00ff00');
   });
 
+  it('should update theme login aside to color', async () => {
+    const UPDATE_INPUT = {
+      id: customThemeId,
+      input: [
+        { key: 'theme_login_aside_color', value: '#ff0000' },
+        { key: 'theme_login_aside_gradient_start', value: '' },
+        { key: 'theme_login_aside_gradient_end', value: '' },
+      ],
+    };
+
+    const updated = await queryAsAdmin({
+      query: UPDATE_THEME_MUTATION,
+      variables: UPDATE_INPUT,
+    });
+
+    expect(updated.data?.themeFieldPatch.theme_login_aside_color).toBe('#ff0000');
+    expect(updated.data?.themeFieldPatch.theme_login_aside_gradient_start).toBeFalsy();
+    expect(updated.data?.themeFieldPatch.theme_login_aside_gradient_end).toBeFalsy();
+  });
+
+  it('should clear theme login aside fields', async () => {
+    const UPDATE_INPUT = {
+      id: customThemeId,
+      input: [
+        { key: 'theme_login_aside_color', value: '' },
+      ],
+    };
+
+    const updated = await queryAsAdmin({
+      query: UPDATE_THEME_MUTATION,
+      variables: UPDATE_INPUT,
+    });
+
+    expect(updated.data?.themeFieldPatch.theme_login_aside_color).toBeFalsy();
+  });
+
   it('should search themes by name', async () => {
     const queryResult = await queryAsAdmin({
       query: LIST_THEMES_QUERY,
       variables: {
         search: 'Updated Custom',
-        first: 10
-      }
+        first: 10,
+      },
     });
 
     expect(queryResult.data?.themes.edges.length).toBeGreaterThanOrEqual(1);
@@ -266,7 +322,7 @@ describe('Themes resolver testing', () => {
   it('should not delete a built-in theme', async () => {
     const result = await queryAsAdmin({
       query: DELETE_THEME_MUTATION,
-      variables: { id: darkThemeId }
+      variables: { id: darkThemeId },
     });
 
     expect(result.errors).toBeDefined();
@@ -276,14 +332,14 @@ describe('Themes resolver testing', () => {
   it('should delete a custom theme', async () => {
     const result = await queryAsAdmin({
       query: DELETE_THEME_MUTATION,
-      variables: { id: customThemeId }
+      variables: { id: customThemeId },
     });
 
     expect(result.data?.themeDelete).toBe(customThemeId);
 
     const queryResult = await queryAsAdmin({
       query: READ_THEME_QUERY,
-      variables: { id: customThemeId }
+      variables: { id: customThemeId },
     });
 
     expect(queryResult.data?.theme).toBeNull();
@@ -292,7 +348,7 @@ describe('Themes resolver testing', () => {
   it('should not delete a non-existent theme', async () => {
     const result = await queryAsAdmin({
       query: DELETE_THEME_MUTATION,
-      variables: { id: 'non-existent-id' }
+      variables: { id: 'non-existent-id' },
     });
 
     expect(result.errors).toBeDefined();
@@ -313,8 +369,8 @@ describe('Themes resolver testing', () => {
             mode: 'or',
           }],
           filterGroups: [],
-        }
-      }
+        },
+      },
     });
 
     expect(queryResult.data?.themes.edges.length).toBeGreaterThanOrEqual(2);
@@ -329,8 +385,8 @@ describe('Themes resolver testing', () => {
       variables: {
         first: 10,
         orderBy: 'name',
-        orderMode: 'asc'
-      }
+        orderMode: 'asc',
+      },
     });
 
     const names = queryResult.data?.themes.edges.map((edge: any) => edge.node.name);
@@ -344,9 +400,7 @@ describe('Themes resolver testing', () => {
 
     const theme = await queryAsAdmin({
       query: IMPORT_THEME_MUTATION,
-      variables: {
-        file: upload
-      }
+      variables: { file: upload },
     });
 
     const importThemeId = theme.data?.themeImport.id;
@@ -358,17 +412,16 @@ describe('Themes resolver testing', () => {
     expect(theme.data?.themeImport.theme_logo).toBe('http://www.test.com/image.svg');
     expect(theme.data?.themeImport.built_in).toBe(false);
 
-    // delete the imported theme
     const result = await queryAsAdmin({
       query: DELETE_THEME_MUTATION,
-      variables: { id: importThemeId }
+      variables: { id: importThemeId },
     });
 
     expect(result.data?.themeDelete).toBe(importThemeId);
 
     const queryResult = await queryAsAdmin({
       query: READ_THEME_QUERY,
-      variables: { id: importThemeId }
+      variables: { id: importThemeId },
     });
 
     expect(queryResult.data?.theme).toBeNull();
