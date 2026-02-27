@@ -11,6 +11,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import { useGenerateAuditMessage } from '../../../../../utils/history';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import { AuditDrawerQuery } from './__generated__/AuditDrawerQuery.graphql';
+import MarkdownDisplay from '../../../../../components/MarkdownDisplay';
 
 interface AuditDrawerProps {
   open: boolean;
@@ -77,7 +78,13 @@ const AuditDrawerContent: FunctionComponent<{ logId: string }> = ({ logId }) => 
       <Alert
         content={(
           <>
-            <strong>{data?.audit?.user?.name}</strong> {message}
+            <div>
+              <MarkdownDisplay
+                content={`\`${data?.audit?.user?.name}\` ${message}`}
+                remarkGfmPlugin={true}
+                commonmark={true}
+              />
+            </div>
           </>
         )}
       />

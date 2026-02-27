@@ -181,7 +181,7 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, asyn
   const updateDate = reportDetailsPage.getTextForHeading('Modification date', now);
   await expect(updateDate).toBeVisible();
 
-  const historyDescription = reportDetailsPage.getTextForCard('Most recent history', `creates a Report \`${reportName}\``);
+  const historyDescription = reportDetailsPage.getTextForCard('Most recent history', `creates a Report ${reportName}`);
   await expect(historyDescription).toBeVisible();
   const historyDate = reportDetailsPage.getTextForCard('Most recent history', format(new Date(), 'MMM d, yyyy'));
   await expect(historyDate).toBeVisible();

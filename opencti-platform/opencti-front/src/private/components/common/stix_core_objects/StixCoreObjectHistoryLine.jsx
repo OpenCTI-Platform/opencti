@@ -155,7 +155,11 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
           </div>
           <Tooltip sx={{ maxWidth: '80%', lineHeight: 2, padding: 10 }} title={<><b>{data.user?.name}</b> {data.context_data.message}</>}>
             <div style={{ height: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              <b>{data.user?.name}</b> {data.context_data.message}
+              <MarkdownDisplay
+                content={`\`${data.user?.name}\` ${data.context_data.message}`}
+                remarkGfmPlugin={true}
+                commonmark={true}
+              />
             </div>
           </Tooltip>
           {hasExternalRefs && (
