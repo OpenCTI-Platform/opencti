@@ -15,7 +15,7 @@ import { graphql, createRefetchContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
 import Slide from '@mui/material/Slide';
 import ItemIcon from '../../../../components/ItemIcon';
-import inject18n from '../../../../components/i18n';
+import inject18n, { isDateStringNone } from '../../../../components/i18n';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import { truncate } from '../../../../utils/String';
 import { getSecondaryRepresentative, getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -44,6 +44,16 @@ class StixDomainObjectTimelineComponent extends Component {
         ? assoc('targetEntity', n.to, n)
         : assoc('targetEntity', n.from, n))),
     )(data.stixRelationships.edges);
+
+    const getDate = (relationship) => {
+      const dateList = timeField === 'technical'
+        ? [relationship.created, relationship.created_at]
+        : [relationship.start_time, relationship.first_seen, relationship.created_at];
+
+      const usableDate = dateList.find((date) => date && !isDateStringNone(date));
+      return usableDate ? fldt(usableDate) : '-';
+    };
+
     return (
       <div style={{ marginBottom: 90 }}>
         <div id="container">
@@ -66,14 +76,7 @@ class StixDomainObjectTimelineComponent extends Component {
                     sx={{ paddingTop: '18px' }}
                     color="text.secondary"
                   >
-                    {fldt(
-                      timeField === 'technical'
-                        ? stixRelationship.created
-                        || stixRelationship.created_at
-                        : stixRelationship.start_time
-                          || stixRelationship.first_seen
-                          || stixRelationship.created_at,
-                    )}
+                    {getDate(stixRelationship)}
                   </TimelineOppositeContent>
                   <TimelineSeparator>
                     {link ? (
@@ -206,6 +209,7 @@ const StixDomainObjectTimeline = createRefetchContainer(
               ... on StixCoreRelationship {
                 description
                 created
+                created_at
                 start_time
                 stop_time
                 killChainPhases {
@@ -223,6 +227,7 @@ const StixDomainObjectTimeline = createRefetchContainer(
               }
               ... on StixSightingRelationship {
                 created
+                created_at
                 first_seen
                 last_seen
                 objectMarking {
