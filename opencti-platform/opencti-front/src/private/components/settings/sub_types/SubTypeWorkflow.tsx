@@ -6,6 +6,8 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { SubTypeWorkflowDefinitionQuery } from './__generated__/SubTypeWorkflowDefinitionQuery.graphql';
 import Loader from '../../../../components/Loader';
 import { Suspense } from 'react';
+import { StatusTemplateFieldQuery } from '@components/common/form/StatusTemplateField';
+import { StatusTemplateFieldSearchQuery } from '@components/common/form/__generated__/StatusTemplateFieldSearchQuery.graphql';
 
 export const workflowDefinitionQuery = graphql`
   query SubTypeWorkflowDefinitionQuery($entityType: String!) {
@@ -16,9 +18,13 @@ export const workflowDefinitionQuery = graphql`
       states {
         name
         onExit{
+          type
+          mode
           params
         }
         onEnter {
+          type
+          mode
           params
         }
       }
@@ -27,6 +33,8 @@ export const workflowDefinitionQuery = graphql`
         from
         to
         actions {
+          type
+          mode
           params
         }
         conditions {
@@ -42,22 +50,34 @@ export const workflowDefinitionQuery = graphql`
 `;
 
 const SubTypeWorkflow = () => {
-  const queryRef = useQueryLoading<SubTypeWorkflowDefinitionQuery>(workflowDefinitionQuery, {
-    entityType: 'DraftWorkspace',
-  });
+  const workflowQueryRef = useQueryLoading<SubTypeWorkflowDefinitionQuery>(
+    workflowDefinitionQuery,
+    { entityType: 'DraftWorkspace' },
+  );
 
-  return queryRef ? (
+  const statusTemplatesQueryRef = useQueryLoading<StatusTemplateFieldSearchQuery>(
+    StatusTemplateFieldQuery,
+    {},
+  );
+
+  if (!workflowQueryRef || !statusTemplatesQueryRef) {
+    return <Loader />;
+  }
+
+  return (
     <Suspense fallback={<Loader />}>
-
       <ErrorBoundary>
         <div style={{ width: '100%', height: 'calc(100vh - 250px)', marginBottom: '-50px' }}>
           <ReactFlowProvider>
-            <Workflow queryRef={queryRef} />
+            <Workflow
+              queryRef={workflowQueryRef}
+              statusTemplatesQueryRef={statusTemplatesQueryRef}
+            />
           </ReactFlowProvider>
         </div>
       </ErrorBoundary>
     </Suspense>
-  ) : <Loader />;
+  );
 };
 
 export default SubTypeWorkflow;

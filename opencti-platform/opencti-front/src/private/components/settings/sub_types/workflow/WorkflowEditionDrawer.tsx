@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import Drawer from '@components/common/drawer/Drawer';
 import * as Yup from 'yup';
-import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
+import { Field, FieldArray, FieldProps, Form, Formik, FormikHelpers } from 'formik';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
@@ -16,9 +16,11 @@ import useAddStatus from './hooks/useAddStatus';
 import useDeleteElement from './hooks/useDeleteElement';
 import StatusTemplateField from '@components/common/form/StatusTemplateField';
 import type { Transition, Status, Action, Condition } from './utils';
+import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
+import { capitalizeFirstLetter } from '../../../../../utils/String';
 
 const statusValidation = (t: (value: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
+  statusTemplate: Yup.object().required(t('This field is required')),
 });
 
 const transitionValidation = (t: (value: string) => string) => Yup.object().shape({
@@ -30,91 +32,120 @@ interface WorkflowEditionDrawerProps {
   onClose: () => void;
 }
 
-const WorkflowFields = ({
-  // form,
-  field,
-  // index,
-  // availableTypes = [],
-  // handleRepresentationErrors,
-  // prefixLabel,
-  onDelete,
-  // attributes,
-}: {
-  field: { name: string; value: Action | Condition };
+interface WorkflowFieldsProps extends FieldProps {
   onDelete: () => void;
-}) => {
+}
+
+const WorkflowFields = ({
+  field, // contains name and value
+  form, // contains setFieldValue, values, etc.
+  onDelete,
+}: WorkflowFieldsProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { value } = field;
-  // const { setFieldValue } = form;
+  const { name, value } = field;
+  const { setFieldValue } = form;
 
   const deletion = useDeletion({});
   const { setDeleting, handleCloseDelete, handleOpenDelete } = deletion;
+  const [open, setOpen] = useState<boolean>(true);
 
-  // -- ERRORS --
-  const [hasError, _setHasError] = useState<boolean>(false);
-  // let errors: Map<string, string> = new Map();
-  // const handleErrors = (key: string, val: string | null) => {
-  //   errors = { ...errors, [key]: val };
-  //   const hasErrors = Object.values(errors).filter((v) => v !== null).length > 0;
-  //   setHasError(hasErrors);
-  //   handleRepresentationErrors(value.id, hasErrors);
-  // };
-
-  // -- ACCORDION --
-  const [open, setOpen] = useState<boolean>(false);
-  const toggle = () => {
-    setOpen((oldValue) => {
-      return !oldValue;
-    });
+  // Helper to handle the string[] conversion for authorized_members
+  const handleMembersChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    // Split by comma and trim whitespace
+    const arrayValues = val.split(',').map((item) => item.trim()).filter((item) => item !== '');
+    setFieldValue(`${name}.params.authorized_members`, arrayValues);
   };
 
-  const deleteRepresentation = async () => {
-    onDelete();
-    setDeleting(false);
-    handleCloseDelete();
-  };
+  const isCondition = 'operator' in value || 'field' in value;
+  const isAuthorizedMembersAction = (value as Action).type === 'updateAuthorizedMembers';
 
   return (
     <>
-      <Accordion
-        expanded={open}
-        variant="outlined"
-        style={{
-          width: '100%',
-          borderColor: hasError ? theme.palette.designSystem.tertiary.red[400] : undefined,
-        }}
-      >
-        <AccordionSummary expandIcon={<ExpandMoreOutlined />} onClick={toggle}>
-          <div style={{ display: 'inline-flex', alignItems: 'center' }}>
-            <Typography>
-              {value.type || value.field || t_i18n('New condition')}
-            </Typography>
-            <Tooltip title={t_i18n('Delete')}>
-              <IconButton color="error" onClick={handleOpenDelete}>
-                <DeleteOutlined fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </div>
+      <Accordion expanded={open} variant="outlined" sx={{ width: '100%', mb: 2 }}>
+        <AccordionSummary expandIcon={<ExpandMoreOutlined />} onClick={() => setOpen(!open)}>
+          <Typography sx={{ display: 'inline-flex', alignItems: 'center', fontWeight: 'bold' }}>
+            {isCondition ? t_i18n('Condition') : capitalizeFirstLetter(value.type.replace('_', ' ')) }
+          </Typography>
+          <IconButton
+            color="error"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenDelete();
+            }}
+          >
+            <DeleteOutlined fontSize="small" />
+          </IconButton>
         </AccordionSummary>
-        <AccordionDetails style={{ width: '100%' }}>
-          <>
-            <pre>{JSON.stringify(value, null, 2)}</pre>
-            <div style={{ textAlign: 'right', marginTop: '20px' }}>
-              <Button
-                color="error"
-                onClick={handleOpenDelete}
-              >
-                {t_i18n('Delete')}
-              </Button>
-            </div>
-          </>
+        <AccordionDetails>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+
+            {/* CONDITION FIELDS */}
+            {isCondition && (
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <Field
+                  component={TextField}
+                  name={`${name}.field`}
+                  label={t_i18n('Field')}
+                  variant="standard"
+                  fullWidth
+                />
+                <Field
+                  component={TextField}
+                  name={`${name}.operator`}
+                  label={t_i18n('Operator')}
+                  variant="standard"
+                  fullWidth
+                />
+                <Field
+                  component={TextField}
+                  name={`${name}.value`}
+                  label={t_i18n('Value')}
+                  variant="standard"
+                  fullWidth
+                />
+              </div>
+            )}
+
+            {/* ACTION FIELDS (Authorized Members) */}
+            {isAuthorizedMembersAction && (
+              <>
+                <Field
+                  name={`${name}.params.authorized_members`}
+                  component={AuthorizedMembersField}
+                  // containerstyle={{ marginTop: 20 }}
+                  showAllMembersLine
+                  canDeactivate={false}
+                  enableAccesses
+                  hideInfo
+                />
+              </>
+              // <TextField
+              //   variant="standard"
+              //   label={t_i18n('Authorized Members (comma separated)')}
+              //   fullWidth
+              //   defaultValue={(value as Action).params?.authorized_members?.join(', ') || ''}
+              //   onChange={handleMembersChange}
+              //   helperText={t_i18n('Enter emails or IDs separated by commas')}
+              // />
+            )}
+
+            {/* Fallback for other types */}
+            {!isCondition && !isAuthorizedMembersAction && (
+              <Typography variant="caption">Type: {(value as any).type}</Typography>
+            )}
+          </div>
         </AccordionDetails>
       </Accordion>
+
       <DeleteDialog
-        message={t_i18n('Do you want to delete this condition?')}
+        message={t_i18n('Are you sure?')}
         deletion={deletion}
-        submitDelete={deleteRepresentation}
+        submitDelete={() => {
+          onDelete();
+          handleCloseDelete();
+        }}
       />
     </>
   );
@@ -136,11 +167,20 @@ const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDraw
     setFieldValue: FormikHelpers<WorkflowEditionFormValues>['setFieldValue'],
     values: WorkflowEditionFormValues,
   ) => {
-    setFieldValue(type, [
-      ...values[type] || [],
-      { type: `new-${type}-test` },
-    ]);
+    let newItem = {};
+
+    if (type === 'conditions') {
+      newItem = { field: '', operator: 'eq', value: '' };
+    } else if (type === 'actions' || type === 'onEnter' || type === 'onExit') {
+      newItem = {
+        type: 'updateAuthorizedMembers',
+        params: { authorized_members: [] },
+      };
+    }
+
+    setFieldValue(type, [...(values[type] || []), newItem]);
   };
+
   const drawerTitle = useMemo(() => {
     if (isStatus) {
       return isNewStatus ? t_i18n('Add status') : t_i18n('Edit status');
@@ -200,16 +240,12 @@ const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDraw
             <Form style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               {isStatus ? (
                 <>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="name"
-                    label={t_i18n('Name')}
-                    fullWidth
-                  />
                   <StatusTemplateField
                     name="statusTemplate"
-                    setFieldValue={setFieldValue}
+                    label="Status"
+                    setFieldValue={(field, { value, label, color }) =>
+                      setFieldValue(field, { id: value, name: label, color })
+                    }
                     helpertext=""
                   />
                   <div style={{ display: 'flex', alignItems: 'center' }}>

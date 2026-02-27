@@ -1,27 +1,22 @@
 import { MarkerType, useReactFlow } from 'reactflow';
 import type { Node, Edge } from 'reactflow';
-import { colorPalette } from '../utils';
 import type { Status } from '../utils';
 
 const useAddStatus = (selectedElement?: Edge | null) => {
-  const { setNodes, setEdges, getNode, getNodes } = useReactFlow();
-
+  const { setNodes, setEdges, getNode } = useReactFlow();
   const onClick = (values: Status): void => {
-    // TODO remove when real status is plugged
-    const index = getNodes().filter((n) => n.type === 'status').length + 1;
-    const color = values?.color || colorPalette[index % colorPalette.length];
-    const newStatusName = values.name.toLowerCase().replace(/\s+/g, '-');
-    const statusId = newStatusName;
-
     const sourceNode = selectedElement?.source ? getNode(selectedElement.source) : null;
     const targetNode = selectedElement?.target ? getNode(selectedElement.target) : null;
 
+    const statusId = values.statusTemplate.id;
+
+    console.log({ selectedElement, values });
     // 1. Add new from button (unlinked status)
     if (!sourceNode && !targetNode) {
       const newStatusNode: Node = {
         id: statusId,
         type: 'status',
-        data: { ...values, color },
+        data: values,
         position: { x: 0, y: 0 },
       };
       setNodes((nds) => [...nds, newStatusNode]);
@@ -42,7 +37,7 @@ const useAddStatus = (selectedElement?: Edge | null) => {
       const newStatusNode: Node = {
         id: statusId,
         type: 'status',
-        data: { ...values, color },
+        data: values,
         position: sourceNode.position,
       };
 
@@ -73,7 +68,7 @@ const useAddStatus = (selectedElement?: Edge | null) => {
       let secondNewNode: Node;
 
       if (sourceNode?.type === 'status') {
-        const transitionId = `transition-${sourceNode.id}-${newStatusName}`;
+        const transitionId = `transition-${sourceNode.id}-${statusId}`;
         firstNewNode = {
           id: transitionId,
           type: 'transition',
@@ -83,7 +78,7 @@ const useAddStatus = (selectedElement?: Edge | null) => {
         secondNewNode = {
           id: statusId,
           type: 'status',
-          data: { ...values, color },
+          data: values,
           position: targetNode.position,
         };
       } else {
@@ -91,7 +86,7 @@ const useAddStatus = (selectedElement?: Edge | null) => {
         firstNewNode = {
           id: statusId,
           type: 'status',
-          data: { ...values, color },
+          data: values,
           position: sourceNode.position,
         };
         secondNewNode = {
