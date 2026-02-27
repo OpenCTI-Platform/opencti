@@ -1,18 +1,17 @@
 import type { Node, Edge } from 'reactflow';
 import { SubTypeWorkflowDefinitionQuery$data } from '../__generated__/SubTypeWorkflowDefinitionQuery.graphql';
+import { AuthorizedMemberOption } from '../../../../../utils/authorizedMembers';
 
 export type Condition = { field: string; operator: string; value: string }
   | { type: string };
 
 export type Action = {
   type: string;
-  params: {
-    authorized_members?: string[];
-  };
+  params?: unknown;
 };
 
 export type Status = {
-  name: string;
+  statusTemplate: { id: string; name: string; color: string };
   color?: string;
   onEnter?: Action[];
   onExit?: Action[];
@@ -21,45 +20,56 @@ export type Status = {
 export type Transition = {
   event: string;
   actions?: Action[];
-  conditions?: Action[];
+  conditions?: Condition[];
 };
 
-const colorPalette = ['#4caf50', '#2196f3', '#ff9800', '#9c27b0', '#f44336', '#3f51b5', '#00bcd4', '#8bc34a', '#ff5722', '#673ab7'];
-
 export const NODE_SIZE = { width: 160, height: 50 };
+
+const formatActions = (actions: Action[]) => {
+  return actions.map(({ type, params }) => {
+    if (type === 'updateAuthorizedMembers') {
+      return {
+        type,
+        mode: 'sync',
+        params: { authorized_members: (params as { authorized_members: AuthorizedMemberOption[] }).authorized_members
+          .map(({ value, accessRight }) => ({ id: value, access_right: accessRight })) },
+      };
+    }
+  });
+};
 
 const transformToWorkflowDefinition = (nodes: Node[], edges: Edge[], workflowDefinition: SubTypeWorkflowDefinitionQuery$data['workflowDefinition']) => {
   // 1. Extract States
   const states = nodes
     .filter((node) => node.type === 'status')
-    .map((node) => {
-      const { color: _color, ...restData } = node.data;
+    .map(({ id, data: { onEnter = [], onExit = [] } }) => {
       return {
-        name: node.id,
-        ...restData,
+        name: id,
+        onEnter: formatActions(onEnter),
+        onExit: formatActions(onExit),
       };
     });
 
   // 2. Extract Transitions
   const transitions = nodes
     .filter((node) => node.type === 'transition')
-    .map((transitionNode) => {
-      const targetEdge = edges.find((e) => e.target === transitionNode.id);
-      const sourceEdge = edges.find((e) => e.source === transitionNode.id);
+    .map(({ id, data: { event, conditions = [], actions = [] } }) => {
+      const targetEdge = edges.find((e) => e.target === id);
+      const sourceEdge = edges.find((e) => e.source === id);
 
       return {
         from: targetEdge?.source || '',
         to: sourceEdge?.target || '',
-        event: transitionNode.data.event,
-        conditions: transitionNode.data.conditions || [],
-        actions: transitionNode.data.actions || [],
+        event: event,
+        conditions: conditions,
+        actions: formatActions(actions),
       };
     });
 
   // 3. Get first status
   const initialState = nodes
     .filter((node) => node.type === 'status')
-    .find((transitionNode) => !edges.find((e) => e.target === transitionNode.id));
+    .find(({ id }) => !edges.find((e) => e.target === id));
 
   return {
     id: workflowDefinition?.id,
@@ -71,6 +81,5 @@ const transformToWorkflowDefinition = (nodes: Node[], edges: Edge[], workflowDef
 };
 
 export {
-  colorPalette,
   transformToWorkflowDefinition,
 };

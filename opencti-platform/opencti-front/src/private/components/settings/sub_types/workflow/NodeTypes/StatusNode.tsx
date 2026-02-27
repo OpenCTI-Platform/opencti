@@ -1,10 +1,10 @@
-import React from 'react';
 import { Handle, NodeProps, Position } from 'reactflow';
 import { hexToRGB } from '../../../../../../utils/Colors';
 import { Chip } from '@mui/material';
 import { NODE_SIZE } from '../utils';
 
 const StatusNode = ({ id, data }: NodeProps) => {
+  const { name, color } = data.statusTemplate;
   return (
     <>
       <Handle
@@ -20,14 +20,14 @@ const StatusNode = ({ id, data }: NodeProps) => {
           height: NODE_SIZE.height,
           textTransform: 'uppercase',
           borderRadius: 4,
-          backgroundColor: hexToRGB(data.color),
-          color: data.color,
-          border: `1px solid ${data.color}`,
+          backgroundColor: hexToRGB(color),
+          color: color,
+          border: `1px solid ${color}`,
           minWidth: NODE_SIZE.width,
           cursor: 'pointer',
         }}
         variant="outlined"
-        label={data.name.toUpperCase().replace(/_/g, ' ')}
+        label={name}
       />
       <Handle
         id="source"

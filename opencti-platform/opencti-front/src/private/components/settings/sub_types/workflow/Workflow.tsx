@@ -18,6 +18,8 @@ import { WorkflowDefinitionMutation } from './__generated__/WorkflowDefinitionMu
 import { useWorkflowInitialElements } from './hooks/useWorkflowInitialElements';
 import { usePlaceholdersSync } from './hooks/usePlaceholdersSync';
 import { useStatusConnection } from './hooks/useStatusConnection';
+import { StatusTemplateFieldSearchQuery } from '@components/common/form/__generated__/StatusTemplateFieldSearchQuery.graphql';
+import { StatusTemplateFieldQuery } from '@components/common/form/StatusTemplateField';
 
 const workflowDefinitionSetMutation = graphql`
   mutation WorkflowDefinitionMutation($entityType: String!, $definition: String!) {
@@ -36,7 +38,13 @@ const fitViewOptions = {};
 //   style: { strokeWidth: 2, strokeDasharray: '3 3' },
 // };
 
-const Workflow = ({ queryRef}: { queryRef: PreloadedQuery<SubTypeWorkflowDefinitionQuery> }) => {
+const Workflow = ({
+  queryRef,
+  statusTemplatesQueryRef,
+}: {
+  queryRef: PreloadedQuery<SubTypeWorkflowDefinitionQuery>;
+  statusTemplatesQueryRef: PreloadedQuery<StatusTemplateFieldSearchQuery>;
+}) => {
   const { t_i18n } = useFormatter();
   const { fitView, getNode } = useReactFlow();
 
@@ -45,8 +53,13 @@ const Workflow = ({ queryRef}: { queryRef: PreloadedQuery<SubTypeWorkflowDefinit
     queryRef,
   );
 
+  const { statusTemplates } = usePreloadedQuery<StatusTemplateFieldSearchQuery>(
+    StatusTemplateFieldQuery,
+    statusTemplatesQueryRef,
+  );
+
   // 1. Get initial edges and nodes from workflow definition
-  const { initialNodes, initialEdges } = useWorkflowInitialElements(workflowDefinition);
+  const { initialNodes, initialEdges } = useWorkflowInitialElements(workflowDefinition, statusTemplates);
 
   const [nodes, _dispatchNodes, onNodesChange] = useNodesState<Node[]>(initialNodes);
   const [edges, _dispatchEdges, onEdgesChange] = useEdgesState<Edge[]>(initialEdges);
