@@ -131,31 +131,31 @@ filters = {
 
 <details>
 
-<summary><strong>'Only equals to' and 'Not only equals to' detailed examples</strong></summary>
+<summary><strong>'Only equal to' and 'Not only equal to' detailed examples</strong></summary>
 
 - `only_eq_to` with a single value: fields having exactly one value, corresponding to the filter value
 
-![Only Equals To filter operator with one value](./assets/filters-OnlyEqTo.png)
+![Only Equal To filter operator with one value](./assets/filters-OnlyEqTo.png)
 
 - `only_eq_to` with several values and `or` local mode: fields having one value only among the filter values
 
-![Only Equals To filter operator with 'or' mode](./assets/filters-OnlyEqTo-or.png)
+![Only Equal To filter operator with 'or' mode](./assets/filters-OnlyEqTo-or.png)
 
 - `only_eq_to` with several values and `and` local mode: fields having exactly all the filter values, and no other values
 
-![Only Equals To filter operator with 'or' mode](./assets/filters-OnlyEqTo-and.png)
+![Only Equal To filter operator with 'or' mode](./assets/filters-OnlyEqTo-and.png)
 
 - `not_only_eq_to` with a single value
 
-![Not Only Equals To filter operator with one value](./assets/filters-NotOnlyEqTo.png)
+![Not Only Equal To filter operator with one value](./assets/filters-NotOnlyEqTo.png)
 
 - `not_only_eq_to` with several values and `or` local mode
 
-![Not Only Equals To filter operator with 'or' mode](./assets/filters-NotOnlyEqTo-or.png)
+![Not Only Equal To filter operator with 'or' mode](./assets/filters-NotOnlyEqTo-or.png)
 
 - `not_only_eq_to` with several values and `and` local mode
 
-![Not Only Equals To filter operator with 'or' mode](./assets/filters-NotOnlyEqTo-and.png)
+![Not Only Equal To filter operator with 'or' mode](./assets/filters-NotOnlyEqTo-and.png)
 
 
 </details>

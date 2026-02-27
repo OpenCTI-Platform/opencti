@@ -86,8 +86,8 @@ const OperatorKeyValues: {
   not_ends_with: 'Not ends with',
   search: 'Search',
   within: 'Within',
-  only_eq_to: 'Only equals to',
-  not_only_eq_to: 'Not only equals to',
+  only_eq_to: 'Only equal to',
+  not_only_eq_to: 'Not only equal to',
 };
 
 export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
