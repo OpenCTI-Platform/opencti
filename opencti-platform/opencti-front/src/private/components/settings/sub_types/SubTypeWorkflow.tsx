@@ -1,19 +1,82 @@
-import Card from '@common/card/Card';
-import Grid from '@mui/material/Grid2';
+import Workflow from './workflow/Workflow';
+import { ReactFlowProvider } from 'reactflow';
+import { ErrorBoundary } from '../../Error';
+import { graphql } from 'react-relay';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { SubTypeWorkflowDefinitionQuery } from './__generated__/SubTypeWorkflowDefinitionQuery.graphql';
+import Loader from '../../../../components/Loader';
+import { Suspense } from 'react';
+import { StatusTemplateFieldQuery } from '@components/common/form/StatusTemplateField';
+import { StatusTemplateFieldSearchQuery } from '@components/common/form/__generated__/StatusTemplateFieldSearchQuery.graphql';
+
+export const workflowDefinitionQuery = graphql`
+  query SubTypeWorkflowDefinitionQuery($entityType: String!) {
+    workflowDefinition(entityType: $entityType) {
+      id
+      name
+      initialState
+      states {
+        name
+        onExit{
+          type
+          mode
+          params
+        }
+        onEnter {
+          type
+          mode
+          params
+        }
+      }
+      transitions {
+        event
+        from
+        to
+        actions {
+          type
+          mode
+          params
+        }
+        conditions {
+          type
+          field
+          operator
+          value
+        }
+        
+      }
+    }
+  }
+`;
 
 const SubTypeWorkflow = () => {
-  // TODO use workflow data from subType
-  // const { subType } = useOutletContext<{ subType: SubTypeQuery['response']['subType'] }>();
-  return (
-    <Grid container spacing={3}>
+  const workflowQueryRef = useQueryLoading<SubTypeWorkflowDefinitionQuery>(
+    workflowDefinitionQuery,
+    { entityType: 'DraftWorkspace' },
+  );
 
-      <Grid size={{ xs: 12 }} gap={3}>
-        <Card>
-          {/* TODO Workflow settings component */}
-          <div>Workflow settings component</div>
-        </Card>
-      </Grid>
-    </Grid>
+  const statusTemplatesQueryRef = useQueryLoading<StatusTemplateFieldSearchQuery>(
+    StatusTemplateFieldQuery,
+    {},
+  );
+
+  if (!workflowQueryRef || !statusTemplatesQueryRef) {
+    return <Loader />;
+  }
+
+  return (
+    <Suspense fallback={<Loader />}>
+      <ErrorBoundary>
+        <div style={{ width: '100%', height: 'calc(100vh - 250px)', marginBottom: '-50px' }}>
+          <ReactFlowProvider>
+            <Workflow
+              queryRef={workflowQueryRef}
+              statusTemplatesQueryRef={statusTemplatesQueryRef}
+            />
+          </ReactFlowProvider>
+        </div>
+      </ErrorBoundary>
+    </Suspense>
   );
 };
 
