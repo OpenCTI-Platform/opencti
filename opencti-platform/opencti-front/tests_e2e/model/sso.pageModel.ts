@@ -9,18 +9,28 @@ export default class SSOPage {
   }
 
   async navigateFromMenu() {
-    return this.page.getByTestId('sso-security-page');
+    return this.page.getByTestId('authentication-page');
   }
 
   getCreateButton() {
-    return this.page.getByRole('button', { name: 'Create authentication', exact: true });
+    return this.page.getByRole('button', { name: 'Create Authentication', exact: true }).click();
   }
 
   getCreateSAML() {
-    return this.page.getByRole('button', { name: 'Create SAML', exact: true });
+    return this.page.getByRole('menuitem', { name: 'Create SAML' }).click();
   }
 
   getItemFromList(name: string) {
     return this.page.getByTestId(name);
+  }
+
+  getSAMLConfig() {
+    return this.page.getByText('e2e SSO Authentication');
+  }
+
+  async delete() {
+    await this.page.getByRole('button', { name: 'Update' }).click();
+    await this.page.getByRole('menuitem', { name: 'Delete' }).click();
+    return this.page.getByRole('dialog').getByRole('button', { name: 'Confirm' }).click();
   }
 }
