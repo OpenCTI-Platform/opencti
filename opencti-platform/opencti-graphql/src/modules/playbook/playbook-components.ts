@@ -64,7 +64,7 @@ import {
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { internalFindByIds, fullEntitiesList, fullRelationsList, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, internalFindByIds, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
@@ -316,7 +316,7 @@ const PLAYBOOK_REDUCING_COMPONENT_SCHEMA: JSONSchemaType<ReduceConfiguration> = 
   },
   required: ['filters'],
 };
-const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
+export const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
   id: 'PLAYBOOK_REDUCING_COMPONENT',
   name: 'Reduce knowledge',
   description: 'Reduce STIX data according to the filter (keep only matching)',
@@ -331,10 +331,6 @@ const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const { filters } = playbookNode.configuration;
     const jsonFilters = JSON.parse(filters);
-    const baseMatches = await isStixMatchFilterGroup(context, SYSTEM_USER, baseData, jsonFilters);
-    if (!baseMatches) {
-      return { output_port: 'unmatch', bundle };
-    }
     const matchedElements = [baseData];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const bundleElement = bundle.objects[index];
@@ -632,7 +628,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         const tasks = await createTaskFromCaseTemplates(caseTemplates, (container as StixContainer));
         pushAll(bundle.objects, tasks);
       }
-      bundle.objects.push(container);
+      bundle.objects.push(container as StixObject);
     }
     return { output_port: 'out', bundle };
   },
