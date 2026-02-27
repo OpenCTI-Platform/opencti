@@ -320,7 +320,7 @@ const SSODefinitions = () => {
   } as UsePreloadedPaginationFragment<SSODefinitionsLinesPaginationQuery>;
 
   return (
-    <div style={{ paddingRight: '200px' }}>
+    <div style={{ paddingRight: '200px' }} data-testid="sso-security-page">
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Security') },
