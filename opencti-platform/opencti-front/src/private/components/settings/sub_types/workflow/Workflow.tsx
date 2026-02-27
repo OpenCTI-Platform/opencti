@@ -10,8 +10,8 @@ import Button from '@common/button/Button';
 import { SaveOutlined } from '@mui/icons-material';
 import { transformToWorkflowDefinition } from './utils';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { workflowDefinitionQuery } from '../SubTypeWorkflow';
-import { SubTypeWorkflowDefinitionQuery } from '../__generated__/SubTypeWorkflowDefinitionQuery.graphql';
+import { workflowQuery } from '../SubTypeWorkflow';
+import { SubTypeWorkflowQuery } from '../__generated__/SubTypeWorkflowQuery.graphql';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../../components/i18n';
 import { WorkflowDefinitionMutation } from './__generated__/WorkflowDefinitionMutation.graphql';
@@ -38,28 +38,17 @@ const fitViewOptions = {};
 //   style: { strokeWidth: 2, strokeDasharray: '3 3' },
 // };
 
-const Workflow = ({
-  queryRef,
-  statusTemplatesQueryRef,
-}: {
-  queryRef: PreloadedQuery<SubTypeWorkflowDefinitionQuery>;
-  statusTemplatesQueryRef: PreloadedQuery<StatusTemplateFieldSearchQuery>;
-}) => {
+const Workflow = ({ queryRef }: { queryRef: PreloadedQuery<SubTypeWorkflowQuery> }) => {
   const { t_i18n } = useFormatter();
   const { fitView, getNode } = useReactFlow();
 
-  const { workflowDefinition } = usePreloadedQuery<SubTypeWorkflowDefinitionQuery>(
-    workflowDefinitionQuery,
+  const { workflowDefinition, statusTemplates, members } = usePreloadedQuery<SubTypeWorkflowQuery>(
+    workflowQuery,
     queryRef,
   );
 
-  const { statusTemplates } = usePreloadedQuery<StatusTemplateFieldSearchQuery>(
-    StatusTemplateFieldQuery,
-    statusTemplatesQueryRef,
-  );
-
   // 1. Get initial edges and nodes from workflow definition
-  const { initialNodes, initialEdges } = useWorkflowInitialElements(workflowDefinition, statusTemplates);
+  const { initialNodes, initialEdges } = useWorkflowInitialElements(workflowDefinition, statusTemplates, members);
 
   const [nodes, _dispatchNodes, onNodesChange] = useNodesState<Node[]>(initialNodes);
   const [edges, _dispatchEdges, onEdgesChange] = useEdgesState<Edge[]>(initialEdges);

@@ -1,5 +1,5 @@
 import type { Node, Edge } from 'reactflow';
-import { SubTypeWorkflowDefinitionQuery$data } from '../__generated__/SubTypeWorkflowDefinitionQuery.graphql';
+import { SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
 import { AuthorizedMemberOption } from '../../../../../utils/authorizedMembers';
 
 export type Condition = { field: string; operator: string; value: string }
@@ -38,7 +38,7 @@ const formatActions = (actions: Action[]) => {
   });
 };
 
-const transformToWorkflowDefinition = (nodes: Node[], edges: Edge[], workflowDefinition: SubTypeWorkflowDefinitionQuery$data['workflowDefinition']) => {
+const transformToWorkflowDefinition = (nodes: Node[], edges: Edge[], workflowDefinition: SubTypeWorkflowQuery$data['workflowDefinition']) => {
   // 1. Extract States
   const states = nodes
     .filter((node) => node.type === 'status')

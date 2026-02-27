@@ -3,14 +3,12 @@ import { ReactFlowProvider } from 'reactflow';
 import { ErrorBoundary } from '../../Error';
 import { graphql } from 'react-relay';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { SubTypeWorkflowDefinitionQuery } from './__generated__/SubTypeWorkflowDefinitionQuery.graphql';
+import { SubTypeWorkflowQuery } from './__generated__/SubTypeWorkflowQuery.graphql';
 import Loader from '../../../../components/Loader';
 import { Suspense } from 'react';
-import { StatusTemplateFieldQuery } from '@components/common/form/StatusTemplateField';
-import { StatusTemplateFieldSearchQuery } from '@components/common/form/__generated__/StatusTemplateFieldSearchQuery.graphql';
 
-export const workflowDefinitionQuery = graphql`
-  query SubTypeWorkflowDefinitionQuery($entityType: String!) {
+export const workflowQuery = graphql`
+  query SubTypeWorkflowQuery($entityType: String!) {
     workflowDefinition(entityType: $entityType) {
       id
       name
@@ -46,21 +44,34 @@ export const workflowDefinitionQuery = graphql`
         
       }
     }
+    members(search: "", first: 100) {
+      edges {
+        node {
+          id
+          entity_type
+          name
+        }
+      }
+    }
+    statusTemplates(search: "") {
+      edges {
+        node {
+          id
+          name
+          color
+        }
+      }
+    }
   }
 `;
 
 const SubTypeWorkflow = () => {
-  const workflowQueryRef = useQueryLoading<SubTypeWorkflowDefinitionQuery>(
-    workflowDefinitionQuery,
+  const workflowQueryRef = useQueryLoading<SubTypeWorkflowQuery>(
+    workflowQuery,
     { entityType: 'DraftWorkspace' },
   );
 
-  const statusTemplatesQueryRef = useQueryLoading<StatusTemplateFieldSearchQuery>(
-    StatusTemplateFieldQuery,
-    {},
-  );
-
-  if (!workflowQueryRef || !statusTemplatesQueryRef) {
+  if (!workflowQueryRef) {
     return <Loader />;
   }
 
@@ -71,7 +82,6 @@ const SubTypeWorkflow = () => {
           <ReactFlowProvider>
             <Workflow
               queryRef={workflowQueryRef}
-              statusTemplatesQueryRef={statusTemplatesQueryRef}
             />
           </ReactFlowProvider>
         </div>
