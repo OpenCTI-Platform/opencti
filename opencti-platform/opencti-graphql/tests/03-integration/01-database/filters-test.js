@@ -5,6 +5,10 @@ import { isEmptyField } from '../../../src/database/utils';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
 import { isStixMatchFilterGroup_MockableForUnitTests } from '../../../src/utils/filtering/filtering-stix/stix-filtering';
 
+// -- File to test stix filtering (filters on events: in the context of playbooks, streams, triggers)
+// -- with different keys, operators, modes, combinations
+// -- applied on data of the file DATA-TEST-FILTERS.json
+
 const WHITE_TLP = { standard_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9', internal_id: null };
 
 const applyFilters = async (filters, user = ADMIN_USER) => {
@@ -131,7 +135,7 @@ describe('Filters testing', () => {
   // assignee_filter
 
   it('Should labels filters correctly applied', async () => {
-    // With eq on marking
+    // With eq
     const filters = {
       mode: 'and',
       filters: [{
@@ -144,7 +148,7 @@ describe('Filters testing', () => {
     };
     const filteredObjects = await applyFilters(filters);
     expect(filteredObjects.length).toBe(2);
-    // With _not_eq
+    // With not_eq
     const filtersNot = {
       mode: 'and',
       filters: [{
@@ -157,6 +161,87 @@ describe('Filters testing', () => {
     };
     const filteredObjectsNot = await applyFilters(filtersNot);
     expect(stixBundle.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
+  });
+  it('Should labels filters correctly applied with only_eq_to operator', async () => {
+    // With only_eq_to
+    let filters = {
+      mode: 'and',
+      filters: [{
+        key: ['objectLabel'],
+        values: ['identity'],
+        operator: 'only_eq_to',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
+    let filteredObjects = await applyFilters(filters);
+    expect(filteredObjects.length).toBe(10);
+    // With not_only_eq_to
+    let filtersNot = {
+      mode: 'and',
+      filters: [{
+        key: ['objectLabel'],
+        values: ['identity'],
+        operator: 'not_only_eq_to',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
+    let filteredObjectsNot = await applyFilters(filtersNot);
+    expect(stixBundle.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
+    // With only_eq_to & AND local mode
+    filters = {
+      mode: 'and',
+      filters: [{
+        key: ['objectLabel'],
+        values: ['identity', 'organization'],
+        operator: 'only_eq_to',
+        mode: 'and',
+      }],
+      filterGroups: [],
+    };
+    filteredObjects = await applyFilters(filters);
+    expect(filteredObjects.length).toBe(1);
+    expect(filteredObjects[0].name).toBe('ANSSI');
+    // With not_only_eq_to & AND local mode
+    filtersNot = {
+      mode: 'and',
+      filters: [{
+        key: ['objectLabel'],
+        values: ['identity', 'organization'],
+        operator: 'not_only_eq_to',
+        mode: 'and',
+      }],
+      filterGroups: [],
+    };
+    filteredObjectsNot = await applyFilters(filtersNot);
+    expect(stixBundle.objects.length - filteredObjects.length).toBe(filteredObjectsNot.length);
+    expect(filteredObjectsNot.map((n) => n.name).includes('ANSSI')).toBeFalsy();
+    // With only_eq_to & OR local mode
+    filters = {
+      mode: 'and',
+      filters: [{
+        key: ['objectLabel'],
+        values: ['identity', 'organization'],
+        operator: 'only_eq_to',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
+    filteredObjects = await applyFilters(filters);
+    expect(filteredObjects.length).toBe(10);
+    filters = {
+      mode: 'and',
+      filters: [{
+        key: ['objectLabel'],
+        values: ['identity', 'note'],
+        operator: 'only_eq_to',
+        mode: 'or',
+      }],
+      filterGroups: [],
+    };
+    filteredObjects = await applyFilters(filters);
+    expect(filteredObjects.length).toBe(11);
   });
 
   // revoked

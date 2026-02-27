@@ -2285,6 +2285,9 @@ const buildFieldForQuery = (field: string) => {
     ? field
     : `${field}.keyword`;
 };
+const buildFieldForScriptQuery = (field: string) => {
+  return buildFieldForQuery(field).replaceAll('*', 'internal_id');
+};
 export const buildLocalMustFilter = (validFilter: any) => {
   const valuesFiltering = [];
   const noValuesFiltering = [];
@@ -2294,7 +2297,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
   }
   const arrayKeys = Array.isArray(key) ? key : [key];
   const headKey = R.head(arrayKeys);
-  const dontHandleMultipleKeys = nested || operator === 'nil' || operator === 'not_nil';
+  const dontHandleMultipleKeys = nested || operator === 'nil' || operator === 'not_nil' || operator === 'only_eq_to' || operator === 'not_only_eq_to';
   if (dontHandleMultipleKeys && arrayKeys.length > 1) {
     throw UnsupportedError('Filter must have only one field', { keys: arrayKeys, operator });
   }
@@ -2558,6 +2561,29 @@ export const buildLocalMustFilter = (validFilter: any) => {
               multi_match: {
                 fields: arrayKeys.map((k) => buildFieldForQuery(k)),
                 query: values[i].toString(),
+              },
+            });
+          } else if (operator === 'only_eq_to' || operator === 'not_only_eq_to') {
+            const targets = operator === 'only_eq_to' ? valuesFiltering : noValuesFiltering;
+            targets.push({
+              script: {
+                script: {
+                  source: `
+                    def fieldValues = doc['${buildFieldForScriptQuery(headKey)}'];
+                    if (fieldValues == null || fieldValues.length == 0) return false;
+                    def filterValues = params.values;
+                    if (params.mode == 'and') {
+                      return fieldValues.length == filterValues.length && fieldValues.every(v -> filterValues.contains(v));
+                    } else if (params.mode == 'or') {
+                      return fieldValues.length == 1 && filterValues.contains(fieldValues[0]);
+                    }
+                    return false;
+                  `,
+                  params: {
+                    values,
+                    mode: localFilterMode,
+                  },
+                },
               },
             });
           } else if (operator === 'match') {
