@@ -294,7 +294,7 @@ describe('Retention Manager tests ', () => {
     expect(filesToDelete.edges[0].node.id).toEqual(fileId);
     // retention rule on all the files
     const filesToDelete2 = await getElementsToDelete(context, 'file', utcDate());
-    expect(filesToDelete2.edges.length).toEqual(8); // all the files that has not been modified since now and with uploadStatus = complete
+    expect(filesToDelete2.edges.length).toEqual(9); // all the files that has not been modified since now and with uploadStatus = complete
   });
   it('should fetch the correct files to be deleted by a retention rule on workbenches', async () => {
     // retention rule on workbenches not modified since 2023-07-01
