@@ -15,7 +15,7 @@ import { graphql, createRefetchContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
 import Slide from '@mui/material/Slide';
 import ItemIcon from '../../../../components/ItemIcon';
-import inject18n from '../../../../components/i18n';
+import inject18n, { isDateStringNone } from '../../../../components/i18n';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import { truncate } from '../../../../utils/String';
 import { getSecondaryRepresentative, getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -46,8 +46,12 @@ class StixDomainObjectTimelineComponent extends Component {
     )(data.stixRelationships.edges);
 
     const getDate = (relationship) => {
-      if (timeField === 'technical') return fldt(relationship.created ?? relationship.created_at);
-      return fldt(relationship.created_at);
+      const dateList = timeField === 'technical'
+        ? [relationship.created, relationship.created_at]
+        : [relationship.start_time, relationship.first_seen, relationship.created_at];
+
+      const usableDate = dateList.find((date) => date && !isDateStringNone(date));
+      return usableDate ? fldt(usableDate) : '-';
     };
 
     return (
