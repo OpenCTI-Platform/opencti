@@ -172,10 +172,7 @@ test('Incident Response Creation', { tag: ['@ce'] }, async ({ page }) => {
   const updateDate = incidentResponseDetailsPage.getTextForHeading('Modification date', now);
   await expect(updateDate).toBeVisible();
 
-  const historyDescription = cardPage.getTextInCard(
-    'Most recent history',
-    new RegExp(`creates a Case-Incident\\s+${incidentResponseName}`),
-  );
+  const historyDescription = cardPage.getTextInCard('Most recent history', `creates a Case-Incident ${incidentResponseName}`);
   await expect(historyDescription).toBeVisible();
   const historyDate = cardPage.getTextInCard('Most recent history', format(new Date(), 'MMM d, yyyy'));
   await expect(historyDate).toBeVisible();
