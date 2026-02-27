@@ -336,7 +336,7 @@ describe('Retention Manager tests ', () => {
     // delete file
     await deleteElement(context, 'file', fileId); // should delete fileToTestRetentionRule
     const files = await allFilesForPaths(testContext, ADMIN_USER, [globalPath]);
-    expect(files.length).toEqual(8); // 7 files from index-file-test + the 2 created files - fileToTestRetentionRule that should have been deleted
+    expect(files.length).toEqual(9); // 8 files from index-file-test + the 2 created files - fileToTestRetentionRule that should have been deleted
     // delete workbench
     await deleteElement(context, 'workbench', workbench1Id); // should delete workbench1
     const workbenches = await allFilesForPaths(testContext, ADMIN_USER, [pendingPath]);
