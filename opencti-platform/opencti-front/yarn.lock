@@ -9212,10 +9212,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql@npm:16.12.0":
-  version: 16.12.0
-  resolution: "graphql@npm:16.12.0"
-  checksum: 10c0/b6fffa4e8a4e4a9933ebe85e7470b346dbf49050c1a482fac5e03e4a1a7bed2ecd3a4c97e29f04457af929464bc5e4f2aac991090c2f320111eef26e902a5c75
+"graphql@npm:16.13.0":
+  version: 16.13.0
+  resolution: "graphql@npm:16.13.0"
+  checksum: 10c0/c20e7909c6c8d405a30f8caeae5aaf604b9f949bdcdf80bdb3d3561123e6099181c39eae697cf4fcdc5dd301ab215363b8def0aa0ff51f03cc7e4b48a8c2c2b1
   languageName: node
   linkType: hard
 
@@ -12295,7 +12295,7 @@ __metadata:
     formik-mui-lab: "npm:1.0.0"
     globals: "npm:17.3.0"
     graphiql: "npm:4.1.2"
-    graphql: "npm:16.12.0"
+    graphql: "npm:16.13.0"
     graphql-ws: "npm:5.16.2"
     html-react-parser: "npm:5.2.17"
     html-to-image: "npm:1.11.13"
