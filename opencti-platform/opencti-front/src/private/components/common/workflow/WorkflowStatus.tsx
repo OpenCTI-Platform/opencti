@@ -114,7 +114,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
   }
 
   const { workflowInstance } = draft;
-
+  console.log({ workflowInstance });
   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -124,6 +124,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
   };
 
   const handleTransition = (eventName: string, actions: readonly string[]) => {
+    console.log('Triggering transition:', eventName, 'with actions:', actions);
     if (actions.includes('validateDraft')) {
       handleClose();
       setValidationTransition(eventName);

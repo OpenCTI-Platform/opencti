@@ -25,7 +25,7 @@ export type Transition = {
 
 export const NODE_SIZE = { width: 160, height: 50 };
 
-const formatActions = (actions: Action[]) => {
+const formatActions = (actions: Action[] = []) => {
   return actions.map(({ type, params }) => {
     if (type === 'updateAuthorizedMembers') {
       return {
@@ -33,6 +33,12 @@ const formatActions = (actions: Action[]) => {
         mode: 'sync',
         params: { authorized_members: (params as { authorized_members: AuthorizedMemberOption[] }).authorized_members
           .map(({ value, accessRight }) => ({ id: value, access_right: accessRight })) },
+      };
+    }
+    if (type === 'validateDraft') {
+      return {
+        type,
+        mode: 'sync',
       };
     }
   });
