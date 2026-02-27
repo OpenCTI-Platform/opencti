@@ -23,7 +23,7 @@ import { CaseTasksLines_data$key } from './__generated__/CaseTasksLines_data.gra
 import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 import CaseTaskCreation from './CaseTaskCreation';
 import { CaseTasksLine } from './CaseTasksLine';
-import { tasksDataColumns } from './TasksLine';
+import { tasksDataColumns } from './tasksDataColumns';
 
 export const caseTasksLinesQuery = graphql`
   query CaseTasksLinesQuery(
@@ -210,6 +210,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           dataColumns={tasksDataColumns}
           inline={true}
           secondaryAction={true}
+          iconExtension
         >
           <ListLinesContent
             dataColumns={tasksDataColumns}

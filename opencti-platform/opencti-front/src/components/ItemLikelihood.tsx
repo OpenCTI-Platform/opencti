@@ -1,6 +1,7 @@
 import React from 'react';
 import Tag from '@common/tag/Tag';
 import { useTheme } from '@mui/material/styles';
+import { EMPTY_VALUE } from '../utils/String';
 
 interface ItemLikelihoodProps {
   likelihood?: number | null;
@@ -9,9 +10,7 @@ interface ItemLikelihoodProps {
 const ItemLikelihood = ({ likelihood }: ItemLikelihoodProps) => {
   const theme = useTheme();
   if (!likelihood) {
-    return (
-      <>-</>
-    );
+    return <>{EMPTY_VALUE}</>;
   }
   if (likelihood <= 20) {
     return (

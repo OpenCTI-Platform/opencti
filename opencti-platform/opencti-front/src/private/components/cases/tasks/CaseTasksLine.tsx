@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
-import { tasksDataColumns } from './TasksLine';
+import { tasksDataColumns } from './tasksDataColumns';
 import { useFormatter } from '../../../../components/i18n';
 import { CaseTasksLine_data$key } from './__generated__/CaseTasksLine_data.graphql';
 import TaskPopover from './TaskPopover';
