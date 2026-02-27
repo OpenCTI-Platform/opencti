@@ -133,7 +133,6 @@ const RootReport = () => {
                     enableQuickSubscription={true}
                     enableQuickExport={true}
                     enableEnrollPlaybook={true}
-                    enableAskAi={false}
                     overview={isOverview}
                     redirectToContent={true}
                     enableEnricher={true}

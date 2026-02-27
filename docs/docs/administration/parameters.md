@@ -97,11 +97,11 @@ Click on the **+** icon and configure your theme properties.
 | **Logo URL (login)**  | Login page logo                                                                                       | Authentication screen                                 | URL or Base64 |
 
 
-![Theme Colors in Action](assets/theme-desc-2.png)
+![Theme Colors: background, paper and primary colors](assets/theme-desc-1.png)
 
-![Theme Colors in Dialog](assets/theme-desc-1.png)
+![Theme Colors: secondary and accent colors](assets/theme-desc-2.png)
 
-![Theme Colors in Parameters](assets/theme-desc-3.png)
+![Theme Colors: navigation and paper colors, and Logo Url](assets/theme-desc-3.png)
 
 #### Login aside customization
 
