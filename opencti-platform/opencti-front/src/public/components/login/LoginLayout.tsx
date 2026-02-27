@@ -80,7 +80,7 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
     }
 
     if (loginAsideType === 'gradient') {
-      return `linear-gradient(135deg, ${settings.platform_theme?.theme_login_aside_gradient_start} 0%, ${settings.platform_theme?.theme_login_aside_gradient_end} 100%)`;
+      return `linear-gradient(100deg, ${settings.platform_theme?.theme_login_aside_gradient_start} 0%, ${settings.platform_theme?.theme_login_aside_gradient_end} 100%)`;
     }
 
     if (loginAsideType === 'image') {
@@ -101,7 +101,7 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
     minWidth: 500,
     overflow: 'hidden',
     background: backgroundContent,
-    boxShadow: '8px 0px 9px 0px #0000000F',
+    boxShadow: '8px 0px 9px 0px #0000002F',
     zIndex: 2,
   };
 
