@@ -1415,6 +1415,8 @@ class OpenCTIStix2:
                     "object_marking_refs",
                     "x_opencti_created_by_ref",
                     "x_opencti_granted_refs",
+                    "src_ref",
+                    "dst_ref",
                 ]:
                     if key.endswith("_ref"):
                         relationship_type = key.replace("_ref", "")
