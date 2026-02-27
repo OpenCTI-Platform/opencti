@@ -16,7 +16,7 @@ export const workflowDefinitionQuery = graphql`
       name
       initialState
       states {
-        name
+        statusId
         onExit{
           type
           mode

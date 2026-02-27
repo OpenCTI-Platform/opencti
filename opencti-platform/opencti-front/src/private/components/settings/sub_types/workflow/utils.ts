@@ -44,7 +44,7 @@ const transformToWorkflowDefinition = (nodes: Node[], edges: Edge[], workflowDef
     .filter((node) => node.type === 'status')
     .map(({ id, data: { onEnter = [], onExit = [] } }) => {
       return {
-        name: id,
+        statusId: id,
         onEnter: formatActions(onEnter),
         onExit: formatActions(onExit),
       };

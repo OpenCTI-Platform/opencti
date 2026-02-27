@@ -71,15 +71,15 @@ export const useWorkflowInitialElements = (
     );
 
     // 1. Map states to nodes
-    const stateNodes: Node[] = workflowDefinition.states.map(({ name, onEnter, onExit }) => ({
-      id: name,
+    const stateNodes: Node[] = workflowDefinition.states.map(({ statusId, onEnter, onExit }) => ({
+      id: statusId,
       type: 'status',
       data: {
         // onEnter: parseActions(onEnter),
         onEnter: onEnter,
         onExit: onExit,
         // onExit: parseActions(onExit),
-        statusTemplate: statusTemplates[name] },
+        statusTemplate: statusTemplates[statusId] },
       position: { x: 0, y: 0 },
     }));
 
