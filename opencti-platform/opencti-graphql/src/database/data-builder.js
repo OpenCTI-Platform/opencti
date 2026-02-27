@@ -29,7 +29,7 @@ import { RELATION_IN_PIR } from '../schema/internalRelationship';
 import { pushAll } from '../utils/arrayUtil';
 
 export const buildEntityData = async (context, user, input, type, opts = {}) => {
-  const { fromRule } = opts;
+  const { fromRule, restore } = opts;
   const internalId = input.internal_id || generateInternalId();
   const standardId = input.standard_id || generateStandardId(type, input);
   // Complete with identifiers
@@ -70,6 +70,9 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
     const haveStixId = isNotEmptyField(input.stix_id);
     if (haveStixId && input.stix_id !== standardId) {
       stixIds.push(input.stix_id.toLowerCase());
+    }
+    if (restore) {
+      input.created_at = input.created;
     }
     data = R.pipe(
       R.assoc(IDS_STIX, stixIds),
