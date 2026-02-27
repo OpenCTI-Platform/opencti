@@ -1,0 +1,56 @@
+name: PR conventions checks
+on:
+  pull_request:
+    types: [opened, edited, reopened, ready_for_review, synchronize]
+jobs:
+  check-organization:
+    name: Check if label can be setup based on organization
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setting labels
+        uses: FiligranHQ/auto-label@1.0.0
+        with:
+          labels_by_organization: "{\"FiligranHQ\":[\"filigran team\"]}"
+  check-pr-title-convention:
+    name: Check that PR title follows convention
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: Slashgear/action-check-pr-title@161cede0311ec624ae3ee76a2c27522f7b6fa2d8
+        with:
+          regexp: '^\[[a-z]+.+\].+\((#[0-9]+)\)$|^\[deps\].+'
+          flags: "gm"
+          helpMessage: "Format: '[component] Message (#issuenumber)', see https://github.com/OpenCTI-Platform/opencti/blob/master/CONTRIBUTING.md#how-can-you-contribute"
+  check-signed-commits:
+    name: Check signed commits in PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Information about how to sign commits see https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits
+        # "with comment" below does not work for forks.
+        run: |
+          echo "If you need to sign commits, Please see https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits"
+      - name: Check signed commits in PR on fail see above information.
+        uses: 1Password/check-signed-commits-action@v1
+        with:
+          comment: |
+            Thank you for your contribution, but we need you to sign your commits. Please see https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits
+  check-pr-issue:
+    name: Check Pull Request is linked to an issue
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: hattan/verify-linked-issue-action@2d8e2e47a462cc7b07ba5e6cab6f9d57bd36672e
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          message: "Please attach at least one issue to your Pull Request"
