@@ -143,7 +143,7 @@ const useFormEditor = (
   const changeCreated = (name: string, value: FieldOption | '') => {
     if (!enableReferences) {
       validate(name, value !== '' ? value : null, () => {
-        const finalValue = value !== '' ? (value as FieldOption).value : null;
+        const finalValue = (value !== '' && value !== null) ? (value as FieldOption).value : null;
         commitFieldPatch({
           variables: {
             id: data.id,
