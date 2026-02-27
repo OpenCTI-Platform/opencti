@@ -87,9 +87,9 @@ Click on the **+** icon and configure your theme properties.
 | **Name**              | Unique identifier for the theme (case-sensitive)                                                      | Theme selector                                        | `My Theme`    |
 | **Background color**  | Main application background                                                                           | Behind all content areas                              | `#122e52`     |
 | **Paper color**       | Background for content containers                                                                     | Cards, side panels, dialog bodies                     | `#0a395f`     |
-| **Navigation color**  | Navigation and header elements                                                                        | Top app bar, dialog headers, right navigation panels  | `#060b3f`     |
+| **Navigation color**  | Navigation and header elements                                                                        | Dialog headers, right navigation panels  | `#060b3f`     |
 | **Primary color**     | Main interactive elements                                                                             | Icon buttons, action buttons, highlights | `#e41682`  |
-| **Secondary color**   | Secondary actions                                                                                     | Primary action buttons in dialogs                     | `#d1c71d`     |
+| **Secondary color**   | Secondary actions                                                                                     | Badge color                     | `#d1c71d`     |
 | **Accent color**      | Highlight and emphasis                                                                                | Copied items, history entries, selected items         | `#e5abec`     |
 | **Text color**        | Primary text throughout the application                                                               | All text content                                      | `#e0e0e0`     |
 | **Logo URL**          | Full-size logo                                                                                        | Expanded left navigation panel                        | URL or Base64 |
@@ -100,6 +100,28 @@ Click on the **+** icon and configure your theme properties.
 ![Theme Colors in Action](assets/theme-desc-2.png)
 
 ![Theme Colors in Dialog](assets/theme-desc-1.png)
+
+![Theme Colors in Parameters](assets/theme-desc-3.png)
+
+#### Login aside customization
+
+The right panel of the login page can be customized with three options:
+
+- **Color**: a single solid background color
+- **Gradient**: a linear gradient between two colors applied horizontally from the start color to the end color
+- **Image**: full-cover background image via URL or Base64. The image is scaled to cover the entire panel and centered, so edges may be cropped on smaller screens. Prefer images with a centered subject.
+
+![Login Aside config](assets/theme-login-aside-config.png)
+
+
+![Login Aside default](assets/theme-login-1.png)
+*Login page with no aside config set*
+
+![Login Aside with gradient](assets/theme-login-2.png)
+*Login page with a custom gradient background*
+
+
+
 
 #### Color requirements
 - **Format:** All colors must be in hexadecimal format (e.g., `#122e52`)
