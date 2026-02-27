@@ -24118,6 +24118,8 @@ export type QueryGlobalSearchArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  useFuzzySearch?: InputMaybe<Scalars['Boolean']['input']>;
+  useWildcardPrefix?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 

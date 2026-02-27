@@ -14615,6 +14615,8 @@ type Query {
     first: Int
     after: ID
     search: String
+    useWildcardPrefix: Boolean
+    useFuzzySearch: Boolean
     types: [String]
     orderBy: StixCoreObjectsOrdering
     orderMode: OrderingMode

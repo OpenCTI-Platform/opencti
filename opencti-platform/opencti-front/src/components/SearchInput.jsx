@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
-import { ManageSearchOutlined, Search, TuneOutlined } from '@mui/icons-material';
+import { ManageSearchOutlined, Search, TuneOutlined, StarOutlined, WavesOutlined } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import IconButton from '@common/button/IconButton';
 import { Link, useLocation } from 'react-router-dom';
@@ -158,6 +158,8 @@ const SearchInput = (props) => {
   const [displayEEDialog, setDisplayEEDialog] = useState(false);
   const [searchValue, setSearchValue] = useState(keyword);
   const [askAI, setAskAI] = useState(false);
+  const [wildcardSearch, setWildcardSearch] = useState(false);
+  const [fuzzySearch, setFuzzySearch] = useState(false);
 
   useEffect(() => {
     if (keyword !== searchValue) {
@@ -203,7 +205,6 @@ const SearchInput = (props) => {
       setAskAI(false);
     }
   };
-
   return (
     <>
       <GradientBorderTextField
@@ -226,13 +227,31 @@ const SearchInput = (props) => {
         slotProps={{
           input: {
             startAdornment: (
-              <Search
-                fontSize="small"
-                sx={{
-                  color: isNLQActivated ? theme.palette.ai.main : 'inherit',
-                  mr: 0.5,
-                }}
-              />
+              <InputAdornment position="start" style={{ color: isNLQActivated ? theme.palette.ai.main : undefined }}>
+                <Search
+                  fontSize="small"
+                  sx={{
+                    color: isNLQActivated ? theme.palette.ai.main : 'inherit',
+                    mr: 0.5,
+                  }}
+                />
+                <Tooltip title={t_i18n('Wildcard search')}>
+                  <IconButton
+                    onClick={() => setWildcardSearch(!wildcardSearch)}
+                    color={wildcardSearch ? 'primary' : 'warn'}
+                  >
+                    <StarOutlined fontSize="medium" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title={t_i18n('Fuzzy search')}>
+                  <IconButton
+                    onClick={() => setFuzzySearch(!fuzzySearch)}
+                    color={fuzzySearch ? 'primary' : 'warn'}
+                  >
+                    <WavesOutlined fontSize="medium" />
+                  </IconButton>
+                </Tooltip>
+              </InputAdornment>
             ),
 
             endAdornment: variant === 'topBar' ? (
