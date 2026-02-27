@@ -3485,6 +3485,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :type send_to_directory_retention: int, optional
         :param send_to_s3: Whether to upload bundle to S3 (default: self.bundle_send_to_s3)
         :type send_to_s3: bool, optional
+        :param no_split: Whether to send without splitting (default: False)
+        :type no_split: bool, optional
 
         :return: List of processed bundle chunks
         :rtype: list
@@ -3514,6 +3516,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             "send_to_directory_retention", self.bundle_send_to_directory_retention
         )
         bundle_send_to_s3 = kwargs.get("send_to_s3", self.bundle_send_to_s3)
+        no_split = kwargs.get("no_split", False)
 
         # In case of enrichment ingestion, ensure the sharing if needed
         if self.enrichment_shared_organizations is not None:
@@ -3641,13 +3644,19 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             )
             self._send_bundle_to_s3(json.dumps(message_bundle), bundle_file)
 
-        stix2_splitter = OpenCTIStix2Splitter()
-        expectations_number, _, bundles = stix2_splitter.split_bundle_with_expectations(
-            bundle=bundle,
-            use_json=True,
-            event_version=event_version,
-            cleanup_inconsistent_bundle=cleanup_inconsistent_bundle,
-        )
+        if no_split:
+            bundles = [bundle]
+            expectations_number = 1
+        else:
+            stix2_splitter = OpenCTIStix2Splitter()
+            expectations_number, _, bundles = (
+                stix2_splitter.split_bundle_with_expectations(
+                    bundle=bundle,
+                    use_json=True,
+                    event_version=event_version,
+                    cleanup_inconsistent_bundle=cleanup_inconsistent_bundle,
+                )
+            )
 
         if len(bundles) == 0:
             self.metric.inc("error_count")
@@ -3696,6 +3705,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                         sequence=sequence,
                         update=update,
                         draft_id=draft_id,
+                        no_split=no_split,
                     )
                 channel.close()
                 pika_connection.close()
@@ -3737,6 +3747,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         update = kwargs.get("update", False)
         entities_types = kwargs.get("entities_types", None)
         draft_id = kwargs.get("draft_id", None)
+        no_split = kwargs.get("no_split", False)
 
         if entities_types is None:
             entities_types = []
@@ -3759,6 +3770,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             ),
             "update": update,
             "draft_id": draft_id,
+            "no_split": no_split,
         }
         if work_id is not None:
             message["work_id"] = work_id
