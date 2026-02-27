@@ -7,7 +7,7 @@ export default class CardPage {
     return this.page.getByText(title).locator('../..');
   }
 
-  getTextInCard(title: string, text: string) {
+  getTextInCard(title: string, text: string | RegExp) {
     const card = this.getCard(title);
     return card.getByText(text);
   }
