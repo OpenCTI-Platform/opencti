@@ -2,7 +2,6 @@ name: Check migration file timestamps
 
 on:
   pull_request:
-    branches: [master]
     paths:
       - 'opencti-platform/opencti-graphql/src/migrations/**'
 
