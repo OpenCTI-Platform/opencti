@@ -18,8 +18,6 @@ import { WorkflowDefinitionMutation } from './__generated__/WorkflowDefinitionMu
 import { useWorkflowInitialElements } from './hooks/useWorkflowInitialElements';
 import { usePlaceholdersSync } from './hooks/usePlaceholdersSync';
 import { useStatusConnection } from './hooks/useStatusConnection';
-import { StatusTemplateFieldSearchQuery } from '@components/common/form/__generated__/StatusTemplateFieldSearchQuery.graphql';
-import { StatusTemplateFieldQuery } from '@components/common/form/StatusTemplateField';
 
 const workflowDefinitionSetMutation = graphql`
   mutation WorkflowDefinitionMutation($entityType: String!, $definition: String!) {

@@ -1,4 +1,3 @@
-import { StatusTemplateFieldSearchQuery$data } from '@components/common/form/__generated__/StatusTemplateFieldSearchQuery.graphql';
 import { useMemo } from 'react';
 import { Node, Edge, MarkerType } from 'reactflow';
 import { SubTypeWorkflowQuery$data } from '../../__generated__/SubTypeWorkflowQuery.graphql';
@@ -27,18 +26,12 @@ export const useWorkflowInitialElements = (
 
   return useMemo(() => {
     if (!workflowDefinition) return { initialNodes: [], initialEdges: [] };
-    console.log({ workflowDefinition });
 
-    // 1. Refactor Status Templates
     const statusTemplates: StatusTemplate = convertEdgesToObject(statusTemplatesEdges);
-
-    // 2. Refactor Members
     const members = convertEdgesToObject(membersEdges);
 
-    console.log({ members });
+    // Populate authorized members
     const parseActions = (actions) => {
-      // console.log('parse', { members });
-
       return actions.map((action) => {
         if (action.type === 'updateAuthorizedMembers') {
           return {
@@ -57,8 +50,6 @@ export const useWorkflowInitialElements = (
       data: {
         onEnter: parseActions(onEnter),
         onExit: parseActions(onExit),
-        // onEnter: onEnter,
-        // onExit: onExit,
         statusTemplate: statusTemplates[statusId] },
       position: { x: 0, y: 0 },
     }));
@@ -69,7 +60,6 @@ export const useWorkflowInitialElements = (
       type: 'transition',
       data: {
         conditions: transition.conditions,
-        // actions: transition.actions,
         actions: parseActions(transition.actions),
         event: transition.event,
       },

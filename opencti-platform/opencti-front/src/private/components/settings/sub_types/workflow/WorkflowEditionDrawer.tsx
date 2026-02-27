@@ -7,7 +7,7 @@ import TextField from '../../../../../components/TextField';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../../../../../components/Theme';
-import { Accordion, AccordionDetails, AccordionSummary, Button, IconButton, Tooltip, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Button, IconButton, Typography } from '@mui/material';
 import { Add, DeleteOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import FormButtonContainer from '@common/form/FormButtonContainer';
@@ -15,7 +15,7 @@ import { useReactFlow } from 'reactflow';
 import useAddStatus from './hooks/useAddStatus';
 import useDeleteElement from './hooks/useDeleteElement';
 import StatusTemplateField from '@components/common/form/StatusTemplateField';
-import type { Transition, Status, Action, Condition } from './utils';
+import type { Transition, Status, Action } from './utils';
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import { capitalizeFirstLetter } from '../../../../../utils/String';
 
