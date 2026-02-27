@@ -342,36 +342,10 @@ const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDraw
                     component={TextField}
                     variant="standard"
                     name="event"
-                    label={t_i18n('Event name')}
+                    label={t_i18n('Transition name')}
                     fullWidth
                   />
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Typography variant="h3" sx={{ m: 0 }}>
-                      {t_i18n('Actions')}
-                    </Typography>
-                    <ActionMenuButton onAddObject={onAddObject} setFieldValue={setFieldValue} values={values} type="actions" />
-                  </div>
-                  <FieldArray
-                    name="actions"
-                    render={(arrayHelpers) => (
-                      <>
-                        {values.actions?.map((_, idx: number) => (
-                          <div
-                            key={`action-${idx}`}
-                            style={{ display: 'flex' }}
-                          >
-                            <Field
-                              component={WorkflowFields}
-                              name={`actions[${idx}]`}
-                              index={idx}
-                              prefixLabel="action_"
-                              onDelete={() => arrayHelpers.remove(idx)}
-                            />
-                          </div>
-                        ))}
-                      </>
-                    )}
-                  />
+
                   {/* Conditions */}
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Typography variant="h3" sx={{ m: 0 }}>
@@ -399,6 +373,35 @@ const WorkflowEditionDrawer = ({ selectedElement, onClose }: WorkflowEditionDraw
                               name={`conditions[${idx}]`}
                               index={idx}
                               prefixLabel="condition_"
+                              onDelete={() => arrayHelpers.remove(idx)}
+                            />
+                          </div>
+                        ))}
+                      </>
+                    )}
+                  />
+
+                  {/* Actions */}
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography variant="h3" sx={{ m: 0 }}>
+                      {t_i18n('Actions')}
+                    </Typography>
+                    <ActionMenuButton onAddObject={onAddObject} setFieldValue={setFieldValue} values={values} type="actions" />
+                  </div>
+                  <FieldArray
+                    name="actions"
+                    render={(arrayHelpers) => (
+                      <>
+                        {values.actions?.map((_, idx: number) => (
+                          <div
+                            key={`action-${idx}`}
+                            style={{ display: 'flex' }}
+                          >
+                            <Field
+                              component={WorkflowFields}
+                              name={`actions[${idx}]`}
+                              index={idx}
+                              prefixLabel="action_"
                               onDelete={() => arrayHelpers.remove(idx)}
                             />
                           </div>
