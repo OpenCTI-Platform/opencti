@@ -816,6 +816,15 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
         ... on AIPrompt {
           value
         }
+        ... on IMEI {
+          value
+        }
+        ... on ICCID {
+          value
+        }
+        ... on IMSI {
+          value
+        }
         x_opencti_score
         x_opencti_description
         createdBy {

@@ -413,6 +413,9 @@ enum EntityObservableEnum {
   X509_CERTIFICATE = 'X509-Certificate',
   SSH_KEY = 'SSH-Key',
   AI_PROMPT = 'AI-Prompt',
+  IMEI = 'IMEI',
+  ICCID = 'ICCID',
+  IMSI = 'IMSI',
 }
 
 export const entityObservableDescription = {
@@ -680,6 +683,15 @@ export const entityObservableDescription = {
   },
   [EntityObservableEnum.AI_PROMPT]: {
     description: 'A prompt used to interact with an AI model, relevant for AI-related threat intelligence.',
+  },
+  [EntityObservableEnum.IMEI]: {
+    description: 'An identifier used to identify a specific mobile device.',
+  },
+  [EntityObservableEnum.ICCID]: {
+    description: 'An identifier used to identify a specific SIM card.',
+  },
+  [EntityObservableEnum.IMSI]: {
+    description: 'An identifier used to identify a specific mobile network subscriber.',
   },
 };
 

@@ -66,6 +66,9 @@ class StixCyberObservableTypes(CaseInsensitiveEnum):
     PERSONA = "Persona"
     SSH_KEY = "SSH-Key"
     AI_PROMPT = "AI-Prompt"
+    IMEI = "IMEI"
+    ICCID = "ICCID"
+    IMSI = "IMSI"
 
 
 class IdentityTypes(CaseInsensitiveEnum):
@@ -780,6 +783,106 @@ class CustomObservableAIPrompt:
     Represents an AI prompt cyber observable used in AI-related threat intelligence.
 
     :param value: The AI prompt value (required)
+    :type value: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param object_marking_refs: List of marking definition references
+    :type object_marking_refs: list
+    """
+
+    pass
+
+
+@CustomObservable(
+    "imei",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableIMEI:
+    """IMEI observable.
+
+    Represents an International Mobile Equipment Identity
+    which is a phone serial number.
+
+    Format: 14 digits + 1 check digit, numeric only,
+    (can be 16 for legacy digits total).
+
+    :param value: The IMEI value (required)
+    :type value: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param object_marking_refs: List of marking definition references
+    :type object_marking_refs: list
+    """
+
+    pass
+
+
+@CustomObservable(
+    "iccid",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableICCID:
+    """ICCID observable.
+
+    Represents an unique serial number of a SIM card,
+    printed on the SIM itself.
+
+    Format: up to 19-20 digits, numeric only.
+
+    :param value: The ICCID value (required)
+    :type value: str
+    :param spec_version: STIX specification version, fixed to "2.1"
+    :type spec_version: str
+    :param object_marking_refs: List of marking definition references
+    :type object_marking_refs: list
+    """
+
+    pass
+
+
+@CustomObservable(
+    "imsi",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableIMSI:
+    """IMSI observable.
+
+    Identifies the user as a subscriber in the mobile network.
+
+    Format: usually 15 digits (can be 14-15), numeric only
+    Composed of MCC+MNC+MSIN
+
+    :param value: The IMSI value (required)
     :type value: str
     :param spec_version: STIX specification version, fixed to "2.1"
     :type spec_version: str

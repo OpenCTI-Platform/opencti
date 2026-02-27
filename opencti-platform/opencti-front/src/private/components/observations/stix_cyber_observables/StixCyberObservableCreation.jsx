@@ -109,6 +109,9 @@ const stixCyberObservableMutation = graphql`
     $Persona: PersonaAddInput
     $SSHKey: SSHKeyAddInput
     $AIPrompt: AIPromptAddInput
+    $IMEI: IMEIAddInput
+    $ICCID: ICCIDAddInput
+    $IMSI: IMSIAddInput
   ) {
     stixCyberObservableAdd(
       type: $type
@@ -153,6 +156,9 @@ const stixCyberObservableMutation = graphql`
       Persona: $Persona
       SSHKey: $SSHKey
       AIPrompt: $AIPrompt
+      IMEI: $IMEI
+      ICCID: $ICCID
+      IMSI: $IMSI
     ) {
       id
       draftVersion {
@@ -205,6 +211,9 @@ const BULK_OBSERVABLES = [
   { type: 'Domain-Name', keys: ['value'] },
   { type: 'Email-Addr', keys: ['value'] },
   { type: 'Hostname', keys: ['value'] },
+  { type: 'ICCID', keys: ['value'] },
+  { type: 'IMEI', keys: ['value'] },
+  { type: 'IMSI', keys: ['value'] },
   { type: 'IPv4-Addr', keys: ['value'] },
   { type: 'IPv6-Addr', keys: ['value'] },
   { type: 'Mac-Addr', keys: ['value'] },
@@ -589,6 +598,36 @@ const StixCyberObservableCreation = ({
                   ['hashes_SHA-256', 'hashes_SHA-512'],
                   ['hashes_SHA-256', 'name'],
                   ['hashes_SHA-512', 'name'],
+                ];
+              } else if (status.type === 'IMEI') {
+                const imeiRegex = /^([0-9]{15,16}\n*)+$/i;
+                extraFieldsToValidate = {
+                  [attribute.value]: Yup.string()
+                    .required(t_i18n('This field is required'))
+                    .matches(imeiRegex, t_i18n('IMEI values can only include digits, must be 15 to 16 characters')),
+                };
+                requiredOneOfFields = [
+                  [attribute.value],
+                ];
+              } else if (status.type === 'ICCID') {
+                const iccidRegex = /^([0-9]{18,22}\n*)+$/i;
+                extraFieldsToValidate = {
+                  [attribute.value]: Yup.string()
+                    .required(t_i18n('This field is required'))
+                    .matches(iccidRegex, t_i18n('ICCID values can only include digits, must be 18 to 22 characters')),
+                };
+                requiredOneOfFields = [
+                  [attribute.value],
+                ];
+              } else if (status.type === 'IMSI') {
+                const imsiRegex = /^([0-9]{14,15}\n*)+$/i;
+                extraFieldsToValidate = {
+                  [attribute.value]: Yup.string()
+                    .required(t_i18n('This field is required'))
+                    .matches(imsiRegex, t_i18n('IMSI values can only include digits, must be 14 to 15 characters')),
+                };
+                requiredOneOfFields = [
+                  [attribute.value],
                 ];
               } else if (attribute.value === 'value') {
                 initialValues[attribute.value] = inputValue || '';

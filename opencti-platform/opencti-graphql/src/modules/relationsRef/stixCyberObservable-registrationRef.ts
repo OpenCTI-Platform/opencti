@@ -50,6 +50,9 @@ import {
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
   ENTITY_AI_PROMPT,
   ENTITY_HOSTNAME,
+  ENTITY_ICCID,
+  ENTITY_IMEI,
+  ENTITY_IMSI,
   ENTITY_IPV4_ADDR,
   ENTITY_IPV6_ADDR,
   ENTITY_MAC_ADDR,
@@ -162,3 +165,6 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_WINDOWS_REGISTRY_VALUE_
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE, []);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_SSH_KEY, []);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_AI_PROMPT, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_IMEI, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_ICCID, []);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_IMSI, []);
