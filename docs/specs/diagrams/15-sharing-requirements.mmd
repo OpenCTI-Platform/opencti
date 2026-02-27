@@ -1,0 +1,36 @@
+---
+title: "Partage des entites — Ce qui doit etre partagé pour que ca fonctionne"
+---
+graph TB
+    subgraph RULE["Regle fondamentale de l'org segregation"]
+        RULE_TEXT["Quand platform_organization est defini:\n\n🔒 Toute entite SANS objectOrganization\nest INVISIBLE pour les users hors platform org\n\n→ Il faut explicitement partager chaque entite\navec les orgs clientes via restrictionOrganizationAdd"]
+    end
+
+    subgraph SHARE["Ce qu'il faut partager avec chaque org client"]
+        direction TB
+
+        S1["1️⃣ IntrusionSets\n(Akira → Acme, Kimsuky → TechStart, etc.)"]
+        S2["2️⃣ AttackPatterns\nutilises par ces IntrusionSets\n(78 pour Acme, 150 pour TechStart, 119 pour FinanceGroup)"]
+        S3["3️⃣ SecurityCoverage\n(auto via pushResults → addOrganizationRestriction)"]
+        S4["4️⃣ has-covered relationships\nentre SecurityCoverage et AttackPatterns\n(sinon matrice MITRE vide pour le client)"]
+        S5["5️⃣ SecurityCoverageResult\n(auto a la creation avec organization_id)"]
+        S6["6️⃣ has-covered sur SecurityCoverageResult\n(pour que le client voie la matrice de ses propres resultats)"]
+
+        S1 --> S2 --> S3 --> S4 --> S5 --> S6
+    end
+
+    subgraph MARKINGS["⚠️ Prerequis souvent oublie"]
+        MARK_TEXT["Les Groupes doivent avoir les Markings\nassignes via accesses-to\n\nSans marking → le user ne voit\nAUCUNE entite marquee\n(meme si l'org est correcte)"]
+    end
+
+    subgraph AUTO["Ce qui est automatique"]
+        direction LR
+        A1["✅ pushResults ajoute\nl'org au objectOrganization\nde la SecurityCoverage"]
+        A2["✅ Platform org users\nvoient tout sans partage"]
+        A3["✅ BYPASS users\nvoient tout sans restriction"]
+    end
+
+    style RULE fill:#ffcdd2,stroke:#c62828
+    style SHARE fill:#e3f2fd,stroke:#1565c0
+    style MARKINGS fill:#fff9c4,stroke:#f9a825
+    style AUTO fill:#c8e6c9,stroke:#2e7d32

@@ -1,0 +1,36 @@
+---
+title: "Experience Utilisateur — MSSP Analyst vs Client Analyst"
+---
+graph TB
+    subgraph MSSP_VIEW["👤 analyst@mssp-cybershield.io — MSSP Analyst (Platform Org)"]
+        direction TB
+        M_DESC["Membre de l'org plateforme\n→ Voit TOUTES les entites, TOUS les resultats"]
+
+        M_LIST["📋 Liste Security Coverages\n━━━━━━━━━━━━━━━━━━━━━━━━━\n✅ APT28  (MSSP only)\n✅ Akira  (Acme)\n✅ Kimsuky (TechStart)\n✅ Turla  (FinanceGroup)\n✅ APT29  (partagé)"]
+
+        M_DETAIL["📊 Detail APT29 — Vue Compare\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nMetrique    | MSSP | Acme | Tech | Fin\nPrevention  |  72% |  38% |  55% | 85%\nDetection   |  80% |  50% |  65% | 92%\nVulnerability| 58% |  25% |  35% | 78%\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nToggle: [Single ↔ Compare]"]
+
+        M_MATRIX["🎯 Matrice MITRE\n66 TTPs avec scores P/D\nVue globale toutes orgs"]
+
+        M_LIST --> M_DETAIL --> M_MATRIX
+    end
+
+    subgraph CLIENT_VIEW["👤 analyst@acme-corp.io — Acme Analyst (Org segreguee)"]
+        direction TB
+        C_DESC["Membre d'Acme Corp uniquement\n→ Voit SEULEMENT les entites partagees avec Acme"]
+
+        C_LIST["📋 Liste Security Coverages\n━━━━━━━━━━━━━━━━━━━━━━\n❌ APT28   (invisible)\n✅ Akira   (Acme)\n❌ Kimsuky  (invisible)\n❌ Turla   (invisible)\n✅ APT29   (partagé)"]
+
+        C_DETAIL["📊 Detail APT29 — Vue Single\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\nOrg: Acme Corp\n\nPrevention:     38%\nDetection:      50%\nVulnerability:  25%\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\nPas de toggle Compare\n(voit seulement Acme + MSSP)"]
+
+        C_MATRIX["🎯 Matrice MITRE\n78 TTPs (Akira + APT29)\nScores P/D pour Acme seulement"]
+
+        C_LIST --> C_DETAIL --> C_MATRIX
+    end
+
+    style MSSP_VIEW fill:#e3f2fd,stroke:#1565c0
+    style CLIENT_VIEW fill:#fff3e0,stroke:#e65100
+    style M_DESC fill:#bbdefb,stroke:#1565c0
+    style C_DESC fill:#ffe0b2,stroke:#e65100
+    style M_LIST fill:#e8f5e9,stroke:#2e7d32
+    style C_LIST fill:#fce4ec,stroke:#c62828

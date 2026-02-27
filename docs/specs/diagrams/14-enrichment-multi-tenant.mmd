@@ -1,0 +1,53 @@
+---
+title: "Enrichissement Multi-Tenant — Connecteurs OpenAEV par org"
+---
+sequenceDiagram
+    participant UI as 👤 MSSP Analyst
+    participant Platform as OpenCTI Platform
+    participant RMQ as RabbitMQ
+    participant ConnMSSP as 🔵 Connector OpenAEV<br/>(svc-openaev@mssp)
+    participant ConnAcme as 🟠 Connector OpenAEV<br/>(svc-openaev@acme)
+    participant ConnTech as 🟢 Connector OpenAEV<br/>(svc-openaev@techstart)
+    participant ConnFin as 🟣 Connector OpenAEV<br/>(svc-openaev@financegroup)
+    participant OAEV as OpenAEV API
+
+    Note over UI,Platform: 1. Trigger enrichissement (auto ou clic "Enrich")
+
+    UI->>Platform: Enrichir SecurityCoverage "APT29"
+
+    Note over Platform: findConnectorsForElementEnrichment()<br/>scope: "Security-Coverage"<br/>→ trouve 4 connecteurs (1 par org)
+
+    Platform->>RMQ: Message pour ConnMSSP<br/>{entity: SC_APT29,<br/>connector_org_id: uuid-mssp}
+    Platform->>RMQ: Message pour ConnAcme<br/>{entity: SC_APT29,<br/>connector_org_id: uuid-acme}
+    Platform->>RMQ: Message pour ConnTech<br/>{entity: SC_APT29,<br/>connector_org_id: uuid-techstart}
+    Platform->>RMQ: Message pour ConnFin<br/>{entity: SC_APT29,<br/>connector_org_id: uuid-financegroup}
+
+    Note over ConnMSSP,OAEV: 2. Chaque connecteur evalue sa propre stack securite
+
+    ConnMSSP->>OAEV: Evaluer APT29 TTPs<br/>contre stack MSSP
+    OAEV-->>ConnMSSP: P:72% D:80% V:58%
+
+    ConnAcme->>OAEV: Evaluer APT29 TTPs<br/>contre stack Acme
+    OAEV-->>ConnAcme: P:38% D:50% V:25%
+
+    ConnTech->>OAEV: Evaluer APT29 TTPs<br/>contre stack TechStart
+    OAEV-->>ConnTech: P:55% D:65% V:35%
+
+    ConnFin->>OAEV: Evaluer APT29 TTPs<br/>contre stack FinanceGroup
+    OAEV-->>ConnFin: P:85% D:92% V:78%
+
+    Note over ConnMSSP,Platform: 3. Push resultats — chaque org pousse pour elle-meme
+
+    ConnMSSP->>Platform: securityCoveragePushResults(<br/>id: SC_APT29,<br/>orgId: uuid-mssp,<br/>results: [{P:72},{D:80},{V:58}])
+
+    ConnAcme->>Platform: securityCoveragePushResults(<br/>id: SC_APT29,<br/>orgId: uuid-acme,<br/>results: [{P:38},{D:50},{V:25}])
+
+    ConnTech->>Platform: securityCoveragePushResults(<br/>id: SC_APT29,<br/>orgId: uuid-techstart,<br/>results: [{P:55},{D:65},{V:35}])
+
+    ConnFin->>Platform: securityCoveragePushResults(<br/>id: SC_APT29,<br/>orgId: uuid-financegroup,<br/>results: [{P:85},{D:92},{V:78}])
+
+    Note over Platform: SecurityCoverage "APT29"<br/>coverage_information: [<br/>  {org: MSSP, P:72, D:80, V:58},<br/>  {org: Acme, P:38, D:50, V:25},<br/>  {org: TechStart, P:55, D:65, V:35},<br/>  {org: FinanceGroup, P:85, D:92, V:78}<br/>]
+
+    Note over UI,Platform: 4. Visualisation selon le role
+
+    Platform-->>UI: MSSP Analyst → Vue Compare<br/>4 colonnes, tous les scores

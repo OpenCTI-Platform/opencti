@@ -1,0 +1,56 @@
+---
+title: "Architecture Technique — SecurityCoverage Multi-Org"
+---
+graph TB
+    subgraph DATA_MODEL["Modele de donnees — 1 SecurityCoverage par menace"]
+        direction TB
+
+        IS["🎭 IntrusionSet\nAPT29"]
+        SC["📊 SecurityCoverage\nname: APT29\nobjectCovered → APT29\nobjectOrganization: [MSSP, Acme, Tech, Fin]"]
+
+        IS -->|"object-covered\n(1:1)"| SC
+
+        subgraph CI["coverage_information[] — Resultats par org"]
+            direction LR
+            R1["🔵 MSSP CyberShield\nP:72% D:80% V:58%\nauto_enrichment: true"]
+            R2["🟠 Acme Corp\nP:38% D:50% V:25%\nauto_enrichment: false"]
+            R3["🟢 TechStart\nP:55% D:65% V:35%\nauto_enrichment: false"]
+            R4["🟣 FinanceGroup\nP:85% D:92% V:78%\nauto_enrichment: false"]
+        end
+
+        SC --> CI
+
+        subgraph RESULTS["SecurityCoverageResult[] — 1 par org"]
+            direction LR
+            SCR1["SCR: APT29-MSSP\norg: MSSP CyberShield"]
+            SCR2["SCR: APT29-Acme\norg: Acme Corp"]
+            SCR3["SCR: APT29-Tech\norg: TechStart"]
+            SCR4["SCR: APT29-Fin\norg: FinanceGroup"]
+        end
+
+        SC -->|"objectCoverage\n(1:N)"| RESULTS
+
+        subgraph MITRE["Matrice MITRE — has-covered"]
+            direction LR
+            AP1["T1588.002\nP:62% D:55%"]
+            AP2["T1546.003\nP:94% D:100%"]
+            AP3["... 64 autres\nTTPs"]
+        end
+
+        SC -->|"has-covered\n(66 relations)"| MITRE
+        SCR1 -->|"has-covered\nscores specifiques\npar org"| MITRE
+    end
+
+    style IS fill:#fff9c4,stroke:#f9a825
+    style SC fill:#e3f2fd,stroke:#1565c0
+    style R1 fill:#bbdefb,stroke:#1565c0
+    style R2 fill:#ffe0b2,stroke:#e65100
+    style R3 fill:#c8e6c9,stroke:#2e7d32
+    style R4 fill:#e1bee7,stroke:#6a1b9a
+    style SCR1 fill:#bbdefb,stroke:#1565c0
+    style SCR2 fill:#ffe0b2,stroke:#e65100
+    style SCR3 fill:#c8e6c9,stroke:#2e7d32
+    style SCR4 fill:#e1bee7,stroke:#6a1b9a
+    style CI fill:#f5f5f5,stroke:#9e9e9e
+    style RESULTS fill:#f5f5f5,stroke:#9e9e9e
+    style MITRE fill:#fce4ec,stroke:#c62828

@@ -1,0 +1,57 @@
+---
+title: "Vue d'ensemble — Setup MSSP Multi-Tenant"
+---
+graph TB
+    subgraph PLATFORM["OpenCTI Platform"]
+        direction TB
+        SETTINGS["⚙️ platform_organization = MSSP CyberShield\n(org segregation active)"]
+
+        subgraph ORGS["Organisations"]
+            direction LR
+            MSSP["🏢 MSSP CyberShield\n(Platform Org)\nVoit TOUT"]
+            ACME["🏭 Acme Corp\n(Client A)"]
+            TECH["💻 TechStart\n(Client B)"]
+            FIN["🏦 FinanceGroup\n(Client C)"]
+        end
+
+        subgraph THREATS["Intrusion Sets (MITRE)"]
+            direction LR
+            APT28["APT28\n🔒 MSSP only"]
+            AKIRA["Akira\n🔒 Acme"]
+            KIMSUKY["Kimsuky\n🔒 TechStart"]
+            TURLA["Turla\n🔒 FinanceGroup"]
+            APT29["APT29\n🔓 Partagé\n(4 orgs)"]
+        end
+
+        subgraph COVERAGES["SecurityCoverage (1 par menace)"]
+            direction LR
+            COV_APT28["SC APT28"]
+            COV_AKIRA["SC Akira"]
+            COV_KIMSUKY["SC Kimsuky"]
+            COV_TURLA["SC Turla"]
+            COV_APT29["SC APT29\n4 org results"]
+        end
+    end
+
+    APT28 -.->|objectCovered| COV_APT28
+    AKIRA -.->|objectCovered| COV_AKIRA
+    KIMSUKY -.->|objectCovered| COV_KIMSUKY
+    TURLA -.->|objectCovered| COV_TURLA
+    APT29 -.->|objectCovered| COV_APT29
+
+    COV_APT28 ---|"P:78% D:85%\n(MSSP)"| MSSP
+    COV_AKIRA ---|"P:35% D:48%\n(Acme)"| ACME
+    COV_KIMSUKY ---|"P:50% D:60%\n(TechStart)"| TECH
+    COV_TURLA ---|"P:88% D:95%\n(FinanceGroup)"| FIN
+    COV_APT29 ---|"Résultats\npar org"| MSSP
+    COV_APT29 ---|"Résultats\npar org"| ACME
+    COV_APT29 ---|"Résultats\npar org"| TECH
+    COV_APT29 ---|"Résultats\npar org"| FIN
+
+    style MSSP fill:#1565c0,stroke:#0d47a1,color:#fff
+    style ACME fill:#e65100,stroke:#bf360c,color:#fff
+    style TECH fill:#2e7d32,stroke:#1b5e20,color:#fff
+    style FIN fill:#6a1b9a,stroke:#4a148c,color:#fff
+    style APT29 fill:#fff9c4,stroke:#f9a825
+    style SETTINGS fill:#e3f2fd,stroke:#1565c0
+    style PLATFORM fill:#fafafa,stroke:#616161
