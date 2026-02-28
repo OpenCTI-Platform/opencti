@@ -11,7 +11,7 @@ services:
   elasticsearch:
     container_name: elasticsearch
     profiles: ["backend"]
-    image: elasticsearch:8.19.11
+    image: elasticsearch:9.3.0
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
