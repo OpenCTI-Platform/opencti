@@ -1,3 +1,5 @@
+import { assertType } from '../../../utils/type-utils';
+import type { AttachmentProcessorExtractedProp } from '../../../database/attachment-processor-props';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { type AttributeDefinition, createdAt, creators, entityType, id, internalId, parentTypes, refreshedAt, standardId, updatedAt } from '../../../schema/attribute-definition';
@@ -5,7 +7,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../../schema/general';
 import { UPLOAD_STATUS_VALUES } from './document-domain';
 
-const attributes: Array<AttributeDefinition> = [
+const attributes = [
   id,
   internalId,
   standardId,
@@ -93,6 +95,17 @@ const attributes: Array<AttributeDefinition> = [
   { name: 'file_id', label: 'File identifier', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'entity_id', label: 'Related entity', type: 'string', format: 'id', entityTypes: [ABSTRACT_STIX_CORE_OBJECT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'removed', label: 'Removed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-];
+] as const satisfies Array<AttributeDefinition>;
+
+const attachmentAttributes = attributes[18];
+
+type AttachmentAttributeMappingNames = typeof attachmentAttributes.mappings[number]['name'][];
+
+// Make sure there's an attachment mapping for each field extracted
+// by the `attachment` ingest processor, exhaustively.
+assertType<
+  AttachmentAttributeMappingNames,
+  AttachmentProcessorExtractedProp[]
+>(attachmentAttributes.mappings.map(({ name }) => name));
 
 schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_INTERNAL_FILE, attributes);

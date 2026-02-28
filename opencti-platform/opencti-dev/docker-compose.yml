@@ -53,7 +53,7 @@ services:
       - 1080:1080
 
   # Disabled by default, to run use:
-  # docker compose --profile opensearch up -d
+  # podman compose --profile opensearch up -d
   # in opencti configuration:
   # "elasticsearch": {
   #     "url": "http://localhost:9201",
@@ -62,7 +62,7 @@ services:
   opencti-dev-opensearch:
     profiles: [ opensearch ]
     container_name: opencti-dev-opensearch
-    image: opensearchproject/opensearch:3.5.0
+    build: ./opensearch
     volumes:
       - osdata:/usr/share/opensearch/data
       - ossnapshots:/usr/share/opensearch/snapshots

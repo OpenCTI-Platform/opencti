@@ -99,6 +99,11 @@ describe('Indexing file test', () => {
     const result = await indexFile('test-file-to-index.html', mimeType, 'TEST_FILE_7');
     await testFileIndexing(result, mimeType);
   });
+  it('Should index file with metadata unsupported by the attachment processor config', async () => {
+    const mimeType = 'application/pdf';
+    const result = await indexFile('test-report-with-unhandled-metadata-to-index.pdf', mimeType, 'TEST_FILE_8');
+    await testFileIndexing(result, mimeType);
+  });
   it('Should find document by search query', async () => {
     const expectedFile1 = {
       _index: 'test_files-000001',

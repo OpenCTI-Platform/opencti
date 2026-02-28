@@ -176,6 +176,7 @@ import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { asyncMap } from '../utils/data-processing';
 import { doYield } from '../utils/eventloop-utils';
+import type { Mutable } from '../utils/type-utils';
 import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
@@ -197,6 +198,7 @@ import { IDS_ATTRIBUTES } from '../domain/attribute-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import type { FiltersWithNested } from './middleware-loader';
 import { pushAll, unshiftAll } from '../utils/arrayUtil';
+import { ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_ELASTICSEARCH, ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_OPENSEARCH } from './attachment-processor-props';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -309,6 +311,7 @@ export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
           attachment: {
             field: 'file_data',
             remove_binary: true,
+            properties: ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_ELASTICSEARCH as Mutable<typeof ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_ELASTICSEARCH>,
           },
         },
       ],
@@ -325,6 +328,7 @@ export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
           {
             attachment: {
               field: 'file_data',
+              properties: ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_OPENSEARCH as Mutable<typeof ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_OPENSEARCH>,
             },
           },
           {
@@ -2717,11 +2721,11 @@ const buildSubQueryForFilterGroup = (
 
   const currentSubQuery = localMustFilters.length > 0
     ? {
-        bool: {
-          should: localMustFilters,
-          minimum_should_match: mode === 'or' ? 1 : localMustFilters.length,
-        },
-      }
+      bool: {
+        should: localMustFilters,
+        minimum_should_match: mode === 'or' ? 1 : localMustFilters.length,
+      },
+    }
     : null;
   return { subQuery: currentSubQuery, postFiltersTags: localPostFilterTags, resultSaltCount: localSaltCount };
 };
@@ -3094,12 +3098,12 @@ const tagFiltersForPostFiltering = (
 ) => {
   const taggedFilters: (Filter & { postFilteringTag: string })[] = filters
     ? extractFiltersFromGroup(filters, [INSTANCE_REGARDING_OF, INSTANCE_DYNAMIC_REGARDING_OF])
-        .filter((filter) => isEmptyField(filter.operator) || filter.operator === 'eq')
-        .map((filter, i) => {
-          const taggedFilter = filter as Filter & { postFilteringTag: string };
-          taggedFilter.postFilteringTag = `${i}`;
-          return taggedFilter;
-        })
+      .filter((filter) => isEmptyField(filter.operator) || filter.operator === 'eq')
+      .map((filter, i) => {
+        const taggedFilter = filter as Filter & { postFilteringTag: string };
+        taggedFilter.postFilteringTag = `${i}`;
+        return taggedFilter;
+      })
     : [];
 
   if (taggedFilters.length > 0) {
