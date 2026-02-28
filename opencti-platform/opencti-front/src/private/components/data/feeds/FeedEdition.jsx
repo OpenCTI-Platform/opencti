@@ -20,6 +20,9 @@ import { InformationOutline } from 'mdi-material-ui';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
 import Drawer from '../../common/drawer/Drawer';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
@@ -43,6 +46,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useAttributes from '../../../../utils/hooks/useAttributes';
+import useAuth from '../../../../utils/hooks/useAuth';
 import { useTheme } from '@mui/material/styles';
 
 const styles = (theme) => ({
@@ -154,6 +158,30 @@ const FeedEditionContainer = (props) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const { ignoredAttributesInFeeds } = useAttributes();
+  const { schema } = useAuth();
+
+  const getRelationshipTypesForEntity = (entityType) => {
+    const relTypes = new Set();
+    schema.schemaRelationsTypesMapping.forEach((values, key) => {
+      if (key.startsWith(`${entityType}_`) || key.endsWith(`_${entityType}`)) {
+        values.forEach((v) => relTypes.add(v));
+      }
+    });
+    relTypes.add('related-to');
+    return Array.from(relTypes).sort();
+  };
+
+  const getTargetTypesForRelationship = (entityType, relType) => {
+    const targets = new Set();
+    schema.schemaRelationsTypesMapping.forEach((values, key) => {
+      if (values.includes(relType) || relType === 'related-to') {
+        const [from, to] = key.split('_');
+        if (from === entityType) targets.add(to);
+        if (to === entityType) targets.add(from);
+      }
+    });
+    return Array.from(targets).sort();
+  };
   const [selectedTypes, setSelectedTypes] = useState(feed.feed_types);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(feed.filters));
   const [feedAttributes, setFeedAttributes] = useState({
@@ -187,7 +215,14 @@ const FeedEditionContainer = (props) => {
   const onSubmit = (values, { setSubmitting, resetForm }) => {
     const finalFeedAttributes = R.values(feedAttributes).map((n) => ({
       attribute: n.attribute,
-      mappings: R.values(n.mappings),
+      multi_match_strategy: n.multi_match_strategy ?? undefined,
+      multi_match_separator: n.multi_match_separator ?? undefined,
+      mappings: R.values(n.mappings).map((m) => ({
+        type: m.type,
+        attribute: m.attribute,
+        relationship_type: m.relationship_type ?? undefined,
+        target_entity_type: m.target_entity_type ?? undefined,
+      })),
     }));
     const finalValues = R.pipe(
       R.assoc('rolling_time', parseInt(values.rolling_time, 10)),
@@ -233,15 +268,16 @@ const FeedEditionContainer = (props) => {
         || !feedAttribute.attribute
         || !feedAttribute.mappings
         || R.values(feedAttribute.mappings).length !== selectedTypes.length
-        || R.values(feedAttribute.mappings).filter(
-          (m) => !m.attribute
-            || !m.type
-            || m.attribute.length === 0
-            || m.type.length === 0,
-        ).length > 0
       ) {
         return false;
       }
+      const invalidMappings = R.values(feedAttribute.mappings).filter((m) => {
+        if (!m.type || m.type.length === 0 || !m.attribute || m.attribute.length === 0) return true;
+        if (m.relationship_type && !m.target_entity_type) return true;
+        if (!m.relationship_type && m.target_entity_type) return true;
+        return false;
+      });
+      if (invalidMappings.length > 0) return false;
     }
     return true;
   };
@@ -261,7 +297,8 @@ const FeedEditionContainer = (props) => {
   };
 
   const handleChangeAttributeMapping = (i, type, value) => {
-    const mapping = { type, attribute: value };
+    const existingMapping = feedAttributes[i]?.mappings?.[type] || {};
+    const mapping = { ...existingMapping, type, attribute: value };
     const newFeedAttributeMapping = R.assoc(
       type,
       mapping,
@@ -272,6 +309,61 @@ const FeedEditionContainer = (props) => {
       newFeedAttributeMapping,
       feedAttributes[i],
     );
+    setFeedAttributes(R.assoc(i, newFeedAttribute, feedAttributes));
+  };
+
+  const handleToggleNeighborMode = (i, type) => {
+    const existingMapping = feedAttributes[i]?.mappings?.[type] || {};
+    const isNeighbor = 'relationship_type' in existingMapping;
+    let mapping;
+    if (isNeighbor) {
+      mapping = { type, attribute: '' };
+    } else {
+      mapping = { type, attribute: '', relationship_type: '', target_entity_type: '' };
+    }
+    const newFeedAttributeMapping = R.assoc(
+      type,
+      mapping,
+      feedAttributes[i].mappings || {},
+    );
+    const newFeedAttribute = R.assoc(
+      'mappings',
+      newFeedAttributeMapping,
+      feedAttributes[i],
+    );
+    setFeedAttributes(R.assoc(i, newFeedAttribute, feedAttributes));
+  };
+
+  const handleChangeNeighborMapping = (i, type, field, value) => {
+    const existingMapping = feedAttributes[i]?.mappings?.[type] || { type };
+    const mapping = { ...existingMapping, [field]: value };
+    if (field === 'relationship_type') {
+      mapping.target_entity_type = '';
+      mapping.attribute = '';
+    }
+    if (field === 'target_entity_type') {
+      mapping.attribute = '';
+    }
+    const newFeedAttributeMapping = R.assoc(
+      type,
+      mapping,
+      feedAttributes[i].mappings || {},
+    );
+    const newFeedAttribute = R.assoc(
+      'mappings',
+      newFeedAttributeMapping,
+      feedAttributes[i],
+    );
+    setFeedAttributes(R.assoc(i, newFeedAttribute, feedAttributes));
+  };
+
+  const handleChangeMultiMatchStrategy = (i, value) => {
+    const newFeedAttribute = R.assoc('multi_match_strategy', value, feedAttributes[i]);
+    setFeedAttributes(R.assoc(i, newFeedAttribute, feedAttributes));
+  };
+
+  const handleChangeMultiMatchSeparator = (i, value) => {
+    const newFeedAttribute = R.assoc('multi_match_separator', value, feedAttributes[i]);
     setFeedAttributes(R.assoc(i, newFeedAttribute, feedAttributes));
   };
 
@@ -468,118 +560,192 @@ const FeedEditionContainer = (props) => {
                     />
                     {selectedTypes.length > 0 && (
                       <div className={classes.container} style={{ marginTop: 20 }}>
-                        {Object.keys(feedAttributes).map((i) => (
-                          <div key={i} className={classes.step}>
-                            <IconButton
-                              disabled={feedAttributes.length === 1}
-                              aria-label="Delete"
-                              className={classes.stepCloseButton}
-                              onClick={() => handleRemoveAttribute(i)}
-                            >
-                              <CancelOutlined fontSize="small" />
-                            </IconButton>
-                            <Grid container={true} spacing={3}>
-                              <Grid item xs="auto">
-                                <MuiTextField
-                                  variant="standard"
-                                  name="attribute"
-                                  label={t_i18n('Column')}
-                                  fullWidth={true}
-                                  value={feedAttributes[i].attribute}
-                                  onChange={(event) => handleChangeField(i, event.target.value)
-                                  }
-                                />
-                              </Grid>
-                              {selectedTypes.map((selectedType) => (
-                                <Grid
-                                  key={selectedType}
-                                  item
-                                  xs="auto"
-                                >
-                                  <FormControl
-                                    className={classes.formControl}
-                                  >
-                                    <InputLabel>
-                                      {t_i18n(`entity_${selectedType}`)}
-                                    </InputLabel>
-                                    <QueryRenderer
-                                      query={
-                                        stixCyberObservablesLinesAttributesQuery
-                                      }
-                                      variables={{
-                                        elementType: [selectedType],
-                                      }}
-                                      render={({ props: resultProps }) => {
-                                        if (
-                                          resultProps
-                                          && resultProps.schemaAttributeNames
-                                        ) {
-                                          let attributes = R.pipe(
-                                            R.map((n) => n.node),
-                                            R.filter(
-                                              (n) => !R.includes(
-                                                n.value,
-                                                ignoredAttributesInFeeds,
-                                              )
-                                              && !n.value.startsWith('i_'),
-                                            ),
-                                          )(
-                                            resultProps.schemaAttributeNames.edges,
-                                          );
-                                          if (
-                                            attributes.filter(
-                                              (n) => n.value === 'hashes',
-                                            ).length > 0
-                                          ) {
-                                            attributes = R.sortBy(
-                                              R.prop('value'),
-                                              [
-                                                ...attributes,
-                                                { value: 'hashes.MD5' },
-                                                { value: 'hashes.SHA-1' },
-                                                { value: 'hashes.SHA-256' },
-                                                { value: 'hashes.SHA-512' },
-                                              ].filter(
-                                                (n) => n.value !== 'hashes',
-                                              ),
-                                            );
-                                          }
-                                          return (
-                                            <Select
-                                              style={{ width: 150 }}
-                                              value={
-                                                feedAttributes[i]?.mappings
-                                                && feedAttributes[i].mappings[
-                                                  selectedType
-                                                ]?.attribute
+                        {Object.keys(feedAttributes).map((i) => {
+                          const hasNeighborMapping = R.values(feedAttributes[i]?.mappings || {}).some(
+                            (m) => !!m?.relationship_type,
+                          );
+                          return (
+                            <div key={i} className={classes.step}>
+                              <IconButton
+                                disabled={feedAttributes.length === 1}
+                                aria-label="Delete"
+                                className={classes.stepCloseButton}
+                                onClick={() => handleRemoveAttribute(i)}
+                              >
+                                <CancelOutlined fontSize="small" />
+                              </IconButton>
+                              <Box sx={{ width: '100%' }}>
+                                <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', mb: 2 }}>
+                                  <MuiTextField
+                                    variant="standard"
+                                    name="attribute"
+                                    label={t_i18n('Column name')}
+                                    fullWidth={true}
+                                    value={feedAttributes[i].attribute || ''}
+                                    onChange={(event) => handleChangeField(i, event.target.value)}
+                                    sx={{ flex: 1 }}
+                                  />
+                                  {hasNeighborMapping && (
+                                    <>
+                                      <FormControl variant="standard" sx={{ minWidth: 140 }}>
+                                        <InputLabel>{t_i18n('Multi-match')}</InputLabel>
+                                        <Select
+                                          value={feedAttributes[i]?.multi_match_strategy || 'list'}
+                                          onChange={(event) => handleChangeMultiMatchStrategy(i, event.target.value)}
+                                        >
+                                          <MenuItem value="list">{t_i18n('All (list)')}</MenuItem>
+                                          <MenuItem value="first">{t_i18n('First match')}</MenuItem>
+                                        </Select>
+                                      </FormControl>
+                                      {(feedAttributes[i]?.multi_match_strategy || 'list') === 'list' && (
+                                        <MuiTextField
+                                          variant="standard"
+                                          label={t_i18n('List separator')}
+                                          value={feedAttributes[i]?.multi_match_separator ?? ','}
+                                          onChange={(event) => handleChangeMultiMatchSeparator(i, event.target.value)}
+                                          sx={{ width: 100 }}
+                                          inputProps={{ maxLength: 3 }}
+                                        />
+                                      )}
+                                    </>
+                                  )}
+                                </Box>
+                                {selectedTypes.map((selectedType, typeIndex) => {
+                                  const currentMapping = feedAttributes[i]?.mappings?.[selectedType];
+                                  const isNeighborMode = !!currentMapping?.relationship_type || currentMapping?.relationship_type === '';
+                                  return (
+                                    <Box key={selectedType}>
+                                      {typeIndex > 0 && <Divider sx={{ my: 1.5 }} />}
+                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                          {t_i18n(`entity_${selectedType}`)}
+                                        </Typography>
+                                        <Chip
+                                          label={isNeighborMode ? t_i18n('Relationship') : t_i18n('Direct')}
+                                          size="small"
+                                          color={isNeighborMode ? 'secondary' : 'default'}
+                                          variant="outlined"
+                                          onClick={() => handleToggleNeighborMode(i, selectedType)}
+                                          sx={{ cursor: 'pointer', fontSize: '0.75rem', height: 22 }}
+                                        />
+                                      </Box>
+                                      {isNeighborMode ? (
+                                        <Grid container spacing={2}>
+                                          <Grid item xs={4}>
+                                            <FormControl variant="standard" fullWidth>
+                                              <InputLabel>{t_i18n('Relationship type')}</InputLabel>
+                                              <Select
+                                                value={currentMapping?.relationship_type || ''}
+                                                onChange={(event) => handleChangeNeighborMapping(i, selectedType, 'relationship_type', event.target.value)}
+                                              >
+                                                {getRelationshipTypesForEntity(selectedType).map((rt) => (
+                                                  <MenuItem key={rt} value={rt}>
+                                                    {t_i18n(`relationship_${rt}`)}
+                                                  </MenuItem>
+                                                ))}
+                                              </Select>
+                                            </FormControl>
+                                          </Grid>
+                                          <Grid item xs={4}>
+                                            <FormControl variant="standard" fullWidth disabled={!currentMapping?.relationship_type}>
+                                              <InputLabel>{t_i18n('Target type')}</InputLabel>
+                                              <Select
+                                                value={currentMapping?.target_entity_type || ''}
+                                                onChange={(event) => handleChangeNeighborMapping(i, selectedType, 'target_entity_type', event.target.value)}
+                                              >
+                                                {currentMapping?.relationship_type
+                                                  && getTargetTypesForRelationship(selectedType, currentMapping.relationship_type).map((tt) => (
+                                                    <MenuItem key={tt} value={tt}>
+                                                      {t_i18n(`entity_${tt}`)}
+                                                    </MenuItem>
+                                                  ))}
+                                              </Select>
+                                            </FormControl>
+                                          </Grid>
+                                          <Grid item xs={4}>
+                                            <FormControl variant="standard" fullWidth disabled={!currentMapping?.target_entity_type}>
+                                              <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                                              {currentMapping?.target_entity_type ? (
+                                                <QueryRenderer
+                                                  query={stixCyberObservablesLinesAttributesQuery}
+                                                  variables={{ elementType: [currentMapping.target_entity_type] }}
+                                                  render={({ props: resultProps }) => {
+                                                    if (resultProps?.schemaAttributeNames) {
+                                                      let attributes = R.pipe(
+                                                        R.map((n) => n.node),
+                                                        R.filter((n) => !R.includes(n.value, ignoredAttributesInFeeds) && !n.value.startsWith('i_')),
+                                                      )(resultProps.schemaAttributeNames.edges);
+                                                      if (attributes.some((n) => n.value === 'hashes')) {
+                                                        attributes = R.sortBy(R.prop('value'), [
+                                                          ...attributes,
+                                                          { value: 'hashes.MD5' },
+                                                          { value: 'hashes.SHA-1' },
+                                                          { value: 'hashes.SHA-256' },
+                                                          { value: 'hashes.SHA-512' },
+                                                        ].filter((n) => n.value !== 'hashes'));
+                                                      }
+                                                      return (
+                                                        <Select
+                                                          value={currentMapping?.attribute || ''}
+                                                          onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value)}
+                                                        >
+                                                          {attributes.map((attr) => (
+                                                            <MenuItem key={attr.value} value={attr.value}>{attr.value}</MenuItem>
+                                                          ))}
+                                                        </Select>
+                                                      );
+                                                    }
+                                                    return <Select disabled value="" />;
+                                                  }}
+                                                />
+                                              ) : <Select disabled value="" />}
+                                            </FormControl>
+                                          </Grid>
+                                        </Grid>
+                                      ) : (
+                                        <FormControl variant="standard" fullWidth>
+                                          <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                                          <QueryRenderer
+                                            query={stixCyberObservablesLinesAttributesQuery}
+                                            variables={{ elementType: [selectedType] }}
+                                            render={({ props: resultProps }) => {
+                                              if (resultProps?.schemaAttributeNames) {
+                                                let attributes = R.pipe(
+                                                  R.map((n) => n.node),
+                                                  R.filter((n) => !R.includes(n.value, ignoredAttributesInFeeds) && !n.value.startsWith('i_')),
+                                                )(resultProps.schemaAttributeNames.edges);
+                                                if (attributes.some((n) => n.value === 'hashes')) {
+                                                  attributes = R.sortBy(R.prop('value'), [
+                                                    ...attributes,
+                                                    { value: 'hashes.MD5' },
+                                                    { value: 'hashes.SHA-1' },
+                                                    { value: 'hashes.SHA-256' },
+                                                    { value: 'hashes.SHA-512' },
+                                                  ].filter((n) => n.value !== 'hashes'));
+                                                }
+                                                return (
+                                                  <Select
+                                                    value={currentMapping?.attribute || ''}
+                                                    onChange={(event) => handleChangeAttributeMapping(i, selectedType, event.target.value)}
+                                                  >
+                                                    {attributes.map((attr) => (
+                                                      <MenuItem key={attr.value} value={attr.value}>{attr.value}</MenuItem>
+                                                    ))}
+                                                  </Select>
+                                                );
                                               }
-                                              onChange={(event) => handleChangeAttributeMapping(
-                                                i,
-                                                selectedType,
-                                                event.target.value,
-                                              )
-                                              }
-                                            >
-                                              {attributes.map((attribute) => (
-                                                <MenuItem
-                                                  key={attribute.value}
-                                                  value={attribute.value}
-                                                >
-                                                  {attribute.value}
-                                                </MenuItem>
-                                              ))}
-                                            </Select>
-                                          );
-                                        }
-                                        return <div />;
-                                      }}
-                                    />
-                                  </FormControl>
-                                </Grid>
-                              ))}
-                            </Grid>
-                          </div>
-                        ))}
+                                              return <Select disabled value="" />;
+                                            }}
+                                          />
+                                        </FormControl>
+                                      )}
+                                    </Box>
+                                  );
+                                })}
+                              </Box>
+                            </div>
+                          );
+                        })}
                         <div className={classes.add}>
                           <IconButton
                             disabled={selectedTypes.length === 0}
@@ -644,9 +810,13 @@ const FeedEditionFragment = createFragmentContainer(FeedEditionContainer, {
       separator
       feed_attributes {
         attribute
+        multi_match_strategy
+        multi_match_separator
         mappings {
           type
           attribute
+          relationship_type
+          target_entity_type
         }
       }
       feed_public

@@ -14,6 +14,8 @@ import { publishUserAction } from '../listener/UserActionListener';
 import { isUserHasCapability, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
 import { TAXIIAPI } from './user';
 
+const VALID_MULTI_MATCH_STRATEGIES = ['first', 'list'];
+
 const checkFeedIntegrity = (input: FeedAddInput) => {
   if (input.separator.length > 1) {
     throw ValidationError('Separator must be only one char', 'separator');
@@ -25,6 +27,15 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
       throw UnsupportedError(`${feedType} is not supported in http feeds`);
     }
     input.feed_attributes.forEach((f) => {
+      if (f.multi_match_strategy && !VALID_MULTI_MATCH_STRATEGIES.includes(f.multi_match_strategy)) {
+        throw ValidationError(`Invalid multi_match_strategy "${f.multi_match_strategy}", must be "first" or "list"`, 'multi_match_strategy');
+      }
+      if (f.multi_match_separator && f.multi_match_separator === input.separator) {
+        throw ValidationError(
+          `Multi-match separator for column "${f.attribute}" must differ from the feed CSV separator ("${input.separator}")`,
+          'multi_match_separator',
+        );
+      }
       if (f.mappings.length !== input.feed_types.length) {
         throw UnsupportedError('Feed mappings length does not match global types length');
       }
@@ -34,6 +45,16 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
       if (f.mappings.filter((m) => !input.feed_types.includes(m.type)).length > 0) {
         throw UnsupportedError(`The attribute ${f.attribute} contains an invalid mapping.`);
       }
+      f.mappings.forEach((m) => {
+        const hasRelType = !!m.relationship_type;
+        const hasTargetType = !!m.target_entity_type;
+        if (hasRelType !== hasTargetType) {
+          throw ValidationError(
+            `Mapping for type "${m.type}" in attribute "${f.attribute}": relationship_type and target_entity_type must both be set or both be absent`,
+            'feed_attributes',
+          );
+        }
+      });
     });
   }
 };

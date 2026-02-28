@@ -608,11 +608,15 @@ enum TaxiiCollectionOrdering {
 type FeedMapping {
   type: String!
   attribute: String!
+  relationship_type: String
+  target_entity_type: String
 }
 
 type FeedAttribute {
   attribute: String!
   mappings: [FeedMapping!]!
+  multi_match_strategy: String
+  multi_match_separator: String
 }
 
 type Feed {
@@ -634,11 +638,15 @@ type Feed {
 input FeedMappingInput {
   type: String!
   attribute: String!
+  relationship_type: String
+  target_entity_type: String
 }
 
 input FeedAttributeMappingInput {
   attribute: String!
   mappings: [FeedMappingInput!]!
+  multi_match_strategy: String
+  multi_match_separator: String
 }
 
 input FeedAddInput {

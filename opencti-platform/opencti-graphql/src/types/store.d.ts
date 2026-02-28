@@ -481,9 +481,13 @@ interface BasicStoreEntityFeed extends BasicStoreEntity {
   feed_date_attribute: string;
   feed_attributes: Array<{
     attribute: string;
+    multi_match_strategy?: string;
+    multi_match_separator?: string;
     mappings: [{
       type: string;
       attribute: string;
+      relationship_type?: string;
+      target_entity_type?: string;
     }];
   }>;
   restricted_members: Array<AuthorizedMember>;
