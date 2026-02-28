@@ -2,9 +2,75 @@ services:
   opencti-dev-redis:
     container_name: opencti-dev-redis
     image: redis:8.6.0
+    command: >
+      redis-server
+      --bind 0.0.0.0
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --cluster-announce-ip host.docker.internal
+      --cluster-announce-port 6379
+      --cluster-announce-bus-port 16379
     restart: unless-stopped
     ports:
       - 6379:6379
+      - 16379:16379
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  opencti-dev-redis-2:
+    container_name: opencti-dev-redis-2
+    image: redis:8.6.0
+    command: >
+      redis-server
+      --bind 0.0.0.0
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --cluster-announce-ip host.docker.internal
+      --cluster-announce-port 6380
+      --cluster-announce-bus-port 16380
+    restart: unless-stopped
+    ports:
+      - 6380:6379
+      - 16380:16379
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  opencti-dev-redis-3:
+    container_name: opencti-dev-redis-3
+    image: redis:8.6.0
+    command: >
+      redis-server
+      --bind 0.0.0.0
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --cluster-announce-ip host.docker.internal
+      --cluster-announce-port 6381
+      --cluster-announce-bus-port 16381
+    restart: unless-stopped
+    ports:
+      - 6381:6379
+      - 16381:16379
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  opencti-dev-redis-cluster-init:
+    container_name: opencti-dev-redis-cluster-init
+    image: redis:8.6.0
+    command: >
+      sh -c "
+        echo 'Waiting for Redis nodes...';
+        until redis-cli -h opencti-dev-redis ping 2>/dev/null; do sleep 1; done;
+        until redis-cli -h opencti-dev-redis-2 ping 2>/dev/null; do sleep 1; done;
+        until redis-cli -h opencti-dev-redis-3 ping 2>/dev/null; do sleep 1; done;
+        sleep 2;
+        redis-cli --cluster create opencti-dev-redis:6379 opencti-dev-redis-2:6379 opencti-dev-redis-3:6379 --cluster-yes;
+        echo 'Cluster created.';
+      "
+    depends_on:
+      - opencti-dev-redis
+      - opencti-dev-redis-2
+      - opencti-dev-redis-3
+    restart: "no"
   opencti-dev-redis-insight:
     container_name: opencti-dev-redis-insight
     image: redislabs/redisinsight:latest
