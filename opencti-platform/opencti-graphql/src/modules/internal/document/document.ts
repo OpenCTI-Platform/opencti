@@ -1,58 +1,13 @@
+import { assertType } from '../../../utils/type-utils';
 import type { AttachmentProcessorExtractedProp } from '../../../database/attachment-processor-props';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
-import {
-  type AttributeDefinition,
-  createdAt,
-  creators,
-  entityType,
-  id,
-  internalId,
-  parentTypes,
-  refreshedAt,
-  standardId,
-  updatedAt,
-  type MappingDefinition,
-  type BasicStoreAttribute,
-} from '../../../schema/attribute-definition';
+import { type AttributeDefinition, createdAt, creators, entityType, id, internalId, parentTypes, refreshedAt, standardId, updatedAt } from '../../../schema/attribute-definition';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../../schema/general';
 import { UPLOAD_STATUS_VALUES } from './document-domain';
 
-export const ATTACHMENT_MAPPINGS = [
-  { name: 'author', label: 'Author', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'comments', label: 'Comments', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'content', label: 'Content', type: 'string', format: 'text', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'content_length', label: 'Content length', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'content_type', label: 'Content type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'creator_tool', label: 'Creator tool', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'date', label: 'Created date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'format', label: 'Format', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'keywords', label: 'Keywords', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'language', label: 'Language', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'metadata_date', label: 'Metadata date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'modified', label: 'Modified date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'modifier', label: 'Modifier', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'print_date', label: 'Print date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-  { name: 'title', label: 'Title', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-] satisfies ({
-  name: AttachmentProcessorExtractedProp;
-} & MappingDefinition<BasicStoreAttribute>)[];
-
-// Compile-time shenanigans to make sure we don't forget to update
-// ATTACHMENT_MAPPINGS when/if we start extracting new fields
-// via the ES/OS attachment ingest pipeline.
-type AttachmentMappingsWithCheck = Exclude<
-  AttachmentProcessorExtractedProp,
-  typeof ATTACHMENT_MAPPINGS[number]['name']
-> extends never
-  ? MappingDefinition<BasicStoreAttribute>[]
-  : 'Make sure ATTACHMENT_MAPPINGS defines one mapping for each AttachmentProcessorExtractedProp';
-
-const TYPE_CHECKED_ATTACHMENT_MAPPINGS: AttachmentMappingsWithCheck = ATTACHMENT_MAPPINGS;
-
-const attributes: Array<AttributeDefinition> = [
+const attributes = [
   id,
   internalId,
   standardId,
@@ -117,12 +72,40 @@ const attributes: Array<AttributeDefinition> = [
     multiple: false,
     upsert: false,
     isFilterable: false,
-    mappings: TYPE_CHECKED_ATTACHMENT_MAPPINGS,
+    mappings: [
+      { name: 'author', label: 'Author', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'comments', label: 'Comments', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'content', label: 'Content', type: 'string', format: 'text', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'content_length', label: 'Content length', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'content_type', label: 'Content type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'creator_tool', label: 'Creator tool', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'date', label: 'Created date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'format', label: 'Format', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'keywords', label: 'Keywords', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'language', label: 'Language', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'metadata_date', label: 'Metadata date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'modified', label: 'Modified date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'modifier', label: 'Modifier', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'print_date', label: 'Print date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+      { name: 'title', label: 'Title', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    ],
   },
   { name: 'uploaded_at', label: 'Upload date', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'file_id', label: 'File identifier', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'entity_id', label: 'Related entity', type: 'string', format: 'id', entityTypes: [ABSTRACT_STIX_CORE_OBJECT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'removed', label: 'Removed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-];
+] as const satisfies Array<AttributeDefinition>;
+
+const attachmentAttributes = attributes[18];
+
+type AttachmentAttributeMappingNames = typeof attachmentAttributes.mappings[number]['name'][];
+
+// Make sure there's an attachment mapping for each field extracted
+// by the `attachment` ingest processor, exhaustively.
+assertType<
+  AttachmentAttributeMappingNames,
+  AttachmentProcessorExtractedProp[]
+>(attachmentAttributes.mappings.map(({ name }) => name));
 
 schemaAttributesDefinition.registerAttributes(ENTITY_TYPE_INTERNAL_FILE, attributes);

@@ -1,4 +1,4 @@
-import type { Mutable } from '../types/type-utils';
+import type { Mutable } from '../utils/type-utils';
 
 // List of fields extracted by the attachment ingest processor.
 // The full list is available in the Elasticsearch docs:
