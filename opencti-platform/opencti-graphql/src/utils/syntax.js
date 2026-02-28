@@ -131,7 +131,12 @@ export const cleanupIndicatorPattern = (patternType, pattern) => {
     const patternContext = parsedPattern.getChild(0);
     const patternTokens = [];
     grabInterestingTokens(patternContext, parser, patternTokens);
-    return patternTokens.join('').trim();
+    const cleaned = patternTokens.join('').trim();
+    // Normalize hash values to lowercase for consistent deduplication.
+    // Hash values are case-insensitive (e.g. MD5, SHA-256), so 'd41d8cd9...' and 'D41D8CD9...' must produce the same pattern.
+    // This handles both unquoted (hashes.MD5) and quoted (hashes.'SHA-256') hash type formats.
+    return cleaned.replace(/(hashes(?:\.[a-zA-Z0-9_-]+|\.'[^']+')\s*(?:!=|=)\s*')([a-fA-F0-9]+)(')/g,
+      (_, prefix, hash, suffix) => `${prefix}${hash.toLowerCase()}${suffix}`);
   }
   // For other pattern type, cleanup is not yet implemented
   return pattern;
