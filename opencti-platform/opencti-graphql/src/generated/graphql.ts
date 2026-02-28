@@ -9065,11 +9065,15 @@ export type FeedAttribute = {
   __typename?: 'FeedAttribute';
   attribute: Scalars['String']['output'];
   mappings: Array<FeedMapping>;
+  multi_match_separator?: Maybe<Scalars['String']['output']>;
+  multi_match_strategy?: Maybe<Scalars['String']['output']>;
 };
 
 export type FeedAttributeMappingInput = {
   attribute: Scalars['String']['input'];
   mappings: Array<FeedMappingInput>;
+  multi_match_separator?: InputMaybe<Scalars['String']['input']>;
+  multi_match_strategy?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type FeedConnection = {
@@ -9087,11 +9091,15 @@ export type FeedEdge = {
 export type FeedMapping = {
   __typename?: 'FeedMapping';
   attribute: Scalars['String']['output'];
+  relationship_type?: Maybe<Scalars['String']['output']>;
+  target_entity_type?: Maybe<Scalars['String']['output']>;
   type: Scalars['String']['output'];
 };
 
 export type FeedMappingInput = {
   attribute: Scalars['String']['input'];
+  relationship_type?: InputMaybe<Scalars['String']['input']>;
+  target_entity_type?: InputMaybe<Scalars['String']['input']>;
   type: Scalars['String']['input'];
 };
 
@@ -42518,6 +42526,8 @@ export type FeedResolvers<ContextType = any, ParentType extends ResolversParentT
 export type FeedAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['FeedAttribute'] = ResolversParentTypes['FeedAttribute']> = ResolversObject<{
   attribute?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   mappings?: Resolver<Array<ResolversTypes['FeedMapping']>, ParentType, ContextType>;
+  multi_match_separator?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  multi_match_strategy?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type FeedConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['FeedConnection'] = ResolversParentTypes['FeedConnection']> = ResolversObject<{
@@ -42532,6 +42542,8 @@ export type FeedEdgeResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type FeedMappingResolvers<ContextType = any, ParentType extends ResolversParentTypes['FeedMapping'] = ResolversParentTypes['FeedMapping']> = ResolversObject<{
   attribute?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  relationship_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  target_entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
