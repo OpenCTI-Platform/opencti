@@ -33,7 +33,7 @@ In order to correctly configure the filters, here's a definition of the event st
     - Event scopes: `read`, `create` and `delete`
 
 - Event type: `mutation`
-    - Event scopes: `unauthorized`, `update `, `create` and `delete`
+    - Event scopes: `unauthorized`, `update `, `create`, `delete` and `merge`
 
 - Event type: `command`
     - Event scopes: `search `, `enrich `, `import` and `export`
