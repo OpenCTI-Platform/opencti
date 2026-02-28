@@ -100,6 +100,15 @@ describe('indicator utils', () => {
       '[file:hashes.MD5 = \'8b510662d51cbf365f5de1666eeb7f65\' OR file:hashes.\'SHA-1\' = \'be496dec5b552d81b8ff30572bb0ff4f65dd6e29\' OR file:hashes.\'SHA-256\' = \'1263998c8c9571df6994c790f9de03d14bef16820171950d58d1071f89093b8c\']',
       '[file:hashes.MD5 = \'8b510662d51cbf365f5de1666eeb7f65\' OR file:hashes.\'SHA-1\' = \'be496dec5b552d81b8ff30572bb0ff4f65dd6e29\' OR file:hashes.\'SHA-256\' = \'1263998c8c9571df6994c790f9de03d14bef16820171950d58d1071f89093b8c\']'
     );
+    // Hash values should be normalized to lowercase for consistent deduplication
+    testIndicatorPattern(
+      '[file:hashes.\'MD5\' = \'D41D8CD98F00B204E9800998ECF8427E\']',
+      '[file:hashes.\'MD5\' = \'d41d8cd98f00b204e9800998ecf8427e\']'
+    );
+    testIndicatorPattern(
+      '[file:hashes.\'SHA-256\' = \'4BAC27393BDD9777CE02453256C5577CD02275510B2227F473D03F533924F877\' OR file:hashes.MD5 = \'CEAD3F77F6CDA6EC00F57D76C9A6879F\']',
+      '[file:hashes.\'SHA-256\' = \'4bac27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f877\' OR file:hashes.MD5 = \'cead3f77f6cda6ec00f57d76c9a6879f\']'
+    );
   });
   it('should valid_from default', async () => {
     const { validFrom } = await computeValidPeriod({ ...DEFAULT_PARAM }, FALLBACK_DECAY_RULE.decay_lifetime);
