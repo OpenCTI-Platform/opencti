@@ -1,14 +1,14 @@
-const {promises} = require('fs');
-const crypto = require('crypto');
-const {print, parse} = require('graphql');
+import { readFile } from 'node:fs/promises';
+import crypto from 'crypto';
+import { print, parse } from 'graphql';
 
-module.exports.RelayPlugin = {
+export const RelayPlugin = {
     name: 'relay',
     setup: (build) => {
         build.onLoad({filter: /\.(js|tsx|jsx)$/, namespace: "file"}, async (args) => {
             let contents;
             if (args.path.includes('src') && !args.path.includes('node_modules') && !args.path.includes('__generated__')) {
-                contents = await promises.readFile(args.path, 'utf8');
+                contents = await readFile(args.path, 'utf8');
                 if (contents.includes('graphql`')) {
                     const imports = [];
                     contents = contents.replaceAll(/\sgraphql`([\s\S]*?)`/gm, (match, query) => {
