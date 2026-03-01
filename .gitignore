@@ -21,3 +21,8 @@ opencti-platform/opencti-graphql/.yarnrc.yml
 .venv
 venv
 /licenses/
+
+
+
+.nx/cache
+.nx/workspace-data
