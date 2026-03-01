@@ -13,6 +13,7 @@ interface StixCoreObjectMenuItemUnderEEProps {
   isDisabled?: boolean;
   needs?: string[];
   matchAll?: boolean;
+  allowInDraft?: boolean;
 }
 
 const StixCoreObjectMenuItemUnderEE: FunctionComponent<StixCoreObjectMenuItemUnderEEProps> = ({
@@ -22,14 +23,15 @@ const StixCoreObjectMenuItemUnderEE: FunctionComponent<StixCoreObjectMenuItemUnd
   needs,
   matchAll,
   isDisabled = false,
+  allowInDraft = false,
 }) => {
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const isActionPossible = !draftContext && isEnterpriseEdition && !isDisabled;
+  const isActionPossible = (allowInDraft || !draftContext) && isEnterpriseEdition && !isDisabled;
 
   let tooltipContent: string | undefined;
-  if (draftContext) {
+  if (draftContext && !allowInDraft) {
     tooltipContent = t_i18n('Not available in draft');
   } else if (!isEnterpriseEdition) {
     tooltipContent = t_i18n('Only available in EE');
