@@ -114,7 +114,8 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 # Standard event with STIX information
                 if "objects" not in content or len(content["objects"]) == 0:
                     raise ValueError("JSON data type is not a STIX2 bundle")
-                if len(content["objects"]) == 1 or data.get("no_split", False):
+                # do we still want to condition the bundle splitting or do we always handle all bundles as no split now?
+                if len(content["objects"]) == 1 or data.get("no_split", False) or True:
                     update = data.get("update", False)
                     imported_items, too_large_items_bundles = (
                         self.api.stix2.import_bundle_from_json(
