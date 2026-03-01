@@ -3229,10 +3229,16 @@ class OpenCTIStix2:
         :return: True on success
         :rtype: bool
         """
+        is_inferred = self.opencti.get_attribute_in_extension("is_inferred", item)
         opencti_operation = self.opencti.get_attribute_in_extension(
             "opencti_operation", item
         )
-        if opencti_operation is not None:
+        if is_inferred:
+            self.opencti.app_logger.debug(
+                "Ignoring inferred item during import",
+                {"id": item["id"], "type": item["type"]},
+            )
+        elif opencti_operation is not None:
             self.apply_opencti_operation(item, opencti_operation, bundle_id)
         elif "opencti_operation" in item:
             self.apply_opencti_operation(item, item["opencti_operation"], bundle_id)
