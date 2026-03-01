@@ -206,10 +206,6 @@ const useStyles = makeStyles((theme) => createStyles({
 const leftBarQuery = graphql`
   query LeftBarQuery {
     settings {
-      platform_theme {
-        theme_logo
-        theme_logo_collapsed
-      }
       platform_whitemark
     }
   }
@@ -262,10 +258,9 @@ const LeftBarComponent = ({ queryRef }) => {
   const classes = useStyles({ navOpen });
 
   const data = usePreloadedQuery(leftBarQuery, queryRef);
-  const platformTheme = data.settings?.platform_theme;
 
-  const navOpenLogo = platformTheme?.theme_logo || (draftContext ? LogoTextOrange : theme.logo);
-  const navCloseLogo = platformTheme?.theme_logo_collapsed || (draftContext ? LogoCollapsedOrange : theme.logo_collapsed);
+  const navOpenLogo = draftContext ? LogoTextOrange : theme.logo;
+  const navCloseLogo = draftContext ? LogoCollapsedOrange : theme.logo_collapsed;
   let logo = navOpen ? navOpenLogo : navCloseLogo;
 
   const addMenuUnique = (menu) => {
@@ -441,7 +436,7 @@ const LeftBarComponent = ({ queryRef }) => {
     >
       <LeftBarHeader
         logo={logo}
-        logoCollapsed={platformTheme?.theme_logo_collapsed}
+        logoCollapsed={navCloseLogo}
         navOpen={navOpen}
         bannerHeightNumber={bannerHeightNumber}
         settingsMessagesBannerHeight={settingsMessagesBannerHeight}
