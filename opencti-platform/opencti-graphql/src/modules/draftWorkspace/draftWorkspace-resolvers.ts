@@ -3,6 +3,8 @@ import {
   addDraftWorkspace,
   deleteDraftWorkspace,
   draftWorkspaceEditAuthorizedMembers,
+  draftWorkspaceEditContext,
+  draftWorkspaceEditField,
   findById,
   findDraftWorkspacePaginated,
   findDraftWorkspaceRestrictedPaginated,
@@ -53,6 +55,7 @@ const draftWorkspaceResolvers: Resolvers = {
     draftWorkspaceAdd: (_, { input }, context) => {
       return addDraftWorkspace(context, context.user, input);
     },
+    draftWorkspaceFieldPatch: (_, { id, input }, context) => draftWorkspaceEditField(context, context.user, id, input),
     draftWorkspaceEditAuthorizedMembers: (_, { id, input }, context) => {
       return draftWorkspaceEditAuthorizedMembers(context, context.user, id, input);
     },
@@ -61,6 +64,9 @@ const draftWorkspaceResolvers: Resolvers = {
     },
     draftWorkspaceDelete: (_, { id }, context) => {
       return deleteDraftWorkspace(context, context.user, id);
+    },
+    draftWorkspaceContextPatch: (_, { id, input }, context) => {
+      return draftWorkspaceEditContext(context, context.user, id, input);
     },
   },
 };
