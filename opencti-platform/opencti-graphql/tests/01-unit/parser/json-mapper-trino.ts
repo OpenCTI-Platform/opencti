@@ -53,7 +53,7 @@ export const trino_mapper: Partial<JsonMapperParsed> = {
     type: JsonMapperRepresentationType.Entity,
     target: {
       entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
-      path: '$.data'
+      path: '$.data',
     },
     attributes: [
       {
@@ -62,9 +62,9 @@ export const trino_mapper: Partial<JsonMapperParsed> = {
         attr_path: {
           path: '$[1]',
         },
-      }
-    ]
-  }]
+      },
+    ],
+  }],
 };
 
 export const trino_data = {
@@ -77,8 +77,8 @@ export const trino_data = {
       type: 'uuid',
       typeSignature: {
         rawType: 'uuid',
-        arguments: []
-      }
+        arguments: [],
+      },
     },
     {
       name: 'md5',
@@ -88,10 +88,10 @@ export const trino_data = {
         arguments: [
           {
             kind: 'LONG',
-            value: 2147483647
-          }
-        ]
-      }
+            value: 2147483647,
+          },
+        ],
+      },
     },
     {
       name: 'sha1',
@@ -101,10 +101,10 @@ export const trino_data = {
         arguments: [
           {
             kind: 'LONG',
-            value: 2147483647
-          }
-        ]
-      }
+            value: 2147483647,
+          },
+        ],
+      },
     },
     {
       name: 'sha256',
@@ -114,10 +114,10 @@ export const trino_data = {
         arguments: [
           {
             kind: 'LONG',
-            value: 2147483647
-          }
-        ]
-      }
+            value: 2147483647,
+          },
+        ],
+      },
     },
     {
       name: 'sha512',
@@ -127,10 +127,10 @@ export const trino_data = {
         arguments: [
           {
             kind: 'LONG',
-            value: 2147483647
-          }
-        ]
-      }
+            value: 2147483647,
+          },
+        ],
+      },
     },
     {
       name: 'labels',
@@ -145,13 +145,13 @@ export const trino_data = {
               arguments: [
                 {
                   kind: 'LONG',
-                  value: 2147483647
-                }
-              ]
-            }
-          }
-        ]
-      }
+                  value: 2147483647,
+                },
+              ],
+            },
+          },
+        ],
+      },
     },
     {
       name: 'created_at',
@@ -161,11 +161,11 @@ export const trino_data = {
         arguments: [
           {
             kind: 'LONG',
-            value: 6
-          }
-        ]
-      }
-    }
+            value: 6,
+          },
+        ],
+      },
+    },
   ],
   data: [
     [
@@ -176,9 +176,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label1',
-        'label2'
+        'label2',
       ],
-      '2023-10-01 12:00:00.000'
+      '2023-10-01 12:00:00.000',
     ],
     [
       '0e68f057-a98e-40f3-a19d-4e2702de430b',
@@ -188,9 +188,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000000',
       [
         'label3',
-        'label4'
+        'label4',
       ],
-      '2023-10-01 12:01:00.000'
+      '2023-10-01 12:01:00.000',
     ],
     [
       '94ceabca-9294-4b0a-ba5d-d5f8f52ca15f',
@@ -200,9 +200,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label5',
-        'label6'
+        'label6',
       ],
-      '2023-10-01 12:02:00.000'
+      '2023-10-01 12:02:00.000',
     ],
     [
       '9a85c613-bfc8-4612-871d-a992e8746e26',
@@ -212,9 +212,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000001',
       [
         'label7',
-        'label8'
+        'label8',
       ],
-      '2023-10-01 12:03:00.000'
+      '2023-10-01 12:03:00.000',
     ],
     [
       '734363a2-b32b-410f-af6b-c56b439667ca',
@@ -224,9 +224,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label9',
-        'label10'
+        'label10',
       ],
-      '2023-10-01 12:04:00.000'
+      '2023-10-01 12:04:00.000',
     ],
     [
       'b738cc24-6bf0-48db-b8fa-4032dd16f10e',
@@ -236,9 +236,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000002',
       [
         'label11',
-        'label12'
+        'label12',
       ],
-      '2023-10-01 12:05:00.000'
+      '2023-10-01 12:05:00.000',
     ],
     [
       '2f6845e2-06fd-49d0-ba2e-abb544603ff8',
@@ -248,9 +248,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label13',
-        'label14'
+        'label14',
       ],
-      '2023-10-01 12:06:00.000'
+      '2023-10-01 12:06:00.000',
     ],
     [
       '2715da74-6515-428e-aea6-8dbf989f306e',
@@ -260,9 +260,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000003',
       [
         'label15',
-        'label16'
+        'label16',
       ],
-      '2023-10-01 12:07:00.000'
+      '2023-10-01 12:07:00.000',
     ],
     [
       '3386b8e2-7369-4085-bd55-6ca774c17078',
@@ -272,9 +272,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label17',
-        'label18'
+        'label18',
       ],
-      '2023-10-01 12:08:00.000'
+      '2023-10-01 12:08:00.000',
     ],
     [
       '15c571bd-f457-4841-86f3-9c1bf0ccbfc0',
@@ -284,9 +284,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000004',
       [
         'label19',
-        'label20'
+        'label20',
       ],
-      '2023-10-01 12:09:00.000'
+      '2023-10-01 12:09:00.000',
     ],
     [
       'd5389623-d140-4265-9aac-77052e57b59f',
@@ -296,9 +296,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label21',
-        'label22'
+        'label22',
       ],
-      '2023-10-01 12:10:00.000'
+      '2023-10-01 12:10:00.000',
     ],
     [
       '0293eb2d-551b-48ff-b2ef-d06fa2dfcb4b',
@@ -308,9 +308,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000005',
       [
         'label23',
-        'label24'
+        'label24',
       ],
-      '2023-10-01 12:11:00.000'
+      '2023-10-01 12:11:00.000',
     ],
     [
       'd467e7fc-d2e3-442e-a91d-bcd949936c91',
@@ -320,9 +320,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label25',
-        'label26'
+        'label26',
       ],
-      '2023-10-01 12:12:00.000'
+      '2023-10-01 12:12:00.000',
     ],
     [
       'ab2d7326-a66f-409c-a92c-cd9320e3cda4',
@@ -332,9 +332,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000006',
       [
         'label27',
-        'label28'
+        'label28',
       ],
-      '2023-10-01 12:13:00.000'
+      '2023-10-01 12:13:00.000',
     ],
     [
       '03b5b4d3-19d9-44e5-8830-c5bd60ec5c7f',
@@ -344,9 +344,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label29',
-        'label30'
+        'label30',
       ],
-      '2023-10-01 12:14:00.000'
+      '2023-10-01 12:14:00.000',
     ],
     [
       'cd284f62-484c-463a-987d-c44a9f20b729',
@@ -356,9 +356,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000007',
       [
         'label31',
-        'label32'
+        'label32',
       ],
-      '2023-10-01 12:15:00.000'
+      '2023-10-01 12:15:00.000',
     ],
     [
       '41d4bba7-6c1e-43bf-8500-70ceddf2e51c',
@@ -368,9 +368,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label33',
-        'label34'
+        'label34',
       ],
-      '2023-10-01 12:16:00.000'
+      '2023-10-01 12:16:00.000',
     ],
     [
       '1a7f0a58-b716-4f56-96b0-61fdc0a872df',
@@ -380,9 +380,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000008',
       [
         'label35',
-        'label36'
+        'label36',
       ],
-      '2023-10-01 12:17:00.000'
+      '2023-10-01 12:17:00.000',
     ],
     [
       'a17ed06f-7b8f-4d9e-b924-28cf47e04b0f',
@@ -392,9 +392,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label37',
-        'label38'
+        'label38',
       ],
-      '2023-10-01 12:18:00.000'
+      '2023-10-01 12:18:00.000',
     ],
     [
       'abb88b04-6ac2-4e03-af25-6d133d6b8de4',
@@ -404,9 +404,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000009',
       [
         'label39',
-        'label40'
+        'label40',
       ],
-      '2023-10-01 12:19:00.000'
+      '2023-10-01 12:19:00.000',
     ],
     [
       'c7a69f1e-3bfe-4a92-923f-c1392b66ce1d',
@@ -416,9 +416,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label41',
-        'label42'
+        'label42',
       ],
-      '2023-10-01 12:20:00.000'
+      '2023-10-01 12:20:00.000',
     ],
     [
       'aab478c0-e268-4477-8e2b-949c05ea5429',
@@ -428,9 +428,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000010',
       [
         'label43',
-        'label44'
+        'label44',
       ],
-      '2023-10-01 12:21:00.000'
+      '2023-10-01 12:21:00.000',
     ],
     [
       '0f942d57-5e7d-44c2-88b8-402aa2541cff',
@@ -440,9 +440,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label45',
-        'label46'
+        'label46',
       ],
-      '2023-10-01 12:22:00.000'
+      '2023-10-01 12:22:00.000',
     ],
     [
       '793ddd74-6ddc-4520-9789-e03575ca06d2',
@@ -452,9 +452,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000011',
       [
         'label47',
-        'label48'
+        'label48',
       ],
-      '2023-10-01 12:23:00.000'
+      '2023-10-01 12:23:00.000',
     ],
     [
       '1dd328ef-80b4-4780-81b4-7f4ad63c30be',
@@ -464,9 +464,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label49',
-        'label50'
+        'label50',
       ],
-      '2023-10-01 12:24:00.000'
+      '2023-10-01 12:24:00.000',
     ],
     [
       '42cd9ce0-87e3-4cb0-b2fa-deb5240e5cad',
@@ -476,9 +476,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000012',
       [
         'label51',
-        'label52'
+        'label52',
       ],
-      '2023-10-01 12:25:00.000'
+      '2023-10-01 12:25:00.000',
     ],
     [
       '5dc7e1be-7af9-4c13-86c2-cf4bf96dc193',
@@ -488,9 +488,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label53',
-        'label54'
+        'label54',
       ],
-      '2023-10-01 12:26:00.000'
+      '2023-10-01 12:26:00.000',
     ],
     [
       '7924288a-3663-4c68-b0c5-2eada1619c7c',
@@ -500,9 +500,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000013',
       [
         'label55',
-        'label56'
+        'label56',
       ],
-      '2023-10-01 12:27:00.000'
+      '2023-10-01 12:27:00.000',
     ],
     [
       'e1aff1c5-afc8-4d78-9cef-ed173b835823',
@@ -512,9 +512,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label57',
-        'label58'
+        'label58',
       ],
-      '2023-10-01 12:28:00.000'
+      '2023-10-01 12:28:00.000',
     ],
     [
       '5756d8a9-6132-4a5e-9c38-f3f09100e9d2',
@@ -524,9 +524,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000014',
       [
         'label59',
-        'label60'
+        'label60',
       ],
-      '2023-10-01 12:29:00.000'
+      '2023-10-01 12:29:00.000',
     ],
     [
       '91f1370f-9875-4e64-8988-345cc9a5c873',
@@ -536,9 +536,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label61',
-        'label62'
+        'label62',
       ],
-      '2023-10-01 12:30:00.000'
+      '2023-10-01 12:30:00.000',
     ],
     [
       '5ed1aa06-a3c3-4e0c-8e2a-dbf39529d57d',
@@ -548,9 +548,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000015',
       [
         'label63',
-        'label64'
+        'label64',
       ],
-      '2023-10-01 12:31:00.000'
+      '2023-10-01 12:31:00.000',
     ],
     [
       '18aa789f-b91c-4fdc-9f9d-a3658084b6b6',
@@ -560,9 +560,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label65',
-        'label66'
+        'label66',
       ],
-      '2023-10-01 12:32:00.000'
+      '2023-10-01 12:32:00.000',
     ],
     [
       '641af800-5104-43b2-b9a3-185ad4dba171',
@@ -572,9 +572,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000016',
       [
         'label67',
-        'label68'
+        'label68',
       ],
-      '2023-10-01 12:33:00.000'
+      '2023-10-01 12:33:00.000',
     ],
     [
       '686a9fec-6dac-404f-9ce3-86c638be8e7d',
@@ -584,9 +584,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label69',
-        'label70'
+        'label70',
       ],
-      '2023-10-01 12:34:00.000'
+      '2023-10-01 12:34:00.000',
     ],
     [
       '56a4f2b9-2380-4abf-84af-359aedb6e3ae',
@@ -596,9 +596,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000017',
       [
         'label71',
-        'label72'
+        'label72',
       ],
-      '2023-10-01 12:35:00.000'
+      '2023-10-01 12:35:00.000',
     ],
     [
       'ee0df25d-dd0d-4cc2-9576-1621e138ac32',
@@ -608,9 +608,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label73',
-        'label74'
+        'label74',
       ],
-      '2023-10-01 12:36:00.000'
+      '2023-10-01 12:36:00.000',
     ],
     [
       'c31d91ca-261d-424a-a332-537277c0d8e4',
@@ -620,9 +620,9 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000018',
       [
         'label75',
-        'label76'
+        'label76',
       ],
-      '2023-10-01 12:37:00.000'
+      '2023-10-01 12:37:00.000',
     ],
     [
       '9d83b4f0-d63a-419d-ae1c-92dab05bd3c7',
@@ -632,9 +632,9 @@ export const trino_data = {
       'cf83e1357eefb8bd...',
       [
         'label77',
-        'label78'
+        'label78',
       ],
-      '2023-10-01 12:38:00.000'
+      '2023-10-01 12:38:00.000',
     ],
     [
       '30a36b69-ff17-4377-8bc9-a47577fe3fea',
@@ -644,10 +644,10 @@ export const trino_data = {
       'e3e1e1718c2140b348432e9b00000019',
       [
         'label79',
-        'label80'
+        'label80',
       ],
-      '2023-10-01 12:39:00.000'
-    ]
+      '2023-10-01 12:39:00.000',
+    ],
   ],
   stats: {
     state: 'FINISHED',
@@ -708,10 +708,10 @@ export const trino_data = {
           physicalInputBytes: 10817,
           failedTasks: 0,
           coordinatorOnly: false,
-          subStages: []
-        }
-      ]
-    }
+          subStages: [],
+        },
+      ],
+    },
   },
-  warnings: []
+  warnings: [],
 };

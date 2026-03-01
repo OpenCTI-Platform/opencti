@@ -3706,6 +3706,7 @@
   "Select a form": "양식 선택",
   "Select a mapper": "매퍼를 선택하세요",
   "Select a relationship": "관계 선택",
+  "Select a representation first": "먼저 표현을 선택합니다",
   "Select a sample file in CSV format, with a maximum size of 1MB to limit the processing time.": "처리 시간을 제한하기 위해 최대 1MB 크기의 CSV 형식 샘플 파일을 선택하세요.",
   "Select a sighting": "목격 선택",
   "Select all nodes": "모든 노드 선택",

@@ -1,4 +1,5 @@
 import {
+  BasedOnType,
   JsonMapperRepresentationAttribute,
   JsonMapperRepresentationAttributeEdit,
   JsonMapperRepresentationAttributeFormData,
@@ -71,10 +72,7 @@ export const jsonMapperAttributeToFormData = (
     key: attribute.key,
     mode: attribute.mode,
     attr_path: attribute.attr_path,
-    based_on: {
-      identifier: attribute.based_on?.identifier,
-      representations: attribute.based_on?.representations as string[],
-    },
+    based_on: attribute.based_on as BasedOnType,
     default_values: schemaAttribute ? computeDefaultValues(
       entityType,
       attribute.key,
@@ -128,7 +126,10 @@ export const formDataToJsonMapperAttribute = (
   // }
   if (mapperAttribute.mode === 'base' && data.based_on) {
     mapperAttribute.based_on = {
-      identifier: data.based_on?.identifier,
+      identifier: data.based_on?.identifier?.map((i) => ({
+        identifier: i.identifier,
+        representation: i.representation,
+      })),
       representations: data.based_on?.representations,
     };
   }

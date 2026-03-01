@@ -3706,6 +3706,7 @@
   "Select a form": "Sélectionnez un formulaire",
   "Select a mapper": "Sélectionner un mappeur",
   "Select a relationship": "Sélectionner une relation",
+  "Select a representation first": "Choisir d'abord une représentation",
   "Select a sample file in CSV format, with a maximum size of 1MB to limit the processing time.": "Sélectionnez un fichier d'exemple au format CSV, avec une taille maximale de 5 Mo pour limiter le temps de traitement.",
   "Select a sighting": "Sélectionnez une observation",
   "Select all nodes": "Sélectionner tous les noeuds",
