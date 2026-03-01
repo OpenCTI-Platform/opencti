@@ -8,7 +8,7 @@ The main menu "Notifications and triggers" for creating and managing notificatio
 
 ![Notifications](assets/notifications.png)  
 
-Click on the line "Digest with multiples notifiers" to open a drawer and access to detailed notifications. 
+Click on the line "Digest with multiples notifiers" to open a drawer and access detailed notifications.
 
 ![Notifications](assets/digestWithMultipleNotifiers.png)
 

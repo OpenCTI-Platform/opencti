@@ -27,7 +27,7 @@ Also, using the `Advanced search` button, it is possible to directly put filters
 
 !!! info "Advanced filters"
 
-    You have access to advanced filters all accross the UI, if you want to know more about how to use these 
+    You have access to advanced filters all across the UI, if you want to know more about how to use these 
     filters with the API or the Python library, [don't hesitate to read the dedicated page](../reference/filters.md)
 
 ### Full text search in files content
@@ -48,11 +48,11 @@ In order to search in files, you need to configure [file indexing](../administra
 
 ## Bulk search
 
-The bulk search capabilities is available in the top bar of the platform and allows you to copy paste a list of keyword or objects (ie. list of domains, list of IP addresses, list of vulnerabilities, etc.) to search in the platform:
+The bulk search capability is available in the top bar of the platform and allows you to copy paste a list of keyword or objects (ie. list of domains, list of IP addresses, list of vulnerabilities, etc.) to search in the platform:
 
 ![Bulk search](assets/bulk-search.png)
 
-When searching in bulk, OpenCTI is only looking for an case-insensitive exact match in some properties:
+When searching in bulk, OpenCTI is only looking for a case-insensitive exact match in some properties:
 
 * `name`
 * `aliases`

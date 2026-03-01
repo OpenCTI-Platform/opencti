@@ -6,7 +6,7 @@
 
 In the [STIX 2.1 standard](https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html), objects can:
 
-1. Refer to other objects in directly in their `attributes`, by referencing one or multiple IDs.
+1. Refer to other objects directly in their `attributes`, by referencing one or multiple IDs.
 2. Have other objects directly embedded in the entity.
 
 ### Example
@@ -17,7 +17,7 @@ In the [STIX 2.1 standard](https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.h
    "spec_version": "2.1",
    "id": "intrusion-set--4e78f46f-a023-4e5f-bc24-71b3ca22ec29",
    "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff", // nested reference to an identity
-   "object_marking_refs": ["marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"], // nested reference to multiple marking defintions
+   "object_marking_refs": ["marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"], // nested reference to multiple marking definitions
    "external_references": [
       {
          "source_name": "veris",
@@ -38,7 +38,7 @@ In the previous example, we have 2 nested references to other objects in:
 
 ```json
 "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff", // nested reference to an identity
-"object_marking_refs": ["marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"], // nested reference to multiple marking defintions
+"object_marking_refs": ["marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"], // nested reference to multiple marking definitions
 ```
 
 But we also have a nested object within the entity (an `External Reference`):
@@ -57,7 +57,7 @@ But we also have a nested object within the entity (an `External Reference`):
 
 ### Modelization
 
-In OpenCTI, all nested references and objects are modelized as relationships, to be able to pivot more easily on labels, external references, kill chain phases, marking definitions, etc.
+In OpenCTI, all nested references and objects are modeled as relationships, to be able to pivot more easily on labels, external references, kill chain phases, marking definitions, etc.
 
 ![Investigation](assets/investigation.png)
 

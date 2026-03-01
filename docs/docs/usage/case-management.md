@@ -2,13 +2,13 @@
 
 ## Why Case management?
 
-Compiling CTI data in one place, deduplicate and correlate to transform it into Intelligence is very important. **But ultimately, you need to act based on this Intelligence**. Some situations will need to be taken care of, like cybersecurity incidents, requests for information or requests for takedown. Some actions will then need to be traced, to be coordinated and oversaw. Some actions will include feedback and content delivery.
+Compiling CTI data in one place, deduplicate and correlate to transform it into Intelligence is very important. **But ultimately, you need to act based on this Intelligence**. Some situations will need to be taken care of, like cybersecurity incidents, requests for information or requests for takedown. Some actions will then need to be traced, to be coordinated and overseen. Some actions will include feedback and content delivery.
 
 OpenCTI includes [Cases](exploring-cases.md) to allow organizations to manage situations and organize their team's work. Better, **by doing Case management in OpenCTI, you handle your cases with all the context and Intelligence you need, at hand.**
 
 ## How to manage your Case in OpenCTI?
 
-Multiple situations can be modelize in OpenCTI as a Case, either an Incident Response, a Request for Takedown or a Request for Information.
+Multiple situations can be modeled in OpenCTI as a Case, either an Incident Response, a Request for Takedown or a Request for Information.
 
 ![Incident Responses' list](assets/cases-list.png)
 
@@ -22,7 +22,7 @@ Tip: A user can have a custom dashboard showing him all the tasks that have been
 
 ![Incident Responses' list](assets/case-applying-template.png)
 
-As with other objects in OpenCTI, you can also leverage the `Notes` to add some investigation and analysis related comments, helping you shaping up the content of your case with unstructured data and trace all the work that have been done.
+As with other objects in OpenCTI, you can also leverage the `Notes` to add some investigation and analysis related comments, helping you shaping up the content of your case with unstructured data and trace all the work that has been done.
 
 You can also use `Opinions` to collect how the Case has been handled, helping you to build Lessons Learned.
 
@@ -30,15 +30,15 @@ You can also use `Opinions` to collect how the Case has been handled, helping yo
 
 To trace the evolution of your Case and define specific resolution worflows, you can use the `Status` (that can be define in Settings/Taxonomies/Status templates).
 
-At the end of your Case, you will certainly want to report on what has been done. OpenCTI allows you to export the content of the Case in a simple but customizable PDF (currently in refactor). But of course, your company has its own documents' templates, right? With OpenCTI, you will be able to include some nice graphics in it. For example, a Matrix view of the attacker attack pattern or even a graph display of how things are connected. 
+At the end of your Case, you will certainly want to report on what has been done. OpenCTI allows you to export the content of the Case in a simple but customizable PDF (currently in refactor). But of course, your company has its own document templates. With OpenCTI, you will be able to include some nice graphics in it. For example, a Matrix view of the attacker attack pattern or even a graph display of how things are connected. 
 
-Also, we are currently working a more meaningfull Timeline view that will be possible to export too.
+Also, we are currently working a more meaningful Timeline view that will be possible to export too.
 
 ## Use case example: A suspicious observable is sighted by a defense system. Is it important?
 
 - Daily, your SIEM and EDR are fed Indicators of Compromise from your OpenCTI instance. 
-- Today, your SIEM has sighted the domain name "bad.com" matching one of them. Its alert has been transfered to OpenCTI and has created a `Sighting` relationship between your System "SIEM permiter A" and the Observable "bad.com". 
-- You are alerted immediatly, because you have activated the inference rule creating a corresponding `Incident` in this situation, and you have created an alert based on new Incident that sends you email `notification` and Teams message (webhook).
+- Today, your SIEM has sighted the domain name "bad.com" matching one of them. Its alert has been transferred to OpenCTI and has created a `Sighting` relationship between your System "SIEM permiter A" and the Observable "bad.com". 
+- You are alerted immediately, because you have activated the inference rule creating a corresponding `Incident` in this situation, and you have created an alert based on new Incident that sends you email `notification` and Teams message (webhook).
 - In OpenCTI, you can clearly see the link between the alerting System, the sighted Observable and the corresponding Indicator. Better, you can also see all the context of the Indicator. It is linked to a notorious and recent phishing `campaign` targeting your activity `sector`. "bad.com" is clearly something to investigate ASAP.
 - You quickly select all the context you have found, and add it to a new `Incident response`case. You position the priority to High, regarding the context, and the severity to Low, as you don't know yet if someone really interacted with "bad.com".
 - You also assign the case to one of your colleagues, on duty for investigative work. To guide him, you also create a `Task` in your case for verifying if an actual interaction happened with "bad.com".
