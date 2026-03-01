@@ -20,7 +20,7 @@ const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProp
   useInitCreateRelationshipContext();
 
   const [isMappingHeaderDisabled, setMappingHeaderDisabled] = useState<boolean>(false);
-  const [isEditorHeaderDisabled, setEditorHeaderDisabled] = useState<boolean>(false);
+  const [isEditorHeaderDisabled, setEditorHeaderDisabled] = useState<boolean>(!isContainer);
   const { pathname } = useLocation();
 
   const getCurrentMode = (currentPathname: string) => {
