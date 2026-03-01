@@ -62,8 +62,24 @@ class ListenHandler:
                 },
                 timeout=300,
             )
-            if response.status_code != 200 and response.status_code != 202:
-                raise RequestException(response.status_code, response.text)
+            if response.status_code not in (200, 202):
+                # Distinguish between client errors (4xx) and server errors (5xx)
+                if 400 <= response.status_code < 500:
+                    # Client error (permanent): don't requeue
+                    self.logger.error(
+                        "Client error from remote server, rejecting message permanently",
+                        {"status_code": response.status_code, "response": response.text},
+                    )
+                    return "nack"
+                else:
+                    # Server error (5xx) or other: temporary, requeue
+                    self.logger.error(
+                        "Server error from remote server, requeuing message",
+                        {"status_code": response.status_code, "response": response.text},
+                    )
+                    sleep_jitter = round(random.uniform(10, 30), 2)
+                    time.sleep(sleep_jitter)
+                    return "requeue"
 
             return "ack"
         except (RequestException, Timeout):
