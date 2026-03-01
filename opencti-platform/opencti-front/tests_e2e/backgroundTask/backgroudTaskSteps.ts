@@ -6,7 +6,7 @@ import FiltersPageModel from '../model/filters.pageModel';
 import { expect } from '../fixtures/baseFixtures';
 import SearchPageModel from '../model/search.pageModel';
 import DataEntitiesPage from '../model/DataEntities.pageModel';
-import { sleep } from '../utils';
+import { sleep } from '../utils/utils';
 
 export const runBackgroundTaskOnIncidentByFilter = async (page: Page, dryRun: boolean) => {
   const incidentPage = new EventsIncidentPage(page);
