@@ -20,6 +20,7 @@ interface UserOrigin {
   applicant_id?: string;
   playbook_id?: string;
   referer?: string;
+  synchronized_upsert?: boolean;
   user_metadata?: object;
   call_retry_number?: number;
 }
@@ -81,5 +82,6 @@ interface AuthContext {
   synchronizedUpsert?: boolean;
   previousStandard?: string;
   req?: Express.Request;
+  synchronizedUpsert?: boolean;
   blocked_for_lts_validation?: boolean;
 }
