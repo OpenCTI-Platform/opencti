@@ -151,7 +151,7 @@
     "nodemailer": "8.0.1",
     "openai": "4.104.0",
     "openid-client": "6.8.2",
-    "openid-clientv5": "npm:openid-client@5.7.1",
+    "openid-clientv5": "npm:openid-client@6.8.2",
     "opentelemetry-node-metrics": "3.0.0",
     "otplib": "13.3.0",
     "passport": "0.7.0",
@@ -228,7 +228,7 @@
     "eventsource": "patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
     "node-calls-python": "patch:node-calls-python@1.11.1#./patch/node-calls-python.patch",
-    "openid-clientv5": "patch:openid-client@5.7.1#./patch/openid-client.patch"
+    "openid-clientv5": "npm:openid-client@6.8.2"
   },
   "dependenciesMeta": {
     "es5-ext": {
