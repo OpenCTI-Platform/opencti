@@ -12328,7 +12328,7 @@ __metadata:
     react-csv: "npm:2.2.2"
     react-dom: "npm:19.2.4"
     react-draggable: "npm:4.5.0"
-    react-force-graph-2d: "npm:1.29.0"
+    react-force-graph-2d: "npm:1.29.1"
     react-force-graph-3d: "npm:1.29.0"
     react-grid-layout: "npm:1.5.3"
     react-intl: "npm:7.1.14"
@@ -13030,16 +13030,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-force-graph-2d@npm:1.29.0":
-  version: 1.29.0
-  resolution: "react-force-graph-2d@npm:1.29.0"
+"react-force-graph-2d@npm:1.29.1":
+  version: 1.29.1
+  resolution: "react-force-graph-2d@npm:1.29.1"
   dependencies:
     force-graph: "npm:^1.51"
     prop-types: "npm:15"
     react-kapsule: "npm:^2.5"
   peerDependencies:
     react: "*"
-  checksum: 10c0/d9bfa894712d0997a190e98af93533c3e549a06800a2aed4b5d03b5c4aa76583d68cf22f1cf660c447082b95ba591e00ea1a7757e8faf86a5cc43259c16d7c13
+  checksum: 10c0/c23e4fdb53c304dd45e4b88ee8d1994691dffd5b8e5e25783d85ab8ff69f7ace02e3cd550abf63004ea74859cce87e8b45b1b4bf0ceb30fa4ca50e73c9dde233
   languageName: node
   linkType: hard
 
