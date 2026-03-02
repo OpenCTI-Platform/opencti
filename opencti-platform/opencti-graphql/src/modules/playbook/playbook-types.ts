@@ -113,7 +113,7 @@ export interface ComponentDefinition {
   links: LinkDefinition[];
 }
 
-export const PlayComponentDefinition: JSONSchemaType<ComponentDefinition> = {
+export const PlaybookComponentDefinition: JSONSchemaType<ComponentDefinition> = {
   type: 'object',
   properties: {
     nodes: {
@@ -165,3 +165,11 @@ export const PlayComponentDefinition: JSONSchemaType<ComponentDefinition> = {
   },
   required: ['nodes', 'links'],
 };
+
+export type ElementsToApply = 'all-elements' | 'only-main' | 'all-except-main';
+
+export enum ElementsToApplyTitle {
+  ALL = 'All elements in the bundle',
+  MAIN = 'Only main element in the bundle',
+  ALL_EXCEPT_MAIN = 'All except main element in the bundle',
+}
