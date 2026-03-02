@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
-import { awaitUntilCondition } from '../utils';
+import { awaitUntilCondition } from '../utils/utils';
 
 const openThemeEditMenu = async (themeName: string, page: Page) => {
   await page
