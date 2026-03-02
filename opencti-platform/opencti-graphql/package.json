@@ -180,7 +180,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@graphql-codegen/cli": "6.1.1",
+    "@graphql-codegen/cli": "6.1.2",
     "@graphql-codegen/introspection": "5.0.0",
     "@graphql-codegen/typescript-resolvers": "5.1.6",
     "@luckycatfactory/esbuild-graphql-loader": "3.8.1",
@@ -206,14 +206,14 @@
     "esbuild": "0.27.3",
     "esbuild-plugin-copy": "2.1.1",
     "esbuild-plugin-import-glob": "0.1.1",
-    "eslint": "10.0.1",
+    "eslint": "10.0.2",
     "eslint-import-resolver-typescript": "4.4.4",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-import-newlines": "2.0.0",
     "globals": "17.3.0",
     "graphql-tag": "2.12.6",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.56.0",
+    "typescript-eslint": "8.56.1",
     "vitest": "3.2.4"
   },
   "resolutions": {
