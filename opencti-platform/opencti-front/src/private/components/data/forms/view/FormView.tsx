@@ -7,7 +7,6 @@ import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
 import IconButton from '@common/button/IconButton';
@@ -18,7 +17,7 @@ import TextField from '../../../../../components/TextField';
 import { useFormatter } from '../../../../../components/i18n';
 import { FormViewQuery } from './__generated__/FormViewQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
-import FormFieldRenderer, { FormFieldRendererProps } from './FormFieldRenderer';
+import { FormFieldRendererProps } from './FormFieldRenderer';
 import { FormSchemaDefinition } from '../Form.d';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
@@ -30,6 +29,7 @@ import StixCoreObjectsField from '../../../common/form/StixCoreObjectsField';
 import useGranted, { INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
 import useImportAccess from '../../../../../utils/hooks/useImportAccess';
 import Card from '../../../../../components/common/card/Card';
+import FormFields from './FormFields';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -553,44 +553,15 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                               <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>
                                 {t_i18n('Additional fields (will be applied to all created entities)')}
                               </Typography>
-                              {(() => {
-                                const hasWidthDefined = mainEntityFields.some((f) => f.width && f.width !== 'full');
-                                if (hasWidthDefined) {
-                                  return (
-                                    <Grid container spacing={2}>
-                                      {mainEntityFields.map((field) => (
-                                        <FormFieldRenderer
-                                          key={`mainEntityFields.${field.name}`}
-                                          field={{
-                                            ...field,
-                                            name: `mainEntityFields.${field.name}`,
-                                          }}
-                                          values={values}
-                                          errors={errors as Record<string, string>}
-                                          touched={touched as Record<string, boolean>}
-                                          setFieldValue={setFieldValue}
-                                          entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                          useGridLayout={true}
-                                        />
-                                      ))}
-                                    </Grid>
-                                  );
-                                }
-                                return mainEntityFields.map((field) => (
-                                  <FormFieldRenderer
-                                    key={`mainEntityFields.${field.name}`}
-                                    field={{
-                                      ...field,
-                                      name: `mainEntityFields.${field.name}`,
-                                    }}
-                                    values={values}
-                                    errors={errors as Record<string, string>}
-                                    touched={touched as Record<string, boolean>}
-                                    setFieldValue={setFieldValue}
-                                    entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                  />
-                                ));
-                              })()}
+                              <FormFields
+                                fields={mainEntityFields}
+                                values={values}
+                                errors={errors as Record<string, string>}
+                                touched={touched as Record<string, boolean>}
+                                setFieldValue={setFieldValue}
+                                entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                                getFieldKey={(field) => `mainEntityFields.${field.name}`}
+                              />
                             </>
                           )}
                         </>
@@ -617,44 +588,16 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                   <Typography variant="subtitle2" gutterBottom>
                                     {`${t_i18n(schema.mainEntityType)} ${index + 1}`}
                                   </Typography>
-                                  {(() => {
-                                    const hasWidthDefined = mainEntityFields.some((f) => f.width && f.width !== 'full');
-                                    if (hasWidthDefined) {
-                                      return (
-                                        <Grid container spacing={2}>
-                                          {mainEntityFields.map((field) => (
-                                            <FormFieldRenderer
-                                              key={`mainEntityGroups.${index}.${field.name}`}
-                                              field={{
-                                                ...field,
-                                                name: `mainEntityGroups.${index}.${field.name}`,
-                                              }}
-                                              values={values}
-                                              errors={errors as Record<string, string>}
-                                              touched={touched as Record<string, boolean>}
-                                              setFieldValue={setFieldValue}
-                                              entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                              useGridLayout={true}
-                                            />
-                                          ))}
-                                        </Grid>
-                                      );
-                                    }
-                                    return mainEntityFields.map((field) => (
-                                      <FormFieldRenderer
-                                        key={`mainEntityGroups.${index}.${field.name}`}
-                                        field={{
-                                          ...field,
-                                          name: `mainEntityGroups.${index}.${field.name}`,
-                                        }}
-                                        values={values}
-                                        errors={errors as Record<string, string>}
-                                        touched={touched as Record<string, boolean>}
-                                        setFieldValue={setFieldValue}
-                                        entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                      />
-                                    ));
-                                  })()}
+                                  <FormFields
+                                    fields={mainEntityFields}
+                                    values={values}
+                                    errors={errors as Record<string, string>}
+                                    touched={touched as Record<string, boolean>}
+                                    setFieldValue={setFieldValue}
+                                    entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                                    getFieldKey={(field) => `mainEntityGroups.${index}.${field.name}`}
+                                    getFieldOverride={(field) => ({ name: `mainEntityGroups.${index}.${field.name}` })}
+                                  />
                                   {index < ((values.mainEntityGroups as unknown as Record<string, unknown>[])?.length || 1) - 1 && (
                                     <Divider style={{ marginTop: 15 }} />
                                   )}
@@ -689,37 +632,16 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                       );
                     }
                     // Single entity mode - wrap fields in Grid if any have width defined
-                    const hasWidthDefined = mainEntityFields.some((f) => f.width && f.width !== 'full');
-                    if (hasWidthDefined) {
-                      return (
-                        <Grid container spacing={2}>
-                          {mainEntityFields.map((field) => (
-                            <FormFieldRenderer
-                              key={field.name}
-                              field={field}
-                              values={values}
-                              errors={errors as Record<string, string>}
-                              touched={touched as Record<string, boolean>}
-                              setFieldValue={setFieldValue}
-                              entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                              useGridLayout={true}
-                            />
-                          ))}
-                        </Grid>
-                      );
-                    }
                     return (
-                      mainEntityFields.map((field) => (
-                        <FormFieldRenderer
-                          key={field.name}
-                          field={field}
-                          values={values}
-                          errors={errors as Record<string, string>}
-                          touched={touched as Record<string, boolean>}
-                          setFieldValue={setFieldValue}
-                          entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                        />
-                      ))
+                      <FormFields
+                        fields={mainEntityFields}
+                        values={values}
+                        errors={errors as Record<string, string>}
+                        touched={touched as Record<string, boolean>}
+                        setFieldValue={setFieldValue}
+                        entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                        getFieldKey={(field) => field.name}
+                      />
                     );
                   })()}
                 </div>
@@ -793,44 +715,16 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                       <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>
                                         {t_i18n('Additional fields (will be applied to all created entities)')}
                                       </Typography>
-                                      {(() => {
-                                        const hasWidthDefined = entityFields.some((f) => f.width && f.width !== 'full');
-                                        if (hasWidthDefined) {
-                                          return (
-                                            <Grid container spacing={2}>
-                                              {entityFields.map((field) => (
-                                                <FormFieldRenderer
-                                                  key={`additional_${additionalEntity.id}_fields.${field.name}`}
-                                                  field={{
-                                                    ...field,
-                                                    name: `additional_${additionalEntity.id}_fields.${field.name}`,
-                                                  }}
-                                                  values={values}
-                                                  errors={errors as Record<string, string>}
-                                                  touched={touched as Record<string, boolean>}
-                                                  setFieldValue={setFieldValue}
-                                                  entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                                  useGridLayout={true}
-                                                />
-                                              ))}
-                                            </Grid>
-                                          );
-                                        }
-                                        return entityFields.map((field) => (
-                                          <FormFieldRenderer
-                                            key={`additional_${additionalEntity.id}_fields.${field.name}`}
-                                            field={{
-                                              ...field,
-                                              name: `additional_${additionalEntity.id}_fields.${field.name}`,
-                                            }}
-                                            values={values}
-                                            errors={errors as Record<string, string>}
-                                            touched={touched as Record<string, boolean>}
-                                            setFieldValue={setFieldValue}
-                                            entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                          />
-                                        ));
-                                      })()}
+                                      <FormFields
+                                        fields={entityFields}
+                                        values={values}
+                                        errors={errors as Record<string, string>}
+                                        touched={touched as Record<string, boolean>}
+                                        setFieldValue={setFieldValue}
+                                        entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                                        getFieldKey={(field) => `additional_${additionalEntity.id}_fields.${field.name}`}
+                                        getFieldOverride={(field) => ({ name: `additional_${additionalEntity.id}_fields.${field.name}` })}
+                                      />
                                     </>
                                   )}
                                 </>
@@ -859,44 +753,16 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                           <Typography variant="subtitle2" gutterBottom>
                                             {additionalEntity.label || additionalEntity.entityType} {index + 1}
                                           </Typography>
-                                          {(() => {
-                                            const hasWidthDefined = entityFields.some((f) => f.width && f.width !== 'full');
-                                            if (hasWidthDefined) {
-                                              return (
-                                                <Grid container spacing={2}>
-                                                  {entityFields.map((field) => (
-                                                    <FormFieldRenderer
-                                                      key={`${groupsFieldName}.${index}.${field.name}`}
-                                                      field={{
-                                                        ...field,
-                                                        name: `${groupsFieldName}.${index}.${field.name}`,
-                                                      }}
-                                                      values={values}
-                                                      errors={errors as Record<string, string>}
-                                                      touched={touched as Record<string, boolean>}
-                                                      setFieldValue={setFieldValue}
-                                                      entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                                      useGridLayout={true}
-                                                    />
-                                                  ))}
-                                                </Grid>
-                                              );
-                                            }
-                                            return entityFields.map((field) => (
-                                              <FormFieldRenderer
-                                                key={`${groupsFieldName}.${index}.${field.name}`}
-                                                field={{
-                                                  ...field,
-                                                  name: `${groupsFieldName}.${index}.${field.name}`,
-                                                }}
-                                                values={values}
-                                                errors={errors as Record<string, string>}
-                                                touched={touched as Record<string, boolean>}
-                                                setFieldValue={setFieldValue}
-                                                entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                              />
-                                            ));
-                                          })()}
+                                          <FormFields
+                                            fields={entityFields}
+                                            values={values}
+                                            errors={errors as Record<string, string>}
+                                            touched={touched as Record<string, boolean>}
+                                            setFieldValue={setFieldValue}
+                                            entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                                            getFieldKey={(field) => `${groupsFieldName}.${index}.${field.name}`}
+                                            getFieldOverride={(field) => ({ name: `${groupsFieldName}.${index}.${field.name}` })}
+                                          />
                                           {index < ((values[groupsFieldName] as unknown as Record<string, unknown>[])?.length || 1) - 1 && (
                                             <Divider style={{ marginTop: 15 }} />
                                           )}
@@ -931,41 +797,17 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                               );
                             }
                             // Single entity mode - wrap fields in Grid if any have width defined
-                            const hasWidthDefined = entityFields.some((f) => f.width && f.width !== 'full');
-                            if (hasWidthDefined) {
-                              return (
-                                <Grid container spacing={2}>
-                                  {entityFields.map((field) => (
-                                    <FormFieldRenderer
-                                      key={`${additionalEntity.id}_${field.name}`}
-                                      field={field}
-                                      values={values[`additional_${additionalEntity.id}`] as Record<string, unknown> || {}}
-                                      errors={(errors as unknown as Record<string, Record<string, string>>)[`additional_${additionalEntity.id}`] || {}}
-                                      touched={(touched as unknown as Record<string, Record<string, boolean>>)[`additional_${additionalEntity.id}`] || {}}
-                                      setFieldValue={(fieldName: string, value: unknown) => setFieldValue(`additional_${additionalEntity.id}.${fieldName}`, value)
-                                      }
-                                      entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                      fieldPrefix={`additional_${additionalEntity.id}`}
-                                      useGridLayout={true}
-                                    />
-                                  ))}
-                                </Grid>
-                              );
-                            }
                             return (
-                              entityFields.map((field) => (
-                                <FormFieldRenderer
-                                  key={`${additionalEntity.id}_${field.name}`}
-                                  field={field}
-                                  values={values[`additional_${additionalEntity.id}`] as Record<string, unknown> || {}}
-                                  errors={(errors as unknown as Record<string, Record<string, string>>)[`additional_${additionalEntity.id}`] || {}}
-                                  touched={(touched as unknown as Record<string, Record<string, boolean>>)[`additional_${additionalEntity.id}`] || {}}
-                                  setFieldValue={(fieldName: string, value: unknown) => setFieldValue(`additional_${additionalEntity.id}.${fieldName}`, value)
-                                  }
-                                  entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                  fieldPrefix={`additional_${additionalEntity.id}`}
-                                />
-                              ))
+                              <FormFields
+                                fields={entityFields}
+                                values={values[`additional_${additionalEntity.id}`] as Record<string, unknown> || {}}
+                                errors={(errors as unknown as Record<string, Record<string, string>>)[`additional_${additionalEntity.id}`] || {}}
+                                touched={(touched as unknown as Record<string, Record<string, boolean>>)[`additional_${additionalEntity.id}`] || {}}
+                                setFieldValue={(fieldName: string, value: unknown) => setFieldValue(`additional_${additionalEntity.id}.${fieldName}`, value)}
+                                entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                                fieldPrefix={`additional_${additionalEntity.id}`}
+                                getFieldKey={(field) => `${additionalEntity.id}_${field.name}`}
+                              />
                             );
                           })()}
                         </div>
@@ -1000,40 +842,16 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                             <Typography variant="subtitle1" style={{ marginBottom: 10 }}>
                               {`${fromEntityLabel} → ${t_i18n(`relationship_${relationship.relationshipType}`)} → ${toEntityLabel}`}
                             </Typography>
-                            {(() => {
-                              const hasWidthDefined = relationship.fields?.some((f) => f.width && f.width !== 'full');
-                              if (hasWidthDefined) {
-                                return (
-                                  <Grid container spacing={2}>
-                                    {relationship.fields?.map((field) => (
-                                      <FormFieldRenderer
-                                        key={`relationship_${relationship.id}_${field.name}`}
-                                        field={field}
-                                        values={values[`relationship_${relationship.id}`] as Record<string, unknown> || {}}
-                                        errors={(errors as unknown as Record<string, Record<string, string>>)[`relationship_${relationship.id}`] || {}}
-                                        touched={(touched as unknown as Record<string, Record<string, boolean>>)[`relationship_${relationship.id}`] || {}}
-                                        setFieldValue={(fieldName: string, value: unknown) => setFieldValue(`relationship_${relationship.id}.${field.name}`, value)}
-                                        entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                        fieldPrefix={`relationship_${relationship.id}`}
-                                        useGridLayout={true}
-                                      />
-                                    ))}
-                                  </Grid>
-                                );
-                              }
-                              return relationship.fields?.map((field) => (
-                                <FormFieldRenderer
-                                  key={`relationship_${relationship.id}_${field.name}`}
-                                  field={field}
-                                  values={values[`relationship_${relationship.id}`] as Record<string, unknown> || {}}
-                                  errors={(errors as unknown as Record<string, Record<string, string>>)[`relationship_${relationship.id}`] || {}}
-                                  touched={(touched as unknown as Record<string, Record<string, boolean>>)[`relationship_${relationship.id}`] || {}}
-                                  setFieldValue={(fieldName: string, value: unknown) => setFieldValue(`relationship_${relationship.id}.${field.name}`, value)}
-                                  entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                  fieldPrefix={`relationship_${relationship.id}`}
-                                />
-                              ));
-                            })()}
+                            <FormFields
+                              fields={relationship.fields ?? []}
+                              values={values[`relationship_${relationship.id}`] as Record<string, unknown> || {}}
+                              errors={(errors as unknown as Record<string, Record<string, string>>)[`relationship_${relationship.id}`] || {}}
+                              touched={(touched as unknown as Record<string, Record<string, boolean>>)[`relationship_${relationship.id}`] || {}}
+                              setFieldValue={(fieldName: string, value: unknown) => setFieldValue(`relationship_${relationship.id}.${fieldName}`, value)}
+                              entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                              fieldPrefix={`relationship_${relationship.id}`}
+                              getFieldKey={(field) => `relationship_${relationship.id}_${field.name}`}
+                            />
                           </div>
                         );
                       })}
