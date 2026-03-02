@@ -152,7 +152,7 @@ testDeletedCounter.tool = 5;
 testDeletedCounter.vulnerability = 3;
 testDeletedCounter.software = 1;
 testDeletedCounter.iccid = 3;
-testDeletedCounter.imei = 1;
+testDeletedCounter.imei = 2;
 testDeletedCounter.imsi = 1;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
