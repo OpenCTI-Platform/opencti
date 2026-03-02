@@ -222,9 +222,13 @@ class TestBatchCallbackWrapper(TestCase):
             self.assertTrue(done.wait(timeout=5))
             self.assertEqual(len(batches), 3)
             self.assertEqual(batches[0]["batch_metadata"]["batch_size"], 3)
-            self.assertEqual(batches[0]["batch_metadata"]["trigger_reason"], "size_limit")
+            self.assertEqual(
+                batches[0]["batch_metadata"]["trigger_reason"], "size_limit"
+            )
             self.assertEqual(batches[1]["batch_metadata"]["batch_size"], 3)
-            self.assertEqual(batches[1]["batch_metadata"]["trigger_reason"], "size_limit")
+            self.assertEqual(
+                batches[1]["batch_metadata"]["trigger_reason"], "size_limit"
+            )
             self.assertEqual(batches[2]["batch_metadata"]["batch_size"], 2)
             self.assertEqual(batches[2]["batch_metadata"]["trigger_reason"], "timeout")
         finally:
