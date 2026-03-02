@@ -151,7 +151,7 @@ testDeletedCounter['threat-actor'] = 12;
 testDeletedCounter.tool = 5;
 testDeletedCounter.vulnerability = 3;
 testDeletedCounter.software = 1;
-testDeletedCounter.iccid = 1;
+testDeletedCounter.iccid = 3;
 testDeletedCounter.imei = 1;
 testDeletedCounter.imsi = 1;
 
