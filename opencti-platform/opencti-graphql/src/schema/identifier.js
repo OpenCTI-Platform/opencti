@@ -151,16 +151,18 @@ const stixBaseCyberObservableContribution = {
     hashes(data) {
       // Uppercase the object keys (md5 == MD5)
       const hashes = transformObjectToUpperKeys(data);
-      // Get the key from stix rules and lowercase the hash value for deduplication
-      // Hash values are case-insensitive, so normalizing to lowercase ensures
-      // indicators with the same hash but different casing are properly deduplicated
+      // Get the key from stix rules and lowercase the hash value for deduplication.
+      // Hash values are case-insensitive for hex-encoded hashes, so normalizing
+      // to lowercase ensures observables with the same hash but different casing
+      // are properly deduplicated. SSDEEP is excluded as it uses base64 encoding
+      // where case is significant.
       if (hashes[MD5]) return { [MD5]: hashes[MD5].toLowerCase() };
       if (hashes[SHA_1]) return { [SHA_1]: hashes[SHA_1].toLowerCase() };
       if (hashes[SHA_256]) return { [SHA_256]: hashes[SHA_256].toLowerCase() };
       if (hashes[SHA_512]) return { [SHA_512]: hashes[SHA_512].toLowerCase() };
       if (hashes[SHA3_256]) return { [SHA3_256]: hashes[SHA3_256].toLowerCase() };
       if (hashes[SHA3_512]) return { [SHA3_512]: hashes[SHA3_512].toLowerCase() };
-      if (hashes[SSDEEP]) return { [SSDEEP]: hashes[SSDEEP].toLowerCase() };
+      if (hashes[SSDEEP]) return { [SSDEEP]: hashes[SSDEEP] };
       return undefined;
     },
   },

@@ -55,11 +55,25 @@ import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { checkScore, prepareDate, utcDate } from '../../utils/format';
 import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
-import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
+import { v5 as uuidv5 } from 'uuid';
+import jsonCanonicalize from 'canonicalize';
+import { generateStandardId, REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
+import { OASIS_NAMESPACE } from '../../schema/general';
 import { checkDecayExclusionRules, getActiveDecayExclusionRules } from '../decayRule/exclusions/decayExclusionRule-domain';
 import { getEntitySettingFromCache } from '../../modules/entitySetting/entitySetting-utils';
 import { pushAll } from '../../utils/arrayUtil';
 import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
+
+// Compute the legacy standard_id for an indicator pattern without hash normalization.
+// Before the hash-lowercasing resolver was added, the standard_id was computed from
+// the raw pattern. We generate this legacy ID and include it in x_opencti_stix_ids
+// so that existing indicators (created before the normalization change) are found
+// during upsert lookup, preventing duplicates without requiring a bulk migration.
+const computeLegacyIndicatorStandardId = (pattern: string): string => {
+  const data = jsonCanonicalize({ pattern });
+  const uuid = uuidv5(data as string, OASIS_NAMESPACE);
+  return `indicator--${uuid}`;
+};
 
 export const NO_DECAY_DEFAULT_VALID_PERIOD: number = dayToMs(90);
 export const NO_DECAY_DEFAULT_REVOKED_SCORE: number = 0;
@@ -280,10 +294,24 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 
   const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
 
+  // For backward compatibility with indicators created before hash normalization,
+  // include the legacy standard_id (computed from the raw pattern) in x_opencti_stix_ids.
+  // This ensures upsert lookup finds existing indicators even though their standard_id
+  // was computed without lowercasing hash values.
+  let backwardCompatStixIds = indicator.x_opencti_stix_ids ?? [];
+  if (formattedPattern.includes('hashes')) {
+    const newStandardId = generateStandardId(ENTITY_TYPE_INDICATOR, { pattern: formattedPattern });
+    const legacyStandardId = computeLegacyIndicatorStandardId(formattedPattern);
+    if (legacyStandardId !== newStandardId) {
+      backwardCompatStixIds = [...backwardCompatStixIds, legacyStandardId];
+    }
+  }
+
   const baseIndicator = {
     ...indicator,
     pattern: formattedPattern,
     x_opencti_main_observable_type: observableType,
+    x_opencti_stix_ids: backwardCompatStixIds,
     [X_SCORE]: indicatorBaseScore,
     x_opencti_detection: indicator.x_opencti_detection ?? false,
     valid_from: validFrom.toISOString(),
