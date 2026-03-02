@@ -19,18 +19,16 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
       [ENTITY_TYPE_INDICATOR]: [{ src: 'pattern' }],
     },
     resolvers: {
-      pattern(data: string) {
-        // Normalize hash values in STIX patterns to lowercase for deduplication
+      pattern(data: object) {
+        const pattern = data as unknown as string;
+        if (!pattern || typeof pattern !== 'string') return pattern;
+
+        if (!pattern.includes('hashes')) return pattern;
+
+        // Normalize hash values in STIX patterns to lowercase for deduplication.
         // Hash values are case-insensitive, so [file:hashes.'MD5' = 'ABC'] and
-        // [file:hashes.'MD5' = 'abc'] should produce the same standard ID
-        if (!data || typeof data !== 'string') return data;
-
-        // Only normalize hashes in patterns (patterns containing "hashes")
-        if (!data.includes('hashes')) return data;
-
-        // Use a regex to find hash values after "hashes" and normalize them
-        // This matches patterns like: file:hashes.'MD5' = 'HASH_VALUE'
-        return data.replace(/(hashes[^=]+=\s*')([^']+)(')/g, (_match, prefix, hashValue, suffix) => {
+        // [file:hashes.'MD5' = 'abc'] should produce the same standard ID.
+        return pattern.replace(/(hashes[^=]+=\s*')([^']+)(')/g, (_match, prefix, hashValue, suffix) => {
           return prefix + hashValue.toLowerCase() + suffix;
         });
       },

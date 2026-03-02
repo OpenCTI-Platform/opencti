@@ -44,7 +44,7 @@ export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
       [k: string]: Array<{ src: string; dependencies?: string[] }> | string | (() => string);
     };
     resolvers?: {
-      [f: string]: (data: any) => string;
+      [f: string]: (data: object) => string;
     };
   };
   representative: RepresentativeFn<Z>;
