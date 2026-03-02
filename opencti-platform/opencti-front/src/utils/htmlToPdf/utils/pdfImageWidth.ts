@@ -26,12 +26,18 @@ const setImagesWidth = (content: string) => {
   updatedContent = updatedContent.replaceAll(/<figure.+?style=".*?width:([0-9\\.]+%).*?".*?>.*?<\/figure>/gi, (match, width) => {
     const widthValue = width.split('%')[0];
     const widthInPixels = (fullWidth * widthValue) / 100;
-    return match.replace('<img src="', `<img width="${widthInPixels}" src="`);
+    let result = match;
+    result = result.replace(/ width="\d+"/, '');
+    result = result.replace(/ height="\d+"/, '');
+    return result.replace('<img ', `<img width="${widthInPixels}" `);
   });
   // In case of figures with pixels containing images, need to also apply the size on the image.
   updatedContent = updatedContent.replaceAll(/<figure.+?style=".*?width:([0-9\\.]+px).*?".*?>.*?<\/figure>/gi, (match, width) => {
     const widthValue = width.split('px')[0];
-    return match.replace('<img src="', `<img width="${widthValue}" src="`);
+    let result = match;
+    result = result.replace(/ width="\d+"/, '');
+    result = result.replace(/ height="\d+"/, '');
+    return result.replace('<img ', `<img width="${widthValue}" `);
   });
   return updatedContent;
 };
