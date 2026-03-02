@@ -150,7 +150,7 @@ testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter['threat-actor'] = 12;
 testDeletedCounter.tool = 5;
 testDeletedCounter.vulnerability = 2;
-testDeletedCounter.iccid = 1;
+testDeletedCounter.iccid = 3;
 testDeletedCounter.imei = 1;
 testDeletedCounter.imsi = 1;
 
