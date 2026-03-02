@@ -322,4 +322,23 @@ describe('identifier', () => {
     const hostnameType = generateInternalType(hostname);
     expect(hostnameType).toEqual('Hostname');
   });
+
+  it('should hash-based indicators be deduplicated regardless of case', () => {
+    // MD5 hash with different casing should produce the same standard ID
+    const md5Lower = generateStandardId(ENTITY_TYPE_INDICATOR, { pattern: '[file:hashes.\'MD5\' = \'d41d8cd98f00b204e9800998ecf8427e\']' });
+    const md5Upper = generateStandardId(ENTITY_TYPE_INDICATOR, { pattern: '[file:hashes.\'MD5\' = \'D41D8CD98F00B204E9800998ECF8427E\']' });
+    const md5Mixed = generateStandardId(ENTITY_TYPE_INDICATOR, { pattern: '[file:hashes.\'MD5\' = \'D41d8cd98f00B204e9800998ecf8427E\']' });
+    expect(md5Lower).toEqual(md5Upper);
+    expect(md5Lower).toEqual(md5Mixed);
+
+    // SHA-1 hash with different casing should produce the same standard ID
+    const sha1Lower = generateStandardId(ENTITY_TYPE_INDICATOR, { pattern: '[file:hashes.\'SHA-1\' = \'da39a3ee5e6b4b0d3255bfef95601890afd80709\']' });
+    const sha1Upper = generateStandardId(ENTITY_TYPE_INDICATOR, { pattern: '[file:hashes.\'SHA-1\' = \'DA39A3EE5E6B4B0D3255BFEF95601890AFD80709\']' });
+    expect(sha1Lower).toEqual(sha1Upper);
+
+    // SHA-256 hash with different casing should produce the same standard ID
+    const sha256Lower = generateStandardId(ENTITY_TYPE_INDICATOR, { pattern: '[file:hashes.\'SHA-256\' = \'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\']' });
+    const sha256Upper = generateStandardId(ENTITY_TYPE_INDICATOR, { pattern: '[file:hashes.\'SHA-256\' = \'E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855\']' });
+    expect(sha256Lower).toEqual(sha256Upper);
+  });
 });

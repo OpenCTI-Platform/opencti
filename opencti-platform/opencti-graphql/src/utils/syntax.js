@@ -112,25 +112,44 @@ export const extractValidObservablesFromIndicatorPattern = (pattern) => {
 
 export const cleanupIndicatorPattern = (patternType, pattern) => {
   if (pattern && patternType.toLowerCase() === STIX_PATTERN_TYPE) {
-    const grabInterestingTokens = (ctx, parser, acc) => {
+    const grabInterestingTokens = (ctx, parser, acc, prevToken, isHashContext) => {
       const operators = [...parser.symbolicNames, '=', '!=', '<', '>', '<=', '>='];
       const numberOfTokens = ctx.getChildCount();
+      // Check if we're in a hash context (file:hashes)
+      let inHashContext = isHashContext;
       for (let i = 0; i < numberOfTokens; i += 1) {
         const child = ctx.getChild(i);
         const subCount = child.getChildCount();
+        const childText = child.getText();
+
+        // Detect if we're entering a hash context
+        if (childText.includes('hashes')) {
+          inHashContext = true;
+        }
+
         if (subCount > 0) {
-          grabInterestingTokens(child, parser, acc);
-        } else if (operators.includes(child.getText())) {
-          acc.push(` ${child.getText()} `);
+          grabInterestingTokens(child, parser, acc, childText, inHashContext);
+        } else if (operators.includes(childText)) {
+          acc.push(` ${childText} `);
+          inHashContext = false; // Reset after operator
         } else {
-          acc.push(child.getText());
+          // If we're in a hash context and this is a hash value (quoted string after =)
+          // normalize it to lowercase
+          if (inHashContext && prevToken && prevToken.trim() === '=' && childText.startsWith("'") && childText.endsWith("'")) {
+            // Extract the hash value, lowercase it, and put quotes back
+            const hashValue = childText.slice(1, -1); // Remove quotes
+            acc.push(`'${hashValue.toLowerCase()}'`);
+            inHashContext = false; // Reset after hash value
+          } else {
+            acc.push(childText);
+          }
         }
       }
     };
     const { parser, parsedPattern } = parsePattern(pattern);
     const patternContext = parsedPattern.getChild(0);
     const patternTokens = [];
-    grabInterestingTokens(patternContext, parser, patternTokens);
+    grabInterestingTokens(patternContext, parser, patternTokens, null, false);
     return patternTokens.join('').trim();
   }
   // For other pattern type, cleanup is not yet implemented
