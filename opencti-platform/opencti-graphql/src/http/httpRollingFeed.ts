@@ -84,13 +84,9 @@ export const resolveNeighborsForFeed = async (
   const elementIds = elements.map((e) => e.internal_id);
   const elementIdSet = new Set(elementIds);
 
-  for (const pairKey of neededPairs) {
+  const queryRelationsForPair = async (pairKey: string) => {
     const [relType, targetType] = pairKey.split(':');
 
-    // Query both directions: source entity as FROM, and source entity as TO
-    const allRelations: BasicStoreRelation[] = [];
-
-    // Direction 1: feed entities as FROM -> resolve TO neighbors
     const fromFilter: FiltersWithNested = {
       key: ['connections'],
       values: [],
@@ -112,14 +108,7 @@ export const resolveNeighborsForFeed = async (
       filters: [fromFilter, toTypeFilter],
       filterGroups: [],
     };
-    const relsFrom = await fullRelationsList<BasicStoreRelation>(context, user, [relType], {
-      filters: filtersFrom,
-      indices: READ_RELATIONSHIPS_INDICES,
-      noFiltersChecking: true,
-    });
-    allRelations.push(...relsFrom);
 
-    // Direction 2: feed entities as TO -> resolve FROM neighbors
     const toFilter: FiltersWithNested = {
       key: ['connections'],
       values: [],
@@ -141,14 +130,22 @@ export const resolveNeighborsForFeed = async (
       filters: [toFilter, fromTypeFilter],
       filterGroups: [],
     };
-    const relsTo = await fullRelationsList<BasicStoreRelation>(context, user, [relType], {
-      filters: filtersTo,
-      indices: READ_RELATIONSHIPS_INDICES,
-      noFiltersChecking: true,
-    });
-    allRelations.push(...relsTo);
 
-    // Build source->target ID mapping from all found relationships
+    const [relsFrom, relsTo] = await Promise.all([
+      fullRelationsList<BasicStoreRelation>(context, user, [relType], {
+        filters: filtersFrom,
+        indices: READ_RELATIONSHIPS_INDICES,
+        noFiltersChecking: true,
+      }),
+      fullRelationsList<BasicStoreRelation>(context, user, [relType], {
+        filters: filtersTo,
+        indices: READ_RELATIONSHIPS_INDICES,
+        noFiltersChecking: true,
+      }),
+    ]);
+
+    const allRelations = [...relsFrom, ...relsTo];
+
     const sourceToTargetIds = new Map<string, Set<string>>();
     for (const rel of allRelations) {
       let sourceId: string;
@@ -168,14 +165,38 @@ export const resolveNeighborsForFeed = async (
       sourceToTargetIds.get(sourceId)!.add(targetId);
     }
 
-    // Batch-resolve all target entities
-    const allTargetIds = R.uniq(
-      Array.from(sourceToTargetIds.values()).flatMap((s) => Array.from(s)),
-    );
-    if (allTargetIds.length === 0) continue;
-    const resolvedEntities = await elFindByIds(context, user, allTargetIds, { type: targetType, toMap: true }) as Record<string, BasicStoreBase>;
+    return { pairKey, targetType, sourceToTargetIds };
+  };
 
-    // Populate the neighbors map
+  const pairResults = await Promise.all(
+    Array.from(neededPairs).map((pairKey) => queryRelationsForPair(pairKey)),
+  );
+
+  // Batch-resolve all target entities across all pairs in a single call
+  const allTargetIdsByType = new Map<string, Set<string>>();
+  for (const { targetType, sourceToTargetIds } of pairResults) {
+    for (const targetIds of sourceToTargetIds.values()) {
+      if (!allTargetIdsByType.has(targetType)) {
+        allTargetIdsByType.set(targetType, new Set());
+      }
+      const typeSet = allTargetIdsByType.get(targetType)!;
+      for (const tid of targetIds) {
+        typeSet.add(tid);
+      }
+    }
+  }
+
+  const resolvedByType = new Map<string, Record<string, BasicStoreBase>>();
+  await Promise.all(
+    Array.from(allTargetIdsByType.entries()).map(async ([targetType, ids]) => {
+      const resolved = await elFindByIds(context, user, Array.from(ids), { type: targetType, toMap: true }) as Record<string, BasicStoreBase>;
+      resolvedByType.set(targetType, resolved);
+    }),
+  );
+
+  // Populate the neighbors map
+  for (const { pairKey, targetType, sourceToTargetIds } of pairResults) {
+    const resolvedEntities = resolvedByType.get(targetType) ?? {};
     for (const [sourceId, targetIds] of sourceToTargetIds.entries()) {
       if (!neighborsMap.has(sourceId)) {
         neighborsMap.set(sourceId, new Map());

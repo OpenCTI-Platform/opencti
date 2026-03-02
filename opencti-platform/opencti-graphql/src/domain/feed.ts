@@ -30,7 +30,10 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
       if (f.multi_match_strategy && !VALID_MULTI_MATCH_STRATEGIES.includes(f.multi_match_strategy)) {
         throw ValidationError(`Invalid multi_match_strategy "${f.multi_match_strategy}", must be "first" or "list"`, 'multi_match_strategy');
       }
-      if (f.multi_match_separator && f.multi_match_separator === input.separator) {
+      const hasRelationshipMappings = f.mappings.some((m) => !!m.relationship_type && !!m.target_entity_type);
+      const effectiveStrategy = f.multi_match_strategy || 'list';
+      const effectiveSeparator = f.multi_match_separator || ',';
+      if (hasRelationshipMappings && effectiveStrategy === 'list' && effectiveSeparator === input.separator) {
         throw ValidationError(
           `Multi-match separator for column "${f.attribute}" must differ from the feed CSV separator ("${input.separator}")`,
           'multi_match_separator',

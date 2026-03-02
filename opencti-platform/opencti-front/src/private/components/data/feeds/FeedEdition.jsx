@@ -314,7 +314,7 @@ const FeedEditionContainer = (props) => {
 
   const handleToggleNeighborMode = (i, type) => {
     const existingMapping = feedAttributes[i]?.mappings?.[type] || {};
-    const isNeighbor = 'relationship_type' in existingMapping;
+    const isNeighbor = !!existingMapping.relationship_type;
     let mapping;
     if (isNeighbor) {
       mapping = { type, attribute: '' };

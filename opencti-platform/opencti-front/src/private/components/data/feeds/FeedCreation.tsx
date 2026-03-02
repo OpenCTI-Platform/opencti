@@ -364,7 +364,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
 
   const handleToggleNeighborMode = (i: string, type: string) => {
     const existingMapping = feedAttributes[i]?.mappings?.[type] || {};
-    const isNeighbor = 'relationship_type' in existingMapping;
+    const isNeighbor = !!existingMapping.relationship_type;
     let mapping;
     if (isNeighbor) {
       mapping = { type, attribute: '' };
