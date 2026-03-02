@@ -92,6 +92,8 @@ The available operators are:
 | not_eq          | different             |                       |
 | nil             | empty / no value      |                       |
 | not_nil         | non-empty / any value |                       |
+| only_eq_to      | is only equal to      |                       |
+| not_only_eq_to  | is not only equal to  |                       |
 | gt              | greater than          | numbers and dates     |
 | gte             | greater than or equal | numbers and dates     |
 | lt              | lower than            | numbers and dates     |
@@ -121,6 +123,57 @@ filters = {
     filterGroups: [],
 };
 ```
+
+- The operator `only_eq_to` differs from `eq` operator for attributes that can have several `values`. It indicates a field values are all equal to the provided filter values, and no other values. With the `or` local operator, the field should have only one value, equal to one of the filter values. With the `and` local mode, the field should have exactly all the filter values, and no other values.
+
+  The operator `not_only_eq_to` is the opposite of `only_eq_to` and returns the values that don't match the same filter with `only_eq_to` instead of `not_only_eq_to`.
+
+
+<details>
+
+<summary><strong>'Only equal to' and 'Not only equal to' detailed examples</strong></summary>
+
+- `only_eq_to` with a single value: fields having exactly one value, corresponding to the filter value
+
+![Only Equal To filter operator with one value](./assets/filters-OnlyEqTo.png)
+
+- `only_eq_to` with several values and `or` local mode: fields having one value only among the filter values
+
+![Only Equal To filter operator with 'or' mode](./assets/filters-OnlyEqTo-or.png)
+
+- `only_eq_to` with several values and `and` local mode: fields having exactly all the filter values, and no other values
+
+![Only Equal To filter operator with 'or' mode](./assets/filters-OnlyEqTo-and.png)
+
+- `not_only_eq_to` with a single value
+
+![Not Only Equal To filter operator with one value](./assets/filters-NotOnlyEqTo.png)
+
+- `not_only_eq_to` with several values and `or` local mode
+
+![Not Only Equal To filter operator with 'or' mode](./assets/filters-NotOnlyEqTo-or.png)
+
+- `not_only_eq_to` with several values and `and` local mode
+
+![Not Only Equal To filter operator with 'or' mode](./assets/filters-NotOnlyEqTo-and.png)
+
+
+</details>
+
+```ts
+// Example: labels are only equal to 'label1' or 'label2', no other labels are accepted
+filters = {
+    mode: 'and',
+    filters: [{
+        key: 'objectLabel',
+        values: ['label1', 'label2'],
+        operator: 'only_eq_to',
+        mode: 'or',
+    }],
+    filterGroups: [],
+};
+```
+
 
 - There is a small difference between `search` and `contains`. `search` finds any occurrence of specified words regardless of their order, while `contains` specifically looks for the exact sequence of words you provide.
 

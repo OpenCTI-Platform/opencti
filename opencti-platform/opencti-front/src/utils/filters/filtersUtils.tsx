@@ -770,7 +770,11 @@ export const getAvailableOperatorForFilterKey = (
     }
   }
 
-  return ['eq', 'not_eq', 'nil', 'not_nil']; // vocabulary or id
+  if (filterDefinition.multiple) {
+    return ['eq', 'not_eq', 'only_eq_to', 'not_only_eq_to', 'nil', 'not_nil'];
+  }
+
+  return ['eq', 'not_eq', 'nil', 'not_nil'];
 };
 
 export const getAvailableOperatorForFilter = (

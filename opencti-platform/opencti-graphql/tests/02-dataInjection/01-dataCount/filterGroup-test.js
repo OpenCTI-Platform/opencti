@@ -26,6 +26,8 @@ import { getFakeAuthUser } from '../../utils/domainQueryHelper';
 import { SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../../../src/modules/malwareAnalysis/malwareAnalysis-types';
 
+// File to test dynamic filtering with different keys, operators, modes, combinations
+
 // test queries involving dynamic filters
 
 const REPORT_LIST_QUERY = gql`
@@ -116,14 +118,18 @@ describe('Complex filters combinations for elastic queries', () => {
   let report2InternalId;
   let report3InternalId;
   let report4InternalId;
+  let report5InternalId;
   const report1StixId = 'report--994491f0-f114-4e41-bcf0-3288c0324f01';
   const report2StixId = 'report--994491f0-f114-4e41-bcf0-3288c0324f02';
   const report3StixId = 'report--994491f0-f114-4e41-bcf0-3288c0324f03';
   const report4StixId = 'report--994491f0-f114-4e41-bcf0-3288c0324f04';
+  const report5StixId = 'report--994491f0-f114-4e41-bcf0-3288c0324f05';
   let marking1StixId;
   let marking1Id;
   let marking2StixId;
   let marking2Id;
+  let marking3StixId;
+  let marking3Id;
   let locationInternalId;
   let intrusionSetInternalId;
   it('should testing environment created', async () => {
@@ -147,12 +153,20 @@ describe('Complex filters combinations for elastic queries', () => {
       definition: 'TEST:2',
       x_opencti_order: 2,
     };
+    const marking3Input = {
+      definition_type: 'PAP',
+      definition: 'PAP:NEW',
+      x_opencti_order: 3,
+    };
     const marking1 = await addAllowedMarkingDefinition(testContext, ADMIN_USER, marking1Input);
     marking1StixId = marking1.standard_id;
     marking1Id = marking1.id;
     const marking2 = await addAllowedMarkingDefinition(testContext, ADMIN_USER, marking2Input);
     marking2StixId = marking2.standard_id;
     marking2Id = marking2.id;
+    const marking3 = await addAllowedMarkingDefinition(testContext, ADMIN_USER, marking3Input);
+    marking3StixId = marking3.standard_id;
+    marking3Id = marking3.id;
     // Create the reports
     const REPORT1 = {
       input: {
@@ -192,8 +206,19 @@ describe('Complex filters combinations for elastic queries', () => {
         description: '', // empty string
         stix_id: report4StixId,
         published: '2023-09-15T00:51:35.000Z',
-        objectMarking: [marking2StixId],
+        objectMarking: [marking2StixId, marking1StixId, marking3StixId],
         confidence: 40,
+      },
+    };
+    const REPORT5 = {
+      input: {
+        name: 'Report5',
+        description: null,
+        stix_id: report5StixId,
+        published: '2025-09-15T00:51:35.000Z',
+        report_types: ['threat-report', 'internal-report'],
+        objectMarking: [],
+        confidence: 11,
       },
     };
     const report1 = await queryAsAdmin({
@@ -212,6 +237,10 @@ describe('Complex filters combinations for elastic queries', () => {
       query: CREATE_QUERY,
       variables: REPORT4,
     });
+    const report5 = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: REPORT5,
+    });
     expect(report1).not.toBeNull();
     expect(report1.data.reportAdd).not.toBeNull();
     expect(report1.data.reportAdd.name).toEqual('Report1');
@@ -224,10 +253,14 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(report4).not.toBeNull();
     expect(report4.data.reportAdd).not.toBeNull();
     expect(report4.data.reportAdd.name).toEqual('Report4');
+    expect(report5).not.toBeNull();
+    expect(report5.data.reportAdd).not.toBeNull();
+    expect(report5.data.reportAdd.name).toEqual('Report5');
     report1InternalId = report1.data.reportAdd.id;
     report2InternalId = report2.data.reportAdd.id;
     report3InternalId = report3.data.reportAdd.id;
     report4InternalId = report4.data.reportAdd.id;
+    report5InternalId = report5.data.reportAdd.id;
     // Fetch a location and an intrusion set internal ids
     const location = await storeLoadById(testContext, ADMIN_USER, 'location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c', ENTITY_TYPE_LOCATION);
     locationInternalId = location.internal_id;
@@ -265,9 +298,9 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(5); // the 4 reports created + the report in DATA-TEST-STIX2_v2.json
+    expect(queryResult.data.reports.edges.length).toEqual(6); // the 5 reports created + the report in DATA-TEST-STIX2_v2.json
     queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY });
-    expect(queryResult.data.reports.edges.length).toEqual(5);
+    expect(queryResult.data.reports.edges.length).toEqual(6);
   });
   it('should list entities according to filters: one filter', async () => {
     // report_types = threat-report
@@ -289,7 +322,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(3); // the reports created + the report in DATA-TEST-STIX2_v2.json
+    expect(queryResult.data.reports.edges.length).toEqual(4); // 3 of the created reports + the report in DATA-TEST-STIX2_v2.json
   });
   it('should list entities according to filters: filters with different operators', async () => {
     // (report_types = threat-report) AND (report_types != internal-report)
@@ -347,7 +380,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(3); // report1 and report3 and report in DATA-TEST-STIX2_v2.json
+    expect(queryResult.data.reports.edges.length).toEqual(4); // report1, report3, report5 and report in DATA-TEST-STIX2_v2.json
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
@@ -398,7 +431,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(4); // 3 of the reports created + the report in DATA-TEST-STIX2_v2.json
+    expect(queryResult.data.reports.edges.length).toEqual(5); // 4 of the reports created + the report in DATA-TEST-STIX2_v2.json
     // (report_types = internal-report AND threat-report)
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
@@ -418,8 +451,9 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(1);
-    expect(queryResult.data.reports.edges[0].node.name).toEqual('Report2');
+    expect(queryResult.data.reports.edges.length).toEqual(2);
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report5')).toBeTruthy();
   });
   it('should list entities according to filters: filters and filter groups', async () => {
     // (report_types = threat-report AND published before 30/12/2021)
@@ -529,9 +563,10 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(3);
+    expect(queryResult.data.reports.edges.length).toEqual(4);
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report2')).toBeTruthy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy();
     expect(queryResult.data.reports.edges.map((n) => n.node.name)).includes('A demo report for testing purposes').toBeTruthy();
   });
   it('should list entities according to filters: complex filter combination with groups and filters imbrication', async () => {
@@ -700,8 +735,9 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(1);
-    expect(queryResult.data.reports.edges[0].node.name).toEqual('Report3');
+    expect(queryResult.data.reports.edges.length).toEqual(2);
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeTruthy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report5')).toBeTruthy();
     // test for 'not_nil': objectMarking is not empty
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
@@ -744,9 +780,10 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(2);
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeTruthy(); // description is empty string
-    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy(); // description is null
+    expect(queryResult.data.reports.edges.length).toEqual(3);
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeTruthy(); // description is undefined
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report4')).toBeTruthy(); // description is empty string
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report5')).toBeTruthy(); // description is null
     // description is not empty
     queryResult = await queryAsAdmin({
       query: REPORT_LIST_QUERY,
@@ -847,11 +884,12 @@ describe('Complex filters combinations for elastic queries', () => {
       toTypes: [ENTITY_TYPE_MARKING_DEFINITION],
     };
     const distribution = await distributionRelations(testContext, ADMIN_USER, distributionArgs);
-    // there are 3 markings involved in a relationship with a report: the 2 markings created + the marking of the report in DATA-TEST-STIX2_v2
-    expect(distribution.length).toEqual(3);
+    // there are 4 markings involved in a relationship with a report: the 3 markings created + the marking of the report in DATA-TEST-STIX2_v2
+    expect(distribution.length).toEqual(4);
     const distributionCount = new Map(distribution.map((n) => [n.label, n.value])); // Map<marking internal_id, count>
-    expect(distributionCount.get(marking1Id)).toEqual(1); // marking1 is used 1 time (in Report1)
+    expect(distributionCount.get(marking1Id)).toEqual(2); // marking1 is used 2 times (in Report1 and Report4)
     expect(distributionCount.get(marking2Id)).toEqual(3); // marking2 is used 3 times
+    expect(distributionCount.get(marking3Id)).toEqual(1); // marking3 is used 1 time (in Report4)
   });
   it('should list entities according to filters: filters with multi keys', async () => {
     // (name = Report1) OR (description = Report1)
@@ -957,7 +995,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(8); // 8 containers: 4 reports in this file + 1 report, 1 note, 1 observed-data, 1 opinion in DATA-TEST-STIXv2_v2
+    expect(queryResult.data.globalSearch.edges.length).toEqual(9); // 9 containers: 5 reports in this file + 1 report, 1 note, 1 observed-data, 1 opinion in DATA-TEST-STIXv2_v2
     // (entity_type = Report AND container)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -977,7 +1015,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(5); // 5 reports
+    expect(queryResult.data.globalSearch.edges.length).toEqual(6); // 5 reports created in this file + 1 report in DATA-TEST-STIXv2_v2
     // (entity_type = Report AND Container AND Stix-Core-Object)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -997,7 +1035,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(5); // 5 reports
+    expect(queryResult.data.globalSearch.edges.length).toEqual(6); // 5 reports created in this file + 1 report in DATA-TEST-STIXv2_v2
     // (entity_type = Report AND Container AND Internal-Object)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1277,7 +1315,7 @@ describe('Complex filters combinations for elastic queries', () => {
         filters: undefined,
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(44);
+    expect(queryResult.data.globalSearch.edges.length).toEqual(45);
     // (source_reliability is empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1297,7 +1335,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(33); // 44 entities - 11 entities with a source reliability = 33
+    expect(queryResult.data.globalSearch.edges.length).toEqual(34); // 45 entities - 11 entities with a source reliability = 34
     // (source_reliability is not empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1357,7 +1395,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(38); // 44 entities - 6 entities with source reliability equals to A = 38
+    expect(queryResult.data.globalSearch.edges.length).toEqual(39); // 45 entities - 6 entities with source reliability equals to A = 39
     // (source_reliability = A - Completely reliable OR B - Usually reliable)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1460,7 +1498,7 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(31); // 44 - 11 with a source reliability - 2 with a reliability (and no source reliability) = 31
+    expect(queryResult.data.globalSearch.edges.length).toEqual(32); // 45 - 11 with a source reliability - 2 with a reliability (and no source reliability) = 31
     // (computed_reliability is not empty)
     queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -2372,8 +2410,190 @@ describe('Complex filters combinations for elastic queries', () => {
         },
       },
     });
-    expect(queryResult.data.reports.edges.length).toEqual(3); // the reports published in the last 3 years: report1, report2, report4
+    expect(queryResult.data.reports.edges.length).toEqual(4); // the reports published in the last 3 years: report1, report2, report4, report5
   });
+  it('should list entities according filters with only_eq_to operator', async () => {
+    // only_eq_to operator with several filter keys: not supported
+    let queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: ['report_types', 'name'],
+            values: ['internal-report'],
+            operator: 'only_eq_to',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.errors[0].message).toEqual('Filter must have only one field');
+    // report_types only_eq_to internal-report
+    queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'report_types',
+            values: ['internal-report'],
+            operator: 'only_eq_to',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(1);
+    expect(queryResult.data.reports.edges[0].node.name).toEqual('Report3');
+    // marking only_eq_to marking2 (to test only_eq_to with a relation ref filter)
+    queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'objectMarking',
+            values: [marking2Id],
+            operator: 'only_eq_to',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(1);
+    expect(queryResult.data.reports.edges[0].node.name).toEqual('Report2');
+    // report_types only_eq_to internal-report OR threat-report
+    // It corresponds to the reports with report_types exactly equal to ['internal-report'] or to ['threat-report']
+    queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'report_types',
+            values: ['internal-report', 'threat-report'],
+            operator: 'only_eq_to',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(3);
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeTruthy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeTruthy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('A demo report for testing purposes')).toBeTruthy();
+    // marking only_eq_to marking1 AND marking2
+    // It corresponds to the reports with exactly 2 markings, one being marking1 and the other being marking2
+    queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'objectMarking',
+            values: [marking1Id, marking2Id],
+            operator: 'only_eq_to',
+            mode: 'and',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(1);
+    expect(queryResult.data.reports.edges[0].node.name).toEqual('Report1');
+  });
+  it('should list entities according filters with not_only_eq_to operator', async () => {
+    // not_only_eq_to operator with several filter keys: not supported
+    let queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: ['report_types', 'name'],
+            values: ['internal-report'],
+            operator: 'not_only_eq_to',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.errors[0].message).toEqual('Filter must have only one field');
+    // reports with report_types not_only_eq_to internal-report
+    queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'report_types',
+            values: ['internal-report'],
+            operator: 'not_only_eq_to',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(5); // 6 reports - 1 report with report_types only equal to internal-report (report3)
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeFalsy();
+    // report_types not_only_eq_to internal-report OR threat-report
+    // It corresponds to the reports WITHOUT report_types exactly equal to ['internal-report'] or to ['threat-report']
+    queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'report_types',
+            values: ['internal-report', 'threat-report'],
+            operator: 'not_only_eq_to',
+            mode: 'or',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(3); // 6 reports - 3 reports with report_types only equal to ['internal-report'] or to ['threat-report']
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report3')).toBeFalsy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeFalsy();
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('A demo report for testing purposes')).toBeFalsy();
+    // marking not_only_eq_to marking1 AND marking2
+    // It corresponds to the reports WITHOUT exactly 2 markings, one being marking1 and the other being marking2
+    queryResult = await queryAsAdmin({
+      query: REPORT_LIST_QUERY,
+      variables: {
+        first: 10,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'objectMarking',
+            values: [marking1Id, marking2Id],
+            operator: 'not_only_eq_to',
+            mode: 'and',
+          }],
+          filterGroups: [],
+        },
+      },
+    });
+    expect(queryResult.data.reports.edges.length).toEqual(5); // 6 reports - 1 report matching only_eq_to marking1 AND and marking2 (report1)
+    expect(queryResult.data.reports.edges.map((n) => n.node.name).includes('Report1')).toBeFalsy();
+  });
+
   it('should test environment deleted', async () => {
     const DELETE_REPORT_QUERY = gql`
         mutation reportDelete($id: ID!) {
@@ -2407,12 +2627,20 @@ describe('Complex filters combinations for elastic queries', () => {
       variables: { id: report4InternalId },
     });
     await queryAsAdmin({
+      query: DELETE_REPORT_QUERY,
+      variables: { id: report5InternalId },
+    });
+    await queryAsAdmin({
       query: DELETE_MARKING_QUERY,
       variables: { id: marking1Id },
     });
     await queryAsAdmin({
       query: DELETE_MARKING_QUERY,
       variables: { id: marking2Id },
+    });
+    await queryAsAdmin({
+      query: DELETE_MARKING_QUERY,
+      variables: { id: marking3Id },
     });
     // Verify is no longer found
     let queryResult;
@@ -2428,10 +2656,16 @@ describe('Complex filters combinations for elastic queries', () => {
     queryResult = await queryAsAdmin({ query: READ_REPORT_QUERY, variables: { id: report4StixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).toBeNull();
+    queryResult = await queryAsAdmin({ query: READ_REPORT_QUERY, variables: { id: report5StixId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.report).toBeNull();
     queryResult = await queryAsAdmin({ query: READ_MARKING_QUERY, variables: { id: marking1StixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.markingDefinition).toBeNull();
     queryResult = await queryAsAdmin({ query: READ_MARKING_QUERY, variables: { id: marking2StixId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.markingDefinition).toBeNull();
+    queryResult = await queryAsAdmin({ query: READ_MARKING_QUERY, variables: { id: marking3StixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.markingDefinition).toBeNull();
   });
