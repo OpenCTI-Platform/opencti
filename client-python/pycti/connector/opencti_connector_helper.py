@@ -1382,7 +1382,11 @@ class BatchCallbackWrapper:
                 self._batch_ready_event.set()
 
     def _extract_batch_data(self, trigger_reason: str) -> dict:
-        """Extract batch data and reset batch state. Must be called with _lock held.
+        """Extract up to batch_size events and return batch data. Must be called with _lock held.
+
+        When batch_size is set, extracts at most batch_size items, leaving any
+        overflow in self.batch with a refreshed batch_start_time. When batch_size
+        is None, extracts all items and fully resets batch state.
 
         :param trigger_reason: What triggered batch processing
         :return: Dictionary containing events and batch metadata
