@@ -26,7 +26,7 @@ const SliderField = (muiProps: SliderFieldProps) => {
   } = muiProps;
   const [field, meta] = useField(name);
   const internalOnFocus = (event: FocusEvent<HTMLDivElement>) => {
-    const related = event.relatedTarget as HTMLElement | null;
+    const related = event.relatedTarget;
     const nodeName = related?.nodeName;
     if (nodeName === 'INPUT' || nodeName === undefined) {
       if (typeof onFocus === 'function') {
