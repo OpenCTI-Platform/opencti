@@ -117,7 +117,6 @@ We support the following field types:
 ## Additionnal entities definition
 
 Once you have defined your main entity, you can define additional entities to allow your users to add additional entities within the same form submission. 
-It will allow your users to add additional entities within the same submission.
 
 
 Additional entities can be created of the same type. 
