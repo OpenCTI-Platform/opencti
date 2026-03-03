@@ -291,6 +291,9 @@ export const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration>
       if (isMatch && baseData.id !== bundleElement.id) matchedElements.push(bundleElement);
     }
     const newBundle = { ...bundle, objects: matchedElements };
+    if (matchedElements.length === 1) {
+      return { output_port: 'unmatch', bundle: newBundle };
+    }
     return { output_port: 'out', bundle: newBundle };
   },
 };

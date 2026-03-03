@@ -79,7 +79,7 @@ describe('PLAYBOOK_REDUCING_COMPONENT', () => {
 
     const result = await callExecutor(bundle);
 
-    expect(result.output_port).toBe('out');
+    expect(result.output_port).toBe('unmatch');
     expect(result.bundle.objects).toHaveLength(1);
     expect(result.bundle.objects.find((o) => o.id === REPORT_ID)).toBeDefined();
     expect(result.bundle.objects.find((o) => o.id === CAMPAIGN_ID)).toBeUndefined();
