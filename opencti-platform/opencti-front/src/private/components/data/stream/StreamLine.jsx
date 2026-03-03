@@ -12,7 +12,9 @@ import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
 import StreamPopover from './StreamPopover';
 import inject18n from '../../../../components/i18n';
+import Tag from '@common/tag/Tag';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import StreamConsumersDrawer from './StreamConsumersDrawer';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemBoolean from '../../../../components/ItemBoolean';
@@ -43,6 +45,13 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
+  },
+  filtersItem: {
+    height: 40,
+    display: 'flex',
+    alignItems: 'center',
+    float: 'left',
     paddingRight: 10,
   },
   consumersItem: {
@@ -110,92 +119,111 @@ class StreamLineLineComponent extends Component {
 
   render() {
     const { classes, node, dataColumns, paginationOptions, t } = this.props;
-    const _health = this.computeConsumersHealth();
+    const health = this.computeConsumersHealth();
     const filters = deserializeFilterGroupForFrontend(node.filters);
     return (
-      <ListItem
-        divider={true}
-        disablePadding
-        secondaryAction={(
-          <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
-            <StreamPopover
-              streamCollection={node}
-              paginationOptions={paginationOptions}
-            />
-          </Security>
-        )}
-      >
-        <ListItemButton
-          classes={{ root: classes.item }}
-          component="a"
-          href={`/stream/${node.id}`}
-          target="_blank"
+      <>
+        <ListItem
+          divider={true}
+          disablePadding
+          secondaryAction={(
+            <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+              <StreamPopover
+                streamCollection={node}
+                paginationOptions={paginationOptions}
+              />
+            </Security>
+          )}
         >
-          <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <Stream />
-          </ListItemIcon>
-          <ListItemText
-            primary={(
-              <>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.name.width }}
-                >
-                  {node.name}
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.description.width }}
-                >
-                  <FieldOrEmpty source={node.description}>{node.description}</FieldOrEmpty>
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.id.width, paddingRight: 10 }}
-                >
-                  <ItemCopy content={node.id} variant="inLine" />
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.stream_public.width }}
-                >
-                  <ItemBoolean
-                    variant="inList"
-                    label={node.stream_public ? t('Yes') : t('No')}
-                    status={node.stream_public}
-                  />
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.stream_live.width }}
-                >
-                  <ItemBoolean
-                    variant="inList"
-                    label={node.stream_live ? t('Started') : t('Stopped')}
-                    status={node.stream_live}
-                  />
-                </div>
-                <div
-                  className={classes.consumersItem}
-                  style={{ width: dataColumns.consumers.width }}
-                >
-                  {isFilterGroupNotEmpty(filters)
-                    ? (
-                        <FilterIconButton
-                          filters={filters}
-                          dataColumns={dataColumns}
-                          variant="small"
-                          entityTypes={['Stix-Filtering']}
-                        />
-                      )
-                    : EMPTY_VALUE
-                  }
-                </div>
-              </>
-            )}
-          />
-        </ListItemButton>
-      </ListItem>
+          <ListItemButton
+            classes={{ root: classes.item }}
+            onClick={this.handleOpenConsumers.bind(this)}
+          >
+            <ListItemIcon classes={{ root: classes.itemIcon }}>
+              <Stream />
+            </ListItemIcon>
+            <ListItemText
+              primary={(
+                <>
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.name.width }}
+                  >
+                    {node.name}
+                  </div>
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.description.width }}
+                  >
+                    <FieldOrEmpty source={node.description}>{node.description}</FieldOrEmpty>
+                  </div>
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.id.width, paddingRight: 10 }}
+                  >
+                    <ItemCopy content={node.id} variant="inLine" />
+                  </div>
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.stream_public.width }}
+                  >
+                    <ItemBoolean
+                      variant="inList"
+                      label={node.stream_public ? t('Yes') : t('No')}
+                      status={node.stream_public}
+                    />
+                  </div>
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.stream_live.width }}
+                  >
+                    <ItemBoolean
+                      variant="inList"
+                      label={node.stream_live ? t('Started') : t('Stopped')}
+                      status={node.stream_live}
+                    />
+                  </div>
+                  <div
+                    className={classes.consumersItem}
+                    style={{ width: dataColumns.consumers.width }}
+                  >
+                    {health.count === 0
+                      ? <>{EMPTY_VALUE}</>
+                      : (
+                          <Tag
+                            label={health.label}
+                            color={health.hexColor}
+                          />
+                        )}
+                  </div>
+                  <div
+                    className={classes.filtersItem}
+                    style={{ width: dataColumns.filters.width }}
+                  >
+                    {isFilterGroupNotEmpty(filters)
+                      ? (
+                          <FilterIconButton
+                            filters={filters}
+                            dataColumns={dataColumns}
+                            variant="small"
+                            entityTypes={['Stix-Filtering']}
+                          />
+                        )
+                      : EMPTY_VALUE
+                    }
+                  </div>
+                </>
+              )}
+            />
+          </ListItemButton>
+        </ListItem>
+        <StreamConsumersDrawer
+          streamCollectionId={node.id}
+          streamCollectionName={node.name}
+          open={this.state.displayConsumers}
+          onClose={this.handleCloseConsumers.bind(this)}
+        />
+      </>
     );
   }
 }

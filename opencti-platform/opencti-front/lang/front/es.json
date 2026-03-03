@@ -1693,6 +1693,7 @@
   "Equals": "Igual",
   "Error": "Error",
   "Error loading forms": "Error cargando formularios",
+  "Error loading stream collection consumers": "Error al cargar los consumidores de la colección de flujos",
   "Error trying to download in PDF": "Error al intentar descargar en PDF",
   "Error trying to export a PDF template": "Error al intentar exportar una plantilla PDF",
   "Error trying to export the file": "Error al intentar exportar el archivo",

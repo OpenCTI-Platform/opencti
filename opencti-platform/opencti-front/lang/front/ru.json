@@ -1693,6 +1693,7 @@
   "Equals": "Равняется",
   "Error": "Ошибка",
   "Error loading forms": "Ошибка при загрузке форм",
+  "Error loading stream collection consumers": "Ошибка при загрузке потребителей коллекции потоков",
   "Error trying to download in PDF": "Ошибка при попытке загрузки в формате PDF",
   "Error trying to export a PDF template": "Ошибка при попытке экспортировать шаблон PDF",
   "Error trying to export the file": "Ошибка при попытке экспортировать файл",
