@@ -1598,6 +1598,7 @@
   "Equals": "Égal",
   "Error": "Erreur",
   "Error loading forms": "Erreur de chargement des formulaires",
+  "Error loading stream collection consumers": "Erreur de chargement des consommateurs de collections de flux",
   "Error trying to download in PDF": "Erreur lors du téléchargement en PDF",
   "Error trying to export a PDF template": "Erreur lors de l'exportation d'un modèle PDF",
   "Error trying to export the file": "Erreur lors de l'exportation du fichier",

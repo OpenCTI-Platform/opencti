@@ -12,8 +12,10 @@ import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
 import StreamPopover from './StreamPopover';
-import StreamConsumersDrawer from './StreamConsumersDrawer';
 import inject18n from '../../../../components/i18n';
+import FilterIconButton from '../../../../components/FilterIconButton';
+import StreamConsumersDrawer from './StreamConsumersDrawer';
+import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Security from '../../../../utils/Security';
@@ -42,6 +44,13 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
+  },
+  filtersItem: {
+    height: 40,
+    display: 'flex',
+    alignItems: 'center',
+    float: 'left',
     paddingRight: 10,
   },
   consumersItem: {
@@ -110,6 +119,8 @@ class StreamLineLineComponent extends Component {
   render() {
     const { classes, node, dataColumns, paginationOptions, t } = this.props;
     const health = this.computeConsumersHealth();
+    const filters = deserializeFilterGroupForFrontend(node.filters);
+
     return (
       <>
         <ListItem
@@ -150,7 +161,7 @@ class StreamLineLineComponent extends Component {
                     className={classes.bodyItem}
                     style={{ width: dataColumns.id.width, paddingRight: 10 }}
                   >
-                    <ItemCopy content={node.id} variant="inLine" />
+                    <ItemCopy content={node.id} variant="inLine"/>
                   </div>
                   <div
                     className={classes.bodyItem}
@@ -179,19 +190,35 @@ class StreamLineLineComponent extends Component {
                     {health.count === 0
                       ? <span style={{ color: '#9e9e9e' }}>-</span>
                       : (
-                          <Chip
-                            label={health.label}
-                            style={{
-                              fontSize: 12,
-                              lineHeight: '12px',
-                              borderRadius: 4,
-                              height: 20,
-                              backgroundColor: `${health.hexColor}33`,
-                              color: health.hexColor,
-                              border: `2px solid ${health.hexColor}`,
-                            }}
-                          />
-                        )}
+                        <Chip
+                          label={health.label}
+                          style={{
+                            fontSize: 12,
+                            lineHeight: '12px',
+                            borderRadius: 4,
+                            height: 20,
+                            backgroundColor: `${health.hexColor}33`,
+                            color: health.hexColor,
+                            border: `2px solid ${health.hexColor}`,
+                          }}
+                        />
+                      )}
+                  </div>
+                  <div
+                    className={classes.filtersItem}
+                    style={{ width: dataColumns.filters.width }}
+                  >
+                    {isFilterGroupNotEmpty(filters)
+                      ? (
+                        <FilterIconButton
+                          filters={filters}
+                          dataColumns={dataColumns}
+                          variant="small"
+                          entityTypes={['Stix-Filtering']}
+                        />
+                      )
+                      : EMPTY_VALUE
+                    }
                   </div>
                 </>
               )}

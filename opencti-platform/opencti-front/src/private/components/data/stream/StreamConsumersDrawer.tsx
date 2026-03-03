@@ -14,7 +14,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
 import Drawer from '../../common/drawer/Drawer';
-import { fetchQuery } from '../../../../relay/environment';
+import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import type { Theme } from '../../../../components/Theme';
@@ -173,6 +173,7 @@ const StreamConsumersDrawer: FunctionComponent<StreamConsumersDrawerProps> = ({
         setLoading(false);
       })
       .catch(() => {
+        MESSAGING$.notifyError(t_i18n('Error loading stream collection consumers'));
         setLoading(false);
       });
   }, [streamCollectionId, open]);

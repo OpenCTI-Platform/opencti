@@ -1598,6 +1598,7 @@
   "Equals": "Uguale",
   "Error": "Errore",
   "Error loading forms": "Errore nel caricamento dei moduli",
+  "Error loading stream collection consumers": "Errore nel caricamento dei consumatori della raccolta di flussi",
   "Error trying to download in PDF": "Errore nel tentativo di scaricare in PDF",
   "Error trying to export a PDF template": "Errore nel tentativo di esportare un template PDF",
   "Error trying to export the file": "Errore nel tentativo di esportare il file",
