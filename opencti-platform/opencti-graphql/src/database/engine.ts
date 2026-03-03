@@ -1,5 +1,4 @@
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
-import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import { Client as ElkClient } from '@elastic/elasticsearch';
 import { Client as OpenClient } from '@opensearch-project/opensearch';
 import { AwsSigv4Signer } from '@opensearch-project/opensearch/aws';
@@ -197,6 +196,7 @@ import { IDS_ATTRIBUTES } from '../domain/attribute-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import type { FiltersWithNested } from './middleware-loader';
 import { pushAll, unshiftAll } from '../utils/arrayUtil';
+import { getRoleAssumerWithWebIdentity } from '../utils/awsSdk';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -391,7 +391,7 @@ export const searchEngineInit = async (): Promise<boolean> => {
       service: conf.get('opensearch:service') || 'es',
       getCredentials: () => {
         const credentialsProvider = defaultProvider({
-          roleAssumerWithWebIdentity: getDefaultRoleAssumerWithWebIdentity({ region }),
+          roleAssumerWithWebIdentity: getRoleAssumerWithWebIdentity({ region }),
         });
         return credentialsProvider();
       },

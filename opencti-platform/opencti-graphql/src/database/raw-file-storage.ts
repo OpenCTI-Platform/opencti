@@ -8,7 +8,6 @@ import {
   S3Client,
   type S3ClientConfig,
 } from '@aws-sdk/client-s3';
-import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { Upload } from '@aws-sdk/lib-storage';
 import type { Readable } from 'stream';
@@ -16,6 +15,7 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import conf, { booleanConf, logApp, logS3Debug } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
 import type { AuthUser } from '../types/user';
+import { getRoleAssumerWithWebIdentity, setupAwsClient } from '../utils/awsSdk';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -52,7 +52,7 @@ const buildCredentialProvider = async () => {
   if (useAwsRole) {
     return () => {
       return defaultProvider({
-        roleAssumerWithWebIdentity: getDefaultRoleAssumerWithWebIdentity({
+        roleAssumerWithWebIdentity: getRoleAssumerWithWebIdentity({
           // You must explicitly pass a region if you are not using us-east-1
           region: bucketRegion,
         }),
@@ -91,7 +91,7 @@ export const initializeFileStorageClient = async () => {
   if (useAwsLogs) {
     s3Config.logger = logS3Debug;
   }
-  s3Client = new s3.S3Client(s3Config);
+  s3Client = setupAwsClient(new s3.S3Client(s3Config));
 };
 
 export const initializeBucket = async () => {
