@@ -92,7 +92,7 @@ testUpdatedCounter.tool = 10;
 testUpdatedCounter.sighting = 4;
 testUpdatedCounter['threat-actor'] = 18;
 testUpdatedCounter.vocabulary = 3;
-testUpdatedCounter.vulnerability = 4;
+testUpdatedCounter.vulnerability = 3;
 
 export const testMergedCounter: Record<string, number> = {};
 testMergedCounter['threat-actor'] = 1;
