@@ -18,9 +18,9 @@ import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookCompo
 import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_CONTAINER } from '../../schema/general';
-import type { BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
-import { generateInternalId, generateStandardId, idGenFromData } from '../../schema/identifier';
-import { now, utcDate } from '../../utils/format';
+import type { BasicStoreRelation, StoreRelation } from '../../types/store';
+import { generateInternalId, generateStandardId } from '../../schema/identifier';
+import { utcDate } from '../../utils/format';
 import type { StixCampaign, StixContainer, StixIncident, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-2-1-sdo';
 import { convertStixToInternalTypes, generateInternalType, getParentTypes } from '../../schema/schemaUtils';
 import { ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
@@ -39,9 +39,8 @@ import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import type { StixRelation } from '../../types/stix-2-1-sro';
-import { extractValidObservablesFromIndicatorPattern } from '../../utils/syntax';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
-import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../indicator/indicator-types';
+import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_CONTAINER_TASK, type StixTask, type StoreEntityTask } from '../task/task-types';
 import { FilterMode } from '../../generated/graphql';
 import { generateCreateMessage } from '../../database/data-changes';
@@ -61,6 +60,7 @@ import { PLAYBOOK_UNSHARING_COMPONENT } from './components/unsharing-component';
 import { PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT } from './components/access-restrictions-component';
 import { PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT } from './components/remove-access-restrictions-component';
 import { PLAYBOOK_CREATE_INDICATOR_COMPONENT } from './components/create-indicator-component';
+import { PLAYBOOK_CREATE_OBSERVABLE_COMPONENT } from './components/create-observable-component';
 
 // region built in playbook components
 interface LoggerConfiguration {
@@ -687,129 +687,6 @@ const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
     return { output_port: undefined, bundle };
   },
 };
-
-interface CreateObservableConfiguration {
-  all: boolean;
-  wrap_in_container: boolean;
-}
-const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA: JSONSchemaType<CreateObservableConfiguration> = {
-  type: 'object',
-  properties: {
-    all: { type: 'boolean', $ref: 'Create observables from all indicators in the bundle', default: false },
-    wrap_in_container: { type: 'boolean', $ref: 'If main entity is a container, wrap observables in container', default: false },
-  },
-  required: [],
-};
-const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableConfiguration> = {
-  id: 'PLAYBOOK_CREATE_OBSERVABLE_COMPONENT',
-  name: 'Extract observables from indicator',
-  description: 'Create observables based on an indicator',
-  icon: 'observable',
-  is_entry_point: false,
-  is_internal: true,
-  ports: [{ id: 'out', type: 'out' }, { id: 'unmodified', type: 'out' }],
-  configuration_schema: PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA,
-  schema: async () => PLAYBOOK_CREATE_OBSERVABLE_COMPONENT_SCHEMA,
-  executor: async ({ playbookNode, dataInstanceId, bundle }) => {
-    const { all, wrap_in_container } = playbookNode.configuration;
-    const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    const indicators = [baseData];
-    if (all) {
-      pushAll(indicators, bundle.objects);
-    }
-    const { type: baseDataType } = baseData.extensions[STIX_EXT_OCTI];
-    const isBaseDataAContainer = isStixDomainObjectContainer(baseDataType);
-    const objectsToPush: StixObject[] = [];
-    for (let indexIndicator = 0; indexIndicator < indicators.length; indexIndicator += 1) {
-      const indicator = indicators[indexIndicator] as StixIndicator;
-      if (indicator.type === 'indicator') {
-        const observables = extractValidObservablesFromIndicatorPattern(indicator.pattern);
-        for (let indexObservable = 0; indexObservable < observables.length; indexObservable += 1) {
-          const observable = observables[indexObservable];
-          const description = indicator.description ?? `Simple observable of indicator {${indicator.name || indicator.pattern}}`;
-          const { score, granted_refs } = indicator.extensions[STIX_EXT_OCTI];
-          const observableData = {
-            ...R.dissoc('type', observable),
-            x_opencti_score: score,
-            x_opencti_description: description,
-            extensions: {
-              [STIX_EXT_OCTI]: {
-                extension_type: 'property-extension',
-                type: observable.type,
-              },
-              [STIX_EXT_OCTI_SCO]: {
-                extension_type: 'property-extension',
-                score,
-                description,
-              },
-            },
-          };
-          const observableStandardId = generateStandardId(observable.type, observableData);
-          const storeObservable = {
-            internal_id: generateInternalId(),
-            standard_id: observableStandardId,
-            entity_type: observable.type,
-            parent_types: getParentTypes(observable.type),
-            ...observableData,
-          } as StoreCommon;
-          const stixObservable = convertStoreToStix_2_1(storeObservable) as StixCyberObject;
-          if (indicator.object_marking_refs) {
-            stixObservable.object_marking_refs = indicator.object_marking_refs;
-          }
-          if (indicator.created_by_ref && stixObservable.extensions[STIX_EXT_OCTI_SCO]) {
-            stixObservable.extensions[STIX_EXT_OCTI_SCO].created_by_ref = indicator.created_by_ref;
-          }
-          if (indicator.labels && stixObservable.extensions[STIX_EXT_OCTI_SCO]) {
-            stixObservable.extensions[STIX_EXT_OCTI_SCO].labels = indicator.labels;
-          }
-          if (indicator.external_references && stixObservable.extensions[STIX_EXT_OCTI_SCO]) {
-            stixObservable.extensions[STIX_EXT_OCTI_SCO].external_references = indicator.external_references;
-          }
-          if (granted_refs) {
-            stixObservable.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
-          }
-          objectsToPush.push(stixObservable);
-          if (wrap_in_container && isBaseDataAContainer) {
-            (baseData as StixContainer).object_refs.push(stixObservable.id);
-          }
-          const relationBaseData = {
-            source_ref: indicator.id,
-            target_ref: stixObservable.id,
-            relationship_type: RELATION_BASED_ON,
-          };
-          const relationStandardId = idGenFromData('relationship', relationBaseData);
-          const relationship = {
-            id: relationStandardId,
-            type: 'relationship',
-            ...relationBaseData,
-            object_marking_refs: indicator.object_marking_refs ?? [],
-            created: now(),
-            modified: now(),
-            extensions: {
-              [STIX_EXT_OCTI]: {
-                extension_type: 'property-extension',
-                type: RELATION_BASED_ON,
-              },
-            },
-          } as StixRelation;
-          if (granted_refs) {
-            relationship.extensions[STIX_EXT_OCTI].granted_refs = granted_refs;
-          }
-          objectsToPush.push(relationship);
-          if (wrap_in_container && isBaseDataAContainer) {
-            (baseData as StixContainer).object_refs.push(relationship.id);
-          }
-        }
-      }
-    }
-    if (objectsToPush.length > 0) {
-      pushAll(bundle.objects, objectsToPush);
-      return { output_port: 'out', bundle: { ...bundle, objects: bundle.objects.map((n) => (n.id === baseData.id ? baseData : n)) } };
-    }
-    return { output_port: 'unmodified', bundle };
-  },
-};
-// endregion
 
 // @ts-expect-error TODO improve playbook types to avoid this
 export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
