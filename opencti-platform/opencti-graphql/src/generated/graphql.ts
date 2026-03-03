@@ -36377,9 +36377,9 @@ export type WorkflowSchema = {
 
 export type WorkflowSerializedState = {
   __typename?: 'WorkflowSerializedState';
-  name: Scalars['String']['output'];
   onEnter?: Maybe<Array<WorkflowActionConfig>>;
   onExit?: Maybe<Array<WorkflowActionConfig>>;
+  statusId: Scalars['String']['output'];
 };
 
 export type WorkflowSerializedTransition = {
@@ -50591,9 +50591,9 @@ export type WorkflowSchemaResolvers<ContextType = any, ParentType extends Resolv
 }>;
 
 export type WorkflowSerializedStateResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSerializedState'] = ResolversParentTypes['WorkflowSerializedState']> = ResolversObject<{
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   onEnter?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
   onExit?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
+  statusId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type WorkflowSerializedTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSerializedTransition'] = ResolversParentTypes['WorkflowSerializedTransition']> = ResolversObject<{
