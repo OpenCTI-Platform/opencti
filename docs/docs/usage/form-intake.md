@@ -130,15 +130,13 @@ The display **label for entity** allows you to set labels so that users who aren
 
 ## Relationships 
 
-You can define relationships to be created between entities created in the form.
+You can define relationships to be created between entities created in the form. The **relationship type** will only present compatible entities.
 
 When you add a relation, you need to choose: 
 - the Source entity (identified in the form by its label)
 - the Target entity (identified in the form by its label)
 - the relationship type (select as soon as Source & Target are provided)
-
-
-The **relationship type** will only present compatible entities.
+- Required: toggling the required switch will allow you to create automatically each relations. 
 
 **Warning**: adding some relations in the form definition will not allow users to create the relation manually in the form. You need to toggle the **required** field to create the relation automatically at form submission. This means that any entities matching as source & targets will have relation created between them.
 
