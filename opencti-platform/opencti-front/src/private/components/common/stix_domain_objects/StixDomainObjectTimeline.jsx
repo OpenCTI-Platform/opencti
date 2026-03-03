@@ -51,7 +51,7 @@ class StixDomainObjectTimelineComponent extends Component {
         : [relationship.start_time, relationship.first_seen, relationship.created_at];
 
       const usableDate = dateList.find((date) => date && !isDateStringNone(date));
-      return usableDate ? fldt(usableDate) : '-';
+      return fldt(usableDate);
     };
 
     return (
