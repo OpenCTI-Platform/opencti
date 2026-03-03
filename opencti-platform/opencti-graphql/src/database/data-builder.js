@@ -48,6 +48,7 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
     R.dissoc('fileMarkings'),
     R.dissoc('files'),
     R.dissoc('filesMarkings'),
+    R.dissoc('filesVersions'),
     R.dissoc('noTriggerImport'),
     R.dissoc('embedded'),
     R.omit(schemaRelationsRefDefinition.getInputNames(input.entity_type)),

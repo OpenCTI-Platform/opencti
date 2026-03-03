@@ -3707,15 +3707,17 @@ const internalCreateEntityRaw = async (
     const filesToUpload = [];
     if (!isEmptyField(resolvedInput.files) && Array.isArray(resolvedInput.files)) {
       const filesMarkings = resolvedInput.filesMarkings || [];
+      const filesVersionsArr = resolvedInput.filesVersions || [];
       const noTriggerImportArr = resolvedInput.noTriggerImport || [];
       const embeddedArr = resolvedInput.embedded || [];
       for (let i = 0; i < resolvedInput.files.length; i += 1) {
         const fileInput = resolvedInput.files[i];
         const fileMarking = filesMarkings[i] || resolvedInput.objectMarking?.map(({ id }: { id: string }) => id);
         // If the array is shorter than files, reuse the last provided value (backward compat: single value applies to all)
+        const fileVersion = filesVersionsArr[Math.min(i, filesVersionsArr.length - 1)] ?? undefined;
         const fileNoTriggerImport = noTriggerImportArr[Math.min(i, noTriggerImportArr.length - 1)] ?? false;
         const fileEmbedded = embeddedArr[Math.min(i, embeddedArr.length - 1)] ?? false;
-        filesToUpload.push({ file: fileInput, markings: fileMarking, noTriggerImport: fileNoTriggerImport, embedded: fileEmbedded });
+        filesToUpload.push({ file: fileInput, markings: fileMarking, version: fileVersion, noTriggerImport: fileNoTriggerImport, embedded: fileEmbedded });
       }
     }
     // Handle single file upload (backward compatibility)
@@ -3731,13 +3733,14 @@ const internalCreateEntityRaw = async (
       const isAutoExternal = entitySetting?.platform_entity_files_ref;
       const uploadedFiles = [];
       for (let i = 0; i < filesToUpload.length; i += 1) {
-        const { file: fileInput, markings: file_markings, noTriggerImport, embedded } = filesToUpload[i];
+        const { file: fileInput, version, markings: file_markings, noTriggerImport, embedded } = filesToUpload[i];
         const { filename } = await fileInput;
         // Use embedded prefix for embedded files (same as stixCoreObjectImportPush)
         const prefix = embedded ? 'embedded' : 'import';
         const filePath = `${prefix}/${type}/${dataEntity.element[ID_INTERNAL]}`;
         const key = `${filePath}/${filename}`;
-        const meta = isAutoExternal ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) } : {};
+        const autoExternalMeta = isAutoExternal ? { external_reference_id: generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` }) } : {};
+        const meta = { ...autoExternalMeta, version };
         const { upload: uploadedFile } = await uploadToStorage(
           context,
           user,
