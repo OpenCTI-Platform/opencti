@@ -1,0 +1,12 @@
+type CustomView implements InternalObject & BasicObject {
+    id: ID!
+    entity_type: String!
+    standard_id: String!
+    parent_types: [String!]!
+    metrics:[Metric]
+    # CustomView
+    name: String!
+    description: String
+    manifest: String
+    authorizedMembers: [MemberAccess!]!
+}
