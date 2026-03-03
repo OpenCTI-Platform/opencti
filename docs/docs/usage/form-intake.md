@@ -52,45 +52,45 @@ For each main entity, you can configure multiple fields:
 
 #### Create multiple instances 
 Create multiple instances of the same entity type is possible by enabling the above options. 
-Several options exist to allow users to create several instances: 
-   - By default, **multiple fields**: this option will allow users to create a new instance of the same type by simply clicking on a button
-   - Parsed values: allow your users enter some text to be parsed based on a specific delimiter of your choice.
+You can choose between 'Multiple fields' or 'Parsed values'.
+   - **Multiple fields** (default): users are presented with a button to create a new instance of the same type of entity.
+   - Parsed values: users can enter text to be parsed by selected delimiter.
 
-If you select the parsed value mode, additionnal options are offered to you: 
+In parsed value mode, additional options are offered to you: 
 - Parse field type: Text or Text Area. 
-- Parse mode: choose the delimiter between each value (default being comma-separated)
-- Map parsed values to attribute: choose which value should the parsed text be mapped with.
+- Parse mode: choose the delimiter between each value comma-separated (default) or one-per-line.
+- Map parsed values to attribute: choose the attribute the parsed text is mapped to.
 
-**Warning**: when choosing to create multiple instance via parsed values, all the additional fields that you will define for the same entity type will be applied to all instances you will create. (Example: if you create multiple reports via parsed values, parsing on the name attribute, in you form intake, if you have added a description for reports, all created reports will have the same description).
+**Warning**: when creating multiple instance via parsed values, the other fields defined for that entity type will be applied consistently to all the instances you create. For example, when generating multiple reports from parsed values, the text is mapped to each report’s name attribute. If you also provide a description field, all generated reports will have the same description.
 
 ### Supported entity Types as main entity
 Any entity can be created as a main entity, whether it is a Stix Domain Object or a Stix Cyber Observable. 
 
 By default, when selecting an entity type, the mandatory fields needed for [deduplication](deduplication.md) are automatically added. 
 
-#### Main entity being a container
+#### Main entity as a container
 
 If your main entity is a container, any additional entities created will be contained in your container.
-If several containers are created as once (via multiple mode enabled), all additional entities created will also be part of each containers. 
+**warning** If several containers are created at once (via multiple mode enabled), any additional entities created will appear in each container. 
 
-#### Main entity being an IOC or an Observable
-If you want to allow your users to bulk create multiple IOCs or observable at once, you can setup a form intake that allows multiple entities to be created as once.
-
-A specific option will be provided at this point: 
-- **Automatically create indicators/observables from observables/indicators**: this will allow you to directly promote the created entities.
+#### Main entity as an IOC or an Observable
+If you want to allow your users to bulk create multiple IOCs or observable, you can setup a form intake that allows multiple entities to be created at once using the option **Automatically create indicators/observables from observables/indicators**.
 
 
-**Warning**: Given all containers are not created at once but one by one, you may also end up with the first container containing only the additionnal entities. And the other containers also containing other containers.
+- **Automatically create indicators/observables from observables/indicators**: this directly creates the entities added by the user.
 
 
-### Select fields for each entity type 
+**Warning**: Containers are created sequentially, not all at once. This means the first container will include only the additional entities. Each subsequent container will also include the containers that were created before it.
 
-Selecting an entity type to create will allow you to select an attribute of this entity to populate.
+
+### Specify fields for each entity type 
+
+When you have added an entity type to be created in the form, you can then set the entity attributes to populate.
 
 Options for each field: 
 - Map to attribute: choose the attribute of the entity that you need your users to provide (for instance, description).
 - Field label: name your field with a custom label so that if your users are not acquainted with stix 2.1 they will be able to understand what is expected for them.
-- Required: make it required. If the entity is not the main entity (and is not mandatory either), then you can proceed without filling the field
+- Required: make the field required. Enable this if the users need to enter this field. 
 - Field width: size of the field on the screen (Full/half/third)
 
 We support the following field types: 
@@ -98,9 +98,9 @@ We support the following field types:
 |Field | Type |	Description|
 |:-----|:-----|:-----------|
 |Text |	Single-line |text input|
-|Textarea	|Multi-line text input|
+|Text Area	|Multi-line text input|
 |Number	|Numeric input|
-|DateTime|	Date and time picker|
+|Date & Time|	Date and time picker|
 |Checkbox	|Boolean checkbox|
 |Toggle	|Boolean| on/off switch (respects defaultValue — e.g., Malware is_family)|
 |Select	|Single-value| dropdown with predefined options|
@@ -112,32 +112,32 @@ We support the following field types:
 |External References|	|Add external references
 |Files	| |Attach files
 
-**Warning:** If you have defined additional mandatory fields for an entity (ex: description) and your description is not added, you might end up with your entity not being created. 
+**Warning:** If you have defined additional mandatory fields for an entity (e.g. description) and your description is not added, your entity will not be created. 
 
 ## Additionnal entities definition
 
-Once you have defined your main entity, you can define additional entities. 
+Once you have defined your main entity, you can define additional entities to allow your users to add additional entities within the same form submission. 
 It will allow your users to add additional entities within the same submission.
 
 
-The same types and same modes are allowed to add additional entities. 
+Additional entities can be created of the same type. 
 
-### Specificities of additional entity definition: required / not required and label
+### Details of required / not required and display labels for additional entities: 
 
 In addition to the various modes allowed to add additionnal entities, you have two other options: 
-- If you enable the option **"allow multiple instances"**, then you will have the option to specify that this entity is optional by entering 0 in the minimum amount field. This means that you require at least 0 entity to be created, meaning that it is optional.
-- If you disable the option **"allow multiple instances"**, then another option is offered to you: **required**. This will force the entity to be provided to submit the form.
+- If you enable the option **"allow multiple instances"**, then you can specify that this entity is optional by entering 0 in the minimum amount field. This means that you do not require an entity to be created.
+- If you disable the option **"allow multiple instances"**, then another option is offered to you: **required**. This will mean the entity must be provided to submit the form.
 
-Last but not least, you can also apply a **label to the entity to create**: this will allow users not experts with stix 2.1 to use the form to fill in entities without having to know that behind the scene, what you have defined as "attacker" will be created as an intrusion set for instance.
+The display **label for entity** allows you to set labels so that users who aren't experts in STIX 2.1 can  use the form. For example you can set a label to "attacker" to use in place of intrusion set.
 
 ## Relationships 
 
-You can define relationships to be created among entities
+You can define relationships to be created between entities created in the form.
 
 When you add a relation, you need to choose: 
 - the Source entity (identified in the form by its label)
 - the Target entity (identified in the form by its label)
-- the relationship type (enabled as soon as Source & Target are provided)
+- the relationship type (select as soon as Source & Target are provided)
 
 
 The **relationship type** will only present compatible entities.
@@ -147,11 +147,11 @@ The **relationship type** will only present compatible entities.
 
 ## Finalizing the submission: draft or not
 
-You have the option, within the main entity, to enable an option **Create as draft by default**. If this option is enabled, another will be offered to your users: **Allow users to uncheck draft mode**.
+You have the option, within the main entity, to enable an option **Create as draft by default**. If this option is enabled, you can then choose to **Allow users to uncheck draft mode**.
 
-This has been built to offer the advanced users the option to directly submit their input to the main database instead of a draft.
+This has been built to offer advanced users the option to directly submit their input to the main database instead of a draft.
 
-However, if your user is only able to create data via draft, due to the [capability specific to draft (entreprise edition)](../administration/users.md) whatever you selected, the user will not able to untick the box.
+However, if your user is only able to create data via draft, due to the [user's specific draft capabilities (entreprise edition)](../administration/users.md) then the user will not able to untick the box.
 
 .
 
@@ -163,7 +163,7 @@ Forms can be submitted from three locations:
 - Import dialog — Select "Import using a Form" in the import file dialog (displays full-width).
 - Ingestion/form intake: when you click directly on the form intake you created, the form is prompted to you.
 
-Note: The form intake button is hidden if the user lacks Create/update capability.
+Note: The form intake button is hidden if the user does not have Create/update capabilities.
 
 ## Submission process
 When a form is submitted, the following 7-step pipeline executes:
@@ -178,19 +178,19 @@ Step	Action	Details
 7	Import bundle	Imports into OpenCTI directly, or into a draft workspace if draft mode is enabled
 
 ## Export
-Export a form definition as a JSON file via the kebab menu → Export.
+Export a form definition as a JSON file via the options (kebab) menu → Export.
 Includes the full schema, field configuration, entity types, and relationships.
 Use for backup or cross-instance sharing.
 Does not export previously submitted data.
 
 ## Import
-Import a form definition from a JSON file via the Form Intakes list page.
+Import a form definition from a JSON file via the Form Intake list page.
 The import dialog displays full-width for readability.
 Cross-instance compatible — share form templates between OpenCTI instances (version ≥ 6.8.1).
 Note: Verify version compatibility when importing across different OpenCTI versions.
 
 ## Delete
-Delete via the kebab menu → Delete. Deletion is permanent and cannot be undone.
+Delete via the options (kebab) menu → Delete. Deletion is permanent and cannot be undone.
 Previously submitted data (entities, relationships already created) is not affected — only the form definition is removed.
 
 
@@ -253,7 +253,7 @@ Copy
 - Start simple: Begin with essential fields and iterate based on analyst feedback.
 - Use Parsed mode for bulk IOCs: Comma or line-separated input is the fastest approach for high-volume observable ingestion.
 - Set field widths strategically: Use third for short fields (dates, scores, markings), full for text areas.
-- Mark only truly essential fields as required: Reduce friction for analysts while maintaining data quality.
+- Mark only truly essential fields as required - reduces friction for analysts while maintaining data quality.
 
 ### Data Ingestion
 - Enable auto-create indicators from observables for actionable intelligence and detection pipeline integration.
