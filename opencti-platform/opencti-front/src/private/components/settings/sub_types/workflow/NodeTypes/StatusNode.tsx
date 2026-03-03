@@ -2,6 +2,7 @@ import { Handle, NodeProps, Position } from 'reactflow';
 import { hexToRGB } from '../../../../../../utils/Colors';
 import { Chip } from '@mui/material';
 import { NODE_SIZE } from '../utils';
+import { snakeCaseToSentenceCase } from '../../../../../../utils/String';
 
 const StatusNode = ({ id, data }: NodeProps) => {
   const { name, color } = data.statusTemplate;
@@ -27,7 +28,7 @@ const StatusNode = ({ id, data }: NodeProps) => {
           cursor: 'pointer',
         }}
         variant="outlined"
-        label={name}
+        label={snakeCaseToSentenceCase(name)}
       />
       <Handle
         id="source"

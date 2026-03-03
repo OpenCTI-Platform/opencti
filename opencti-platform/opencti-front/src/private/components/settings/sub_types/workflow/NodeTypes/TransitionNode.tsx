@@ -3,6 +3,7 @@ import { useFormatter } from '../../../../../../components/i18n';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
 import { NODE_SIZE } from '../utils';
+import { snakeCaseToSentenceCase } from '../../../../../../utils/String';
 
 const generatePath = (points: number[][]) => {
   const path = points.map(([x, y]) => `${x},${y}`).join(' L');
@@ -67,7 +68,7 @@ const TransitionNode = ({ data, id }: NodeProps) => {
           }}
           >
             <div style={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
-              {data.event.replace(/_/g, ' ')}
+              {snakeCaseToSentenceCase(data.event.replace(/_/g, ' '))}
             </div>
             <ul style={{ margin: 0, padding: 0, listStyleType: 'none' }}>
               <li>

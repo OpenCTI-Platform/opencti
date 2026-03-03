@@ -15,9 +15,9 @@ import { useReactFlow } from 'reactflow';
 import useAddStatus from './hooks/useAddStatus';
 import useDeleteElement from './hooks/useDeleteElement';
 import StatusTemplateField from '@components/common/form/StatusTemplateField';
-import type { Transition, Status, Action } from './utils';
+import type { Transition, Status } from './utils';
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
-import { capitalizeFirstLetter } from '../../../../../utils/String';
+import { camelCasetoSentenceCase } from '../../../../../utils/String';
 
 const statusValidation = (t: (value: string) => string) => Yup.object().shape({
   statusTemplate: Yup.object().required(t('This field is required')),
@@ -37,8 +37,8 @@ interface WorkflowFieldsProps extends FieldProps {
 }
 
 const WorkflowFields = ({
-  field, // contains name and value
-  form, // contains setFieldValue, values, etc.
+  field,
+  form,
   onDelete,
 }: WorkflowFieldsProps) => {
   const { t_i18n } = useFormatter();
@@ -53,7 +53,6 @@ const WorkflowFields = ({
   // Helper to handle the string[] conversion for authorized_members
   const handleMembersChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    // Split by comma and trim whitespace
     const arrayValues = val.split(',').map((item) => item.trim()).filter((item) => item !== '');
     setFieldValue(`${name}.params.authorized_members`, arrayValues);
   };
@@ -65,7 +64,7 @@ const WorkflowFields = ({
       <Accordion expanded={open} variant="outlined" sx={{ width: '100%', mb: 2 }}>
         <AccordionSummary expandIcon={<ExpandMoreOutlined />} onClick={() => setOpen(!open)}>
           <Typography sx={{ display: 'inline-flex', alignItems: 'center', fontWeight: 'bold' }}>
-            {isCondition ? t_i18n('Condition') : capitalizeFirstLetter(value.type.replace('_', ' ')) }
+            {isCondition ? t_i18n('Condition') : camelCasetoSentenceCase(value.type) }
           </Typography>
           <IconButton
             color="error"
@@ -107,7 +106,8 @@ const WorkflowFields = ({
               </div>
             )}
 
-            {/* ACTION FIELDS (Authorized Members) */}
+            {/* ACTION FIELDS */}
+            {/* Update Authorized Members */}
             {value.type === 'updateAuthorizedMembers' && (
               <>
                 <Field
@@ -117,6 +117,7 @@ const WorkflowFields = ({
                   canDeactivate={false}
                   enableAccesses
                   hideInfo
+                  addMeUserWithAdminRights
                 />
               </>
             )}
