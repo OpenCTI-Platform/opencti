@@ -28,24 +28,17 @@ import {
 } from '../../utils/access';
 import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
 import {
-  ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
-  ABSTRACT_STIX_RELATIONSHIP,
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_THREAT_ACTOR,
-  INPUT_ASSIGNEE,
   INPUT_AUTHORIZED_MEMBERS,
-  INPUT_CREATED_BY,
   INPUT_GRANTED_REFS,
-  INPUT_KILLCHAIN,
   INPUT_LABELS,
-  INPUT_MARKINGS,
-  INPUT_PARTICIPANT,
   OPENCTI_ADMIN_UUID,
 } from '../../schema/general';
-import type { BasicStoreCommon, BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
+import type { BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
 import { generateInternalId, generateStandardId, idGenFromData } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
 import type { StixCampaign, StixContainer, StixIncident, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-2-1-sdo';
@@ -61,17 +54,14 @@ import {
   isStixDomainObjectContainer,
 } from '../../schema/stixDomainObject';
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
-import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
 import { internalFindByIds, fullEntitiesList, fullRelationsList, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
-import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
-import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
+import { getEntityFromCache } from '../../database/cache';
 import { logApp } from '../../config/conf';
 import { extractStixRepresentative } from '../../database/stix-representative';
 import { isEmptyField, isNotEmptyField, READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
-import { schemaAttributesDefinition } from '../../schema/schema-attributes';
-import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { stixLoadByIds } from '../../database/middleware';
 import { usableNotifiers } from '../notifier/notifier-domain';
 import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION } from '../../manager/notificationManager';
@@ -88,10 +78,8 @@ import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../indicator/indicato
 
 import { ENTITY_TYPE_CONTAINER_TASK, type StixTask, type StoreEntityTask } from '../task/task-types';
 import { EditOperation, FilterMode } from '../../generated/graphql';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { generateCreateMessage } from '../../database/data-changes';
-import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { findAllByCaseTemplateId } from '../task/task-domain';
 import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-template-types';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -104,6 +92,7 @@ import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { ENTITY_TYPE_SECURITY_COVERAGE, INPUT_COVERED, type StixSecurityCoverage, type StoreEntitySecurityCoverage } from '../securityCoverage/securityCoverage-types';
 import { pushAll } from '../../utils/arrayUtil';
 import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from './components/container-wrapper-component';
+import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT } from './components/manipulate-knowledge-component';
 
 // region built in playbook components
 interface LoggerConfiguration {
@@ -893,233 +882,6 @@ export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<Re
   },
 };
 
-const attributePathMapping: any = {
-  [INPUT_MARKINGS]: {
-    [ABSTRACT_STIX_CORE_OBJECT]: `/${objectMarking.stixName}`,
-    [ABSTRACT_STIX_RELATIONSHIP]: `/${objectMarking.stixName}`,
-  },
-  [INPUT_LABELS]: {
-    [ABSTRACT_STIX_CORE_OBJECT]: `/${objectLabel.stixName}`,
-    [ABSTRACT_STIX_RELATIONSHIP]: `/${objectLabel.stixName}`,
-  },
-  [INPUT_CREATED_BY]: {
-    [ABSTRACT_STIX_CORE_OBJECT]: `/${createdBy.stixName}`,
-    [ABSTRACT_STIX_RELATIONSHIP]: `/${createdBy.stixName}`,
-  },
-  [INPUT_ASSIGNEE]: {
-    [ABSTRACT_STIX_DOMAIN_OBJECT]: `/extensions/${STIX_EXT_OCTI}/assignee_ids`,
-  },
-  [INPUT_PARTICIPANT]: {
-    [ABSTRACT_STIX_DOMAIN_OBJECT]: `/extensions/${STIX_EXT_OCTI}/participant_ids`,
-  },
-  confidence: {
-    [ABSTRACT_STIX_DOMAIN_OBJECT]: '/confidence',
-    [ABSTRACT_STIX_RELATIONSHIP]: '/confidence',
-  },
-  x_opencti_score: {
-    [ENTITY_TYPE_INDICATOR]: `/extensions/${STIX_EXT_OCTI}/score`,
-    [ABSTRACT_STIX_CYBER_OBSERVABLE]: `/extensions/${STIX_EXT_OCTI_SCO}/score`,
-    [ENTITY_TYPE_IDENTITY_ORGANIZATION]: `/extensions/${STIX_EXT_OCTI}/score`,
-  },
-  x_opencti_detection: {
-    [ENTITY_TYPE_INDICATOR]: `/extensions/${STIX_EXT_OCTI}/detection`,
-  },
-  x_opencti_workflow_id: {
-    [ABSTRACT_STIX_DOMAIN_OBJECT]: `/extensions/${STIX_EXT_OCTI}/workflow_id`,
-    [ABSTRACT_STIX_CYBER_OBSERVABLE]: `/extensions/${STIX_EXT_OCTI}/workflow_id`,
-    [ABSTRACT_STIX_RELATIONSHIP]: `/extensions/${STIX_EXT_OCTI}/workflow_id`,
-  },
-  severity: {
-    [ENTITY_TYPE_CONTAINER_CASE]: '/severity',
-    [ENTITY_TYPE_INCIDENT]: '/severity',
-  },
-  priority: {
-    [ENTITY_TYPE_CONTAINER_CASE]: '/priority',
-  },
-  indicator_types: {
-    [ENTITY_TYPE_INDICATOR]: '/indicator_types',
-  },
-  [INPUT_KILLCHAIN]: {
-    [ENTITY_TYPE_INDICATOR]: '/kill_chain_phases',
-  },
-  x_mitre_platforms: {
-    [ENTITY_TYPE_INDICATOR]: `/extensions/${STIX_EXT_MITRE}/platforms`,
-  },
-};
-interface UpdateValueConfiguration {
-  label: string;
-  value: string;
-  patch_value: string;
-}
-interface UpdateConfiguration {
-  actions: { op: 'add' | 'replace' | 'remove'; attribute: string; value: UpdateValueConfiguration[] }[];
-  all: boolean;
-}
-const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfiguration> = {
-  type: 'object',
-  properties: {
-    actions: {
-      type: 'array',
-      default: [],
-      items: {
-        type: 'object',
-        properties: {
-          op: { type: 'string', enum: ['add', 'replace', 'remove'] },
-          attribute: { type: 'string' },
-          value: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                label: { type: 'string' },
-                value: { type: 'string' },
-                patch_value: { type: 'string' },
-              },
-              required: ['label', 'value', 'patch_value'],
-            },
-          },
-        },
-        required: ['op', 'attribute', 'value'],
-      },
-    },
-    all: { type: 'boolean', $ref: 'Manipulate all elements included in the bundle', default: false },
-  },
-  required: ['actions'],
-};
-export const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration> = {
-  id: 'PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT',
-  name: 'Manipulate knowledge',
-  description: 'Manipulate STIX data',
-  icon: 'edit',
-  is_entry_point: false,
-  is_internal: true,
-  ports: [{ id: 'out', type: 'out' }, { id: 'unmodified', type: 'out' }],
-  configuration_schema: PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA,
-  schema: async () => PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA,
-  executor: async ({ dataInstanceId, playbookNode, bundle }) => {
-    const context = executionContext('playbook_components');
-    const cacheIds = await getEntitiesMapFromCache(context, AUTOMATION_MANAGER_USER, ENTITY_TYPE_MARKING_DEFINITION);
-    const { actions, all } = playbookNode.configuration;
-    // Compute if the attribute is defined as multiple in schema definition
-    const isAttributeMultiple = (entityType: string, attribute: string) => {
-      const baseAttribute = schemaAttributesDefinition.getAttribute(entityType, attribute);
-      if (baseAttribute) return baseAttribute.multiple;
-      const relationRef = schemaRelationsRefDefinition.getRelationRef(entityType, attribute);
-      if (relationRef) return relationRef.multiple;
-      return undefined;
-    };
-    const getAttributeType = (entityType: string, attribute: string) => {
-      const baseAttribute = schemaAttributesDefinition.getAttribute(entityType, attribute);
-      return baseAttribute?.type ?? 'string';
-    };
-    // Compute the access path for the attribute in the static matrix
-    const computeAttributePath = (entityType: string, attribute: string) => {
-      if (attributePathMapping[attribute]) {
-        if (attributePathMapping[attribute][entityType]) {
-          return attributePathMapping[attribute][entityType];
-        }
-        const key = Object.keys(attributePathMapping[attribute]).filter((o) => getParentTypes(entityType).includes(o)).at(0);
-        if (key) {
-          return attributePathMapping[attribute][key];
-        }
-      }
-      return undefined;
-    };
-    const convertValue = (attributeType: string, value: any) => {
-      if (attributeType === 'numeric') return Number(value);
-      if (attributeType === 'boolean') return value.toLowerCase() === 'true';
-      return value;
-    };
-    const patchOperations: jsonpatch.Operation[] = [];
-    for (let index = 0; index < bundle.objects.length; index += 1) {
-      const element = bundle.objects[index];
-      if (all || element.id === dataInstanceId) {
-        const { type, id } = element.extensions[STIX_EXT_OCTI];
-        const elementOperations = actions
-          .map((action) => {
-            const attrPath = computeAttributePath(type, action.attribute);
-            const multiple = isAttributeMultiple(type, action.attribute);
-            const attributeType = getAttributeType(type, action.attribute);
-            return ({ action, multiple, attributeType, attrPath, path: `/objects/${index}${attrPath}` });
-          })
-          // Unrecognized attributes must be filtered
-          .filter(({ attrPath, multiple }) => isNotEmptyField(multiple) && isNotEmptyField(attrPath))
-          // Map actions to data patches
-          .map(({ action, path, multiple, attributeType }) => {
-            if (multiple) {
-              const currentValues = jsonpatch.getValueByPointer(bundle, path) ?? [];
-              // the patch value can be the "label" instead of id (for ex: markings ids / labels ids)
-              const actionPatchValues = action.value.map((o) => {
-                // If value is an id, must be converted to standard_id has we work on stix bundle
-                if (cacheIds.has(o.patch_value)) return (cacheIds.get(o.patch_value) as BasicStoreCommon).standard_id;
-                // Else, just return the value
-                return convertValue(attributeType, o.patch_value);
-              });
-              // the value is always the id
-              const actionValues = action.value.map((o) => {
-                // If value is an id, must be converted to standard_id has we work on stix bundle
-                if (cacheIds.has(o.value)) return (cacheIds.get(o.value) as BasicStoreCommon).standard_id;
-                // Else, just return the value
-                return convertValue(attributeType, o.value);
-              });
-              if (action.op === EditOperation.Add) {
-                return {
-                  op: action.op,
-                  attribute: action.attribute,
-                  value: actionValues,
-                  patchOperation: { op: EditOperation.Replace, path, value: R.uniq([...currentValues, ...actionPatchValues]) },
-                };
-              }
-              if (action.op === EditOperation.Replace) {
-                return {
-                  op: action.op,
-                  attribute: action.attribute,
-                  value: actionValues,
-                  patchOperation: { op: EditOperation.Replace, path, value: actionPatchValues },
-                };
-              }
-              if (action.op === EditOperation.Remove) {
-                return {
-                  op: action.op,
-                  attribute: action.attribute,
-                  value: actionValues,
-                  patchOperation: { op: EditOperation.Replace, path, value: currentValues.filter((c: any) => !actionPatchValues.includes(c)) },
-                };
-              }
-            }
-            const currentPatchValue = R.head(action.value)?.patch_value;
-            const currentValue = R.head(action.value)?.value;
-            return {
-              op: action.op,
-              attribute: action.attribute,
-              value: currentValue,
-              patchOperation: { op: action.op, path, value: convertValue(attributeType, currentPatchValue) },
-            };
-          });
-        // Enlist operations to execute
-        if (elementOperations.length > 0) {
-          const operationObject = elementOperations.map((op) => {
-            return { key: op.attribute, value: Array.isArray(op.value) ? op.value : [op.value], operation: op.op };
-          });
-          if (id) {
-            applyOperationFieldPatch(element, operationObject);
-          }
-          pushAll(patchOperations, elementOperations.map((e) => e.patchOperation));
-        }
-      }
-    }
-    // Apply operations if needed
-    if (patchOperations.length > 0) {
-      const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
-      const diff = jsonpatch.compare(bundle, patchedBundle);
-      if (isNotEmptyField(diff)) {
-        return { output_port: 'out', bundle: patchedBundle };
-      }
-    }
-    return { output_port: 'unmodified', bundle };
-  },
-};
-
 const DATE_SEEN_RULE = 'seen_dates';
 const RESOLVE_CONTAINER = 'resolve_container';
 const RESOLVE_NEIGHBORS = 'resolve_neighbors';
@@ -1723,7 +1485,7 @@ export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
   [PLAYBOOK_INGESTION_COMPONENT.id]: PLAYBOOK_INGESTION_COMPONENT,
   [PLAYBOOK_MATCHING_COMPONENT.id]: PLAYBOOK_MATCHING_COMPONENT,
   [PLAYBOOK_CONNECTOR_COMPONENT.id]: PLAYBOOK_CONNECTOR_COMPONENT,
-  [PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT.id]: PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT,
+  [PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.id]: PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT,
   [PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.id]: PLAYBOOK_CONTAINER_WRAPPER_COMPONENT,
   [PLAYBOOK_SECURITY_COVERAGE_COMPONENT.id]: PLAYBOOK_SECURITY_COVERAGE_COMPONENT,
   [PLAYBOOK_SHARING_COMPONENT.id]: PLAYBOOK_SHARING_COMPONENT,
