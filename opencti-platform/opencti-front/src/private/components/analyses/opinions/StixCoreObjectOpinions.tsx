@@ -44,6 +44,7 @@ const StixCoreObjectOpinionsComponent: FunctionComponent<StixCoreObjectOpinionsP
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [radarHasData, setRadarHasData] = useState(false);
+
   const handleDelete = () => {
     setDeleteActionTrigger((prev) => !prev);
   };
