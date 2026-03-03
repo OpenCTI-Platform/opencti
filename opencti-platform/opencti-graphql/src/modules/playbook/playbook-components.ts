@@ -16,25 +16,9 @@ import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
 import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from './playbook-types';
-import {
-  type AuthorizedMember,
-  AUTOMATION_MANAGER_USER,
-  AUTOMATION_MANAGER_USER_UUID,
-  executionContext,
-  isUserCanAccessStixElement,
-  isUserInPlatformOrganization,
-  SYSTEM_USER,
-} from '../../utils/access';
+import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
-import {
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ENTITY_TYPE_CONTAINER,
-  ENTITY_TYPE_THREAT_ACTOR,
-  INPUT_AUTHORIZED_MEMBERS,
-  OPENCTI_ADMIN_UUID,
-} from '../../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_THREAT_ACTOR, INPUT_AUTHORIZED_MEMBERS } from '../../schema/general';
 import type { BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
 import { generateInternalId, generateStandardId, idGenFromData } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
@@ -54,7 +38,6 @@ import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject,
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
 import { fullEntitiesList, fullRelationsList, storeLoadById } from '../../database/middleware-loader';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntityFromCache } from '../../database/cache';
 import { logApp } from '../../config/conf';
 import { isEmptyField, isNotEmptyField, READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
@@ -78,7 +61,7 @@ import { generateCreateMessage } from '../../database/data-changes';
 import { findAllByCaseTemplateId } from '../task/task-domain';
 import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-template-types';
 import type { BasicStoreSettings } from '../../types/settings';
-import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, buildRestrictedMembers } from '../../utils/authorizedMembers';
+import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../utils/authorizedMembers';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
 import { applyOperationFieldPatch, convertMembersToUsers, extractBundleBaseElement } from './playbook-utils';
 import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
@@ -89,6 +72,7 @@ import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT } from './components/manipulate
 import { PLAYBOOK_SECURITY_COVERAGE_COMPONENT } from './components/security-coverage-component';
 import { PLAYBOOK_SHARING_COMPONENT } from './components/sharing-component';
 import { PLAYBOOK_UNSHARING_COMPONENT } from './components/unsharing-component';
+import { PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT } from './components/access-restrictions-component';
 
 // region built in playbook components
 interface LoggerConfiguration {
@@ -476,125 +460,6 @@ export const createTaskFromCaseTemplates = async (
   return tasks;
 };
 
-export interface AccessRestrictionsConfiguration {
-  access_restrictions: { groupsRestriction: { label: string; value: string; type: string }[]; accessRight: string; label: string; type: string; value: string }[];
-  all: boolean;
-}
-const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA: JSONSchemaType<AccessRestrictionsConfiguration> = {
-  type: 'object',
-  properties: {
-    access_restrictions: {
-      type: 'array',
-      uniqueItems: true,
-      default: [{
-        label: 'Administrator',
-        type: 'User',
-        value: OPENCTI_ADMIN_UUID,
-        accessRight: 'admin',
-        groupsRestriction: [],
-      }],
-      $ref: 'Access restrictions',
-      items: { type: 'object', oneOf: [] },
-    },
-    all: { type: 'boolean', $ref: 'Apply access restrictions on all elements included in the bundle', default: false },
-  },
-  required: ['access_restrictions'],
-};
-export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRestrictionsConfiguration> = {
-  id: 'PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT',
-  name: 'Manage access restrictions',
-  description: 'Manage advanced access restrictions on entities',
-  icon: 'lock',
-  is_entry_point: false,
-  is_internal: true,
-  ports: [{ id: 'out', type: 'out' }],
-  configuration_schema: PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA,
-  schema: async () => PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA,
-  executor: async ({ dataInstanceId, playbookNode, bundle }) => {
-    const context = executionContext('playbook_components');
-    const { access_restrictions: accessRestrictions, all } = playbookNode.configuration;
-    // Resolve potential dynamic access rights
-    const baseData = extractBundleBaseElement(dataInstanceId, bundle) as StixObject;
-    const finalAccessRestrictions = [];
-    for (let index = 0; index < accessRestrictions.length; index += 1) {
-      const accessRestriction = accessRestrictions[index];
-      if (accessRestriction.value === 'AUTHOR') {
-        // If dynamic binding of author and an author is really defined in the data
-        const createdById = baseData.extensions[STIX_EXT_OCTI].created_by_ref_id;
-        const createdByType = baseData.extensions[STIX_EXT_OCTI].created_by_ref_type;
-        if (isNotEmptyField(createdById) && createdByType === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
-          finalAccessRestrictions.push({ ...accessRestriction, value: createdById });
-        }
-      } else if (accessRestriction.value === 'CREATORS') {
-        const creators = (baseData.extensions[STIX_EXT_OCTI].creator_ids ?? []).filter((id) => isNotEmptyField(id));
-        for (let index2 = 0; index2 < creators.length; index2 += 1) {
-          finalAccessRestrictions.push({ ...accessRestriction, value: creators[index2] });
-        }
-      } else if (accessRestriction.value === 'ASSIGNEES') {
-        const assignees = (baseData.extensions[STIX_EXT_OCTI].assignee_ids ?? []).filter((id) => isNotEmptyField(id));
-        for (let index2 = 0; index2 < assignees.length; index2 += 1) {
-          finalAccessRestrictions.push({ ...accessRestriction, value: assignees[index2] });
-        }
-      } else if (accessRestriction.value === 'PARTICIPANTS') {
-        const participants = (baseData.extensions[STIX_EXT_OCTI].participant_ids ?? []).filter((id) => isNotEmptyField(id));
-        for (let index2 = 0; index2 < participants.length; index2 += 1) {
-          finalAccessRestrictions.push({ ...accessRestriction, value: participants[index2] });
-        }
-      } else if (accessRestriction.value === 'BUNDLE_ORGANIZATIONS') {
-        const bundleOrganizations = bundle.objects.filter((o) => o.extensions[STIX_EXT_OCTI].type === ENTITY_TYPE_IDENTITY_ORGANIZATION);
-        const bundleOrganizationsIds = bundleOrganizations.map((o) => o.extensions[STIX_EXT_OCTI].id).filter((id) => isNotEmptyField(id));
-        for (let index2 = 0; index2 < bundleOrganizationsIds.length; index2 += 1) {
-          finalAccessRestrictions.push({ ...accessRestriction, value: bundleOrganizationsIds[index2] });
-        }
-      } else {
-        finalAccessRestrictions.push(accessRestriction);
-      }
-    }
-    const patchOperations = [];
-    const input = finalAccessRestrictions.map((n) => ({
-      id: n.value,
-      access_right: n.accessRight,
-      groups_restriction_ids: n.groupsRestriction.map((o) => o.value),
-    }));
-    if (input.length === 0) {
-      return { output_port: 'out', bundle };
-    }
-    for (let index = 0; index < bundle.objects.length; index += 1) {
-      const element = bundle.objects[index];
-      const internalType = generateInternalType(element);
-      if (AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType) && (all || element.id === dataInstanceId)) {
-        const args = {
-          entityId: element.id,
-          input,
-          requiredCapabilities: ['KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS'],
-          entityType: internalType,
-          busTopicKey: ABSTRACT_STIX_DOMAIN_OBJECT,
-        };
-        const restrictedMembers = await buildRestrictedMembers(context, AUTOMATION_MANAGER_USER, args) as AuthorizedMember[];
-        const patchValue = {
-          op: EditOperation.Replace,
-          path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/authorized_members`,
-          value: restrictedMembers,
-        };
-        const patchOperation = {
-          operation: EditOperation.Replace,
-          key: INPUT_AUTHORIZED_MEMBERS,
-          value: restrictedMembers,
-        };
-        applyOperationFieldPatch(element, [patchOperation]);
-        patchOperations.push(patchValue);
-      }
-    }
-    if (patchOperations.length > 0) {
-      const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
-      const diff = jsonpatch.compare(bundle, patchedBundle);
-      if (isNotEmptyField(diff)) {
-        return { output_port: 'out', bundle: patchedBundle };
-      }
-    }
-    return { output_port: 'out', bundle };
-  },
-};
 export interface RemoveAccessRestrictionsConfiguration {
   all: boolean;
 }
