@@ -23,6 +23,8 @@ The OpenCTI Integration Manager is a deployment tool that simplifies the managem
 
 ### Prerequisites
 
+- The OpenCTI Integration Manager is available starting from OpenCTI version 6.8.17.
+
 - An **Enterprise Edition license** is required to use this feature. Without it, the catalog is available in read-only mode. You can enter the license key from:
     - the **Deploy** action on a connector card,
     - the connector’s detail view,
