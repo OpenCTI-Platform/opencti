@@ -11,7 +11,7 @@ export interface GenericData {
   id: string;
   entity_type?: string;
   confidence?: number;
-  readonly objectMarking: {
+  readonly objectMarking?: {
     readonly edges: ReadonlyArray<{
       readonly node: {
         readonly definition: string | null;

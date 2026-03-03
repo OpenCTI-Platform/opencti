@@ -7677,6 +7677,23 @@ export type DraftWorkspaceEdge = {
   node: DraftWorkspace;
 };
 
+export type DraftWorkspaceEdit = {
+  __typename?: 'DraftWorkspaceEdit';
+  relationAdd?: Maybe<InternalRelationship>;
+  relationDelete?: Maybe<DraftWorkspace>;
+};
+
+
+export type DraftWorkspaceEditRelationAddArgs = {
+  input: InternalRelationshipAddInput;
+};
+
+
+export type DraftWorkspaceEditRelationDeleteArgs = {
+  relationship_type: Scalars['String']['input'];
+  toId: Scalars['StixRef']['input'];
+};
+
 export enum DraftWorkspacesOrdering {
   Score = '_score',
   CreatedAt = 'created_at',
@@ -15961,6 +15978,7 @@ export type Mutation = {
   draftWorkspaceAdd?: Maybe<DraftWorkspace>;
   draftWorkspaceContextPatch?: Maybe<DraftWorkspace>;
   draftWorkspaceDelete?: Maybe<Scalars['ID']['output']>;
+  draftWorkspaceEdit?: Maybe<DraftWorkspaceEdit>;
   draftWorkspaceEditAuthorizedMembers?: Maybe<DraftWorkspace>;
   draftWorkspaceFieldPatch?: Maybe<DraftWorkspace>;
   draftWorkspaceValidate?: Maybe<Work>;
@@ -16921,6 +16939,11 @@ export type MutationDraftWorkspaceContextPatchArgs = {
 
 
 export type MutationDraftWorkspaceDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDraftWorkspaceEditArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -37782,6 +37805,7 @@ export type ResolversTypes = ResolversObject<{
   DraftWorkspaceAddInput: DraftWorkspaceAddInput;
   DraftWorkspaceConnection: ResolverTypeWrapper<Omit<DraftWorkspaceConnection, 'edges'> & { edges: Array<ResolversTypes['DraftWorkspaceEdge']> }>;
   DraftWorkspaceEdge: ResolverTypeWrapper<Omit<DraftWorkspaceEdge, 'node'> & { node: ResolversTypes['DraftWorkspace'] }>;
+  DraftWorkspaceEdit: ResolverTypeWrapper<Omit<DraftWorkspaceEdit, 'relationAdd' | 'relationDelete'> & { relationAdd?: Maybe<ResolversTypes['InternalRelationship']>, relationDelete?: Maybe<ResolversTypes['DraftWorkspace']> }>;
   DraftWorkspacesOrdering: DraftWorkspacesOrdering;
   EditContext: EditContext;
   EditInput: EditInput;
@@ -38836,6 +38860,7 @@ export type ResolversParentTypes = ResolversObject<{
   DraftWorkspaceAddInput: DraftWorkspaceAddInput;
   DraftWorkspaceConnection: Omit<DraftWorkspaceConnection, 'edges'> & { edges: Array<ResolversParentTypes['DraftWorkspaceEdge']> };
   DraftWorkspaceEdge: Omit<DraftWorkspaceEdge, 'node'> & { node: ResolversParentTypes['DraftWorkspace'] };
+  DraftWorkspaceEdit: Omit<DraftWorkspaceEdit, 'relationAdd' | 'relationDelete'> & { relationAdd?: Maybe<ResolversParentTypes['InternalRelationship']>, relationDelete?: Maybe<ResolversParentTypes['DraftWorkspace']> };
   EditContext: EditContext;
   EditInput: EditInput;
   EditManagedConnectorInput: EditManagedConnectorInput;
@@ -42094,6 +42119,11 @@ export type DraftWorkspaceEdgeResolvers<ContextType = any, ParentType extends Re
   node?: Resolver<ResolversTypes['DraftWorkspace'], ParentType, ContextType>;
 }>;
 
+export type DraftWorkspaceEditResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftWorkspaceEdit'] = ResolversParentTypes['DraftWorkspaceEdit']> = ResolversObject<{
+  relationAdd?: Resolver<Maybe<ResolversTypes['InternalRelationship']>, ParentType, ContextType, RequireFields<DraftWorkspaceEditRelationAddArgs, 'input'>>;
+  relationDelete?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<DraftWorkspaceEditRelationDeleteArgs, 'relationship_type' | 'toId'>>;
+}>;
+
 export type EditUserContextResolvers<ContextType = any, ParentType extends ResolversParentTypes['EditUserContext'] = ResolversParentTypes['EditUserContext']> = ResolversObject<{
   focusOn?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -45073,6 +45103,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   draftWorkspaceAdd?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceAddArgs, 'input'>>;
   draftWorkspaceContextPatch?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceContextPatchArgs, 'id' | 'input'>>;
   draftWorkspaceDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceDeleteArgs, 'id'>>;
+  draftWorkspaceEdit?: Resolver<Maybe<ResolversTypes['DraftWorkspaceEdit']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceEditArgs, 'id'>>;
   draftWorkspaceEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceEditAuthorizedMembersArgs, 'id'>>;
   draftWorkspaceFieldPatch?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceFieldPatchArgs, 'id' | 'input'>>;
   draftWorkspaceValidate?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceValidateArgs, 'id'>>;
@@ -50734,6 +50765,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   DraftWorkspace?: DraftWorkspaceResolvers<ContextType>;
   DraftWorkspaceConnection?: DraftWorkspaceConnectionResolvers<ContextType>;
   DraftWorkspaceEdge?: DraftWorkspaceEdgeResolvers<ContextType>;
+  DraftWorkspaceEdit?: DraftWorkspaceEditResolvers<ContextType>;
   EditUserContext?: EditUserContextResolvers<ContextType>;
   EffectiveConfidenceLevel?: EffectiveConfidenceLevelResolvers<ContextType>;
   EffectiveConfidenceLevelOverride?: EffectiveConfidenceLevelOverrideResolvers<ContextType>;
