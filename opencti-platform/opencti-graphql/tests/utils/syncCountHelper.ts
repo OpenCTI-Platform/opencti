@@ -63,7 +63,7 @@ export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 2;
 testUpdatedCounter.relationship = 8;
 testUpdatedCounter.campaign = 7;
-testUpdatedCounter.identity = 25;
+testUpdatedCounter.identity = 26;
 testUpdatedCounter.malware = 20;
 testUpdatedCounter.file = 19;
 testUpdatedCounter['intrusion-set'] = 4;
@@ -92,7 +92,7 @@ testUpdatedCounter.tool = 10;
 testUpdatedCounter.sighting = 4;
 testUpdatedCounter['threat-actor'] = 18;
 testUpdatedCounter.vocabulary = 3;
-testUpdatedCounter.vulnerability = 3;
+testUpdatedCounter.vulnerability = 4;
 
 export const testMergedCounter: Record<string, number> = {};
 testMergedCounter['threat-actor'] = 1;
