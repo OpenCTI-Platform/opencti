@@ -60,7 +60,7 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
   // Some internal objects have dates
   if (isDatedInternalObject(type)) {
     data = R.pipe(
-      R.assoc('created_at', today),
+      R.assoc('created_at', restore ? input.created : today),
       R.assoc('updated_at', today),
     )(data);
   }
@@ -70,9 +70,6 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
     const haveStixId = isNotEmptyField(input.stix_id);
     if (haveStixId && input.stix_id !== standardId) {
       stixIds.push(input.stix_id.toLowerCase());
-    }
-    if (restore) {
-      input.created_at = input.created;
     }
     data = R.pipe(
       R.assoc(IDS_STIX, stixIds),
