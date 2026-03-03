@@ -58,7 +58,6 @@ const securityCoverageQuery = graphql`
       currentUserAccessRight
       ...SecurityCoverage_securityCoverage
       ...SecurityCoverageKnowledge_securityCoverage
-      ...SecurityCoverageResult_securityCoverage
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
