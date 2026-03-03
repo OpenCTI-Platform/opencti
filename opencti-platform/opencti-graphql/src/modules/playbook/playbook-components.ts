@@ -14,11 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
-import * as jsonpatch from 'fast-json-patch';
 import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from './playbook-types';
 import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_THREAT_ACTOR, INPUT_AUTHORIZED_MEMBERS } from '../../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_THREAT_ACTOR } from '../../schema/general';
 import type { BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
 import { generateInternalId, generateStandardId, idGenFromData } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
@@ -55,15 +54,14 @@ import { extractValidObservablesFromIndicatorPattern, STIX_PATTERN_TYPE } from '
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../indicator/indicator-types';
 import { ENTITY_TYPE_CONTAINER_TASK, type StixTask, type StoreEntityTask } from '../task/task-types';
-import { EditOperation, FilterMode } from '../../generated/graphql';
+import { FilterMode } from '../../generated/graphql';
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { generateCreateMessage } from '../../database/data-changes';
 import { findAllByCaseTemplateId } from '../task/task-domain';
 import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-template-types';
 import type { BasicStoreSettings } from '../../types/settings';
-import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../utils/authorizedMembers';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
-import { applyOperationFieldPatch, convertMembersToUsers, extractBundleBaseElement } from './playbook-utils';
+import { convertMembersToUsers, extractBundleBaseElement } from './playbook-utils';
 import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { pushAll } from '../../utils/arrayUtil';
@@ -73,6 +71,7 @@ import { PLAYBOOK_SECURITY_COVERAGE_COMPONENT } from './components/security-cove
 import { PLAYBOOK_SHARING_COMPONENT } from './components/sharing-component';
 import { PLAYBOOK_UNSHARING_COMPONENT } from './components/unsharing-component';
 import { PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT } from './components/access-restrictions-component';
+import { PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT } from './components/remove-access-restrictions-component';
 
 // region built in playbook components
 interface LoggerConfiguration {
@@ -458,58 +457,6 @@ export const createTaskFromCaseTemplates = async (
     }
   }
   return tasks;
-};
-
-export interface RemoveAccessRestrictionsConfiguration {
-  all: boolean;
-}
-const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA: JSONSchemaType<RemoveAccessRestrictionsConfiguration> = {
-  type: 'object',
-  properties: {
-    all: { type: 'boolean', $ref: 'Remove access restrictions on all elements included in the bundle', default: false },
-  },
-  required: [],
-};
-export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<RemoveAccessRestrictionsConfiguration> = {
-  id: 'PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT',
-  name: 'Remove access restrictions',
-  description: 'Remove advanced access restrictions on entities',
-  icon: 'lock-remove',
-  is_entry_point: false,
-  is_internal: true,
-  ports: [{ id: 'out', type: 'out' }],
-  configuration_schema: PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA,
-  schema: async () => PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA,
-  executor: async ({ dataInstanceId, playbookNode, bundle }) => {
-    const { all } = playbookNode.configuration;
-    const patchOperations = [];
-    for (let index = 0; index < bundle.objects.length; index += 1) {
-      const element = bundle.objects[index];
-      const internalType = generateInternalType(element);
-      if (AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType) && (all || element.id === dataInstanceId)) {
-        const patchValue = {
-          op: EditOperation.Replace,
-          path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/restricted_members`,
-          value: [],
-        };
-        const patchOperation = {
-          operation: EditOperation.Replace,
-          key: INPUT_AUTHORIZED_MEMBERS,
-          value: [],
-        };
-        applyOperationFieldPatch(element, [patchOperation]);
-        patchOperations.push(patchValue);
-      }
-    }
-    if (patchOperations.length > 0) {
-      const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
-      const diff = jsonpatch.compare(bundle, patchedBundle);
-      if (isNotEmptyField(diff)) {
-        return { output_port: 'out', bundle: patchedBundle };
-      }
-    }
-    return { output_port: 'out', bundle };
-  },
 };
 
 const DATE_SEEN_RULE = 'seen_dates';

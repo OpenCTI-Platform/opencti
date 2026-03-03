@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { StixBundle, StixObject } from '../../../../src/types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
-import { PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT } from '../../../../src/modules/playbook/playbook-components';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../src/schema/stixDomainObject';
+import { PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT } from '../../../../src/modules/playbook/components/remove-access-restrictions-component';
 
 describe('PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT', () => {
   const reportId = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
