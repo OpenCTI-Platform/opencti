@@ -187,6 +187,19 @@ class StreamLineLineComponent extends Component {
                     className={classes.consumersItem}
                     style={{ width: dataColumns.consumers.width }}
                   >
+                    {health.count === 0
+                      ? <>{EMPTY_VALUE}</>
+                      : (
+                          <Tag
+                            label={health.label}
+                            color={health.hexColor}
+                          />
+                        )}
+                  </div>
+                  <div
+                    className={classes.consumersItem}
+                    style={{ width: dataColumns.consumers.width }}
+                  >
                     {isFilterGroupNotEmpty(filters)
                       ? (
                           <FilterIconButton
@@ -198,19 +211,6 @@ class StreamLineLineComponent extends Component {
                         )
                       : EMPTY_VALUE
                     }
-                  </div>
-                  <div
-                    className={classes.consumersItem}
-                    style={{ width: dataColumns.consumers.width }}
-                  >
-                    {health.count === 0
-                      ? <>{EMPTY_VALUE}</>
-                      : (
-                          <Tag
-                            label={health.label}
-                            color={health.hexColor}
-                          />
-                        )}
                   </div>
                 </>
               )}
