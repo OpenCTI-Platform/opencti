@@ -35,6 +35,7 @@ import time
 import uuid
 from collections import deque
 from enum import Enum
+from hmac import compare_digest
 from queue import Queue
 from typing import Callable, Dict, List, Optional, Union
 
@@ -744,31 +745,68 @@ class ListenQueue(threading.Thread):
                         "Failing reporting the processing"
                     )
 
-    def is_token_valid(self, token):
+    def _is_jwt_token_valid(self, token):
+        """Validate a JWT token using the connector JWKS keys.
+
+        :param token: The JWT token string to validate
+        :type token: str
+        :return: True if the JWT signature is valid and the token is not expired
+        :rtype: bool
         """
-        Returns True if the signature is valid and token is not expired.
-        Returns False otherwise.
+        unverified_header = jwt.get_unverified_header(token)
+        used_kid = unverified_header["kid"]
+        key = self.connector_jwks[used_kid]
+        if key is None:
+            self.helper.connector_logger.error(
+                "Error: Public key not found in JWKS."
+            )
+            return False
+
+        jwt.decode(
+            token,
+            key=key,
+            algorithms=[key.algorithm_name],
+            issuer="opencti",
+            subject="connector",
+        )
+        return True
+
+    def _is_plain_token_valid(self, token):
+        """Validate a plain token by comparing it to the connector's OpenCTI token.
+
+        This provides backward compatibility with older OpenCTI platform versions
+        that send the plain connector token instead of a JWT.
+
+        :param token: The plain token string to validate
+        :type token: str
+        :return: True if the token matches the connector's configured OpenCTI token
+        :rtype: bool
+        """
+        return compare_digest(token, self.opencti_token)
+
+    def is_token_valid(self, token):
+        """Validate an authentication token (JWT or plain).
+
+        Detects the token type based on its format: JWT tokens always start
+        with "eyJ" (base64url-encoded JSON header). Plain tokens are simple
+        UIDs used by older OpenCTI versions.
+
+        :param token: The token string to validate
+        :type token: str
+        :return: True if the token is valid, False otherwise
+        :rtype: bool
         """
         try:
-            unverified_header = jwt.get_unverified_header(token)
-            used_kid = unverified_header["kid"]
-            key = self.connector_jwks[used_kid]
-            if key is None:
-                self.helper.connector_logger.error(
-                    "Error: Public key not found in JWKS."
-                )
-                return False
-
-            jwt.decode(
-                token,
-                key=key,
-                algorithms=[key.algorithm_name],
-                issuer="opencti",
-                subject="connector",
-            )
-            return True
+            if token.startswith("eyJ"):
+                # JWT token (OpenCTI v7+): validate signature via JWKS
+                return self._is_jwt_token_valid(token)
+            else:
+                # Plain UID token (older OpenCTI): compare with configured token
+                return self._is_plain_token_valid(token)
         except Exception as e:
-            self.helper.connector_logger.error("Failed to get external data for %s", e)
+            self.helper.connector_logger.error(
+                "Token validation failed", {"reason": str(e)}
+            )
             return False
 
     async def _http_process_callback(self, request: Request) -> JSONResponse:
