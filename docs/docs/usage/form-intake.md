@@ -118,7 +118,6 @@ We support the following field types:
 
 Once you have defined your main entity, you can define additional entities to allow your users to add additional entities within the same form submission. 
 
-
 Additional entities can be created of the same type. 
 
 ### Details of required / not required and display labels for additional entities: 
