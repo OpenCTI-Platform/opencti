@@ -665,9 +665,9 @@ const GraphToolbarExpandTools = ({
 
       <Dialog
         fullWidth
-        maxWidth="sm"
+        maxWidth={false}
         open={isExpandOpen}
-        slotProps={{ paper: { elevation: 1 } }}
+        sx={{ '& .MuiDialog-paper': { width: 640 } }}
         onClose={() => setIsExpandOpen(false)}
       >
         <InvestigationExpandForm
