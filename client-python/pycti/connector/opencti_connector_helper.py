@@ -757,9 +757,7 @@ class ListenQueue(threading.Thread):
         used_kid = unverified_header["kid"]
         key = self.connector_jwks[used_kid]
         if key is None:
-            self.helper.connector_logger.error(
-                "Error: Public key not found in JWKS."
-            )
+            self.helper.connector_logger.error("Error: Public key not found in JWKS.")
             return False
 
         jwt.decode(
