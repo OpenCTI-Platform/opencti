@@ -36,7 +36,7 @@ import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { deleteAllDraftFiles } from '../../database/file-storage';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
+import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { getUserAccessRight, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, SYSTEM_USER } from '../../utils/access';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
@@ -240,7 +240,7 @@ export const draftWorkspaceEditField = async (context: AuthContext, user: AuthUs
   if (!draft) {
     throw FunctionalError(`Draft ${draftId} cannot be found`);
   }
-  const { element } = await updateAttribute(context, user, draftId, ENTITY_TYPE_DRAFT_WORKSPACE, input);
+  const { element } = await updateAttribute<StoreEntity>(context, user, draftId, ENTITY_TYPE_DRAFT_WORKSPACE, input);
   await publishUserAction({
     user,
     event_type: 'mutation',
