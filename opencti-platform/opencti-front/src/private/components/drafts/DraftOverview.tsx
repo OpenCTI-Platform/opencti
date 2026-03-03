@@ -5,6 +5,8 @@ import useOverviewLayoutCustomization from '../../../utils/hooks/useOverviewLayo
 import DraftBasicInformation from './DraftBasicInformation';
 import DraftDetails from '@components/drafts/DraftDetails';
 import DraftEdition from '@components/drafts/DraftEdition';
+import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
+import useUserCanEditDraft from '../../../utils/hooks/useUserCanEditDraft';
 
 interface DraftOverviewProps {
   draft: DraftRootFragment$data;
@@ -12,6 +14,9 @@ interface DraftOverviewProps {
 
 const DraftOverview: FunctionComponent<DraftOverviewProps> = ({ draft }) => {
   const draftOverviewLayoutCustomization = useOverviewLayoutCustomization(draft.entity_type);
+  const currentAccessRight = useGetCurrentUserAccessRight(draft.currentUserAccessRight);
+  const canEdit = useUserCanEditDraft() && currentAccessRight.canEdit;
+
   return (
     <>
       <div style={{ display: 'flex', gap: 20 }}>
@@ -41,7 +46,9 @@ const DraftOverview: FunctionComponent<DraftOverviewProps> = ({ draft }) => {
             })
           }
         </Grid>
-        <DraftEdition draftId={draft.id} overviewData={draft} />
+        {canEdit && (
+          <DraftEdition draftId={draft.id} overviewData={draft} />
+        )}
       </div>
     </>
   );
