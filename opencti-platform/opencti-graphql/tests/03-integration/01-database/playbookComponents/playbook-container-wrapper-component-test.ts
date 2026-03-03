@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import type { StixBundle } from '../../../../src/types/stix-2-1-common';
 import type { StixCaseIncident } from '../../../../src/modules/case/case-incident/case-incident-types';
-import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from '../../../../src/modules/playbook/playbook-components';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../../src/modules/case/case-incident/case-incident-types';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
+import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from '../../../../src/modules/playbook/components/container-wrapper-component';
 
 const INCIDENT_ID = 'incident--c6c2b96d-fe70-5099-a033-87cbfe2d6be2';
 
