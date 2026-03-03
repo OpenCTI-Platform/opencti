@@ -1693,6 +1693,7 @@
   "Equals": "같음",
   "Error": "오류",
   "Error loading forms": "양식 로드 중 오류 발생",
+  "Error loading stream collection consumers": "스트림 컬렉션 소비자 로드 중 오류 발생",
   "Error trying to download in PDF": "PDF로 다운로드하는 동안 오류가 발생했습니다",
   "Error trying to export a PDF template": "PDF 템플릿을 내보내는 동안 오류가 발생했습니다",
   "Error trying to export the file": "파일을 내보내는 동안 오류가 발생했습니다",

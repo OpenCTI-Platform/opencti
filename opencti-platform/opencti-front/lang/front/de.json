@@ -1693,6 +1693,7 @@
   "Equals": "Ist gleich",
   "Error": "Fehler",
   "Error loading forms": "Fehler beim Laden von Formularen",
+  "Error loading stream collection consumers": "Fehler beim Laden von Stream-Sammelkunden",
   "Error trying to download in PDF": "Fehler beim Herunterladen in PDF",
   "Error trying to export a PDF template": "Fehler beim Versuch, eine PDF-Vorlage zu exportieren",
   "Error trying to export the file": "Fehler beim Versuch, die Datei zu exportieren",

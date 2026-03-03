@@ -1693,6 +1693,7 @@
   "Equals": "等しい",
   "Error": "エラー",
   "Error loading forms": "フォームの読み込みエラー",
+  "Error loading stream collection consumers": "ストリーム・コレクション・コンシューマの読み込みエラー",
   "Error trying to download in PDF": "PDFでダウンロードしようとするエラー",
   "Error trying to export a PDF template": "PDFテンプレートをエクスポートしようとするエラー",
   "Error trying to export the file": "ファイルをエクスポートしようとするとエラーが発生します",
