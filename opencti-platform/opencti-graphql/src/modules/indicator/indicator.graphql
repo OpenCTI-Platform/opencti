@@ -257,7 +257,6 @@ input IndicatorAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
-  filesVersions: [DateTime]
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   basedOn: [String!]

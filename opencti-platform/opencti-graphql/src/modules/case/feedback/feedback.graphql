@@ -239,7 +239,6 @@ input FeedbackAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
-  filesVersions: [DateTime]
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   clientMutationId: String

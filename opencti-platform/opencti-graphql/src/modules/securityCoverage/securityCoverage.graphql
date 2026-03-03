@@ -220,7 +220,6 @@ input SecurityCoverageAddInput {
   fileMarkings: [String]
   files: [Upload]
   filesMarkings: [[String]]
-  filesVersions: [DateTime]
   noTriggerImport: [Boolean]
   embedded: [Boolean]
   update: Boolean
