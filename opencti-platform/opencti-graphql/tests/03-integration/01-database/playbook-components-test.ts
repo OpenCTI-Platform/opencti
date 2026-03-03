@@ -9,7 +9,7 @@ import { container_wrapper_component_bundle } from './playbookComponents/playboo
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from '../../../src/modules/playbook/components/container-wrapper-component';
-import { PLAYBOOK_SHARING_COMPONENT } from '../../../src/modules/playbook/components/share-with-organization';
+import { PLAYBOOK_SHARING_COMPONENT } from '../../../src/modules/playbook/components/sharing-component';
 
 describe('playbook sharing component', () => {
   let externalOrganizationEntity: BasicStoreEntityOrganization;

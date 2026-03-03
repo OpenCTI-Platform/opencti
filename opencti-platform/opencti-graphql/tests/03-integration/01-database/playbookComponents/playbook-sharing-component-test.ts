@@ -7,7 +7,7 @@ import { generateStandardId } from '../../../../src/schema/identifier';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
 import * as middlewareLoader from '../../../../src/database/middleware-loader';
 import * as access from '../../../../src/utils/access';
-import { PLAYBOOK_SHARING_COMPONENT } from '../../../../src/modules/playbook/components/share-with-organization';
+import { PLAYBOOK_SHARING_COMPONENT } from '../../../../src/modules/playbook/components/sharing-component';
 
 export const sharing_component_bundle = {
   id: '411628bf-745b-43f6-8194-cbe441edecfd',

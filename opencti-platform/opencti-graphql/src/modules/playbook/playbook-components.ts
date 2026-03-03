@@ -33,7 +33,6 @@ import {
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_THREAT_ACTOR,
   INPUT_AUTHORIZED_MEMBERS,
-  INPUT_GRANTED_REFS,
   OPENCTI_ADMIN_UUID,
 } from '../../schema/general';
 import type { BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
@@ -54,8 +53,8 @@ import {
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { internalFindByIds, fullEntitiesList, fullRelationsList, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import { fullEntitiesList, fullRelationsList, storeLoadById } from '../../database/middleware-loader';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntityFromCache } from '../../database/cache';
 import { logApp } from '../../config/conf';
 import { isEmptyField, isNotEmptyField, READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
@@ -72,7 +71,6 @@ import type { StixRelation } from '../../types/stix-2-1-sro';
 import { extractValidObservablesFromIndicatorPattern, STIX_PATTERN_TYPE } from '../../utils/syntax';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../indicator/indicator-types';
-
 import { ENTITY_TYPE_CONTAINER_TASK, type StixTask, type StoreEntityTask } from '../task/task-types';
 import { EditOperation, FilterMode } from '../../generated/graphql';
 import { schemaTypesDefinition } from '../../schema/schema-types';
@@ -81,7 +79,6 @@ import { findAllByCaseTemplateId } from '../task/task-domain';
 import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-template-types';
 import type { BasicStoreSettings } from '../../types/settings';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, buildRestrictedMembers } from '../../utils/authorizedMembers';
-
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
 import { applyOperationFieldPatch, convertMembersToUsers, extractBundleBaseElement } from './playbook-utils';
 import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
@@ -90,7 +87,8 @@ import { pushAll } from '../../utils/arrayUtil';
 import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from './components/container-wrapper-component';
 import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT } from './components/manipulate-knowledge-component';
 import { PLAYBOOK_SECURITY_COVERAGE_COMPONENT } from './components/security-coverage-component';
-import { PLAYBOOK_SHARING_COMPONENT } from './components/share-with-organization';
+import { PLAYBOOK_SHARING_COMPONENT } from './components/sharing-component';
+import { PLAYBOOK_UNSHARING_COMPONENT } from './components/unsharing-component';
 
 // region built in playbook components
 interface LoggerConfiguration {
@@ -476,76 +474,6 @@ export const createTaskFromCaseTemplates = async (
     }
   }
   return tasks;
-};
-
-export interface UnsharingConfiguration {
-  organizations: string[] | { label: string; value: string }[];
-  all: boolean;
-}
-const PLAYBOOK_UNSHARING_COMPONENT_SCHEMA: JSONSchemaType<UnsharingConfiguration> = {
-  type: 'object',
-  properties: {
-    organizations: {
-      type: 'array',
-      uniqueItems: true,
-      default: [],
-      $ref: 'Target organizations',
-      items: { type: 'string', oneOf: [] },
-    },
-    all: { type: 'boolean', $ref: 'Unshare all elements included in the bundle', default: false },
-  },
-  required: ['organizations'],
-};
-export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfiguration> = {
-  id: 'PLAYBOOK_UNSHARING_COMPONENT',
-  name: 'Unshare with organizations',
-  description: 'Unshare with organizations within the platform',
-  icon: 'organization-remove',
-  is_entry_point: false,
-  is_internal: true,
-  ports: [{ id: 'out', type: 'out' }],
-  configuration_schema: PLAYBOOK_UNSHARING_COMPONENT_SCHEMA,
-  schema: async () => PLAYBOOK_UNSHARING_COMPONENT_SCHEMA,
-  executor: async ({ dataInstanceId, playbookNode, bundle }) => {
-    const context = executionContext('playbook_components', AUTOMATION_MANAGER_USER);
-    const { organizations, all } = playbookNode.configuration;
-    const organizationsValues = organizations.map((o) => (typeof o !== 'string' ? o.value : o));
-    const organizationsByIds = await internalFindByIds<BasicStoreEntityOrganization>(context, SYSTEM_USER, organizationsValues, {
-      type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
-      baseData: true,
-      baseFields: ['standard_id'],
-    }) as BasicStoreEntityOrganization[];
-    if (organizationsByIds.length === 0) {
-      return { output_port: 'out', bundle }; // nothing to do since organizations are empty
-    }
-    const organizationIds = organizationsByIds.map((o) => o.standard_id);
-    const patchOperations = [];
-    for (let index = 0; index < bundle.objects.length; index += 1) {
-      const element = bundle.objects[index];
-      if (all || element.id === dataInstanceId) {
-        const patchValue = {
-          op: EditOperation.Remove,
-          path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/granted_refs`,
-          value: organizationIds,
-        };
-        const patchOperation = {
-          operation: patchValue.op,
-          key: INPUT_GRANTED_REFS,
-          value: patchValue.value,
-        };
-        applyOperationFieldPatch(element, [patchOperation]);
-        patchOperations.push(patchValue);
-      }
-    }
-    if (patchOperations.length > 0) {
-      const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
-      const diff = jsonpatch.compare(bundle, patchedBundle);
-      if (isNotEmptyField(diff)) {
-        return { output_port: 'out', bundle: patchedBundle };
-      }
-    }
-    return { output_port: 'out', bundle };
-  },
 };
 
 export interface AccessRestrictionsConfiguration {
