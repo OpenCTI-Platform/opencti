@@ -4,8 +4,8 @@ import type { BasicStoreEntityOrganization } from '../../../src/modules/organiza
 import { unSetOrganization, setOrganization } from '../../utils/testQueryHelper';
 import { PLATFORM_ORGANIZATION, TEST_ORGANIZATION } from '../../utils/testQuery';
 import { getOrganizationEntity } from '../../utils/domainQueryHelper';
-import { sharing_component_bundle } from './playbookComponents/playbook-sharing-component-test';
-import { container_wrapper_component_bundle } from './playbookComponents/playbook-container-wrapper-component-test';
+import { sharing_component_bundle } from './playbookComponents/sharing-component-test';
+import { container_wrapper_component_bundle } from './playbookComponents/container-wrapper-component-test';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from '../../../src/modules/playbook/components/container-wrapper-component';
