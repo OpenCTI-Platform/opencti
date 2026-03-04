@@ -1,13 +1,13 @@
 import { assert, describe, expect, it } from 'vitest';
 import type { StixBundle, StixOpenctiExtension } from '../../../../src/types/stix-2-1-common';
-import { PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT } from '../../../../src/modules/playbook/playbook-components';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
 import type { StixThreatActor } from '../../../../src/types/stix-2-1-sdo';
 import type { StixObject } from '../../../../src/types/stix-2-1-common';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../../../src/schema/general';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../src/schema/stixDomainObject';
+import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT } from '../../../../src/modules/playbook/components/manipulate-knowledge-component';
 
-describe('PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT', () => {
+describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
   const baseBundle = {
     type: 'bundle',
     spec_version: '2.1',
@@ -86,7 +86,7 @@ describe('PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT', () => {
       },
     };
 
-    const result = await PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT.executor({
+    const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor({
       ...baseExecutorParams,
       previousStepBundle: bundle,
       dataInstanceId: threatObjectId,
@@ -148,7 +148,7 @@ describe('PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT', () => {
       },
     };
 
-    const result = await PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT.executor({
+    const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor({
       ...baseExecutorParams,
       previousStepBundle: bundle,
       dataInstanceId: threatObjectId,
@@ -217,14 +217,14 @@ describe('PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT', () => {
       },
     };
 
-    const result1 = await PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT.executor({
+    const result1 = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor({
       ...baseExecutorParams,
       previousStepBundle: bundle,
       dataInstanceId: threatObjectId,
       playbookNode: playbookNode1,
       bundle,
     });
-    const result2 = await PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT.executor({
+    const result2 = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor({
       ...baseExecutorParams,
       previousStepBundle: bundle,
       dataInstanceId: threatObjectId,

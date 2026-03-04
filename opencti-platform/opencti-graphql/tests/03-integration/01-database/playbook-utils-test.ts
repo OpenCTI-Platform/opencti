@@ -19,7 +19,7 @@ describe('Playbook utils: checkPlaybookFiltersAndBuildConfigWithCorrectFilters',
           { key: [LABEL_FILTER], values: ['label1', 'label2'] },
         ],
         filterGroups: [],
-      }]
+      }],
     };
     const input = {
       component_id: PLAYBOOK_MATCHING_COMPONENT.id,
@@ -68,7 +68,7 @@ describe('Playbook utils: checkPlaybookFiltersAndBuildConfigWithCorrectFilters',
           { key: [LABEL_FILTER], values: ['label1', 'label2'] },
         ],
         filterGroups: [],
-      }]
+      }],
     };
     const expectedFilters = {
       mode: 'and',
@@ -82,7 +82,7 @@ describe('Playbook utils: checkPlaybookFiltersAndBuildConfigWithCorrectFilters',
           { key: [LABEL_FILTER], values: ['label1', 'label2'] },
         ],
         filterGroups: [],
-      }]
+      }],
     };
     const input = {
       component_id: PLAYBOOK_INTERNAL_DATA_CRON.id,
@@ -116,4 +116,4 @@ describe('Playbook utils: checkPlaybookFiltersAndBuildConfigWithCorrectFilters',
     await expect(async () => await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(testContext, ADMIN_USER, input, userId))
       .rejects.toThrowError('Incorrect filter keys not existing in any schema definition');
   });
-  });
+});

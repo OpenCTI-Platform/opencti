@@ -3,12 +3,12 @@ import type { StixBundle, StixObject, StixOpenctiExtension } from '../../../../s
 import type { BasicStoreObject } from '../../../../src/types/store';
 import type { StixId } from '../../../../src/types/stix-2-0-common';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
-import { PLAYBOOK_UNSHARING_COMPONENT } from '../../../../src/modules/playbook/playbook-components';
 import { generateStandardId } from '../../../../src/schema/identifier';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../src/schema/stixDomainObject';
 import * as middlewareLoader from '../../../../src/database/middleware-loader';
 import * as access from '../../../../src/utils/access';
+import { PLAYBOOK_UNSHARING_COMPONENT } from '../../../../src/modules/playbook/components/unsharing-component';
 
 describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
   const reportId = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
