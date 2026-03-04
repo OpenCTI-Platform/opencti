@@ -142,6 +142,7 @@ testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter['threat-actor'] = 12;
 testDeletedCounter.tool = 5;
 testDeletedCounter.vulnerability = 3;
+testDeletedCounter.software = 1;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);
