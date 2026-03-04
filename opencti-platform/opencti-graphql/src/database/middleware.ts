@@ -3670,7 +3670,37 @@ const internalCreateEntityRaw = async (
               mergeTarget = existingByGivenStixId.internal_id;
               mergeSource = existingByStandard.internal_id;
             }
-            logApp.info('[OPENCTI] Merge during creation detected');
+            const mergeInformation = {
+              // Data related to standard id
+              standard_id_computed: standardId,
+              standard_id_detected: {
+                id: existingByStandard.internal_id,
+                standard_id: existingByStandard.standard_id,
+                name: existingByStandard.name,
+                aliases: existingByStandard.aliases,
+                x_opencti_stix_ids: existingByStandard.x_opencti_stix_ids,
+              },
+              // Data related to resolved stix id
+              given_id_computed: resolvedInput.stix_id,
+              given_id_detected: {
+                id: existingByGivenStixId.internal_id,
+                standard_id: existingByGivenStixId.standard_id,
+                name: existingByGivenStixId.name,
+                aliases: existingByGivenStixId.aliases,
+                x_opencti_stix_ids: existingByGivenStixId.x_opencti_stix_ids,
+              },
+              // Data related to input
+              input: {
+                stix_id: resolvedInput.stix_id,
+                name: resolvedInput.name,
+                aliases: resolvedInput.aliases,
+                x_opencti_stix_ids: resolvedInput.x_opencti_stix_ids,
+              },
+              // Data of the merge
+              merge_source: mergeSource,
+              merge_target: mergeTarget,
+            };
+            logApp.info('[OPENCTI] [MERGE] Auto merging during creation', mergeInformation);
             await mergeEntities(context, user, mergeTarget, [mergeSource], { locks: participantIds });
           }
         }
@@ -3685,7 +3715,9 @@ const internalCreateEntityRaw = async (
         const target = R.find((e) => e.standard_id === standardId, filteredEntities) || filteredEntities[0];
         const sources = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
         hashMergeValidation([target, ...sources]);
-        await mergeEntities(context, user, target.internal_id, sources.map((s) => s.internal_id), { locks: participantIds });
+        const sourceEntityIds = sources.map((s) => s.internal_id);
+        logApp.info('[OPENCTI] [MERGE] Force merging (update=true) during creation', { target: target.internal_id, sources: sourceEntityIds });
+        await mergeEntities(context, user, target.internal_id, sourceEntityIds, { locks: participantIds });
         return upsertElement(context, user, target, type, resolvedInput, { ...opts, locks: participantIds });
       }
       // We can't merge, so we need at least to upsert one element.
