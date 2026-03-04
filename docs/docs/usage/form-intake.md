@@ -23,7 +23,7 @@ More details on our [Role-Based access control here](../administration/users.md)
 |View form intakes list| |Manage ingestion or Create / Update knowledge|Create / Update knowledge (creation forced to draft)|
 
 
-When draft creation is enforced, form submissions create entities in a draft workspace for review before publication.
+When draft creation is enforced, form submissions create entities in a draft workspace for review before publication to knowledge.
 Administrators can optionally allow users to override draft mode per submission.
 The form intake button is hidden when the user lacks Authorized Members update rights in draft context. See Enterprise Edition for details on capability overrides in draft.
 
