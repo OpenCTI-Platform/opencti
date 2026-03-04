@@ -284,14 +284,15 @@ export const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration>
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const { filters } = playbookNode.configuration;
     const jsonFilters = JSON.parse(filters);
-    const matchedElements = [baseData];
+    const matchedElements = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const bundleElement = bundle.objects[index];
       const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters);
-      if (isMatch && baseData.id !== bundleElement.id) matchedElements.push(bundleElement);
+      if (isMatch) matchedElements.push(bundleElement);
     }
-    const newBundle = { ...bundle, objects: matchedElements };
-    if (matchedElements.length === 1) {
+    const mergedObjects = uniqBy(prop('id'), [baseData, ...matchedElements]);
+    const newBundle = mergeDeepRight(bundle, { objects: mergedObjects });
+    if (matchedElements.length === 0) {
       return { output_port: 'unmatch', bundle: newBundle };
     }
     return { output_port: 'out', bundle: newBundle };
