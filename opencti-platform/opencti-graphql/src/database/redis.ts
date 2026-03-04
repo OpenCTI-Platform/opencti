@@ -200,11 +200,14 @@ const updateObjectRaw = async (tx: ChainableCommander, id: string, input: object
 const updateObjectCounterRaw = async (tx: ChainableCommander, id: string, field: string, number: number) => {
   await tx.hincrby(id, field, number);
 };
-const setInList = async (listId: string, keyId: string, expirationTime: number) => {
+const setInList = async (listId: string, keyId: string, expirationTime: number, maxLength?: number) => {
   await redisTx(getClientBase(), async (tx) => {
     // add/update the instance with its creation date in the ordered list of instances
     const time = new Date().getTime();
     await tx.zadd(listId, time, keyId);
+    if (maxLength && maxLength > 0) {
+      await tx.zremrangebyrank(listId, 0, -(maxLength + 1)); // keep only the top maxLength elements
+    }
     // remove the too old keys from the list of instances
     await tx.zremrangebyscore(listId, '-inf', time - (expirationTime * 1000));
   });
@@ -214,16 +217,19 @@ const delKeyWithList = async (keyId: string, listIds: string[]) => {
   const listsPromise = listIds.map((listId) => getClientBase().zrem(listId, keyId));
   await Promise.all([keyPromise, ...listsPromise]);
 };
-const setKeyWithList = async (keyId: string, listIds: string[], keyData: any, expirationTime: number) => {
+const setKeyWithList = async (keyId: string, listIds: string[], keyData: any, expirationTime: number, maxLength?: number) => {
   const keyPromise = getClientBase().set(keyId, JSON.stringify(keyData), 'EX', expirationTime);
-  const listsPromise = listIds.map((listId) => setInList(listId, keyId, expirationTime));
+  const listsPromise = listIds.map((listId) => setInList(listId, keyId, expirationTime, maxLength));
   await Promise.all([keyPromise, ...listsPromise]);
   return keyData;
 };
-const keysFromList = async (listId: string, expirationTime?: number) => {
+const keysFromList = async (listId: string, expirationTime?: number, maxLength?: number) => {
   if (expirationTime) {
     const time = new Date().getTime();
     await getClientBase().zremrangebyscore(listId, '-inf', time - (expirationTime * 1000));
+  }
+  if (maxLength && maxLength > 0) {
+    await getClientBase().zremrangebyrank(listId, 0, -(maxLength + 1)); // keep only the top maxLength elements
   }
   const instances = await getClientBase().zrange(listId, 0, -1);
   if (instances && instances.length > 0) {
@@ -541,16 +547,18 @@ export const getClusterInstances = async () => {
 // endregion
 
 // playground handling
+const PLAYBOOK_EXECUTION_TTL = 90 * 24 * 60 * 60; // 90 days
+const PLAYBOOK_EXECUTIONS_MAX_LENGTH = 20;
 export const redisPlaybookUpdate = async (envelop: ExecutionEnvelop) => {
   const clientBase = getClientBase();
   const id = `playbook_execution_${envelop.playbook_execution_id}`;
   const follow = await clientBase.get(id);
   const objectFollow = follow ? JSON.parse(follow) : {};
   const toUpdate = mergeDeepRightAll(objectFollow, envelop);
-  await setKeyWithList(id, [`playbook_executions_${envelop.playbook_id}`], toUpdate, 5 * 60); // 5 minutes
+  await setKeyWithList(id, [`playbook_executions_${envelop.playbook_id}`], toUpdate, PLAYBOOK_EXECUTION_TTL, PLAYBOOK_EXECUTIONS_MAX_LENGTH); // 5 minutes
 };
 export const getLastPlaybookExecutions = async (playbookId: string) => {
-  const executions = await keysFromList(`playbook_executions_${playbookId}`, 5 * 60) as ExecutionEnvelop[];
+  const executions = await keysFromList(`playbook_executions_${playbookId}`, PLAYBOOK_EXECUTION_TTL, PLAYBOOK_EXECUTIONS_MAX_LENGTH) as ExecutionEnvelop[];
   return executions.map((e) => {
     const steps = Object.entries(e).filter(([k, _]) => k.startsWith('step_')).map(([k, v]) => {
       const fullData = v.bundle ? JSON.stringify([v.bundle], null, 2) : JSON.stringify(v.patch, null, 2);
