@@ -69,6 +69,60 @@ describe('ConfigExtractor', () => {
     const ext = new ConfigExtractor({ a: 1, b: 2 });
     expect(ext.getUnconsumedEntries()).toStrictEqual([['a', 1], ['b', 2]]);
   });
+
+  // --- String → boolean auto-conversion ---
+
+  it('should convert string "true" to boolean true when defaultValue is boolean', () => {
+    const ext = new ConfigExtractor({ flag: 'true' });
+    expect(ext.get<boolean>('flag', false)).toBe(true);
+  });
+
+  it('should convert string "True" to boolean true (case-insensitive)', () => {
+    const ext = new ConfigExtractor({ flag: 'True' });
+    expect(ext.get<boolean>('flag', false)).toBe(true);
+  });
+
+  it('should convert string "TRUE" to boolean true (case-insensitive)', () => {
+    const ext = new ConfigExtractor({ flag: 'TRUE' });
+    expect(ext.get<boolean>('flag', false)).toBe(true);
+  });
+
+  it('should convert string "false" to boolean false when defaultValue is boolean', () => {
+    const ext = new ConfigExtractor({ flag: 'false' });
+    expect(ext.get<boolean>('flag', true)).toBe(false);
+  });
+
+  it('should convert string "False" to boolean false (case-insensitive)', () => {
+    const ext = new ConfigExtractor({ flag: 'False' });
+    expect(ext.get<boolean>('flag', true)).toBe(false);
+  });
+
+  it('should convert string "FALSE" to boolean false (case-insensitive)', () => {
+    const ext = new ConfigExtractor({ flag: 'FALSE' });
+    expect(ext.get<boolean>('flag', true)).toBe(false);
+  });
+
+  it('should convert any non-"true" string to false when defaultValue is boolean', () => {
+    const ext = new ConfigExtractor({ flag: 'yes' });
+    expect(ext.get<boolean>('flag', true)).toBe(false);
+  });
+
+  it('should NOT convert string when defaultValue is not boolean', () => {
+    const ext = new ConfigExtractor({ val: 'true' });
+    expect(ext.get<string>('val', 'fallback')).toBe('true');
+  });
+
+  it('should NOT convert string when no defaultValue is provided', () => {
+    const ext = new ConfigExtractor({ val: 'true' });
+    expect(ext.get('val')).toBe('true');
+  });
+
+  it('should return boolean value as-is when value is already boolean', () => {
+    const ext = new ConfigExtractor({ flag: true });
+    expect(ext.get<boolean>('flag', false)).toBe(true);
+    const ext2 = new ConfigExtractor({ flag: false });
+    expect(ext2.get<boolean>('flag', true)).toBe(false);
+  });
 });
 
 // ==========================================================================
