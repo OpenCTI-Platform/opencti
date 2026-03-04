@@ -140,7 +140,7 @@ export interface DataTableProps {
   actions?: (row: any) => ReactNode;
   icon?: (row: any) => ReactNode;
   createButton?: ReactNode;
-  pageSize?: string;
+  pageSize?: number;
   disableNavigation?: boolean;
   disableLineSelection?: boolean;
   disableToolBar?: boolean;
