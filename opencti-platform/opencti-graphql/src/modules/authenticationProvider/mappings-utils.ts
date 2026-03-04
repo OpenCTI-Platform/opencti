@@ -36,7 +36,25 @@ export const resolvePath = (path: string[]) => async (obj: unknown): Promise<any
   return resolvePath(remaining)(resolvedValue);
 };
 
-export const resolveDotPath = (path: string) => resolvePath(path.split('.'));
+/**
+ * Parses a dot-separated path string into segments.
+ * Path components that contain dots (e.g. SAML HTTP claim URIs) can be quoted with double quotes.
+ * Inside quoted segments, use "" to represent a literal double quote.
+ * Example: user_info."http://example.com/claims/email" → ['user_info', 'http://example.com/claims/email']
+ */
+export const parseDotPath = (path: string): string[] => {
+  // Unquoted [^."]+ or quoted "((?:[^"]|"")*)", then . or end. "" inside quotes = literal ".
+  const re = /(?:([^."]+)|"((?:[^"]|"")*)")(?:\.|$)/g;
+  const segments: string[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(path)) !== null) {
+    const segment = m[1] !== undefined ? m[1] : m[2].replace(/""/g, '"');
+    segments.push(segment);
+  }
+  return segments;
+};
+
+export const resolveDotPath = (path: string) => resolvePath(parseDotPath(path));
 
 type ResolveExprFunction = (obj: unknown) => undefined | string | string[] | Promise<undefined | string | string[]>;
 type CreateResolveExprFunction = (expr: string) => ResolveExprFunction;

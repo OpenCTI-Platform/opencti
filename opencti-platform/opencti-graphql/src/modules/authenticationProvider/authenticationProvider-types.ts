@@ -7,7 +7,7 @@ export const ENTITY_TYPE_AUTHENTICATION_PROVIDER = 'AuthenticationProvider';
 // Mapping configuration
 //
 // All _expr fields use dot-separated notation (e.g. 'user_info.email', 'tokens.access_token.groups').
-// Resolution splits on '.' and traverses the path: resolvePath(root, expr.split('.'))
+// Path components that contain dots can be quoted with double quotes: "http://example.com/claims/email".
 //
 // OIDC:  context = { tokens: fn(name), user_info: fn() } — paths like 'user_info.email' or 'tokens.id_token.sub'
 // SAML:  context = profile.attributes ?? profile — paths like 'email' (flat) or 'org.list' (nested)
