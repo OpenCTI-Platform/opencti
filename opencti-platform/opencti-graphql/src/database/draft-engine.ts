@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS, toBase64 } from './utils';
+import { isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from './utils';
 import { DatabaseError, UnsupportedError } from '../config/errors';
 import {
   BULK_TIMEOUT,
@@ -283,7 +283,7 @@ export const resolveDraftUpdateFiles = async (context: AuthContext, user: AuthUs
     for (let i = 0; i < fileIds.length; i += 1) {
       const currentFileId = fileIds[i];
       const currentFile = await loadFile(context, user, currentFileId as string);
-      const currentFileContent = toBase64(await getFileContent(currentFileId as string));
+      const currentFileContent = await getFileContent(currentFileId as string, 'base64');
       if (currentFile) {
         const currentFileObject = {
           name: currentFile.name,
