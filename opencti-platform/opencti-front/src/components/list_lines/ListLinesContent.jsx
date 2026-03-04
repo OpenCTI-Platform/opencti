@@ -26,6 +26,7 @@ class ListLinesContent extends Component {
     this.state = {
       loadingRowCount: 0,
       computedScrollElement: null,
+      isScrollElementResolved: false,
     };
   }
 
@@ -43,17 +44,18 @@ class ListLinesContent extends Component {
         if (node instanceof HTMLElement) {
           const { overflowY } = window.getComputedStyle(node);
           if (overflowY === 'auto' || overflowY === 'scroll') {
-            this.setState({ computedScrollElement: node });
+            this.setState({ computedScrollElement: node, isScrollElementResolved: true });
             return;
           }
         }
         node = node.parentNode;
       }
+      this.setState({ isScrollElementResolved: true });
     }
   }
 
   componentDidUpdate(prevProps) {
-    if (!this.state.computedScrollElement) {
+    if (!this.state.isScrollElementResolved) {
       this.updateScrollElement();
     }
     const diff = !R.equals(this.props.dataList, prevProps.dataList)
