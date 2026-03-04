@@ -37,7 +37,7 @@ You can set core detail fields:
 - Active (toggle on/off, default to on): when activate, your form will be present in the form intake list.
 
 ## Main entity definition
-Defining a main entity has two goals: 
+Defining a main entity sets two variables: 
 - Be able to define in which screen, in addition to the import menu, you will see your form intake (ex: if your main entity is a Report, on the Report List view, you will see your form intake)
 - Be able to specify which entity you want to create first (especially useful if it's a container.)
 
