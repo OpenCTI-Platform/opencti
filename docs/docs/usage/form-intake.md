@@ -38,7 +38,7 @@ You can set core detail fields:
 
 ## Main entity definition
 Defining a main entity sets two variables: 
-- Be able to define in which screen, in addition to the import menu, you will see your form intake (ex: if your main entity is a Report, on the Report List view, you will see your form intake)
+- The entity view where the form intake will be available, this is in addition to the import menu. E.g. if your main entity is a Report, you will see your form intake in the Report List view.
 - Be able to specify which entity you want to create first (especially useful if it's a container.)
 
 By default, main entity selected is a **Report**.
