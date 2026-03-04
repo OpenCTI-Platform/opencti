@@ -127,7 +127,6 @@ describe('PLAYBOOK_REDUCING_COMPONENT', () => {
     expect(result.bundle.objects.find((o) => o.id === CAMPAIGN_ID)).toBeDefined(); // unmatched element included
   });
 
-  // Cas unmatch (2 objets): rien ne matche → unmatch: [Campaign, Malware] uniquement
   it('should return unmatch port with only unmatched elements (Campaign + Malware) without base element when nothing matches filter', async () => {
     const report = createObject(REPORT_ID, 'report');
     const campaign = createObject(CAMPAIGN_ID, 'campaign');
