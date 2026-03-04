@@ -90,7 +90,7 @@ const VocabularyCategories = () => {
           dataColumns={dataColumns}
           getComputeLink={({ category }: { category: VocabularyDefinition }) => (category.key)}
           globalCount={categories.length}
-          pageSize={categories.length}
+          pageSize={categories.length.toString()}
           icon={() => (<ShortTextOutlined color="primary" />)}
           onSort={onSort}
         />
