@@ -81,6 +81,44 @@ The entries in the file correspond to the information that matches the filters a
 
 The *Rolling Time* value (represented in minutes) determines how far back in time OpenCTI should look for data that matches your filters since the last fetch. The *Base Attribute* value determines whether OpenCTI should look for data <ins>created</ins> within the *Rolling Time* period, or data <ins>updated</ins> within the *Rolling Time* period.
 
+### Relationship-based columns (neighbor resolution)
+
+By default, CSV feed columns map directly to attributes of the selected entity type (e.g., an Indicator's `value`, `confidence`, or `pattern_type`). With relationship-based columns, you can also include attributes from **first-degree neighbors** resolved through relationships at runtime.
+
+For example, an Indicator-based feed can include columns like *Malware Name*, *Campaign Name*, or *Intrusion Set Name* — pulled from entities connected to the Indicator via `indicates` relationships — without any additional API calls from the consumer.
+
+#### Configuring a relationship column
+
+In the column configuration section, each entity type mapping can be toggled between two modes:
+
+- **Direct** (default) — maps to a direct attribute of the entity itself.
+- **Relationship** — resolves a neighbor through a relationship and extracts an attribute from the resolved entity.
+
+Click the **Direct** / **Relationship** chip next to the entity type name to toggle between modes.
+
+When in Relationship mode, three fields appear in a row:
+
+1. **Relationship type** — the relationship to follow (e.g., `indicates`, `uses`, `attributed-to`). Only relationship types valid for the selected entity type are shown, in both directions.
+2. **Target type** — the type of neighbor entity to resolve (e.g., `Malware`, `Intrusion-Set`). Scoped based on the selected relationship type.
+3. **Attribute** — the attribute to extract from the resolved neighbor (e.g., `name`, `description`, `aliases`).
+
+#### Multi-match behavior
+
+When multiple neighbors match (e.g., an Indicator `indicates` two different Malware), the behavior is configurable per column:
+
+- **Strategy**: *All (list)* joins all matched values, *First match* takes only the first.
+- **List separator**: configurable separator for joining multiple values (defaults to `,`). Must differ from the feed's CSV separator to avoid parsing ambiguity.
+
+These options appear automatically in the column header row when any mapping in that column uses Relationship mode.
+
+#### Example
+
+| Indicator Value | Malware Name          | Campaign Name | Indicator Type | Confidence |
+|-----------------|-----------------------|---------------|----------------|------------|
+| 1.2.3.4         | EvilLoader, DarkAgent | Operation X   | IPv4-Addr      | 85         |
+
+Here, *Malware Name* and *Campaign Name* are resolved at runtime through relationships, while *Indicator Value*, *Indicator Type*, and *Confidence* are direct attributes.
+
 ### Duplication
 To easily configure a new CSV feed, you can choose to start from an existing feed configuration and duplicate it.
 The "duplicate" action is accessible from the feed burger menu. 

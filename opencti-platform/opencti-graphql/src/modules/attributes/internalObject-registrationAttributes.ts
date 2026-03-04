@@ -499,6 +499,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
       isFilterable: true,
       mappings: [
         { name: 'attribute', label: 'Attribute', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: true, isFilterable: true },
+        { name: 'multi_match_strategy', label: 'Multi-match strategy', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+        { name: 'multi_match_separator', label: 'Multi-match separator', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
         {
           name: 'mappings',
           label: 'Mappings',
@@ -512,6 +514,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
           mappings: [
             { name: 'type', label: 'Type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: true, isFilterable: false },
             { name: 'attribute', label: 'Attribute', type: 'string', format: 'short', editDefault: false, mandatoryType: 'internal', multiple: false, upsert: true, isFilterable: false },
+            { name: 'relationship_type', label: 'Relationship type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+            { name: 'target_entity_type', label: 'Target entity type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
           ],
         },
       ],

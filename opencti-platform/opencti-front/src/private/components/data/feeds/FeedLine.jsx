@@ -156,9 +156,13 @@ const FeedLineFragment = createFragmentContainer(FeedLineLineComponent, {
       feed_types
       feed_attributes {
         attribute
+        multi_match_strategy
+        multi_match_separator
         mappings {
           type
           attribute
+          relationship_type
+          target_entity_type
         }
       }
     }

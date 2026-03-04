@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildCsvLines } from '../../../src/http/httpRollingFeed';
-import type { BasicStoreEntityFeed } from '../../../src/types/store';
+import type { BasicStoreBase, BasicStoreEntityFeed } from '../../../src/types/store';
 
 const feed = {
   _index: 'opencti_internal_objects-000001',
@@ -106,5 +106,99 @@ test"`];
 
     const resultLines = buildCsvLines(elementsWithCaractersToRemove, feed);
     expect(resultLines).toEqual(expectedResultLines);
+  });
+
+  it('should resolve neighbor attributes via relationship mapping', () => {
+    const neighborFeed = {
+      ...feed,
+      feed_attributes: [
+        {
+          attribute: 'value',
+          mappings: [{ attribute: 'name', type: 'Indicator' }],
+        },
+        {
+          attribute: 'malware_name',
+          multi_match_strategy: 'list',
+          multi_match_separator: '|',
+          mappings: [{
+            attribute: 'name',
+            type: 'Indicator',
+            relationship_type: 'indicates',
+            target_entity_type: 'Malware',
+          }],
+        },
+      ],
+    } as unknown as BasicStoreEntityFeed;
+
+    const malware1 = { internal_id: 'malware-1', name: 'WannaCry', entity_type: 'Malware' } as unknown as BasicStoreBase;
+    const malware2 = { internal_id: 'malware-2', name: 'NotPetya', entity_type: 'Malware' } as unknown as BasicStoreBase;
+
+    const neighborsMap = new Map();
+    const entityNeighbors = new Map();
+    entityNeighbors.set('indicates:Malware', [malware1, malware2]);
+    neighborsMap.set('test-id', entityNeighbors);
+
+    const resultLines = buildCsvLines(elements, neighborFeed, neighborsMap);
+    expect(resultLines).toEqual(['CSV test;WannaCry|NotPetya']);
+  });
+
+  it('should use first-match strategy when configured', () => {
+    const neighborFeed = {
+      ...feed,
+      feed_attributes: [
+        {
+          attribute: 'value',
+          mappings: [{ attribute: 'name', type: 'Indicator' }],
+        },
+        {
+          attribute: 'malware_name',
+          multi_match_strategy: 'first',
+          mappings: [{
+            attribute: 'name',
+            type: 'Indicator',
+            relationship_type: 'indicates',
+            target_entity_type: 'Malware',
+          }],
+        },
+      ],
+    } as unknown as BasicStoreEntityFeed;
+
+    const malware1 = { internal_id: 'malware-1', name: 'WannaCry', entity_type: 'Malware' } as unknown as BasicStoreBase;
+    const malware2 = { internal_id: 'malware-2', name: 'NotPetya', entity_type: 'Malware' } as unknown as BasicStoreBase;
+
+    const neighborsMap = new Map();
+    const entityNeighbors = new Map();
+    entityNeighbors.set('indicates:Malware', [malware1, malware2]);
+    neighborsMap.set('test-id', entityNeighbors);
+
+    const resultLines = buildCsvLines(elements, neighborFeed, neighborsMap);
+    expect(resultLines).toEqual(['CSV test;WannaCry']);
+  });
+
+  it('should output empty value when no neighbors match', () => {
+    const neighborFeed = {
+      ...feed,
+      feed_attributes: [
+        {
+          attribute: 'value',
+          mappings: [{ attribute: 'name', type: 'Indicator' }],
+        },
+        {
+          attribute: 'malware_name',
+          multi_match_strategy: 'list',
+          multi_match_separator: ',',
+          mappings: [{
+            attribute: 'name',
+            type: 'Indicator',
+            relationship_type: 'indicates',
+            target_entity_type: 'Malware',
+          }],
+        },
+      ],
+    } as unknown as BasicStoreEntityFeed;
+
+    const emptyNeighborsMap = new Map();
+    const resultLines = buildCsvLines(elements, neighborFeed, emptyNeighborsMap);
+    expect(resultLines).toEqual(['CSV test;']);
   });
 });

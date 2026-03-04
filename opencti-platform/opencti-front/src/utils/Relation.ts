@@ -155,3 +155,19 @@ export const getRelationshipTypesForEntityType = (entityType: string, schema: Sc
   uniqRelationshipList.add(DEFAULT_RELATION);
   return Array.from(uniqRelationshipList);
 };
+
+export const getTargetTypesForRelationship = (
+  entityType: string,
+  relType: string,
+  schemaRelationsTypesMapping: Map<string, readonly string[]>,
+): string[] => {
+  const targets = new Set<string>();
+  schemaRelationsTypesMapping.forEach((values, key) => {
+    if (values.includes(relType) || relType === DEFAULT_RELATION) {
+      const [from, to] = key.split('_');
+      if (from === entityType) targets.add(to);
+      if (to === entityType) targets.add(from);
+    }
+  });
+  return Array.from(targets).sort();
+};
