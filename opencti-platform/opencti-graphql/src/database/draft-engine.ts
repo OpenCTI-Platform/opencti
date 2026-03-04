@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS, toBase64 } from './utils';
+import { isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from './utils';
 import { DatabaseError, UnsupportedError } from '../config/errors';
 import {
   BULK_TIMEOUT,
