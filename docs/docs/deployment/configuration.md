@@ -57,6 +57,7 @@ Here are the configuration keys, for both containers (environment variables) and
 | http_proxy                                          | HTTP_PROXY                                             |                                                                                                                                    | Proxy URL for HTTP connection (example: http://proxy:80080)                                                         |
 | https_proxy                                         | HTTPS_PROXY                                            |                                                                                                                                    | Proxy URL for HTTPS connection (example: http://proxy:80080)                                                        |
 | no_proxy                                            | NO_PROXY                                               |                                                                                                                                    | Comma separated list of hostnames for proxy exception (example: localhost,127.0.0.0/8,internal.opencti.io)          |
+| aws:proxy_enabled                                   | AWS__PROXY_ENABLED                                     | false                                                                                                                              | When enabled, routes all AWS SDK traffic (STS and S3) through the HTTP/HTTPS proxy above.                           |
 | app:https_cert:cookie_secure                        | APP__HTTPS_CERT__COOKIE_SECURE                         | false                                                                                                                              | Set the flag "secure" for session cookies                                                                           |
 | app:https_cert:ca                                   | APP__HTTPS_CERT__CA                                    | Empty list []                                                                                                                      | Certificate authority paths or content, only if the client uses a self-signed certificate                           |
 | app:https_cert:key                                  | APP__HTTPS_CERT__KEY                                   |                                                                                                                                    | Certificate key path or content                                                                                     |
@@ -169,6 +170,11 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | elasticsearch:ssl:ca                  | ELASTICSEARCH__SSL__CA                  |                       | Custom certificate path or content                                                                                                                                                                                                                                     |
 | elasticsearch:search_wildcard_prefix  | ELASTICSEARCH__SEARCH_WILDCARD_PREFIX   | `false`               | Search includes words with automatic fuzzy comparison                                                                                                                                                                                                                  |
 | elasticsearch:search_fuzzy            | ELASTICSEARCH__SEARCH_FUZZY             | `false`               | Search will include words not starting with the search keyword                                                                                                                                                                                                         |
+| opensearch:region                     | OPENSEARCH__REGION                      |                       | AWS region when using AWS OpenSearch with IAM (e.g. `us-east-1`). When set, requests are signed with SigV4 using the default credential chain (env, instance role, etc.). Omit for self‑hosted Elasticsearch/OpenSearch. |
+
+!!! note "Using a proxy for AWS OpenSearch STS credentials"
+
+    When using AWS credentials (e.g. IAM roles), the backend calls AWS STS to obtain credentials; that STS traffic does not use the system proxy by default. Set `aws:proxy_enabled` to `true` and set `http_proxy` and/or `https_proxy` in the **Network and security** section above to route STS calls through a proxy. The proxy does not apply to traffic to the OpenSearch cluster itself.
 
 #### Redis
 
@@ -225,6 +231,10 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | minio:bucket_name   | MINIO__BUCKET_NAME   | opencti-bucket | S3 bucket name. Useful to change if you use AWS.                                                                                                                                                                            |
 | minio:bucket_region | MINIO__BUCKET_REGION | us-east-1      | Region of the S3 bucket if you are using AWS. This parameter value can be omitted if you use Minio as an S3 Bucket Service.                                                                                                 |
 | minio:use_aws_role  | MINIO__USE_AWS_ROLE  | `false`        | Indicates whether to use AWS role auto credentials. When this parameter is configured, the `minio:access_key` and `minio:secret_key` parameters are not necessary.                                                          |
+
+!!! note "Using a proxy for AWS S3"
+
+    To route both STS (credential) calls and S3 traffic from the backend through an HTTP or HTTPS proxy, set `http_proxy` and/or `https_proxy` in the **Network and security** section above, then set `aws:proxy_enabled` to `true`.
 
 #### SMTP Service
 

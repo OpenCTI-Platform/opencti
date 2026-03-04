@@ -95,6 +95,7 @@
     "archiver": "7.0.1",
     "archiver-zip-encrypted": "2.0.0",
     "async-lock": "1.4.1",
+    "aws-sdk-v3-proxy": "2.2.0",
     "axios": "1.13.5",
     "axios-cookiejar-support": "6.0.5",
     "bcryptjs": "3.0.3",

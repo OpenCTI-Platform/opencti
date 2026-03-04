@@ -411,6 +411,9 @@
     "forced_sender_email": "",
     "email_max_cc_size": 500
   },
+  "aws": {
+    "proxy_enabled": false
+  },
   "providers": {
     "local": {
       "strategy": "LocalStrategy"
