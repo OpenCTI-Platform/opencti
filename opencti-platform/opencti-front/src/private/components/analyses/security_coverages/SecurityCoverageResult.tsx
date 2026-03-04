@@ -189,7 +189,7 @@ const securityCoverageResultLineFragment = graphql`
     }
 `;
 
-export const SecurityCoverageResultLinesSearchQuery = graphql`
+export const securityCoverageResultLinesSearchQuery = graphql`
     query SecurityCoverageResultLinesSearchQuery(
         $id: String!
         $search: String
