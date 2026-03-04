@@ -46,7 +46,7 @@ By default, the main entity selected is a **Report**.
 ### Common fields
 
 For each main entity, you can configure multiple fields: 
-- **Entity Lookup** (disabled by default): if enabled, users will not be able to create any new entity, but will be forced to choose among existing entities. Another field will appear if you enable this field: **Disable on-the-fly entity creation**
+- **Entity Lookup** (disabled by default): if enabled, users will will be forced to choose from existing entities. Another field will appear when you enable this field: **Disable on-the-fly entity creation**
 - **Disable on-the-fly entity creation** (disabled by default): if you want your users to select some entities among existing ones, you may face an issue, if the entity they want to create does not exist. Enable this option to prevent from being able to create entity on the fly, to ensure strict entity lookup. 
 - **Allow multiple instances of main entity** (disabled by default): if you want to allow your users multiple times the same entity.  If you enable this field, another field will appear **Multiple Mode**. 
 
