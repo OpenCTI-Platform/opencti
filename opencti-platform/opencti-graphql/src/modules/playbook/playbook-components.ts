@@ -289,20 +289,19 @@ export const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration>
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const bundleElement = bundle.objects[index];
       const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters);
-      if (isMatch) {
-        matchedElements.push(bundleElement);
-      } else {
+      if (!isMatch && bundleElement.id !== baseData.id) {
         unmatchedElements.push(bundleElement);
+      } else if (isMatch) {
+        matchedElements.push(bundleElement);
       }
     }
     if (matchedElements.length === 0) {
-      // Add the unmatched objects to another bundle to be able to work with them as well if needed.
-      const unmatchedObjects = uniqBy(prop('id'), [baseData, ...unmatchedElements]);
-      return { output_port: 'unmatch', bundle: mergeDeepRight(bundle, { objects: unmatchedObjects }) };
+      // Only unmatched elements, base element is not included to avoid side effects on other branches
+      const unmatchedObjects = R.uniqBy(R.prop('id'), [...unmatchedElements]);
+      return { output_port: 'unmatch', bundle: { ...bundle, objects: unmatchedObjects } };
     }
-    const mergedObjects = uniqBy(prop('id'), [baseData, ...matchedElements]);
-    const newBundle = mergeDeepRight(bundle, { objects: mergedObjects });
-    return { output_port: 'out', bundle: newBundle };
+    const mergedObjects = R.uniqBy(R.prop('id'), [baseData, ...matchedElements]);
+    return { output_port: 'out', bundle: { ...bundle, objects: mergedObjects } };
   },
 };
 

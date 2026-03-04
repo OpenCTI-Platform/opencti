@@ -109,7 +109,7 @@ describe('PLAYBOOK_REDUCING_COMPONENT', () => {
     expect(result.bundle.objects.find((o) => o.id === MALWARE_ID)).toBeUndefined();
   });
 
-  it('should return unmatch port with base element (Report) + all unmatched elements (Campaign) when nothing matches filter', async () => {
+  it('should return unmatch port with only unmatched elements (Campaign) without base element when nothing matches filter', async () => {
     const report = createObject(REPORT_ID, 'report');
     const campaign = createObject(CAMPAIGN_ID, 'campaign');
     const bundle = createBundle(report, campaign);
@@ -121,12 +121,14 @@ describe('PLAYBOOK_REDUCING_COMPONENT', () => {
     const result = await callExecutor(bundle);
 
     expect(result.output_port).toBe('unmatch');
-    expect(result.bundle.objects).toHaveLength(2); // Report (baseData) + Campaign (unmatched)
-    expect(result.bundle.objects.find((o) => o.id === REPORT_ID)).toBeDefined(); // base element always included
+    console.log('result', result.bundle.objects);
+    expect(result.bundle.objects).toHaveLength(1); // only Campaign (unmatched), Report excluded
+    expect(result.bundle.objects.find((o) => o.id === REPORT_ID)).toBeUndefined(); // base element NOT included on unmatch
     expect(result.bundle.objects.find((o) => o.id === CAMPAIGN_ID)).toBeDefined(); // unmatched element included
   });
 
-  it('should return unmatch port with base element (Report) + all unmatched elements (Campaign + Malware) when nothing matches filter', async () => {
+  // Cas unmatch (2 objets): rien ne matche → unmatch: [Campaign, Malware] uniquement
+  it('should return unmatch port with only unmatched elements (Campaign + Malware) without base element when nothing matches filter', async () => {
     const report = createObject(REPORT_ID, 'report');
     const campaign = createObject(CAMPAIGN_ID, 'campaign');
     const malware = createObject(MALWARE_ID, 'malware');
@@ -140,8 +142,8 @@ describe('PLAYBOOK_REDUCING_COMPONENT', () => {
     const result = await callExecutor(bundle);
 
     expect(result.output_port).toBe('unmatch');
-    expect(result.bundle.objects).toHaveLength(3); // Report (baseData) + Campaign + Malware (all unmatched)
-    expect(result.bundle.objects.find((o) => o.id === REPORT_ID)).toBeDefined(); // base element always included
+    expect(result.bundle.objects).toHaveLength(2); // Campaign + Malware (unmatched), Report excluded
+    expect(result.bundle.objects.find((o) => o.id === REPORT_ID)).toBeUndefined(); // base element NOT included on unmatch
     expect(result.bundle.objects.find((o) => o.id === CAMPAIGN_ID)).toBeDefined(); // unmatched element included
     expect(result.bundle.objects.find((o) => o.id === MALWARE_ID)).toBeDefined(); // unmatched element included
   });
