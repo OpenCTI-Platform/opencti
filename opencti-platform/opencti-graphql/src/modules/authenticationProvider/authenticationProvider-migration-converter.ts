@@ -365,6 +365,18 @@ const collectExtraConf = (
   return extraConf;
 };
 
+/**
+ * Quotes a path segment for dot-separated expressions when it contains '.' or '"',
+ * so that parseDotPath (mappings-utils) treats it as a single component (e.g. SAML HTTP URIs).
+ * Uses "" inside quoted strings to represent a literal double quote.
+ */
+const quotePathSegment = (segment: string): string => {
+  if (segment.includes('.') || segment.includes('"')) {
+    return `"${segment.replace(/"/g, '""')}"`;
+  }
+  return segment;
+};
+
 // ---------------------------------------------------------------------------
 // OIDC conversion
 // ---------------------------------------------------------------------------
@@ -428,10 +440,10 @@ export const convertOidcEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   }
 
   const userInfoMapping: UserInfoMappingInput = {
-    email_expr: `${userInfoPrefix}.${ext.get<string>('email_attribute', 'email')}`,
-    name_expr: `${userInfoPrefix}.${ext.get<string>('name_attribute', 'name')}`,
-    firstname_expr: `${userInfoPrefix}.${ext.get<string>('firstname_attribute', 'given_name')}`,
-    lastname_expr: `${userInfoPrefix}.${ext.get<string>('lastname_attribute', 'family_name')}`,
+    email_expr: `${userInfoPrefix}.${quotePathSegment(ext.get<string>('email_attribute', 'email'))}`,
+    name_expr: `${userInfoPrefix}.${quotePathSegment(ext.get<string>('name_attribute', 'name'))}`,
+    firstname_expr: `${userInfoPrefix}.${quotePathSegment(ext.get<string>('firstname_attribute', 'given_name'))}`,
+    lastname_expr: `${userInfoPrefix}.${quotePathSegment(ext.get<string>('lastname_attribute', 'family_name'))}`,
   };
 
   // Groups mapping
@@ -531,10 +543,10 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
 
   // User info mapping — SAML uses attribute names directly from SAML assertions
   const userInfoMapping: UserInfoMappingInput = {
-    email_expr: ext.get<string>('mail_attribute', 'nameID'),
-    name_expr: ext.get<string>('account_attribute', 'nameID'),
-    firstname_expr: ext.get<string | null>('firstname_attribute', null),
-    lastname_expr: ext.get<string | null>('lastname_attribute', null),
+    email_expr: quotePathSegment(ext.get<string>('mail_attribute', 'nameID')),
+    name_expr: quotePathSegment(ext.get<string>('account_attribute', 'nameID')),
+    firstname_expr: quotePathSegment(ext.get<string>('firstname_attribute', '')) || null,
+    lastname_expr: quotePathSegment(ext.get<string>('lastname_attribute', '')) || null,
   };
 
   // Groups mapping: SAML uses group_attributes (attribute names in SAML assertion)
@@ -542,7 +554,7 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
   const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
   const gm = resolveGroupsManagement(ext, 'saml', warnings);
-  const groupsExpr = gm?.group_attributes ?? ['groups'];
+  const groupsExpr = (gm?.group_attributes ?? ['groups']).map(quotePathSegment);
   const groupsMapping: GroupsMappingInput = {
     auto_create_groups: autoCreateGroup,
     prevent_default_groups: preventDefaultGroups,
@@ -563,7 +575,7 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const organizationsMapping: OrganizationsMappingInput = {
     auto_create_organizations: false,
     default_organizations: organizationsDefault,
-    organizations_expr: [rawOrgPath.join('.')],
+    organizations_expr: [rawOrgPath.map(quotePathSegment).join('.')],
     organizations_mapping: convertMappingEntries(om?.organizations_mapping),
   };
 
@@ -635,10 +647,10 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
 
   // User info mapping — LDAP uses direct attribute names on the LDAP user object
   const userInfoMapping: UserInfoMappingInput = {
-    email_expr: ext.get<string>('mail_attribute', 'mail'),
-    name_expr: ext.get<string>('account_attribute', 'givenName'),
-    firstname_expr: ext.get<string | null>('firstname_attribute', null),
-    lastname_expr: ext.get<string | null>('lastname_attribute', null),
+    email_expr: quotePathSegment(ext.get<string>('mail_attribute', 'mail')),
+    name_expr: quotePathSegment(ext.get<string>('account_attribute', 'givenName')),
+    firstname_expr: quotePathSegment(ext.get<string>('firstname_attribute', '')) || null,
+    lastname_expr: quotePathSegment(ext.get<string>('lastname_attribute', '')) || null,
   };
 
   // Groups mapping: LDAP uses group_attribute (attribute name in _groups entries, default 'cn')
@@ -646,7 +658,7 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
   const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
   const gm = resolveGroupsManagement(ext, 'ldap', warnings);
-  const groupsExpr = [gm?.group_attribute ?? 'cn'];
+  const groupsExpr = [quotePathSegment(gm?.group_attribute ?? 'cn')];
   const groupsMapping: GroupsMappingInput = {
     auto_create_groups: autoCreateGroup,
     prevent_default_groups: preventDefaultGroups,
@@ -662,7 +674,7 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const organizationsMapping: OrganizationsMappingInput = {
     auto_create_organizations: false,
     default_organizations: organizationsDefault,
-    organizations_expr: om?.organizations_path ?? ['organizations'],
+    organizations_expr: (om?.organizations_path ?? ['organizations']).map(quotePathSegment),
     organizations_mapping: convertMappingEntries(om?.organizations_mapping),
   };
 

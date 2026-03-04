@@ -1,7 +1,55 @@
 import { describe, expect, it } from 'vitest';
-import { resolvePath } from '../../../../src/modules/authenticationProvider/mappings-utils';
+import { parseDotPath, resolvePath, resolveDotPath } from '../../../../src/modules/authenticationProvider/mappings-utils';
 
 describe('mappings-utils', () => {
+  describe('parseDotPath', () => {
+    it('should split simple dot-separated path', () => {
+      expect(parseDotPath('a.b.c')).toEqual(['a', 'b', 'c']);
+    });
+
+    it('should treat quoted segment as single component (SAML URI)', () => {
+      expect(parseDotPath('user_info."http://example.com/claims/email"')).toEqual(['user_info', 'http://example.com/claims/email']);
+    });
+
+    it('should support multiple quoted segments', () => {
+      expect(parseDotPath('"http://a".b."http://c"')).toEqual(['http://a', 'b', 'http://c']);
+    });
+
+    it('should allow escaped double quote inside quoted segment (double double quote)', () => {
+      expect(parseDotPath('"say ""hi"""')).toEqual(['say "hi"']);
+    });
+
+    it('should return single segment when no dots', () => {
+      expect(parseDotPath('mail')).toEqual(['mail']);
+    });
+
+    it('should handle empty path', () => {
+      expect(parseDotPath('')).toEqual([]);
+    });
+
+    it('should handle trailing dot (empty segment not pushed)', () => {
+      expect(parseDotPath('a.')).toEqual(['a']);
+    });
+  });
+
+  describe('resolveDotPath', () => {
+    it('should resolve path with quoted segment (SAML-style URI key)', async () => {
+      const obj = {
+        attributes: {
+          'http://example.com/claims/email': 'user@example.com',
+        },
+      };
+      const result = await resolveDotPath('attributes."http://example.com/claims/email"')(obj);
+      expect(result).toBe('user@example.com');
+    });
+
+    it('should resolve plain dot path as before (backward compatible)', async () => {
+      const obj = { user_info: { email: 'a@b.com' } };
+      const result = await resolveDotPath('user_info.email')(obj);
+      expect(result).toBe('a@b.com');
+    });
+  });
+
   describe('resolvePath', () => {
     it('should resolve simple property', async () => {
       const obj = { foo: 'bar' };
