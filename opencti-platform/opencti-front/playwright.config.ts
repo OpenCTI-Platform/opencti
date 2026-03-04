@@ -30,7 +30,7 @@ export default defineConfig({
       coverage: {
         outputDir: './test-results/coverage',
         entryFilter: (entry) => true,
-        sourceFilter: (sourcePath) => sourcePath.startsWith('src'),
+        sourceFilter: (sourcePath) => sourcePath.search(/src\//) !== -1 && !sourcePath.includes('node_modules'),
         reports: [
           ['codecov'],
         ],

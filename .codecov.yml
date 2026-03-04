@@ -14,3 +14,6 @@ coverage:
         target: 100%
         paths: ["src/opencti-platform/opencti-front/src/utils/hooks"]
         informational: true
+fixes:
+  - "/home/runner/work/opencti/opencti/frontend-e2e-test/opencti-platform/opencti-front/::opencti-platform/opencti-front/"
+  - "frontend-e2e-test/::"
