@@ -646,7 +646,9 @@ const FeedEditionContainer = (props) => {
                                                 onChange={(event) => handleChangeNeighborMapping(i, selectedType, 'target_entity_type', event.target.value)}
                                               >
                                                 {currentMapping?.relationship_type
-                                                  && getTargetTypesForRelationship(selectedType, currentMapping.relationship_type, schema.schemaRelationsTypesMapping).map((tt) => (
+                                                  && getTargetTypesForRelationship(
+                                                    selectedType, currentMapping.relationship_type, schema.schemaRelationsTypesMapping,
+                                                  ).map((tt) => (
                                                     <MenuItem key={tt} value={tt}>
                                                       {t_i18n(`entity_${tt}`)}
                                                     </MenuItem>
