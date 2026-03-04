@@ -104,17 +104,26 @@ export class ConfigExtractor {
   /** Read a key and mark it as consumed. Also checks the camelCase/snake_case alias. */
   get<T = any>(key: string, defaultValue?: T): T {
     this.consumed.add(key);
+    let value: any;
     if (key in this.config) {
-      return this.config[key] as T;
-    }
-    const alias = SNAKE_TO_CAMEL[key] ?? CAMEL_TO_SNAKE[key];
-    if (alias) {
-      this.consumed.add(alias);
-      if (alias in this.config) {
-        return this.config[alias] as T;
+      value = this.config[key];
+    } else {
+      const alias = SNAKE_TO_CAMEL[key] ?? CAMEL_TO_SNAKE[key];
+      if (alias) {
+        this.consumed.add(alias);
+        if (alias in this.config) {
+          value = this.config[alias];
+        }
       }
     }
-    return defaultValue as T;
+    if (value === undefined) {
+      return defaultValue as T;
+    }
+    // Auto-convert string → boolean when the expected type is boolean
+    if (typeof defaultValue === 'boolean' && typeof value === 'string') {
+      return (value.toLowerCase() === 'true') as unknown as T;
+    }
+    return value as T;
   }
 
   /** Check if a key exists (also checks alias). */
