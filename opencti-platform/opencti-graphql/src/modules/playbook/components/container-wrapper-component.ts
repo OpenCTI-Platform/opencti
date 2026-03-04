@@ -21,6 +21,8 @@ import type { StixContainer, StixIncident, StixReport } from '../../../types/sti
 import type { StixDomainObject, StixObject } from '../../../types/stix-2-1-common';
 import { createTaskFromCaseTemplates } from '../playbook-components';
 import { pushAll } from '../../../utils/arrayUtil';
+import { getFileContent } from '../../../database/raw-file-storage';
+import { logApp } from '../../../config/conf';
 
 // For now, only a fixed list of containers are compatible
 // these are the containers that can be created with a name and no specific mandatory fields
@@ -153,8 +155,30 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         (<StixCaseIncident>container).extensions[STIX_EXT_OCTI].granted_refs = (<StixIncident>baseData).extensions[STIX_EXT_OCTI].granted_refs;
       }
       // Copy files from the main element to the container if requested
-      if (copyFiles && baseData.extensions[STIX_EXT_OCTI].files && baseData.extensions[STIX_EXT_OCTI].files.length > 0) {
-        container.extensions[STIX_EXT_OCTI].files = baseData.extensions[STIX_EXT_OCTI].files;
+      const stixFileExtensions = baseData.extensions[STIX_EXT_OCTI].files;
+      if (copyFiles && stixFileExtensions && stixFileExtensions.length > 0) {
+        // We need to get the files and add the data inside
+        const copiedFiles = [];
+        for (let index = 0; index < stixFileExtensions.length; index += 1) {
+          const currentFile = stixFileExtensions[index];
+          try {
+            // If data already available, just apply no_trigger_import
+            if (currentFile.data) {
+              copiedFiles.push({ ...currentFile, no_trigger_import: true });
+            } else {
+              // If data not in the element, fetch it in base64
+              const currentFileUri = currentFile.uri;
+              const fileId = currentFileUri.replace('/storage/get/', '');
+              const currentFileContent = await getFileContent(fileId, 'base64');
+              if (currentFileContent) { // File does not exist anymore
+                copiedFiles.push({ ...currentFile, data: currentFileContent, no_trigger_import: true });
+              }
+            }
+          } catch (e) {
+            logApp.error("Can't copy file from main element to the container", { cause: e, name: currentFile.name });
+          }
+        }
+        container.extensions[STIX_EXT_OCTI].files = copiedFiles;
       }
       if (STIX_DOMAIN_OBJECT_CONTAINER_CASES.includes(container_type) && caseTemplates.length > 0) {
         const tasks = await createTaskFromCaseTemplates(caseTemplates, (container as StixContainer));
