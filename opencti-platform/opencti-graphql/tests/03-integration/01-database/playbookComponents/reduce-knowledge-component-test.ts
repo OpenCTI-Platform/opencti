@@ -69,7 +69,7 @@ describe('PLAYBOOK_REDUCING_COMPONENT', () => {
     expect(result.bundle.objects.find((o) => o.id === CAMPAIGN_ID)).toBeDefined(); // matched element included
   });
 
-  it('should return base element (Report) + matched element (Malware) only when filter matches Malware', async () => {
+  it('should return base element (Report) + matched element (Malware) when filter matches Malware', async () => {
     const report = createObject(REPORT_ID, 'report');
     const campaign = createObject(CAMPAIGN_ID, 'campaign');
     const malware = createObject(MALWARE_ID, 'malware');
@@ -109,7 +109,7 @@ describe('PLAYBOOK_REDUCING_COMPONENT', () => {
     expect(result.bundle.objects.find((o) => o.id === MALWARE_ID)).toBeUndefined();
   });
 
-  it('should return unmatch port with only base element (Report) when nothing matches filter', async () => {
+  it('should return unmatch port with base element (Report) + all unmatched elements (Campaign) when nothing matches filter', async () => {
     const report = createObject(REPORT_ID, 'report');
     const campaign = createObject(CAMPAIGN_ID, 'campaign');
     const bundle = createBundle(report, campaign);
@@ -121,8 +121,28 @@ describe('PLAYBOOK_REDUCING_COMPONENT', () => {
     const result = await callExecutor(bundle);
 
     expect(result.output_port).toBe('unmatch');
-    expect(result.bundle.objects).toHaveLength(1); // only base element (Report) kept
+    expect(result.bundle.objects).toHaveLength(2); // Report (baseData) + Campaign (unmatched)
     expect(result.bundle.objects.find((o) => o.id === REPORT_ID)).toBeDefined(); // base element always included
-    expect(result.bundle.objects.find((o) => o.id === CAMPAIGN_ID)).toBeUndefined(); // not matched, excluded
+    expect(result.bundle.objects.find((o) => o.id === CAMPAIGN_ID)).toBeDefined(); // unmatched element included
+  });
+
+  it('should return unmatch port with base element (Report) + all unmatched elements (Campaign + Malware) when nothing matches filter', async () => {
+    const report = createObject(REPORT_ID, 'report');
+    const campaign = createObject(CAMPAIGN_ID, 'campaign');
+    const malware = createObject(MALWARE_ID, 'malware');
+    const bundle = createBundle(report, campaign, malware);
+
+    vi.spyOn(filterUtils, 'isStixMatchFilterGroup')
+      .mockResolvedValueOnce(false) // report does not match filter
+      .mockResolvedValueOnce(false) // campaign does not match filter
+      .mockResolvedValueOnce(false); // malware does not match filter
+
+    const result = await callExecutor(bundle);
+
+    expect(result.output_port).toBe('unmatch');
+    expect(result.bundle.objects).toHaveLength(3); // Report (baseData) + Campaign + Malware (all unmatched)
+    expect(result.bundle.objects.find((o) => o.id === REPORT_ID)).toBeDefined(); // base element always included
+    expect(result.bundle.objects.find((o) => o.id === CAMPAIGN_ID)).toBeDefined(); // unmatched element included
+    expect(result.bundle.objects.find((o) => o.id === MALWARE_ID)).toBeDefined(); // unmatched element included
   });
 });
