@@ -48,6 +48,7 @@ import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useTheme } from '@mui/material/styles';
+import { getRelationshipTypesForEntityType, getTargetTypesForRelationship } from '../../../../utils/Relation';
 
 const styles = (theme) => ({
   header: {
@@ -160,28 +161,6 @@ const FeedEditionContainer = (props) => {
   const { ignoredAttributesInFeeds } = useAttributes();
   const { schema } = useAuth();
 
-  const getRelationshipTypesForEntity = (entityType) => {
-    const relTypes = new Set();
-    schema.schemaRelationsTypesMapping.forEach((values, key) => {
-      if (key.startsWith(`${entityType}_`) || key.endsWith(`_${entityType}`)) {
-        values.forEach((v) => relTypes.add(v));
-      }
-    });
-    relTypes.add('related-to');
-    return Array.from(relTypes).sort();
-  };
-
-  const getTargetTypesForRelationship = (entityType, relType) => {
-    const targets = new Set();
-    schema.schemaRelationsTypesMapping.forEach((values, key) => {
-      if (values.includes(relType) || relType === 'related-to') {
-        const [from, to] = key.split('_');
-        if (from === entityType) targets.add(to);
-        if (to === entityType) targets.add(from);
-      }
-    });
-    return Array.from(targets).sort();
-  };
   const [selectedTypes, setSelectedTypes] = useState(feed.feed_types);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(feed.filters));
   const [feedAttributes, setFeedAttributes] = useState({
@@ -272,7 +251,7 @@ const FeedEditionContainer = (props) => {
         return false;
       }
       const invalidMappings = R.values(feedAttribute.mappings).filter((m) => {
-        if (!m.type || m.type.length === 0 || !m.attribute || m.attribute.length === 0) return true;
+        if (!m.type || !m.attribute) return true;
         if (m.relationship_type && !m.target_entity_type) return true;
         if (!m.relationship_type && m.target_entity_type) return true;
         return false;
@@ -280,6 +259,17 @@ const FeedEditionContainer = (props) => {
       if (invalidMappings.length > 0) return false;
     }
     return true;
+  };
+
+  const hasSeparatorCollision = (csvSeparator) => {
+    return R.values(feedAttributes).some((attr) => {
+      const hasRelMapping = R.values(attr?.mappings || {}).some((m) => !!m?.relationship_type);
+      if (!hasRelMapping) return false;
+      const strategy = attr?.multi_match_strategy || 'list';
+      if (strategy !== 'list') return false;
+      const listSep = attr?.multi_match_separator ?? ',';
+      return listSep === csvSeparator;
+    });
   };
 
   const handleAddAttribute = () => {
@@ -605,6 +595,8 @@ const FeedEditionContainer = (props) => {
                                           onChange={(event) => handleChangeMultiMatchSeparator(i, event.target.value)}
                                           sx={{ width: 100 }}
                                           inputProps={{ maxLength: 3 }}
+                                          error={(feedAttributes[i]?.multi_match_separator ?? ',') === values.separator}
+                                          helperText={(feedAttributes[i]?.multi_match_separator ?? ',') === values.separator ? t_i18n('Must differ from CSV separator') : undefined}
                                         />
                                       )}
                                     </>
@@ -638,7 +630,7 @@ const FeedEditionContainer = (props) => {
                                                 value={currentMapping?.relationship_type || ''}
                                                 onChange={(event) => handleChangeNeighborMapping(i, selectedType, 'relationship_type', event.target.value)}
                                               >
-                                                {getRelationshipTypesForEntity(selectedType).map((rt) => (
+                                                {getRelationshipTypesForEntityType(selectedType, schema).sort().map((rt) => (
                                                   <MenuItem key={rt} value={rt}>
                                                     {t_i18n(`relationship_${rt}`)}
                                                   </MenuItem>
@@ -654,7 +646,7 @@ const FeedEditionContainer = (props) => {
                                                 onChange={(event) => handleChangeNeighborMapping(i, selectedType, 'target_entity_type', event.target.value)}
                                               >
                                                 {currentMapping?.relationship_type
-                                                  && getTargetTypesForRelationship(selectedType, currentMapping.relationship_type).map((tt) => (
+                                                  && getTargetTypesForRelationship(selectedType, currentMapping.relationship_type, schema.schemaRelationsTypesMapping).map((tt) => (
                                                     <MenuItem key={tt} value={tt}>
                                                       {t_i18n(`entity_${tt}`)}
                                                     </MenuItem>
@@ -770,7 +762,7 @@ const FeedEditionContainer = (props) => {
                       </Button>
                       <Button
                         onClick={submitForm}
-                        disabled={isSubmitting || !areAttributesValid()}
+                        disabled={isSubmitting || !areAttributesValid() || hasSeparatorCollision(values.separator)}
                         classes={{ root: classes.button }}
                       >
                         {t_i18n('Update')}

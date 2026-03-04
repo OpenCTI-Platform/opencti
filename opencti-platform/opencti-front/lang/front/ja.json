@@ -2731,6 +2731,7 @@
   "Multiple fields (+ button)": "複数フィールド（＋ボタン）",
   "Multiple Mode": "複数のモード",
   "Must be a valid URL": "有効なURLであること",
+  "Must differ from CSV separator": "CSVセパレータと異なる必要があります",
   "Mutex": "ミューテックス",
   "My CSV file contains headers": "CSVファイルにヘッダーが含まれています",
   "My saved filter": "保存したフィルター",

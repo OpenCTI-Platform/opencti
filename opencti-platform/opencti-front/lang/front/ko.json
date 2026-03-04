@@ -2731,6 +2731,7 @@
   "Multiple fields (+ button)": "여러 필드(+ 버튼)",
   "Multiple Mode": "다중 모드",
   "Must be a valid URL": "유효한 URL이어야 합니다",
+  "Must differ from CSV separator": "CSV 구분 기호와 달라야 합니다",
   "Mutex": "뮤텍스",
   "My CSV file contains headers": "내 CSV 파일에 헤더가 포함되어 있습니다",
   "My saved filter": "내 저장된 필터",

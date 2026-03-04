@@ -2731,6 +2731,7 @@
   "Multiple fields (+ button)": "多个字段（+ 按钮）",
   "Multiple Mode": "多种模式",
   "Must be a valid URL": "必须是有效的 URL",
+  "Must differ from CSV separator": "必须与CSV分隔符不同",
   "Mutex": "互斥体",
   "My CSV file contains headers": "我的CSV文件包含标题",
   "My saved filter": "我保存的过滤器",

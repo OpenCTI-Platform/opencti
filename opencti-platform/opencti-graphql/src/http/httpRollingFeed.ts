@@ -49,7 +49,7 @@ const escapeCsvField = (separator: string, data: string) => {
 
 const neighborKey = (relType: string, targetType: string) => `${relType}:${targetType}`;
 
-const extractAttributeFromEntity = (entity: BasicStoreBase, attributePath: string): string => {
+const extractAttributeFromEntity = (entity: BasicStoreBase, attributePath: string, listSeparator = ','): string => {
   const isComplexKey = attributePath.includes('.');
   const baseKey = isComplexKey ? attributePath.split('.')[0] : attributePath;
   const data = (entity as any)[baseKey];
@@ -59,7 +59,7 @@ const extractAttributeFromEntity = (entity: BasicStoreBase, attributePath: strin
     const dictInnerData = data[innerKey.toUpperCase()];
     return isNotEmptyField(dictInnerData) ? String(dictInnerData) : '';
   }
-  if (Array.isArray(data)) return data.join(',');
+  if (Array.isArray(data)) return data.join(listSeparator);
   if (typeof data === 'object') return JSON.stringify(data);
   return String(data);
 };
@@ -235,7 +235,7 @@ export const buildCsvLines = (elements: any[], feed: BasicStoreEntityFeed, neigh
             const targetEntities = strategy === 'first' ? [neighbors[0]] : neighbors;
             const multiSep = attribute.multi_match_separator ?? ',';
             const values = targetEntities
-              .map((n) => extractAttributeFromEntity(n, mapping.attribute))
+              .map((n) => extractAttributeFromEntity(n, mapping.attribute, multiSep))
               .filter((v) => v.length > 0);
             dataElements.push(escapeCsvField(separator, values.join(multiSep)));
           }

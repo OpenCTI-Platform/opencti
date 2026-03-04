@@ -2731,6 +2731,7 @@
   "Multiple fields (+ button)": "Несколько полей (кнопка +)",
   "Multiple Mode": "Множественный режим",
   "Must be a valid URL": "Должен быть действительным URL",
+  "Must differ from CSV separator": "Должен отличаться от разделителя CSV",
   "Mutex": "Mutex",
   "My CSV file contains headers": "Мой CSV-файл содержит заголовки",
   "My saved filter": "Мой сохраненный фильтр",

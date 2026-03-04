@@ -2731,6 +2731,7 @@
   "Multiple fields (+ button)": "Champs multiples (bouton +)",
   "Multiple Mode": "Mode multiple",
   "Must be a valid URL": "Doit être une URL valide",
+  "Must differ from CSV separator": "Doit différer du séparateur CSV",
   "Mutex": "Mutex",
   "My CSV file contains headers": "Mon fichier CSV contient des en-têtes",
   "My saved filter": "Mon filtre sauvegardé",
