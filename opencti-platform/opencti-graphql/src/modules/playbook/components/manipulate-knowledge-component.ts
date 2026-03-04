@@ -129,7 +129,7 @@ interface UpdateValueConfiguration {
 }
 
 export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<ManipulateConfiguration> = {
-  id: 'PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT',
+  id: 'PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT',
   name: 'Manipulate knowledge',
   description: 'Manipulate STIX data',
   icon: 'edit',
