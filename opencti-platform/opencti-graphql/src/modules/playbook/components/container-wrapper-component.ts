@@ -161,19 +161,19 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         const copiedFiles = [];
         for (let index = 0; index < stixFileExtensions.length; index += 1) {
           const currentFile = stixFileExtensions[index];
-          try {
-            // If data already available, just apply no_trigger_import
-            if (currentFile.data !== undefined && currentFile.data !== null) {
-              copiedFiles.push({ ...currentFile, no_trigger_import: true });
-            } else {
-              // If data not in the element, fetch it in base64
-              const currentFileUri = currentFile.uri;
+          // If data already available, just apply no_trigger_import
+          if (currentFile.data !== undefined && currentFile.data !== null) {
+            copiedFiles.push({ ...currentFile, no_trigger_import: true });
+          } else {
+            // If data not in the element, fetch it in base64
+            const currentFileUri = currentFile.uri;
+            try {
               const fileId = currentFileUri.replace('/storage/get/', '');
               const currentFileContent = await getFileContent(fileId, 'base64');
               copiedFiles.push({ ...currentFile, data: currentFileContent, no_trigger_import: true });
+            } catch (e) {
+              logApp.error("[PLAYBOOK] Can't copy file from main element to the container", { cause: e, name: currentFile.name });
             }
-          } catch (e) {
-            logApp.error("Can't copy file from main element to the container", { cause: e, name: currentFile.name });
           }
         }
         container.extensions[STIX_EXT_OCTI].files = copiedFiles;
