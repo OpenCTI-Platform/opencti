@@ -18,7 +18,7 @@ const WORKFLOW_DEFINITION_QUERY = gql`
       name
       initialState
       states {
-        name
+        statusId
       }
       transitions {
         from
@@ -90,7 +90,7 @@ describe('Workflow Resolver', () => {
     id: 'draft-workflow',
     name: 'Draft Workflow',
     initialState: 'open',
-    states: [{ name: 'open' }, { name: 'validated' }],
+    states: [{ statusId: 'open' }, { statusId: 'validated' }],
     transitions: [{ from: 'open', to: 'validated', event: 'validate_event' }],
   });
 
@@ -98,7 +98,7 @@ describe('Workflow Resolver', () => {
     const result = await adminQuery({
       query: CREATE_DRAFT_WORKSPACE_QUERY,
       variables: {
-        input: { name: 'Workflow Test Workspace' },
+        input: { statusId: 'Workflow Test Workspace' },
       },
     });
     if (result.errors) {
