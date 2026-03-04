@@ -94,9 +94,9 @@ const layoutAlgorithm = async (nodes: Node[], edges: Edge[], options = { directi
   // looking up a node's position later on.
   const root = layout(hierarchy);
   const layoutNodes = new Map<string, HierarchyPointNode<NodeWithPosition>>();
-  for (const node of root) {
+  root.each((node) => {
     layoutNodes.set(node.id!, node);
-  }
+  });
 
   const nextNodes = nodes.map((node) => {
     const { x, y } = layoutNodes.get(node.id)!;
@@ -192,7 +192,7 @@ const compareNodes = (xs: Map<string, Node>, ys: Map<string, Node>) => {
   // the number of nodes changed, so we already know that the nodes are not equal
   if (xs.size !== ys.size) return false;
 
-  for (const [id, x] of xs.entries()) {
+  Array.from(xs.entries()).forEach(([id, x]) => {
     const y = ys.get(id);
 
     // the node doesn't exist in the next state so it just got added
@@ -206,7 +206,7 @@ const compareNodes = (xs: Map<string, Node>, ys: Map<string, Node>) => {
     // trying to resize a node or move it around.
     if (x.resizing || x.dragging) return true;
     if (x.width !== y.width || x.height !== y.height) return false;
-  }
+  });
 
   return true;
 };
@@ -215,7 +215,7 @@ const compareEdges = (xs: Map<string, Edge>, ys: Map<string, Edge>) => {
   // the number of edges changed, so we already know that the edges are not equal
   if (xs.size !== ys.size) return false;
 
-  for (const [id, x] of xs.entries()) {
+  Array.from(xs.entries()).forEach(([id, x]) => {
     const y = ys.get(id);
 
     // the edge doesn't exist in the next state so it just got added
@@ -223,7 +223,7 @@ const compareEdges = (xs: Map<string, Edge>, ys: Map<string, Edge>) => {
     if (x.source !== y.source || x.target !== y.target) return false;
     if (x?.sourceHandle !== y?.sourceHandle) return false;
     if (x?.targetHandle !== y?.targetHandle) return false;
-  }
+  })
 
   return true;
 };

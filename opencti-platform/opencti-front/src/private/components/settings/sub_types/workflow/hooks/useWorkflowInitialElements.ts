@@ -1,10 +1,12 @@
+import { authorizedMembers } from './../../../../../../../../opencti-graphql/src/schema/attribute-definition';
 import { useMemo } from 'react';
 import { Node, Edge, MarkerType } from 'reactflow';
 import { SubTypeWorkflowQuery$data } from '../../__generated__/SubTypeWorkflowQuery.graphql';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
-import { authorizedMembersToOptions } from '../../../../../../utils/authorizedMembers';
+import { AuthorizedMembers, authorizedMembersToOptions } from '../../../../../../utils/authorizedMembers';
 import { Connection, getNodes } from '../../../../../../utils/connection';
+import { Action } from '../utils';
 
 type StatusTemplate = { [key: string]: { color: string; id: string; name: string } };
 
@@ -31,12 +33,21 @@ export const useWorkflowInitialElements = (
     const members = convertEdgesToObject(membersEdges);
 
     // Populate authorized members
-    const parseActions = (actions) => {
+    const parseActions = (actions: Action[]) => {
       return actions.map((action) => {
         if (action.type === 'updateAuthorizedMembers') {
           return {
             ...action,
-            params: { authorized_members: authorizedMembersToOptions(action?.params?.authorized_members.map((am) => ({ ...am, ...members[am.id] }))) },
+            params: {
+              authorized_members: authorizedMembersToOptions(
+                (action?.params as { authorized_members: AuthorizedMembers })
+                  ?.authorized_members
+                  ?.map((am) => ({ 
+                    ...am, 
+                    ...members[am.id],
+                  })) ?? null,
+              ),
+            },
           };
         }
         return action;

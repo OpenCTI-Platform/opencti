@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import ReactFlow, { Edge, EdgeMouseHandler, Node, NodeMouseHandler, Panel, useEdgesState, useNodesState, useReactFlow } from 'reactflow';
-// @ts-expect-error ts-migrate(7016) FIXME: Could not find a declaration file for module 'reac... Remove this comment to see the full error message
 import 'reactflow/dist/style.css';
 import WorkflowEditionDrawer from './WorkflowEditionDrawer';
 import useWorkflowLayout, { LayoutOptions, Direction } from './hooks/useWorkflowLayout';
