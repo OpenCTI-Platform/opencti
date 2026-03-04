@@ -262,6 +262,7 @@ export const draftWorkspaceDeleteRelation = async (context: AuthContext, user: A
   }
   const { to } = await deleteRelationsByFromAndTo(context, user, draft.id, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
   const input = { relationship_type: relationshipType, toId };
+  const draftUpdated = await findById(context, user, draftId);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -270,7 +271,7 @@ export const draftWorkspaceDeleteRelation = async (context: AuthContext, user: A
     message: `removes ${to.entity_type} \`${extractEntityRepresentativeName(to)}\` for draft \`${draft.name}\``,
     context_data: { id: draft.id, entity_type: ENTITY_TYPE_DRAFT_WORKSPACE, input },
   });
-  return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].EDIT_TOPIC, draft, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].EDIT_TOPIC, draftUpdated, user);
 };
 
 export const draftWorkspaceEditField = async (context: AuthContext, user: AuthUser, draftId: string, input: EditInput[]) => {
