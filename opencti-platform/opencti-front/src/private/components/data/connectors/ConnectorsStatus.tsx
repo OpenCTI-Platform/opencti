@@ -137,18 +137,32 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
 
   const queues = connectorsStateData.rabbitMQMetrics?.queues ?? [];
 
+  const toSafeNumber = (value: unknown): number => {
+    const nValue = Number(value);
+    return Number.isFinite(nValue) ? nValue : 0;
+  };
+
+  // Build a map of connectorId -> total messages in one pass over all queues
+  const queueMessagesByConnector = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const queue of queues) {
+      if (!queue?.name) continue;
+      const messages = toSafeNumber(queue.messages);
+      // Match queue names like "<prefix>push_<connectorId>" or "<prefix>listen_<connectorId>"
+      let idx = queue.name.indexOf('push_');
+      if (idx === -1) idx = queue.name.indexOf('listen_');
+      if (idx === -1) continue;
+      const connectorId = queue.name.substring(queue.name.indexOf('_', idx) + 1);
+      if (!connectorId) continue;
+      map.set(connectorId, (map.get(connectorId) ?? 0) + messages);
+    }
+    return map;
+  }, [queues]);
+
   const connectorsWithMessages = filteredConnectors?.map((connector) => {
-    const queueName = connector.connector_type === 'INTERNAL_ENRICHMENT'
-      ? `listen_${connector.id}`
-      : `push_${connector.id}`;
-    const queue = queues.find((o) => o?.name?.includes(queueName));
-    const messagesCount = queue ? queue.messages : 0;
+    const messagesCount = queueMessagesByConnector.get(connector.id) ?? 0;
     const connectorTriggerStatus = getConnectorTriggerStatus(connector as unknown as Connector);
-    return {
-      ...connector,
-      messages: messagesCount,
-      connectorTriggerStatus,
-    };
+    return { ...connector, messages: messagesCount, connectorTriggerStatus };
   }) || [];
 
   const sortedConnectors = connectorsWithMessages.sort((a, b) => {

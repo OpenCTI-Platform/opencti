@@ -367,13 +367,25 @@ export const purgeConnectorQueues = async (connector) => {
 export const getConnectorQueueDetails = async (connectorId) => {
   try {
     const httpClient = await amqpHttpClient();
-    const pathRabbit = `/api/queues${isEmptyField(VHOST_PATH) ? '/%2F' : VHOST_PATH}/${RABBITMQ_PUSH_QUEUE_PREFIX}${connectorId}`;
+    const vhostPath = isEmptyField(VHOST_PATH) ? '/%2F' : VHOST_PATH;
+    const pathPushQueue = `/api/queues${vhostPath}/${RABBITMQ_PUSH_QUEUE_PREFIX}${connectorId}`;
+    const pathListenQueue = `/api/queues${vhostPath}/${RABBITMQ_LISTEN_QUEUE_PREFIX}${connectorId}`;
 
-    const queueDetailResponse = await httpClient.get(pathRabbit).then((response) => response.data);
-    logApp.debug('Rabbit HTTP API response', { queueDetailResponse });
+    // Fetch both push and listen queue details in parallel
+    const [pushResult, listenResult] = await Promise.all([
+      httpClient.get(pathPushQueue).then((response) => response.data).catch(() => null),
+      httpClient.get(pathListenQueue).then((response) => response.data).catch(() => null),
+    ]);
+
+    const pushMessages = pushResult?.messages || 0;
+    const pushSize = pushResult?.message_bytes || 0;
+    const listenMessages = listenResult?.messages || 0;
+    const listenSize = listenResult?.message_bytes || 0;
+
+    logApp.debug('Rabbit HTTP API response', { pushResult, listenResult });
     return {
-      messages_number: queueDetailResponse.messages || 0,
-      messages_size: queueDetailResponse.message_bytes || 0,
+      messages_number: pushMessages + listenMessages,
+      messages_size: pushSize + listenSize,
     };
   } catch (e) {
     // For managed connector, the queue is available only after the connector is started.
