@@ -50,7 +50,7 @@ For each main entity, you can configure multiple fields:
 - **Disable on-the-fly entity creation** (disabled by default): Enable this If you want your users to only select an existing entity. 
 - **Allow multiple instances of main entity** (disabled by default): Enable this if you want to allow your users to be able to enter the same entity multiple times.  When enabled **Multiple instances mode** will appear. 
 
-#### Create multiple instances 
+#### Multiple Mode for Main Entity
 Create multiple instances of the same entity type is possible by enabling the above options. 
 You can choose between 'Multiple fields' or 'Parsed values'.
    - **Multiple fields** (default): users are presented with a button to create a new instance of the same type of entity.
