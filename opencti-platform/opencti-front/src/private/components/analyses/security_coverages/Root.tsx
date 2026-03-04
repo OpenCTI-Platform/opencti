@@ -164,7 +164,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
               }
             />
             <Route
-              path="/result/*"
+              path="/result"
               element={(
                 <SecurityCoverageResult data={securityCoverage} />
               )}
