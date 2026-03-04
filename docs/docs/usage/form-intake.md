@@ -16,7 +16,7 @@ The Form Intake allows administrators to design structured forms that analysts f
 ## Prerequisites & Permissions
 More details on our [Role-Based access control here](../administration/users.md)
 
-|Action |Details |Required Capability| Override of capabilities in draft (EE) |
+|Action |Details |Required Capability| Control of capabilities in Draft mode (EE) |
 |:------|:-------|:---------------------|---------------|
 |Manage form intakes|Create, edit, delete, activate/deactivate, export, import|Manage ingestion|Capability not existing|
 |Submit form intakes|Fill and submit forms|Create / Update knowledge| Create / Update knowledge (creation forced to draft)|
