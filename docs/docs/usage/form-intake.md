@@ -25,7 +25,7 @@ More details on our [Role-Based access control here](../administration/users.md)
 
 When draft creation is enforced, form submissions create entities in a draft workspace for review before publication to knowledge.
 Administrators can optionally allow users to skip draft mode per submission.
-The form intake button is hidden when the user lacks Authorized Members update rights in draft context. See Enterprise Edition for details on capability overrides in draft.
+The form intake button is hidden when the user does not have 'Authorized Members update' rights in draft context. See Enterprise Edition for details on controlling users capabilities in draft mode.
 
 
 ## Defining a Form Intake
