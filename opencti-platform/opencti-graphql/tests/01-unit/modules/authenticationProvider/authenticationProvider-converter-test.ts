@@ -1396,9 +1396,9 @@ describe('Real-world configuration scenarios', () => {
     // extra_conf should be empty
     expect(result.configuration.extra_conf).toHaveLength(0);
 
-    // Groups
+    // Groups (URI claim is quoted so dot-separated path parser treats it as one segment)
     expect(result.configuration.groups_mapping.groups_expr).toStrictEqual([
-      'http://schemas.microsoft.com/ws/2008/06/identity/claims/groups',
+      '"http://schemas.microsoft.com/ws/2008/06/identity/claims/groups"',
     ]);
 
     // Orgs
