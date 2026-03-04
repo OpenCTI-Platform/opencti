@@ -17,3 +17,4 @@ coverage:
 fixes:
   - "/home/runner/work/opencti/opencti/frontend-e2e-test/opencti-platform/opencti-front/::opencti-platform/opencti-front/"
   - "frontend-e2e-test/::"
+  - "localhost-3000/::src"
