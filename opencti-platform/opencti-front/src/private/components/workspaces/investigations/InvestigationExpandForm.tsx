@@ -392,7 +392,7 @@ const InvestigationExpandFormContent = ({
               type="checkbox"
               name="reset_filters"
               label={t_i18n('Reset filters')}
-              containerstyle={{ marginTop: 20 }}
+              containerstyle={{ marginTop: 12 }}
             />
 
             <DialogActions>
