@@ -3,7 +3,7 @@
 
 The Form Intake allows administrators to design structured forms that analysts fill out to quickly create STIX entities, relationships, and observables ready for knowledge ingestion — without navigating complex creation dialogs.
 
-## Key capabilities
+## Key features
 
 - Visual form designer with field configuration and reordering 16 supported field types (text, date, select, toggle, lookup, vocabulary, etc.)
 - Field width control (full, half, third)
