@@ -41,7 +41,7 @@ Defining a main entity sets two variables:
 - The entity view where the form intake will be available, this is in addition to the import menu. E.g. if your main entity is a Report, you will see your form intake in the Report List view.
 - Which entity you want to create first, this is especially useful for a container entity.
 
-By default, main entity selected is a **Report**.
+By default, the main entity selected is a **Report**.
 
 ### Common fields
 
