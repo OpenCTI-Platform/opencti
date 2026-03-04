@@ -61,9 +61,32 @@ const FintelDesigns = lazy(() => import('./fintel_design/FintelDesigns'));
 const FintelDesign = lazy(() => import('./fintel_design/FintelDesign'));
 const Experience = lazy(() => import('./Experience'));
 
-const Root = () => {
+const AccessesRedirect = () => {
   const adminOrga = isOnlyOrganizationAdmin();
+  const hasSetAccesses = useGranted([SETTINGS_SETACCESSES]);
+  const hasVirtualOrgAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
+  const hasSetMarkings = useGranted([SETTINGS_SETMARKINGS]);
+  const hasSetDissemination = useGranted([SETTINGS_SETDISSEMINATION]);
+  const hasSetAuth = useGranted([SETTINGS_SETAUTH]);
+  if (hasSetAccesses) {
+    return <Navigate to="/dashboard/settings/accesses/roles" />;
+  }
+  if (hasVirtualOrgAdmin) {
+    return <Navigate to={adminOrga ? '/dashboard/settings/accesses/organizations' : '/dashboard/settings/accesses/roles'} />;
+  }
+  if (hasSetAuth) {
+    return <Navigate to="/dashboard/settings/accesses/authentications" />;
+  }
+  if (hasSetMarkings) {
+    return <Navigate to="/dashboard/settings/accesses/marking" />;
+  }
+  if (hasSetDissemination) {
+    return <Navigate to="/dashboard/settings/accesses/dissemination_list" />;
+  }
+  return <Navigate to="/dashboard/settings" />;
+};
 
+const Root = () => {
   const isGrantedToLabels = useGranted([SETTINGS_SETLABELS]);
   const isGrantedToVocabularies = useGranted([SETTINGS_SETVOCABULARIES]);
   const isGrantedToKillChainPhases = useGranted([SETTINGS_SETKILLCHAINPHASES]);
@@ -124,10 +147,10 @@ const Root = () => {
             path="/accesses"
             element={(
               <Security
-                needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
+                needs={[SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS, SETTINGS_SETDISSEMINATION, SETTINGS_SETAUTH, VIRTUAL_ORGANIZATION_ADMIN]}
                 placeholder={<Navigate to={urlWithCapabilities()} />}
               >
-                <Navigate to={adminOrga ? '/dashboard/settings/accesses/organizations' : '/dashboard/settings/accesses/roles'} />
+                <AccessesRedirect />
               </Security>
             )}
           />
