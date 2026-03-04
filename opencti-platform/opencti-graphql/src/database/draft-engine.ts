@@ -283,7 +283,7 @@ export const resolveDraftUpdateFiles = async (context: AuthContext, user: AuthUs
     for (let i = 0; i < fileIds.length; i += 1) {
       const currentFileId = fileIds[i];
       const currentFile = await loadFile(context, user, currentFileId as string);
-      const currentFileContent = toBase64(await getFileContent(currentFileId as string));
+      const currentFileContent = await getFileContent(currentFileId as string, 'base64');
       if (currentFile) {
         const currentFileObject = {
           name: currentFile.name,

@@ -163,16 +163,14 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
           const currentFile = stixFileExtensions[index];
           try {
             // If data already available, just apply no_trigger_import
-            if (currentFile.data) {
+            if (currentFile.data !== undefined && currentFile.data !== null) {
               copiedFiles.push({ ...currentFile, no_trigger_import: true });
             } else {
               // If data not in the element, fetch it in base64
               const currentFileUri = currentFile.uri;
               const fileId = currentFileUri.replace('/storage/get/', '');
               const currentFileContent = await getFileContent(fileId, 'base64');
-              if (currentFileContent) { // File does not exist anymore
-                copiedFiles.push({ ...currentFile, data: currentFileContent, no_trigger_import: true });
-              }
+              copiedFiles.push({ ...currentFile, data: currentFileContent, no_trigger_import: true });
             }
           } catch (e) {
             logApp.error("Can't copy file from main element to the container", { cause: e, name: currentFile.name });
