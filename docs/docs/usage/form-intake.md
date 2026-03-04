@@ -29,7 +29,7 @@ The form intake button is hidden when the user does not have 'Authorized Members
 
 
 ## Defining a Form Intake
-To create a form intake, go in the Ingestion menu, Form intake menu and click on Create.
+To create a form intake, navigate to the Ingestion menu, Form intake menu and click Create.
 
 Multiple fields are offered to you: 
 - Name of your form intake
