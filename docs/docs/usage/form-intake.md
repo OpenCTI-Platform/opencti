@@ -1,7 +1,7 @@
 # Create knowledge via Form Intake
 
 
-It allows administrators to design structured forms that analysts fill out to quickly create STIX entities, relationships, and observables — without navigating complex creation dialogs.
+The Form Intake allows administrators to design structured forms that analysts fill out to quickly create STIX entities, relationships, and observables ready for knowledge ingestion — without navigating complex creation dialogs.
 
 ## Key capabilities
 
