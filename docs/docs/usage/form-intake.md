@@ -31,7 +31,7 @@ The form intake button is hidden when the user does not have 'Authorized Members
 ## Defining a Form Intake
 To create a form intake, navigate to the Ingestion menu, Form intake menu and click Create.
 
-Multiple fields are offered to you: 
+You can set core detail fields: 
 - Name of your form intake
 - Description of the form intake 
 - Active (toggle on/off, default to on): when activated, your form will be present in the list.
