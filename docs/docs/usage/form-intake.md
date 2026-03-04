@@ -9,7 +9,7 @@ The Form Intake allows administrators to design structured forms that analysts f
 - Field width control (full, half, third)
 - 4 entity creation modes: Single, Multiple, Parsed, and Lookup
 - Additional entities and relationships in a single form
-- STIX bundle generation from submissions
+- Generate STIX bundle from submissions
 - Export/import form definitions across instances (JSON)
 - Draft workspace integration
 
