@@ -442,7 +442,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       createdBy: values.createdBy?.value,
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
-      confidence: values.confidence,
+      confidence: parseInt(String(values.confidence), 10),
     };
 
     commit({
