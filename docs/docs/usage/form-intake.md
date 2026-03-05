@@ -124,7 +124,7 @@ Additional entities can be created of the same type.
 
 In addition to the various modes allowed to add additional entities, you have two other options: 
 - If you enable the option **"allow multiple instances"**, then you can specify that this entity is optional by entering 0 in the minimum amount field. This means that you do not require an entity to be created.
-- If you disable the option **"allow multiple instances"**, then another option is offered to you: **required**. This will mean the entity must be provided to submit the form.
+- If you disable the option **"allow multiple instances"**, then another option is offered to you: **required**. This means that the entity must be provided to submit the form.
 
 The display **label for entity** allows you to set labels so that users who aren't experts in STIX 2.1 can  use the form. For example you can set a label to "attacker" to use in place of intrusion set.
 
