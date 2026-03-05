@@ -49,13 +49,13 @@ To do so, click on the grey rectangle in the center of the workspace and select 
 
 ### Duplicate a playbook
 
-It is possible to duplicate a playbook, to easily replicate a playbook. You can do it directly by cliking on the burger menu (the 3 dots) at the end of the row and click on duplicate, or directly when you're inside a playbook.
+It is possible to duplicate a playbook, to easily replicate a playbook. You can do it directly by clicking on the burger menu (the 3 dots) at the end of the row and click on duplicate, or directly when you're inside a playbook.
 
 ### Import/Export a playbook
 
 #### Export a playbook
 
-If you need to share a playbook with a colleague that is not on the same platform than you (or if you need to troubleshoot a playbook issue), you can now export your playbook directly: by cliking on the burger menu (the 3 dots) at the end of the row and click on duplicate, or directly when you're inside a playbook.
+If you need to share a playbook with a colleague that is not on the same platform than you (or if you need to troubleshoot a playbook issue), you can now export your playbook directly: by clicking on the burger menu (the 3 dots) at the end of the row and click on duplicate, or directly when you're inside a playbook.
 
 #### Import a playbook
 
@@ -133,10 +133,9 @@ With such event source, the playbook will query knowledge on a hourly / daily / 
 
 If you check the option "Only last modified entities after the last run', then the playbook will exclude from each run the entities that have not changed since last run.
 
-##### Specificities of the component
+**Specificities of the component**
 
 **Include all entities in a single bundle**: this options allows you to add all entities found in a single bundle. This is useful if you want for instance to send a single email containing multiple entities at once.
-
 
 ![Querying last incidents](assets/Playbook_query_knowledge.png)
 
@@ -170,9 +169,8 @@ Do not forget to start your Playbook when ready, with the Start option of the bu
 
 ## Components of playbooks
 
-![List of current components(1/2)](assets/playbook_list_of_components.png)
+![List of current components](assets/playbook_components.png)
 
-![List of current components(2/2)](assets/playbook_list_of_components2.png)
 ### Log data in standard output
 
 Will write the received STIX 2.1 bundle in platform logs with configurable log level and then send out the STIX 2.1 bundle unmodified.
@@ -181,17 +179,11 @@ Will write the received STIX 2.1 bundle in platform logs with configurable log l
 
 Will pass the STIX 2.1 bundle to be written in the data stream. This component has no output and should end a branch of your playbook.
 
-### Filter Knowledge
-
-Will allow you to define filter and apply it to the received STIX 2.1 bundle. The component has 2 output, one for data matching the filter and one for the remainder.
-
-By default, filtering is applied to entities having triggered the playbook. You can toggle the corresponding option to apply it to all elements in the bundle (elements that might result from enrichment for example).
-
 ### Enrich through connector
 
 Will send the received STIX 2.1 bundle to the stated enrichment connector and send out the modified bundle.
 
-#### Specificities of the component
+**Specificities of the component**
 
 **Step will fail if a single entity does not match the connector scope**
 Entities that are passed to this stage must be compatible with the enrichment connector being used, as otherwise the playbook may stop at this stage. 
@@ -200,14 +192,13 @@ The best approach is to use a first playbook that will **flag your data, by appl
 **Step will fail if an observable triggered by the enrichment is not found**
 If the playbook stops from time to time at this step, it might be because the observable (or entity) is not found in the third-party system in charge of enriching the observable (or entity).
 
-
-#### Manipulate knowledge
+### Manipulate knowledge
 
 Will add, replace, or remove compatible attributes of the entities contained in the received STIX 2.1 bundle and send out the modified bundle.
 
 By default, modification is applied to entities having triggered the playbook. You can toggle the corresponding option to apply it to all elements in the bundle (elements that might result from enrichment for example).
 
-#### Specificities of the component
+**Specificities of the component**
 
 **Remove & replace operations:**
 These operations will only remove and & replace data that has been added in the context of this playbook. This step cannot be used to modify attributes of an entity (or observable) that has already been written in your platform. For instance, if an entity is ingested with a TLP:RED marking and a specific label, and your playbook listens to any entity created with this specific label, if you have a step to remove TLP:RED marking within your playbook, this step will not be executed because the TLP:RED marking would already be written in your platform.
@@ -222,7 +213,7 @@ These operations will only remove and & replace data that has been added in the 
 Will modify the received STIX 2.1 bundle to include the entities into an container of the type you configured. 
 By default, wrapping is applied to entities having triggered the playbook. You can toggle the corresponding option to apply it to all elements in the bundle (elements that might result from enrichment for example).
 
-#### Specificities of the component
+**Specificities of the component**
 
 **Case Templates**
 It is possible to add a case template to the container wrapper step. If you select a Case in the "container type", then the case template field will be enabled, allowing you to create a case with some tasks associated.
@@ -232,7 +223,6 @@ You can decide whether you want to create a container each time this step is tri
 
 **Specific situation: wrap an incident into a case**
 When the primary entity you listen to is an incident & then use the "Container Wrapper" step to create a case out of your incident, by default, your case will reuse some of the attributes of your incident:
-
 
 - Author
 - Labels
@@ -251,57 +241,58 @@ Compared to other components, this component **makes direct call to the database
 
 More details on [organization segregation](https://docs.opencti.io/latest/administration/organization-segregation/) 
 
-#### Unshare with organizations
+### Unshare with organizations
 
 Will unshare every entity in the received STIX 2.1 bundle with Organizations you configured. Your platform needs to have declared a platform main organization in Settings/Parameters.
 You can decide to share only the main triggering element, or the whole bundle thanks to the toggle.
 
 Compared to other components, this component **makes a direct call to the database**: this means that the query will be applied before the "send to ingestion" step. As a result, if, **within the same playbook**, you attempt to create a new entity (via the wrap in container step) and unshare the entity, the playbook will fail. Indeed, the entity will not yet be created, since it won't be sent to ingestion yet. You need to unshare the entity in another playbook to achieve this use case.
 
-#### Manage Access Restriction
+### Manage Access Restriction
 
-Will apply authorized members on the bundle within the playbook. It is only compatible with entities supportsing authorized members (Containers, Drafts, Organization).
+Will apply authorized members on the bundle within the playbook. It is only compatible with entities supporting authorized members (Containers, Drafts, Organization).
 You can decide to only apply restrictions on the triggering element or the whole bundle by enabling the toggle.
 
 More details on [Authorize members](https://docs.opencti.io/latest/administration/authorized-members/?h=me)
 
-##### Specificities of the component
+**Specificities of the component**
+
 Compared to other components, this component **makes direct call to the database**: this means that the query will be applied before the "send to ingestion" step. As a result, if, **within the same playbook**, you attempt to create a new entity (via the wrap in container step) and apply authorized members, the playbook will fail. Indeed, the entity will not yet be created, since it won't be sent to ingestion yet. You need to apply the authorized members in another playbook to achieve this use case.
 
-**This component supportss dynamic variables**
+**This component supports dynamic variables**
 
 - Dynamic from the main entity triggering the playbook: Will apply the authorized members on the corresponding user of the field you choose, based on the triggering entity only. you can choose among:
-   - Author (organisation): If your author is an organisation, you will be able to apply authorized members directly on the organisation in author.
-   - Creator: Will apply the authorized members on all users in Creator field.
-   - Assignee: Will apply the authorized members on all users in Asignee field.
-   - Participant: Will apply the authorized members on all users in Participants field.
+  - Author (organization): If your author is an organization, you will be able to apply authorized members directly on the organization in author.
+  - Creator: Will apply the authorized members on all users in Creator field.
+  - Assignee: Will apply the authorized members on all users in Assignee field.
+  - Participant: Will apply the authorized members on all users in Participants field.
 
- - Dynamic from the object in the bundle of the playbook: will apply the authorized members on all the corresponding users of all the entities contained in your bundle and not only the triggering entity. 
-    - Organization: all users belonging to the organizations in your bundle will be added as authorized members.
+- Dynamic from the object in the bundle of the playbook: will apply the authorized members on all the corresponding users of all the entities contained in your bundle and not only the triggering entity.
+  - Organization: all users belonging to the organizations in your bundle will be added as authorized members.
   
-**The component also supportss static fields, used for authorized members: users, groups & organizations.**
+**The component also supports static fields, used for authorized members: users, groups & organizations.**
 
-#### Remove Access Restriction
+### Remove Access Restriction
+
 Compared to other components, this component **makes direct call to the database**: this means that the query will be applied before the "send to ingestion" step. As a result, if, **within the same playbook**, you attempt to create a new entity (via the wrap in container step) and remove default authorized members, the playbook will fail. Indeed, the entity will not yet be created, since it won't be sent to ingestion yet. You need to remove the authorized members in another playbook to achieve this use case.
 
-Will remove authorized members on the bundle within the playbook. It is only compatible with entities supportsing authorized members (Containers, Drafts).
+Will remove authorized members on the bundle within the playbook. It is only compatible with entities supporting authorized members (Containers, Drafts).
 You can decide to only remove restriction on the triggering element or the whole bundle by enabling the toggle.
 
-##### Specificities of the component
+**Specificities of the component**
 
-**This component supportss dynamic variables**
+**This component supports dynamic variables**
 
 - Dynamic from the main entity triggering the playbook: Will remove the authorized members on the corresponding user of the field you choose, based on the triggering entity only. you can choose among:
-   - Author (organisation): If your author is an organisation, you will be able to remove the organization from the authorized members.
-   - Creator: Will remove all users in creator field from the authorized members.
-   - Assignee: Will remove all users in assignee field from the authorized members.
-   - Participant: Will remove all users in participant field from the authorized members.
+  - Author (organization): If your author is an organization, you will be able to remove the organization from the authorized members.
+  - Creator: Will remove all users in creator field from the authorized members.
+  - Assignee: Will remove all users in assignee field from the authorized members.
+  - Participant: Will remove all users in participant field from the authorized members.
 
- - Dynamic from the object in the bundle of the playbook: will remove the authorized members on all the corresponding users of all the entities contained in your bundle and not only the triggering entity. 
-    - Organization: all users belonging to the organizations in your bundle will be removed from authorized members.
+- Dynamic from the object in the bundle of the playbook: will remove the authorized members on all the corresponding users of all the entities contained in your bundle and not only the triggering entity.
+  - Organization: all users belonging to the organizations in your bundle will be removed from authorized members.
   
-**The component also supportss static fields, used for authorized members: users, groups & organizations.**
-
+**The component also supports static fields, used for authorized members: users, groups & organizations.**
 
 ### Apply predefined rule
 
@@ -314,7 +305,7 @@ Will apply a complex automation built-in rule. This kind of rule might impact pe
 - Resolve neighbors relations and entities (add in bundle): will add to the bundle all relations of the entity having triggered the playbook, as well as all entities at the end of these relations, i.e. the "first neighbors" (if the entity is a container, the output of this component will be empty).
 - Resolve containers containing the entity (add in bundle): will add to the bundle all the containers containing the entity or observable that triggered the playbook.
 
-#### Specificities of the component
+**Specificities of the component**
 
 **It is not possible to chain two rules to apply a second rule on the result of the first one:**
 For instance, the following operation will not work within a playbook: listen to a report creation, add everything within a bundle, then apply another rule to resolve neighbor relations and entities (add in bundle) of all entities & observables of the container. As a result, your playbook will stop there.
@@ -328,24 +319,23 @@ For instance, the following operation will not work within a playbook: listen to
 
 Will generate a Notification each time a STIX 2.1 bundle is received. Note that Notifier ends a branch but does not save any changes. Best practice is to create a branch next to the notifier using the button on the bottom right of the Notifier Component and add the send for ingestion in the same output branch.
 
-#### Send email from template
+### Send email from template
 
-Will send an email using the template that you can set in Parameters/security (used for users) to users. you can choose the template you want. 
+Will send an email using the template that you can set in Parameters/security (used for users) to users. you can choose the template you want.
 
+**Specificities of the component**
 
-##### Specificities of the component
-
-**This component supportss dynamic variables**
+**This component supports dynamic variables**
 
 - Dynamic from the main entity triggering the playbook as Target: will send the email using the selected template to the corresponding user of the field you choose, based on the triggering entity only. you can choose among:
-   - Creator: Will send an email using an Email Template to the corresponding user.
-   - Assignee: Will send an email using an Email Template to the corresponding user.
-   - Participant: Will send an email using an Email Template to the corresponding user.
+  - Creator: Will send an email using an Email Template to the corresponding user.
+  - Assignee: Will send an email using an Email Template to the corresponding user.
+  - Participant: Will send an email using an Email Template to the corresponding user.
 
- - Dynamic from the object in the bundle of the playbook as Target: will send the email using the selected template to the corresponding user of the entities contained in your bundle and not only the triggering entity. 
-    - Organization: all users of all organizations contained in your bundle will receive an email.
+- Dynamic from the object in the bundle of the playbook as Target: will send the email using the selected template to the corresponding user of the entities contained in your bundle and not only the triggering entity.
+  - Organization: all users of all organizations contained in your bundle will receive an email.
   
-**The component also supportss static fields, used for authorized members: users, groups & organizations.**
+**The component also supports static fields, used for authorized members: users, groups & organizations.**
 
 ### Promote observable to indicator
 
@@ -355,7 +345,7 @@ By default, it is applied to entities having triggered the playbook. You can tog
 
 You can also add all indicators and relationships generated by this component in the entity having triggered the playbook, if this entity is a container.
 
-#### Specifities of the component
+**Specificities of the component**
 
 **Routes:**
 
@@ -370,44 +360,34 @@ By default, it is applied to entities having triggered the playbook. You can tog
 
 You can also add all observables and relationships generated by this component in the entity having triggered the playbook, if this entity is a container.
 
-#### Specifities of the component
+**Specificities of the component**
 
 **Routes:**
 
-- Unmodified: if none of your indicators have triggered an observable creation, then the STIX bundle will follow the **unmodified** route.
-- Out: if at least one of your indicators of your STIX bundle has triggered an observable creation, then the STIX bundle will follow the **Out** route.
+- **Out**: if at least one of your indicators of your STIX bundle has triggered an observable creation, then the STIX bundle will follow the **Out** route.
+- **Unmodified**: if none of your indicators have triggered an observable creation, then the STIX bundle will follow the **unmodified** route.
 
 ### Reduce Knowledge
 
-Will filter out any entities in the current stage that do not match the filter conditions in the stage. 
+Filters the entities in the current STIX bundle, keeping only those that match the defined filter conditions.
 
-#### Specificities of the component
+!!! note "The main entity is always preserved"
+    The entity that originally triggered the playbook (e.g. a Report) is never removed from the bundle, even if it does not match the filter.
 
-**Reduce will not work if the result of your reduce knowledge step is different from the entity triggering your playbook:**
+**Specificities of the component**
 
-If the result of the reduce knowledge ends up not matching the initial entity triggering yur playbook, then the reduce step will fail. As an example: 
-With a first step listening on: entity type = IPV4 OR Report AND label = test. And a step that reduces knowledge based on Entity type = IPV4. You will get the following results:
+At any point in a playbook, the STIX bundle may contain multiple entities, for example after a "Resolve container references (add in bundle)" step. Reduce Knowledge keeps only the entities that match your filter criteria. The main entity is never removed.
 
+**Routes**
 
-- Test 1: edit a report that does not contain IPV4
-   - Result: the playbook took the route "unmatched" (since no IP in the bundle, because triggering entity is the Report)
- 
-- Test 2: edit a report that contains an IPV4
-  - Result: the playbook took the route "unmatched" (since the entity triggering the playbook is the Report and not the IPV4)
-
-- Test 3: edit an IPV4
-  - Result: the playbook took the route "out" (since only the triggering entity is the IPV4)
-
- **Routes:**
- 
-- Unmatched: if the bundle does not match the reduce condition, then the stix bundle will follow the **unmatch** route. In this case, the playbook will act as the route "umatch" of the "match" component.
-- Out: if your bundle is effectively reduced, then the stix bundle will follow the **Out** route.
+- **Out**: The bundle was successfully reduced: it now contains only the main entity and the entities that matched the filter. The playbook continues down this route with the filtered bundle.
+- **Unmatched**: No entity in the bundle matched the filter conditions. The original bundle is passed through unchanged. The playbook continues down this route.
 
 ### Match knowledge
 
 It will allow you to continue only if some specific conditions are met.
 
-#### Specificities of the component
+**Specificities of the component**
 
 **Routes:**
 
@@ -433,10 +413,10 @@ In this list, you will find:
 
 At the top right of the interface, you can access execution trace of your playbook and consult the raw data after every step of your playbook execution.
 
-### Useful for troublshooting
+### Useful for troubleshooting
 
 - Fewer steps than the number of steps of your playbook: If your playbook contains, for instance, 5 steps and only 4 steps are shown, it means that the playbook stopped at the 4th step.
 - Data created/ingested by the playbook does not contain the right modifications applied in the manipulate step: verify that your step is present, and that the operations you wanted to apply are well applied (you need to see the operation type, the field & the value)
-- Use the different routes to help troubleshoot your playbook: if you're using multiple components that involves mutliple routes, it is sometimes useful to test your playbook by adding a "manipulate knowledge" step to add a label for instance, to understand the route your bundle is taking if you feel that the data created by your playbook is not the one you expect.
+- Use the different routes to help troubleshoot your playbook: if you're using multiple components that involves multiple routes, it is sometimes useful to test your playbook by adding a "manipulate knowledge" step to add a label for instance, to understand the route your bundle is taking if you feel that the data created by your playbook is not the one you expect.
 
 ![Steps monitoring](assets/playbook_traces.png)
