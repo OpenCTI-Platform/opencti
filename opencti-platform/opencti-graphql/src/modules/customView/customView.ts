@@ -1,12 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
-import { normalizeName } from '../../schema/identifier';
+import { isFeatureEnabled } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
 import { authorizedMembers } from '../../schema/attribute-definition';
-import convertCustomViewToStix from './customView-converter';
 import { ENTITY_TYPE_CUSTOM_VIEW, type StixCustomView, type StoreEntityCustomView } from './customView-types';
-import { isFeatureEnabled } from '../../config/conf';
+import convertCustomViewToStix from './customView-converter';
 
 export const CUSTOM_VIEW_DEFINITION: ModuleDefinition<StoreEntityCustomView, StixCustomView> = {
   type: {
@@ -18,11 +17,6 @@ export const CUSTOM_VIEW_DEFINITION: ModuleDefinition<StoreEntityCustomView, Sti
   identifier: {
     definition: {
       [ENTITY_TYPE_CUSTOM_VIEW]: () => uuidv4(),
-    },
-    resolvers: {
-      name(data: object) {
-        return normalizeName(data);
-      },
     },
   },
   attributes: [
