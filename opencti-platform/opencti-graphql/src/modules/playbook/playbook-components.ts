@@ -295,7 +295,9 @@ export const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration>
     if (matchedElements.length === 0) {
       return { output_port: 'unmatch', bundle };
     }
-    const mergedObjects = R.uniqBy(R.prop('id'), [baseData, ...matchedElements]);
+    const mergedObjects = [...new Map(
+      [baseData, ...matchedElements].map((item) => [item.id, item]),
+    ).values()];
     return { output_port: 'out', bundle: { ...bundle, objects: mergedObjects } };
   },
 };
