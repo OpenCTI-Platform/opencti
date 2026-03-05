@@ -1375,16 +1375,26 @@ class BatchCallbackWrapper:
                     if should_process:
                         batch_data = self._extract_batch_data(trigger_reason)
 
-            if batch_data is not None:
+            while batch_data is not None:
                 self._execute_batch_callback(batch_data)
+                batch_data = None
+                if self._stop_event.is_set():
+                    break
+                with self._lock:
+                    if self.batch_size and len(self.batch) >= self.batch_size:
+                        batch_data = self._extract_batch_data("size_limit")
 
         # Process remaining messages after loop exits
         batch_data = None
         with self._lock:
             if len(self.batch) > 0:
                 batch_data = self._extract_batch_data("shutdown")
-        if batch_data is not None:
+        while batch_data is not None:
             self._execute_batch_callback(batch_data)
+            batch_data = None
+            with self._lock:
+                if len(self.batch) > 0:
+                    batch_data = self._extract_batch_data("shutdown")
 
     def __call__(self, msg) -> None:
         """Accumulate a message into the current batch.
@@ -1402,34 +1412,49 @@ class BatchCallbackWrapper:
                 self._batch_ready_event.set()
 
     def _extract_batch_data(self, trigger_reason: str) -> dict:
-        """Extract batch data and reset batch state. Must be called with _lock held.
+        """Extract up to batch_size events and return batch data. Must be called with _lock held.
+
+        When batch_size is set, extracts at most batch_size items, leaving any
+        overflow in self.batch with a refreshed batch_start_time. When batch_size
+        is None, extracts all items and fully resets batch state.
 
         :param trigger_reason: What triggered batch processing
         :return: Dictionary containing events and batch metadata
         """
+        if self.batch_size:
+            extracted = self.batch[: self.batch_size]
+            self.batch = self.batch[self.batch_size :]
+        else:
+            extracted = self.batch.copy()
+            self.batch = []
+
         elapsed = time.time() - self.batch_start_time if self.batch_start_time else 0
 
         self.helper.connector_logger.info(
             "Processing batch",
             {
-                "batch_size": len(self.batch),
+                "batch_size": len(extracted),
                 "elapsed_time": elapsed,
                 "trigger": trigger_reason,
             },
         )
 
         batch_data = {
-            "events": self.batch.copy(),
+            "events": extracted,
             "batch_metadata": {
-                "batch_size": len(self.batch),
+                "batch_size": len(extracted),
                 "trigger_reason": trigger_reason,
                 "elapsed_time": elapsed,
                 "timestamp": time.time(),
             },
         }
 
-        self.batch = []
-        self.batch_start_time = None
+        # Only reset batch_start_time if the buffer is now empty
+        if len(self.batch) == 0:
+            self.batch_start_time = None
+        else:
+            # Reset start time so the remaining items get a fresh timeout window
+            self.batch_start_time = time.time()
 
         return batch_data
 
