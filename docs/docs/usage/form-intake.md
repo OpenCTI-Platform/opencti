@@ -74,7 +74,7 @@ If your main entity is a container, any additional entities created will be cont
 **warning** If several containers are created at once (via multiple mode enabled), any additional entities created will appear in each container. 
 
 #### Main entity as an IOC or an Observable
-If you want to allow your users to bulk create multiple IOCs or observable, you can setup a form intake that allows multiple entities to be created at once using the option **Automatically create indicators/observables from observables/indicators**.
+If you want to allow your users to bulk create multiple IOCs or observables, you can setup a form intake that allows multiple entities to be created at once using the option **Automatically create indicators/observables from observables/indicators**.
 
 
 - **Automatically create indicators/observables from observables/indicators**: this directly creates the entities added by the user.
