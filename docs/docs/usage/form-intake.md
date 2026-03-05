@@ -34,7 +34,7 @@ To create a form intake, navigate to the Ingestion menu, Form intake menu and cl
 You can set core detail fields: 
 - Name of your form intake
 - Description of the form intake 
-- Active (toggle on/off, default to on): when activate, your form will be present in the form intake list.
+- Active (toggle on/off, default to on): when enabled, your form will be present in the form intake list.
 
 ## Main entity definition
 Defining a main entity sets two variables: 
