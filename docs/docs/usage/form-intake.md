@@ -122,7 +122,7 @@ Additional entities can be created of the same type.
 
 ### Details of required / not required and display labels for additional entities: 
 
-In addition to the various modes allowed to add additionnal entities, you have two other options: 
+In addition to the various modes allowed to add additional entities, you have two other options: 
 - If you enable the option **"allow multiple instances"**, then you can specify that this entity is optional by entering 0 in the minimum amount field. This means that you do not require an entity to be created.
 - If you disable the option **"allow multiple instances"**, then another option is offered to you: **required**. This will mean the entity must be provided to submit the form.
 
