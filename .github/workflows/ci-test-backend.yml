@@ -28,13 +28,13 @@ jobs:
 
     - name: Download image platform
       continue-on-error: true
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: docker-image-opencti-platform
         path: /tmp
 
     - name: Download image worker
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: docker-image-opencti-worker
         path: /tmp
@@ -98,7 +98,7 @@ jobs:
         override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
 
     - name: Upload backend test result
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: always()
       continue-on-error: true
       with:
@@ -161,13 +161,13 @@ jobs:
 
     - name: Download image platform
       continue-on-error: true
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: docker-image-opencti-platform
         path: /tmp
 
     - name: Download image worker
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: docker-image-opencti-worker
         path: /tmp
@@ -252,7 +252,7 @@ jobs:
 
     - name: Download image platform
       continue-on-error: true
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: docker-image-opencti-platform
         path: /tmp
