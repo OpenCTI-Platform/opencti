@@ -312,7 +312,7 @@ For instance, the following operation will not work within a playbook: listen to
 
 **Routes:**
 
-- Unmodified: because of the above reason, if none of your entities or observables contained in your STIX bundle have been impacted by the rule, then the STIX bundle will follow will follow the **unmodified** route.
+- Unmodified: because of the above reason, if none of your entities or observables contained in your STIX bundle have been impacted by the rule, then the STIX bundle will follow the **unmodified** route.
 - Out: if at least one of the entity or observable of your STIX bundle has been successfully impacted by the rule, then the STIX bundle will follow the **Out** route.
 
 ### Send to notifier

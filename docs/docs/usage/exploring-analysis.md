@@ -22,7 +22,7 @@ In the MITRE STIX 2.1 documentation, a `Report` is defined as such :
 
 > Reports are collections of threat intelligence focused on one or more topics, such as a description of a threat actor, malware, or attack technique, including context and related details. They are used to group related threat intelligence together so that it can be published as a comprehensive cyber threat story.
 
-As a result, a `Report` object in OpenCTI is a set of attributes and metadata defining and describing a document outside the platform, which can be a threat intelligence report from a security reseearch team, a blog post, a press article a video, a conference extract, a MISP event, or any type of document and source.
+As a result, a `Report` object in OpenCTI is a set of attributes and metadata defining and describing a document outside the platform, which can be a threat intelligence report from a security research team, a blog post, a press article a video, a conference extract, a MISP event, or any type of document and source.
 
 When clicking on the Reports tab at the top left, you see the list of all the Reports you have access to, in respect with your [allowed marking definitions](../administration/users.md). You can then search and filter on some common and specific attributes of reports.
 
@@ -43,10 +43,10 @@ Exploring and modifying the structured Knowledge contained in a Report can be do
 
 ![Graph View of a Report](assets/report-graph-view.png)
 
-In Graph view, STIX SDO are displayed as graph nodes and relationships as graph links. Nodes are colored depending of their type. Direct relationship are displayed as plain link and inferred relationships in dotted link.
-At the top right, you will find a serie of icons. From there you can change the current type of view. Here you can also perform global action on the Knowledge of the Report. Let's highlight 2 of them:
+In Graph view, STIX SDO are displayed as graph nodes and relationships as graph links. Nodes are colored depending on their type. Direct relationship are displayed as plain link and inferred relationships in dotted link.
+At the top right, you will find a series of icons. From there you can change the current type of view. Here you can also perform global action on the Knowledge of the Report. Let's highlight 2 of them:
 - Suggestions: This tool suggests you some logical relationships to add between your contained Object to give more consistency to your Knowledge.
-- Share with an Organization: if you have designated a main Organization in the platform settings, you can here share your Report and its content with users of an other Organization.
+- Share with an Organization: if you have designated a main Organization in the platform settings, you can here share your Report and its content with users of another Organization.
 
 At the bottom, you have many option to manipulate the graph:
 - Multiple option for shaping the graph and applying forces to the nodes and links
@@ -59,7 +59,7 @@ At the bottom, you have many option to manipulate the graph:
 
 ![Timeline view of a Report](assets/report-timeline-view.png)
 
-This view allows you to see the structured Knowledge chronologically. This view is really useful when the report describes an attack or a campaign that lasted some time, and the analyst payed attention to the dates.
+This view allows you to see the structured Knowledge chronologically. This view is really useful when the report describes an attack or a campaign that lasted some time, and the analyst paid attention to the dates.
 The view can be filtered and displayed relationships too.
 
 #### Correlation view
@@ -78,7 +78,7 @@ If your Report describes let's say an attack, a campaign, or an understanding of
 
 #### Organization segregation
 
-If you have designated a main Organization in the platform settings, you can share your Report and its content with users of an other Organization.
+If you have designated a main Organization in the platform settings, you can share your Report and its content with users of another Organization.
 
 ![containers-organization-sharing-button.png](assets%2Fcontainers-organization-sharing-button.png)
 
@@ -110,15 +110,15 @@ Clicking on a Grouping, you land on its Overview tab. For a Groupings, the follo
 - Overview: as described [here](overview.md#overview-section).
 - Knowledge: a complex tab that regroups all the structured Knowledge contained in the groupings, as for a Report, except for the Timeline view. As described [here](overview.md#knowledge-section).
 - Content: a tab to provide access to content mapping, suggested mapping and allows to preview, manage and write the deliverables associated with the Grouping. For example, an analytical report to share with other teams, a markdown file to feed a collaborative wiki, etc. As described [here](overview.md#content-section).
-- Entities: A table containing all SDO (Stix Domain Objects) contained in the Grouping, with search and filters available. It also display if the SDO has been added directly or through [inferences with the reasonging engine](inferences.md)
-- Observables: A table containing all SCO (Stix Cyber Observable) contained in the Grouping, with search and filters available. It also display if the SDO has been added directly or through [inferences with the reasonging engine](inferences.md)
+- Entities: A table containing all SDO (Stix Domain Objects) contained in the Grouping, with search and filters available. It also displays if the SDO has been added directly or through [inferences with the reasoning engine](inferences.md)
+- Observables: A table containing all SCO (Stix Cyber Observable) contained in the Grouping, with search and filters available. It also displays if the SDO has been added directly or through [inferences with the reasoning engine](inferences.md)
 - Data: as described [here](overview.md#data-section).
 
 ### Restricting access to a Grouping
 
 #### Organization segregation
 
-If you have designated a main Organization in the platform settings, you can share your Grouping and its content with users of an other Organization.
+If you have designated a main Organization in the platform settings, you can share your Grouping and its content with users of another Organization.
 
 ![containers-organization-sharing-button.png](assets%2Fcontainers-organization-sharing-button.png)
 
@@ -147,9 +147,9 @@ In the MITRE STIX 2.1 documentation, a `Malware Analyses` is defined as such :
 When clicking on the Malware Analyses tab at the top of the interface, you see the list of all the Malware Analyses you have access to, in respect with your [allowed marking definitions](../administration/users.md). You can then search and filter on some common and specific attributes of the Malware Analyses.
 
 Clicking on a Malware Analyses, you land on its Overview tab. The following tabs are accessible:
-- Overview: This view contains some additions from the common Overview [here](overview.md#overview-section). You will find here details about how the analysis have been performed, what is the global result regarding the malicioussness of the analysed artifact and all the Observables that have been found during the analysis. 
+- Overview: This view contains some additions from the common Overview [here](overview.md#overview-section). You will find here details about how the analysis has been performed, what is the global result regarding the maliciousness of the analysed artifact and all the Observables that have been found during the analysis.
 - Knowledge: If you Malware analysis is linked to other Objects that are not part of the analysis result, they will be displayed here. As described [here](overview.md#knowledge-section).
-- Content: This specific tab allows to previzualize, manage and write deliverable associated with the Malware Analyses. For example an analytic report to share with other teams, a markdown files to feed a collaborative wiki with, etc. As described [here](overview.md#content-section).
+- Content: This specific tab allows to preview, manage and write deliverable associated with the Malware Analyses. For example an analytical report to share with other teams, a markdown file to feed a collaborative wiki, etc. As described [here](overview.md#content-section).
 - Data: as described [here](overview.md#data-section).
 - History: as described [here](overview.md#history-section).
 
@@ -172,7 +172,7 @@ Clicking on a Note, you land on its Overview tab. The following tabs are accessi
 
 Intelligence is never created from nothing. External references give user a way to link sources or reference documents to any Object in the platform. All external references are listed within the Analyses menu for accessing directly sources of the structured Knowledge.
 
-In the MITRE STIX 2.1 documentation, a `External references` is defined as such :
+In the MITRE STIX 2.1 documentation, an `External Reference` is defined as such :
 > External references are used to describe pointers to information represented outside of STIX. For example, a Malware object could use an external reference to indicate an ID for that malware in an external database or a report could use references to represent source material.
 
 Clicking on an External reference, you land on its Overview tab. The following tabs are accessible:

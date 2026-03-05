@@ -31,7 +31,7 @@ A perspective is the way the platform will count the data to display in your wid
 
 Filters vary based on the selected perspective, defining the dataset to be utilized in the widget. Filters are instrumental in narrowing down the scope of data for a more focused analysis.
 
-While filters in the "Entities" and "Activity & History" perspectives align with the platform's familiar search and feed creation filters, the "Knowledge Graph" perspective introduces a more intricate filter configuration.Therefore, they need to be addressed in more detail.
+While filters in the "Entities" and "Activity & History" perspectives align with the platform's familiar search and feed creation filters, the "Knowledge Graph" perspective introduces a more intricate filter configuration. Therefore, they need to be addressed in more detail.
 
 #### Filter in the context of Knowledge Graph
 
