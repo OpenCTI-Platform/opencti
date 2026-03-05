@@ -14,6 +14,7 @@ import { ENTITY_TYPE_FORM } from '../modules/form/form-types';
 import { ENTITY_TYPE_FEED } from '../modules/dataSharing/feed-types';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../modules/dataSharing/taxiiCollection-types';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../modules/dataSharing/streamCollection-types';
+import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from '../modules/workflow/types/workflow-types';
 
 // Re-exported for backward compatibility (used by migrations)
 export { ENTITY_TYPE_FEED } from '../modules/dataSharing/feed-types';
@@ -45,6 +46,7 @@ export const ENTITY_TYPE_INTERNAL_FILE = 'InternalFile';
 export const ENTITY_TYPE_STATUS_TEMPLATE = 'StatusTemplate';
 export const ENTITY_TYPE_STATUS = 'Status';
 export const ENTITY_TYPE_THEME = 'Theme';
+
 const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
   ENTITY_TYPE_GROUP,
@@ -62,6 +64,8 @@ const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_PIR,
   ENTITY_TYPE_FORM,
   ENTITY_TYPE_THEME,
+  ENTITY_TYPE_WORKFLOW_DEFINITION,
+  ENTITY_TYPE_WORKFLOW_INSTANCE,
 ];
 const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
@@ -99,6 +103,8 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_THEME,
   ENTITY_TYPE_EMAIL_TEMPLATE,
   ENTITY_TYPE_FORM,
+  ENTITY_TYPE_WORKFLOW_DEFINITION,
+  ENTITY_TYPE_WORKFLOW_INSTANCE,
 ];
 const HISTORY_OBJECTS = [
   ENTITY_TYPE_WORK,
