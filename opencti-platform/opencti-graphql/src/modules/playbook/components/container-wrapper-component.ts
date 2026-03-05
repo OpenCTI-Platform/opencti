@@ -36,7 +36,7 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS = [
   ENTITY_TYPE_CONTAINER_TASK,
 ];
 
-interface ContainerWrapperConfiguration {
+export interface ContainerWrapperConfiguration {
   container_type: string;
   caseTemplates: { label: string; value: string }[];
   all: boolean;
