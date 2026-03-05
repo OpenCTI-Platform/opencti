@@ -1,5 +1,5 @@
 import { logApp } from '../../../config/conf';
-import { validateDraftWorkspace } from '../../draftWorkspace/draftWorkspace-domain';
+import { draftWorkspaceEditAuthorizedMembers, validateDraftWorkspace } from '../../draftWorkspace/draftWorkspace-domain';
 import type { Context } from '../types/workflow-types';
 
 export type ActionFunction<TContext extends Context = Context> = (ctx: TContext, params?: any) => Promise<void> | void;
@@ -13,5 +13,9 @@ export const ActionRegistry: Record<string, ActionFunction> = {
   validateDraft: async (ctx) => {
     const { entity, user, context } = ctx;
     await validateDraftWorkspace(context, user, entity.id);
+  },
+  updateAuthorizedMembers: async (ctx, params) => {
+    const { entity, user, context } = ctx;
+    await draftWorkspaceEditAuthorizedMembers(context, user, entity.id, params?.authorized_members);
   },
 };
