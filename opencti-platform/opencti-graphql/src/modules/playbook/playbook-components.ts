@@ -269,7 +269,7 @@ const PLAYBOOK_REDUCING_COMPONENT_SCHEMA: JSONSchemaType<ReduceConfiguration> = 
   },
   required: ['filters'],
 };
-const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
+export const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
   id: 'PLAYBOOK_REDUCING_COMPONENT',
   name: 'Reduce knowledge',
   description: 'Reduce STIX data according to the filter (keep only matching)',
@@ -284,18 +284,22 @@ const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const { filters } = playbookNode.configuration;
     const jsonFilters = JSON.parse(filters);
-    const baseMatches = await isStixMatchFilterGroup(context, SYSTEM_USER, baseData, jsonFilters);
-    if (!baseMatches) {
-      return { output_port: 'unmatch', bundle };
-    }
-    const matchedElements = [baseData];
+    const matchedElements = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const bundleElement = bundle.objects[index];
       const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, bundleElement, jsonFilters);
-      if (isMatch && baseData.id !== bundleElement.id) matchedElements.push(bundleElement);
+      if (isMatch) {
+        matchedElements.push(bundleElement);
+      }
     }
-    const newBundle = { ...bundle, objects: matchedElements };
-    return { output_port: 'out', bundle: newBundle };
+    if (matchedElements.length === 0) {
+      return { output_port: 'unmatch', bundle };
+    }
+    // always add main entity to the final bundle if not already in it
+    if (matchedElements.length > 0 && !matchedElements.some((e) => e.id === baseData.id)) {
+      matchedElements.push(baseData);
+    }
+    return { output_port: 'out', bundle: { ...bundle, objects: matchedElements } };
   },
 };
 
