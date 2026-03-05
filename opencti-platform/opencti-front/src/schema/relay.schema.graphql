@@ -16085,6 +16085,8 @@ type CustomView implements InternalObject & BasicObject {
   standard_id: String!
   parent_types: [String!]!
   metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
   name: String!
   description: String
   manifest: String

@@ -1,4 +1,4 @@
-import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
+import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
 import type { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { AuthorizedMember } from '../../utils/access';
@@ -22,7 +22,7 @@ export interface StoreEntityCustomView extends StoreEntity {
 // endregion
 
 // region Stix type
-export interface StixCustomView extends StixDomainObject {
+export interface StixCustomView extends StixObject {
   name: string;
   description: string;
   manifest: string;

@@ -4,6 +4,8 @@ type CustomView implements InternalObject & BasicObject {
     standard_id: String!
     parent_types: [String!]!
     metrics:[Metric]
+    created_at: DateTime!
+    updated_at: DateTime!
     # CustomView
     name: String!
     description: String
