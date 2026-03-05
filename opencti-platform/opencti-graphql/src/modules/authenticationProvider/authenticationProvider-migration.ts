@@ -9,7 +9,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { AuthenticationProviderType } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
 import { convertAllSSOEnvProviders } from './authenticationProvider-migration-converter';
-import { addAuthenticationProvider, findAllAuthenticationProvider, getAllIdentifiers, resolveProviderIdentifier } from './authenticationProvider-domain';
+import { addAuthenticationProvider, getAllIdentifiers, resolveProviderIdentifier } from './authenticationProvider-domain';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { AuthRequired } from '../../config/errors';
 import { isAuthenticationProviderMigrated } from './providers-configuration';
