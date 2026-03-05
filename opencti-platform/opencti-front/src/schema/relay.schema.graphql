@@ -9647,6 +9647,10 @@ type Query {
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
   stixObjectOrStixRelationships(first: Int, after: ID, search: String, filters: FilterGroup): StixObjectOrStixRelationshipConnection
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
+  workflowDefinition(entityType: String!): WorkflowSchema
+  workflowInstance(entityId: String!): WorkflowInstance
+  allowedNextStatuses(entityId: String!): [Status!]!
+  allowedTransitions(entityId: String!): [WorkflowTransition!]!
   csvMapperTest(configuration: String!, content: String!): CsvMapperTestResult @deprecated(reason: "[>=6.4 & <6.7]. Use `csvMapperTest mutation`.")
   channel(id: String!): Channel
   channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ChannelConnection
@@ -10460,6 +10464,9 @@ type Mutation {
   stixRefRelationshipEdit(id: ID!): StixRefRelationshipEditMutations
   stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput!): StixSightingRelationship
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
+  workflowDefinitionSet(entityType: String!, definition: String!): EntitySetting
+  workflowDefinitionDelete(entityType: String!): EntitySetting
+  triggerWorkflowEvent(entityId: String!, eventName: String!): WorkflowTriggerResult!
   channelAdd(input: ChannelAddInput!): Channel
   channelDelete(id: ID!): ID
   channelFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Channel
@@ -10846,6 +10853,30 @@ type WorkflowInstance {
   id: ID!
   currentState: String!
   allowedTransitions: [WorkflowTransition!]!
+}
+
+type DraftWorkspace implements InternalObject & BasicObject {
+  workflowInstance: WorkflowInstance
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  name: String!
+  createdBy: Identity
+  description: String
+  created_at: DateTime!
+  creators: [Creator!]
+  entity_id: String
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
+  objectsCount: DraftObjectsCount!
+  draft_status: DraftStatus!
+  processingCount: Int!
+  works(first: Int): [Work!]
+  validationWork: Work
+  authorizedMembers: [MemberAccess!]!
+  currentUserAccessRight: String
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -15043,30 +15074,6 @@ input ExclusionListFileAddInput {
 enum DraftStatus {
   open
   validated
-}
-
-type DraftWorkspace implements InternalObject & BasicObject {
-  id: ID!
-  entity_type: String!
-  standard_id: String!
-  parent_types: [String!]!
-  metrics: [Metric]
-  name: String!
-  createdBy: Identity
-  description: String
-  created_at: DateTime!
-  creators: [Creator!]
-  entity_id: String
-  objectAssignee: [Assignee!]
-  objectParticipant: [Participant!]
-  objectsCount: DraftObjectsCount!
-  draft_status: DraftStatus!
-  processingCount: Int!
-  works(first: Int): [Work!]
-  validationWork: Work
-  authorizedMembers: [MemberAccess!]!
-  currentUserAccessRight: String
-  workflowInstance: WorkflowInstance
 }
 
 type DraftObjectsCount {
