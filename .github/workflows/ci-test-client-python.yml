@@ -39,7 +39,7 @@ jobs:
 
     - name: Download image platform
       continue-on-error: true
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: docker-image-opencti-platform
         path: /tmp
