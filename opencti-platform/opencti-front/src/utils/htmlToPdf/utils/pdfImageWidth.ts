@@ -8,14 +8,15 @@ import { CKEDITOR_CONTAINER_SELECTOR, MAX_WIDTH_PORTRAIT } from './constants';
  * - An image with a width in percent => convert to pixels.
  * - An image inside a figure with a width in pixels => set width to image.
  * - An image inside a figure with a width in percent => convert to pixels and set to image.
+ * - An image without any size => make it full width.
  *
  * @param content The content of the file.
  * @returns New content with images widths in pixels.
  */
-const setImagesWidth = (content: string) => {
+const setImagesWidth = (content: string, maxWidth = MAX_WIDTH_PORTRAIT) => {
   let updatedContent = content;
   const elementCkEditor = document.querySelector(CKEDITOR_CONTAINER_SELECTOR);
-  const fullWidth = elementCkEditor ? elementCkEditor.clientWidth : MAX_WIDTH_PORTRAIT;
+  const fullWidth = elementCkEditor ? elementCkEditor.clientWidth : maxWidth;
 
   // 1. In case of images with width in pixels.
   // Find the value of the width and max sure it is not higher than maximum possible.
@@ -23,9 +24,9 @@ const setImagesWidth = (content: string) => {
     /<img.+?width="([0-9\\.]+)".*?>/gi,
     (match, width) => {
       let result = match;
-      if (width > MAX_WIDTH_PORTRAIT) {
+      if (width > maxWidth) {
         result = result.replace(/ height="\d+"/, ''); // Clear height to keep ratio.
-        result = result.replace(`width="${width}"`, `width="${MAX_WIDTH_PORTRAIT}"`);
+        result = result.replace(`width="${width}"`, `width="${maxWidth}"`);
       }
       return result;
     },
@@ -62,12 +63,20 @@ const setImagesWidth = (content: string) => {
     /<figure.+?style=".*?width:([0-9\\.]+px).*?".*?>.*?<\/figure>/gi,
     (match, width) => {
       let widthValue = width.split('px')[0];
-      if (widthValue > MAX_WIDTH_PORTRAIT) widthValue = MAX_WIDTH_PORTRAIT;
+      if (widthValue > maxWidth) widthValue = maxWidth;
       let result = match;
       result = result.replace(/ width="\d+"/, '');
       result = result.replace(/ height="\d+"/, '');
       return result.replace('<img ', `<img width="${widthValue}" `);
     },
+  );
+
+  // 5. In case of images without any size.
+  // (/!\ it is important to have this test after all others).
+  // Make it full width.
+  updatedContent = updatedContent.replaceAll(
+    /(<img(?![^>]*\swidth=")(?![^>]*\bwidth:)[^>]*>)/gi, // check width attribute AND width ins tyle attribute.
+    (match) => match.replace('<img ', `<img width="${maxWidth}" `),
   );
 
   return updatedContent;
