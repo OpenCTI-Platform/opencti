@@ -1,4 +1,8 @@
+import { loadAssignees, loadCreators, loadParticipants } from '../../database/members';
+import { findById as findWorkById, worksForDraft } from '../../domain/work';
 import type { Resolvers, StixRefRelationshipAddInput } from '../../generated/graphql';
+import { getAuthorizedMembers } from '../../utils/authorizedMembers';
+import { getWorkflowInstance } from '../workflow/domain/workflow-domain';
 import {
   addDraftWorkspace,
   deleteDraftWorkspace,
@@ -23,9 +27,6 @@ import {
   resolveIdRepresentatives,
   validateDraftWorkspace,
 } from './draftWorkspace-domain';
-import { findById as findWorkById, worksForDraft } from '../../domain/work';
-import { getAuthorizedMembers } from '../../utils/authorizedMembers';
-import { loadAssignees, loadCreators, loadParticipants } from '../../database/members';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import { INPUT_CREATED_BY } from '../../schema/general';
 
@@ -57,6 +58,7 @@ const draftWorkspaceResolvers: Resolvers = {
       return worksForDraft(context, context.user, draft.id, args) as unknown as any;
     },
     validationWork: (draft, _, context) => (draft.validation_work_id ? findWorkById(context, context.user, draft.validation_work_id) as any : null),
+    workflowInstance: (draft, _, context) => getWorkflowInstance(context, context.user, draft.id),
     authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
     currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context.user, workspace),
     objectParticipant: async (workspace, _, context) => loadParticipants(context, context.user, workspace),
