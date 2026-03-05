@@ -175,7 +175,6 @@ import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { asyncMap } from '../utils/data-processing';
 import { doYield } from '../utils/eventloop-utils';
-import type { Mutable } from '../utils/type-utils';
 import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
@@ -310,7 +309,39 @@ export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
           attachment: {
             field: 'file_data',
             remove_binary: true,
-            properties: ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_ELASTICSEARCH as Mutable<typeof ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_ELASTICSEARCH>,
+            // List of fields extracted by the attachment ingest processor.
+            // The full list is available in the Elasticsearch docs:
+            // (https://www.elastic.co/guide/en/elasticsearch/reference/8.19/attachment.html#attachment-fields).
+            properties: [
+              'content',
+              'title',
+              'author',
+              'keywords',
+              'date',
+              'content_type',
+              'content_length',
+              'language',
+              'modified',
+              'format',
+              // identifier,     NOT EXTRACTED
+              // contributor,    NOT EXTRACTED
+              // coverage,       NOT EXTRACTED
+              'modifier',
+              'creator_tool',
+              // publisher,      NOT EXTRACTED
+              // relation,       NOT EXTRACTED
+              // rights,         NOT EXTRACTED
+              // source,         NOT EXTRACTED
+              // type,           NOT EXTRACTED
+              'description',
+              'print_date',
+              'metadata_date',
+              // latitude,       NOT EXTRACTED
+              // longitude,      NOT EXTRACTED
+              // altitude,       NOT EXTRACTED
+              // rating,         NOT EXTRACTED
+              'comments',
+            ],
           },
         },
       ],
@@ -327,7 +358,21 @@ export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
           {
             attachment: {
               field: 'file_data',
-              properties: ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_OPENSEARCH as Mutable<typeof ATTACHMENT_PROCESSOR_EXTRACTED_PROPS_OPENSEARCH>,
+              // List of fields extracted by the attachment ingest processor, for OpenSearch.
+              // The full list is available in the OS docs:
+              // (https://docs.opensearch.org/latest/install-and-configure/additional-plugins/ingest-attachment-plugin/#extracted-information),
+              // and code shows the check rejects unknown fields with an exception:
+              // https://github.com/opensearch-project/OpenSearch/blob/315481148edaa43410e2e9f1801ec903fd62ec20/plugins/ingest-attachment/src/main/java/org/opensearch/ingest/attachment/AttachmentProcessor.java#L277
+              properties: [
+                'content',
+                'title',
+                'author',
+                'keywords',
+                'date',
+                'content_type',
+                'content_length',
+                'language',
+              ],
             },
           },
           {
@@ -2746,11 +2791,11 @@ const buildSubQueryForFilterGroup = (
 
   const currentSubQuery = localMustFilters.length > 0
     ? {
-      bool: {
-        should: localMustFilters,
-        minimum_should_match: mode === 'or' ? 1 : localMustFilters.length,
-      },
-    }
+        bool: {
+          should: localMustFilters,
+          minimum_should_match: mode === 'or' ? 1 : localMustFilters.length,
+        },
+      }
     : null;
   return { subQuery: currentSubQuery, postFiltersTags: localPostFilterTags, resultSaltCount: localSaltCount };
 };
@@ -3123,12 +3168,12 @@ const tagFiltersForPostFiltering = (
 ) => {
   const taggedFilters: (Filter & { postFilteringTag: string })[] = filters
     ? extractFiltersFromGroup(filters, [INSTANCE_REGARDING_OF, INSTANCE_DYNAMIC_REGARDING_OF])
-      .filter((filter) => isEmptyField(filter.operator) || filter.operator === 'eq')
-      .map((filter, i) => {
-        const taggedFilter = filter as Filter & { postFilteringTag: string };
-        taggedFilter.postFilteringTag = `${i}`;
-        return taggedFilter;
-      })
+        .filter((filter) => isEmptyField(filter.operator) || filter.operator === 'eq')
+        .map((filter, i) => {
+          const taggedFilter = filter as Filter & { postFilteringTag: string };
+          taggedFilter.postFilteringTag = `${i}`;
+          return taggedFilter;
+        })
     : [];
 
   if (taggedFilters.length > 0) {

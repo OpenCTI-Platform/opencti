@@ -122,7 +122,7 @@ services:
       - 15672:15672
 
   ## Telemetry + tracing dependencies
-  ## docker compose --profile telemetry up -d (launch everything + telemetry)
+  ## podman compose --profile telemetry up -d (launch everything + telemetry)
   opencti-dev-telemetry-pyroscope:
     container_name: opencti-pyroscope
     image: grafana/pyroscope
