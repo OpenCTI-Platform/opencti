@@ -10763,6 +10763,91 @@ type Mutation {
   streamCollectionEdit(id: ID!): StreamCollectionEditMutations
 }
 
+enum WorkflowActionMode {
+  sync
+  async
+}
+
+type WorkflowActionConfig {
+  type: String!
+  params: String
+  mode: WorkflowActionMode!
+}
+
+type WorkflowConditionConfig {
+  type: String
+  field: String
+  operator: String
+  value: String
+}
+
+type WorkflowSerializedState {
+  name: String!
+  onEnter: [WorkflowActionConfig!]
+  onExit: [WorkflowActionConfig!]
+}
+
+type WorkflowSerializedTransition {
+  from: String!
+  to: String!
+  event: String!
+  actions: [WorkflowActionConfig!]
+  conditions: [WorkflowConditionConfig!]
+}
+
+type WorkflowSchema {
+  id: ID!
+  name: String!
+  initialState: String!
+  states: [WorkflowSerializedState!]!
+  transitions: [WorkflowSerializedTransition!]!
+}
+
+type EntitySetting implements InternalObject & BasicObject {
+  workflow_configuration: Boolean
+  workflow_id: String
+  id: ID!
+  entity_type: String!
+  standard_id: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  target_type: String!
+  platform_entity_files_ref: Boolean
+  platform_hidden_type: Boolean
+  enforce_reference: Boolean
+  attributes_configuration: String
+  attributesDefinitions: [TypeAttribute!]!
+  mandatoryAttributes: [String!]!
+  scaleAttributes: [ScaleAttribute!]!
+  defaultValuesAttributes: [DefaultValueAttribute!]!
+  availableSettings: [String!]!
+  created_at: DateTime!
+  updated_at: DateTime!
+  refreshed_at: DateTime
+  overview_layout_customization: [OverviewWidgetCustomization!]
+  fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
+  requestAccessConfiguration: RequestAccessConfiguration
+}
+
+type WorkflowTriggerResult {
+  success: Boolean!
+  newState: String
+  reason: String
+  status: Status
+}
+
+type WorkflowTransition {
+  event: String!
+  toState: String!
+  toStatus: Status
+}
+
+type WorkflowInstance {
+  id: ID!
+  currentState: String!
+  allowedTransitions: [WorkflowTransition!]!
+}
+
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
@@ -12935,30 +13020,6 @@ type OverviewWidgetCustomization {
   label: String!
 }
 
-type EntitySetting implements InternalObject & BasicObject {
-  id: ID!
-  entity_type: String!
-  standard_id: String!
-  parent_types: [String!]!
-  metrics: [Metric]
-  target_type: String!
-  platform_entity_files_ref: Boolean
-  platform_hidden_type: Boolean
-  enforce_reference: Boolean
-  attributes_configuration: String
-  attributesDefinitions: [TypeAttribute!]!
-  mandatoryAttributes: [String!]!
-  scaleAttributes: [ScaleAttribute!]!
-  defaultValuesAttributes: [DefaultValueAttribute!]!
-  availableSettings: [String!]!
-  created_at: DateTime!
-  updated_at: DateTime!
-  refreshed_at: DateTime
-  overview_layout_customization: [OverviewWidgetCustomization!]
-  fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
-  requestAccessConfiguration: RequestAccessConfiguration
-}
-
 enum EntitySettingsOrdering {
   target_type
   _score
@@ -15005,6 +15066,7 @@ type DraftWorkspace implements InternalObject & BasicObject {
   validationWork: Work
   authorizedMembers: [MemberAccess!]!
   currentUserAccessRight: String
+  workflowInstance: WorkflowInstance
 }
 
 type DraftObjectsCount {
