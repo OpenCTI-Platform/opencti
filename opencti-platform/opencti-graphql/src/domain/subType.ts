@@ -1,18 +1,18 @@
 import * as R from 'ramda';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
-import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { buildPagination } from '../database/utils';
-import { schemaAttributesDefinition } from '../schema/schema-attributes';
-import { schemaTypesDefinition } from '../schema/schema-types';
-import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { ABSTRACT_STIX_NESTED_REF_RELATIONSHIP } from '../schema/stixRefRelationship';
-import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable';
 import { isFeatureEnabled } from '../config/conf';
 import { telemetry } from '../config/tracing';
-import type { AuthContext, AuthUser } from '../types/user';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
+import { buildPagination } from '../database/utils';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import { schemaAttributesDefinition } from '../schema/schema-attributes';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { schemaTypesDefinition } from '../schema/schema-types';
+import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../schema/stixCyberObservable';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
+import { ABSTRACT_STIX_NESTED_REF_RELATIONSHIP } from '../schema/stixRefRelationship';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import type { AuthContext, AuthUser } from '../types/user';
 
 // -- ENTITY TYPES --
 

@@ -12,6 +12,7 @@ export const RELATION_HAS_CAPABILITY = 'has-capability';
 export const RELATION_HAS_CAPABILITY_IN_DRAFT = 'has-capability-in-draft';
 export const RELATION_ACCESSES_TO = 'accesses-to';
 export const RELATION_IN_PIR = 'in-pir';
+export const RELATION_HAS_WORKFLOW = 'has-workflow';
 
 export const INTERNAL_RELATIONSHIPS = [
   RELATION_MIGRATES,
@@ -23,6 +24,7 @@ export const INTERNAL_RELATIONSHIPS = [
   RELATION_ACCESSES_TO,
   RELATION_PARTICIPATE_TO,
   RELATION_IN_PIR,
+  RELATION_HAS_WORKFLOW,
 ];
 
 schemaTypesDefinition.register(ABSTRACT_INTERNAL_RELATIONSHIP, INTERNAL_RELATIONSHIPS);
