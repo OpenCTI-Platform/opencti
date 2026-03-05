@@ -200,17 +200,25 @@ const updateObjectRaw = async (tx: ChainableCommander, id: string, input: object
 const updateObjectCounterRaw = async (tx: ChainableCommander, id: string, field: string, number: number) => {
   await tx.hincrby(id, field, number);
 };
+const deleteOldestKeysFromList = async (listId: string, count: number) => {
+  const oldestKeys = await getClientBase().zrange(listId, 0, -(count + 1));
+  if (oldestKeys?.length > 0) {
+    await getClientBase().zrem(listId, oldestKeys);
+    await getClientBase().del(oldestKeys);
+  }
+};
 const setInList = async (listId: string, keyId: string, expirationTime: number, maxLength?: number) => {
   await redisTx(getClientBase(), async (tx) => {
     // add/update the instance with its creation date in the ordered list of instances
     const time = new Date().getTime();
     await tx.zadd(listId, time, keyId);
-    if (maxLength && maxLength > 0) {
-      await tx.zremrangebyrank(listId, 0, -(maxLength + 1)); // keep only the top maxLength elements
-    }
     // remove the too old keys from the list of instances
     await tx.zremrangebyscore(listId, '-inf', time - (expirationTime * 1000));
   });
+  if (maxLength && maxLength > 0) {
+    // keep only the top maxLength elements
+    await deleteOldestKeysFromList(listId, maxLength);
+  }
 };
 const delKeyWithList = async (keyId: string, listIds: string[]) => {
   const keyPromise = getClientBase().del(keyId);
@@ -229,7 +237,7 @@ const keysFromList = async (listId: string, expirationTime?: number, maxLength?:
     await getClientBase().zremrangebyscore(listId, '-inf', time - (expirationTime * 1000));
   }
   if (maxLength && maxLength > 0) {
-    await getClientBase().zremrangebyrank(listId, 0, -(maxLength + 1)); // keep only the top maxLength elements
+    await deleteOldestKeysFromList(listId, maxLength); // keep only the top maxLength elements
   }
   const instances = await getClientBase().zrange(listId, 0, -1);
   if (instances && instances.length > 0) {
