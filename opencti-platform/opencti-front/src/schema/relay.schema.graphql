@@ -10758,7 +10758,7 @@ enum WorkflowActionMode {
 
 type WorkflowActionConfig {
   type: String!
-  params: String
+  params: JSON
   mode: WorkflowActionMode!
 }
 
@@ -10770,7 +10770,7 @@ type WorkflowConditionConfig {
 }
 
 type WorkflowSerializedState {
-  name: String!
+  statusId: String!
   onEnter: [WorkflowActionConfig!]
   onExit: [WorkflowActionConfig!]
 }

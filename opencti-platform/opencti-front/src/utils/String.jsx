@@ -100,6 +100,16 @@ export const computeDuplicates = (fields, data) => R.groupWith(R.allPass(R.map(R
 
 export const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
+export const camelCasetoSentenceCase = (str) => {
+  const res = str.replace(/([A-Z])/g, ' $1').toLowerCase();
+  return capitalizeFirstLetter(res);
+};
+
+export const snakeCaseToSentenceCase = (str) => {
+  const res = str.replace(/_/g, ' ').toLowerCase();
+  return capitalizeFirstLetter(res);
+};
+
 export const capitalizeWords = (str) => str.split(' ').map(capitalizeFirstLetter).join(' ');
 
 export const toCamelCase = (str) => {
