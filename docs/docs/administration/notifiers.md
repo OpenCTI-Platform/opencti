@@ -60,5 +60,5 @@ Custom notifiers are manageable in the "Settings > Customization > Notifiers" wi
 
 For guidance on configuring notification triggers and exploring the usages of notifiers, refer to the [dedicated documentation page](../usage/notifications.md).
 
-For security reason, the authorized methods that can be used in webhook template is limited, see [notifier_authorized_functions parameter](https://github.com/OpenCTI-Platform/opencti/blob/master/opencti-platform/opencti-graphql/config/default.json).
-If you need to extend this authorization, you can update `APP__NOTIFIER_AUTHORIZED_FUNCTIONS` with a custom list. The default managed list by OpenCTI is safe, please be aware that you extends this list at your own risk.
+For security reasons, the authorized methods that can be used in webhook template is limited, see [notifier_authorized_functions parameter](https://github.com/OpenCTI-Platform/opencti/blob/master/opencti-platform/opencti-graphql/config/default.json).
+If you need to extend this authorization, you can update `APP__NOTIFIER_AUTHORIZED_FUNCTIONS` with a custom list. The default managed list by OpenCTI is safe, please be aware that you extend this list at your own risk.

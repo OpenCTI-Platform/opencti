@@ -8,7 +8,7 @@ From the `Cases` section, users can access the following tabs:
 
 - `Incident Responses`: This type of Cases is dedicated to the management of incidents. An Incident Response case does not represent an incident, but all the context and actions that will encompass the response to a specific incident.
 - `Request for Information`: CTI teams are often asked to provide extensive information and analysis on a specific subject, be it related to an ongoing incident or a particular trending threat. Request for Information cases allow you to store context and actions relative to this type of request and its response.
-- `Request for Takedown`: When an organization is targeted by an attack campaign, a typical response action can be to request the Takedown of elements of the attack infrastructure, for example a domain name impersonating the organization to phish its employees, or an email address used to deliver phishing content. As Takedown needs in most case to reach out to external providers and be effective quickly, it often needs specific workflows. Request for Takedown cases give you a dedicated space to manage these specific actions.
+- `Request for Takedown`: When an organization is targeted by an attack campaign, a typical response action can be to request the Takedown of elements of the attack infrastructure, for example a domain name impersonating the organization to phish its employees, or an email address used to deliver phishing content. As Takedown needs in most cases to reach out to external providers and be effective quickly, it often needs specific workflows. Request for Takedown cases give you a dedicated space to manage these specific actions.
 - `Tasks`: In every case, you need tasks to be performed in order to solve it. The Tasks tab allows you to review all created tasks to quickly see past due date, or quickly see every task assigned to a specific user.
 - `Feedbacks`: If you use your platform to interact with other teams and provide them CTI Knowledge, some users may want to give you feedback about it. Those feedbacks can easily be considered as another type of case to solve, as it will often refer to Knowledge inconsistency or gaps.
 
@@ -72,7 +72,7 @@ If your Case contains attack patterns, you will be able to visualize them in a M
 
 #### Organization segregation
 
-If you have designated a main Organization in the platform settings, you can share your Case and its content with users of an other Organization.
+If you have designated a main Organization in the platform settings, you can share your Case and its content with users of another Organization.
 
 ![containers-organization-sharing-button.png](assets%2Fcontainers-organization-sharing-button.png)
 
@@ -103,7 +103,7 @@ Clicking on a Task, you land on its Overview tab. For a Tasks, the following tab
 
 ## Feedbacks
 
-When a user fill a feedback form from its Profile/Feedback menu, it will then be accessible here.
+When a user fills a feedback form from its Profile/Feedback menu, it will then be accessible here.
 
 This feature gives the opportunity to engage with other users of your platform and to respond directly to their concern about it or the Knowledge, without the need of third party software.
 

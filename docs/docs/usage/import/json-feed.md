@@ -17,7 +17,7 @@ By adhering to these best practices, you ensure independence in managing rights 
 ## Configuration
 
 Configuring a JSON feed will be simple or complex depending on the needs of pagination.
-So we will show be example of its different and how to configure it in the two cases.
+So we will show by example of its different and how to configure it in the two cases.
 
 ### Simple API
 
@@ -31,7 +31,7 @@ Here's a step-by-step guide to configure JSON ingesters:
 
 ### Paginated API
 
-For paginated API its more difficult to configure the JSON feed. You have more elements.
+For paginated APIs, it's more difficult to configure the JSON feed. You have more elements.
 
 #### Verb and variables
 
@@ -39,7 +39,7 @@ You need to start to configure the verb to use and the variables.
 
 **GET**
 
-When you use a GET API, a majority of case will use query parameters to be able to setup variables for the pagination.
+When you use a GET API, a majority of cases will use query parameters to be able to setup variables for the pagination.
 For example lets take an api where the get command need to specify the page number to consume.
 There is a part of the URI that need to be dynamic.
 

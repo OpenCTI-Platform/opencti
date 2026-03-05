@@ -55,7 +55,7 @@ Technically, OpenCTI generates deterministic IDs based on the listed properties 
 
 ### Relationships
 
-The deduplication process of relationships is based on the following criterias:
+The deduplication process of relationships is based on the following criteria:
 
 * Type
 * Source

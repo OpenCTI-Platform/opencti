@@ -25,7 +25,7 @@ The welcome page gives any visitor on the OpenCTI platform an overview of what's
 
 | Component      | Description                      |
 |:---------------|:---------------------------------|
-| Intrusion sets | Number of intrusion sets       . |
+| Intrusion sets | Number of intrusion sets. |
 | Malware        | Number of malware.               |
 | Reports        | Number of reports.               |
 | Indicators     | Number of indicators.            |

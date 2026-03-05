@@ -49,13 +49,13 @@ To do so, click on the grey rectangle in the center of the workspace and select 
 
 ### Duplicate a playbook
 
-It is possible to duplicate a playbook, to easily replicate a playbook. You can do it directly by cliking on the burger menu (the 3 dots) at the end of the row and click on duplicate, or directly when you're inside a playbook.
+It is possible to duplicate a playbook, to easily replicate a playbook. You can do it directly by clicking on the burger menu (the 3 dots) at the end of the row and click on duplicate, or directly when you're inside a playbook.
 
 ### Import/Export a playbook
 
 #### Export a playbook
 
-If you need to share a playbook with a colleague that is not on the same platform than you (or if you need to troubleshoot a playbook issue), you can now export your playbook directly: by cliking on the burger menu (the 3 dots) at the end of the row and click on duplicate, or directly when you're inside a playbook.
+If you need to share a playbook with a colleague that is not on the same platform than you (or if you need to troubleshoot a playbook issue), you can now export your playbook directly: by clicking on the burger menu (the 3 dots) at the end of the row and click on duplicate, or directly when you're inside a playbook.
 
 #### Import a playbook
 
@@ -260,7 +260,7 @@ Compared to other components, this component **makes a direct call to the databa
 
 #### Manage Access Restriction
 
-Will apply authorized members on the bundle within the playbook. It is only compatible with entities supportsing authorized members (Containers, Drafts, Organization).
+Will apply authorized members on the bundle within the playbook. It is only compatible with entities supporting authorized members (Containers, Drafts, Organization).
 You can decide to only apply restrictions on the triggering element or the whole bundle by enabling the toggle.
 
 More details on [Authorize members](https://docs.opencti.io/latest/administration/authorized-members/?h=me)
@@ -268,28 +268,28 @@ More details on [Authorize members](https://docs.opencti.io/latest/administratio
 ##### Specificities of the component
 Compared to other components, this component **makes direct call to the database**: this means that the query will be applied before the "send to ingestion" step. As a result, if, **within the same playbook**, you attempt to create a new entity (via the wrap in container step) and apply authorized members, the playbook will fail. Indeed, the entity will not yet be created, since it won't be sent to ingestion yet. You need to apply the authorized members in another playbook to achieve this use case.
 
-**This component supportss dynamic variables**
+**This component supports dynamic variables**
 
 - Dynamic from the main entity triggering the playbook: Will apply the authorized members on the corresponding user of the field you choose, based on the triggering entity only. you can choose among:
    - Author (organisation): If your author is an organisation, you will be able to apply authorized members directly on the organisation in author.
    - Creator: Will apply the authorized members on all users in Creator field.
-   - Assignee: Will apply the authorized members on all users in Asignee field.
+   - Assignee: Will apply the authorized members on all users in Assignee field.
    - Participant: Will apply the authorized members on all users in Participants field.
 
  - Dynamic from the object in the bundle of the playbook: will apply the authorized members on all the corresponding users of all the entities contained in your bundle and not only the triggering entity. 
     - Organization: all users belonging to the organizations in your bundle will be added as authorized members.
   
-**The component also supportss static fields, used for authorized members: users, groups & organizations.**
+**The component also supports static fields, used for authorized members: users, groups & organizations.**
 
 #### Remove Access Restriction
 Compared to other components, this component **makes direct call to the database**: this means that the query will be applied before the "send to ingestion" step. As a result, if, **within the same playbook**, you attempt to create a new entity (via the wrap in container step) and remove default authorized members, the playbook will fail. Indeed, the entity will not yet be created, since it won't be sent to ingestion yet. You need to remove the authorized members in another playbook to achieve this use case.
 
-Will remove authorized members on the bundle within the playbook. It is only compatible with entities supportsing authorized members (Containers, Drafts).
+Will remove authorized members on the bundle within the playbook. It is only compatible with entities supporting authorized members (Containers, Drafts).
 You can decide to only remove restriction on the triggering element or the whole bundle by enabling the toggle.
 
 ##### Specificities of the component
 
-**This component supportss dynamic variables**
+**This component supports dynamic variables**
 
 - Dynamic from the main entity triggering the playbook: Will remove the authorized members on the corresponding user of the field you choose, based on the triggering entity only. you can choose among:
    - Author (organisation): If your author is an organisation, you will be able to remove the organization from the authorized members.
@@ -300,7 +300,7 @@ You can decide to only remove restriction on the triggering element or the whole
  - Dynamic from the object in the bundle of the playbook: will remove the authorized members on all the corresponding users of all the entities contained in your bundle and not only the triggering entity. 
     - Organization: all users belonging to the organizations in your bundle will be removed from authorized members.
   
-**The component also supportss static fields, used for authorized members: users, groups & organizations.**
+**The component also supports static fields, used for authorized members: users, groups & organizations.**
 
 
 ### Apply predefined rule
@@ -321,7 +321,7 @@ For instance, the following operation will not work within a playbook: listen to
 
 **Routes:**
 
-- Unmodified: because of the above reason, if none of your entities or observables contained in your STIX bundle have been impacted by the rule, then the STIX bundle will follow will follow the **unmodified** route.
+- Unmodified: because of the above reason, if none of your entities or observables contained in your STIX bundle have been impacted by the rule, then the STIX bundle will follow the **unmodified** route.
 - Out: if at least one of the entity or observable of your STIX bundle has been successfully impacted by the rule, then the STIX bundle will follow the **Out** route.
 
 ### Send to notifier
@@ -335,7 +335,7 @@ Will send an email using the template that you can set in Parameters/security (u
 
 ##### Specificities of the component
 
-**This component supportss dynamic variables**
+**This component supports dynamic variables**
 
 - Dynamic from the main entity triggering the playbook as Target: will send the email using the selected template to the corresponding user of the field you choose, based on the triggering entity only. you can choose among:
    - Creator: Will send an email using an Email Template to the corresponding user.
@@ -345,7 +345,7 @@ Will send an email using the template that you can set in Parameters/security (u
  - Dynamic from the object in the bundle of the playbook as Target: will send the email using the selected template to the corresponding user of the entities contained in your bundle and not only the triggering entity. 
     - Organization: all users of all organizations contained in your bundle will receive an email.
   
-**The component also supportss static fields, used for authorized members: users, groups & organizations.**
+**The component also supports static fields, used for authorized members: users, groups & organizations.**
 
 ### Promote observable to indicator
 
@@ -355,7 +355,7 @@ By default, it is applied to entities having triggered the playbook. You can tog
 
 You can also add all indicators and relationships generated by this component in the entity having triggered the playbook, if this entity is a container.
 
-#### Specifities of the component
+#### Specificities of the component
 
 **Routes:**
 
@@ -370,7 +370,7 @@ By default, it is applied to entities having triggered the playbook. You can tog
 
 You can also add all observables and relationships generated by this component in the entity having triggered the playbook, if this entity is a container.
 
-#### Specifities of the component
+#### Specificities of the component
 
 **Routes:**
 
@@ -385,7 +385,7 @@ Will filter out any entities in the current stage that do not match the filter c
 
 **Reduce will not work if the result of your reduce knowledge step is different from the entity triggering your playbook:**
 
-If the result of the reduce knowledge ends up not matching the initial entity triggering yur playbook, then the reduce step will fail. As an example: 
+If the result of the reduce knowledge ends up not matching the initial entity triggering your playbook, then the reduce step will fail. As an example: 
 With a first step listening on: entity type = IPV4 OR Report AND label = test. And a step that reduces knowledge based on Entity type = IPV4. You will get the following results:
 
 
@@ -400,7 +400,7 @@ With a first step listening on: entity type = IPV4 OR Report AND label = test. A
 
  **Routes:**
  
-- Unmatched: if the bundle does not match the reduce condition, then the stix bundle will follow the **unmatch** route. In this case, the playbook will act as the route "umatch" of the "match" component.
+- Unmatched: if the bundle does not match the reduce condition, then the stix bundle will follow the **unmatched** route. In this case, the playbook will act as the route "unmatched" of the "match" component.
 - Out: if your bundle is effectively reduced, then the stix bundle will follow the **Out** route.
 
 ### Match knowledge
@@ -433,10 +433,10 @@ In this list, you will find:
 
 At the top right of the interface, you can access execution trace of your playbook and consult the raw data after every step of your playbook execution.
 
-### Useful for troublshooting
+### Useful for troubleshooting
 
 - Fewer steps than the number of steps of your playbook: If your playbook contains, for instance, 5 steps and only 4 steps are shown, it means that the playbook stopped at the 4th step.
 - Data created/ingested by the playbook does not contain the right modifications applied in the manipulate step: verify that your step is present, and that the operations you wanted to apply are well applied (you need to see the operation type, the field & the value)
-- Use the different routes to help troubleshoot your playbook: if you're using multiple components that involves mutliple routes, it is sometimes useful to test your playbook by adding a "manipulate knowledge" step to add a label for instance, to understand the route your bundle is taking if you feel that the data created by your playbook is not the one you expect.
+- Use the different routes to help troubleshoot your playbook: if you're using multiple components that involves multiple routes, it is sometimes useful to test your playbook by adding a "manipulate knowledge" step to add a label for instance, to understand the route your bundle is taking if you feel that the data created by your playbook is not the one you expect.
 
 ![Steps monitoring](assets/playbook_traces.png)

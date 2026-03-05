@@ -1,6 +1,6 @@
 # Python library
 
-The PyCTI library is the official Python client for OpenCTI. It is made to help developers interact with the openCTI plaform.
+The PyCTI library is the official Python client for OpenCTI. It is made to help developers interact with the openCTI platform.
 
 # Installation
 
