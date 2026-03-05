@@ -1,90 +1,111 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT, type ContainerWrapperConfiguration } from '../../../../src/modules/playbook/components/container-wrapper-component';
 import type { StixBundle } from '../../../../src/types/stix-2-1-common';
-import type { StixCaseIncident } from '../../../../src/modules/case/case-incident/case-incident-types';
-import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../../src/modules/case/case-incident/case-incident-types';
-import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
-import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from '../../../../src/modules/playbook/components/container-wrapper-component';
+import type { ExecutorParameters } from '../../../../src/modules/playbook/playbook-types';
+import type { StixContainer } from '../../../../src/types/stix-2-1-sdo';
 
-const INCIDENT_ID = 'incident--c6c2b96d-fe70-5099-a033-87cbfe2d6be2';
+const dataInstanceIdMock = 'malware--09bd862a-f030-55f2-920a-900c4913d9ff';
 
-export const container_wrapper_component_bundle: StixBundle = {
-  id: '1c775f39-6cea-4b14-92f8-7843d2443af7',
-  spec_version: '2.1',
-  type: 'bundle',
-  objects: [
-    {
-      id: INCIDENT_ID,
-      spec_version: '2.1',
-      type: 'incident',
-      extensions: {
-        'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
-          extension_type: 'new-sdo',
-          id: '25cab01c-46be-48ed-832f-857d35347f15',
-          type: 'Incident',
-          created_at: '2025-02-25T08:13:45.863Z',
-          updated_at: '2025-05-09T10:03:11.288Z',
-          is_inferred: false,
-          granted_refs: ['34a50091-acd7-5b12-88f4-086155cf40d4'],
-          creator_ids: ['88ec0c6a-13ce-5e39-b486-354fe4a7084f'],
-        },
-      },
-      external_references: [
-        {
-          source_name: 'upload_file',
-          external_id: 'upload_file_example.pdf',
-        },
-      ],
-      severity: 'high',
-      created: '2025-02-25T08:13:45.851Z',
-      modified: '2025-05-09T10:03:11.288Z',
-      revoked: false,
-      confidence: 100,
-      lang: 'en',
-      name: 'Test Incident',
-      description: '',
+const playbookNodeMock = (args: { configurationAll: boolean; configurationExcludeMainElement: boolean }) => {
+  return {
+    id: '4eb0be9f-e826-4b49-89bf-ced3f4c6e2ba',
+    name: 'Container wrapper',
+    position: { x: 0, y: 150 },
+    component_id: 'PLAYBOOK_CONTAINER_WRAPPER_COMPONENT',
+    configuration: {
+      all: args.configurationAll,
+      caseTemplates: [],
+      container_type: 'Report',
+      copyFiles: false,
+      excludeMainElement: args.configurationExcludeMainElement,
+      newContainer: true,
     },
-  ],
-} as unknown as StixBundle;
+  };
+};
 
-const buildPlaybookNode = () => ({
-  id: 'playbook-node',
-  name: 'share-node',
-  component_id: 'PLAYBOOK_CONTAINER_WRAPPER_COMPONENT',
-  configuration: {
-    container_type: ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
-    all: false,
-    excludeMainElement: false,
-    copyFiles: false,
-    newContainer: false,
-    caseTemplates: [],
-  },
-});
-
-describe('PLAYBOOK_CONTAINER_WRAPPER_COMPONENT — Incident → Case Incident mapping', () => {
-  it('should map all three incident-specific attributes in a single execution', async () => {
-    const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor({
-      eventId: '',
-      executionId: '',
-      playbookId: '',
-      previousPlaybookNodeId: undefined,
-      previousStepBundle: null as StixBundle | null,
-      dataInstanceId: INCIDENT_ID,
-      playbookNode: buildPlaybookNode(),
-      bundle: structuredClone(container_wrapper_component_bundle),
-    });
-
-    const caseIncident = result.bundle.objects[1] as StixCaseIncident;
-
-    expect(caseIncident).toBeDefined();
-    expect(caseIncident.severity).toBe('high');
-    expect(caseIncident.external_references).toEqual([
+const bundleMock = () => {
+  return {
+    id: 'id',
+    spec_version: '2.1',
+    type: 'bundle',
+    objects: [
       {
-        source_name: 'upload_file',
-        external_id: 'upload_file_example.pdf',
+        id: 'malware--09bd862a-f030-55f2-920a-900c4913d9ff',
+        type: 'malware',
+        extensions: {
+          'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+            extension_type: 'property-extension',
+            id: 'f5233051-049e-49c6-8be3-909a22dccc88',
+            type: 'Malware',
+          },
+        },
       },
-    ]);
-    expect(caseIncident.extensions[STIX_EXT_OCTI].granted_refs).toEqual([
-      '34a50091-acd7-5b12-88f4-086155cf40d4',
-    ]);
+      {
+        id: 'relationship--08e64f51-e890-5bec-be34-3344746f1b0c',
+        spec_version: '2.1',
+        type: 'relationship',
+        relationship_type: 'related-to',
+        source_ref: 'malware--09bd862a-f030-55f2-920a-900c4913d9ff',
+        target_ref: 'campaign--6bcf59ca-70c8-55ae-ac7d-a6f9b107a35b',
+      },
+      {
+        id: 'campaign--6bcf59ca-70c8-55ae-ac7d-a6f9b107a35b',
+        spec_version: '2.1',
+        type: 'campaign',
+      },
+    ],
+  } as unknown as StixBundle;
+};
+
+describe('PLAYBOOK_CONTAINER_WRAPPER_COMPONENT', () => {
+  it('should wrap only main element', async () => {
+    const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor({
+      dataInstanceId: dataInstanceIdMock,
+      playbookNode: playbookNodeMock({ configurationAll: false, configurationExcludeMainElement: false }),
+      bundle: bundleMock(),
+    } as unknown as ExecutorParameters<ContainerWrapperConfiguration>);
+
+    const reportResult = result.bundle.objects.find((element) => element.type === 'report') as StixContainer;
+
+    const expectedReportRefs = [
+      'malware--09bd862a-f030-55f2-920a-900c4913d9ff',
+    ];
+
+    expect(reportResult.object_refs).toEqual(expectedReportRefs);
+  });
+
+  it('should wrap all elements', async () => {
+    const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor({
+      dataInstanceId: dataInstanceIdMock,
+      playbookNode: playbookNodeMock({ configurationAll: true, configurationExcludeMainElement: false }),
+      bundle: bundleMock(),
+    } as unknown as ExecutorParameters<ContainerWrapperConfiguration>);
+
+    const reportResult = result.bundle.objects.find((element) => element.type === 'report') as StixContainer;
+
+    const expectedReportRefs = [
+      'malware--09bd862a-f030-55f2-920a-900c4913d9ff',
+      'relationship--08e64f51-e890-5bec-be34-3344746f1b0c',
+      'campaign--6bcf59ca-70c8-55ae-ac7d-a6f9b107a35b',
+    ];
+
+    expect(reportResult.object_refs).toEqual(expectedReportRefs);
+  });
+
+  it('should wrap all elements except main', async () => {
+    const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor({
+      dataInstanceId: dataInstanceIdMock,
+      playbookNode: playbookNodeMock({ configurationAll: true, configurationExcludeMainElement: true }),
+      bundle: bundleMock(),
+    } as unknown as ExecutorParameters<ContainerWrapperConfiguration>);
+
+    const reportResult = result.bundle.objects.find((element) => element.type === 'report') as StixContainer;
+
+    const expectedReportRefs = [
+      'relationship--08e64f51-e890-5bec-be34-3344746f1b0c',
+      'campaign--6bcf59ca-70c8-55ae-ac7d-a6f9b107a35b',
+    ];
+
+    expect(reportResult.object_refs).toEqual(expectedReportRefs);
   });
 });
