@@ -32,13 +32,14 @@ const SecurityCoverageMainInfo: FunctionComponent<Props> = ({
   const { t_i18n, fndt } = useFormatter();
   const data = useFragment(securityCoverageEntitiesMainInfoFragment, securityCoverage);
   return (
-    <Card title={t_i18n('Entity details')}>
+    <Card title={t_i18n('Entity details')} sx={{ alignContent: 'center' }}>
       <Stack
         direction="row"
         divider={<Divider orientation="vertical" flexItem />}
         spacing={2}
+        alignItems="center"
       >
-        <Stack sx={{ flexGrow: 1 }} spacing={1}>
+        <Stack sx={{ flexGrow: 1 }} spacing={2}>
           <Stack direction="row" spacing={1}>
             <Label>{t_i18n('Last result')}</Label>
             <Typography>{data.coverage_last_result ? fndt(data.coverage_last_result) : EMPTY_VALUE} </Typography>
