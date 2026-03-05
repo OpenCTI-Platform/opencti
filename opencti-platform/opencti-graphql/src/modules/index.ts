@@ -42,6 +42,7 @@ import './case/case-rfi/case-rfi';
 import './case/case-rft/case-rft';
 import './case/feedback/feedback';
 import './entitySetting/entitySetting';
+import './workflow/workflow';
 import './workspace/workspace';
 import './malwareAnalysis/malwareAnalysis';
 import './managerConfiguration/managerConfiguration';
@@ -154,4 +155,5 @@ import './xtm/hub/xtm-hub-graphql';
 import './metrics/metrics-graphql';
 import './authenticationProvider/authenticationProvider-graphql';
 import './customView/customView-graphql';
+import './workflow/api/workflow-graphql';
 // endregion
