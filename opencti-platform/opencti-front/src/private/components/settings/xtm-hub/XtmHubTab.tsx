@@ -53,6 +53,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
   const { settings, about } = useContext(UserContext);
   const eeSettings = settings?.platform_enterprise_edition;
   const isEnterpriseEdition = eeSettings?.license_validated;
+  const isDemo = settings?.platform_demo ?? false;
   const registrationHubUrl = settings?.platform_xtmhub_url ?? 'https://hub.filigran.io/app';
   const [processStep, setProcessStep] = useState<ProcessSteps>(
     ProcessSteps.INSTRUCTIONS,
@@ -261,6 +262,10 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {
     }
     return t_i18n('Register in XTM Hub');
   };
+
+  if (isDemo) {
+    return null;
+  }
 
   if (isRegistered) {
     if (isEnterpriseEdition && eeSettings?.license_type === LICENSE_OPTION_TRIAL) {
