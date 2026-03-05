@@ -1,5 +1,5 @@
 import validator from 'validator';
-import { addSettings } from '../domain/settings';
+import { addSettings, updateLocalAuth } from '../domain/settings';
 import { BYPASS, AUTOMATION, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
 import { findByType as findEntitySettingsByType, initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from '../modules/decayRule/decayRule-domain';
@@ -26,6 +26,7 @@ import { initDefaultTheme } from '../modules/theme/theme-domain';
 import { addEmailTemplate } from '../modules/emailTemplate/emailTemplate-domain';
 import { DEFAULT_EMAIL_TEMPLATE_INPUT } from './default-email-template-input';
 import { createRetentionRule } from '../domain/retentionRule';
+import nconf from 'nconf';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -443,6 +444,9 @@ export const initializeData = async (context, withMarkings = true) => {
     logApp.warn(`[INIT] Platform identifier forced to [${platformId}]`);
   }
   const darkTheme = await initDefaultTheme(context);
+  const envConfigurations = nconf.get('providers') ?? {};
+  const local = envConfigurations['local'];
+  const isLocalDisabledinEnv = local?.config.disabled !== true;
   await addSettings(context, SYSTEM_USER, {
     internal_id: platformId,
     platform_title: 'OpenCTI - Cyber Threat Intelligence Platform',
@@ -450,7 +454,7 @@ export const initializeData = async (context, withMarkings = true) => {
     platform_theme: darkTheme.id,
     platform_language: 'auto',
     view_all_users: false,
-    local_auth: { enabled: true }, // TODO issue here for platform starting on v7 with local in env
+    local_auth: { enabled: !isLocalDisabledinEnv },
     cert_auth: {
       enabled: false,
       description: null,
