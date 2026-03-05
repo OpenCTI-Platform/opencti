@@ -38,7 +38,6 @@ const SecurityCoverageMainInfo: FunctionComponent<Props> = ({
         divider={<Divider orientation="vertical" flexItem />}
         spacing={2}
       >
-        {/* Column 2 — Last result / Valid from / Valid until */}
         <Stack sx={{ flexGrow: 1 }} spacing={1}>
           <Stack direction="row" spacing={1}>
             <Label>{t_i18n('Last result')}</Label>
@@ -54,7 +53,6 @@ const SecurityCoverageMainInfo: FunctionComponent<Props> = ({
           </Stack>
         </Stack>
 
-        {/* Column 3 */}
         <Stack id="testname" sx={{ flexGrow: 1, alignItems: 'center' }}>
           <SecurityCoverageInformation coverage_information={data.coverage_information ?? []} variant="details" />
         </Stack>
