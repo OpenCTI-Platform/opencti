@@ -18,6 +18,22 @@ import { getSettings, updateCertAuth, updateHeaderAuth, updateLocalAuth } from '
 import type { BasicStoreSettings } from '../../types/settings';
 
 // ---------------------------------------------------------------------------
+// Pure helpers (exported for testability)
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns true if the local auth strategy should be enabled, based on the
+ * environment providers configuration.
+ *
+ * Defaults to enabled (true) when no local provider entry is present.
+ * Set to disabled (false) only when `providers.local.config.disabled === true`.
+ */
+export const resolveLocalAuthEnabled = (envProviders: Record<string, any>): boolean => {
+  const local = envProviders['local'];
+  return local?.config?.disabled !== true;
+};
+
+// ---------------------------------------------------------------------------
 // Provider type mapping
 // ---------------------------------------------------------------------------
 
@@ -65,10 +81,9 @@ const parseMappingStrings = (mapping: any) => {
 const migrateLocalAuthIfNeeded = async (context: AuthContext, user: AuthUser) => {
   const settings = await getSettings(context) as unknown as BasicStoreSettings;
   const envConfigurations = nconf.get('providers') ?? {};
-  const local = envConfigurations['local'];
   if (!settings.local_auth) {
     logApp.info('[SINGLETON-MIGRATION] local_auth is absent, creating with defaults');
-    await updateLocalAuth(context, user, settings.id, { enabled: local?.config.disabled !== true });
+    await updateLocalAuth(context, user, settings.id, { enabled: resolveLocalAuthEnabled(envConfigurations) });
     logApp.info('[SINGLETON-MIGRATION] local_auth successfully ensured');
   }
 };

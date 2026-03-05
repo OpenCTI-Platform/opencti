@@ -27,6 +27,7 @@ import { addEmailTemplate } from '../modules/emailTemplate/emailTemplate-domain'
 import { DEFAULT_EMAIL_TEMPLATE_INPUT } from './default-email-template-input';
 import { createRetentionRule } from '../domain/retentionRule';
 import nconf from 'nconf';
+import { resolveLocalAuthEnabled } from '../modules/authenticationProvider/authenticationProvider-migration';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -445,8 +446,6 @@ export const initializeData = async (context, withMarkings = true) => {
   }
   const darkTheme = await initDefaultTheme(context);
   const envConfigurations = nconf.get('providers') ?? {};
-  const local = envConfigurations['local'];
-  const isLocalDisabledinEnv = local?.config.disabled !== true;
   await addSettings(context, SYSTEM_USER, {
     internal_id: platformId,
     platform_title: 'OpenCTI - Cyber Threat Intelligence Platform',
@@ -454,7 +453,7 @@ export const initializeData = async (context, withMarkings = true) => {
     platform_theme: darkTheme.id,
     platform_language: 'auto',
     view_all_users: false,
-    local_auth: { enabled: !isLocalDisabledinEnv },
+    local_auth: { enabled: resolveLocalAuthEnabled(envConfigurations) },
     cert_auth: {
       enabled: false,
       description: null,
