@@ -295,10 +295,11 @@ export const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration>
     if (matchedElements.length === 0) {
       return { output_port: 'unmatch', bundle };
     }
-    const mergedObjects = [...new Map(
-      [baseData, ...matchedElements].map((item) => [item.id, item]),
-    ).values()];
-    return { output_port: 'out', bundle: { ...bundle, objects: mergedObjects } };
+    // always add main entity to the final bundle if not already in it
+    if (matchedElements.length > 0 && !matchedElements.some((e) => e.id === baseData.id)) {
+      matchedElements.push(baseData);
+    }
+    return { output_port: 'out', bundle: { ...bundle, objects: matchedElements } };
   },
 };
 
