@@ -6,6 +6,10 @@ import { registerManager } from './managerModule';
 
 const XTM_ONE_URL = conf.get('xtm:xtm_one_url');
 const XTM_ONE_TOKEN = conf.get('xtm:xtm_one_token');
+// Both URL *and* token are required.  xtm_one_url alone is used by the
+// chatbot proxy (httpChatbotProxy) and does NOT mean the registration
+// manager should run — the token is the signal that XTM One registration
+// is intentionally configured.
 const XTM_ONE_ENABLED = !!(XTM_ONE_URL && XTM_ONE_TOKEN);
 const SCHEDULE_TIME = 5 * 60 * 1000; // 5 minutes
 const BOOT_DELAY = 30_000; // 30 seconds — let the platform finish init

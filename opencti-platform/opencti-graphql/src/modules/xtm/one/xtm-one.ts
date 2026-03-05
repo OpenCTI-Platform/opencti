@@ -23,10 +23,11 @@ export const getDiscoveredChatWebToken = (): string | null => discoveredChatWebT
  * endpoint is an upsert so repeated calls are safe and serve as both
  * initial registration and periodic heartbeat.
  *
- * For each user we load from the DB (not cache) to reliably check whether
- * an "XTM One" named token already exists.  Only users who receive a
- * newly-created token are included in the payload — their plaintext key
- * is only available at creation time.
+ * Every user with an email is sent on every tick so that XTM One can
+ * create/update them.  An "XTM One" API token is provisioned once per
+ * user; the plaintext key is only available at creation time, so
+ * subsequent pings send the user with an empty api_key (XTM One keeps
+ * the previously stored credentials).
  */
 export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): Promise<void> => {
   if (!xtmOneClient.isConfigured()) {
@@ -57,22 +58,25 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
     for (const u of allUsers) {
       if (!u.user_email) continue;
       try {
-        // Load from DB (not cache) so the api_tokens check is reliable
-        // and we never accidentally create duplicate "XTM One" tokens.
         const freshUser = await internalLoadById(context, user, u.id) as unknown as AuthUser;
         if (!freshUser) continue;
         const existingTokens = (freshUser as any).api_tokens ?? [];
-        if (existingTokens.some((t: any) => t.name === XTM_ONE_TOKEN_NAME)) {
-          continue;
+        const hasXtmOneToken = existingTokens.some((t: any) => t.name === XTM_ONE_TOKEN_NAME);
+        let apiKey = '';
+        if (!hasXtmOneToken) {
+          const newToken = await addUserTokenByAdmin(context, user, u.id, { name: XTM_ONE_TOKEN_NAME, duration: TokenDuration.Unlimited });
+          apiKey = newToken.plaintext_token;
         }
-        const newToken = await addUserTokenByAdmin(context, user, u.id, { name: XTM_ONE_TOKEN_NAME, duration: TokenDuration.Unlimited });
+        // Always include the user so XTM One can create/update them on
+        // every ping.  api_key is only available at token-creation time;
+        // XTM One treats an empty key as "keep existing credentials".
         users.push({
           email: u.user_email,
           display_name: u.name || u.user_email,
-          api_key: newToken.plaintext_token,
+          api_key: apiKey,
         });
       } catch (tokenErr: any) {
-        logApp.warn('[XTM One] Failed to create token for user', { email: u.user_email, error: tokenErr.message });
+        logApp.warn('[XTM One] Failed to process token for user', { email: u.user_email, error: tokenErr.message });
       }
     }
   } catch (err: any) {
