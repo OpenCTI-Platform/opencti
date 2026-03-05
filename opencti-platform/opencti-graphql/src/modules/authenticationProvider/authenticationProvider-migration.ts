@@ -9,7 +9,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { AuthenticationProviderType } from '../../generated/graphql';
 import { logApp } from '../../config/conf';
 import { convertAllSSOEnvProviders } from './authenticationProvider-migration-converter';
-import { addAuthenticationProvider, getAllIdentifiers, resolveProviderIdentifier } from './authenticationProvider-domain';
+import { addAuthenticationProvider, findAllAuthenticationProvider, getAllIdentifiers, resolveProviderIdentifier } from './authenticationProvider-domain';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { AuthRequired } from '../../config/errors';
 import { isAuthenticationProviderMigrated } from './providers-configuration';
@@ -64,11 +64,11 @@ const parseMappingStrings = (mapping: any) => {
  */
 const migrateLocalAuthIfNeeded = async (context: AuthContext, user: AuthUser) => {
   const settings = await getSettings(context) as unknown as BasicStoreSettings;
+  const envConfigurations = nconf.get('providers') ?? {};
+  const local = envConfigurations['local'];
   if (!settings.local_auth) {
-    const envConfigurations = nconf.get('providers') ?? {};
-    const local = envConfigurations['local'];
     logApp.info('[SINGLETON-MIGRATION] local_auth is absent, creating with defaults');
-    await updateLocalAuth(context, user, settings.id, { enabled: local?.enabled ?? true });
+    await updateLocalAuth(context, user, settings.id, { enabled: local?.config.disabled !== true });
     logApp.info('[SINGLETON-MIGRATION] local_auth successfully ensured');
   }
 };

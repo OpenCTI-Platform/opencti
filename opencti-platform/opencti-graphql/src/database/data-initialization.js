@@ -450,7 +450,7 @@ export const initializeData = async (context, withMarkings = true) => {
     platform_theme: darkTheme.id,
     platform_language: 'auto',
     view_all_users: false,
-    local_auth: { enabled: true },
+    local_auth: { enabled: true }, // TODO issue here for platform starting on v7 with local in env
     cert_auth: {
       enabled: false,
       description: null,
