@@ -1,0 +1,6 @@
+coverage:
+  status:
+    patch:
+      default:
+        target: 80%
+        informational: true
