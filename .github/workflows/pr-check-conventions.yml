@@ -42,3 +42,26 @@ jobs:
         with:
           comment: |
             Thank you for your contribution, but we need you to sign your commits. Please see https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits
+  check-pr-issue:
+    name: Check Pull Request is linked to an issue
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Check for linked issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Get PR details including linked issues
+          LINKED_ISSUES=$(gh pr view $PR_NUMBER --repo $REPO --json closingIssuesReferences --jq '.closingIssuesReferences | length')
+          
+          if [ "$LINKED_ISSUES" -eq 0 ]; then
+            echo "::error::No linked issues found. Please link at least one issue to this Pull Request."
+            echo "You can link an issue by using keywords like 'Fixes #123', 'Closes #123', or 'Resolves #123' in the PR description."
+            exit 1
+          else
+            echo "✓ Found $LINKED_ISSUES linked issue(s)"
+          fi
