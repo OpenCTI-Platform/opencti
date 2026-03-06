@@ -1,0 +1,114 @@
+
+# ──────────────────────────────────────────────────────────────
+# 🌐 Global fallback
+# ──────────────────────────────────────────────────────────────
+*                                           @kedae @labo-flg @aHenryJard
+
+
+# ──────────────────────────────────────────────────────────────
+# ⚙️ CI / GitHub workflows
+# ──────────────────────────────────────────────────────────────
+/.github/**                                 @aHenryJard @labo-flg @SouadHadjiat @fellowseb @ludovic
+/.circleci/**                               @aHenryJard @labo-flg @SouadHadjiat @fellowseb @ludovic
+/renovate.json5                             @aHenryJard @labo-flg @SouadHadjiat @fellowseb @ludovic
+/.pre-commit-config.yaml                    @aHenryJard @labo-flg
+
+
+# ──────────────────────────────────────────────────────────────
+# 🐳 Docker / Infrastructure
+# ──────────────────────────────────────────────────────────────
+/opencti-platform/Dockerfile*               @labo-flg @SouadHadjiat @ludovic
+/opencti-platform/.dockerignore             @labo-flg @SouadHadjiat
+/scripts/**                                 @labo-flg @SouadHadjiat @ludovic
+
+
+# ──────────────────────────────────────────────────────────────
+# 🔧 Backend — opencti-graphql
+# ──────────────────────────────────────────────────────────────
+/opencti-platform/opencti-graphql/**        @labo-flg @SouadHadjiat @fellowseb @ludovic
+
+# Core boot & initialization (high sensitivity)
+/opencti-platform/opencti-graphql/src/boot.js          @aHenryJard @labo-flg @SouadHadjiat
+/opencti-platform/opencti-graphql/src/initialization.js @aHenryJard @labo-flg @SouadHadjiat
+
+# Configuration (security-sensitive)
+/opencti-platform/opencti-graphql/src/config/**        @aHenryJard @labo-flg @SouadHadjiat @fellowseb
+
+# Database layer
+/opencti-platform/opencti-graphql/src/database/**      @SouadHadjiat @fellowseb @ludovic @OctaveLaventure
+
+# Domain logic
+/opencti-platform/opencti-graphql/src/domain/**        @SouadHadjiat @lndrtrbn @esrevi @OctaveLaventure
+
+# GraphQL schema & resolvers
+/opencti-platform/opencti-graphql/src/graphql/**       @SouadHadjiat @fellowseb @lndrtrbn @delemaf
+/opencti-platform/opencti-graphql/src/resolvers/**     @SouadHadjiat @fellowseb @lndrtrbn @delemaf
+/opencti-platform/opencti-graphql/src/schema/**        @SouadHadjiat @fellowseb @ludovic
+
+# Modules
+/opencti-platform/opencti-graphql/src/modules/**       @SouadHadjiat @fellowseb @esrevi @Archidoit
+
+# Managers (background workers, schedulers)
+/opencti-platform/opencti-graphql/src/manager/**       @SouadHadjiat @ludovic @JeremyCloarec
+
+# Enterprise Edition
+/opencti-platform/opencti-graphql/src/enterprise-edition/** @aHenryJard @labo-flg @SouadHadjiat @fellowseb @ludovic
+
+# Rules engine
+/opencti-platform/opencti-graphql/src/rules/**         @SouadHadjiat @ludovic @OctaveLaventure @JeremyCloarec
+
+# Auth / Security utils
+/opencti-platform/opencti-graphql/src/utils/**         @aHenryJard @SouadHadjiat @fellowseb @ludovic
+
+# Connectors
+/opencti-platform/opencti-graphql/src/connector/**     @fellowseb @esrevi @frapuks
+
+# Parser / STIX pattern
+/opencti-platform/opencti-graphql/src/parser/**        @SouadHadjiat @OctaveLaventure @delemaf
+/opencti-platform/opencti-graphql/src/stixpattern/**   @SouadHadjiat @OctaveLaventure @delemaf
+
+# Migrations
+/opencti-platform/opencti-graphql/src/migrations/**    @aHenryJard @SouadHadjiat @fellowseb @ludovic
+
+# HTTP layer
+/opencti-platform/opencti-graphql/src/http/**          @SouadHadjiat @lndrtrbn @esrevi
+
+# Telemetry
+/opencti-platform/opencti-graphql/src/telemetry/**     @labo-flg @SouadHadjiat @ludovic
+
+
+# ──────────────────────────────────────────────────────────────
+# 🎨 Frontend — opencti-front (React / TypeScript / Relay)
+# ──────────────────────────────────────────────────────────────
+/opencti-platform/opencti-front/**          @labo-flg @ludovic @valentin @SarahBocognano @marieflorescontact
+
+# Components (shared UI library)
+/opencti-platform/opencti-front/src/components/**      @ludovic @valentin @SarahBocognano @mariet @marieflorescontact @CelineSebe
+
+# Private (authenticated views)
+/opencti-platform/opencti-front/src/private/**         @ludovic @valentin @marieflorescontact @SarahBocognano
+
+# Public (login, SSO pages)
+/opencti-platform/opencti-front/src/public/**          @ludovic @valentin @CelineSebe
+
+# Relay (data fetching layer)
+/opencti-platform/opencti-front/src/relay/**           @ludovic @valentin @marieflorescontact
+
+# Utils & schema
+/opencti-platform/opencti-front/src/utils/**           @ludovic @valentin @SarahBocognano
+/opencti-platform/opencti-front/src/schema/**          @ludovic @SouadHadjiat @fellowseb
+
+
+# ──────────────────────────────────────────────────────────────
+# 🐍 Python client / Worker
+# ──────────────────────────────────────────────────────────────
+/client-python/**                           @labo-flg @SouadHadjiat @esrevi @frapuks
+/opencti-worker/**                          @labo-flg @SouadHadjiat @ludovic @JeremyCloarec
+
+
+# ──────────────────────────────────────────────────────────────
+# 📖 Documentation
+# ──────────────────────────────────────────────────────────────
+/docs/**                                    @aHenryJard @labo-flg
+*.md                                        @aHenryJard @labo-flg
+SECURITY.md                                 @aHenryJard @labo-flg @SouadHadjiat @fellowSeb @ludovic
