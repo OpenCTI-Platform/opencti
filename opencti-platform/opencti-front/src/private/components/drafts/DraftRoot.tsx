@@ -25,6 +25,7 @@ import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGrant
 import useSwitchDraft from './useSwitchDraft';
 import { DraftRootFragment$key } from './__generated__/DraftRootFragment.graphql';
 import DraftOverview from '@components/drafts/DraftOverview';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -107,6 +108,7 @@ interface RootDraftComponentProps {
 }
 
 const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentProps) => {
+  const { isFeatureEnable } = useHelper();
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
@@ -202,14 +204,16 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           id="tabs-container"
           value={getCurrentTab(location.pathname, draftId, '/dashboard/data/import/draft/entities')}
         >
-          <Tab
-            component={Link}
-            to={`/dashboard/data/import/draft/${draftId}/overview`}
-            value={`/dashboard/data/import/draft/${draftId}/overview`}
-            label={
-              <span>{t_i18n('Overview')}</span>
-            }
-          />
+          {isFeatureEnable('DRAFT_METADATA') && (
+            <Tab
+              component={Link}
+              to={`/dashboard/data/import/draft/${draftId}/overview`}
+              value={`/dashboard/data/import/draft/${draftId}/overview`}
+              label={
+                <span>{t_i18n('Overview')}</span>
+              }
+            />
+          )}
           <Tab
             component={Link}
             to={`/dashboard/data/import/draft/${draftId}/entities`}
@@ -265,10 +269,12 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           path="/"
           element={<Navigate to={`/dashboard/data/import/draft/${draftId}/entities`} replace={true} />}
         />
-        <Route
-          path="/overview"
-          element={<DraftOverview draft={draft} />}
-        />
+        {isFeatureEnable('DRAFT_METADATA') && (
+          <Route
+            path="/overview"
+            element={<DraftOverview draft={draft} />}
+          />
+        )}
         <Route
           path="/entities"
           element={<DraftEntities entitiesType="Stix-Domain-Object" excludedEntityTypes="Container" isReadOnly={isDraftReadOnly} />}
