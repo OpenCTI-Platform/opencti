@@ -28,7 +28,10 @@ const ItemStatusTemplate = ({ statuses, disabled, actionComponent }: ItemStatusT
 
   if (disabled) {
     return (
-      <Tag label={t_i18n('Disabled')} disabled />
+      <Stack direction="row" alignItems="center" gap={1}>
+        <Tag label={t_i18n('Disabled')} disabled />
+        {actionComponent}
+      </Stack>
     );
   }
 
