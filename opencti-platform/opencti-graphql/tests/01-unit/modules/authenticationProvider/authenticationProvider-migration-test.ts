@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isLocalAuthEnabled } from '../../../../src/modules/authenticationProvider/authenticationProvider-migration';
+import { isLocalAuthEnabledInEnv } from '../../../../src/modules/authenticationProvider/authenticationProvider-migration';
 
 // ==========================================================================
 // resolveLocalAuthEnabled
@@ -7,27 +7,27 @@ import { isLocalAuthEnabled } from '../../../../src/modules/authenticationProvid
 
 describe('resolveLocalAuthEnabled', () => {
   it('should return true when no local provider is configured', () => {
-    expect(isLocalAuthEnabled({})).toBe(true);
+    expect(isLocalAuthEnabledInEnv({})).toBe(true);
   });
 
   it('should return true when local provider exists but disabled is not set', () => {
     const providers = { local: { strategy: 'LocalStrategy', config: {} } };
-    expect(isLocalAuthEnabled(providers)).toBe(true);
+    expect(isLocalAuthEnabledInEnv(providers)).toBe(true);
   });
 
   it('should return true when local provider disabled is explicitly false', () => {
     const providers = { local: { strategy: 'LocalStrategy', config: { disabled: false } } };
-    expect(isLocalAuthEnabled(providers)).toBe(true);
+    expect(isLocalAuthEnabledInEnv(providers)).toBe(true);
   });
 
   it('should return false when local provider disabled is explicitly true', () => {
     const providers = { local: { strategy: 'LocalStrategy', config: { disabled: true } } };
-    expect(isLocalAuthEnabled(providers)).toBe(false);
+    expect(isLocalAuthEnabledInEnv(providers)).toBe(false);
   });
 
   it('should return true when local provider has no config property', () => {
     const providers = { local: { strategy: 'LocalStrategy' } };
-    expect(isLocalAuthEnabled(providers)).toBe(true);
+    expect(isLocalAuthEnabledInEnv(providers)).toBe(true);
   });
 
   it('should not be affected by other providers being present', () => {
@@ -35,7 +35,7 @@ describe('resolveLocalAuthEnabled', () => {
       oidc: { strategy: 'OpenIDConnectStrategy', config: { disabled: true } },
       local: { strategy: 'LocalStrategy', config: { disabled: false } },
     };
-    expect(isLocalAuthEnabled(providers)).toBe(true);
+    expect(isLocalAuthEnabledInEnv(providers)).toBe(true);
   });
 
   it('should return false when local is disabled even if other providers are enabled', () => {
@@ -43,6 +43,6 @@ describe('resolveLocalAuthEnabled', () => {
       oidc: { strategy: 'OpenIDConnectStrategy', config: { disabled: false } },
       local: { strategy: 'LocalStrategy', config: { disabled: true } },
     };
-    expect(isLocalAuthEnabled(providers)).toBe(false);
+    expect(isLocalAuthEnabledInEnv(providers)).toBe(false);
   });
 });

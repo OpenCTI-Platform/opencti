@@ -17,7 +17,7 @@ import nconf from 'nconf';
 import { getSettings, updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../../domain/settings';
 import type { BasicStoreSettings } from '../../types/settings';
 
-export const isLocalAuthEnabled = (envProviders: Record<string, any>): boolean => {
+export const isLocalAuthEnabledInEnv = (envProviders: Record<string, any>): boolean => {
   const local = envProviders['local'];
   return local?.config?.disabled !== true;
 };
@@ -72,7 +72,7 @@ const migrateLocalAuthIfNeeded = async (context: AuthContext, user: AuthUser) =>
   const envConfigurations = nconf.get('providers') ?? {};
   if (!settings.local_auth) {
     logApp.info('[SINGLETON-MIGRATION] local_auth is absent, creating with defaults');
-    await updateLocalAuth(context, user, settings.id, { enabled: isLocalAuthEnabled(envConfigurations) });
+    await updateLocalAuth(context, user, settings.id, { enabled: isLocalAuthEnabledInEnv(envConfigurations) });
     logApp.info('[SINGLETON-MIGRATION] local_auth successfully ensured');
   }
 };
