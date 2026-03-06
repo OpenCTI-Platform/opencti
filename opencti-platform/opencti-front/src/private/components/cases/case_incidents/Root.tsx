@@ -3,11 +3,9 @@
 // @ts-nocheck
 import React, { useMemo } from 'react';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
-import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import Security from 'src/utils/Security';
@@ -28,7 +26,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import CaseIncidentEdition from './CaseIncidentEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import CaseIncidentDeletion from './CaseIncidentDeletion';
@@ -135,63 +133,24 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
         redirectToContent={true}
         enableEnricher={true}
       />
-      <Box
-        sx={{
-          borderBottom: 1,
-          borderColor: 'divider',
-          marginBottom: 3,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItem: 'center',
-        }}
-      >
-        <Tabs
-          value={getCurrentTab(location.pathname, caseData.id, '/dashboard/cases/incidents')}
-        >
-          <Tab
-            component={Link}
-            to={`/dashboard/cases/incidents/${caseData.id}`}
-            value={`/dashboard/cases/incidents/${caseData.id}`}
-            label={t_i18n('Overview')}
-          />
-          <Tab
-            component={Link}
-            to={`/dashboard/cases/incidents/${caseData.id}/knowledge/graph`}
-            value={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
-            label={t_i18n('Knowledge')}
-          />
-          <Tab
-            component={Link}
-            to={`/dashboard/cases/incidents/${caseData.id}/content`}
-            value={`/dashboard/cases/incidents/${caseData.id}/content`}
-            label={t_i18n('Content')}
-          />
-          <Tab
-            component={Link}
-            to={`/dashboard/cases/incidents/${caseData.id}/entities`}
-            value={`/dashboard/cases/incidents/${caseData.id}/entities`}
-            label={t_i18n('Entities')}
-          />
-          <Tab
-            component={Link}
-            to={`/dashboard/cases/incidents/${caseData.id}/observables`}
-            value={`/dashboard/cases/incidents/${caseData.id}/observables`}
-            label={t_i18n('Observables')}
-          />
-          <Tab
-            component={Link}
-            to={`/dashboard/cases/incidents/${caseData.id}/files`}
-            value={`/dashboard/cases/incidents/${caseData.id}/files`}
-            label={t_i18n('Data')}
-          />
-        </Tabs>
-        {!isKnowledgeOrContent && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+      <StixDomainObjectTabsBox
+        basePath="/dashboard/cases/incidents"
+        entity={caseData}
+        tabs={[
+          'overview',
+          'knowledge-graph',
+          'content',
+          'entities',
+          'observables',
+          'files',
+        ]}
+        extraActions={!isKnowledgeOrContent && (
+          <>
             <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
             <StixCoreObjectSecurityCoverage id={caseData.id} coverage={caseData.securityCoverage} />
-          </div>
+          </>
         )}
-      </Box>
+      />
       <Routes>
         <Route
           path="/"

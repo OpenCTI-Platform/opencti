@@ -1,15 +1,13 @@
 import React, { useMemo, Suspense, useState } from 'react';
-import { Route, Routes, Link, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { Route, Routes, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { propOr } from 'ramda';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import { RootSystemQuery } from '@components/entities/systems/__generated__/RootSystemQuery.graphql';
 import { RootSystemsSubscription } from '@components/entities/systems/__generated__/RootSystemsSubscription.graphql';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
@@ -26,7 +24,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import SystemEdition from './SystemEdition';
@@ -191,60 +189,19 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
               redirectToContent={true}
               enableEnrollPlaybook={true}
             />
-            <Box
-              sx={{
-                borderBottom: 1,
-                borderColor: 'divider',
-                marginBottom: 3,
-              }}
-            >
-              <Tabs
-                value={getCurrentTab(location.pathname, system.id, '/dashboard/entities/systems')}
-              >
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/systems/${system.id}`}
-                  value={`/dashboard/entities/systems/${system.id}`}
-                  label={t_i18n('Overview')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/systems/${system.id}/knowledge/overview`}
-                  value={`/dashboard/entities/systems/${system.id}/knowledge`}
-                  label={t_i18n('Knowledge')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/systems/${system.id}/content`}
-                  value={`/dashboard/entities/systems/${system.id}/content`}
-                  label={t_i18n('Content')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/systems/${system.id}/analyses`}
-                  value={`/dashboard/entities/systems/${system.id}/analyses`}
-                  label={t_i18n('Analyses')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/systems/${system.id}/sightings`}
-                  value={`/dashboard/entities/systems/${system.id}/sightings`}
-                  label={t_i18n('Sightings')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/systems/${system.id}/files`}
-                  value={`/dashboard/entities/systems/${system.id}/files`}
-                  label={t_i18n('Data')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/systems/${system.id}/history`}
-                  value={`/dashboard/entities/systems/${system.id}/history`}
-                  label={t_i18n('History')}
-                />
-              </Tabs>
-            </Box>
+            <StixDomainObjectTabsBox
+              basePath="/dashboard/entities/systems"
+              entity={system}
+              tabs={[
+                'overview',
+                'knowledge-overview',
+                'content',
+                'analyses',
+                'sightings',
+                'files',
+                'history',
+              ]}
+            />
             <Routes>
               <Route
                 path="/"

@@ -1,10 +1,7 @@
-import React, { useMemo, Suspense } from 'react';
-import { Route, Routes, Link, Navigate, useLocation, useParams } from 'react-router-dom';
+import { useMemo, Suspense } from 'react';
+import { Route, Routes, Navigate, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import { RootSecurityPlatformSubscription } from '@components/entities/securityPlatforms/__generated__/RootSecurityPlatformSubscription.graphql';
@@ -13,6 +10,7 @@ import SecurityPlatformKnowledge from '@components/entities/securityPlatforms/Se
 import SecurityPlatformEdition from '@components/entities/securityPlatforms/SecurityPlatformEdition';
 import SecurityPlatformAnalysis from '@components/entities/securityPlatforms/SecurityPlatformAnalysis';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import SecurityPlatform from './SecurityPlatform';
@@ -24,7 +22,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import SecurityPlatformDeletion from './SecurityPlatformDeletion';
@@ -158,54 +156,18 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
               enableEnricher={true}
               enableEnrollPlaybook={true}
             />
-            <Box
-              sx={{
-                borderBottom: 1,
-                borderColor: 'divider',
-                marginBottom: 3,
-              }}
-            >
-              <Tabs
-                value={getCurrentTab(location.pathname, securityPlatform.id, '/dashboard/entities/security_platforms')}
-              >
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/security_platforms/${securityPlatform.id}`}
-                  value={`/dashboard/entities/security_platforms/${securityPlatform.id}`}
-                  label={t_i18n('Overview')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/security_platforms/${securityPlatform.id}/knowledge/overview`}
-                  value={`/dashboard/entities/security_platforms/${securityPlatform.id}/knowledge`}
-                  label={t_i18n('Knowledge')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/security_platforms/${securityPlatform.id}/content`}
-                  value={`/dashboard/entities/security_platforms/${securityPlatform.id}/content`}
-                  label={t_i18n('Content')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/security_platforms/${securityPlatform.id}/analyses`}
-                  value={`/dashboard/entities/security_platforms/${securityPlatform.id}/analyses`}
-                  label={t_i18n('Analyses')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/security_platforms/${securityPlatform.id}/files`}
-                  value={`/dashboard/entities/security_platforms/${securityPlatform.id}/files`}
-                  label={t_i18n('Data')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/security_platforms/${securityPlatform.id}/history`}
-                  value={`/dashboard/entities/security_platforms/${securityPlatform.id}/history`}
-                  label={t_i18n('History')}
-                />
-              </Tabs>
-            </Box>
+            <StixDomainObjectTabsBox
+              basePath="/dashboard/entities/security_platforms"
+              entity={securityPlatform}
+              tabs={[
+                'overview',
+                'knowledge-overview',
+                'content',
+                'analyses',
+                'files',
+                'history',
+              ]}
+            />
             <Routes>
               <Route
                 path="/"
