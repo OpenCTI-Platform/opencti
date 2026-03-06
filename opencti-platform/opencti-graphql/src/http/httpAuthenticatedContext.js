@@ -11,7 +11,7 @@ import { batchFileMarkingDefinitions, batchFileWorks } from '../domain/file';
 import { batchGlobalStatusesByType, batchRequestAccessStatusesByType } from '../domain/status';
 import { batchEntitySettingsByType } from '../modules/entitySetting/entitySetting-domain';
 import { batchIsSubAttackPattern } from '../domain/attackPattern';
-import { executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
+import { executionContext, isBypassUser, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { batchContextDataForLog } from '../database/data-changes';
 
@@ -49,7 +49,6 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
   executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
   executeContext.eventId = req.headers['opencti-event-id']; // Api call is due to listening event
   executeContext.previousStandard = req.headers['previous-standard']; // Previous standard id
-  executeContext.synchronizedUpsert = req.headers['synchronized-upsert'] === 'true'; // If full sync needs to be done
   // region handle user
   try {
     const user = await authenticateUserFromRequest(executeContext, req);
@@ -58,6 +57,8 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
         executeContext.draft_context = user.draft_context;
       }
       executeContext.user = userWithOrigin(req, user);
+      // If full sync needs to be done : used only by bypass user (worker)
+      executeContext.synchronizedUpsert = user.origin?.synchronized_upsert === true || (req.headers['synchronized-upsert'] === 'true' && isBypassUser(user));
       executeContext.user_otp_validated = true;
       executeContext.user_with_session = isNotEmptyField(req.session?.user);
       if (executeContext.user_with_session) {
