@@ -259,7 +259,7 @@ describe('getConsumersForCollection', () => {
 
     // zrangebyscore should be called with staleCutoff and +inf
     expect(mockClient.zrangebyscore).toHaveBeenCalledWith(
-      expect.stringContaining('collection:collection-cleanup'),
+      '{stream_consumers}:collection-cleanup',
       expect.any(Number),
       '+inf',
     );
@@ -308,7 +308,7 @@ describe('getConsumersForCollection', () => {
     await getConsumersForCollection('test-collection-id');
 
     expect(mockClient.zrangebyscore).toHaveBeenCalledWith(
-      '{stream_monitoring}:collection:test-collection-id',
+      '{stream_consumers}:test-collection-id',
       expect.any(Number),
       '+inf',
     );
