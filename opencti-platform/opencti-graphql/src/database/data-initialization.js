@@ -1,5 +1,5 @@
 import validator from 'validator';
-import { addSettings, updateLocalAuth } from '../domain/settings';
+import { addSettings } from '../domain/settings';
 import { BYPASS, AUTOMATION, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
 import { findByType as findEntitySettingsByType, initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from '../modules/decayRule/decayRule-domain';
