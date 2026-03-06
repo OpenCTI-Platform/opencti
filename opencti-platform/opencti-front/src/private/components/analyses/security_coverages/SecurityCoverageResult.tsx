@@ -1,4 +1,4 @@
-import React, {Suspense} from "react";
+import React, {Suspense, useRef, useState} from "react";
 import Loader, {LoaderVariant} from "../../../../components/Loader";
 import {
   SecurityCoverageResult_securityCoverage$key
@@ -200,6 +200,7 @@ export const securityCoverageResultLinesSearchQuery = graphql`
     ) {
         securityCoverage(id: $id) {
             id
+            entity_type
             stixCoreRelationships(
                 search: $search
                 first: $count
@@ -387,6 +388,7 @@ export const securityCoverageResultLinesFragment = graphql`
   @refetchable(queryName: "SecurityCoverageResultLinesRefetchQuery") {
       securityCoverage(id: $id) {
           id
+          entity_type
           stixCoreRelationships(
               search: $search
               first: $count
@@ -438,6 +440,7 @@ export const securityCoverageResultLinesQuery = graphql`
 
 const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultComponentProps) => {
   const { t_i18n } = useFormatter();
+  const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
   const LOCAL_STORAGE_KEY = `container-${data.id}-security-coverage-result`;
   const initialValues = {
     filters: { ...emptyFilterGroup },
@@ -473,10 +476,23 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
     </span>
   );
 
+  const contextFilters = {
+    mode: 'and',
+    filters: [
+      {
+        key: 'fromOrToId',
+        values: [data.id],
+        operator: 'eq',
+        mode: 'or',
+      },
+    ],
+    filterGroups: [],
+  };
+
   const dataColumns: DataTableProps['dataColumns'] = {
     entity_type: {
       label: 'Type',
-      percentWidth: 13,
+      percentWidth: 15,
       isSortable: true,
       render: ({ to, coverage_information }) => withDisabledStyle(coverage_information, (
         <>
@@ -512,7 +528,7 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
     },
     objectLabel: {
       label: 'Labels',
-      percentWidth: 21,
+      percentWidth: 20,
       isSortable: false,
       render: ({ to, coverage_information }) => withDisabledStyle(coverage_information, (
           <StixCoreObjectLabels
@@ -524,7 +540,7 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
     },
     objectMarking: {
       label: 'Marking',
-      percentWidth: 21,
+      percentWidth: 20,
       isSortable: false,
       render: ({ to, coverage_information }) => withDisabledStyle(coverage_information, (
           <ItemMarkings
@@ -537,28 +553,28 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
   };
 
   return (
-    <div data-testid="security-coverage-result-page">
-      <ExportContextProvider>
-        {queryRef && (
-          <DataTable
-            storageKey={LOCAL_STORAGE_KEY}
-            initialValues={initialValues}
-            lineFragment={securityCoverageResultLineFragment}
-            preloadedPaginationProps={{
-              linesQuery: securityCoverageResultLinesQuery,
-              linesFragment: securityCoverageResultLinesFragment,
-              queryRef,
-              nodePath: ['securityCoverage', 'stixCoreRelationships', 'pageInfo', 'globalCount'],
-              setNumberOfElements: storageHelpers.handleSetNumberOfElements,
-            } as UsePreloadedPaginationFragment<SecurityCoverageResultLinesPaginationQuery>}
-            entityTypes={['stix-core-relationship']}
-            availableFilterKeys={[ 'toTypes' ]}
-            resolvePath={(data: SecurityCoverageResultLines_data$data) => data.securityCoverage?.stixCoreRelationships?.edges?.map((n) => n?.node)}
-            dataColumns={dataColumns}
-            exportContext={{ entity_id: data.id, entity_type: 'Stix-Core-Relationship' }}
-          />
-        )}
-      </ExportContextProvider>
+    <div data-testid="security-coverage-result-page" style={{ height: '100%' }} ref={setTableRootRef}>
+      {queryRef && (
+        <DataTable
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          lineFragment={securityCoverageResultLineFragment}
+          preloadedPaginationProps={{
+            linesQuery: securityCoverageResultLinesQuery,
+            linesFragment: securityCoverageResultLinesFragment,
+            queryRef,
+            nodePath: ['securityCoverage', 'stixCoreRelationships', 'pageInfo', 'globalCount'],
+            setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+          } as UsePreloadedPaginationFragment<SecurityCoverageResultLinesPaginationQuery>}
+          entityTypes={['stix-core-relationship']}
+          availableFilterKeys={[ 'toTypes' ]}
+          resolvePath={(data: SecurityCoverageResultLines_data$data) => data.securityCoverage?.stixCoreRelationships?.edges?.map((n) => n?.node)}
+          dataColumns={dataColumns}
+          exportContext={{ entity_id: data.id, entity_type: 'stix-core-relationship' }}
+          contextFilters={contextFilters}
+          rootRef={tableRootRef ?? undefined}
+        />
+      )}
     </div>
   );
 }
