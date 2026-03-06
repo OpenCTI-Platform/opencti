@@ -51,13 +51,24 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
     ...extraConf,
   };
 
+  const tryJwtDecode = (token: string | undefined) => {
+    if (token) {
+      try {
+        return jwtDecode(token);
+      } catch {
+        return { error: 'Token is not a valid JWT' };
+      }
+    }
+    return undefined;
+  };
+
   const verify: VerifyFunction = async (tokens, verified: AuthenticateCallback) => {
     try {
       logger.info('Successfully logged on IdP', {
         tokens: {
-          access_token: tokens.access_token ? jwtDecode(tokens.access_token) : undefined,
-          id_token: tokens.id_token ? jwtDecode(tokens.id_token) : undefined,
-          refresh_token: tokens.refresh_token ? jwtDecode(tokens.refresh_token) : undefined,
+          access_token: tryJwtDecode(tokens.access_token),
+          id_token: tryJwtDecode(tokens.id_token),
+          refresh_token: tryJwtDecode(tokens.refresh_token),
         },
         scope: tokens.scope,
       });
