@@ -3,6 +3,7 @@ import { CSSProperties, FunctionComponent, ReactNode } from 'react';
 import Card, { CardProps } from '../common/card/Card';
 import Label from '../common/label/Label';
 import ChartExportPopover from '../../private/components/common/charts/ChartExportPopover';
+import { ErrorBoundary } from '@components/Error';
 
 interface WidgetContainerProps {
   children: ReactNode;
@@ -36,13 +37,18 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
                   {action}
                 </div>
               )}
-            >{children}
+            >
+              <ErrorBoundary>
+                {children}
+              </ErrorBoundary>
             </Card>
           )
         : (
             <>
               {title && <Label>{title}</Label>}
-              {children}
+              <ErrorBoundary>
+                {children}
+              </ErrorBoundary>
             </>
           )
       }
