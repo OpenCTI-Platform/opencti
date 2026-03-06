@@ -102,7 +102,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
   return (
     <>
       {securityCoverage ? (
-        <div style={{ paddingRight, height: '80%' }}>
+        <div style={{ paddingRight, height: '90vh' }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Analyses') },
             { label: t_i18n('Security coverages'), link: '/dashboard/analyses/security_coverages' },
@@ -149,7 +149,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                 component={Link}
                 to={`/dashboard/analyses/security_coverages/${securityCoverage.id}/result`}
                 value={`/dashboard/analyses/security_coverages/${securityCoverage.id}/result`}
-                label={t_i18n('Result')}
+                label={t_i18n('Results')}
               />
               <Tab
                 component={Link}
