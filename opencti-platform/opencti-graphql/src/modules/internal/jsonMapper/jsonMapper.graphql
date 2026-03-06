@@ -21,12 +21,22 @@ type ComplexPath {
     configuration: AttributeColumnConfiguration
 }
 
+type JsonIdentifier {
+    identifier: String
+    representation: String
+}
+
+type JsonAttributeBasedOn {
+    identifier: [JsonIdentifier]
+    representations: [String]
+}
+
 type JsonMapperRepresentationAttribute {
     key: String!
     mode: String!
     attr_path: AttributePath
     complex_path: ComplexPath
-    based_on: AttributeBasedOn
+    based_on: JsonAttributeBasedOn
     default_values: [DefaultValue!]
 }
 
