@@ -1,10 +1,6 @@
-import React, {Suspense, useRef, useState} from "react";
+import React, {Suspense, useState} from "react";
 import Loader, {LoaderVariant} from "../../../../components/Loader";
-import {
-  SecurityCoverageResult_securityCoverage$key
-} from "@components/analyses/security_coverages/__generated__/SecurityCoverageResult_securityCoverage.graphql";
 import {graphql} from "react-relay";
-import ExportContextProvider from "../../../../utils/ExportContextProvider";
 import DataTable from "../../../../components/dataGrid/DataTable";
 import useQueryLoading from "../../../../utils/hooks/useQueryLoading";
 import {
@@ -25,13 +21,15 @@ import ItemIcon from "../../../../components/ItemIcon";
 import SecurityCoverageInformation from "@components/analyses/security_coverages/SecurityCoverageInformation";
 import Tooltip from "@mui/material/Tooltip";
 import {useFormatter} from "../../../../components/i18n";
+import IconButton from "@common/button/IconButton";
+import {InfoOutlined} from "@mui/icons-material";
 
 interface SecurityCoverageResultProps {
-  data: { id: string } & SecurityCoverageResult_securityCoverage$key;
+  data: { id: string };
 }
 
 interface SecurityCoverageResultComponentProps {
-  data: { id: string } & SecurityCoverageResult_securityCoverage$key;
+  data: { id: string };
 }
 
 const securityCoverageResultLineFragment = graphql`
@@ -191,189 +189,6 @@ const securityCoverageResultLineFragment = graphql`
     }
 `;
 
-export const securityCoverageResultLinesSearchQuery = graphql`
-    query SecurityCoverageResultLinesSearchQuery(
-        $id: String!
-        $search: String
-        $filters: FilterGroup
-        $count: Int
-    ) {
-        securityCoverage(id: $id) {
-            id
-            entity_type
-            stixCoreRelationships(
-                search: $search
-                first: $count
-                filters: $filters
-            ){
-                edges {
-                    node {
-                        ... on StixCoreRelationship {
-                            id
-                            standard_id
-                            entity_type
-                            relationship_type
-                            to{
-                                ... on StixCoreObject {
-                                    id
-                                    draftVersion {
-                                        draft_id
-                                        draft_operation
-                                    }
-                                    standard_id
-                                    entity_type
-                                    created_at
-                                    objectLabel {
-                                        id
-                                        value
-                                        color
-                                    }
-                                    createdBy {
-                                        ... on Identity {
-                                            id
-                                            name
-                                            entity_type
-                                        }
-                                    }
-                                    objectMarking {
-                                        id
-                                        definition_type
-                                        definition
-                                        x_opencti_order
-                                        x_opencti_color
-                                    }
-                                    containersNumber {
-                                        total
-                                    }
-                                }
-                                ... on AttackPattern {
-                                    name
-                                    x_mitre_id
-                                }
-                                ... on Campaign {
-                                    name
-                                }
-                                ... on CourseOfAction {
-                                    name
-                                }
-                                ... on ObservedData {
-                                    name
-                                }
-                                ... on Report {
-                                    name
-                                }
-                                ... on Grouping {
-                                    name
-                                }
-                                ... on Note {
-                                    attribute_abstract
-                                    content
-                                }
-                                ... on Opinion {
-                                    opinion
-                                }
-                                ... on Individual {
-                                    name
-                                }
-                                ... on Organization {
-                                    name
-                                }
-                                ... on Sector {
-                                    name
-                                }
-                                ... on System {
-                                    name
-                                }
-                                ... on Indicator {
-                                    name
-                                }
-                                ... on Infrastructure {
-                                    name
-                                }
-                                ... on IntrusionSet {
-                                    name
-                                }
-                                ... on Position {
-                                    name
-                                }
-                                ... on City {
-                                    name
-                                }
-                                ... on AdministrativeArea {
-                                    name
-                                }
-                                ... on Country {
-                                    name
-                                }
-                                ... on Region {
-                                    name
-                                }
-                                ... on Malware {
-                                    name
-                                }
-                                ... on MalwareAnalysis {
-                                    result_name
-                                }
-                                ... on ThreatActor {
-                                    name
-                                }
-                                ... on Tool {
-                                    name
-                                }
-                                ... on Vulnerability {
-                                    name
-                                }
-                                ... on Incident {
-                                    name
-                                }
-                                ... on Event {
-                                    name
-                                }
-                                ... on Channel {
-                                    name
-                                }
-                                ... on Narrative {
-                                    name
-                                }
-                                ... on Language {
-                                    name
-                                }
-                                ... on DataComponent {
-                                    name
-                                }
-                                ... on DataSource {
-                                    name
-                                }
-                                ... on Case {
-                                    name
-                                }
-                                ... on Task {
-                                    name
-                                }
-                                ...on Artifact {
-                                    observable_value
-                                }
-                                ... on Indicator {
-                                    name
-                                }
-                            }
-                            coverage_information{
-                                coverage_name
-                                coverage_score
-                            }
-                        }
-                    }
-                }
-                pageInfo {
-                    endCursor
-                    hasNextPage
-                    globalCount
-                }
-            }
-        }
-    }
-`;
-
 export const securityCoverageResultLinesFragment = graphql`
   fragment SecurityCoverageResultLines_data on Query
   @argumentDefinitions(
@@ -396,13 +211,11 @@ export const securityCoverageResultLinesFragment = graphql`
               orderBy: $orderBy
               orderMode: $orderMode
               filters: $filters
-          ) @connection(key: "Pagination__stixCoreRelationships") {
+          ) @connection(key: "PaginationSecurityCoverageResultLines__stixCoreRelationships") {
               edges {
                   node {
-                      ... on StixCoreRelationship {
-                          id
-                          ...SecurityCoverageResultLine_node
-                      }
+                      id
+                      ...SecurityCoverageResultLine_node
                   }
               }
               pageInfo {
@@ -553,7 +366,7 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
   };
 
   return (
-    <div data-testid="security-coverage-result-page" style={{ height: '100%' }} ref={setTableRootRef}>
+    <div data-testid="security-coverage-result-page" style={{ height: '70vh' }} ref={setTableRootRef}>
       {queryRef && (
         <DataTable
           storageKey={LOCAL_STORAGE_KEY}
@@ -573,6 +386,16 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
           exportContext={{ entity_id: data.id, entity_type: 'stix-core-relationship' }}
           contextFilters={contextFilters}
           rootRef={tableRootRef ?? undefined}
+          additionalHeaderButtons={[
+            <Tooltip
+              key="security-coverage-result-global-information-tooltip"
+              title={t_i18n('The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\n Coverage may be partial if some injects were not executed, if placeholders were not resolved, or if the platform does not support certain actions')}
+            >
+              <IconButton color="primary" style={{ height: '100%' }}>
+                <InfoOutlined />
+              </IconButton>
+            </Tooltip>,
+          ]}
         />
       )}
     </div>
