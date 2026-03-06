@@ -787,28 +787,6 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
   const rawRedirectUris = ext.get<string | string[] | null>('redirect_uris', null);
   const redirectUri = Array.isArray(rawRedirectUris) ? (rawRedirectUris[0] ?? null) : rawRedirectUris;
   const callbackUrl = ext.get<string | null>('callback_url', null) ?? redirectUri;
-  const gm = resolveGroupsManagement(ext, 'oidc', warnings);
-  const om = ext.get<EnvOrganizationsManagement | undefined>('organizations_management', undefined);
-
-  // Groups mapping
-  const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
-  const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
-  const groupsMapping: GroupsMappingInput = {
-    auto_create_groups: autoCreateGroup,
-    prevent_default_groups: preventDefaultGroups,
-    default_groups: [],
-    groups_expr: buildOidcGroupsExpr(gm),
-    groups_mapping: convertMappingEntries(gm?.groups_mapping),
-  };
-
-  // Organizations mapping
-  const organizationsDefault = ext.get<string[]>('organizations_default', []);
-  const organizationsMapping: OrganizationsMappingInput = {
-    auto_create_organizations: false,
-    default_organizations: organizationsDefault,
-    organizations_expr: buildOidcOrgsExpr(om),
-    organizations_mapping: convertMappingEntries(om?.organizations_mapping),
-  };
 
   // Issuer: Auth0 derives from config.domain, others use well-known URLs
   let issuer: string;
@@ -842,8 +820,8 @@ export const convertDeprecatedToOidc = (envKey: string, entry: EnvProviderEntry)
         firstname_expr: 'user_info.given_name',
         lastname_expr: 'user_info.family_name',
       },
-      groups_mapping: groupsMapping,
-      organizations_mapping: organizationsMapping,
+      groups_mapping: { auto_create_groups: false, prevent_default_groups: false, default_groups: [], groups_expr: [], groups_mapping: [] },
+      organizations_mapping: { auto_create_organizations: false, default_organizations: [], organizations_expr: [], organizations_mapping: [] },
       extra_conf: collectExtraConf(ext, warnings),
     };
 
