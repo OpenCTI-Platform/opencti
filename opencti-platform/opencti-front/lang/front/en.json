@@ -1598,6 +1598,7 @@
   "Equals": "Equals",
   "Error": "Error",
   "Error loading forms": "Error loading forms",
+  "Error loading stream collection consumers": "Error loading stream collection consumers",
   "Error trying to download in PDF": "Error trying to download in PDF",
   "Error trying to export a PDF template": "Error trying to export a PDF template",
   "Error trying to export the file": "Error trying to export the file",

@@ -1598,6 +1598,7 @@
   "Equals": "等于",
   "Error": "错误",
   "Error loading forms": "加载表格出错",
+  "Error loading stream collection consumers": "加载数据流集合消费者时出错",
   "Error trying to download in PDF": "尝试以 PDF 格式下载时出错",
   "Error trying to export a PDF template": "尝试导出 PDF 模板时出错",
   "Error trying to export the file": "尝试导出文件时出错",

@@ -12,8 +12,10 @@ import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
 import StreamPopover from './StreamPopover';
-import StreamConsumersDrawer from './StreamConsumersDrawer';
 import inject18n from '../../../../components/i18n';
+import FilterIconButton from '../../../../components/FilterIconButton';
+import StreamConsumersDrawer from './StreamConsumersDrawer';
+import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Security from '../../../../utils/Security';
@@ -42,6 +44,13 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    paddingRight: 10,
+  },
+  filtersItem: {
+    height: 40,
+    display: 'flex',
+    alignItems: 'center',
+    float: 'left',
     paddingRight: 10,
   },
   consumersItem: {
@@ -110,6 +119,8 @@ class StreamLineLineComponent extends Component {
   render() {
     const { classes, node, dataColumns, paginationOptions, t } = this.props;
     const health = this.computeConsumersHealth();
+    const filters = deserializeFilterGroupForFrontend(node.filters);
+
     return (
       <>
         <ListItem
@@ -192,6 +203,22 @@ class StreamLineLineComponent extends Component {
                             }}
                           />
                         )}
+                  </div>
+                  <div
+                    className={classes.filtersItem}
+                    style={{ width: dataColumns.filters.width }}
+                  >
+                    {isFilterGroupNotEmpty(filters)
+                      ? (
+                          <FilterIconButton
+                            filters={filters}
+                            dataColumns={dataColumns}
+                            variant="small"
+                            entityTypes={['Stix-Filtering']}
+                          />
+                        )
+                      : '-'
+                    }
                   </div>
                 </>
               )}
