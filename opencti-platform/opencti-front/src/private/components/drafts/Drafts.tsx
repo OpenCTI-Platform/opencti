@@ -254,11 +254,11 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
       percentWidth: 10,
       isSortable: true,
     },
-    objectParticipant: {
+    objectAssignee: {
       percentWidth: 10,
       isSortable: true,
     },
-    objectAssignee: {
+    objectParticipant: {
       percentWidth: 10,
       isSortable: true,
     },

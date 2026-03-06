@@ -1,7 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import Upload from 'graphql-upload/Upload.mjs';
-import { ADMIN_USER, adminQuery, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, adminQuery, queryAsAdmin, testContext, TEST_ORGANIZATION, USER_PARTICIPATE, getUserIdByEmail, getOrganizationIdByName } from '../../utils/testQuery';
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { buildDraftValidationBundle } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import { DRAFT_VALIDATION_CONNECTOR_ID } from '../../../src/modules/draftWorkspace/draftWorkspace-connector';
@@ -182,6 +182,90 @@ const IMPORT_FILE_QUERY = gql`
     }
 `;
 
+const DRAFT_WORKSPACE_RELATION_ADD_QUERY = gql`
+  mutation DraftWorkspaceRelationAdd($id: ID!, $input: InternalRelationshipAddInput!) {
+    draftWorkspaceEdit(id: $id) {
+      relationAdd(input: $input) {
+        id
+        from {
+          ... on DraftWorkspace {
+            id
+            objectAssignee {
+              id
+            }
+            objectParticipant {
+              id
+            }
+            createdBy {
+              ... on Identity {
+                id
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+const DRAFT_WORKSPACE_RELATION_DELETE_QUERY = gql`
+  mutation DraftWorkspaceRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
+    draftWorkspaceEdit(id: $id) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
+        id
+        objectAssignee {
+          id
+        }
+        objectParticipant {
+          id
+        }
+        createdBy {
+          ... on Identity {
+            id
+          }
+        }
+      }
+    }
+  }
+`;
+
+const DRAFT_WORKSPACE_FIELD_PATCH_QUERY = gql`
+  mutation DraftWorkspaceFieldPatch($id: ID!, $input: [EditInput!]!) {
+    draftWorkspaceFieldPatch(id: $id, input: $input) {
+      id
+      name
+      description
+      createdBy {
+        ... on Identity {
+          id
+        }
+      }
+    }
+  }
+`;
+
+const READ_DRAFT_WORKSPACE_FULL_QUERY = gql`
+  query DraftWorkspaceFull($id: String!) {
+    draftWorkspace(id: $id) {
+      id
+      name
+      description
+      draft_status
+      objectAssignee {
+        id
+      }
+      objectParticipant {
+        id
+      }
+      createdBy {
+        ... on Identity {
+          id
+        }
+      }
+    }
+  }
+`;
+
 const modifyAdminDraftContext = async (draftId: string) => {
   const meUserModifyResult = await adminQuery({
     query: MODIFY_USER_DRAFT_WORKSPACE_QUERY,
@@ -198,8 +282,12 @@ describe('Drafts workspace resolver testing', () => {
   let addedDraftId = '';
   let addedDraftName = '';
   let addedDraftEntityId = '';
+  let userParticipateId = '';
+  let testOrganizationId = '';
 
   it('should create a draft', async () => {
+    userParticipateId = await getUserIdByEmail(USER_PARTICIPATE.email);
+    testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
     const draftName = 'testDraft';
     const draftEntityId = 'testId';
     const createdDraft = await queryAsAdmin({
@@ -546,6 +634,305 @@ describe('Drafts workspace resolver testing', () => {
     await adminQuery({
       query: DELETE_REPORT_QUERY,
       variables: { id: reportToDeleteStandardId },
+    });
+  });
+
+  // ---- Tests for draftWorkspaceEditField ----
+  describe('draftWorkspaceEditField', () => {
+    let fieldPatchDraftId = '';
+
+    it('should create a draft for field patch tests', async () => {
+      const createdDraft = await queryAsAdmin({
+        query: CREATE_DRAFT_WORKSPACE_QUERY,
+        variables: { input: { name: 'fieldPatchTestDraft' } },
+      });
+      expect(createdDraft.data?.draftWorkspaceAdd).toBeDefined();
+      fieldPatchDraftId = createdDraft.data?.draftWorkspaceAdd.id;
+    });
+
+    it('should update the name of a draft', async () => {
+      const newName = 'Updated Draft Name';
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACE_FIELD_PATCH_QUERY,
+        variables: {
+          id: fieldPatchDraftId,
+          input: [{ key: 'name', value: [newName] }],
+        },
+      });
+      expect(result.data?.draftWorkspaceFieldPatch).toBeDefined();
+      expect(result.data?.draftWorkspaceFieldPatch.name).toEqual(newName);
+    });
+
+    it('should update the description of a draft', async () => {
+      const newDescription = 'Updated Draft Description';
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACE_FIELD_PATCH_QUERY,
+        variables: {
+          id: fieldPatchDraftId,
+          input: [{ key: 'description', value: [newDescription] }],
+        },
+      });
+      expect(result.data?.draftWorkspaceFieldPatch).toBeDefined();
+      expect(result.data?.draftWorkspaceFieldPatch.description).toEqual(newDescription);
+    });
+
+    it('should add a createdBy relation to a draft', async () => {
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACE_FIELD_PATCH_QUERY,
+        variables: {
+          id: fieldPatchDraftId,
+          input: [{ key: 'createdBy', value: [testOrganizationId] }],
+        },
+      });
+      expect(result.data?.draftWorkspaceFieldPatch).toBeDefined();
+      expect(result.data?.draftWorkspaceFieldPatch.createdBy).toBeDefined();
+      expect(result.data?.draftWorkspaceFieldPatch.createdBy.id).toEqual(testOrganizationId);
+    });
+
+    it('should update multiple fields at once', async () => {
+      const newName = 'Multi-update Draft';
+      const newDescription = 'Multi-update description';
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACE_FIELD_PATCH_QUERY,
+        variables: {
+          id: fieldPatchDraftId,
+          input: [
+            { key: 'name', value: [newName] },
+            { key: 'description', value: [newDescription] },
+          ],
+        },
+      });
+      expect(result.data?.draftWorkspaceFieldPatch).toBeDefined();
+      expect(result.data?.draftWorkspaceFieldPatch.name).toEqual(newName);
+      expect(result.data?.draftWorkspaceFieldPatch.description).toEqual(newDescription);
+    });
+
+    it('should fail to update a non-existent draft', async () => {
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACE_FIELD_PATCH_QUERY,
+        variables: {
+          id: 'non-existent-draft-id',
+          input: [{ key: 'name', value: ['Should fail'] }],
+        },
+      });
+      expect(result.errors).toBeDefined();
+      expect(result.errors?.length).toBeGreaterThan(0);
+    });
+
+    it('should verify updated fields persist after re-read', async () => {
+      const newName = 'Persisted Name';
+      await queryAsAdmin({
+        query: DRAFT_WORKSPACE_FIELD_PATCH_QUERY,
+        variables: {
+          id: fieldPatchDraftId,
+          input: [{ key: 'name', value: [newName] }],
+        },
+      });
+      const readResult = await queryAsAdmin({
+        query: READ_DRAFT_WORKSPACE_FULL_QUERY,
+        variables: { id: fieldPatchDraftId },
+      });
+      expect(readResult.data?.draftWorkspace).toBeDefined();
+      expect(readResult.data?.draftWorkspace.name).toEqual(newName);
+    });
+
+    it('should clean up field patch test draft', async () => {
+      await queryAsAdmin({
+        query: DELETE_DRAFT_WORKSPACE_QUERY,
+        variables: { id: fieldPatchDraftId },
+      });
+    });
+  });
+
+  // ---- Tests for draftWorkspaceAddRelation ----
+  describe('draftWorkspaceAddRelation', () => {
+    let relationDraftId = '';
+
+    it('should create a draft for relation tests', async () => {
+      const createdDraft = await queryAsAdmin({
+        query: CREATE_DRAFT_WORKSPACE_QUERY,
+        variables: { input: { name: 'relationTestDraft' } },
+      });
+      expect(createdDraft.data?.draftWorkspaceAdd).toBeDefined();
+      relationDraftId = createdDraft.data?.draftWorkspaceAdd.id;
+    });
+
+    it('should add an objectAssignee relation to a draft', async () => {
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACE_RELATION_ADD_QUERY,
+        variables: {
+          id: relationDraftId,
+          input: {
+            toId: userParticipateId,
+            relationship_type: 'object-assignee',
+          },
+        },
+      });
+      expect(result.data?.draftWorkspaceEdit.relationAdd).toBeDefined();
+      const from = result.data?.draftWorkspaceEdit.relationAdd.from;
+      expect(from.objectAssignee.length).toBeGreaterThanOrEqual(1);
+      const assigneeIds = from.objectAssignee.map((a: { id: string }) => a.id);
+      expect(assigneeIds).toContain(userParticipateId);
+    });
+
+    it('should add an objectParticipant relation to a draft', async () => {
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACE_RELATION_ADD_QUERY,
+        variables: {
+          id: relationDraftId,
+          input: {
+            toId: userParticipateId,
+            relationship_type: 'object-participant',
+          },
+        },
+      });
+      expect(result.data?.draftWorkspaceEdit.relationAdd).toBeDefined();
+      const from = result.data?.draftWorkspaceEdit.relationAdd.from;
+      expect(from.objectParticipant.length).toBeGreaterThanOrEqual(1);
+      const participantIds = from.objectParticipant.map((p: { id: string }) => p.id);
+      expect(participantIds).toContain(userParticipateId);
+    });
+
+    it('should fail to add a relation to a non-existent draft', async () => {
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACE_RELATION_ADD_QUERY,
+        variables: {
+          id: 'non-existent-draft-id',
+          input: {
+            toId: userParticipateId,
+            relationship_type: 'object-assignee',
+          },
+        },
+      });
+      expect(result.errors).toBeDefined();
+      expect(result.errors?.length).toBeGreaterThan(0);
+    });
+
+    it('should verify added relations persist after re-read', async () => {
+      const readResult = await queryAsAdmin({
+        query: READ_DRAFT_WORKSPACE_FULL_QUERY,
+        variables: { id: relationDraftId },
+      });
+      const draft = readResult.data?.draftWorkspace;
+      expect(draft).toBeDefined();
+      expect(draft.objectAssignee.length).toBeGreaterThanOrEqual(1);
+      expect(draft.objectParticipant.length).toBeGreaterThanOrEqual(1);
+      expect(draft.createdBy).toBeDefined();
+    });
+
+    it('should clean up relation add test draft', async () => {
+      await queryAsAdmin({
+        query: DELETE_DRAFT_WORKSPACE_QUERY,
+        variables: { id: relationDraftId },
+      });
+    });
+  });
+
+  // ---- Tests for draftWorkspaceDeleteRelation ----
+  describe('draftWorkspaceDeleteRelation', () => {
+    let deleteRelDraftId = '';
+
+    it('should create a draft with relations for delete tests', async () => {
+      const createdDraft = await queryAsAdmin({
+        query: CREATE_DRAFT_WORKSPACE_QUERY,
+        variables: { input: { name: 'deleteRelationTestDraft' } },
+      });
+      expect(createdDraft.data?.draftWorkspaceAdd).toBeDefined();
+      deleteRelDraftId = createdDraft.data?.draftWorkspaceAdd.id;
+
+      // Add objectAssignee relation
+      await queryAsAdmin({
+        query: DRAFT_WORKSPACE_RELATION_ADD_QUERY,
+        variables: {
+          id: deleteRelDraftId,
+          input: {
+            toId: userParticipateId,
+            relationship_type: 'object-assignee',
+          },
+        },
+      });
+
+      // Add objectParticipant relation
+      await queryAsAdmin({
+        query: DRAFT_WORKSPACE_RELATION_ADD_QUERY,
+        variables: {
+          id: deleteRelDraftId,
+          input: {
+            toId: userParticipateId,
+            relationship_type: 'object-participant',
+          },
+        },
+      });
+
+      // Verify all relations are added
+      const readResult = await queryAsAdmin({
+        query: READ_DRAFT_WORKSPACE_FULL_QUERY,
+        variables: { id: deleteRelDraftId },
+      });
+      expect(readResult.data?.draftWorkspace.objectAssignee.length).toBeGreaterThanOrEqual(1);
+      expect(readResult.data?.draftWorkspace.objectParticipant.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should delete an objectAssignee relation from a draft', async () => {
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACE_RELATION_DELETE_QUERY,
+        variables: {
+          id: deleteRelDraftId,
+          toId: userParticipateId,
+          relationship_type: 'object-assignee',
+        },
+      });
+      expect(result.data?.draftWorkspaceEdit.relationDelete).toBeDefined();
+      const draft = result.data?.draftWorkspaceEdit.relationDelete;
+      const assigneeIds = draft.objectAssignee.map((a: { id: string }) => a.id);
+      expect(assigneeIds).not.toContain(userParticipateId);
+    });
+
+    it('should delete an objectParticipant relation from a draft', async () => {
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACE_RELATION_DELETE_QUERY,
+        variables: {
+          id: deleteRelDraftId,
+          toId: userParticipateId,
+          relationship_type: 'object-participant',
+        },
+      });
+      expect(result.data?.draftWorkspaceEdit.relationDelete).toBeDefined();
+      const draft = result.data?.draftWorkspaceEdit.relationDelete;
+      const participantIds = draft.objectParticipant.map((p: { id: string }) => p.id);
+      expect(participantIds).not.toContain(userParticipateId);
+    });
+
+    it('should verify relations are removed after re-read', async () => {
+      const readResult = await queryAsAdmin({
+        query: READ_DRAFT_WORKSPACE_FULL_QUERY,
+        variables: { id: deleteRelDraftId },
+      });
+      const draft = readResult.data?.draftWorkspace;
+      expect(draft).toBeDefined();
+      expect(draft.objectAssignee.length).toEqual(0);
+      expect(draft.objectParticipant.length).toEqual(0);
+      expect(draft.createdBy).toBeNull();
+    });
+
+    it('should fail to delete a relation from a non-existent draft', async () => {
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACE_RELATION_DELETE_QUERY,
+        variables: {
+          id: 'non-existent-draft-id',
+          toId: userParticipateId,
+          relationship_type: 'object-assignee',
+        },
+      });
+      expect(result.errors).toBeDefined();
+      expect(result.errors?.length).toBeGreaterThan(0);
+    });
+
+    it('should clean up delete relation test draft', async () => {
+      await queryAsAdmin({
+        query: DELETE_DRAFT_WORKSPACE_QUERY,
+        variables: { id: deleteRelDraftId },
+      });
     });
   });
 });
