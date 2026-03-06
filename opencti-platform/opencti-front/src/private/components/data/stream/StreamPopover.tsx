@@ -15,8 +15,10 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import Drawer from '../../common/drawer/Drawer';
+import Security from '../../../../utils/Security';
 import StreamCollectionEdition, { streamCollectionMutationFieldPatch } from './StreamCollectionEdition';
 import DeleteDialog from '../../../../components/DeleteDialog';
+import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
 
 const streamCollectionPopoverDeletionMutation = graphql`
   mutation StreamPopoverDeletionMutation($id: ID!) {
@@ -116,15 +118,19 @@ const StreamCollectionPopover: FunctionComponent<StreamCollectionPopoverProps> =
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        <MenuItem onClick={handleOnOff}>
-          {t_i18n(streamCollection.stream_live ? 'Stop' : 'Start')}
-        </MenuItem>
-        <MenuItem onClick={handleOpenUpdate}>
-          {t_i18n('Update')}
-        </MenuItem>
-        <MenuItem onClick={handleOpenDelete}>
-          {t_i18n('Delete')}
-        </MenuItem>
+        <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+          <>
+            <MenuItem onClick={handleOnOff}>
+              {t_i18n(streamCollection.stream_live ? 'Stop' : 'Start')}
+            </MenuItem>
+            <MenuItem onClick={handleOpenUpdate}>
+              {t_i18n('Update')}
+            </MenuItem>
+            <MenuItem onClick={handleOpenDelete}>
+              {t_i18n('Delete')}
+            </MenuItem>
+          </>
+        </Security>
         <MenuItem onClick={handleOpenStream}>
           <ListItemIcon>
             <OpenInNewOutlined fontSize="small" />
@@ -132,20 +138,24 @@ const StreamCollectionPopover: FunctionComponent<StreamCollectionPopoverProps> =
           <ListItemText>{t_i18n('Open stream')}</ListItemText>
         </MenuItem>
       </Menu>
-      <Drawer
-        open={displayUpdate}
-        title={t_i18n('Update a live stream')}
-        onClose={handleCloseUpdate}
-      >
-        <StreamCollectionEdition
-          streamCollection={streamCollection}
-        />
-      </Drawer>
-      <DeleteDialog
-        deletion={deletion}
-        submitDelete={submitDelete}
-        message={t_i18n('Do you want to delete this live stream?')}
-      />
+      <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+        <>
+          <Drawer
+            open={displayUpdate}
+            title={t_i18n('Update a live stream')}
+            onClose={handleCloseUpdate}
+          >
+            <StreamCollectionEdition
+              streamCollection={streamCollection}
+            />
+          </Drawer>
+          <DeleteDialog
+            deletion={deletion}
+            submitDelete={submitDelete}
+            message={t_i18n('Do you want to delete this live stream?')}
+          />
+        </>
+      </Security>
     </div>
   );
 };
