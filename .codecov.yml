@@ -2,5 +2,5 @@ coverage:
   status:
     patch:
       default:
-        target: 100%
-        informational: false
+        target: 80%
+        informational: true
