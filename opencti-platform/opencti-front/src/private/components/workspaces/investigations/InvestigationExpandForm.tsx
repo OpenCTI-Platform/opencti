@@ -371,40 +371,42 @@ const InvestigationExpandFormContent = ({
     >
       {({ submitForm, handleReset, isSubmitting }) => (
         <Form>
-          <Stack direction="row" justifyContent="space-between">
+          <Stack spacing={3} sx={{ p: 3 }}>
+            <Stack direction="row" justifyContent="space-between">
+              <Field
+                name="entity_types"
+                component={CheckboxesField}
+                label={t_i18n('All types of target')}
+                items={targets}
+              />
+              <Field
+                name="relationship_types"
+                component={CheckboxesField}
+                label={t_i18n('All types of relationship')}
+                items={relationships}
+              />
+            </Stack>
+
             <Field
-              name="entity_types"
-              component={CheckboxesField}
-              label={t_i18n('All types of target')}
-              items={targets}
+              component={SwitchField}
+              type="checkbox"
+              name="reset_filters"
+              label={t_i18n('Reset filters')}
+              containerstyle={{ marginTop: 12 }}
             />
-            <Field
-              name="relationship_types"
-              component={CheckboxesField}
-              label={t_i18n('All types of relationship')}
-              items={relationships}
-            />
+
+            <DialogActions>
+              <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                onClick={submitForm}
+                disabled={isSubmitting}
+              >
+                {t_i18n('Expand')}
+              </Button>
+            </DialogActions>
           </Stack>
-
-          <Field
-            component={SwitchField}
-            type="checkbox"
-            name="reset_filters"
-            label={t_i18n('Reset filters')}
-            containerstyle={{ marginTop: 20 }}
-          />
-
-          <DialogActions>
-            <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
-              {t_i18n('Cancel')}
-            </Button>
-            <Button
-              onClick={submitForm}
-              disabled={isSubmitting}
-            >
-              {t_i18n('Expand')}
-            </Button>
-          </DialogActions>
         </Form>
       )}
     </Formik>
