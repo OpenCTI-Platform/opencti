@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__version__ = "7.260305.0"
+__version__ = "7.260306.0"
 
 from .api.opencti_api_client import OpenCTIApiClient
 from .api.opencti_api_connector import OpenCTIApiConnector
