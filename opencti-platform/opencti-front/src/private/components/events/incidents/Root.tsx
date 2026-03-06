@@ -2,12 +2,10 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
+import { Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
@@ -30,7 +28,6 @@ import { RootIncidentQuery } from './__generated__/RootIncidentQuery.graphql';
 import { RootIncidentSubscription } from './__generated__/RootIncidentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab } from '../../../../utils/utils';
 import IncidentEdition from './IncidentEdition';
 import IncidentDeletion from './IncidentDeletion';
 
@@ -175,63 +172,24 @@ const RootIncidentComponent = ({ queryRef }) => {
               enableEnricher={true}
               enableEnrollPlaybook={true}
             />
-            <Box
-              sx={{
-                borderBottom: 1,
-                borderColor: 'divider',
-                marginBottom: 3,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItem: 'center',
-              }}
-            >
-              <Tabs
-                value={getCurrentTab(location.pathname, incident.id, '/dashboard/events/incidents')}
-              >
-                <Tab
-                  component={Link}
-                  to={`/dashboard/events/incidents/${incident.id}`}
-                  value={`/dashboard/events/incidents/${incident.id}`}
-                  label={t_i18n('Overview')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/events/incidents/${incident.id}/knowledge/overview`}
-                  value={`/dashboard/events/incidents/${incident.id}/knowledge`}
-                  label={t_i18n('Knowledge')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/events/incidents/${incident.id}/content`}
-                  value={`/dashboard/events/incidents/${incident.id}/content`}
-                  label={t_i18n('Content')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/events/incidents/${incident.id}/analyses`}
-                  value={`/dashboard/events/incidents/${incident.id}/analyses`}
-                  label={t_i18n('Analyses')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/events/incidents/${incident.id}/files`}
-                  value={`/dashboard/events/incidents/${incident.id}/files`}
-                  label={t_i18n('Data')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/events/incidents/${incident.id}/history`}
-                  value={`/dashboard/events/incidents/${incident.id}/history`}
-                  label={t_i18n('History')}
-                />
-              </Tabs>
-              {isOverview && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+            <StixDomainObjectTabsBox
+              basePath="/dashboard/events/incidents"
+              entity={incident}
+              tabs={[
+                'overview',
+                'knowledge-overview',
+                'content',
+                'analyses',
+                'files',
+                'history',
+              ]}
+              extraActions={isOverview && (
+                <>
                   <AIInsights id={incident.id} />
                   <StixCoreObjectSecurityCoverage id={incident.id} coverage={incident.securityCoverage} />
-                </div>
+                </>
               )}
-            </Box>
+            />
             <Routes>
               <Route
                 path="/"

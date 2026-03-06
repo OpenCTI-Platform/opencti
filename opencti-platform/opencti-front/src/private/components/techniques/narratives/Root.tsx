@@ -1,16 +1,14 @@
-import React, { useMemo, Suspense } from 'react';
-import { Route, Routes, Link, Navigate, useLocation, useParams } from 'react-router-dom';
+import { useMemo, Suspense } from 'react';
+import { Route, Routes, Navigate, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import { RootNarrativeQuery } from '@components/techniques/narratives/__generated__/RootNarrativeQuery.graphql';
 import { RootNarrativeSubscription } from '@components/techniques/narratives/__generated__/RootNarrativeSubscription.graphql';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Narrative from './Narrative';
 import NarrativeKnowledge from './NarrativeKnowledge';
@@ -23,7 +21,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import NarrativeEdition from './NarrativeEdition';
@@ -155,54 +153,18 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
                 </Security>
               )}
             />
-            <Box
-              sx={{
-                borderBottom: 1,
-                borderColor: 'divider',
-                marginBottom: 3,
-              }}
-            >
-              <Tabs
-                value={getCurrentTab(location.pathname, narrative.id, '/dashboard/techniques/narratives')}
-              >
-                <Tab
-                  component={Link}
-                  to={`/dashboard/techniques/narratives/${narrative.id}`}
-                  value={`/dashboard/techniques/narratives/${narrative.id}`}
-                  label={t_i18n('Overview')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/techniques/narratives/${narrative.id}/knowledge/overview`}
-                  value={`/dashboard/techniques/narratives/${narrative.id}/knowledge`}
-                  label={t_i18n('Knowledge')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/techniques/narratives/${narrative.id}/content`}
-                  value={`/dashboard/techniques/narratives/${narrative.id}/content`}
-                  label={t_i18n('Content')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/techniques/narratives/${narrative.id}/analyses`}
-                  value={`/dashboard/techniques/narratives/${narrative.id}/analyses`}
-                  label={t_i18n('Analyses')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/techniques/narratives/${narrative.id}/files`}
-                  value={`/dashboard/techniques/narratives/${narrative.id}/files`}
-                  label={t_i18n('Data')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/techniques/narratives/${narrative.id}/history`}
-                  value={`/dashboard/techniques/narratives/${narrative.id}/history`}
-                  label={t_i18n('History')}
-                />
-              </Tabs>
-            </Box>
+            <StixDomainObjectTabsBox
+              basePath="/dashboard/techniques/narratives"
+              entity={narrative}
+              tabs={[
+                'overview',
+                'knowledge-overview',
+                'content',
+                'analyses',
+                'files',
+                'history',
+              ]}
+            />
             <Routes>
               <Route
                 path="/"

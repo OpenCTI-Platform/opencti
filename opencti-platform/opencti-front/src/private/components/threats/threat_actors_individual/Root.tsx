@@ -1,10 +1,7 @@
 import React, { useMemo } from 'react';
-import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import AIInsights from '@components/common/ai/AIInsights';
@@ -15,6 +12,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import { RootThreatActorIndividualQuery } from './__generated__/RootThreatActorIndividualQuery.graphql';
 import { RootThreatActorIndividualSubscription } from './__generated__/RootThreatActorIndividualSubscription.graphql';
 import ThreatActorIndividual from './ThreatActorIndividual';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
@@ -22,7 +20,7 @@ import ThreatActorIndividualKnowledge from './ThreatActorIndividualKnowledge';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
@@ -184,62 +182,19 @@ const RootThreatActorIndividualComponent = ({
               redirectToContent={true}
               enableEnrollPlaybook={true}
             />
-            <Box
-              sx={{
-                borderBottom: 1,
-                borderColor: 'divider',
-                marginBottom: 3,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItem: 'center',
-              }}
-            >
-              <Tabs
-                value={getCurrentTab(location.pathname, threatActorIndividual.id, '/dashboard/threats/threat_actors_individual')}
-              >
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}`}
-                  value={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}`}
-                  label={t_i18n('Overview')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge/overview`}
-                  value={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge`}
-                  label={t_i18n('Knowledge')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/content`}
-                  value={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/content`}
-                  label={t_i18n('Content')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/analyses`}
-                  value={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/analyses`}
-                  label={t_i18n('Analyses')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/files`}
-                  value={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/files`}
-                  label={t_i18n('Data')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/history`}
-                  value={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/history`}
-                  label={t_i18n('History')}
-                />
-              </Tabs>
-              {isOverview && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                  <AIInsights id={threatActorIndividual.id} />
-                </div>
-              )}
-            </Box>
+            <StixDomainObjectTabsBox
+              basePath="/dashboard/threats/threat_actors_individual"
+              entity={threatActorIndividual}
+              tabs={[
+                'overview',
+                'knowledge-overview',
+                'content',
+                'analyses',
+                'files',
+                'history',
+              ]}
+              extraActions={isOverview && <AIInsights id={threatActorIndividual.id} />}
+            />
             <Routes>
               <Route
                 path="/"
