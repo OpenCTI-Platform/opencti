@@ -292,18 +292,20 @@ export const getConsumersForCollection = async (collectionId: string): Promise<R
       const [err, data] = pipelineResults[i];
       if (!err && data && typeof data === 'object' && Object.keys(data as object).length > 0) {
         const hash = data as Record<string, string>;
-        results.push({
-          connectionId: hash.connectionId || connectionIds[i],
-          collectionId: hash.collectionId || collectionId,
-          userId: hash.userId || '',
-          userEmail: hash.userEmail || '',
-          connectedAt: hash.connectedAt || '',
-          lastEventId: hash.lastEventId || '',
-          deliveryRate: parseFloat(hash.deliveryRate || '0'),
-          processingRate: parseFloat(hash.processingRate || '0'),
-          resolutionRate: parseFloat(hash.resolutionRate || '0'),
-          lastUpdate: parseInt(hash.lastUpdate || '0', 10),
-        });
+        if (hash.userId && hash.connectedAt) { // only push if we have a userId and connectedAt (indicates a valid and still ongoing consumer)
+          results.push({
+            connectionId: hash.connectionId || connectionIds[i],
+            collectionId: hash.collectionId || collectionId,
+            userId: hash.userId,
+            userEmail: hash.userEmail || '',
+            connectedAt: hash.connectedAt,
+            lastEventId: hash.lastEventId || '',
+            deliveryRate: parseFloat(hash.deliveryRate || '0'),
+            processingRate: parseFloat(hash.processingRate || '0'),
+            resolutionRate: parseFloat(hash.resolutionRate || '0'),
+            lastUpdate: parseInt(hash.lastUpdate || '0', 10),
+          });
+        }
       }
     }
   }
