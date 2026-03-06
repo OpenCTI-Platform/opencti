@@ -161,7 +161,7 @@ class StreamLineLineComponent extends Component {
                     className={classes.bodyItem}
                     style={{ width: dataColumns.id.width, paddingRight: 10 }}
                   >
-                    <ItemCopy content={node.id} variant="inLine"/>
+                    <ItemCopy content={node.id} variant="inLine" />
                   </div>
                   <div
                     className={classes.bodyItem}
@@ -190,19 +190,19 @@ class StreamLineLineComponent extends Component {
                     {health.count === 0
                       ? <span style={{ color: '#9e9e9e' }}>-</span>
                       : (
-                        <Chip
-                          label={health.label}
-                          style={{
-                            fontSize: 12,
-                            lineHeight: '12px',
-                            borderRadius: 4,
-                            height: 20,
-                            backgroundColor: `${health.hexColor}33`,
-                            color: health.hexColor,
-                            border: `2px solid ${health.hexColor}`,
-                          }}
-                        />
-                      )}
+                          <Chip
+                            label={health.label}
+                            style={{
+                              fontSize: 12,
+                              lineHeight: '12px',
+                              borderRadius: 4,
+                              height: 20,
+                              backgroundColor: `${health.hexColor}33`,
+                              color: health.hexColor,
+                              border: `2px solid ${health.hexColor}`,
+                            }}
+                          />
+                        )}
                   </div>
                   <div
                     className={classes.filtersItem}
@@ -210,14 +210,14 @@ class StreamLineLineComponent extends Component {
                   >
                     {isFilterGroupNotEmpty(filters)
                       ? (
-                        <FilterIconButton
-                          filters={filters}
-                          dataColumns={dataColumns}
-                          variant="small"
-                          entityTypes={['Stix-Filtering']}
-                        />
-                      )
-                      : EMPTY_VALUE
+                          <FilterIconButton
+                            filters={filters}
+                            dataColumns={dataColumns}
+                            variant="small"
+                            entityTypes={['Stix-Filtering']}
+                          />
+                        )
+                      : '-'
                     }
                   </div>
                 </>
