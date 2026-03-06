@@ -430,6 +430,13 @@ const createApp = async (app, schema) => {
     try {
       const { provider } = req.params;
       const strategy = passport._strategy(provider);
+      if (!strategy) {
+        setCookieError(res, `Unknown authentication provider '${provider}'`);
+        logApp.info('Unknown authentication provider', { provider });
+        res.status(503).send({ status: 'error' });
+        return;
+      }
+
       const referer = extractRefererPathFromReq(req);
 
       const isSaml = strategy._saml;
