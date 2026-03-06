@@ -76,6 +76,7 @@ import './emailTemplate/emailTemplate';
 import './form/form';
 import './securityCoverage/securityCoverage';
 import './authenticationProvider/authenticationProvider';
+import './customView/customView';
 
 // incomplete modules
 import './report/report';
@@ -152,4 +153,5 @@ import './form/form-graphql';
 import './xtm/hub/xtm-hub-graphql';
 import './metrics/metrics-graphql';
 import './authenticationProvider/authenticationProvider-graphql';
+import './customView/customView-graphql';
 // endregion
