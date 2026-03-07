@@ -21,7 +21,6 @@ import MarkdownField from '../../../../../components/fields/MarkdownField';
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';
-import useHelper from '../../../../../utils/hooks/useHelper';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../../utils/hooks/useEntitySettings';
 import { DraftAddInput, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import useDefaultValues from '../../../../../utils/hooks/useDefaultValues';
@@ -49,7 +48,6 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
   entityId,
   paginationOptions,
 }) => {
-  const { isFeatureEnable } = useHelper();
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
   const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);
@@ -148,37 +146,35 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
               label={t_i18n('Name')}
               fullWidth
             />
-            {isFeatureEnable('DRAFT_METADATA') && (
-              <>
-                <Field
-                  component={MarkdownField}
-                  name="description"
-                  label={t_i18n('Description')}
-                  required={mandatoryAttributes.includes('description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
-                  style={fieldSpacingContainerStyle}
-                  askAi={true}
-                />
-                <ObjectAssigneeField
-                  name="objectAssignee"
-                  style={fieldSpacingContainerStyle}
-                  required={mandatoryAttributes.includes('objectAssignee')}
-                />
-                <ObjectParticipantField
-                  name="objectParticipant"
-                  style={fieldSpacingContainerStyle}
-                  required={mandatoryAttributes.includes('objectParticipant')}
-                />
-                <CreatedByField
-                  name="createdBy"
-                  required={mandatoryAttributes.includes('createdBy')}
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                />
-              </>
-            )}
+            <>
+              <Field
+                component={MarkdownField}
+                name="description"
+                label={t_i18n('Description')}
+                required={mandatoryAttributes.includes('description')}
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                style={fieldSpacingContainerStyle}
+                askAi={true}
+              />
+              <ObjectAssigneeField
+                name="objectAssignee"
+                style={fieldSpacingContainerStyle}
+                required={mandatoryAttributes.includes('objectAssignee')}
+              />
+              <ObjectParticipantField
+                name="objectParticipant"
+                style={fieldSpacingContainerStyle}
+                required={mandatoryAttributes.includes('objectParticipant')}
+              />
+              <CreatedByField
+                name="createdBy"
+                required={mandatoryAttributes.includes('createdBy')}
+                style={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+              />
+            </>
             <Field
               name="authorized_members"
               component={AuthorizedMembersField}
