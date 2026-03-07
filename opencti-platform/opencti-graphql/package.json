@@ -113,7 +113,7 @@
     "eventsource": "2.0.2",
     "eventsource-parser": "3.0.6",
     "express": "5.2.1",
-    "express-rate-limit": "8.2.1",
+    "express-rate-limit": "8.2.2",
     "express-session": "1.19.0",
     "fast-json-patch": "3.1.1",
     "file-type": "21.3.0",
