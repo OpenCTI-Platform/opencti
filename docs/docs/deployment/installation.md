@@ -111,6 +111,7 @@ OPENCTI_ADMIN_PASSWORD=ChangeMePlease
 OPENCTI_ADMIN_TOKEN=$(cat /proc/sys/kernel/random/uuid)
 OPENCTI_BASE_URL=http://localhost:8080
 OPENCTI_HEALTHCHECK_ACCESS_KEY=$(cat /proc/sys/kernel/random/uuid)
+OPENCTI_ENCRYPTION_KEY=$(openssl rand -base64 32)
 MINIO_ROOT_USER=$(cat /proc/sys/kernel/random/uuid)
 MINIO_ROOT_PASSWORD=$(cat /proc/sys/kernel/random/uuid)
 RABBITMQ_DEFAULT_USER=guest
