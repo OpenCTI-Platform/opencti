@@ -2,14 +2,12 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription } from 'react-relay';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootReportSubscription } from '@components/analyses/reports/__generated__/RootReportSubscription.graphql';
 import Security from 'src/utils/Security';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import GroupingDeletion from '@components/analyses/groupings/GroupingDeletion';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
@@ -27,7 +25,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import GroupingEdition from './GroupingEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 
@@ -137,63 +135,23 @@ const RootGrouping = () => {
                     enableEnricher={true}
                     enableEnrollPlaybook={true}
                   />
-                  <Box
-                    sx={{
-                      borderBottom: 1,
-                      borderColor: 'divider',
-                      marginBottom: 3,
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItem: 'center',
-                    }}
-                  >
-                    <Tabs
-                      value={getCurrentTab(location.pathname, grouping.id, '/dashboard/analyses/groupings')}
-                    >
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/analyses/groupings/${grouping.id}`}
-                        value={`/dashboard/analyses/groupings/${grouping.id}`}
-                        label={t_i18n('Overview')}
-                      />
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/analyses/groupings/${grouping.id}/knowledge/graph`}
-                        value={`/dashboard/analyses/groupings/${grouping.id}/knowledge`}
-                        label={t_i18n('Knowledge')}
-                      />
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/analyses/groupings/${grouping.id}/content`}
-                        value={`/dashboard/analyses/groupings/${grouping.id}/content`}
-                        label={t_i18n('Content')}
-                      />
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/analyses/groupings/${grouping.id}/entities`}
-                        value={`/dashboard/analyses/groupings/${grouping.id}/entities`}
-                        label={t_i18n('Entities')}
-                      />
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/analyses/groupings/${grouping.id}/observables`}
-                        value={`/dashboard/analyses/groupings/${grouping.id}/observables`}
-                        label={t_i18n('Observables')}
-                      />
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/analyses/groupings/${grouping.id}/files`}
-                        value={`/dashboard/analyses/groupings/${grouping.id}/files`}
-                        label={t_i18n('Data')}
-                      />
-                    </Tabs>
-                    {!isKnowledgeOrContent && (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <StixDomainObjectTabsBox
+                    basePath="/dashboard/analyses/groupings"
+                    tabs={[
+                      'overview',
+                      'knowledge',
+                      'content',
+                      'entities',
+                      'observables',
+                      'files',
+                    ]}
+                    extraActions={!isKnowledgeOrContent && (
+                      <>
                         <AIInsights id={grouping.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
                         <StixCoreObjectSecurityCoverage id={grouping.id} coverage={grouping.securityCoverage} />
-                      </div>
+                      </>
                     )}
-                  </Box>
+                  />
                   <Routes>
                     <Route
                       path="/"

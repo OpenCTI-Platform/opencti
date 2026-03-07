@@ -1,15 +1,13 @@
 // TODO Remove this when V6
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import Box from '@mui/material/Box';
 import React, { useMemo } from 'react';
-import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import Security from 'src/utils/Security';
 import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from 'src/utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -24,7 +22,7 @@ import Feedback from './Feedback';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import FeedbackEdition from './FeedbackEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import FeedbackDeletion from './FeedbackDeletion';
@@ -134,42 +132,16 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
         enableQuickSubscription
         redirectToContent={true}
       />
-      <Box
-        sx={{
-          borderBottom: 1,
-          borderColor: 'divider',
-          marginBottom: 3,
-        }}
-      >
-        <Tabs
-          value={getCurrentTab(location.pathname, feedbackData.id, '/dashboard/incidents/feedbacks')}
-        >
-          <Tab
-            component={Link}
-            to={`/dashboard/cases/feedbacks/${feedbackData.id}`}
-            value={`/dashboard/cases/feedbacks/${feedbackData.id}`}
-            label={t_i18n('Overview')}
-          />
-          <Tab
-            component={Link}
-            to={`/dashboard/cases/feedbacks/${feedbackData.id}/content`}
-            value={`/dashboard/cases/feedbacks/${feedbackData.id}/content`}
-            label={t_i18n('Content')}
-          />
-          <Tab
-            component={Link}
-            to={`/dashboard/cases/feedbacks/${feedbackData.id}/files`}
-            value={`/dashboard/cases/feedbacks/${feedbackData.id}/files`}
-            label={t_i18n('Data')}
-          />
-          <Tab
-            component={Link}
-            to={`/dashboard/cases/feedbacks/${feedbackData.id}/history`}
-            value={`/dashboard/cases/feedbacks/${feedbackData.id}/history`}
-            label={t_i18n('History')}
-          />
-        </Tabs>
-      </Box>
+      <StixDomainObjectTabsBox
+        basePath="/dashboard/incidents/feedbacks"
+        entity={feedbackData}
+        tabs={[
+          'overview',
+          'content',
+          'files',
+          'history',
+        ]}
+      />
       <Routes>
         <Route
           path="/"

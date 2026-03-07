@@ -2,13 +2,11 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import Security from 'src/utils/Security';
 import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from 'src/utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -23,7 +21,7 @@ import { RootTaskSubscription } from './__generated__/RootTaskSubscription.graph
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import TaskEdition from './TaskEdition';
 import TaskDeletion from './TaskDeletion';
 
@@ -115,42 +113,16 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
             disableAuthorizedMembers={true}
             enableEnrollPlaybook={true}
           />
-          <Box
-            sx={{
-              borderBottom: 1,
-              borderColor: 'divider',
-              marginBottom: 3,
-            }}
-          >
-            <Tabs
-              value={getCurrentTab(location.pathname, data.id, '/dashboard/cases/tasks')}
-            >
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/tasks/${data.id}`}
-                value={`/dashboard/cases/tasks/${data.id}`}
-                label={t_i18n('Overview')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/tasks/${data.id}/content`}
-                value={`/dashboard/cases/tasks/${data.id}/content`}
-                label={t_i18n('Content')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/tasks/${data.id}/files`}
-                value={`/dashboard/cases/tasks/${data.id}/files`}
-                label={t_i18n('Data')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/cases/tasks/${data.id}/history`}
-                value={`/dashboard/cases/tasks/${data.id}/history`}
-                label={t_i18n('History')}
-              />
-            </Tabs>
-          </Box>
+          <StixDomainObjectTabsBox
+            basePath="/dashboard/cases/tasks"
+            entity={data}
+            tabs={[
+              'overview',
+              'content',
+              'files',
+              'history',
+            ]}
+          />
           <Routes>
             <Route
               path="/"
