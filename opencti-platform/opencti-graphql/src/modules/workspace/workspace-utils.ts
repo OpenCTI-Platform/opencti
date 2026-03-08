@@ -3,7 +3,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { Filter, FilterGroup } from '../../generated/graphql';
 import type { BasicStoreObject } from '../../types/store';
 import { internalFindByIds } from '../../database/middleware-loader';
-import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
+import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
 import { isInternalId, isStixId } from '../../schema/schemaUtils';
 import { idsValuesRemap } from '../../database/stix-2-1-converter';
 import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
@@ -15,6 +15,11 @@ import { pushAll } from '../../utils/arrayUtil';
 
 const toKeys = (k: string | string[]) => (Array.isArray(k) ? k : [k]);
 
+const isRegardingOfKey = (key: string | string[]) => {
+  const keys = toKeys(key);
+  return keys.includes(INSTANCE_REGARDING_OF) || keys.includes(INSTANCE_DYNAMIC_REGARDING_OF);
+};
+
 const filterValuesRemap = (filter: Filter, resolvedMap: { [k: string]: BasicStoreObject }, from: 'internal' | 'stix') => {
   return idsValuesRemap(filter.values, resolvedMap, from);
 };
@@ -23,8 +28,18 @@ const extractFiltersIds = (filter: FilterGroup, from: 'internal' | 'stix') => {
   const internalIds: string[] = [];
   filter.filters.forEach((f) => {
     let innerValues = f.values;
-    if (toKeys(f.key).includes(INSTANCE_REGARDING_OF)) {
+    if (isRegardingOfKey(f.key)) {
       innerValues = innerValues.find((v) => toKeys(v.key).includes('id'))?.values ?? [];
+      // dynamicRegardingOf may contain a 'dynamic' subfilter with nested FilterGroups holding IDs
+      const dynamicSubfilter = f.values.find((v) => toKeys(v.key).includes('dynamic'));
+      if (dynamicSubfilter) {
+        dynamicSubfilter.values.forEach((dynamicFilterGroup: any) => {
+          if (isFilterGroupNotEmpty(dynamicFilterGroup)) {
+            const nestedIds = extractFiltersIds(dynamicFilterGroup as FilterGroup, from);
+            pushAll(internalIds, nestedIds);
+          }
+        });
+      }
     }
     const ids = innerValues.filter((value) => {
       if (from === 'internal') return isInternalId(value);
@@ -42,7 +57,7 @@ const extractFiltersIds = (filter: FilterGroup, from: 'internal' | 'stix') => {
 const replaceFiltersIds = (filter: FilterGroup, resolvedMap: { [k: string]: BasicStoreObject }, from: 'internal' | 'stix') => {
   filter.filters.forEach((f) => {
     // Explicit reassign working by references
-    if (toKeys(f.key).includes(INSTANCE_REGARDING_OF)) {
+    if (isRegardingOfKey(f.key)) {
       const regardingOfValues = [];
       const idInnerFilter = f.values.find((v) => toKeys(v.key).includes('id'));
       if (idInnerFilter) { // Id is not mandatory
@@ -52,6 +67,16 @@ const replaceFiltersIds = (filter: FilterGroup, resolvedMap: { [k: string]: Basi
       const typeInnerFilter = f.values.find((v) => toKeys(v.key).includes('relationship_type'));
       if (typeInnerFilter) { // Type is not mandatory
         regardingOfValues.push(typeInnerFilter);
+      }
+      // dynamicRegardingOf may contain a 'dynamic' subfilter with nested FilterGroups holding IDs
+      const dynamicSubfilter = f.values.find((v) => toKeys(v.key).includes('dynamic'));
+      if (dynamicSubfilter) {
+        dynamicSubfilter.values.forEach((dynamicFilterGroup: any) => {
+          if (isFilterGroupNotEmpty(dynamicFilterGroup)) {
+            replaceFiltersIds(dynamicFilterGroup as FilterGroup, resolvedMap, from);
+          }
+        });
+        regardingOfValues.push(dynamicSubfilter);
       }
       // eslint-disable-next-line no-param-reassign
       f.values = regardingOfValues;
