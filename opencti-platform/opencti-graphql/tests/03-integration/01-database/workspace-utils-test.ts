@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { convertWidgetsIds } from '../../../src/modules/workspace/workspace-utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { INSTANCE_REGARDING_OF, TYPE_FILTER } from '../../../src/utils/filtering/filtering-constants';
+import { INSTANCE_DYNAMIC_REGARDING_OF, INSTANCE_REGARDING_OF, TYPE_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 import { internalFindByIds } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
@@ -97,6 +97,189 @@ describe('Workspace utils', () => {
       }
     ];
     // check the result
+    await convertWidgetsIds(testContext, ADMIN_USER, input, 'internal');
+    expect(input).toEqual(convertedInput);
+  });
+
+  it('should convert widget filters ids with dynamicRegardingOf', async () => {
+    const reportId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
+    const malwareId = 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c';
+    const resolveOpts = { baseData: true, mapWithAllIds: true };
+    const objects = await internalFindByIds(testContext, ADMIN_USER, [reportId, malwareId], resolveOpts) as BasicStoreBase[];
+    const reportInternalId = objects.find((o) => o.entity_type === ENTITY_TYPE_CONTAINER_REPORT)?.internal_id;
+    const reportStandardId = objects.find((o) => o.entity_type === ENTITY_TYPE_CONTAINER_REPORT)?.standard_id;
+    const malwareInternalId = objects.find((o) => o.entity_type === ENTITY_TYPE_MALWARE)?.internal_id;
+    const malwareStandardId = objects.find((o) => o.entity_type === ENTITY_TYPE_MALWARE)?.standard_id;
+
+    const filters = {
+      mode: 'and',
+      filters: [
+        {
+          key: INSTANCE_DYNAMIC_REGARDING_OF,
+          values: [
+            { key: 'id', values: [reportInternalId] },
+            { key: 'relationship_type', values: ['related-to'] },
+            {
+              key: 'dynamic',
+              values: [
+                {
+                  mode: 'and',
+                  filters: [
+                    { key: 'entity_type', values: ['Report'] },
+                    { key: 'objectMarking', values: [malwareInternalId] },
+                  ],
+                  filterGroups: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      filterGroups: [],
+    };
+    const input = [
+      {
+        type: 'list',
+        perspective: 'entities',
+        parameters: {},
+        dataSelection: [{
+          number: 10,
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          filters,
+          dynamicFrom: emptyFilterGroup,
+          dynamicTo: emptyFilterGroup,
+        }],
+      }
+    ];
+
+    const convertedFilters = {
+      mode: 'and',
+      filters: [
+        {
+          key: INSTANCE_DYNAMIC_REGARDING_OF,
+          values: [
+            { key: 'id', values: [reportStandardId] },
+            { key: 'relationship_type', values: ['related-to'] },
+            {
+              key: 'dynamic',
+              values: [
+                {
+                  mode: 'and',
+                  filters: [
+                    { key: 'entity_type', values: ['Report'] },
+                    { key: 'objectMarking', values: [malwareStandardId] },
+                  ],
+                  filterGroups: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      filterGroups: [],
+    };
+    const convertedInput = [
+      {
+        type: 'list',
+        perspective: 'entities',
+        parameters: {},
+        dataSelection: [{
+          number: 10,
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          filters: convertedFilters,
+          dynamicFrom: emptyFilterGroup,
+          dynamicTo: emptyFilterGroup,
+        }],
+      }
+    ];
+
+    await convertWidgetsIds(testContext, ADMIN_USER, input, 'internal');
+    expect(input).toEqual(convertedInput);
+  });
+
+  it('should convert widget filters ids with dynamicRegardingOf without id subfilter', async () => {
+    const filters = {
+      mode: 'and',
+      filters: [
+        {
+          key: INSTANCE_DYNAMIC_REGARDING_OF,
+          values: [
+            { key: 'relationship_type', values: ['related-to'] },
+            {
+              key: 'dynamic',
+              values: [
+                {
+                  mode: 'and',
+                  filters: [
+                    { key: 'entity_type', values: ['Report'] },
+                  ],
+                  filterGroups: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      filterGroups: [],
+    };
+    const input = [
+      {
+        type: 'list',
+        perspective: 'entities',
+        parameters: {},
+        dataSelection: [{
+          number: 10,
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          filters,
+          dynamicFrom: emptyFilterGroup,
+          dynamicTo: emptyFilterGroup,
+        }],
+      }
+    ];
+
+    const convertedFilters = {
+      mode: 'and',
+      filters: [
+        {
+          key: INSTANCE_DYNAMIC_REGARDING_OF,
+          values: [
+            { key: 'relationship_type', values: ['related-to'] },
+            {
+              key: 'dynamic',
+              values: [
+                {
+                  mode: 'and',
+                  filters: [
+                    { key: 'entity_type', values: ['Report'] },
+                  ],
+                  filterGroups: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      filterGroups: [],
+    };
+    const convertedInput = [
+      {
+        type: 'list',
+        perspective: 'entities',
+        parameters: {},
+        dataSelection: [{
+          number: 10,
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          filters: convertedFilters,
+          dynamicFrom: emptyFilterGroup,
+          dynamicTo: emptyFilterGroup,
+        }],
+      }
+    ];
+
     await convertWidgetsIds(testContext, ADMIN_USER, input, 'internal');
     expect(input).toEqual(convertedInput);
   });
