@@ -152,6 +152,7 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
         value="popover"
         color="primary"
         size="small"
+        data-testid="connector-popover-button"
       >
         <MoreVert fontSize="small" color="primary" />
       </ToggleButton>
@@ -160,6 +161,7 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}
+        data-testid="connector-popover-menu"
       >
         {connector.is_managed && (
           <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
@@ -168,15 +170,25 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
           <DangerZoneBlock
             type="connector_reset"
             sx={{ title: { display: 'none' } }}
-            component={(
-              <MenuItem onClick={handleOpenResetState} sx={{ color: theme.palette.dangerZone.main, gap: 1 }}>
+            component={({ disabled }) => (
+              <MenuItem
+                onClick={handleOpenResetState}
+                disabled={disabled}
+                sx={{ color: theme.palette.dangerZone.main, gap: 1 }}
+                data-testid="connector-popover-reset-state"
+              >
                 <span>{t_i18n('Reset')}</span>
-                <DangerZoneChip />
+                <DangerZoneChip disableTooltip />
               </MenuItem>
             )}
           />
         ) : (
-          <MenuItem onClick={handleOpenResetState}>{t_i18n('Reset the connector state')}</MenuItem>
+          <MenuItem
+            onClick={handleOpenResetState}
+            data-testid="connector-popover-reset-state"
+          >
+            {t_i18n('Reset the connector state')}
+          </MenuItem>
         )}
         <MenuItem onClick={handleOpenClearWorks}>{t_i18n('Clear all works')}</MenuItem>
         <MenuItem
