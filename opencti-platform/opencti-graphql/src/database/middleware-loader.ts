@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { isTiDBEntityType, elPaginateTiDB, elFindByIdsTiDB } from './engine-tidb';
 import {
   buildPagination,
   isEmptyField,
@@ -451,6 +452,22 @@ export const pageEntitiesConnection = async <T extends BasicStoreEntity>(
   entityTypes: Array<string>,
   args: EntityOptions<T> = {},
 ): Promise<BasicConnection<T>> => {
+  // Route to TiDB engine for supported entity types, but only when there are
+  // no advanced filters (e.g. INSTANCE_REGARDING_OF used by subSectors /
+  // isSubSector) that TiDB cannot evaluate yet.
+  const hasFilters = args.filters && isFilterGroupNotEmpty(args.filters);
+  if (isTiDBEntityType(entityTypes) && !hasFilters) {
+    const first = args.first ?? ES_DEFAULT_PAGINATION;
+    return elPaginateTiDB<T>(context, user, null, {
+      types: entityTypes,
+      first,
+      after: args.after,
+      orderBy: args.orderBy,
+      orderMode: args.orderMode as 'asc' | 'desc' | null,
+      search: args.search,
+      connectionFormat: true,
+    }) as Promise<BasicConnection<T>>;
+  }
   const { indices } = args;
   const computedIndices = computeQueryIndices(indices, entityTypes);
   const first = args.first ?? ES_DEFAULT_PAGINATION;
@@ -558,6 +575,10 @@ export const internalFindByIds = async <T extends BasicStoreObject>(
     baseFields?: string[];
   } & ElFindByIdsOpts,
 ) => {
+  // Route to TiDB for supported entity types
+  if (args?.type && isTiDBEntityType(args.type)) {
+    return await elFindByIdsTiDB<T>(context, user, ids, args);
+  }
   return await elFindByIds<T>(context, user, ids, args);
 };
 
@@ -583,6 +604,11 @@ export const internalLoadById = async <T extends BasicStoreBase>(
   id: string | undefined,
   opts?: { type?: string | string[]; baseData?: boolean; indices?: string[] },
 ): Promise<T> => {
+  // Route to TiDB for supported entity types
+  if (id && opts?.type && isTiDBEntityType(opts.type)) {
+    const results = await elFindByIdsTiDB<T>(context, user, [id], { type: opts.type });
+    return results[0] as T;
+  }
   return await elLoadById<T>(context, user, id ?? '', opts) as unknown as T;
 };
 
@@ -608,6 +634,11 @@ export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthCon
 export const storeLoadByIds = async <T extends BasicStoreBase>(context: AuthContext, user: AuthUser, ids: string[], type: string): Promise<T[]> => {
   if (R.isNil(type) || R.isEmpty(type)) {
     throw FunctionalError('You need to specify a type when loading elements', { ids });
+  }
+  // Route to TiDB for supported entity types
+  if (isTiDBEntityType(type)) {
+    const hits = await elFindByIdsTiDB<T>(context, user, ids, { type });
+    return ids.map((id) => (hits as T[]).find((h: T) => h.internal_id === id)) as T[];
   }
   const hits = await elFindByIds(context, user, ids, { type, indices: READ_DATA_INDICES });
   return ids.map((id) => (hits as T[]).find((h: T) => h.internal_id === id)) as T[];
