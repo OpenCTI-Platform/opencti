@@ -141,9 +141,10 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 if self.opencti_ng_url is not None:
                     # opencti-ng handles the full bundle in one shot (no splitting needed)
                     nb_objects = len(content["objects"])
-                    # Tell the platform how many objects to expect
-                    if work_id is not None and nb_objects > 0:
-                        self.api.work.add_expectations(work_id, nb_objects)
+                    # The work already counts 1 expectation for this bundle message.
+                    # Replace it with per-object expectations: add (N - 1) additional.
+                    if work_id is not None and nb_objects > 1:
+                        self.api.work.add_expectations(work_id, nb_objects - 1)
                     try:
                         result = self._push_to_opencti_ng(content)
                         ingested = result.get("ingested", 0)
