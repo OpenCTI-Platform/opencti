@@ -42,8 +42,12 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             provider="worker/" + __version__,
         )
 
-    def _push_to_opencti_ng(self, bundle: dict) -> list:
-        """POST a full STIX bundle to opencti-ng and return the list of imported IDs."""
+    def _push_to_opencti_ng(self, bundle: dict) -> dict:
+        """POST a full STIX bundle to opencti-ng.
+
+        Returns the raw response dict with keys:
+          ingested (int), skipped (int), errors (list[str])
+        """
         url = f"{self.opencti_ng_url}/api/v1/stix/bundle"
         headers = {
             "Authorization": f"Bearer {self.opencti_ng_token}",
@@ -57,8 +61,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             timeout=300,
         )
         response.raise_for_status()
-        result = response.json()
-        return result.get("imported", [])
+        return response.json()
 
     def send_bundle_to_specific_queue(
         self,
@@ -142,13 +145,35 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                     if work_id is not None and nb_objects > 0:
                         self.api.work.add_expectations(work_id, nb_objects)
                     try:
-                        imported_items = self._push_to_opencti_ng(content)
-                        # Report success for each object in the bundle
+                        result = self._push_to_opencti_ng(content)
+                        ingested = result.get("ingested", 0)
+                        skipped = result.get("skipped", 0)
+                        ng_errors = result.get("errors", [])
+                        imported_items = ["ok"] * ingested
                         if work_id is not None:
-                            for _ in range(nb_objects):
+                            # Report success for each ingested + skipped object
+                            for _ in range(ingested + skipped):
                                 self.api.work.report_expectation(work_id, None)
+                            # Report failure for each errored object
+                            for err_msg in ng_errors:
+                                self.api.work.report_expectation(
+                                    work_id,
+                                    {
+                                        "error": err_msg,
+                                        "source": "opencti-ng ingestion",
+                                    },
+                                )
+                        if ng_errors:
+                            self.logger.warning(
+                                "opencti-ng ingestion completed with errors",
+                                {
+                                    "ingested": ingested,
+                                    "skipped": skipped,
+                                    "errors": len(ng_errors),
+                                },
+                            )
                     except Exception as ng_error:
-                        # Report failure for each object
+                        # HTTP-level failure — report all objects as failed
                         if work_id is not None:
                             for _ in range(nb_objects):
                                 self.api.work.report_expectation(
