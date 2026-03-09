@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { isTiDBEntityType, elPaginateTiDB, elFindByIdsTiDB, isTiDBSupportedFilter } from './engine-tidb';
 import {
   buildPagination,
   isEmptyField,
@@ -452,33 +451,20 @@ export const pageEntitiesConnection = async <T extends BasicStoreEntity>(
   entityTypes: Array<string>,
   args: EntityOptions<T> = {},
 ): Promise<BasicConnection<T>> => {
-  // Route to TiDB engine for supported entity types when:
-  // - No filters at all, OR
-  // - The only filter is regardingOf (which opencti-ng can handle natively)
-  if (isTiDBEntityType(entityTypes)) {
-    const hasFilters = args.filters && isFilterGroupNotEmpty(args.filters);
-    const canTiDBHandle = !hasFilters || isTiDBSupportedFilter(args.filters!);
-    if (canTiDBHandle) {
-      const first = args.first ?? ES_DEFAULT_PAGINATION;
-      return elPaginateTiDB<T>(context, user, null, {
-        types: entityTypes,
-        first,
-        after: args.after,
-        orderBy: args.orderBy,
-        orderMode: args.orderMode as 'asc' | 'desc' | null,
-        search: args.search,
-        connectionFormat: true,
-        filters: hasFilters ? args.filters : undefined,
-      }) as Promise<BasicConnection<T>>;
-    }
-  }
   const { indices } = args;
   const computedIndices = computeQueryIndices(indices, entityTypes);
   const first = args.first ?? ES_DEFAULT_PAGINATION;
-  // maxSize MUST be aligned with first in this method.
-  // As using elConnection is repaginate, removing maxSize will lead to major api breaking
-  const paginateArgs = { ...buildEntityFilters(entityTypes, args), first, maxSize: first };
-  const connection = await elConnection(context, user, computedIndices, paginateArgs);
+  // elPaginate routes to TiDB for supported entity types, ES for the rest
+  const paginateArgs = {
+    ...buildEntityFilters(entityTypes, args),
+    types: entityTypes,
+    first,
+    maxSize: first,
+    after: args.after,
+    connectionFormat: true,
+    filters: args.filters,
+  };
+  const connection = await elPaginate<T>(context, user, computedIndices, paginateArgs);
   return connection as BasicConnection<T>;
 };
 
@@ -579,10 +565,7 @@ export const internalFindByIds = async <T extends BasicStoreObject>(
     baseFields?: string[];
   } & ElFindByIdsOpts,
 ) => {
-  // Route to TiDB for supported entity types
-  if (args?.type && isTiDBEntityType(args.type)) {
-    return await elFindByIdsTiDB<T>(context, user, ids, args);
-  }
+  // Routing to TiDB for supported types is handled by elFindByIds in engine.ts
   return await elFindByIds<T>(context, user, ids, args);
 };
 
@@ -608,11 +591,7 @@ export const internalLoadById = async <T extends BasicStoreBase>(
   id: string | undefined,
   opts?: { type?: string | string[]; baseData?: boolean; indices?: string[] },
 ): Promise<T> => {
-  // Route to TiDB for supported entity types
-  if (id && opts?.type && isTiDBEntityType(opts.type)) {
-    const results = await elFindByIdsTiDB<T>(context, user, [id], { type: opts.type });
-    return results[0] as T;
-  }
+  // Routing to TiDB for supported types is handled by elLoadById in engine.ts
   return await elLoadById<T>(context, user, id ?? '', opts) as unknown as T;
 };
 
@@ -639,11 +618,7 @@ export const storeLoadByIds = async <T extends BasicStoreBase>(context: AuthCont
   if (R.isNil(type) || R.isEmpty(type)) {
     throw FunctionalError('You need to specify a type when loading elements', { ids });
   }
-  // Route to TiDB for supported entity types
-  if (isTiDBEntityType(type)) {
-    const hits = await elFindByIdsTiDB<T>(context, user, ids, { type });
-    return ids.map((id) => (hits as T[]).find((h: T) => h.internal_id === id)) as T[];
-  }
+  // Routing to TiDB for supported types is handled by elFindByIds in engine.ts
   const hits = await elFindByIds(context, user, ids, { type, indices: READ_DATA_INDICES });
   return ids.map((id) => (hits as T[]).find((h: T) => h.internal_id === id)) as T[];
 };
