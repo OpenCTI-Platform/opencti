@@ -3,9 +3,10 @@ import datetime
 import json
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, Literal, Union
+from typing import Any, Dict, Literal, Optional, Union
 
 import pika
+import requests as http_requests
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.exceptions import NackError, UnroutableError
 from pycti import OpenCTIApiClient, OpenCTIStix2Splitter, __version__
@@ -28,6 +29,8 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
     bundles_global_counter: Any
     bundles_processing_time_gauge: Any
     objects_max_refs: int
+    opencti_ng_url: Optional[str] = None
+    opencti_ng_token: Optional[str] = None
 
     def __post_init__(self) -> None:
         self.api = OpenCTIApiClient(
@@ -38,6 +41,24 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             ssl_verify=self.ssl_verify,
             provider="worker/" + __version__,
         )
+
+    def _push_to_opencti_ng(self, bundle: dict) -> list:
+        """POST a full STIX bundle to opencti-ng and return the list of imported IDs."""
+        url = f"{self.opencti_ng_url}/api/v1/stix/bundle"
+        headers = {
+            "Authorization": f"Bearer {self.opencti_ng_token}",
+            "Content-Type": "application/json",
+            "User-Agent": f"opencti-worker/{__version__}",
+        }
+        response = http_requests.post(
+            url,
+            json=bundle,
+            headers=headers,
+            timeout=300,
+        )
+        response.raise_for_status()
+        result = response.json()
+        return result.get("imported", [])
 
     def send_bundle_to_specific_queue(
         self,
@@ -114,7 +135,10 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 # Standard event with STIX information
                 if "objects" not in content or len(content["objects"]) == 0:
                     raise ValueError("JSON data type is not a STIX2 bundle")
-                if len(content["objects"]) == 1 or data.get("no_split", False):
+                if self.opencti_ng_url is not None:
+                    # opencti-ng handles the full bundle in one shot (no splitting needed)
+                    imported_items = self._push_to_opencti_ng(content)
+                elif len(content["objects"]) == 1 or data.get("no_split", False):
                     update = data.get("update", False)
                     imported_items, too_large_items_bundles = (
                         self.api.stix2.import_bundle_from_json(
