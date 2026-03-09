@@ -111,15 +111,15 @@ const PARENT_TYPES: Record<string, string[]> = {
 
 /**
  * Check if a FilterGroup contains only filters that TiDB/opencti-ng can handle.
- * Currently supports: regardingOf filters (used by sector parent/child queries).
+ * Currently supports: regardingOf, entity_type filters.
  */
 export const isTiDBSupportedFilter = (filterGroup: any): boolean => {
   if (!filterGroup) return true;
+  const SUPPORTED_KEYS = new Set(['regardingOf', 'entity_type']);
   const { filters = [], filterGroups = [] } = filterGroup;
-  // All top-level filters must be regardingOf
   for (const filter of filters) {
     const keys = filter.key || [];
-    if (!keys.includes('regardingOf')) {
+    if (!keys.some((k: string) => SUPPORTED_KEYS.has(k))) {
       return false;
     }
   }
