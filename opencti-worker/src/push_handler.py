@@ -137,7 +137,28 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                     raise ValueError("JSON data type is not a STIX2 bundle")
                 if self.opencti_ng_url is not None:
                     # opencti-ng handles the full bundle in one shot (no splitting needed)
-                    imported_items = self._push_to_opencti_ng(content)
+                    nb_objects = len(content["objects"])
+                    # Tell the platform how many objects to expect
+                    if work_id is not None and nb_objects > 0:
+                        self.api.work.add_expectations(work_id, nb_objects)
+                    try:
+                        imported_items = self._push_to_opencti_ng(content)
+                        # Report success for each object in the bundle
+                        if work_id is not None:
+                            for _ in range(nb_objects):
+                                self.api.work.report_expectation(work_id, None)
+                    except Exception as ng_error:
+                        # Report failure for each object
+                        if work_id is not None:
+                            for _ in range(nb_objects):
+                                self.api.work.report_expectation(
+                                    work_id,
+                                    {
+                                        "error": str(ng_error),
+                                        "source": "opencti-ng ingestion",
+                                    },
+                                )
+                        raise
                 elif len(content["objects"]) == 1 or data.get("no_split", False):
                     update = data.get("update", False)
                     imported_items, too_large_items_bundles = (
