@@ -35,6 +35,9 @@ const TIDB_SUPPORTED_TYPES = new Set([
   'Organization', 'Sector',
   'Region', 'Country', 'City', 'Position',
   'Location',
+  'Malware',
+  'Attack-Pattern', 'Intrusion-Set', 'Campaign', 'Tool', 'Course-Of-Action',
+  'Report',
 ]);
 
 export const isTiDBEntityType = (entityType: string | string[]): boolean => {
@@ -52,6 +55,13 @@ const typeToApiPath = (entityType: string): string => {
     case 'City': return 'cities';
     case 'Position': return 'positions';
     case 'Location': return 'locations';
+    case 'Malware': return 'malware';
+    case 'Attack-Pattern': return 'attack-patterns';
+    case 'Intrusion-Set': return 'intrusion-sets';
+    case 'Campaign': return 'campaigns';
+    case 'Tool': return 'tools';
+    case 'Course-Of-Action': return 'courses-of-action';
+    case 'Report': return 'reports';
     default:
       return entityType.toLowerCase();
   }
@@ -67,6 +77,13 @@ const apiPathToType = (apiPath: string): string => {
     case 'cities': return 'City';
     case 'positions': return 'Position';
     case 'locations': return 'Location';
+    case 'malware': return 'Malware';
+    case 'attack-patterns': return 'Attack-Pattern';
+    case 'intrusion-sets': return 'Intrusion-Set';
+    case 'campaigns': return 'Campaign';
+    case 'tools': return 'Tool';
+    case 'courses-of-action': return 'Course-Of-Action';
+    case 'reports': return 'Report';
     default: return apiPath;
   }
 };
@@ -79,6 +96,13 @@ const PARENT_TYPES: Record<string, string[]> = {
   Country: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object', 'Location'],
   City: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object', 'Location'],
   Position: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object', 'Location'],
+  Malware: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
+  'Attack-Pattern': ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
+  'Intrusion-Set': ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
+  Campaign: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
+  Tool: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
+  'Course-Of-Action': ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
+  Report: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object', 'Container'],
 };
 
 // ---------------------------------------------------------------------------
@@ -243,6 +267,56 @@ const apiEntityToStoreEntity = (
   }
   if (entity.region !== undefined) store.region = entity.region;
   if (entity.country !== undefined) store.country = entity.country;
+
+  // Malware-specific
+  if (entity.is_family !== undefined) store.is_family = entity.is_family;
+  if (entity.malware_types) store.malware_types = entity.malware_types;
+  if (entity.first_seen !== undefined) store.first_seen = entity.first_seen;
+  if (entity.last_seen !== undefined) store.last_seen = entity.last_seen;
+
+  // Attack-Pattern-specific
+  if (entity.x_mitre_id !== undefined) store.x_mitre_id = entity.x_mitre_id;
+  if (entity.x_mitre_detection !== undefined) store.x_mitre_detection = entity.x_mitre_detection;
+  if (entity.x_mitre_platforms) store.x_mitre_platforms = entity.x_mitre_platforms;
+  if (entity.x_mitre_is_subtechnique !== undefined) store.x_mitre_is_subtechnique = entity.x_mitre_is_subtechnique;
+
+  // Intrusion-Set-specific
+  if (entityType === 'Intrusion-Set') {
+    if (entity.first_seen !== undefined) store.first_seen = entity.first_seen;
+    if (entity.last_seen !== undefined) store.last_seen = entity.last_seen;
+    if (entity.goals) store.goals = entity.goals;
+    if (entity.resource_level !== undefined) store.resource_level = entity.resource_level;
+    if (entity.primary_motivation !== undefined) store.primary_motivation = entity.primary_motivation;
+    if (entity.secondary_motivations) store.secondary_motivations = entity.secondary_motivations;
+  }
+
+  // Campaign-specific
+  if (entityType === 'Campaign') {
+    if (entity.first_seen !== undefined) store.first_seen = entity.first_seen;
+    if (entity.last_seen !== undefined) store.last_seen = entity.last_seen;
+    if (entity.objective !== undefined) store.objective = entity.objective;
+  }
+
+  // Tool-specific
+  if (entity.tool_types) store.tool_types = entity.tool_types;
+  if (entity.tool_version !== undefined) store.tool_version = entity.tool_version;
+
+  // Report-specific
+  if (entity.report_types) store.report_types = entity.report_types;
+  if (entity.published !== undefined) store.published = entity.published;
+
+  // Aliases (shared across Malware, Attack-Pattern, Intrusion-Set, Campaign, Tool)
+  if (entity.aliases) store.aliases = entity.aliases;
+
+  // Kill chain phases (shared across Attack-Pattern, Tool, Malware)
+  if (entity.kill_chain_phases && entity.kill_chain_phases.length > 0) {
+    store.kill_chain_phases = entity.kill_chain_phases;
+  }
+
+  // External references (shared across all SDO types)
+  if (entity.external_references && entity.external_references.length > 0) {
+    store.external_references = entity.external_references;
+  }
 
   return store;
 };
