@@ -33,6 +33,23 @@ const CERT_KEY_CERT = conf.get('app:https_cert:crt');
 const CA_CERTS = conf.get('app:https_cert:ca');
 const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', true);
 
+const createRequestAbortSignal = (req, res) => {
+  const abortController = new AbortController();
+  const abortIfDisconnected = () => {
+    // `close` is emitted for both success and disconnect; only abort on disconnect.
+    if (!res.writableEnded && !abortController.signal.aborted) {
+      abortController.abort();
+    }
+  };
+  req.once('aborted', () => {
+    if (!abortController.signal.aborted) {
+      abortController.abort();
+    }
+  });
+  res.once('close', abortIfDisconnected);
+  return abortController.signal;
+};
+
 const createHttpServer = async () => {
   logApp.info('[INIT] Configuring HTTP/HTTPS server');
   const app = express();
@@ -138,7 +155,8 @@ const createHttpServer = async () => {
       app,
       path: `${basePath}/graphql`,
       context: async ({ req, res }) => {
-        const executeContext = await createAuthenticatedContext(req, res, 'api');
+        const requestAbortSignal = createRequestAbortSignal(req, res);
+        const executeContext = await createAuthenticatedContext(req, res, 'api', requestAbortSignal);
         // When context is related to a work, we need to check work status
         if (executeContext.workId) {
           const workStillAlive = await isWorkAlive(executeContext, executeContext.user, executeContext.workId);

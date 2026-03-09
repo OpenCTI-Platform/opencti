@@ -493,18 +493,32 @@ export const isRuntimeSortEnable = (): boolean => isRuntimeSortingEnable;
 export const elRawSearch = (context: AuthContext, user: AuthUser, types: string[] | string | null, query: any) => {
   // Add signal to prevent unwanted warning
   // Waiting for https://github.com/elastic/elastic-transport-js/issues/63
-  const searchOpts = { signal: new AbortController().signal };
-  const elRawSearchFn = async () => (engine instanceof ElkClient ? engine.search(query, searchOpts) : engine.search(query)).then((r: any) => {
-    const parsedSearch = oebp(r);
-    if (parsedSearch._shards.failed > 0) {
+  const requestAbortSignal = context.requestAbortSignal ?? new AbortController().signal;
+  const elRawSearchFn = async () => {
+    let searchCall: Promise<any>;
+    if (engine instanceof ElkClient) {
+      const searchOpts = { signal: requestAbortSignal };
+      searchCall = engine.search(query, searchOpts);
+    } else {
+      searchCall = engine.search(query);
+      requestAbortSignal.addEventListener('abort', () => {
+        // OpenSearch client does not support abort signal, so we need to manually abort the request
+        // We do this by closing the client, which will abort all pending requests with an error
+        (searchCall as any).abort();
+      });
+    }
+    void searchCall.then((r: any) => {
+      const parsedSearch = oebp(r);
+      if (parsedSearch._shards.failed > 0) {
       // We do not support response with shards failure.
       // Result must be always accurate to prevent data duplication and unwanted behaviors
       // If any shard fail during query, engine throw a shard exception with shards information
-      throw EngineShardsError({ shards: parsedSearch._shards });
-    }
-    // Return result of the search if everything goes well
-    return parsedSearch;
-  });
+        throw EngineShardsError({ shards: parsedSearch._shards });
+      }
+      // Return result of the search if everything goes well
+      return parsedSearch;
+    });
+  };
   return telemetry(context, user, `SELECT ${Array.isArray(types) ? types.join(', ') : (types || 'None')}`, {
     [SEMATTRS_DB_NAME]: 'search_engine',
     [SEMATTRS_DB_OPERATION]: 'read',
