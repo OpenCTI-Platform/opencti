@@ -156,12 +156,15 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                             for _ in range(ingested + skipped):
                                 self.api.work.report_expectation(work_id, None)
                             # Report failure for each errored object
-                            for err_msg in ng_errors:
+                            for err_obj in ng_errors:
+                                # Structured: {stix_id, error_type, message}
+                                err_msg = err_obj.get("message", str(err_obj)) if isinstance(err_obj, dict) else str(err_obj)
+                                err_source = err_obj.get("stix_id", "unknown") if isinstance(err_obj, dict) else "opencti-ng"
                                 self.api.work.report_expectation(
                                     work_id,
                                     {
                                         "error": err_msg,
-                                        "source": "opencti-ng ingestion",
+                                        "source": err_source,
                                     },
                                 )
                         if ng_errors:
