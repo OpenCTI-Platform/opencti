@@ -20,6 +20,7 @@ const styles = () => ({
 class ListCardsContent extends Component {
   constructor(props) {
     super(props);
+    this.containerRef = React.createRef();
     this._isCellLoaded = this._isCellLoaded.bind(this);
     this._loadMoreRows = this._loadMoreRows.bind(this);
     this._onSectionRendered = this._onSectionRendered.bind(this);
@@ -29,10 +30,39 @@ class ListCardsContent extends Component {
     this.gridRef = React.createRef();
     this.state = {
       loadingCardCount: 0,
+      computedScrollElement: null,
+      isScrollElementResolved: false,
     };
   }
 
+  componentDidMount() {
+    this.updateScrollElement();
+    if (this._windowScroller) {
+      this._windowScroller.updatePosition();
+    }
+  }
+
+  updateScrollElement() {
+    if (this.containerRef.current) {
+      let node = this.containerRef.current.parentNode;
+      while (node && node !== document.body && node !== document.documentElement) {
+        if (node instanceof HTMLElement) {
+          const { overflowY } = window.getComputedStyle(node);
+          if (overflowY === 'auto' || overflowY === 'scroll') {
+            this.setState({ computedScrollElement: node, isScrollElementResolved: true });
+            return;
+          }
+        }
+        node = node.parentNode;
+      }
+      this.setState({ isScrollElementResolved: true });
+    }
+  }
+
   componentDidUpdate(prevProps) {
+    if (!this.state.isScrollElementResolved) {
+      this.updateScrollElement();
+    }
     if (
       !R.equals(prevProps.dataList, this.props.dataList)
       || !R.equals(prevProps.bookmarkList, this.props.bookmarkList)
@@ -160,60 +190,67 @@ class ListCardsContent extends Component {
       ? nbLineForCards + this.state.loadingCardCount
       : nbLineForCards;
     const rowCount = initialLoading ? nbOfLinesToLoad : nbLinesWithLoading;
+    const scrollElement = this.state.computedScrollElement || window;
     return (
-      <WindowScroller ref={this._setRef} scrollElement={window}>
-        {({ height, isScrolling, onChildScroll, scrollTop }) => (
-          <div className={styles.windowScrollerWrapper}>
-            <InfiniteLoader
-              isRowLoaded={this._isCellLoaded}
-              loadMoreRows={this._loadMoreRows}
-              rowCount={globalCount}
-            >
-              {({ onRowsRendered, registerChild }) => {
-                this._onRowsRendered = onRowsRendered;
-                return (
-                  <AutoSizer disableHeight>
-                    {({ width }) => (
-                      <ColumnSizer
-                        columnCount={numberOfCardsPerLine}
-                        width={width}
-                      >
-                        {({ adjustedWidth, getColumnWidth }) => {
-                          const columnWidth = getColumnWidth();
-                          return (
-                            <Grid
-                              ref={(ref) => {
-                                this.gridRef = ref;
-                                registerChild(ref);
-                              }}
-                              autoHeight={true}
-                              height={height}
-                              onRowsRendered={onRowsRendered}
-                              isScrolling={isScrolling}
-                              onScroll={onChildScroll}
-                              columnWidth={columnWidth}
-                              columnCount={numberOfCardsPerLine}
-                              rowHeight={rowHeight || 195}
-                              overscanColumnCount={numberOfCardsPerLine}
-                              overscanRowCount={2}
-                              rowCount={rowCount}
-                              cellRenderer={this._cellRenderer}
-                              onSectionRendered={this._onSectionRendered}
-                              scrollToIndex={-1}
-                              scrollTop={scrollTop}
-                              width={adjustedWidth}
-                            />
-                          );
-                        }}
-                      </ColumnSizer>
-                    )}
-                  </AutoSizer>
-                );
-              }}
-            </InfiniteLoader>
-          </div>
-        )}
-      </WindowScroller>
+      <div ref={this.containerRef}>
+        <WindowScroller
+          key={scrollElement === window ? 'window' : 'element'}
+          ref={this._setRef}
+          scrollElement={scrollElement}
+        >
+          {({ height, isScrolling, onChildScroll, scrollTop }) => (
+            <div className={styles.windowScrollerWrapper}>
+              <InfiniteLoader
+                isRowLoaded={this._isCellLoaded}
+                loadMoreRows={this._loadMoreRows}
+                rowCount={globalCount}
+              >
+                {({ onRowsRendered, registerChild }) => {
+                  this._onRowsRendered = onRowsRendered;
+                  return (
+                    <AutoSizer disableHeight>
+                      {({ width }) => (
+                        <ColumnSizer
+                          columnCount={numberOfCardsPerLine}
+                          width={width}
+                        >
+                          {({ adjustedWidth, getColumnWidth }) => {
+                            const columnWidth = getColumnWidth();
+                            return (
+                              <Grid
+                                ref={(ref) => {
+                                  this.gridRef = ref;
+                                  registerChild(ref);
+                                }}
+                                autoHeight={true}
+                                height={height || 0}
+                                onRowsRendered={onRowsRendered}
+                                isScrolling={isScrolling}
+                                onScroll={onChildScroll}
+                                columnWidth={columnWidth}
+                                columnCount={numberOfCardsPerLine}
+                                rowHeight={rowHeight || 195}
+                                overscanColumnCount={numberOfCardsPerLine}
+                                overscanRowCount={2}
+                                rowCount={rowCount}
+                                cellRenderer={this._cellRenderer}
+                                onSectionRendered={this._onSectionRendered}
+                                scrollToIndex={-1}
+                                scrollTop={scrollTop}
+                                width={adjustedWidth}
+                              />
+                            );
+                          }}
+                        </ColumnSizer>
+                      )}
+                    </AutoSizer>
+                  );
+                }}
+              </InfiniteLoader>
+            </div>
+          )}
+        </WindowScroller>
+      </div>
     );
   }
 }
