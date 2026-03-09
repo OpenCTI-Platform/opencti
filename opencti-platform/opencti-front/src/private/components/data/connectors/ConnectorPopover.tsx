@@ -13,6 +13,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover';
 import ToggleButton from '@mui/material/ToggleButton';
+import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -168,11 +169,23 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
           <DangerZoneBlock
             type="connector_reset"
             sx={{ title: { display: 'none' } }}
-            component={(
-              <MenuItem onClick={handleOpenResetState} sx={{ color: theme.palette.dangerZone.main, gap: 1 }}>
-                <span>{t_i18n('Reset')}</span>
-                <DangerZoneChip />
-              </MenuItem>
+            component={({ disabled, style }) => (
+              <Tooltip
+                title={t_i18n('Resetting the connector state enables you to restart the ingestion process from the very beginning. This can lead to a significant amount of data to re-process.')}
+                placement="left"
+              >
+                <span>
+                  <MenuItem
+                    onClick={handleOpenResetState}
+                    disabled={disabled}
+                    sx={{ color: theme.palette.dangerZone.main, gap: 1 }}
+                    style={style}
+                  >
+                    <span>{t_i18n('Reset')}</span>
+                    <DangerZoneChip />
+                  </MenuItem>
+                </span>
+              </Tooltip>
             )}
           />
         ) : (
