@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { isTiDBEntityType, elPaginateTiDB, elFindByIdsTiDB } from './engine-tidb';
+import { isTiDBEntityType, elPaginateTiDB, elFindByIdsTiDB, isTiDBSupportedFilter } from './engine-tidb';
 import {
   buildPagination,
   isEmptyField,
@@ -452,21 +452,25 @@ export const pageEntitiesConnection = async <T extends BasicStoreEntity>(
   entityTypes: Array<string>,
   args: EntityOptions<T> = {},
 ): Promise<BasicConnection<T>> => {
-  // Route to TiDB engine for supported entity types, but only when there are
-  // no advanced filters (e.g. INSTANCE_REGARDING_OF used by subSectors /
-  // isSubSector) that TiDB cannot evaluate yet.
-  const hasFilters = args.filters && isFilterGroupNotEmpty(args.filters);
-  if (isTiDBEntityType(entityTypes) && !hasFilters) {
-    const first = args.first ?? ES_DEFAULT_PAGINATION;
-    return elPaginateTiDB<T>(context, user, null, {
-      types: entityTypes,
-      first,
-      after: args.after,
-      orderBy: args.orderBy,
-      orderMode: args.orderMode as 'asc' | 'desc' | null,
-      search: args.search,
-      connectionFormat: true,
-    }) as Promise<BasicConnection<T>>;
+  // Route to TiDB engine for supported entity types when:
+  // - No filters at all, OR
+  // - The only filter is regardingOf (which opencti-ng can handle natively)
+  if (isTiDBEntityType(entityTypes)) {
+    const hasFilters = args.filters && isFilterGroupNotEmpty(args.filters);
+    const canTiDBHandle = !hasFilters || isTiDBSupportedFilter(args.filters!);
+    if (canTiDBHandle) {
+      const first = args.first ?? ES_DEFAULT_PAGINATION;
+      return elPaginateTiDB<T>(context, user, null, {
+        types: entityTypes,
+        first,
+        after: args.after,
+        orderBy: args.orderBy,
+        orderMode: args.orderMode as 'asc' | 'desc' | null,
+        search: args.search,
+        connectionFormat: true,
+        filters: hasFilters ? args.filters : undefined,
+      }) as Promise<BasicConnection<T>>;
+    }
   }
   const { indices } = args;
   const computedIndices = computeQueryIndices(indices, entityTypes);
