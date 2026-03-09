@@ -23,7 +23,7 @@ export const up = async (next) => {
       .flat()
       .filter((hiddenTypes) => isNotEmptyField(hiddenTypes));
     const patch = { default_hidden_types: defaultHiddenTypes };
-    await elReplace(group._index, group.id, { doc: patch });
+    await elReplace(context, group._index, group.id, { doc: patch });
   };
   await Promise.map(groups, updateGroup, { concurrency: ES_MAX_CONCURRENCY });
   // Remove default_hidden_types for role

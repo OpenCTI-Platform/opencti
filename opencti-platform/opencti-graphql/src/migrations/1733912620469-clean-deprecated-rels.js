@@ -73,7 +73,7 @@ export const up = async (next) => {
   let currentProcessingRelatedTo = 0;
   const groupsOfOperationsRelatedTo = R.splitEvery(MAX_BULK_OPERATIONS, bulkOperationsRelatedTo);
   const concurrentUpdateRelatedTo = async (bulk) => {
-    await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulk });
+    await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessingRelatedTo += bulk.length;
     logMigration.info(`[OPENCTI] Cleaning deprecated rels for observable related-to ${currentProcessingRelatedTo} / ${bulkOperationsRelatedTo.length}`);
   };
@@ -123,7 +123,7 @@ export const up = async (next) => {
   let currentProcessing = 0;
   const groupsOfOperations = R.splitEvery(MAX_BULK_OPERATIONS, bulkOperationsLocatedAt);
   const concurrentUpdate = async (bulk) => {
-    await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulk });
+    await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessing += bulk.length;
     logMigration.info(`[OPENCTI] Cleaning deprecated rels for located-at to country / region ${currentProcessing} / ${bulkOperationsLocatedAt.length}`);
   };

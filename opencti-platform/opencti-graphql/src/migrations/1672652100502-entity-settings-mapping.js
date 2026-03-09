@@ -51,7 +51,7 @@ export const up = async (next) => {
   settingsFromEl.platform_hidden_types = null;
 
   const esData = await prepareElementForIndexing(settingsFromEl);
-  await elReplace(settingsFromEl._index, settingsFromEl.internal_id, { doc: esData });
+  await elReplace(context, settingsFromEl._index, settingsFromEl.internal_id, { doc: esData });
 
   next();
 };

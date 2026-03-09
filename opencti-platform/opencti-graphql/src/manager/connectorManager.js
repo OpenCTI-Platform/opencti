@@ -45,7 +45,7 @@ const closeOldWorks = async (context, connector) => {
             const sourceScript = `ctx._source['status'] = "complete";
                 ctx._source['completed_time'] = params.completed_time;
                 ctx._source['completed_number'] = params.completed_number;`;
-            await elUpdate(element._index, element.internal_id, {
+            await elUpdate(context, element._index, element.internal_id, {
               script: {
                 source: sourceScript,
                 lang: 'painless',
@@ -85,7 +85,7 @@ export const deleteCompletedWorks = async (context, connector) => {
   const queryCallback = async (elements) => {
     const message = `[WORKS] Deleting ${elements.length} works for ${connector.name}`;
     logApp.info(message);
-    await deleteWorksRaw(elements);
+    await deleteWorksRaw(context, elements);
   };
   await elList(context, SYSTEM_USER, [READ_INDEX_HISTORY], {
     filters,
