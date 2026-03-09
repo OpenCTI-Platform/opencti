@@ -165,6 +165,19 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             True,
             0,
         )
+        # OpenCTI-NG (optional dual-write / replacement engine)
+        self.opencti_ng_url = get_config_variable(
+            "OPENCTI_NG_URL",
+            ["opencti_ng", "url"],
+            config,
+            default=None,
+        )
+        self.opencti_ng_token = get_config_variable(
+            "OPENCTI_NG_TOKEN",
+            ["opencti_ng", "token"],
+            config,
+            default=None,
+        )
         # Telemetry
         if self.telemetry_enabled:
             self.prom_httpd, self.prom_t = start_http_server(
@@ -287,6 +300,8 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             bundles_global_counter,
                             bundles_processing_time_gauge,
                             self.objects_max_refs,
+                            self.opencti_ng_url,
+                            self.opencti_ng_token,
                         )
                         is_realtime = is_priority_connector(
                             connector["connector_priority_group"]

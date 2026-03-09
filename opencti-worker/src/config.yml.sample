@@ -4,6 +4,11 @@ opencti:
   token: 'ChangeMe'
   json_logging: true
 
+# Optional: route STIX bundle ingestion to opencti-ng instead of GraphQL
+# opencti_ng:
+#   url: 'http://localhost:4100'
+#   token: 'ChangeMe'
+
 worker:
   log_level: 'info'
   telemetry_enabled: false
