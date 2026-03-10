@@ -3,7 +3,7 @@ import '../../../src/modules/index';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import type { Change } from '../../../src/types/event';
 import { generateMessageFromChanges, humanizeRawValue } from '../../../src/database/data-changes';
-import { type AttributeDefinition, authorizedMembers, authorizedMembersActivationDate, files, revoked, xOpenctiAliases } from '../../../src/schema/attribute-definition';
+import { type AttributeDefinition, authorizedMembers, authorizedMembersActivationDate, creators, files, revoked, xOpenctiAliases } from '../../../src/schema/attribute-definition';
 import { DefaultFormating } from '../../../src/utils/humanize';
 import { height, type Measurement, weight } from '../../../src/modules/threatActorIndividual/threatActorIndividual';
 import { workflowId } from '../../../src/modules/attributes/stixDomainObject-registrationAttributes';
@@ -177,6 +177,14 @@ describe('generateUpdatePatchMessage tests', () => {
     measure = { measure: 20, date_seen: '2026-01-28T12:27:18Z' };
     human = humanizeRawValue({}, weight as AttributeDefinition, { raw: JSON.stringify(measure) }, DefaultFormating);
     expect(human).toEqual('20.00 (kg) at January 28 2026, 12:27:18 PM');
+  });
+  it('should humanize creators correctly handled', () => {
+    let human = humanizeRawValue({}, creators as AttributeDefinition, { raw: '-' }, DefaultFormating);
+    expect(human).toEqual('Restricted');
+    human = humanizeRawValue({
+      '5f6d506d-dd03-438e-b137-245933538f02': 'Admin',
+    }, workflowId as AttributeDefinition, { raw: '5f6d506d-dd03-438e-b137-245933538f02' }, DefaultFormating);
+    expect(human).toEqual('Admin');
   });
   it('should humanize workflow correctly handled', () => {
     let human = humanizeRawValue({}, workflowId as AttributeDefinition, { raw: '-' }, DefaultFormating);
