@@ -32,6 +32,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { NarrativeCreationMutation, NarrativeCreationMutation$variables } from './__generated__/NarrativeCreationMutation.graphql';
 import { NarrativesLinesPaginationQuery$variables } from './__generated__/NarrativesLinesPaginationQuery.graphql';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const narrativeMutation = graphql`
   mutation NarrativeCreationMutation($input: NarrativeAddInput!) {
@@ -110,6 +111,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(NARRATIVE_TYPE);
@@ -125,7 +127,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
   const [commit] = useApiMutation<NarrativeCreationMutation>(
     narrativeMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Narrative')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityLabel('Narrative')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -326,6 +328,7 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
   display,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const [open, setOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -347,7 +350,7 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
   const renderClassic = () => {
     return (
       <Drawer
-        title={t_i18n('Create a narrative')}
+        title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Narrative') } })}
         header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
         controlledDial={CreateNarrativeControlledDial}
       >

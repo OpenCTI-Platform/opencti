@@ -17,11 +17,13 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
+import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
 
 export const LOCAL_STORAGE_KEY = 'incidents';
 
 const Incidents: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Incidents | Events'));
   const {
@@ -76,7 +78,7 @@ const Incidents: FunctionComponent = () => {
 
   return (
     <div data-testid="incident-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: t_i18n('Incidents'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: entityLabel('Incident', t_i18n('Incidents')), current: true }]} />
       {queryRef && (
         <DataTable
           storageKey={LOCAL_STORAGE_KEY}

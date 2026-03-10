@@ -6,6 +6,7 @@ import CountryEditionOverview from './CountryEditionOverview';
 import { CountryEditionContainerQuery } from './__generated__/CountryEditionContainerQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 interface CountryEditionContainerProps {
   handleClose: () => void;
@@ -33,11 +34,12 @@ const CountryEditionContainer: FunctionComponent<CountryEditionContainerProps> =
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const { country } = usePreloadedQuery(countryEditionQuery, queryRef);
   if (country) {
     return (
       <Drawer
-        title={t_i18n('Update a country')}
+        title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Country') } })}
         context={country.editContext}
         onClose={handleClose}
         open={open}

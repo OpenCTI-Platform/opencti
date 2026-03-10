@@ -7,6 +7,7 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { RelayError } from '../../../../relay/relayTypes';
 import DeleteDialog from '../../../../components/DeleteDialog';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const IndicatorDeletionDeleteMutation = graphql`
   mutation IndicatorDeletionDeleteMutation($id: ID!) {
@@ -17,9 +18,10 @@ const IndicatorDeletionDeleteMutation = graphql`
 const IndicatorDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_Indicator') },
+    values: { entity_type: entityLabel('Indicator') },
   });
   const [commit] = useApiMutation(
     IndicatorDeletionDeleteMutation,

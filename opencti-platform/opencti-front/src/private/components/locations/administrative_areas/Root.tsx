@@ -32,6 +32,7 @@ import AdministrativeAreaEdition from './AdministrativeAreaEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import AdministrativeAreaDeletion from './AdministrativeAreaDeletion';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const subscription = graphql`
   subscription RootAdministrativeAreasSubscription($id: ID!) {
@@ -92,6 +93,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
   useSubscription(subConfig);
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
   const { administrativeArea, connectorsForImport, connectorsForExport } = data;
@@ -130,7 +132,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
-              { label: t_i18n('Administrative areas'), link: '/dashboard/locations/administrative_areas' },
+              { label: entityLabel('Administrative-Area', t_i18n('Administrative areas')), link: '/dashboard/locations/administrative_areas' },
               { label: administrativeArea.name, current: true },
             ]}
             />

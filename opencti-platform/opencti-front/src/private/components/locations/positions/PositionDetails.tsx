@@ -5,6 +5,7 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import Chip from '@mui/material/Chip';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 import { Position_position$data } from './__generated__/Position_position.graphql';
 import type { Theme } from '../../../../components/Theme';
 import { PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery } from './__generated__/PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery.graphql';
@@ -133,6 +134,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
   queryRef,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const classes = useStyles();
   const data = usePreloadedFragment<
     PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery,
@@ -245,7 +247,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
           </Grid>
           <Grid item xs={6}>
             <Label>
-              {t_i18n('entity_Administrative-Area')}
+              {entityLabel('Administrative-Area')}
             </Label>
             <FieldOrEmpty source={areas}>
               {areas?.map((name) => (

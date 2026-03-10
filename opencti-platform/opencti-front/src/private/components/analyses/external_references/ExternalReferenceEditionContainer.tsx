@@ -4,6 +4,7 @@ import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Draw
 import { useFormatter } from '../../../../components/i18n';
 import { ExternalReferenceEditionContainer_externalReference$data } from './__generated__/ExternalReferenceEditionContainer_externalReference.graphql';
 import ExternalReferenceEditionOverview from './ExternalReferenceEditionOverview';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 interface ExternalReferenceEditionContainerProps {
   handleClose: () => void;
@@ -19,12 +20,13 @@ const ExternalReferenceEditionContainer: FunctionComponent<ExternalReferenceEdit
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
 
   const { editContext } = externalReference;
 
   return (
     <Drawer
-      title={t_i18n('Update an external reference')}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('External-Reference') } })}
       context={editContext}
       onClose={handleClose}
       open={open}

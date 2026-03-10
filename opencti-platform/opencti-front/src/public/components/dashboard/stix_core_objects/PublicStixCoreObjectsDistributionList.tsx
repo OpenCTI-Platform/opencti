@@ -3,6 +3,7 @@ import React from 'react';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
@@ -67,7 +68,7 @@ interface PublicStixCoreObjectsDistributionListComponentProps {
 const PublicStixCoreObjectsDistributionListComponent = ({
   queryRef,
 }: PublicStixCoreObjectsDistributionListComponentProps) => {
-  const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const { publicStixCoreObjectsDistribution } = usePreloadedQuery(
     publicStixCoreObjectsDistributionListQuery,
     queryRef,
@@ -76,10 +77,7 @@ const PublicStixCoreObjectsDistributionListComponent = ({
   if (publicStixCoreObjectsDistribution && publicStixCoreObjectsDistribution.length > 0) {
     const data = publicStixCoreObjectsDistribution.flatMap((n) => {
       if (!n) return [];
-      let { label } = n;
-      if (t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
-        label = t_i18n(`entity_${n.label}`);
-      }
+      let label = entityLabel(n.label);
       if (n.entity) {
         label = getMainRepresentative(n.entity);
       }

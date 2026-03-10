@@ -21,6 +21,7 @@ import CaseTask from './Task';
 import { RootTaskQuery } from './__generated__/RootTaskQuery.graphql';
 import { RootTaskSubscription } from './__generated__/RootTaskSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
@@ -77,6 +78,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
   const location = useLocation();
   const enableReferences = useIsEnforceReference('Task') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
 
   useSubscription(subConfig);
 
@@ -94,7 +96,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Cases') },
-            { label: t_i18n('Tasks'), link: '/dashboard/cases/tasks' },
+            { label: entityLabel('Task', t_i18n('Tasks')), link: '/dashboard/cases/tasks' },
             { label: data.name, current: true },
           ]}
           />

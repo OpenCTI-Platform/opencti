@@ -40,6 +40,8 @@ export interface BasicStoreEntityEntitySetting extends BasicStoreEntity {
   overview_layout_customization?: Array<OverviewLayoutCustomization>;
   templates?: Array<FintelTemplate>;
   request_access_workflow?: RequestAccessFlow;
+  custom_name?: string;
+  custom_name_plural?: string;
 }
 
 export interface StoreEntityEntitySetting extends StoreEntity {
@@ -53,6 +55,8 @@ export interface StoreEntityEntitySetting extends StoreEntity {
   overview_layout_customization?: Array<OverviewLayoutCustomization>;
   templates?: Array<FintelTemplate>;
   request_access_workflow?: RequestAccessFlow;
+  custom_name?: string;
+  custom_name_plural?: string;
 }
 
 export interface OverviewLayoutCustomization {
@@ -78,6 +82,8 @@ export interface StoreEntityEntitySetting extends StoreEntity {
   overviewLayoutCustomization?: Array<string>;
   templates?: Array<FintelTemplate>;
   request_access_workflow?: RequestAccessFlow;
+  custom_name?: string;
+  custom_name_plural?: string;
 }
 
 export interface StixEntitySetting extends StixObject {
@@ -90,6 +96,8 @@ export interface StixEntitySetting extends StixObject {
   available_settings?: string[];
   templates?: Array<FintelTemplate>;
   request_access_workflow?: RequestAccessFlow;
+  custom_name?: string;
+  custom_name_plural?: string;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

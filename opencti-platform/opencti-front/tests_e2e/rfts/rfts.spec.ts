@@ -9,7 +9,7 @@ test('Request for takedown CRUD', { tag: ['@ce'] }, async ({ page }) => {
   const leftBarPage = new LeftBarPage(page);
   const caseRftPage = new CaseRftPage(page);
   const caseRftDetailsPage = new CaseRftDetailsPage(page);
-  const caseRftCreateForm = new CaseRftFormPage(page, 'Create a request for takedown');
+  const caseRftCreateForm = new CaseRftFormPage(page, 'Create Request for takedown');
 
   await page.goto('/dashboard/cases/rfts');
   // Open nav bar one and for all.

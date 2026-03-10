@@ -15,7 +15,7 @@ export type EntitySetting = EntitySettingSettings_entitySetting$data;
 const useEntitySettings = (entityType?: string | string[]): EntitySetting[] => {
   const { entitySettings } = useAuth();
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
-  return entitySettings.edges
+  return (entitySettings?.edges ?? [])
     .map(({ node }) => useFragment<EntitySettingSettings_entitySetting$key>(entitySettingFragment, node))
     .filter(({ target_type }: EntitySetting) => (entityType ? entityTypes.includes(target_type) : true));
 };

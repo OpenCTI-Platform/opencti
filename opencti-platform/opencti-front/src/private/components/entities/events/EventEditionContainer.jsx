@@ -4,16 +4,18 @@ import { useFormatter } from '../../../../components/i18n';
 import EventEditionOverview from './EventEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer from '../../common/drawer/Drawer';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const EventEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
 
   const { handleClose, event, open, controlledDial } = props;
   const { editContext } = event;
 
   return (
     <Drawer
-      title={t_i18n('Update an event')}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Event') } })}
       open={open}
       onClose={handleClose}
       context={editContext}

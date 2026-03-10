@@ -31,6 +31,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const administrativeAreaMutation = graphql`
   mutation AdministrativeAreaCreationMutation(
@@ -89,6 +90,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(ADMINISTRATIVE_AREA_TYPE);
@@ -108,7 +110,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
   const [commit] = useApiMutation<AdministrativeAreaCreationMutation>(
     administrativeAreaMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Administrative-Area')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityLabel('Administrative-Area')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -324,6 +326,7 @@ const AdministrativeAreaCreation = ({
   paginationOptions: AdministrativeAreasLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => {
     insertNode(
@@ -339,7 +342,7 @@ const AdministrativeAreaCreation = ({
   );
   return (
     <Drawer
-      title={t_i18n('Create an area')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Administrative-Area') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateAreaControlledDial}
     >

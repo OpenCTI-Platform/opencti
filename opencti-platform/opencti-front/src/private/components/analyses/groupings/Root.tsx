@@ -24,6 +24,7 @@ import ContainerStixCyberObservables from '../../common/containers/ContainerStix
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import { useFormatter } from '../../../../components/i18n';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -97,6 +98,7 @@ const RootGrouping = () => {
   const location = useLocation();
   const enableReferences = useIsEnforceReference('Grouping') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   useSubscription(subConfig);
 
   return (
@@ -115,7 +117,7 @@ const RootGrouping = () => {
                 <div style={{ paddingRight }}>
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
-                    { label: t_i18n('Groupings'), link: '/dashboard/analyses/groupings' },
+                    { label: entityLabel('Grouping', t_i18n('Groupings')), link: '/dashboard/analyses/groupings' },
                     { label: grouping.name, current: true },
                   ]}
                   />

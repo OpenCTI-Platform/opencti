@@ -7,6 +7,7 @@ import {
 import SecurityPlatformEditionOverview from '@components/entities/securityPlatforms/SecurityPlatformEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 interface securityPlatformContainerProps {
   handleClose: () => void;
@@ -20,11 +21,12 @@ const SecurityPlatformEditionContainer: FunctionComponent<securityPlatformContai
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const { editContext } = securityPlatform;
 
   return (
     <Drawer
-      title={t_i18n('Update a security platform')}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Security-Platform') } })}
       onClose={handleClose}
       context={editContext}
       controlledDial={controlledDial}

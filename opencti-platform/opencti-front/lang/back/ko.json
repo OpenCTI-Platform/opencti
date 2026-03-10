@@ -184,6 +184,8 @@
   "Current state date": "현재 상태 날짜",
   "Current stated date": "현재 명시된 날짜",
   "Current_state_hash": "현재 상태 해시",
+  "Custom display name": "사용자 지정 표시 이름",
+  "Custom display name (plural)": "사용자 지정 표시 이름 (복수형)",
   "CVSS2 Access Complexity (AC)": "CVSS2 액세스 복잡성(AC)",
   "CVSS2 Access Vector (AV)": "CVSS2 액세스 벡터(AV)",
   "CVSS2 Authentication (Au)": "CVSS2 인증(Au)",

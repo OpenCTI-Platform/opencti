@@ -1,5 +1,6 @@
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../components/i18n';
+import { useEntityLabelResolver } from './useEntityLabel';
 import { getMainRepresentative, isFieldForIdentifier } from '../defaultRepresentatives';
 import { itemColor } from '../Colors';
 import type { Widget } from '../widget/widget';
@@ -29,6 +30,7 @@ type Selection = Widget['dataSelection'][0];
 
 const useDistributionGraphData = () => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const theme = useTheme();
 
   const getColorFromDistributionNode = (n: DistributionNode, selection: Selection) => {
@@ -62,8 +64,8 @@ const useDistributionGraphData = () => {
       let { label } = n;
       if (isFieldForIdentifier(selection.attribute ?? undefined)) {
         label = getMainRepresentative(n.entity) || n.label;
-      } else if (selection.attribute === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
-        label = t_i18n(`entity_${n.label}`);
+      } else if (selection.attribute === 'entity_type') {
+        label = entityLabel(n.label);
       }
       return {
         x: label,
@@ -111,8 +113,8 @@ const useDistributionGraphData = () => {
       if (isFieldForIdentifier(groupBy)) {
         return getMainRepresentative(n.entity);
       }
-      if (groupBy === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
-        return t_i18n(`entity_${n.label}`);
+      if (groupBy === 'entity_type') {
+        return entityLabel(n.label);
       }
       return n.label;
     });
@@ -129,8 +131,8 @@ const useDistributionGraphData = () => {
       if (isFieldForIdentifier(groupBy)) {
         return { text: getMainRepresentative(n.entity), value: n.value ?? 0 };
       }
-      if (groupBy === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
-        return { text: t_i18n(`entity_${n.label}`), value: n.value ?? 0 };
+      if (groupBy === 'entity_type') {
+        return { text: entityLabel(n.label), value: n.value ?? 0 };
       }
       return { text: n.label, value: n.value ?? 0 };
     });

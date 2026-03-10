@@ -27,6 +27,7 @@ import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import StixCyberObservableDeletion from './StixCyberObservableDeletion';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const subscription = graphql`
   subscription RootStixCyberObservableSubscription($id: ID!) {
@@ -86,6 +87,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   useSubscription<RootStixCyberObservableSubscription>(subConfig);
 
   const {
@@ -105,7 +107,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Observations') },
-            { label: t_i18n('Observables'), link: '/dashboard/observations/observables' },
+            { label: entityLabel('Stix-Cyber-Observable', t_i18n('Observables')), link: '/dashboard/observations/observables' },
             { label: stixCyberObservable.observable_value, current: true },
           ]}
           />

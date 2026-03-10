@@ -6,6 +6,7 @@ import DataComponentEditionOverview from './DataComponentEditionOverview';
 import { DataComponentEditionContainerQuery } from './__generated__/DataComponentEditionContainerQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 export const dataComponentEditionQuery = graphql`
   query DataComponentEditionContainerQuery($id: String!) {
@@ -33,12 +34,13 @@ const DataComponentEditionContainer: FunctionComponent<DataComponentEditionConta
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const { dataComponent } = usePreloadedQuery(dataComponentEditionQuery, queryRef);
 
   if (dataComponent) {
     return (
       <Drawer
-        title={t_i18n('Update a data component')}
+        title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Data-Component') } })}
         context={dataComponent.editContext}
         onClose={handleClose}
         open={open}

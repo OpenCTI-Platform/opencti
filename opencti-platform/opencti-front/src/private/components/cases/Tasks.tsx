@@ -6,6 +6,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
+import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
@@ -110,6 +111,7 @@ export const LOCAL_STORAGE_KEY_TASKS = 'cases-casesTasks';
 
 const Tasks = () => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Tasks | Cases'));
 
@@ -164,7 +166,7 @@ const Tasks = () => {
 
   return (
     <span data-testid="task-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Tasks'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: entityLabel('Task', t_i18n('Tasks')), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
