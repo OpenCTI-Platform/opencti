@@ -71,7 +71,7 @@ jobs:
         tags: type=raw,value=${{ inputs.image_tag }}
 
     - name: Build and push
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@v7
       with:
         context: opencti-platform
         file: opencti-platform/Dockerfile_featurebranch
@@ -125,7 +125,7 @@ jobs:
         tags: type=raw,value=${{ inputs.image_tag }}
 
     - name: Build and push
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@v7
       with:
         context: opencti-worker
         file: opencti-worker/Dockerfile
