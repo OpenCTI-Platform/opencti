@@ -30,6 +30,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { IncidentCreationMutation, IncidentCreationMutation$data } from './__generated__/IncidentCreationMutation.graphql';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const IncidentMutation = graphql`
   mutation IncidentCreationMutation($input: IncidentAddInput!) {
@@ -86,10 +87,11 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const [commit] = useApiMutation(
     IncidentMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Incident')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityLabel('Incident')} ${t_i18n('successfully created')}` },
   );
   const { mandatoryAttributes } = useIsMandatoryAttribute(INCIDENT_TYPE);
   const basicShape = yupShapeConditionalRequired({
@@ -289,13 +291,14 @@ const IncidentCreation = ({
   paginationOptions: IncidentsLinesQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_incidents', paginationOptions, 'incidentAdd');
   const CreateIncidentControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Incident" {...props} />
   );
   return (
     <Drawer
-      title={t_i18n('Create an incident')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Incident') } })}
       controlledDial={CreateIncidentControlledDial}
     >
       {({ onClose }) => (

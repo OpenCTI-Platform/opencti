@@ -15,7 +15,7 @@ export default class CaseRftFormPage {
   }
 
   getCreateTitle() {
-    return this.page.getByRole('heading', { name: 'Create a request for takedown' });
+    return this.page.getByRole('heading', { name: 'Create Request for takedown' });
   }
 
   getCreateButton() {

@@ -34,8 +34,8 @@ test('Incident Response Creation', { tag: ['@ce'] }, async ({ page }) => {
   const leftNavigation = new LeftBarPage(page);
   const incidentResponsePage = new IncidentResponsePage(page);
   const incidentResponseDetailsPage = new IncidentResponseDetailsPage(page);
-  const incidentResponseForm = new IncidentResponseFormPage(page, 'Create an incident response');
-  const incidentResponseUpdateForm = new IncidentResponseFormPage(page, 'Update an incident response');
+  const incidentResponseForm = new IncidentResponseFormPage(page, 'Create Incident response');
+  const incidentResponseUpdateForm = new IncidentResponseFormPage(page, 'Update Incident response');
 
   await page.goto('/dashboard/cases/incidents');
   // open nav bar once and for all
@@ -296,7 +296,7 @@ test('Incident response live entities creation and relationships', { tag: ['@ce'
   const leftNavigation = new LeftBarPage(page);
   const toolbar = new ToolbarPageModel(page);
   const incidentResponsePage = new IncidentResponsePage(page);
-  const incidentResponseForm = new IncidentResponseFormPage(page, 'Create an incident response');
+  const incidentResponseForm = new IncidentResponseFormPage(page, 'Create Incident response');
   const authorForm = new AuthorFormPageModel(page);
   const labelForm = new LabelFormPageModel(page);
   const incidentResponseDetailsPage = new IncidentResponseDetailsPage(page);

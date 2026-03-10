@@ -12,6 +12,7 @@ import IncidentEditionDetails from './IncidentEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { IncidentEditionContainerQuery } from './__generated__/IncidentEditionContainerQuery.graphql';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 interface IncidentEditionContainerProps {
   queryRef: PreloadedQuery<IncidentEditionContainerQuery>;
@@ -41,6 +42,7 @@ const IncidentEditionContainer: FunctionComponent<IncidentEditionContainerProps>
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const { incident } = usePreloadedQuery(IncidentEditionQuery, queryRef);
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (event: React.SyntheticEvent, value: number) => setCurrentTab(value);
@@ -50,7 +52,7 @@ const IncidentEditionContainer: FunctionComponent<IncidentEditionContainerProps>
   }
   return (
     <Drawer
-      title={t_i18n('Update an incident')}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Incident') } })}
       controlledDial={controlledDial}
       context={incident?.editContext}
       onClose={handleClose}

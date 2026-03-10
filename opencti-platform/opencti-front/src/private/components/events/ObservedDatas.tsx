@@ -14,6 +14,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
 
 const LOCAL_STORAGE_KEY = 'observedDatas';
 
@@ -124,6 +125,7 @@ const observedDatasLinesFragment = graphql`
 
 const ObservedDatas: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Observed Data | Events'));
   const {
@@ -183,7 +185,7 @@ const ObservedDatas: FunctionComponent = () => {
 
   return (
     <span data-testid="observed-data">
-      <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: t_i18n('Observed datas'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: entityLabel('Observed-Data', t_i18n('Observed datas')), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../components/DeleteDialog';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const positionDeletionMutation = graphql`
@@ -26,10 +27,11 @@ const PositionDeletion: FunctionComponent<PositionDeletionProps> = ({
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_Position') },
+    values: { entity_type: entityLabel('Position') },
   });
   const [commitMutation] = useApiMutation(
     positionDeletionMutation,

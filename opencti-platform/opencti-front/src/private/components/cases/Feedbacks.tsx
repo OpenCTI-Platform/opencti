@@ -7,6 +7,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
+import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
@@ -124,6 +125,7 @@ export const LOCAL_STORAGE_KEY_FEEDBACK = 'feedbacks';
 
 const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Feedbacks | Cases'));
   const {
@@ -185,7 +187,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
 
   return (
     <span data-testid="feedback-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Feedbacks'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: entityLabel('Feedback', t_i18n('Feedbacks')), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

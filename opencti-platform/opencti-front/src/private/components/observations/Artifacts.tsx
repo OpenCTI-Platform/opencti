@@ -16,6 +16,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
 
 const LOCAL_STORAGE_KEY = 'artifacts';
 
@@ -131,6 +132,7 @@ const artifactsLinesFragment = graphql`
 
 const Artifacts: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Artifacts | Observations'));
   const {
@@ -184,7 +186,7 @@ const Artifacts: FunctionComponent = () => {
   return (
     <div data-testid="artifact-page">
       <ExportContextProvider>
-        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Artifacts'), current: true }]} />
+        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: entityLabel('Artifact', t_i18n('Artifacts')), current: true }]} />
         {queryRef && (
           <DataTable
             dataColumns={dataColumns}

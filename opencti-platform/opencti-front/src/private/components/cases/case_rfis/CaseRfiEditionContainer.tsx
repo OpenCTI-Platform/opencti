@@ -7,6 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { CaseRfiEditionContainerCaseQuery } from './__generated__/CaseRfiEditionContainerCaseQuery.graphql';
 import CaseRfiEditionOverview from './CaseRfiEditionOverview';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 interface CaseRfiEditionContainerProps {
   queryRef: PreloadedQuery<CaseRfiEditionContainerCaseQuery>;
@@ -34,13 +35,14 @@ const CaseRfiEditionContainer: FunctionComponent<CaseRfiEditionContainerProps> =
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const { caseRfi } = usePreloadedQuery(caseRfiEditionQuery, queryRef);
   if (caseRfi === null) {
     return <ErrorNotFound />;
   }
   return (
     <Drawer
-      title={t_i18n('Update a request for information')}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Case-Rfi') } })}
       context={caseRfi?.editContext}
       onClose={handleClose}
       open={open}

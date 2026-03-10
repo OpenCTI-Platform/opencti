@@ -184,6 +184,8 @@
   "Current state date": "Текущая дата состояния",
   "Current stated date": "Текущая заявленная дата",
   "Current_state_hash": "Текущее_состояние_хэша",
+  "Custom display name": "Пользовательское отображаемое имя",
+  "Custom display name (plural)": "Пользовательское отображаемое имя (множественное число)",
   "CVSS2 Access Complexity (AC)": "CVSS2 Access Complexity (AC)",
   "CVSS2 Access Vector (AV)": "Вектор доступа CVSS2 (AV)",
   "CVSS2 Authentication (Au)": "CVSS2 Аутентификация (Au)",

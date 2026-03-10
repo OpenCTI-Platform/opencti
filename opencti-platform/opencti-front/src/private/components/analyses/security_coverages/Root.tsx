@@ -15,6 +15,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { getPaddingRight, isNotEmptyField } from '../../../../utils/utils';
 import SecurityCoverageEdition from './SecurityCoverageEdition';
@@ -74,6 +75,7 @@ type RootSecurityCoverageProps = {
 const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCoverageProps) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const {
     securityCoverage,
     connectorsForExport,
@@ -97,7 +99,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Analyses') },
-            { label: t_i18n('Security coverages'), link: '/dashboard/analyses/security_coverages' },
+            { label: entityLabel('Security-Coverage', t_i18n('Security coverages')), link: '/dashboard/analyses/security_coverages' },
             { label: securityCoverage.name, current: true },
           ]}
           />

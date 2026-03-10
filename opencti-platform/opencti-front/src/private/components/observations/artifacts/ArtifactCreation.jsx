@@ -17,6 +17,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import Drawer from '@components/common/drawer/Drawer';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const artifactMutation = graphql`
   mutation ArtifactCreationMutation(
@@ -47,11 +48,12 @@ const ArtifactCreation = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const [open, setOpen] = useState(false);
   const [commit] = useApiMutation(
     artifactMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Artifact')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityLabel('Artifact')} ${t_i18n('successfully created')}` },
   );
 
   const handleOpen = () => {
@@ -105,7 +107,7 @@ const ArtifactCreation = ({
         onOpen={handleOpen}
       />
       <Drawer
-        title={t_i18n('Create an artifact')}
+        title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Artifact') } })}
         open={open}
         onClose={handleClose}
       >

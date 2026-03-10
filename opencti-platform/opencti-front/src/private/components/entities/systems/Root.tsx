@@ -29,6 +29,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import SystemEdition from './SystemEdition';
 import SystemDeletion from './SystemDeletion';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const subscription = graphql`
   subscription RootSystemsSubscription($id: ID!) {
@@ -113,6 +114,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
   };
 
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   useSubscription<RootSystemsSubscription>(subConfig);
 
   const {
@@ -157,7 +159,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: t_i18n('Systems'), link: '/dashboard/entities/systems' },
+              { label: entityLabel('System', t_i18n('Systems')), link: '/dashboard/entities/systems' },
               { label: system.name, current: true },
             ]}
             />

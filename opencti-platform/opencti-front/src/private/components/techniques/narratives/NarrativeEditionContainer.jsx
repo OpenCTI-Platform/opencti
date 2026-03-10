@@ -4,16 +4,18 @@ import { useFormatter } from '../../../../components/i18n';
 import NarrativeEditionOverview from './NarrativeEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer from '../../common/drawer/Drawer';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const NarrativeEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
 
   const { handleClose, narrative, open, controlledDial } = props;
   const { editContext } = narrative;
 
   return (
     <Drawer
-      title={t_i18n('Update a narrative')}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Narrative') } })}
       open={open}
       onClose={handleClose}
       context={editContext}

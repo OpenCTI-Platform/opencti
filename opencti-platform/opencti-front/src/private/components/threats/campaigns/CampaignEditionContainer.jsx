@@ -8,9 +8,11 @@ import CampaignEditionOverview from './CampaignEditionOverview';
 import CampaignEditionDetails from './CampaignEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer from '../../common/drawer/Drawer';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const CampaignEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
 
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (event, value) => setCurrentTab(value);
@@ -19,7 +21,7 @@ const CampaignEditionContainer = (props) => {
   const { editContext } = campaign;
   return (
     <Drawer
-      title={t_i18n('Update a campaign')}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Campaign') } })}
       open={open}
       onClose={handleClose}
       context={editContext}

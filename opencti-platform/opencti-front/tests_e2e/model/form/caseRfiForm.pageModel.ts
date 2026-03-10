@@ -15,11 +15,11 @@ export default class CaseRfiFormPage {
   }
 
   getCreateTitle() {
-    return this.page.getByRole('heading', { name: 'Create a request for information' });
+    return this.page.getByRole('heading', { name: 'Create Request for information' });
   }
 
   getUpdateTitle() {
-    return this.page.getByRole('heading', { name: 'Update a request for information' });
+    return this.page.getByRole('heading', { name: 'Update Request for information' });
   }
 
   getCreateButton() {

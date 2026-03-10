@@ -10,8 +10,8 @@ test('Request for information CRUD', { tag: ['@ce'] }, async ({ page }) => {
   const leftBarPage = new LeftBarPage(page);
   const caseRfiPage = new CaseRfiPage(page);
   const caseRfiDetailsPage = new CaseRfiDetailsPage(page);
-  const caseRfiCreateForm = new CaseRfiFormPage(page, 'Create a request for information');
-  const caseRfiUpdateForm = new CaseRfiFormPage(page, 'Update a request for information');
+  const caseRfiCreateForm = new CaseRfiFormPage(page, 'Create Request for information');
+  const caseRfiUpdateForm = new CaseRfiFormPage(page, 'Update Request for information');
   const participantsForm = new ParticipantsFormPage(page);
 
   await page.goto('/dashboard/cases/rfis');

@@ -21,6 +21,7 @@ import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../uti
 import ObservedDataDeletion from './ObservedDataDeletion';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const subscription = graphql`
   subscription RootObservedDataSubscription($id: ID!) {
@@ -75,6 +76,7 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
   }), [observedDataId]);
 
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
 
   useSubscription<RootObservedDataSubscription>(subConfig);
 
@@ -93,7 +95,7 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
       <div>
         <Breadcrumbs elements={[
           { label: t_i18n('Events') },
-          { label: t_i18n('Observed datas'), link: '/dashboard/events/observed_data' },
+          { label: entityLabel('Observed-Data', t_i18n('Observed datas')), link: '/dashboard/events/observed_data' },
           { label: observedData.name, current: true },
         ]}
         />

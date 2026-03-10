@@ -4,16 +4,18 @@ import { useFormatter } from '../../../../components/i18n';
 import SystemEditionOverview from './SystemEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer from '../../common/drawer/Drawer';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const SystemEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
 
   const { handleClose, system, open, controlledDial } = props;
   const { editContext } = system;
 
   return (
     <Drawer
-      title={t_i18n('Update a system')}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('System') } })}
       open={open}
       onClose={handleClose}
       context={editContext}
