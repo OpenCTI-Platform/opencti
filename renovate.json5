@@ -21,15 +21,20 @@
   updateNotScheduled: false,
   rebaseWhen: 'conflicted',
   packageRules: [
-    // override for CKEditor monorepos to add ckeditor5-react
+    // Prevent major updates for jose when used as a resolution override for openid-clientv5
+    // The resolution "openid-clientv5/jose" pins jose@5.x for openid-client v5 compatibility.
     {
-      extends: [
-        'monorepo:ckeditor',
+      matchPackageNames: [
+        'jose'
       ],
-      matchSourceUrls: [
-        'https://github.com/ckeditor/ckeditor5',
-        'https://github.com/ckeditor/ckeditor5-react',
-      ]
+      matchDepTypes: [
+        'resolutions'
+      ],
+      matchUpdateTypes: [
+        'major'
+      ],
+      enabled: false,
+      description: 'Do not update openid-clientv5/jose resolution to major versions'
     },
     {
       description: 'Disable updates of images intentionally pinned to older versions for compatibility testing',
@@ -68,13 +73,13 @@
         'pin',
         'digest',
       ],
-      rebaseWhen: 'always',
+      rebaseWhen: 'auto',
     }
   ],
   // do lock file maintenance once a week on Sunday
   lockFileMaintenance: {
     schedule: ['* * * * 0'],
-    rebaseWhen: 'always',
+    rebaseWhen: 'auto',
     enabled: true,
   }
 }
