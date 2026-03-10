@@ -491,60 +491,6 @@ export const searchEngineInit = async (): Promise<boolean> => {
 };
 export const isRuntimeSortEnable = (): boolean => isRuntimeSortingEnable;
 
-export const elRawSearch = (context: AuthContext, user: AuthUser, types: string[] | string | null, query: any) => {
-  // Add signal to prevent unwanted warning
-  // Waiting for https://github.com/elastic/elastic-transport-js/issues/63
-  const searchOpts = { signal: new AbortController().signal };
-  const elRawSearchFn = async () => (engine instanceof ElkClient ? engine.search(query, searchOpts) : engine.search(query)).then((r: any) => {
-    const parsedSearch = oebp(r);
-    if (parsedSearch._shards.failed > 0) {
-      // We do not support response with shards failure.
-      // Result must be always accurate to prevent data duplication and unwanted behaviors
-      // If any shard fail during query, engine throw a shard exception with shards information
-      throw EngineShardsError({ shards: parsedSearch._shards });
-    }
-    // Return result of the search if everything goes well
-    return parsedSearch;
-  });
-  return telemetry(context, user, `SELECT ${Array.isArray(types) ? types.join(', ') : (types || 'None')}`, {
-    [SEMATTRS_DB_NAME]: 'search_engine',
-    [SEMATTRS_DB_OPERATION]: 'read',
-    [SEMATTRS_DB_STATEMENT]: JSON.stringify(query),
-  }, elRawSearchFn);
-};
-
-export const elRawGet = async (args: { id: string; index: string }) => {
-  if (engine instanceof ElkClient) {
-    const r = await engine.get(args);
-    return oebp(r);
-  }
-  const r_1 = await engine.get(args);
-  return oebp(r_1);
-};
-export const elRawIndex = async (args: any) => {
-  if (engine instanceof ElkClient) {
-    const r = await engine.index(args);
-    return oebp(r);
-  }
-  const r_1 = await engine.index(args);
-  return oebp(r_1);
-};
-export const elRawDelete = async (args: any) => {
-  if (engine instanceof ElkClient) {
-    const r = await engine.delete(args);
-    return oebp(r);
-  }
-  const r_1 = await engine.delete(args);
-  return oebp(r_1);
-};
-export const elRawDeleteByQuery = async (query: any) => {
-  if (engine instanceof ElkClient) {
-    const r = await engine.deleteByQuery(query);
-    return oebp(r);
-  }
-  const r_1 = await engine.deleteByQuery(query);
-  return oebp(r_1);
-};
 const BULK_MAX_RETRIES = 5;
 const BULK_INITIAL_DELAY_MS = 500;
 
@@ -568,15 +514,10 @@ const isTransitoryError = (error: any): boolean => {
   return false;
 };
 
-export const elRawBulk = async (args: any) => {
+export const retryElOperations = async (operation: () => Promise<any>): Promise<any> => {
   for (let attempt = 0; attempt <= BULK_MAX_RETRIES; attempt += 1) {
     try {
-      if (engine instanceof ElkClient) {
-        const r = await engine.bulk(args);
-        return oebp(r);
-      }
-      const r_1 = await engine.bulk(args);
-      return oebp(r_1);
+      return await operation();
     } catch (error) {
       if (attempt < BULK_MAX_RETRIES && isTransitoryError(error)) {
         const delayMs = BULK_INITIAL_DELAY_MS * (2 ** attempt);
@@ -588,21 +529,109 @@ export const elRawBulk = async (args: any) => {
     }
   }
 };
+
+export const elRawSearch = (context: AuthContext, user: AuthUser, types: string[] | string | null, query: any) => {
+  // Add signal to prevent unwanted warning
+  // Waiting for https://github.com/elastic/elastic-transport-js/issues/63
+  const searchOpts = { signal: new AbortController().signal };
+  const elRawSearchFn = async () => (engine instanceof ElkClient ? engine.search(query, searchOpts) : engine.search(query)).then((r: any) => {
+    const parsedSearch = oebp(r);
+    if (parsedSearch._shards.failed > 0) {
+      // We do not support response with shards failure.
+      // Result must be always accurate to prevent data duplication and unwanted behaviors
+      // If any shard fail during query, engine throw a shard exception with shards information
+      throw EngineShardsError({ shards: parsedSearch._shards });
+    }
+    // Return result of the search if everything goes well
+    return parsedSearch;
+  });
+  const retriedElRawSearchFn = async () => {
+    const searchOperation = async () => elRawSearchFn();
+    return retryElOperations(searchOperation);
+  };
+  return telemetry(context, user, `SELECT ${Array.isArray(types) ? types.join(', ') : (types || 'None')}`, {
+    [SEMATTRS_DB_NAME]: 'search_engine',
+    [SEMATTRS_DB_OPERATION]: 'read',
+    [SEMATTRS_DB_STATEMENT]: JSON.stringify(query),
+  }, retriedElRawSearchFn);
+};
+
+export const elRawGet = async (args: { id: string; index: string }) => {
+  const rawGetOperation = async () => {
+    if (engine instanceof ElkClient) {
+      const r = await engine.get(args);
+      return oebp(r);
+    }
+    const r_1 = await engine.get(args);
+    return oebp(r_1);
+  };
+  return retryElOperations(rawGetOperation);
+};
+export const elRawIndex = async (args: any) => {
+  const rawIndexOperation = async () => {
+    if (engine instanceof ElkClient) {
+      const r = await engine.index(args);
+      return oebp(r);
+    }
+    const r_1 = await engine.index(args);
+    return oebp(r_1);
+  };
+  return retryElOperations(rawIndexOperation);
+};
+export const elRawDelete = async (args: any) => {
+  const rawDeleteOperation = async () => {
+    if (engine instanceof ElkClient) {
+      const r = await engine.delete(args);
+      return oebp(r);
+    }
+    const r_1 = await engine.delete(args);
+    return oebp(r_1);
+  };
+  return retryElOperations(rawDeleteOperation);
+};
+export const elRawDeleteByQuery = async (query: any) => {
+  const rawDeleteOperation = async () => {
+    if (engine instanceof ElkClient) {
+      const r = await engine.deleteByQuery(query);
+      return oebp(r);
+    }
+    const r_1 = await engine.deleteByQuery(query);
+    return oebp(r_1);
+  };
+  return retryElOperations(rawDeleteOperation);
+};
+export const elRawBulk = async (args: any) => {
+  const bulkOperation = async () => {
+    if (engine instanceof ElkClient) {
+      const r = await engine.bulk(args);
+      return oebp(r);
+    }
+    const r_1 = await engine.bulk(args);
+    return oebp(r_1);
+  };
+  return retryElOperations(bulkOperation);
+};
 export const elRawUpdateByQuery = async (query: any) => {
-  if (engine instanceof ElkClient) {
-    const r = await engine.updateByQuery(query);
-    return oebp(r);
-  }
-  const r_1 = await engine.updateByQuery(query);
-  return oebp(r_1);
+  const rawUpdateOperation = async () => {
+    if (engine instanceof ElkClient) {
+      const r = await engine.updateByQuery(query);
+      return oebp(r);
+    }
+    const r_1 = await engine.updateByQuery(query);
+    return oebp(r_1);
+  };
+  return retryElOperations(rawUpdateOperation);
 };
 export const elRawReindexByQuery = async (query: any) => {
-  if (engine instanceof ElkClient) {
-    const r = await engine.reindex(query);
-    return oebp(r);
-  }
-  const r_1 = await engine.reindex(query);
-  return oebp(r_1);
+  const rawReindexOperation = async () => {
+    if (engine instanceof ElkClient) {
+      const r = await engine.reindex(query);
+      return oebp(r);
+    }
+    const r_1 = await engine.reindex(query);
+    return oebp(r_1);
+  };
+  return retryElOperations(rawReindexOperation);
 };
 
 const elOperationForMigration = (operation: (query: any) => Promise<any>): (message: string, index: string, body: any) => Promise<any> => {
