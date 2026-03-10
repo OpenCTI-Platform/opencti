@@ -493,7 +493,7 @@ export const isRuntimeSortEnable = (): boolean => isRuntimeSortingEnable;
 export const elRawSearch = (context: AuthContext, user: AuthUser, types: string[] | string | null, query: any) => {
   // Add default signal to prevent unwanted warning
   // Waiting for https://github.com/elastic/elastic-transport-js/issues/63
-  const requestAbortSignal = context.requestAbortSignal ?? new AbortController().signal;
+  const requestAbortSignal = context?.requestAbortSignal ?? new AbortController().signal;
   const elRawSearchFn = async () => {
     let searchPromise: Promise<any>;
     if (engine instanceof ElkClient) {
