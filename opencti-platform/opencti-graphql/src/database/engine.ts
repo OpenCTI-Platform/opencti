@@ -587,8 +587,6 @@ export const elRawBulk = async (args: any) => {
       }
     }
   }
-  // This should never be reached, but satisfies TypeScript
-  throw DatabaseError('Bulk request failed after all retries');
 };
 export const elRawUpdateByQuery = async (query: any) => {
   if (engine instanceof ElkClient) {
