@@ -43,6 +43,7 @@ import {
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
+  wait,
   waitInSec,
   WRITE_PLATFORM_INDICES,
 } from './utils';
@@ -544,13 +545,50 @@ export const elRawDeleteByQuery = async (query: any) => {
   const r_1 = await engine.deleteByQuery(query);
   return oebp(r_1);
 };
-export const elRawBulk = async (args: any) => {
-  if (engine instanceof ElkClient) {
-    const r = await engine.bulk(args);
-    return oebp(r);
+const BULK_MAX_RETRIES = 5;
+const BULK_INITIAL_DELAY_MS = 500;
+
+const isTransitoryError = (error: any): boolean => {
+  const statusCode = error?.statusCode ?? error?.meta?.statusCode ?? error?.status;
+  // 429: Too many requests, 503: Service unavailable, both can be transient and should be retried
+  if (statusCode === 429 || statusCode === 503) {
+    return true;
   }
-  const r_1 = await engine.bulk(args);
-  return oebp(r_1);
+  const errorCode = error?.code ?? error?.cause?.code;
+  // All these error codes are commonly associated with transient issues that can occur in network communication
+  // or when the search engine is under heavy load, and thus are good candidates for retrying the operation.
+  if (['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT', 'EPIPE', 'EAI_AGAIN'].includes(errorCode)) {
+    return true;
+  }
+  const errorMessage = error?.message ?? '';
+  // All these error messages are commonly associated with transient issues that can occur when the search engine is under heavy load
+  if (/circuit_breaking_exception|es_rejected_execution|too_many_requests|service_unavailable/i.test(errorMessage)) {
+    return true;
+  }
+  return false;
+};
+
+export const elRawBulk = async (args: any) => {
+  for (let attempt = 0; attempt <= BULK_MAX_RETRIES; attempt += 1) {
+    try {
+      if (engine instanceof ElkClient) {
+        const r = await engine.bulk(args);
+        return oebp(r);
+      }
+      const r_1 = await engine.bulk(args);
+      return oebp(r_1);
+    } catch (error) {
+      if (attempt < BULK_MAX_RETRIES && isTransitoryError(error)) {
+        const delayMs = BULK_INITIAL_DELAY_MS * (2 ** attempt);
+        logApp.warn(`[SEARCH] Bulk request transitory error, retrying in ${delayMs}ms (attempt ${attempt + 1}/${BULK_MAX_RETRIES})`, { cause: error });
+        await wait(delayMs);
+      } else {
+        throw error;
+      }
+    }
+  }
+  // This should never be reached, but satisfies TypeScript
+  throw DatabaseError('Bulk request failed after all retries');
 };
 export const elRawUpdateByQuery = async (query: any) => {
   if (engine instanceof ElkClient) {
