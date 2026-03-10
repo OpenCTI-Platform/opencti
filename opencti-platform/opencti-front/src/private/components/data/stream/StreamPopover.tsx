@@ -38,7 +38,7 @@ const StreamCollectionPopover: FunctionComponent<StreamCollectionPopoverProps> =
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-
+  console.log('streamCollection : ', streamCollection);
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
 
@@ -131,7 +131,7 @@ const StreamCollectionPopover: FunctionComponent<StreamCollectionPopoverProps> =
             </MenuItem>
           </>
         </Security>
-        <MenuItem onClick={handleOpenStream}>
+        <MenuItem onClick={handleOpenStream} disabled={!streamCollection.stream_live}>
           <ListItemIcon>
             <OpenInNewOutlined fontSize="small" />
           </ListItemIcon>
