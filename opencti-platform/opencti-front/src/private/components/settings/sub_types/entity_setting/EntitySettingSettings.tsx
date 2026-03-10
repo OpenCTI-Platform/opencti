@@ -1,9 +1,10 @@
-import { Box, Tooltip } from '@mui/material';
+import { Box, IconButton, TextField, Tooltip } from '@mui/material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import Grid from '@mui/material/Grid';
 import Switch from '@mui/material/Switch';
-import { InformationOutline } from 'mdi-material-ui';
+import { InformationOutline, UndoVariant } from 'mdi-material-ui';
+import { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Label from '../../../../../components/common/label/Label';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
@@ -63,6 +64,8 @@ export const entitySettingFragment = graphql`
             }
         }
     }
+    custom_name
+    custom_name_plural
   }
 `;
 
@@ -90,6 +93,10 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
 
   const [commit] = useApiMutation(entitySettingPatch);
 
+  // Local state for custom name fields
+  const [customName, setCustomName] = useState(entitySetting.custom_name ?? '');
+  const [customNamePlural, setCustomNamePlural] = useState(entitySetting.custom_name_plural ?? '');
+
   const handleSubmitField = (name: string, value: boolean) => {
     commit({
       variables: {
@@ -98,8 +105,117 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
       },
     });
   };
+
+  const handleSubmitCustomName = (name: string, value: string) => {
+    commit({
+      variables: {
+        ids: [entitySetting.id],
+        input: { key: name, value: value.trim().length > 0 ? [value.trim()] : [''] },
+      },
+    });
+  };
+
+  const handleResetCustomName = () => {
+    setCustomName('');
+    commit({
+      variables: {
+        ids: [entitySetting.id],
+        input: { key: 'custom_name', value: [''] },
+      },
+    });
+  };
+
+  const handleResetCustomNamePlural = () => {
+    setCustomNamePlural('');
+    commit({
+      variables: {
+        ids: [entitySetting.id],
+        input: { key: 'custom_name_plural', value: [''] },
+      },
+    });
+  };
+
   return (
     <Grid container={true} spacing={2}>
+      {/* Custom display name section */}
+      <Grid item xs={12}>
+        <Label action={(
+          <Tooltip
+            title={t_i18n('Customize the display name shown in the UI for this entity type. Leave empty to use the default name.')}
+          >
+            <InformationOutline
+              fontSize="small"
+              color="primary"
+            />
+          </Tooltip>
+        )}
+        >
+          {t_i18n('Custom display name')}
+        </Label>
+        <Grid container spacing={2} sx={{ mt: 1 }}>
+          <Grid item xs={6}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <TextField
+                label={t_i18n('Display name (singular)')}
+                fullWidth
+                size="small"
+                value={customName}
+                placeholder={t_i18n(`entity_${entitySetting.target_type}`)}
+                onChange={(e) => setCustomName(e.target.value)}
+                onBlur={() => handleSubmitCustomName('custom_name', customName)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSubmitCustomName('custom_name', customName);
+                  }
+                }}
+              />
+              <Tooltip title={t_i18n('Reset to default')}>
+                <span>
+                  <IconButton
+                    size="small"
+                    color="primary"
+                    disabled={!customName}
+                    onClick={handleResetCustomName}
+                  >
+                    <UndoVariant fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Box>
+          </Grid>
+          <Grid item xs={6}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <TextField
+                label={t_i18n('Display name (plural)')}
+                fullWidth
+                size="small"
+                value={customNamePlural}
+                placeholder={t_i18n(`entity_${entitySetting.target_type}s`)}
+                onChange={(e) => setCustomNamePlural(e.target.value)}
+                onBlur={() => handleSubmitCustomName('custom_name_plural', customNamePlural)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSubmitCustomName('custom_name_plural', customNamePlural);
+                  }
+                }}
+              />
+              <Tooltip title={t_i18n('Reset to default')}>
+                <span>
+                  <IconButton
+                    size="small"
+                    color="primary"
+                    disabled={!customNamePlural}
+                    onClick={handleResetCustomNamePlural}
+                  >
+                    <UndoVariant fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Box>
+          </Grid>
+        </Grid>
+      </Grid>
+
       <Grid item xs={6}>
         <div>
           <Label action={(
