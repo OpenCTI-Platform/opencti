@@ -192,6 +192,7 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
   const filesToUpload = [];
   if (!isEmptyField(updatePatch.files) && Array.isArray(updatePatch.files)) {
     const filesMarkings = updatePatch.filesMarkings || [];
+    const filesVersionsArr = updatePatch.filesVersions || [];
     const noTriggerImportArr = updatePatch.noTriggerImport || [];
     const embeddedArr = updatePatch.embedded || [];
     for (let i = 0; i < updatePatch.files.length; i += 1) {
@@ -199,9 +200,10 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
       // Use snake_case to match storage API parameter naming
       const file_markings = filesMarkings[i] || updatePatch.objectMarking?.map(({ id }) => id);
       // If the array is shorter than files, reuse the last provided value (backward compat: single value applies to all)
+      const fileVersion = filesVersionsArr[Math.min(i, filesVersionsArr.length - 1)] ?? undefined;
       const fileNoTriggerImport = noTriggerImportArr[Math.min(i, noTriggerImportArr.length - 1)] ?? false;
       const fileEmbedded = embeddedArr[Math.min(i, embeddedArr.length - 1)] ?? false;
-      filesToUpload.push({ file: fileInput, markings: file_markings, noTriggerImport: fileNoTriggerImport, embedded: fileEmbedded });
+      filesToUpload.push({ file: fileInput, markings: file_markings, version: fileVersion, noTriggerImport: fileNoTriggerImport, embedded: fileEmbedded });
     }
   }
   // Handle single file upload (backward compatibility)
@@ -228,7 +230,7 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
   const draftContext = getDraftContext(context, user);
 
   for (let i = 0; i < filesToUpload.length; i += 1) {
-    const { file: fileInput, markings: file_markings, noTriggerImport, embedded } = filesToUpload[i];
+    const { file: fileInput, version, markings: file_markings, noTriggerImport, embedded } = filesToUpload[i];
     const { filename } = await fileInput;
     // Use embedded prefix for embedded files (same as stixCoreObjectImportPush)
     const prefix = embedded ? 'embedded' : 'import';
@@ -260,6 +262,7 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
     const { upload: uploadedFile, untouched } = await uploadToStorage(context, user, filePath, fileInput, {
       entity: resolvedElement,
       file_markings,
+      meta: { version },
       noTriggerImport,
     });
 

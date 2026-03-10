@@ -647,6 +647,7 @@ class OpenCTIStix2:
                         # Prepare all files for upload during creation
                         files_to_upload = []
                         files_markings = []
+                        files_versions = []
                         no_trigger_import = []
                         embedded_flags = []
                         for file_obj in ext_ref_files:
@@ -666,6 +667,7 @@ class OpenCTIStix2:
                                 files_markings.append(
                                     file_obj.get("object_marking_refs", None)
                                 )
+                                files_versions.append(file_obj.get("version", None))
                                 no_trigger_import.append(
                                     file_obj.get("no_trigger_import", False)
                                 )
@@ -683,6 +685,7 @@ class OpenCTIStix2:
                             ),
                             files=files_to_upload if files_to_upload else None,
                             filesMarkings=files_markings if files_markings else None,
+                            filesVersions=files_versions if files_versions else None,
                             noTriggerImport=(
                                 no_trigger_import if no_trigger_import else None
                             ),
@@ -841,6 +844,7 @@ class OpenCTIStix2:
                     # Prepare all files for direct upload during creation
                     files_to_upload = []
                     files_markings = []
+                    files_versions = []
                     no_trigger_import = []
                     embedded_flags = []
                     for file_obj in all_files:
@@ -860,6 +864,7 @@ class OpenCTIStix2:
                             files_markings.append(
                                 file_obj.get("object_marking_refs", None)
                             )
+                            files_versions.append(file_obj.get("version", None))
                             no_trigger_import.append(
                                 file_obj.get("no_trigger_import", False)
                             )
@@ -876,6 +881,7 @@ class OpenCTIStix2:
                         ),
                         files=files_to_upload if files_to_upload else None,
                         filesMarkings=files_markings if files_markings else None,
+                        filesVersions=files_versions if files_versions else None,
                         noTriggerImport=(
                             no_trigger_import if no_trigger_import else None
                         ),
@@ -1132,6 +1138,7 @@ class OpenCTIStix2:
         # Prepare all files for direct upload during creation
         files_to_upload = []
         files_markings = []
+        files_versions = []
         no_trigger_import = []
         embedded_flags = []
         for file_obj in x_opencti_files:
@@ -1147,6 +1154,7 @@ class OpenCTIStix2:
                     )
                 )
                 files_markings.append(file_obj.get("object_marking_refs", None))
+                files_versions.append(file_obj.get("version", None))
                 no_trigger_import.append(file_obj.get("no_trigger_import", False))
                 embedded_flags.append(file_obj.get("embedded", False))
 
@@ -1163,6 +1171,7 @@ class OpenCTIStix2:
             "sample_ids": sample_refs_ids,
             "files": files_to_upload if files_to_upload else None,
             "filesMarkings": files_markings if files_markings else None,
+            "filesVersions": files_versions if files_versions else None,
             "noTriggerImport": no_trigger_import if no_trigger_import else None,
             "embedded": embedded_flags if embedded_flags else None,
         }
@@ -1255,6 +1264,7 @@ class OpenCTIStix2:
         # Prepare all files for direct upload during creation
         files_to_upload = []
         files_markings = []
+        files_versions = []
         no_trigger_import = []
         embedded_flags = []
         for file_obj in x_opencti_files:
@@ -1270,6 +1280,7 @@ class OpenCTIStix2:
                     )
                 )
                 files_markings.append(file_obj.get("object_marking_refs", None))
+                files_versions.append(file_obj.get("version", None))
                 no_trigger_import.append(file_obj.get("no_trigger_import", False))
                 embedded_flags.append(file_obj.get("embedded", False))
 
@@ -1287,6 +1298,7 @@ class OpenCTIStix2:
             "sample_ids": sample_refs_ids,
             "files": files_to_upload if files_to_upload else None,
             "filesMarkings": files_markings if files_markings else None,
+            "filesVersions": files_versions if files_versions else None,
             "noTriggerImport": no_trigger_import if no_trigger_import else None,
             "embedded": embedded_flags if embedded_flags else None,
         }
@@ -1337,6 +1349,7 @@ class OpenCTIStix2:
                 update=update,
                 files=extras.get("files"),
                 filesMarkings=extras.get("filesMarkings"),
+                filesVersions=extras.get("filesVersions"),
                 noTriggerImport=extras.get("noTriggerImport", False),
                 upsert_operations=upsert_operations,
             )
@@ -1365,6 +1378,7 @@ class OpenCTIStix2:
                 update=update,
                 files=extras.get("files"),
                 filesMarkings=extras.get("filesMarkings"),
+                filesVersions=extras.get("filesVersions"),
                 noTriggerImport=extras.get("noTriggerImport", False),
                 upsert_operations=upsert_operations,
             )

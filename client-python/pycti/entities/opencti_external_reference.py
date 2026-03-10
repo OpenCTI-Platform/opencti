@@ -297,6 +297,7 @@ class ExternalReference:
         update = kwargs.get("update", False)
         files = kwargs.get("files", None)
         files_markings = kwargs.get("filesMarkings", None)
+        files_versions = kwargs.get("filesVersions", None)
         no_trigger_import = kwargs.get("noTriggerImport", None)
         embedded = kwargs.get("embedded", None)
 
@@ -327,6 +328,7 @@ class ExternalReference:
                 "update": update,
                 "files": files,
                 "filesMarkings": files_markings,
+                "filesVersions": files_versions,
                 "noTriggerImport": no_trigger_import,
                 "embedded": embedded,
             }
