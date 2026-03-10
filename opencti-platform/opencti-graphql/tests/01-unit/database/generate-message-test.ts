@@ -183,7 +183,7 @@ describe('generateUpdatePatchMessage tests', () => {
     expect(human).toEqual('Restricted');
     human = humanizeRawValue({
       '5f6d506d-dd03-438e-b137-245933538f02': 'Admin',
-    }, workflowId as AttributeDefinition, { raw: '5f6d506d-dd03-438e-b137-245933538f02' }, DefaultFormating);
+    }, creators as AttributeDefinition, { raw: '5f6d506d-dd03-438e-b137-245933538f02' }, DefaultFormating);
     expect(human).toEqual('Admin');
   });
   it('should humanize workflow correctly handled', () => {
