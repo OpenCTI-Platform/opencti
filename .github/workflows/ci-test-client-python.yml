@@ -55,6 +55,7 @@ jobs:
          set -ex
          cd scripts/ci
          export TAG=${{ github.sha }}
+         export APP__ENTERPRISE_EDITION_LICENSE="$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt)"
          docker network create runner-docker-network
          docker compose --profile "backend" --profile "ci-test-pycti" up -d
 
