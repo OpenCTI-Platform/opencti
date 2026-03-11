@@ -21,11 +21,21 @@
   updateNotScheduled: false,
   rebaseWhen: 'conflicted',
   packageRules: [
-    // Prevent major updates for jose when used as a resolution override for openid-clientv5
-    // The resolution "openid-clientv5/jose" pins jose@5.x for openid-client v5 compatibility.
+    // openid-clientv5 is an aliased+patched dependency pinned to openid-client@5.7.1.
+    // Its jose resolution is also pinned. Disable all Renovate updates for both.
+    {
+      matchDepNames: [
+        'openid-clientv5',
+      ],
+      matchUpdateTypes: [
+        'major'
+      ],
+      enabled: false,
+      description: 'Do not update openid-clientv5 (aliased and patched, pinned to v5)'
+    },
     {
       matchPackageNames: [
-        'jose'
+        'jose',
       ],
       matchDepTypes: [
         'resolutions'
