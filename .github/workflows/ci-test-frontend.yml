@@ -81,7 +81,7 @@ jobs:
       run: |
          set -ex
          cd frontend-e2e-test/scripts/ci
-         printf "\nAPP__ENTERPRISE_EDITION_LICENSE=\"$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt)\"" >> ci-common.env
+         printf "\nAPP__ENTERPRISE_EDITION_LICENSE=\"$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt | tr -d '\n')\"" >> ci-common.env
          docker network create runner-docker-network
          docker compose --profile "backend" up -d
 
