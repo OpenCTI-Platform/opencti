@@ -5,6 +5,7 @@ import type * as SMO from '../types/stix-2-0-smo';
 import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
 import { INPUT_OPERATING_SYSTEM, INPUT_SAMPLE } from '../schema/stixRefRelationship';
 import {
+  ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
@@ -12,7 +13,9 @@ import {
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
   ENTITY_TYPE_INCIDENT,
+  ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
   isStixDomainObject,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY,
@@ -34,6 +37,8 @@ import { isBasicRelationship } from '../schema/stixRelationship';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField } from './utils';
 import type * as SRO from '../types/stix-2-0-sro';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
+import { convertThreatActorIndividualToStix_2_0 } from '../modules/threatActorIndividual/threatActorIndividual-converter';
 
 const CUSTOM_ENTITY_TYPES = [
   ENTITY_TYPE_CONTAINER_TASK,
@@ -164,6 +169,56 @@ export const convertIncidentToStix = (instance: StoreEntity): SDO.StixIncident =
     incident_type: instance.incident_type,
     severity: instance.severity,
     source: instance.source,
+  };
+};
+
+export const convertCampaignToStix = (instance: StoreEntity): SDO.StixCampaign => {
+  assertType(ENTITY_TYPE_CAMPAIGN, instance.entity_type);
+  return {
+    ...buildStixDomain(instance),
+    name: instance.name,
+    description: instance.description,
+    aliases: instance.aliases ?? instance.x_opencti_aliases ?? [],
+    first_seen: convertToStixDate(instance.first_seen),
+    last_seen: convertToStixDate(instance.last_seen),
+    objective: instance.objective,
+  };
+};
+
+export const convertIntrusionSetToStix = (instance: StoreEntity): SDO.StixIntrusionSet => {
+  assertType(ENTITY_TYPE_INTRUSION_SET, instance.entity_type);
+  return {
+    ...buildStixDomain(instance),
+    name: instance.name,
+    description: instance.description,
+    aliases: instance.aliases ?? instance.x_opencti_aliases ?? [],
+    first_seen: convertToStixDate(instance.first_seen),
+    last_seen: convertToStixDate(instance.last_seen),
+    goals: instance.goals,
+    resource_level: instance.resource_level,
+    primary_motivation: instance.primary_motivation,
+    secondary_motivations: instance.secondary_motivations,
+  };
+};
+
+export const convertThreatActorGroupToStix = (instance: StoreEntity): SDO.StixThreatActor & { threat_actor_group: string } => {
+  assertType(ENTITY_TYPE_THREAT_ACTOR_GROUP, instance.entity_type);
+  return {
+    ...buildStixDomain(instance),
+    name: instance.name,
+    description: instance.description,
+    threat_actor_types: instance.threat_actor_types,
+    aliases: instance.aliases ?? instance.x_opencti_aliases ?? [],
+    first_seen: convertToStixDate(instance.first_seen),
+    last_seen: convertToStixDate(instance.last_seen),
+    roles: instance.roles,
+    goals: instance.goals,
+    sophistication: instance.sophistication,
+    resource_level: instance.resource_level,
+    primary_motivation: instance.primary_motivation,
+    secondary_motivations: instance.secondary_motivations,
+    personal_motivations: instance.personal_motivations,
+    threat_actor_group: instance.name,
   };
 };
 
@@ -332,8 +387,41 @@ const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
       return externalConverter(basic);
     }
     // TODO add Location, Identity, all SDOs
+    if (ENTITY_TYPE_INCIDENT === type) {
+      return convertIncidentToStix(basic);
+    }
     if (ENTITY_TYPE_MALWARE === type) {
       return convertMalwareToStix(basic);
+    }
+    if (ENTITY_TYPE_CAMPAIGN === type) {
+      return convertCampaignToStix(basic);
+    }
+    if (ENTITY_TYPE_INTRUSION_SET === type) {
+      return convertIntrusionSetToStix(basic);
+    }
+    if (ENTITY_TYPE_THREAT_ACTOR_GROUP === type) {
+      return convertThreatActorGroupToStix(basic);
+    }
+    if (ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL === type) {
+      return convertThreatActorIndividualToStix_2_0(basic as any);
+    }
+    if (ENTITY_TYPE_TOOL === type) {
+      return convertToolToStix(basic);
+    }
+    if (ENTITY_TYPE_VULNERABILITY === type) {
+      return convertVulnerabilityToStix(basic);
+    }
+    if (ENTITY_TYPE_CONTAINER_REPORT === type) {
+      return convertReportToStix(basic);
+    }
+    if (ENTITY_TYPE_CONTAINER_NOTE === type) {
+      return convertNoteToStix(basic);
+    }
+    if (ENTITY_TYPE_CONTAINER_OBSERVED_DATA === type) {
+      return convertObservedDataToStix(basic);
+    }
+    if (ENTITY_TYPE_CONTAINER_OPINION === type) {
+      return convertOpinionToStix(basic);
     }
     // No converter_2_0 found
     throw UnsupportedError(`No entity stix 2.0 converter available for ${type}`);

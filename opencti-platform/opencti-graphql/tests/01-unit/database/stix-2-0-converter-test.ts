@@ -20,8 +20,12 @@ import { convertCaseIncidentToStix_2_0 } from '../../../src/modules/case/case-in
 import { convertCaseRftToStix_2_0 } from '../../../src/modules/case/case-rft/case-rft-converter';
 import { convertCaseRfiToStix_2_0 } from '../../../src/modules/case/case-rfi/case-rfi-converter';
 import { convertChannelToStix_2_0 } from '../../../src/modules/channel/channel-converter';
+import { convertThreatActorIndividualToStix_2_0 } from '../../../src/modules/threatActorIndividual/threatActorIndividual-converter';
 import {
+  convertCampaignToStix,
+  convertIntrusionSetToStix,
   convertToolToStix,
+  convertThreatActorGroupToStix,
   convertVulnerabilityToStix,
   convertMalwareToStix,
   convertNoteToStix,
@@ -31,7 +35,11 @@ import {
   convertIncidentToStix,
   convertSightingToStix,
 } from '../../../src/database/stix-2-0-converter';
+import { CAMPAIGN_INSTANCE, EXPECTED_CAMPAIGN } from './instances-stix-2-0-converter/SDOs/campaign';
 import { EXPECTED_INCIDENT, INCIDENT_INSTANCE } from './instances-stix-2-0-converter/SDOs/incident';
+import { EXPECTED_INTRUSION_SET, INTRUSION_SET_INSTANCE } from './instances-stix-2-0-converter/SDOs/intrusion-set';
+import { EXPECTED_THREAT_ACTOR_GROUP, THREAT_ACTOR_GROUP_INSTANCE } from './instances-stix-2-0-converter/SDOs/threat-actor-group';
+import { EXPECTED_THREAT_ACTOR_INDIVIDUAL, THREAT_ACTOR_INDIVIDUAL_INSTANCE } from './instances-stix-2-0-converter/SDOs/threat-actor-individual';
 import { EXPECTED_SIGHTING, SIGHTING_INSTANCE } from './instances-stix-2-0-converter/sightings';
 
 describe('Stix 2.0 opencti converter', () => {
@@ -55,6 +63,22 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Incident', async () => {
     const result = convertIncidentToStix(INCIDENT_INSTANCE);
     expect(result).toEqual(EXPECTED_INCIDENT);
+  });
+  it('should convert Campaign', async () => {
+    const result = convertCampaignToStix(CAMPAIGN_INSTANCE);
+    expect(result).toEqual(EXPECTED_CAMPAIGN);
+  });
+  it('should convert Intrusion Set', async () => {
+    const result = convertIntrusionSetToStix(INTRUSION_SET_INSTANCE);
+    expect(result).toEqual(EXPECTED_INTRUSION_SET);
+  });
+  it('should convert Threat Actor Group', async () => {
+    const result = convertThreatActorGroupToStix(THREAT_ACTOR_GROUP_INSTANCE);
+    expect(result).toEqual(EXPECTED_THREAT_ACTOR_GROUP);
+  });
+  it('should convert Threat Actor Individual', async () => {
+    const result = convertThreatActorIndividualToStix_2_0(THREAT_ACTOR_INDIVIDUAL_INSTANCE);
+    expect(result).toEqual(EXPECTED_THREAT_ACTOR_INDIVIDUAL);
   });
   // Containers
   it('should convert Report', async () => {
