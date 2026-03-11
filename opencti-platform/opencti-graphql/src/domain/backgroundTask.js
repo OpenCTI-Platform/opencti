@@ -186,7 +186,7 @@ export const deleteTask = async (context, user, taskId) => {
   if (taskToDelete.work_id) {
     const taskWork = await loadWorkById(context, user, taskToDelete.work_id);
     if (taskWork) {
-      await deleteWorksRaw([taskWork]);
+      await deleteWorksRaw(context, [taskWork]);
     }
   }
   return taskId;

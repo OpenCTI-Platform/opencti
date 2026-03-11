@@ -115,9 +115,9 @@ export const loadExportWorksAsProgressFiles = async (context, user, sourceId) =>
   return filterSuccessCompleted.map((item) => workToExportFile(item));
 };
 
-export const deleteWorksRaw = async (works) => {
+export const deleteWorksRaw = async (context, works) => {
   const workIds = works.map((w) => w.internal_id);
-  await elDeleteInstances(works);
+  await elDeleteInstances(context, works);
   await redisDeleteWorks(workIds);
   return workIds;
 };
@@ -125,7 +125,7 @@ export const deleteWorksRaw = async (works) => {
 export const deleteWork = async (context, user, workId) => {
   const work = await loadWorkById(context, user, workId);
   if (work) {
-    await deleteWorksRaw([work]);
+    await deleteWorksRaw(context, [work]);
     await publishUserAction({
       user,
       event_type: 'mutation',
@@ -160,7 +160,7 @@ export const deleteWorkForConnector = async (context, user, connectorId) => {
   }
   let works = await worksForConnector(context, user, connectorId, { first: 500 });
   while (works.length > 0) {
-    await deleteWorksRaw(works);
+    await deleteWorksRaw(context, works);
     works = await worksForConnector(context, user, connectorId, { first: 500 });
   }
   await publishUserAction({
@@ -177,7 +177,7 @@ export const deleteWorkForConnector = async (context, user, connectorId) => {
 export const deleteWorkForFile = async (context, user, fileId) => {
   const works = await worksForSource(context, user, fileId);
   if (works.length > 0) {
-    await deleteWorksRaw(works);
+    await deleteWorksRaw(context, works);
   }
   return true;
 };
