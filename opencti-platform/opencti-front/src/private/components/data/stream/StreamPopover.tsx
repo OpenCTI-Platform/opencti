@@ -38,7 +38,7 @@ const StreamCollectionPopover: FunctionComponent<StreamCollectionPopoverProps> =
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  console.log('streamCollection : ', streamCollection);
+
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
 
