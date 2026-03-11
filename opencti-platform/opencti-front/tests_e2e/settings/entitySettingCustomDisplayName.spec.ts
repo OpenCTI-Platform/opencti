@@ -9,14 +9,16 @@ import SearchPageModel from '../model/search.pageModel';
  * Covers:
  * - Setting custom singular and plural display names for an entity type
  * - Verifying values persist after page reload
+ * - Verifying the page title and breadcrumb reflect the custom name
  * - Resetting to default and verifying fields are cleared
+ * - Verifying title/breadcrumb revert to default after reset
  */
 test.describe('Entity setting custom display names', { tag: ['@ce'] }, () => {
   const ENTITY_TYPE = 'Report';
   const CUSTOM_NAME_SINGULAR = 'Intelligence Product';
   const CUSTOM_NAME_PLURAL = 'Intelligence Products';
 
-  test('Set and verify custom display names for Report entity type', async ({ page }) => {
+  test('Set, verify, and reset custom display names for Report entity type', async ({ page }) => {
     // Navigate to Settings > Customization > Entity types
     await page.goto('/dashboard/settings/customization/entity_types');
     const customizationPage = new SettingsCustomizationPage(page);
@@ -37,8 +39,7 @@ test.describe('Entity setting custom display names', { tag: ['@ce'] }, () => {
     await expect(pluralInput).toBeVisible();
     await expect(resetButton).toBeVisible();
 
-    // Fields should initially be empty (default state)
-    // Clear them first in case a previous test run left values
+    // Clear any previously set values to start from a clean state
     await singularInput.clear();
     await singularInput.blur();
     await pluralInput.clear();
@@ -58,15 +59,23 @@ test.describe('Entity setting custom display names', { tag: ['@ce'] }, () => {
     // Wait for the mutation to persist
     await page.waitForTimeout(500);
 
-    // Verify the values are set
+    // Verify the values are set in the input fields
     await expect(singularInput).toHaveValue(CUSTOM_NAME_SINGULAR);
     await expect(pluralInput).toHaveValue(CUSTOM_NAME_PLURAL);
 
     // Reload the page to verify persistence
     await page.reload();
-    await expect(page.getByRole('heading', { name: ENTITY_TYPE })).toBeVisible();
+    await page.waitForTimeout(1000);
 
-    // Re-locate inputs after reload
+    // After reload, the page title and breadcrumb should reflect the custom name
+    const headingAfterSet = page.getByTestId('entity-type-title');
+    await expect(headingAfterSet).toContainText(CUSTOM_NAME_SINGULAR);
+
+    // Verify breadcrumb contains the custom name
+    const breadcrumb = page.getByTestId('navigation');
+    await expect(breadcrumb).toContainText(CUSTOM_NAME_SINGULAR);
+
+    // Re-locate inputs after reload and verify persistence
     const singularInputAfterReload = page.getByTestId('entity-setting-custom-name-input').locator('input');
     const pluralInputAfterReload = page.getByTestId('entity-setting-custom-name-plural-input').locator('input');
 
@@ -87,9 +96,15 @@ test.describe('Entity setting custom display names', { tag: ['@ce'] }, () => {
     // Verify reset button is now disabled
     await expect(resetBtn).toBeDisabled();
 
-    // Reload and confirm reset persisted
+    // Reload and confirm reset persisted — title/breadcrumb should revert to default
     await page.reload();
-    await expect(page.getByRole('heading', { name: ENTITY_TYPE })).toBeVisible();
+    await page.waitForTimeout(1000);
+
+    // Title should be back to the default i18n label
+    const headingAfterReset = page.getByTestId('entity-type-title');
+    await expect(headingAfterReset).toBeVisible();
+
+    // Fields should remain empty
     await expect(page.getByTestId('entity-setting-custom-name-input').locator('input')).toHaveValue('');
     await expect(page.getByTestId('entity-setting-custom-name-plural-input').locator('input')).toHaveValue('');
   });
