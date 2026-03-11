@@ -19,7 +19,7 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../
 import ItemCopy from '../../../../components/ItemCopy';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Security from '../../../../utils/Security';
-import { TAXIIAPI } from '../../../../utils/hooks/useGranted';
+import { TAXIIAPI, TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { EMPTY_VALUE } from '../../../../utils/String';
 
@@ -217,12 +217,14 @@ class StreamLineLineComponent extends Component {
             />
           </ListItemButton>
         </ListItem>
-        <StreamConsumersDrawer
-          streamCollectionId={node.id}
-          streamCollectionName={node.name}
-          open={this.state.displayConsumers}
-          onClose={this.handleCloseConsumers.bind(this)}
-        />
+        <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+          <StreamConsumersDrawer
+            streamCollectionId={node.id}
+            streamCollectionName={node.name}
+            open={this.state.displayConsumers}
+            onClose={this.handleCloseConsumers.bind(this)}
+          />
+        </Security>
       </>
     );
   }
