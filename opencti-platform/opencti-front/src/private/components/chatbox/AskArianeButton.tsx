@@ -4,68 +4,35 @@ import EEChip from '@components/common/entreprise_edition/EEChip';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { CGUStatus } from '@components/settings/Experience';
 import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
-import { useTheme } from '@mui/styles';
 import { LogoXtmOneIcon } from 'filigran-icon';
-import React, { useEffect, useRef, useState } from 'react';
-import type { Theme } from '../../../components/Theme';
+import React, { useState } from 'react';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
 import useHelper from '../../../utils/hooks/useHelper';
-import ChatbotManager from './ChatbotManager';
-import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
+import AskArianePanel from './AskArianePanel';
+import { useChatbot } from './ChatbotContext';
 
 const AskArianeButton = () => {
   const { t_i18n } = useFormatter();
   const { isChatbotAiEnabled } = useHelper();
   const { settings: { filigran_chatbot_ai_cgu_status } } = useAuth();
-  const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
   const hasRightToValidateCGU = useGranted([SETTINGS_SETPARAMETERS]);
-  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const { isOpen, mode, openChat, closeChat, setMode, setSidebarWidth, setIsResizing } = useChatbot();
 
   const isCGUStatusPending = filigran_chatbot_ai_cgu_status === CGUStatus.pending;
-  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
 
-  const chatbotManager = useRef(ChatbotManager.getInstance());
   const isChatbotEnabled = isEnterpriseEdition && isChatbotAiEnabled();
-
-  useEffect(() => {
-    if (isChatbotEnabled) {
-      chatbotManager.current.configure(theme, t_i18n, settingsMessagesBannerHeight);
-    }
-  }, [isChatbotEnabled, theme, t_i18n, settingsMessagesBannerHeight]);
-
-  useEffect(() => {
-    if (!isChatbotEnabled && chatbotManager.current.isReady()) {
-      chatbotManager.current.destroy();
-    }
-  }, [isChatbotEnabled]);
-
-  const openChatbot = () => {
-    setIsChatbotOpen(true);
-    chatbotManager.current.open();
-  };
-
-  const closeChatbot = () => {
-    setIsChatbotOpen(false);
-    chatbotManager.current.close();
-  };
-
-  useEffect(() => {
-    if (chatbotManager.current.isReady()) {
-      chatbotManager.current.setOnClose(closeChatbot);
-    }
-  }, [chatbotManager.current.isReady()]);
 
   const toggleChatbot = () => {
     if (filigran_chatbot_ai_cgu_status === CGUStatus.enabled) {
-      if (isChatbotOpen) {
-        closeChatbot();
+      if (isOpen) {
+        closeChat();
       } else {
-        openChatbot();
+        openChat();
       }
     } else if (hasRightToValidateCGU) {
       setOpenValidateTermsOfUse(true);
@@ -88,6 +55,17 @@ const AskArianeButton = () => {
           <EEChip />
         </Button>
       </EETooltip>
+
+      {isChatbotEnabled && isOpen && (
+        <AskArianePanel
+          mode={mode}
+          onClose={closeChat}
+          onModeChange={setMode}
+          onWidthChange={setSidebarWidth}
+          onResizeStart={() => setIsResizing(true)}
+          onResizeEnd={() => setIsResizing(false)}
+        />
+      )}
 
       {openValidateTermsOfUse && (
         <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={() => setOpenValidateTermsOfUse(false)} />
