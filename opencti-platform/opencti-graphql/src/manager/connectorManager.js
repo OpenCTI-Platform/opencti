@@ -48,7 +48,7 @@ const closeOldWorks = async (context, connector) => {
               const sourceScript = `ctx._source['status'] = "complete";
                   ctx._source['completed_time'] = params.completed_time;
                   ctx._source['completed_number'] = params.completed_number;`;
-              await elUpdate(element._index, element.internal_id, {
+              await elUpdate(context, element._index, element.internal_id, {
                 script: {
                   source: sourceScript,
                   lang: 'painless',

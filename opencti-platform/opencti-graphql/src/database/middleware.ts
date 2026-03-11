@@ -1665,7 +1665,7 @@ const mergeEntitiesRaw = async (
   let currentRelsUpdateCount = 0;
   const groupsOfRelsUpdate = R.splitEvery(MAX_BULK_OPERATIONS, updateConnections);
   const concurrentRelsUpdate = async (connsToUpdate: UpdateConnection[]) => {
-    await elUpdateRelationConnections(connsToUpdate);
+    await elUpdateRelationConnections(context, connsToUpdate);
     currentRelsUpdateCount += connsToUpdate.length;
     logApp.info(`[OPENCTI] Merging, updating relations ${currentRelsUpdateCount} / ${updateConnections.length}`);
   };
@@ -1678,7 +1678,7 @@ const mergeEntitiesRaw = async (
   const updateBulkEntities = entries.filter(([, values]) => values?.length === 1).map(([, values]) => values).flat();
   const groupsOfEntityUpdate = R.splitEvery(MAX_BULK_OPERATIONS, updateBulkEntities);
   const concurrentEntitiesUpdate = async (entitiesToUpdate: UpdateEntity[]) => {
-    await elUpdateEntityConnections(entitiesToUpdate);
+    await elUpdateEntityConnections(context, entitiesToUpdate);
     currentEntUpdateCount += entitiesToUpdate.length;
     logApp.info(`[OPENCTI] Merging updating bulk entities ${currentEntUpdateCount} / ${updateBulkEntities.length}`);
   };
@@ -1704,7 +1704,7 @@ const mergeEntitiesRaw = async (
       // then execute each other one by one
       for (let index = 0; index < operations.length; index += 1) {
         const operation = operations[index];
-        await elUpdateEntityConnections([operation]);
+        await elUpdateEntityConnections(context, [operation]);
       }
     },
     { concurrency: ES_MAX_CONCURRENCY },

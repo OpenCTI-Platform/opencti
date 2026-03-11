@@ -25,7 +25,7 @@ export const up = async (next) => {
       });
       const patch = { attributes_configuration: JSON.stringify(attributesConfiguration) };
       logMigration.info(`${message} > replacing attributes configuration for entity setting ${entitySetting.id}`);
-      await elReplace(entitySetting._index, entitySetting.id, { doc: patch });
+      await elReplace(context, entitySetting._index, entitySetting.id, { doc: patch });
     }
   }
   logMigration.info(`${message} > done`);

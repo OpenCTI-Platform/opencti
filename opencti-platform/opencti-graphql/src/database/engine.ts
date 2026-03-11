@@ -490,24 +490,41 @@ export const searchEngineInit = async (): Promise<boolean> => {
 };
 export const isRuntimeSortEnable = (): boolean => isRuntimeSortingEnable;
 
+/**
+ * Executes an engine operation with proper abort signal handling for both ElkClient and OpenSearch.
+ * - ElkClient: passes the signal as an option natively.
+ * - OpenSearch: manually hooks up the abort signal to call .abort() on the promise.
+ */
+const elExecuteWithAbortSignal = async (
+  abortSignal: AbortSignal | undefined,
+  elkOperation: (opts: { signal: AbortSignal | undefined }) => Promise<any>,
+  openSearchOperation: () => Promise<any>,
+): Promise<any> => {
+  if (engine instanceof ElkClient) {
+    const r = await elkOperation({ signal: abortSignal });
+    return oebp(r);
+  }
+  const promise = openSearchOperation();
+  if (abortSignal) {
+    abortSignal.addEventListener('abort', () => {
+      // OpenSearch client does not support abort signal, so we need to manually abort the request
+      (promise as any).abort();
+    });
+  }
+  const r_1 = await promise;
+  return oebp(r_1);
+};
+
 export const elRawSearch = (context: AuthContext, user: AuthUser, types: string[] | string | null, query: any) => {
   // Add default signal to prevent unwanted warning
   // Waiting for https://github.com/elastic/elastic-transport-js/issues/63
   const requestAbortSignal = context?.requestAbortSignal ?? new AbortController().signal;
   const elRawSearchFn = async () => {
-    let searchPromise: Promise<any>;
-    if (engine instanceof ElkClient) {
-      const searchOpts = { signal: requestAbortSignal };
-      searchPromise = engine.search(query, searchOpts);
-    } else {
-      searchPromise = engine.search(query);
-      requestAbortSignal.addEventListener('abort', () => {
-        // OpenSearch client does not support abort signal, so we need to manually abort the request
-        (searchPromise as any).abort();
-      });
-    }
-    const searchResult = await searchPromise;
-    const parsedSearch = oebp(searchResult);
+    const parsedSearch = await elExecuteWithAbortSignal(
+      requestAbortSignal,
+      (opts) => (engine as ElkClient).search(query, opts),
+      () => (engine as OpenClient).search(query),
+    );
     if (parsedSearch._shards.failed > 0) {
     // We do not support response with shards failure.
     // Result must be always accurate to prevent data duplication and unwanted behaviors
@@ -556,13 +573,12 @@ export const elRawDeleteByQuery = async (query: any) => {
   const r_1 = await engine.deleteByQuery(query);
   return oebp(r_1);
 };
-export const elRawBulk = async (args: any) => {
-  if (engine instanceof ElkClient) {
-    const r = await engine.bulk(args);
-    return oebp(r);
-  }
-  const r_1 = await engine.bulk(args);
-  return oebp(r_1);
+export const elRawBulk = async (context: AuthContext, args: any) => {
+  return elExecuteWithAbortSignal(
+    context?.requestAbortSignal,
+    (opts) => (engine as ElkClient).bulk(args, opts),
+    () => (engine as OpenClient).bulk(args),
+  );
 };
 export const elRawUpdateByQuery = async (query: any) => {
   if (engine instanceof ElkClient) {
@@ -3938,8 +3954,8 @@ export const elAttributeValues = async (
 };
 // endregion
 
-export const elBulk = async (args: any) => {
-  return elRawBulk(args).then((data) => {
+export const elBulk = async (context: AuthContext, args: any) => {
+  return elRawBulk(context, args).then((data) => {
     if (data.errors) {
       const errors = data.items.map((i: any) => i.index?.error || i.update?.error).filter((f: any) => f !== undefined);
       if (errors.filter((err: any) => err.type !== DOCUMENT_MISSING_EXCEPTION).length > 0) {
@@ -3983,6 +3999,7 @@ export const elIndex = async (
 };
 /* v8 ignore next */
 export const elUpdate = async (
+  context: AuthContext,
   indexName: string,
   documentId: string,
   documentBody: any,
@@ -3997,16 +4014,18 @@ export const elUpdate = async (
     refresh: true,
     body: documentBody,
   };
-  if (engine instanceof ElkClient) {
-    return engine.update(updateRequest).catch((err: any) => {
-      throw DatabaseError('Update indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
-    });
-  }
-  return engine.update(updateRequest).catch((err: any) => {
+  try {
+    return await elExecuteWithAbortSignal(
+      context?.requestAbortSignal,
+      (opts) => (engine as ElkClient).update(updateRequest, opts),
+      () => (engine as OpenClient).update(updateRequest),
+    );
+  } catch (err) {
     throw DatabaseError('Update indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
-  });
+  }
 };
 export const elReplace = async (
+  context: AuthContext,
   indexName: string,
   documentId: string,
   documentBody: any,
@@ -4024,7 +4043,7 @@ export const elReplace = async (
     }
   }
   const source = R.join(';', rawSources);
-  return elUpdate(indexName, documentId, {
+  return elUpdate(context, indexName, documentId, {
     script: { source, params: doc },
   });
 };
@@ -4099,6 +4118,7 @@ export const getRelationsToRemove = async <T extends BasicStoreBase>(
   return { relations: R.flatten(relationsToRemove), relationsToRemoveMap };
 };
 export const elDeleteInstances = async <T extends BasicStoreBase>(
+  context: AuthContext,
   instances: T[],
   opts: { forceRefresh?: boolean } = {},
 ) => {
@@ -4112,7 +4132,7 @@ export const elDeleteInstances = async <T extends BasicStoreBase>(
       const bodyDelete = instancesBulk.flatMap((doc) => {
         return [{ delete: { _index: doc._index, _id: doc._id ?? doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } }];
       });
-      await elBulk({ refresh: forceRefresh, timeout: BULK_TIMEOUT, body: bodyDelete });
+      await elBulk(context, { refresh: forceRefresh, timeout: BULK_TIMEOUT, body: bodyDelete });
     }
   }
 };
@@ -4196,7 +4216,7 @@ export const elRemoveRelationConnection = async (
       });
       const bodyUpdate = R.flatten(bodyUpdateRaw);
       if (bodyUpdate.length > 0) {
-        await elBulk({ refresh: forceRefresh, timeout: BULK_TIMEOUT, body: bodyUpdate });
+        await elBulk(context, { refresh: forceRefresh, timeout: BULK_TIMEOUT, body: bodyUpdate });
       }
     }
   }
@@ -4378,7 +4398,7 @@ export const copyLiveElementToDraft = async (
       params: { allDraftIds },
     },
   };
-  await elUpdate(element._index, element.internal_id, addDraftIdScript);
+  await elUpdate(context, element._index, element.internal_id, addDraftIdScript);
 
   return updatedElement;
 };
@@ -4447,11 +4467,11 @@ export const elMarkElementsAsDraftDelete = async (context: AuthContext, user: Au
   const draftNonCreatedElements = elements.filter((f) => isDraftIndex(f._index) && f.draft_change?.draft_operation !== DRAFT_OPERATION_CREATE);
 
   const copyLiveElementsPromise = liveElements.map((e) => copyLiveElementToDraft(context, user, e, DRAFT_OPERATION_DELETE));
-  const deleteDraftCreatedElementsPromise = elDeleteInstances(draftCreatedElements);
+  const deleteDraftCreatedElementsPromise = elDeleteInstances(context, draftCreatedElements);
   const updateDraftElementsPromise = draftNonCreatedElements.map((draftE) => {
     // TODO we might want to apply the reverse patch to draft updated elements
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_DELETE } };
-    return elReplace(draftE._index, draftE._id, { doc: newDraftChange });
+    return elReplace(context, draftE._index, draftE._id, { doc: newDraftChange });
   });
   const copiedLiveElements = await Promise.all(copyLiveElementsPromise);
   const allDraftElements = [...copiedLiveElements, ...draftCreatedElements, ...draftNonCreatedElements];
@@ -4462,12 +4482,12 @@ export const elMarkElementsAsDraftDelete = async (context: AuthContext, user: Au
   const draftCreatedRelations = relations.filter((f) => isDraftIndex(f._index) && f.draft_change?.draft_operation === DRAFT_OPERATION_CREATE);
   const draftNonCreatedRelations = relations.filter((f) => isDraftIndex(f._index) && f.draft_change?.draft_operation !== DRAFT_OPERATION_CREATE);
 
-  const deleteDraftCreatedRelationsPromise = elDeleteInstances(draftCreatedRelations);
+  const deleteDraftCreatedRelationsPromise = elDeleteInstances(context, draftCreatedRelations);
   const copyLiveRelationsPromise = liveRelations.map((e) => copyLiveElementToDraft(context, user, e, DRAFT_OPERATION_DELETE_LINKED));
   const updateDraftRelationsPromise = draftNonCreatedRelations.map((draftR) => {
     // TODO we might want to apply the reverse patch to draft updated elements
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_DELETE_LINKED } };
-    return elReplace(draftR._index, draftR._id, { doc: newDraftChange });
+    return elReplace(context, draftR._index, draftR._id, { doc: newDraftChange });
   });
   await Promise.all([deleteDraftCreatedElementsPromise, ...updateDraftElementsPromise]);
   await Promise.all([...copyLiveRelationsPromise, deleteDraftCreatedRelationsPromise, ...updateDraftRelationsPromise]);
@@ -4667,7 +4687,7 @@ export const elIndexElements = async (
       });
       if (body.length > 0) {
         meterManager.directBulk(body.length, { type: indexingType });
-        await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body });
+        await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body });
       }
     }
     // 02. If relation, generate impacts for from and to sides
@@ -4783,7 +4803,7 @@ export const elIndexElements = async (
         ]);
         if (bodyUpdate.length > 0) {
           meterManager.sideBulk(bodyUpdate.length, { type: indexingType });
-          const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+          const bulkPromise = elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
           await Promise.all([bulkPromise]);
         }
       }
@@ -4796,7 +4816,7 @@ export const elIndexElements = async (
   }, elIndexElementsFn);
 };
 
-export const elUpdateRelationConnections = async (elements: any[]) => {
+export const elUpdateRelationConnections = async (context: AuthContext, elements: any[]) => {
   if (elements.length > 0) {
     const source = 'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); '
       + 'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
@@ -4804,11 +4824,11 @@ export const elUpdateRelationConnections = async (elements: any[]) => {
       { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
       { script: { source, params: { id: doc.toReplace, changes: doc.data } } },
     ]);
-    const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+    const bulkPromise = elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
     await Promise.all([bulkPromise]);
   }
 };
-export const elUpdateEntityConnections = async (elements: any[]) => {
+export const elUpdateEntityConnections = async (context: AuthContext, elements: any[]) => {
   if (elements.length > 0) {
     const source = `if (ctx._source[params.key] == null) {
       ctx._source[params.key] = params.to;
@@ -4842,7 +4862,7 @@ export const elUpdateEntityConnections = async (elements: any[]) => {
         },
       ];
     });
-    await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+    await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
   }
 };
 
@@ -4950,10 +4970,10 @@ export const elDeleteElements = async (
   await elRemoveRelationConnection(context, user, elementsImpact, opts);
   // 02. Remove all related relations and elements
   logApp.debug('[SEARCH] Deleting related relations', { size: relations.length });
-  await elDeleteInstances(relations, opts);
+  await elDeleteInstances(context, relations, opts);
   // 03/ Remove all elements
   logApp.debug('[SEARCH] Deleting elements', { size: elements.length });
-  await elDeleteInstances(elements, opts);
+  await elDeleteInstances(context, elements, opts);
 };
 const getInstanceToUpdate = async (context: AuthContext, user: AuthUser, instance: BasicStoreBase) => {
   const draftContext = getDraftContext(context, user);
@@ -4968,7 +4988,7 @@ export const elUpdateElement = async (context: AuthContext, user: AuthUser, inst
   const esData = await prepareElementForIndexing(instanceToUse);
   validateDataBeforeIndexing(esData);
   const dataToReplace = R.pipe(R.dissoc('representative'), R.dissoc('_id'))(esData);
-  const replacePromise = elReplace(instanceToUse._index, instanceToUse._id ?? instanceToUse.internal_id, { doc: dataToReplace });
+  const replacePromise = elReplace(context, instanceToUse._index, instanceToUse._id ?? instanceToUse.internal_id, { doc: dataToReplace });
   // If entity with a name, must update connections
   let connectionPromise = Promise.resolve();
   if (esData.name && isStixObject(instanceToUse.entity_type)) {

@@ -129,7 +129,7 @@ export const updatePirInformationOnEntity = async (context: AuthContext, user: A
       } else ctx._source['pir_information'] = params.new_pir_information;
     `;
   // call elUpdate directly to avoid generating stream events and modifying the updated_at of the entity
-  return elUpdate(stixDomainObject._index, entityId, { script: { source, lang: 'painless', params } });
+  return elUpdate(context, stixDomainObject._index, entityId, { script: { source, lang: 'painless', params } });
 };
 
 /**

@@ -41,7 +41,7 @@ const completeDeleteElementsFromDraft = async (context: AuthContext, user: AuthU
   if (!draftContext) {
     return;
   }
-  await elDeleteInstances(elements);
+  await elDeleteInstances(context, elements);
   const elementsIds = elements.map((e) => e.internal_id);
   await elRemoveDraftIdFromElements(context, user, draftContext, elementsIds);
 };
@@ -64,7 +64,7 @@ const elRemoveCreateElementFromDraft = async (context: AuthContext, user: AuthUs
   // Clean up all denormalized rel impact of relations deletion, then delete all relations
   // TODO: clean up UPDATE_LINKED impacted elements that no longer need to be in draft => how to know that an update_linked element can be safely removed?
   await elRemoveRelationConnection(context, user, draftRelationsElementsImpact);
-  await elDeleteInstances([element, ...draftCreatedRelations]);
+  await elDeleteInstances(context, [element, ...draftCreatedRelations]);
 };
 
 const elRemoveUpdateElementFromDraft = async (context: AuthContext, user: AuthUser, element: BasicStoreCommon): Promise<void> => {
@@ -87,7 +87,7 @@ const elRemoveUpdateElementFromDraft = async (context: AuthContext, user: AuthUs
   const draftCreatedOrDeletedRelations = relations.filter((f) => f.draft_change && isCreateOrDraftDelete(f.draft_change.draft_operation));
   if (draftCreatedOrDeletedRelations.length > 0) {
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_UPDATE_LINKED } };
-    await elReplace(element._index, element._id, { doc: newDraftChange });
+    await elReplace(context, element._index, element._id, { doc: newDraftChange });
   } else {
     await completeDeleteElementsFromDraft(context, user, [element]);
   }
@@ -124,7 +124,7 @@ const removeDraftDeleteLinkedRelations = async (
     R.dissoc('_index', doc.data),
   ]);
   if (bodyUpdate.length > 0) {
-    const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+    const bulkPromise = elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
     await Promise.all([bulkPromise]);
   }
 
@@ -143,7 +143,7 @@ const elRemoveDeleteElementFromDraft = async (context: AuthContext, user: AuthUs
     const relationshipElement = element as StoreRelation;
     if (isDraftIndex(relationshipElement.from?._index) || isDraftIndex(relationshipElement.to?._index)) {
       const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_DELETE_LINKED } };
-      await elReplace(element._index, element._id, { doc: newDraftChange });
+      await elReplace(context, element._index, element._id, { doc: newDraftChange });
       return;
     }
   }
@@ -200,7 +200,7 @@ const elRemoveDeleteElementFromDraft = async (context: AuthContext, user: AuthUs
     await completeDeleteElementsFromDraft(context, user, [element]);
   } else {
     const newDraftChange = { draft_change: { draft_operation: DRAFT_OPERATION_UPDATE_LINKED } };
-    await elReplace(element._index, element._id, { doc: newDraftChange });
+    await elReplace(context, element._index, element._id, { doc: newDraftChange });
   }
 };
 

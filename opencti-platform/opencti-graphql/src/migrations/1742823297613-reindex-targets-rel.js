@@ -48,7 +48,7 @@ export const up = async (next) => {
   const concurrentUpdate = async (bulk) => {
     currentProcessing += bulk.length;
     logMigration.info(`[OPENCTI] Re-indexing targets for region / countries / sectors ${currentProcessing} / ${bulkOperationsTargets.length}`);
-    await elBulk({ refresh: true, timeout: MIGRATION_BULK_TIMEOUT, body: bulk });
+    await elBulk(context, { refresh: true, timeout: MIGRATION_BULK_TIMEOUT, body: bulk });
   };
   await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: MIGRATION_MAX_CONCURRENCY });
   logMigration.info(`[MIGRATION] Re-indexed targets for region / countries / sectors in ${new Date() - startTargets} ms`);
