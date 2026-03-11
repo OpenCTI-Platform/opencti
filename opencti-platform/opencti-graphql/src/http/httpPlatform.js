@@ -358,7 +358,7 @@ const createApp = async (app, schema) => {
   // Logout
   app.get(`${basePath}/logout`, async (req, res) => {
     try {
-      const referer = extractRefererPathFromReq(req) ?? '/';
+      const referer = extractRefererPathFromReq(req) ?? (basePath || '/');
       const provider = req.session.session_provider;
       const { user } = req.session;
       if (user) {
@@ -500,7 +500,7 @@ const createApp = async (app, schema) => {
       // 2. OIDC (v6): referer is encoded in the OAuth state query parameter
       // 3. Fallback: session-based referer (backward compatibility)
       const referer = req.body?.RelayState ?? decodeOidcState(req.query?.state)?.referer ?? req.session.referer;
-      const sanitizedReferer = sanitizeReferer(referer);
+      const sanitizedReferer = sanitizeReferer(referer) ?? (basePath || '/');
       res.redirect(sanitizedReferer);
     }
   });
