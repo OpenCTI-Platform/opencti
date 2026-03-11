@@ -946,7 +946,7 @@ workflows:
       - build_pycti:
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]+)?/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]*)?/
             branches:
               ignore: /.*/
           requires:
@@ -957,7 +957,7 @@ workflows:
             - build_pycti
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]+)?/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]*)?/
             branches:
               ignore: /.*/
 # Build opencti
@@ -968,13 +968,13 @@ workflows:
       - wait_for_connector_release:
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]+)?/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]*)?/
             branches:
               ignore: /.*/
       - build_platform:
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]+)?/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]*)?/
             branches:
               ignore: /.*/
           requires:
@@ -998,7 +998,7 @@ workflows:
       - build_platform_musl:
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]+)?/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]*)?/
             branches:
               ignore: /.*/
           requires:
@@ -1037,7 +1037,7 @@ workflows:
             - build_platform
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]+)?/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]*)?/
             branches:
               ignore: /.*/
       - tag_package_musl:
@@ -1045,7 +1045,7 @@ workflows:
             - build_platform_musl
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]+)?/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]*)?/
             branches:
               ignore: /.*/              
       - docker_build_platform_rolling:
@@ -1096,7 +1096,7 @@ workflows:
             - wait_for_connector_release
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]+)?/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]*)?/
             branches:
               ignore: /.*/
       - docker_build_worker:
@@ -1105,7 +1105,7 @@ workflows:
             - wait_for_connector_release
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]+)?/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]*)?/
             branches:
               ignore: /.*/
       - docker_build_platform_fips:
@@ -1114,7 +1114,7 @@ workflows:
             - wait_for_connector_release
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]+)?/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]*)?/
             branches:
               ignore: /.*/
       - docker_build_worker_fips:
@@ -1123,7 +1123,7 @@ workflows:
             - wait_for_connector_release
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]+)?/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]*)?/
             branches:
               ignore: /.*/
       - deploy_testing:
@@ -1155,6 +1155,6 @@ workflows:
             - docker_build_worker_fips
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]+)?/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*(-lts[0-9]*)?/
             branches:
               ignore: /.*/
