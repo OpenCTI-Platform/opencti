@@ -51,7 +51,7 @@ jobs:
          set -ex
          cd scripts/ci
          export TAG=${{ github.sha }}
-         echo "APP__ENTERPRISE_EDITION_LICENSE=$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt)" >> ci-common.env
+         echo "APP__ENTERPRISE_EDITION_LICENSE=\"$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt)\"" >> ci-common.env
          docker network create runner-docker-network
          docker compose  --profile "backend" --profile "ci-test-api-sync" up -d
 
@@ -185,7 +185,7 @@ jobs:
          set -ex
          cd scripts/ci
          export TAG=${{ github.sha }}
-         echo "APP__ENTERPRISE_EDITION_LICENSE=$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt)" >> ci-common.env
+         echo "APP__ENTERPRISE_EDITION_LICENSE=\"$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt)\"" >> ci-common.env
          docker network create runner-docker-network
          docker compose --profile "backend" --profile "ci-test-rules" up -d
          ./wait-for-url-200.sh http://localhost:9200/_cluster/health?wait_for_status=yellow  120 2
