@@ -23,6 +23,7 @@ import ContainerStixCyberObservables from '../../common/containers/ContainerStix
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import { RootCaseRftCaseQuery } from './__generated__/RootCaseRftCaseQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -87,6 +88,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
   const location = useLocation();
   const enableReferences = useIsEnforceReference('Case-Rft') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   useSubscription(subConfig);
 
   const {
@@ -104,7 +106,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
     <div style={{ paddingRight }}>
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
-        { label: t_i18n('Requests for takedown'), link: '/dashboard/cases/rfts' },
+        { label: entityLabel('Case-Rft', t_i18n('Requests for takedown')), link: '/dashboard/cases/rfts' },
         { label: caseData.name, current: true },
       ]}
       />

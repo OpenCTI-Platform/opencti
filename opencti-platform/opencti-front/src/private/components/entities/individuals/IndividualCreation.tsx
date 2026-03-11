@@ -31,6 +31,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const individualMutation = graphql`
   mutation IndividualCreationMutation($input: IndividualAddInput!) {
@@ -86,6 +87,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(INDIVIDUAL_TYPE);
@@ -104,7 +106,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
   const [commit] = useApiMutation<IndividualCreationMutation>(
     individualMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Individual')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityLabel('Individual')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -315,6 +317,7 @@ const IndividualCreation = ({ paginationOptions }: {
   paginationOptions: IndividualsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
@@ -328,7 +331,7 @@ const IndividualCreation = ({ paginationOptions }: {
 
   return (
     <Drawer
-      title={t_i18n('Create a individual')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Individual') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateIndividualControlledDial}
     >

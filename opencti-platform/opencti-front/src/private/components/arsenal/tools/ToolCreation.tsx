@@ -33,6 +33,7 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import TextField from '../../../../components/TextField';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const toolMutation = graphql`
   mutation ToolCreationMutation($input: ToolAddInput!) {
@@ -91,6 +92,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(
@@ -108,7 +110,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
   const [commit] = useApiMutation<ToolCreationMutation>(
     toolMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Tool')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityLabel('Tool')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -336,12 +338,13 @@ const ToolCreation = ({
   paginationOptions: ToolsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_tools', paginationOptions, 'toolAdd');
 
   return (
     <Drawer
-      title={t_i18n('Create a tool')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Tool') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateToolControlledDial}
     >

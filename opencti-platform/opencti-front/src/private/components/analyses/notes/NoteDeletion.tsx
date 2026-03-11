@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 import { StixCoreObjectOrStixCoreRelationshipNoteCard_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNoteCard_node.graphql';
 import { deleteNode } from '../../../../utils/store';
 import { StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
@@ -34,10 +35,11 @@ const NoteDeletion: FunctionComponent<NoteDeletionProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_Note') },
+    values: { entity_type: entityLabel('Note') },
   });
   const [commit] = useApiMutation(
     NoteDeletionDeleteMutation,

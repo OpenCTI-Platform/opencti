@@ -24,6 +24,7 @@ import ContainerStixDomainObjects from '../../common/containers/ContainerStixDom
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import CaseRfiKnowledge from './CaseRfiKnowledge';
 import { useFormatter } from '../../../../components/i18n';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -89,6 +90,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
   const location = useLocation();
   const enableReferences = useIsEnforceReference('Case-Rfi') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   useSubscription(subConfig);
 
   const {
@@ -106,7 +108,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
     <div style={{ paddingRight }}>
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
-        { label: t_i18n('Requests for information'), link: '/dashboard/cases/rfis' },
+        { label: entityLabel('Case-Rfi', t_i18n('Requests for information')), link: '/dashboard/cases/rfis' },
         { label: caseData.name, current: true },
       ]}
       />

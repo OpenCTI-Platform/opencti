@@ -15,6 +15,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
 
 const LOCAL_STORAGE_KEY = 'attackPattern';
 
@@ -100,6 +101,7 @@ const attackPatternsLinesFragment = graphql`
 
 const AttackPatterns = () => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Attack Patterns | Techniques'));
   const initialValues = {
@@ -152,7 +154,7 @@ const AttackPatterns = () => {
 
   return (
     <div data-testid="attack-pattern-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Attack patterns'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: entityLabel('Attack-Pattern', t_i18n('Attack patterns')), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

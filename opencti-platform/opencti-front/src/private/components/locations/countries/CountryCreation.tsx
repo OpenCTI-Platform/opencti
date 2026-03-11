@@ -30,6 +30,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const countryMutation = graphql`
   mutation CountryCreationMutation($input: CountryAddInput!) {
@@ -84,6 +85,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(COUNTRY_TYPE);
@@ -98,7 +100,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
   const [commit] = useApiMutation<CountryCreationMutation>(
     countryMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Country')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityLabel('Country')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -289,6 +291,7 @@ const CountryCreation = ({
   paginationOptions: CountriesLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_countries', paginationOptions, 'countryAdd');
 
@@ -297,7 +300,7 @@ const CountryCreation = ({
   );
   return (
     <Drawer
-      title={t_i18n('Create a country')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Country') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateCountryControlledDial}
     >

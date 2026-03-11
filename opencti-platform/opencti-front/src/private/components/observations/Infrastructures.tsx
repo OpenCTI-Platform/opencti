@@ -18,6 +18,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
 
 export const LOCAL_STORAGE_KEY_INFRASTRUCTURES = 'infrastructures';
 
@@ -117,6 +118,7 @@ const infrastructuresLinesFragment = graphql`
 
 const Infrastructures = () => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Infrastructures | Observations'));
   const {
@@ -167,7 +169,7 @@ const Infrastructures = () => {
   return (
     <ExportContextProvider>
       <div data-testid="infrastructures-page">
-        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Infrastructures'), current: true }]} />
+        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: entityLabel('Infrastructure', t_i18n('Infrastructures')), current: true }]} />
         {queryRef && (
           <DataTable
             dataColumns={dataColumns}

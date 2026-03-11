@@ -14,6 +14,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
 
 const LOCAL_STORAGE_KEY = 'vulnerabilities';
 
@@ -108,6 +109,7 @@ const vulnerabilitiesLinesFragment = graphql`
 
 const Vulnerabilities = () => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Vulnerabilities | Arsenal'));
   const {
@@ -161,7 +163,7 @@ const Vulnerabilities = () => {
 
   return (
     <div data-testid="vulnerability-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: t_i18n('Vulnerabilities'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: entityLabel('Vulnerability', t_i18n('Vulnerabilities')), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

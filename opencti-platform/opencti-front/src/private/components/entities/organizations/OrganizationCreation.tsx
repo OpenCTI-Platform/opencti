@@ -32,6 +32,7 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import TextField from '../../../../components/TextField';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const organizationMutation = graphql`
   mutation OrganizationCreationMutation($input: OrganizationAddInput!) {
@@ -89,6 +90,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(ORGANIZATION_TYPE);
@@ -113,7 +115,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
   const [commit] = useApiMutation<OrganizationCreationMutation>(
     organizationMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Organization')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityLabel('Organization')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -348,6 +350,7 @@ const OrganizationCreation = ({ paginationOptions }: {
   paginationOptions: OrganizationsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
@@ -361,7 +364,7 @@ const OrganizationCreation = ({ paginationOptions }: {
 
   return (
     <Drawer
-      title={t_i18n('Create an organization')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Organization') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateOrganizationControlledDial}
     >

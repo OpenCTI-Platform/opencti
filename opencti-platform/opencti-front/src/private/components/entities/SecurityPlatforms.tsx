@@ -13,6 +13,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
+import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
 
 const LOCAL_STORAGE_KEY = 'securityPlatform';
 
@@ -76,6 +77,7 @@ export const securityPlatformsFragment = graphql`
 
 const SecurityPlatforms = () => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -128,7 +130,7 @@ const SecurityPlatforms = () => {
 
   return (
     <div data-testid="security-platform-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Security platforms'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: entityLabel('SecurityPlatform', t_i18n('Security platforms')), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

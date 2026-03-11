@@ -15,11 +15,13 @@ import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
 
 const LOCAL_STORAGE_KEY = 'administrative-areas';
 
 const AdministrativeAreas: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Administrative Areas | Locations'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<AdministrativeAreasLinesPaginationQuery$variables>(
@@ -120,7 +122,7 @@ const AdministrativeAreas: FunctionComponent = () => {
   };
   return (
     <div data-testid="administrative-area-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Administrative areas'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: entityLabel('Administrative-Area', t_i18n('Administrative areas')), current: true }]} />
       {renderLines()}
     </div>
   );

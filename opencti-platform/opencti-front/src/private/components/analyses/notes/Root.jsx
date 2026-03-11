@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { useFormatter } from '../../../../components/i18n';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -70,6 +71,7 @@ const RootNote = () => {
   );
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   useSubscription(subConfig);
   return (
     <>
@@ -84,7 +86,7 @@ const RootNote = () => {
                 <>
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
-                    { label: t_i18n('Notes'), link: '/dashboard/analyses/notes' },
+                    { label: entityLabel('Note', t_i18n('Notes')), link: '/dashboard/analyses/notes' },
                   ]}
                   />
                   <CollaborativeSecurity

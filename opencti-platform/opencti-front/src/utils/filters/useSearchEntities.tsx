@@ -41,7 +41,7 @@ import { contextFilters, entityTypesFilters, FilterSearchContext, getFilterDefin
 import { useSearchEntitiesDashboardsQuery$data } from './__generated__/useSearchEntitiesDashboardsQuery.graphql';
 import { convertMarking } from '../edition';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../hooks/useGranted';
-import { displayEntityTypeForTranslation } from '../String';
+import { useEntityLabelResolver } from '../hooks/useEntityLabel';
 import { useSearchEntitiesGroupsQuery$data } from './__generated__/useSearchEntitiesGroupsQuery.graphql';
 
 const filtersStixCoreObjectsSearchQuery = graphql`
@@ -283,6 +283,7 @@ const useSearchEntities = ({
 }) => {
   const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const { schema, me } = useAuth();
   const { stixCoreObjectTypes } = useAttributes();
   const theme = useTheme() as Theme;
@@ -301,12 +302,12 @@ const useSearchEntities = ({
 
   // construct entity types filter values
   const scoTypes = (schema.scos ?? []).map((n) => ({
-    label: t_i18n(`entity_${n.label}`),
+    label: entityLabel(n.label),
     value: n.label,
     type: n.label,
   }));
   const sdoTypes = (schema.sdos ?? []).map((n) => ({
-    label: t_i18n(`entity_${n.label}`),
+    label: entityLabel(n.label),
     value: n.label,
     type: n.label,
   }));
@@ -316,7 +317,7 @@ const useSearchEntities = ({
     type: n.label,
   }));
   const abstractTypeFilterValue = (abstractType: string) => ({
-    label: t_i18n(`entity_${abstractType}`),
+    label: entityLabel(abstractType),
     value: abstractType,
     type: abstractType,
   });
@@ -769,7 +770,7 @@ const useSearchEntities = ({
           }
           if (searchContext.entityTypes.includes('Activity')) {
             elementTypeResult.push(...INTERNAL_TYPES_IN_ACTIVITY.map((n) => ({
-              label: t_i18n(`entity_${n}`),
+              label: entityLabel(n),
               value: n,
               type: n,
             })));
@@ -803,7 +804,7 @@ const useSearchEntities = ({
             }
             const entitiesTypes = completedAvailableEntityTypes
               .map((n) => ({
-                label: t_i18n(displayEntityTypeForTranslation(n)),
+                label: entityLabel(n),
                 value: n,
                 type: n,
               }))
@@ -961,7 +962,7 @@ const useSearchEntities = ({
                 (data as useSearchEntitiesSchemaSCOSearchQuery$data)?.schemaSCOs
                   ?.edges ?? []
               ).map((n) => ({
-                label: t_i18n(`entity_${n?.node.id}`),
+                label: entityLabel(n?.node.id),
                 value: n?.node.id,
                 type: n?.node.id,
               }));

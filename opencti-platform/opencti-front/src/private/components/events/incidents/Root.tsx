@@ -33,6 +33,7 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab } from '../../../../utils/utils';
 import IncidentEdition from './IncidentEdition';
 import IncidentDeletion from './IncidentDeletion';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -101,6 +102,7 @@ const RootIncidentComponent = ({ queryRef }) => {
   );
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   useSubscription(subConfig);
   const data = usePreloadedQuery(incidentQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
@@ -146,7 +148,7 @@ const RootIncidentComponent = ({ queryRef }) => {
           >
             <Breadcrumbs elements={[
               { label: t_i18n('Events') },
-              { label: t_i18n('Incidents'), link: '/dashboard/events/incidents' },
+              { label: entityLabel('Incident', t_i18n('Incidents')), link: '/dashboard/events/incidents' },
               { label: incident.name, current: true },
             ]}
             />

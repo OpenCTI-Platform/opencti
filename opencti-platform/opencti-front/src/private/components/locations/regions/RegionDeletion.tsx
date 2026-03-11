@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../components/DeleteDialog';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 
 const RegionDeletionDeleteMutation = graphql`
@@ -16,10 +17,11 @@ const RegionDeletionDeleteMutation = graphql`
 
 const RegionDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_Region') },
+    values: { entity_type: entityLabel('Region') },
   });
   const [commit] = useApiMutation(
     RegionDeletionDeleteMutation,

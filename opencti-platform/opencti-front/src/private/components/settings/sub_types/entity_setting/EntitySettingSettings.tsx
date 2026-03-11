@@ -1,9 +1,9 @@
-import { Box, IconButton, TextField, Tooltip } from '@mui/material';
+import { Box, TextField, Tooltip } from '@mui/material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import Grid from '@mui/material/Grid';
 import Switch from '@mui/material/Switch';
-import { InformationOutline, UndoVariant } from 'mdi-material-ui';
+import { InformationOutline } from 'mdi-material-ui';
 import { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Label from '../../../../../components/common/label/Label';
@@ -115,26 +115,6 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
     });
   };
 
-  const handleResetCustomName = () => {
-    setCustomName('');
-    commit({
-      variables: {
-        ids: [entitySetting.id],
-        input: { key: 'custom_name', value: [''] },
-      },
-    });
-  };
-
-  const handleResetCustomNamePlural = () => {
-    setCustomNamePlural('');
-    commit({
-      variables: {
-        ids: [entitySetting.id],
-        input: { key: 'custom_name_plural', value: [''] },
-      },
-    });
-  };
-
   return (
     <Grid container={true} spacing={2}>
       {/* Custom display name section */}
@@ -154,7 +134,6 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
         </Label>
         <Grid container spacing={2} sx={{ mt: 1 }}>
           <Grid item xs={6}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TextField
                 label={t_i18n('Display name (singular)')}
                 fullWidth
@@ -169,28 +148,14 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
                   }
                 }}
               />
-              <Tooltip title={t_i18n('Reset to default')}>
-                <span>
-                  <IconButton
-                    size="small"
-                    color="primary"
-                    disabled={!customName}
-                    onClick={handleResetCustomName}
-                  >
-                    <UndoVariant fontSize="small" />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            </Box>
           </Grid>
           <Grid item xs={6}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TextField
                 label={t_i18n('Display name (plural)')}
                 fullWidth
                 size="small"
                 value={customNamePlural}
-                placeholder={t_i18n(`entity_${entitySetting.target_type}s`)}
+                placeholder={t_i18n(`entity_${entitySetting.target_type}`)}
                 onChange={(e) => setCustomNamePlural(e.target.value)}
                 onBlur={() => handleSubmitCustomName('custom_name_plural', customNamePlural)}
                 onKeyDown={(e) => {
@@ -199,19 +164,6 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
                   }
                 }}
               />
-              <Tooltip title={t_i18n('Reset to default')}>
-                <span>
-                  <IconButton
-                    size="small"
-                    color="primary"
-                    disabled={!customNamePlural}
-                    onClick={handleResetCustomNamePlural}
-                  >
-                    <UndoVariant fontSize="small" />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            </Box>
           </Grid>
         </Grid>
       </Grid>

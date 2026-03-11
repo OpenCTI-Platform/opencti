@@ -32,6 +32,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { DataComponentCreationMutation, DataComponentCreationMutation$variables } from './__generated__/DataComponentCreationMutation.graphql';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const dataComponentMutation = graphql`
   mutation DataComponentCreationMutation($input: DataComponentAddInput!) {
@@ -87,6 +88,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(DATA_COMPONENT_TYPE);
@@ -105,7 +107,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
   const [commit] = useApiMutation<DataComponentCreationMutation>(
     dataComponentMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Data-Component')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityLabel('Data-Component')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -315,6 +317,7 @@ const DataComponentCreation: FunctionComponent<{
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const [bulkOpen, setBulkOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -334,7 +337,7 @@ const DataComponentCreation: FunctionComponent<{
   });
   const renderClassic = () => (
     <Drawer
-      title={t_i18n('Create a data component')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Data-Component') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateDataComponentControlledDial}
     >

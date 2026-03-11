@@ -29,6 +29,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import EventEdition from './EventEdition';
 import EventDeletion from './EventDeletion';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const subscription = graphql`
   subscription RootEventsSubscription($id: ID!) {
@@ -90,6 +91,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   useSubscription<RootEventsSubscription>(subConfig);
 
   const {
@@ -132,7 +134,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: t_i18n('Events'), link: '/dashboard/entities/events' },
+              { label: entityLabel('Event', t_i18n('Events')), link: '/dashboard/entities/events' },
               { label: event.name, current: true },
             ]}
             />

@@ -36,6 +36,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import TypesField from '../TypesField';
 import { IndicatorCreationMutation, IndicatorCreationMutation$variables } from './__generated__/IndicatorCreationMutation.graphql';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -113,6 +114,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const { mandatoryAttributes } = useIsMandatoryAttribute(INDICATOR_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
@@ -150,7 +152,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
   const [commit] = useApiMutation<IndicatorCreationMutation>(
     indicatorMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Indicator')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityLabel('Indicator')} ${t_i18n('successfully created')}` },
   );
 
   const onSubmit: FormikConfig<IndicatorAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
@@ -420,6 +422,7 @@ interface IndicatorCreationProps {
 
 const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginationOptions, contextual, display }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -450,7 +453,7 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
         <Dialog
           open={open}
           onClose={handleClose}
-          title={t_i18n('Create an indicator')}
+          title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Indicator') } })}
         >
           <IndicatorCreationForm
             updater={updater}
@@ -464,7 +467,7 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
 
   return (
     <Drawer
-      title={t_i18n('Create an indicator')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Indicator') } })}
       controlledDial={CreateIndicatorControlledDial}
     >
       {({ onClose }) => (

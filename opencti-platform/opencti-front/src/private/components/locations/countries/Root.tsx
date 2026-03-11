@@ -33,6 +33,7 @@ import CountryEdition from './CountryEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import CountryDeletion from './CountryDeletion';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const subscription = graphql`
   subscription RootCountriesSubscription($id: ID!) {
@@ -93,6 +94,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
   useSubscription(subConfig);
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const data = usePreloadedQuery(countryQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
   const { country, connectorsForImport, connectorsForExport } = data;
@@ -132,7 +134,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
-              { label: t_i18n('Countries'), link: '/dashboard/locations/countries' },
+              { label: entityLabel('Country', t_i18n('Countries')), link: '/dashboard/locations/countries' },
               { label: country.name, current: true },
             ]}
             />

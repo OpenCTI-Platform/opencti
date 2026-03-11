@@ -5,6 +5,7 @@ import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import SecurityPlatformCreationForm from '@components/entities/securityPlatforms/SecurityPlatformCreationForm';
 import { useFormatter } from '../../../../components/i18n';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { insertNode } from '../../../../utils/store';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
@@ -25,6 +26,7 @@ const SecurityPlatformCreation: FunctionComponent<SecurityPlatformCreationProps>
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   const [bulkOpen, setBulkOpen] = useState(false);
 
   const updater = (store: RecordSourceSelectorProxy) => {
@@ -44,7 +46,7 @@ const SecurityPlatformCreation: FunctionComponent<SecurityPlatformCreationProps>
 
   return (
     <Drawer
-      title={t_i18n('Create a security platform')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('SecurityPlatform') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateSecurityPlatformControlledDial}
     >

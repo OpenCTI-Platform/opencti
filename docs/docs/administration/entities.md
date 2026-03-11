@@ -18,6 +18,27 @@ You can specify which entities to hide on a platform-wide basis from "Settings >
 An overview of hidden entity types is available in the "Hidden entity types" field in "Settings > Parameters."
 
 
+## Custom display name
+
+This configuration allows you to rename any entity type across the platform. When you set a custom display name, it replaces the default label everywhere in the interface: navigation menus, creation buttons and dialogs, list columns, filter dropdowns, knowledge graphs, and search results.
+
+To set a custom display name:
+
+1. Navigate to "Settings > Customization > Entity types" and click on the desired entity type.
+2. In the "Custom display name" section, fill in the **Display name (singular)** and/or **Display name (plural)** fields.
+3. The change is applied immediately — press Enter or click outside the field to save.
+
+Leave the fields empty to revert to the default name.
+
+![Custom display name](./assets/custom-display-name.png)
+
+!!! example "Example"
+
+    Renaming "Report" to "Intelligence Report" (singular) and "Intelligence Reports" (plural) will update every place in the platform where "Report" or "Reports" was previously displayed.
+
+Note that it is a local change. When you export data in STIX from the platform, it keeps the STIX 2.1 name.
+
+
 ## Automatic references at file upload
 
 This configuration enables an entity to automatically construct an external reference from the uploaded file.

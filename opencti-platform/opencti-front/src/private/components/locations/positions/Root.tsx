@@ -29,6 +29,7 @@ import PositionEdition from './PositionEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import PositionDeletion from './PositionDeletion';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const subscription = graphql`
   subscription RootPositionsSubscription($id: ID!) {
@@ -89,6 +90,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   useSubscription<RootPositionsSubscription>(subConfig);
 
   const {
@@ -135,7 +137,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
-              { label: t_i18n('Positions'), link: '/dashboard/locations/positions' },
+              { label: entityLabel('Position', t_i18n('Positions')), link: '/dashboard/locations/positions' },
               { label: position.name, current: true },
             ]}
             />

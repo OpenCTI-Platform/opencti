@@ -30,6 +30,7 @@ import IntrusionSetEdition from './IntrusionSetEdition';
 import IntrusionSetDeletion from './IntrusionSetDeletion';
 import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const subscription = graphql`
   subscription RootIntrusionSetSubscription($id: ID!) {
@@ -104,6 +105,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
   }), [intrusionSetId]);
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   useSubscription<RootIntrusionSetSubscription>(subConfig);
   const {
     intrusionSet,
@@ -149,7 +151,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
           <div style={{ paddingRight }} data-testid="intrusionSet-details-page">
             <Breadcrumbs elements={[
               { label: t_i18n('Threats') },
-              { label: t_i18n('Intrusion sets'), link: '/dashboard/threats/intrusion_sets' },
+              { label: entityLabel('Intrusion-Set', t_i18n('Intrusion sets')), link: '/dashboard/threats/intrusion_sets' },
               { label: intrusionSet.name, current: true },
             ]}
             />

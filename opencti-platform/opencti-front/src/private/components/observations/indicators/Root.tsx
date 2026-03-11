@@ -30,6 +30,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import IndicatorEdition from './IndicatorEdition';
 import IndicatorDeletion from './IndicatorDeletion';
+import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -91,6 +92,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const entityLabel = useEntityLabelResolver();
   useSubscription<RootIndicatorSubscription>(subConfig);
 
   const {
@@ -108,7 +110,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Observations') },
-            { label: t_i18n('Indicators'), link: '/dashboard/observations/indicators' },
+            { label: entityLabel('Indicator', t_i18n('Indicators')), link: '/dashboard/observations/indicators' },
             { label: (indicator.name ?? indicator.pattern ?? ''), current: true },
           ]}
           />
