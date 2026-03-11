@@ -45,6 +45,19 @@ export const useIsEnforceReference = (id: string): boolean => {
   );
 };
 
+/**
+ * Returns the custom display name for an entity type, or null if not set.
+ * Use this when you need to check if a custom name exists without fallback.
+ */
+export const useEntityCustomName = (entityType: string): { customName: string | null; customNamePlural: string | null } => {
+  const settings = useEntitySettings(entityType);
+  const setting = settings.length > 0 ? settings[0] : undefined;
+  return {
+    customName: setting?.custom_name ?? null,
+    customNamePlural: setting?.custom_name_plural ?? null,
+  };
+};
+
 export const useIsMandatoryAttribute = (id: string) => {
   const { isFeatureEnable } = useHelper();
   const isDraftWorkflowFeatureEnabled = isFeatureEnable('DRAFT_WORKFLOW');
