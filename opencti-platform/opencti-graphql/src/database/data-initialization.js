@@ -503,21 +503,18 @@ export const initializeData = async (context, withMarkings = true) => {
       },
     },
   });
-
-  // Run independent initialization operations in parallel
   await initCreateEntitySettings(context, SYSTEM_USER);
-  await Promise.all([
-    initManagerConfigurations(context, SYSTEM_USER),
-    initDecayRules(context, SYSTEM_USER),
-    createDefaultStatusTemplates(context),
-    createInitialRequestAccessFlow(context),
-    createBasicRolesAndCapabilities(context),
-    createVocabularies(context),
-    addEmailTemplate(context, SYSTEM_USER, DEFAULT_EMAIL_TEMPLATE_INPUT, false),
-    createDefaultRetentionRules(context),
-    withMarkings ? createMarkingDefinitions(context) : Promise.resolve(),
-  ]);
-
+  await initManagerConfigurations(context, SYSTEM_USER);
+  await initDecayRules(context, SYSTEM_USER);
+  await createDefaultStatusTemplates(context);
+  await createInitialRequestAccessFlow(context);
+  await createBasicRolesAndCapabilities(context);
+  await createVocabularies(context);
+  await addEmailTemplate(context, SYSTEM_USER, DEFAULT_EMAIL_TEMPLATE_INPUT, false);
+  await createDefaultRetentionRules(context);
+  if (withMarkings) {
+    await createMarkingDefinitions(context);
+  }
   logApp.info('[INIT] Platform default initialized');
   return true;
 };

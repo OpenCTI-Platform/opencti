@@ -515,9 +515,18 @@ const initPublisherManager = () => {
   let running = false;
   let shutdown = false;
   let isSmtpActive = false;
-  const wait = (ms: number) => {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
+  let wakeWait: (() => void) | null = null;
+  const waitOrShutdown = (ms: number) => {
+    return new Promise<void>((resolve) => {
+      const timer = setTimeout(() => {
+        wakeWait = null;
+        resolve();
+      }, ms);
+      wakeWait = () => {
+        clearTimeout(timer);
+        wakeWait = null;
+        resolve();
+      };
     });
   };
   const notificationHandler = async () => {
@@ -536,7 +545,7 @@ const initPublisherManager = () => {
         if (PUBLISHER_ENABLE_BUFFERING) {
           await handleEntityNotificationBuffer();
         }
-        await wait(WAIT_TIME_ACTION);
+        await waitOrShutdown(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of publisher manager processing');
     } catch (e: any) {
@@ -571,6 +580,7 @@ const initPublisherManager = () => {
     shutdown: async () => {
       logApp.info('[OPENCTI-MODULE] Stopping publisher manager');
       shutdown = true;
+      wakeWait?.();
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
       return true;
     },

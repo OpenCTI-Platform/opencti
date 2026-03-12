@@ -141,10 +141,6 @@ export const startModules = async () => {
     logApp.info('[OPENCTI-MODULE] File index manager not started (disabled by configuration)');
   }
 
-  // refactoring in module in progress
-  // all managers will be started only in this method
-  startingPromises.push(startAllManagers());
-
   // endregion
   // region Cluster manager
   startingPromises.push(clusterManager.start());
@@ -159,6 +155,10 @@ export const startModules = async () => {
   startingPromises.push(authenticationProviderListener.start());
 
   await Promise.all(startingPromises);
+
+  // refactoring in module in progress
+  // all managers will be started only in this method
+  await startAllManagers();
 };
 
 export const shutdownModules = async () => {
@@ -224,13 +224,9 @@ export const shutdownModules = async () => {
   // endregion
   // region file index manager
   if (ENABLED_FILE_INDEX_MANAGER && isAttachmentProcessorEnabled()) {
-    await fileIndexManager.shutdown();
+    stoppingPromises.push(fileIndexManager.shutdown());
   }
   // endregion
-
-  // refactoring in module in progress
-  // all managers will be started only in this method
-  await shutdownAllManagers();
 
   // endregion
   // region Cluster manager
@@ -243,5 +239,9 @@ export const shutdownModules = async () => {
   stoppingPromises.push(supportPackageListener.shutdown());
   stoppingPromises.push(authenticationProviderListener.shutdown());
   await Promise.all(stoppingPromises);
+
+  // refactoring in module in progress
+  // all managers will be shutdown only in this method
+  await shutdownAllManagers();
 };
 // endregion
