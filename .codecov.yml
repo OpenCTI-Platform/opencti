@@ -4,3 +4,8 @@ coverage:
       default:
         target: 80%
         informational: true
+      opencti-front:
+        target: 80%
+        informational: true
+      opencti-back-end:
+        target: 80%
