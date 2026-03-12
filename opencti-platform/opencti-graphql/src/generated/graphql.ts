@@ -22908,6 +22908,7 @@ export type PublicDistribution = {
 
 export type PublicProvider = {
   __typename?: 'PublicProvider';
+  button_label_override?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   provider: Scalars['String']['output'];
   type: Scalars['String']['output'];
@@ -46710,6 +46711,7 @@ export type PublicDistributionResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type PublicProviderResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicProvider'] = ResolversParentTypes['PublicProvider']> = ResolversObject<{
+  button_label_override?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   provider?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
