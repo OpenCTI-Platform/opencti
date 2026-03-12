@@ -1,7 +1,31 @@
 import React, { FunctionComponent, useState, useMemo, useCallback, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { Add, DeleteOutlined, AddCircleOutlined, ArrowUpward, ArrowDownward } from '@mui/icons-material';
-import { Box, IconButton, MenuItem, Tab, Tabs, Typography, TextField, Alert, Select, FormControl, InputLabel, Switch, FormControlLabel } from '@mui/material';
+import {
+  Add,
+  DeleteOutlined,
+  AddCircleOutlined,
+  ArrowUpward,
+  ArrowDownward,
+  ExpandMore,
+} from '@mui/icons-material';
+import {
+  Box,
+  IconButton,
+  MenuItem,
+  Tab,
+  Tabs,
+  Typography,
+  TextField,
+  Alert,
+  Select,
+  FormControl,
+  InputLabel,
+  Switch,
+  FormControlLabel,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+} from '@mui/material';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -1569,16 +1593,102 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           />
 
           {formData.isDraftByDefault && (
-            <FormControlLabel
-              control={(
-                <Switch
-                  checked={formData.allowDraftOverride}
-                  onChange={(e) => handleFieldChange('allowDraftOverride', e.target.checked)}
-                />
-              )}
-              label={t_i18n('Allow users to uncheck draft mode')}
-              style={{ marginTop: 20, display: 'block' }}
-            />
+            <>
+              <FormControlLabel
+                control={(
+                  <Switch
+                    checked={formData.allowDraftOverride}
+                    onChange={(e) => handleFieldChange('allowDraftOverride', e.target.checked)}
+                  />
+                )}
+                label={t_i18n('Allow users to uncheck draft mode')}
+                style={{ marginTop: 20, display: 'block' }}
+              />
+
+              <Accordion variant="outlined" style={{ marginTop: 20 }}>
+                <AccordionSummary expandIcon={<ExpandMore />}>
+                  <Typography>{t_i18n('Advanced Draft Settings')}</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  {/* Draft Author Section */}
+                  <Typography variant="h6" gutterBottom>{t_i18n('Draft Author')}</Typography>
+                  <FormControl fullWidth variant="standard" style={{ marginBottom: 20 }}>
+                    <InputLabel>{t_i18n('Author Source')}</InputLabel>
+                    <Select
+                      value={formData.draftDefaults?.author?.type || 'none'}
+                      onChange={(e) => {
+                        handleFieldChange('draftDefaults.author.type', e.target.value);
+                      }}
+                      label={t_i18n('Author Source')}
+                    >
+                      <MenuItem value="none">{t_i18n('None (Default)')}</MenuItem>
+                      <MenuItem value="current_user">{t_i18n('Current User')}</MenuItem>
+                      <MenuItem value="main_entity_author">{t_i18n('Reuse Main Entity Author')}</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <FormControlLabel
+                    control={(
+                      <Switch
+                        checked={formData.draftDefaults?.author?.isEditable || false}
+                        onChange={(e) => handleFieldChange('draftDefaults.author.isEditable', e.target.checked)}
+                      />
+                    )}
+                    label={t_i18n('Editable by end user')}
+                    style={{ display: 'block' }}
+                  />
+                  <FormControlLabel
+                    control={(
+                      <Switch
+                        checked={formData.draftDefaults?.author?.isRequired || false}
+                        onChange={(e) => handleFieldChange('draftDefaults.author.isRequired', e.target.checked)}
+                      />
+                    )}
+                    label={t_i18n('Required')}
+                    style={{ display: 'block', marginBottom: 20 }}
+                  />
+
+                  {/* Authorized Members Section */}
+                  <Typography variant="h6" gutterBottom>{t_i18n('Authorized Members')}</Typography>
+                  <FormControlLabel
+                    control={(
+                      <Switch
+                        checked={formData.draftDefaults?.authorizedMembers?.enabled || false}
+                        onChange={(e) => {
+                          const enabled = e.target.checked;
+                          handleFieldChange('draftDefaults.authorizedMembers.enabled', enabled);
+                          // Set default rule if enabling and no rules exist
+                          if (enabled && (!formData.draftDefaults?.authorizedMembers?.defaults || formData.draftDefaults?.authorizedMembers?.defaults.length === 0)) {
+                            handleFieldChange('draftDefaults.authorizedMembers.defaults', [{ type: 'CREATOR' }]);
+                          }
+                        }}
+                      />
+                    )}
+                    label={t_i18n('Activate access restriction')}
+                    style={{ display: 'block' }}
+                  />
+
+                  {formData.draftDefaults?.authorizedMembers?.enabled && (
+                    <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                      <FormControlLabel
+                        control={(
+                          <Switch
+                            checked={formData.draftDefaults?.authorizedMembers?.isRequired || false}
+                            onChange={(e) => handleFieldChange('draftDefaults.authorizedMembers.isRequired', e.target.checked)}
+                          />
+                        )}
+                        label={t_i18n('Required (Users cannot remove default members)')}
+                        style={{ display: 'block', marginBottom: 15 }}
+                      />
+                      
+                      {/* 
+                          The dynamic member selection UI (US.5) will be implemented in Step 2.3.
+                          For now, we just ensure the structure is ready.
+                      */}
+                    </Box>
+                  )}
+                </AccordionDetails>
+              </Accordion>
+            </>
           )}
 
           {formData.mainEntityMultiple && !formData.mainEntityLookup && (
