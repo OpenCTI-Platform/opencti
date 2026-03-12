@@ -124,7 +124,6 @@ import { isInternalId, isStixId } from '../schema/schemaUtils';
 import { assertType, cleanObject, convertObjectReferences, convertToStixDate, isValidStix } from './stix-converter-utils';
 import { type StoreRelationPir } from '../modules/pir/pir-types';
 import { pushAll } from '../utils/arrayUtil';
-import { logApp } from '../config/conf';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
