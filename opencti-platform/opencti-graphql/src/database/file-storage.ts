@@ -1,4 +1,5 @@
 import path, { join } from 'node:path';
+import crypto from 'node:crypto';
 import mime from 'mime-types';
 import nconf from 'nconf';
 import type { _Object } from '@aws-sdk/client-s3';
@@ -62,6 +63,7 @@ interface FileMetadata {
   mimetype?: string;
   encoding?: string;
   filename?: string;
+  sha256?: string;
   creator_id?: string;
   entity_id?: string;
   messages?: string[];
@@ -594,10 +596,25 @@ export const upload = async (
     const draftPrefix = getDraftFilePrefix(draftContext);
     key = `${draftPrefix}${key}`;
   }
+
+  // Read the stream into a buffer to compute SHA256 hash and reuse for upload
+  const readStream = createReadStream();
+  const chunks: Buffer[] = [];
+  for await (const chunk of readStream) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  const fileBuffer = Buffer.concat(chunks);
+  const sha256 = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+
   const currentFile = await documentFindById(context, user, key);
   if (currentFile) {
     // If file exists, we want to use it's internal_id to use the same casing and keep it compatible
     key = currentFile.internal_id;
+    // If the file content is identical (same SHA256), skip the upload entirely
+    if ((currentFile.metaData as FileMetadata).sha256 === sha256) {
+      return { upload: { ...currentFile, information: '', uploadStatus: 'complete' } as LoadedFile, untouched: true };
+    }
+    // keep version handling backward compatible, if the existing file version is newer or equal than the uploaded one, we skip the upload
     if (utcDate((currentFile.metaData as FileMetadata).version as string).isSameOrAfter(utcDate(metadata.version as string))) {
       return { upload: { ...currentFile, information: '', uploadStatus: 'complete' } as LoadedFile, untouched: true };
     }
@@ -608,18 +625,18 @@ export const upload = async (
 
   const creatorId = (currentFile?.metaData as FileMetadata)?.creator_id ? (currentFile.metaData as FileMetadata).creator_id : user.id;
 
-  // Upload the data
-  const readStream = createReadStream();
+  // Upload the data from the buffered content
   const fileMime = metadata.mimetype ?? guessMimeType(key);
   const fullMetadata: FileMetadata = {
     ...metadata,
     filename: encodeURIComponent(truncatedFileName),
     mimetype: fileMime,
     encoding,
+    sha256,
     creator_id: creatorId as string,
     entity_id: (entity as BasicStoreEntity)?.internal_id,
   };
-  await rawUpload(key, readStream);
+  await rawUpload(key, fileBuffer);
   const fileSize = await getFileSize(user, key);
 
   // Register in elastic
