@@ -673,8 +673,8 @@ type RemoteStreamCollection {
 }
 type StreamCollectionConsumer {
   connectionId: String!
-  userId: String!
-  userEmail: String
+  userId: String! @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  userEmail: String @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   connectedAt: DateTime!
   lastEventId: String!
   lastEventDate: DateTime

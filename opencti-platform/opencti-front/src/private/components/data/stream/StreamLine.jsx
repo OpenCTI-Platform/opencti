@@ -225,12 +225,14 @@ class StreamLineLineComponent extends Component {
             />
           </ListItemButton>
         </ListItem>
-        <StreamConsumersDrawer
-          streamCollectionId={node.id}
-          streamCollectionName={node.name}
-          open={this.state.displayConsumers}
-          onClose={this.handleCloseConsumers.bind(this)}
-        />
+        <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+          <StreamConsumersDrawer
+            streamCollectionId={node.id}
+            streamCollectionName={node.name}
+            open={this.state.displayConsumers}
+            onClose={this.handleCloseConsumers.bind(this)}
+          />
+        </Security>
       </>
     );
   }
