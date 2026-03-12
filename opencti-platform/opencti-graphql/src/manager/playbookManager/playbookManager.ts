@@ -186,6 +186,29 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
   return false;
 };
 
+let wakeWaitCron: (() => void) | null = null;
+
+const waitOrShutdownCron = (ms: number) => {
+  return new Promise<void>((resolve) => {
+    const timer = setTimeout(resolve, ms);
+    wakeWaitCron = () => {
+      clearTimeout(timer);
+      resolve();
+    };
+  });
+};
+
+let wakeWaitStream: (() => void) | null = null;
+const waitOrShutdownStream = (ms: number) => {
+  return new Promise<void>((resolve) => {
+    const timer = setTimeout(resolve, ms);
+    wakeWaitStream = () => {
+      clearTimeout(timer);
+      resolve();
+    };
+  });
+};
+
 const initPlaybookManager = () => {
   const WAIT_TIME_ACTION = 2000;
   let streamScheduler: SetIntervalAsyncTimer<[]>;
@@ -193,11 +216,7 @@ const initPlaybookManager = () => {
   let streamProcessor: StreamProcessor;
   let running = false;
   let shutdown = false;
-  const wait = (ms: number) => {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
-  };
+
   const playbookHandler = async () => {
     let lock;
     try {
@@ -210,9 +229,9 @@ const initPlaybookManager = () => {
       await streamProcessor.start(lastEventState ?? 'live');
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
-        await wait(WAIT_TIME_ACTION);
+        await waitOrShutdownStream(WAIT_TIME_ACTION);
       }
-      logApp.info('[OPENCTI-MODULE] End of playbook manager processing');
+      logApp.info('[OPENCTI-MODULE] End of playbook manager processing (live)');
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Playbook manager already started by another API');
@@ -371,7 +390,7 @@ const initPlaybookManager = () => {
       while (!shutdown) {
         lock.signal.throwIfAborted();
         await handlePlaybookCrons(context);
-        await wait(CRON_SCHEDULE_TIME);
+        await waitOrShutdownCron(CRON_SCHEDULE_TIME);
       }
       logApp.info('[OPENCTI-MODULE] End of playbook manager processing (cron)');
     } catch (e: any) {
@@ -401,10 +420,14 @@ const initPlaybookManager = () => {
       };
     },
     shutdown: async () => {
+      const startTime = new Date().getTime();
       logApp.info('[OPENCTI-MODULE] Stopping playbook manager');
       shutdown = true;
+      wakeWaitStream?.();
+      wakeWaitCron?.();
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
       if (cronScheduler) await clearIntervalAsync(cronScheduler);
+      logApp.info(`[OPENCTI-MODULE] Playbook manager stopped in ${new Date().getTime() - startTime} ms`);
       return true;
     },
   };
