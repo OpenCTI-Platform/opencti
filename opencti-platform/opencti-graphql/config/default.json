@@ -127,8 +127,8 @@
     "artifact_zip_password": "infected",
     "admin": {
       "email": "admin@opencti.io",
-      "password": "admin",
-      "token": "550e8400-e29b-41d4-a716-446655440000",
+      "password": "ChangeMe",
+      "token": "ChangeMe",
       "externally_managed": false
     },
     "group_confidence_level": {
