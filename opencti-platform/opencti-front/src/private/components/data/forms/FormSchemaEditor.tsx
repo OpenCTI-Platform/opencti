@@ -991,6 +991,17 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         <FormControlLabel
           control={(
             <Switch
+              checked={field.isReadOnly || false}
+              onChange={(e) => handleFieldChange(`fields.${fieldIndex}.isReadOnly`, e.target.checked)}
+            />
+          )}
+          label={t_i18n('Not editable by user')}
+          style={{ marginTop: 20, display: 'block' }}
+        />
+
+        <FormControlLabel
+          control={(
+            <Switch
               checked={field.required}
               onChange={(e) => handleFieldChange(`fields.${fieldIndex}.required`, e.target.checked)}
               disabled={field.isMandatory && !isInParsedMode}
