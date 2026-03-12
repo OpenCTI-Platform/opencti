@@ -66,6 +66,7 @@ export interface FormFieldDefinition {
   };
   defaultValue?: any;
   options?: Array<{ label: string; value: string }>; // For select fields
+  isReadOnly?: boolean; // Whether this field is read-only (not editable by user)
   relationship?: FormFieldRelationship; // Relationship configuration
   validation?: {
     minLength?: number;
@@ -93,6 +94,21 @@ export interface FormSchemaDefinition {
   includeInContainer?: boolean; // Whether to include entities in container (only for container types)
   isDraftByDefault?: boolean; // Whether forms should be created as draft by default
   allowDraftOverride?: boolean; // Whether users can override the draft setting
+  draftDefaults?: {
+    author?: {
+      type: 'none' | 'current_user' | 'main_entity_author';
+      isEditable: boolean;
+      isRequired: boolean;
+    };
+    authorizedMembers?: {
+      enabled: boolean;
+      isRequired: boolean;
+      defaults: Array<{
+        type: 'CREATOR' | 'AUTHOR_ORG';
+        intersectionGroup?: string;
+      }>;
+    };
+  };
   mainEntityMultiple?: boolean; // Whether main entity allows multiple instances
   mainEntityLookup?: boolean; // Whether main entity is an entity lookup (select existing)
   mainEntityDisableCreation?: boolean; // Whether to disable creation of new main entities (only allow lookup)
