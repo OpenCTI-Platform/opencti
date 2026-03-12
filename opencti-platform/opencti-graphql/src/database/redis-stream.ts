@@ -175,7 +175,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
       if (processingLoopPromise) {
         await processingLoopPromise;
       }
-      logApp.info('[STREAM] Stream processor current promise terminated');
+      logApp.info('[STREAM] Stream processor current promise terminated', { provider });
     },
   };
 };

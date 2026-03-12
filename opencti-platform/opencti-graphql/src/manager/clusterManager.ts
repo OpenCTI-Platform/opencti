@@ -54,10 +54,12 @@ const initClusterManager = () => {
       }, SCHEDULE_TIME);
     },
     shutdown: async () => {
+      const startTime = new Date().getTime();
       logApp.info('[OPENCTI-MODULE] Stopping cluster manager');
       if (scheduler) {
         await clearIntervalAsync(scheduler);
       }
+      logApp.info(`[OPENCTI-MODULE] Cluster manager stopped in ${new Date().getTime() - startTime} ms`);
       return true;
     },
   };

@@ -147,9 +147,18 @@ const initActivityManager = () => {
   let streamProcessor: StreamProcessor;
   let running = false;
   let shutdown = false;
-  const wait = (ms: number) => {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
+  let wakeWait: (() => void) | null = null;
+  const waitOrShutdown = (ms: number) => {
+    return new Promise<void>((resolve) => {
+      const timer = setTimeout(() => {
+        wakeWait = null;
+        resolve();
+      }, ms);
+      wakeWait = () => {
+        clearTimeout(timer);
+        wakeWait = null;
+        resolve();
+      };
     });
   };
   const activityHandler = async (lastEventId: string) => {
@@ -164,7 +173,7 @@ const initActivityManager = () => {
       await streamProcessor.start(lastEventId);
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
-        await wait(WAIT_TIME_ACTION);
+        await waitOrShutdown(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of Activity manager processing');
     } catch (e: any) {
@@ -215,11 +224,14 @@ const initActivityManager = () => {
       };
     },
     shutdown: async () => {
+      const startTime = new Date().getTime();
       logApp.info('[OPENCTI-MODULE] Stopping activity manager');
       shutdown = true;
+      wakeWait?.();
       if (scheduler) {
         await clearIntervalAsync(scheduler);
       }
+      logApp.info(`[OPENCTI-MODULE] Activity manager stopped in ${new Date().getTime() - startTime} ms`);
       return true;
     },
   };

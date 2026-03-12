@@ -8,7 +8,6 @@ import type { BasicStoreSettings } from '../types/settings';
 import { logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { utcDate } from '../utils/format';
-import { wait } from '../database/utils';
 import type { DataEvent, SseEvent } from '../types/event';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 
@@ -56,6 +55,36 @@ const initManager = (manager: ManagerDefinition) => {
   let running = false;
   let shutdown = false;
 
+  let wakeWaitCron: (() => void) | null = null;
+  const waitOrShutdownCron = (ms: number) => {
+    return new Promise<void>((resolve) => {
+      const timer = setTimeout(() => {
+        wakeWaitCron = null;
+        resolve();
+      }, ms);
+      wakeWaitCron = () => {
+        clearTimeout(timer);
+        wakeWaitCron = null;
+        resolve();
+      };
+    });
+  };
+
+  let wakeWaitStream: (() => void) | null = null;
+  const waitOrShutdownStream = (ms: number) => {
+    return new Promise<void>((resolve) => {
+      const timer = setTimeout(() => {
+        wakeWaitStream = null;
+        resolve();
+      }, ms);
+      wakeWaitStream = () => {
+        clearTimeout(timer);
+        wakeWaitStream = null;
+        resolve();
+      };
+    });
+  };
+
   const cronHandler = async (cronInputFn?: () => Promise<HandlerInput>) => {
     if (manager.cronSchedulerHandler) {
       let lock;
@@ -71,7 +100,7 @@ const initManager = (manager: ManagerDefinition) => {
           logApp.info(`[OPENCTI-MODULE] Running ${manager.label} infinite cron handler`);
           while (!shutdown) {
             await manager.cronSchedulerHandler.handler(cronInput);
-            await wait(manager.cronSchedulerHandler.infiniteInterval);
+            await waitOrShutdownCron(manager.cronSchedulerHandler.infiniteInterval);
           }
         } else if (manager.cronSchedulerHandler.lockInHandlerParams) {
           await manager.cronSchedulerHandler.handler(lock);
@@ -109,7 +138,7 @@ const initManager = (manager: ManagerDefinition) => {
         await streamProcessor.start(startFrom);
         while (!shutdown && streamProcessor.running()) {
           lock.signal.throwIfAborted();
-          await wait(WAIT_TIME_ACTION);
+          await waitOrShutdownStream(WAIT_TIME_ACTION);
         }
         logApp.info(`[OPENCTI-MODULE] End of ${manager.label} stream handler`);
       } catch (e: any) {
@@ -154,8 +183,11 @@ const initManager = (manager: ManagerDefinition) => {
       };
     },
     shutdown: async () => {
+      const startTime = new Date().getTime();
       logApp.info(`[OPENCTI-MODULE] Stopping ${manager.label}`);
       shutdown = true;
+      wakeWaitCron?.();
+      wakeWaitStream?.();
       if (scheduler) {
         if (manager.cronSchedulerHandler?.shutdown) {
           manager.cronSchedulerHandler?.shutdown();
@@ -167,6 +199,7 @@ const initManager = (manager: ManagerDefinition) => {
       if (streamScheduler) {
         await clearIntervalAsync(streamScheduler);
       }
+      logApp.info(`[OPENCTI-MODULE] ${manager.label} stopped in ${new Date().getTime() - startTime} ms`);
       return true;
     },
   };
@@ -192,31 +225,30 @@ export const registerManager = (manager: ManagerDefinition) => {
   managersModule.add(managerModule);
 };
 
-export const getAllEnabledManagers = async () => {
+export const getAllEnabledManagers = () => {
   return managersModule.managers
     .filter((managerModule) => managerModule.manager.enabledToStart());
-}
+};
 
-export const getAllDisabledManagers = async () => {
+export const getAllDisabledManagers = () => {
   return managersModule.managers
     .filter((managerModule) => !managerModule.manager.enabledToStart());
-}
+};
 
 export const startAllManagers = async () => {
-  const managersToStart = await getAllEnabledManagers();
-  const disabledManagers = await getAllDisabledManagers();
+  const managersToStart = getAllEnabledManagers();
+  const disabledManagers = getAllDisabledManagers();
 
   for (let i = 0; i < disabledManagers.length; i += 1) {
-      logApp.info(`[OPENCTI-MODULE] ${disabledManagers[i].manager.label} not started (disabled by configuration)`);
+    logApp.info(`[OPENCTI-MODULE] ${disabledManagers[i].manager.label} not started (disabled by configuration)`);
   }
   await Promise.all(
     managersToStart.map((managerModule) => managerModule.start()),
   );
-
 };
 
 export const shutdownAllManagers = async () => {
-  const managersToShutdown = await getAllEnabledManagers();
+  const managersToShutdown = getAllEnabledManagers();
 
   await Promise.all(
     managersToShutdown.map((managerModule) => managerModule.shutdown()),

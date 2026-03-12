@@ -43,18 +43,18 @@ export const checkSystemDependencies = async () => {
 
   // Run checks sequentially to stop startup immediately on first failure.
   const checks = [
-    { label: 'Search engine', run: () => searchEngineInit() },
-    { label: 'File storage', run: () => storageInit() },
-    { label: 'RabbitMQ', run: () => rabbitMQIsAlive() },
-    { label: 'Redis', run: () => redisInit() },
-    { label: 'SMTP', run: () => smtpIsAlive() },
-    { label: 'Python3', run: () => checkPythonAvailability(context, SYSTEM_USER) },
+    { dependencyName: 'Search engine', run: () => searchEngineInit() },
+    { dependencyName: 'File storage', run: () => storageInit() },
+    { dependencyName: 'RabbitMQ', run: () => rabbitMQIsAlive() },
+    { dependencyName: 'Redis', run: () => redisInit() },
+    { dependencyName: 'SMTP', run: () => smtpIsAlive() },
+    { dependencyName: 'Python3', run: () => checkPythonAvailability(context, SYSTEM_USER) },
   ];
 
   for (const check of checks) {
-    logApp.info(`[CHECK] checking if ${check.label} is alive`);
+    logApp.info(`[CHECK] checking if ${check.dependencyName} is alive`);
     await check.run();
-    logApp.info(`[CHECK] ${check.label} is alive`);
+    logApp.info(`[CHECK] ${check.dependencyName} is alive`);
   }
 
   logApp.info('[CHECK] All dependencies are alive');
