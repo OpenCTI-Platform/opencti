@@ -22,6 +22,7 @@ export interface FormFieldAttribute {
   parseMode?: 'comma' | 'line'; // For text/textarea fields
   options?: Array<{ label: string; value: string }>; // For select/multiselect fields
   defaultValue?: string | number | boolean | string[] | Date | null; // Default value for the field
+  isReadOnly?: boolean; // Whether this field is read-only (not editable by user)
 }
 
 export interface AdditionalEntity {
@@ -56,6 +57,21 @@ export interface FormBuilderData {
   includeInContainer: boolean; // Whether to include entities in container (only for container types)
   isDraftByDefault: boolean; // Whether forms should be created as draft by default
   allowDraftOverride: boolean; // Whether users can override the draft setting
+  draftDefaults?: {
+    author?: {
+      type: 'none' | 'current_user' | 'main_entity_author';
+      isEditable: boolean;
+      isRequired: boolean;
+    };
+    authorizedMembers?: {
+      enabled: boolean;
+      isRequired: boolean;
+      defaults: Array<{
+        type: 'CREATOR' | 'AUTHOR_ORG';
+        intersectionGroup?: string;
+      }>;
+    };
+  };
   mainEntityMultiple: boolean; // Whether main entity allows multiple
   mainEntityLookup?: boolean; // Whether main entity is an entity lookup (select existing entities)
   mainEntityDisableCreation?: boolean; // Whether to disable on-the-fly entity creation in main entity lookup mode
@@ -93,6 +109,21 @@ export interface FormSchemaDefinition {
   includeInContainer?: boolean;
   isDraftByDefault?: boolean; // Whether forms should be created as draft by default
   allowDraftOverride?: boolean; // Whether users can override the draft setting
+  draftDefaults?: {
+    author?: {
+      type: 'none' | 'current_user' | 'main_entity_author';
+      isEditable: boolean;
+      isRequired: boolean;
+    };
+    authorizedMembers?: {
+      enabled: boolean;
+      isRequired: boolean;
+      defaults: Array<{
+        type: 'CREATOR' | 'AUTHOR_ORG';
+        intersectionGroup?: string;
+      }>;
+    };
+  };
   mainEntityMultiple?: boolean;
   mainEntityLookup?: boolean;
   mainEntityDisableCreation?: boolean; // Whether to disable on-the-fly entity creation in main entity lookup mode
@@ -131,6 +162,7 @@ export interface FormFieldDefinition {
   };
   options?: Array<{ label: string; value: string }>; // For select/multiselect fields
   defaultValue?: string | number | boolean | string[] | Date | null;
+  isReadOnly?: boolean;
 }
 
 export interface FormRelationshipDefinition {
