@@ -64,10 +64,12 @@ const middleware = (target, ws = false) => createProxyMiddleware({
 
   // Listen change for hot recompile
   if (!process.env.E2E_TEST) {
-    chokidar.watch("src/**/*.{js,jsx,ts,tsx}", {
+    chokidar.watch("src", {
       awaitWriteFinish: true,
       ignoreInitial: true,
     })
+      .on('error', (error) => console.log(`[HOT RELOAD] Watcher error: ${error}`))
+      .on('ready', () => console.log('[HOT RELOAD] Initial scan complete. Ready for changes'))
       .on(
         "all",
         debounce(() => {
