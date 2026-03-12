@@ -133,7 +133,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
         redirectToContent={true}
       />
       <StixDomainObjectTabsBox
-        basePath="/dashboard/incidents/feedbacks"
+        basePath="/dashboard/cases/feedbacks"
         entity={feedbackData}
         tabs={[
           'overview',

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, useSubscription } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -66,7 +66,6 @@ const RootNote = () => {
     }),
     [noteId],
   );
-  const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   return (

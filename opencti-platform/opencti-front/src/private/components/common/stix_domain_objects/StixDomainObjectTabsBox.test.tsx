@@ -32,10 +32,12 @@ describe('StixDomainObjectTabsBox', () => {
         basePath={basePath}
       />,
     );
-    const tabElem = screen.getByText(new RegExp(tabName, 'i'));
+    const tabElem = screen.getByRole('tab', { name: new RegExp(tabName, 'i') });
     expect(tabElem).toBeInTheDocument();
-    expect(tabElem).toBeInstanceOf(HTMLAnchorElement);
-    expect((tabElem as HTMLAnchorElement).href).toMatch(new RegExp(`${basePath}/${entityId}${subroute}$`));
+    expect(tabElem).toHaveAttribute(
+      'href',
+      expect.stringMatching(new RegExp(`${basePath}/${entityId}${subroute}$`)),
+    );
   });
 
   it('renders components passed as extraActions', () => {

@@ -163,7 +163,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
             />
             <StixDomainObjectTabsBox
               basePath="/dashboard/locations/regions"
-              entity={position}
+              entity={region}
               tabs={[
                 'overview',
                 'knowledge-overview',

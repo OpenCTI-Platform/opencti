@@ -1,5 +1,5 @@
 import { Suspense, useMemo } from 'react';
-import { Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootObservedDataSubscription } from './__generated__/RootObservedDataSubscription.graphql';
@@ -75,7 +75,6 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
   }), [observedDataId]);
 
   const { t_i18n } = useFormatter();
-  const location = useLocation();
 
   useSubscription<RootObservedDataSubscription>(subConfig);
 

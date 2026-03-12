@@ -137,6 +137,7 @@ const RootGrouping = () => {
                   />
                   <StixDomainObjectTabsBox
                     basePath="/dashboard/analyses/groupings"
+                    entity={grouping}
                     tabs={[
                       'overview',
                       'knowledge',
