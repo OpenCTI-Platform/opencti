@@ -67,20 +67,12 @@ yarn test:e2e     # E2E (Playwright)
 
 ## Implementation Patterns
 
-### 1. Data Fetching (Relay)
-- Use **Fragment Colocation**: Define data requirements alongside components.
-- Always run `yarn relay` after modifying GraphQL queries or fragments.
-- Avoid manual fetch calls; use Relay hooks (`usePreloadedQuery`, `useFragment`).
-
-### 2. Styling (MUI)
-- Stick to the theme provided by OpenCTI.
-- Use `sx` prop or `styled` components consistent with existing patterns.
-- Ensure dark mode compatibility (OpenCTI is heavily dark-mode focused).
-
-### 3. Components
-- Prefer functional components with hooks.
-- Use `React.memo` judiciously for performance in lists.
-- Keep components focused and small.
+> **Detailed Patterns**:
+> - [Relay Data Fetching](frontend/patterns/relay-data-fetching.md)
+> - [Component Structure](frontend/patterns/component-structure.md)
+> - [Forms & Validation](frontend/patterns/forms-validation.md)
+> - [Styling](frontend/patterns/styling-mui.md)
+> - [Components](frontend/patterns/components.md)
 
 ## Common Issues
 - **Missing Data**: Did you run `yarn relay`?

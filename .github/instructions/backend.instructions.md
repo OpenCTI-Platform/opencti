@@ -65,23 +65,13 @@ yarn test:ci-integration-sync  # Integration tests
 
 ## Implementation Patterns
 
-### 1. GraphQL Schema & Resolvers
-- Use **Attribute-based Access Control (ABAC)** where possible.
-- Ensure all new types have corresponding strict types in TypeScript.
-- Run `yarn build:schema` after modifying `.graphql` files to generate types.
-
-### 2. Database & Migrations
-- **ElasticSearch/OpenSearch** is the primary data store for STIX data.
-- Use `migrate create` (or `yarn migrate:add`) to create schema migrations.
-- **Relations**: Handle relations carefully; cleaner relations script exists (`yarn clean:relations`).
-
-### 3. Error Handling
-- Use typed errors from the `config/errors.ts` or equivalent.
-- Ensure sensitive info is not leaked in error messages.
-
-### 4. Performance
-- Use `DataLoader` patterns for resolving relationships to avoid N+1 queries.
-- Be mindful of payload sizes; STIX objects can be large.
+> **Detailed Patterns**:
+> - [Module Architecture](backend/patterns/module-architecture.md)
+> - [GraphQL Schema & Resolvers](backend/patterns/schema-resolvers.md)
+> - [Database & Migrations](backend/patterns/database-migrations.md)
+> - [Error Handling](backend/patterns/error-handling.md)
+> - [Performance](backend/patterns/performance.md)
+> - [Testing](backend/patterns/testing.md)
 
 ## Common Issues
 - **Missing Python deps**: If you see errors about missing modules, run `yarn install:python`.
