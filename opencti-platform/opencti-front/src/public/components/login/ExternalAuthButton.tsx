@@ -6,7 +6,7 @@ interface ExternalAuthButtonProps {
   auth: {
     provider?: string | null;
     name: string;
-    button_label_override?: string;
+    button_label_override?: string | null;
   };
 }
 
