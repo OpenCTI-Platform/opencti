@@ -1,7 +1,6 @@
 {
   "app": {
     "port": 4000,
-    "encryption_key": "LF7vM33p5UlgZseKtKGbGeodveCCOFnlnKTkm18NuCo=",
     "base_path": "",
     "base_url": "http://localhost:4000/",
     "enterprise_edition_license": "",
