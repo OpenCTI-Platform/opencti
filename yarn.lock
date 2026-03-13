@@ -1042,6 +1042,9 @@ __metadata:
   resolution: "opencti@workspace:."
   dependencies:
     nx: "npm:22.5.4"
+  dependenciesMeta:
+    nx:
+      built: false
   languageName: unknown
   linkType: soft
 

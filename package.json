@@ -17,5 +17,10 @@
     "dev:venv": "yarn with-python-venv yarn dev",
     "test:venv": "yarn with-python-venv yarn test",
     "renovate:dry-run": "LOG_LEVEL=debug yarn dlx renovate --dry-run --platform=local"
+  },
+  "dependenciesMeta": {
+    "nx": {
+      "built": false
+    }
   }
 }
