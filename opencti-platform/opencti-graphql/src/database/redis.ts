@@ -556,7 +556,7 @@ export const getClusterInstances = async () => {
 
 // playground handling
 const PLAYBOOK_EXECUTION_TTL = 90 * 24 * 60 * 60; // 90 days
-const PLAYBOOK_EXECUTIONS_MAX_LENGTH = 20;
+export const PLAYBOOK_EXECUTIONS_MAX_LENGTH = 20;
 export const redisPlaybookUpdate = async (envelop: ExecutionEnvelop) => {
   const clientBase = getClientBase();
   const id = `playbook_execution_${envelop.playbook_execution_id}`;
