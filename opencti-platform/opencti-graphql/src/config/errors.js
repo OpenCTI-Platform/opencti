@@ -198,6 +198,12 @@ export const WorkNotALiveError = () => error(WORK_NOT_ALIVE_ERROR, 'Work is no l
   genre: CATEGORY_BUSINESS,
 });
 
+export const BUNDLE_ALREADY_PROCESSED_ERROR = 'BUNDLE_ALREADY_PROCESSED';
+export const BundleAlreadyProcessedError = () => error(BUNDLE_ALREADY_PROCESSED_ERROR, 'Current bundle operation has already been processed', {
+  http_status: 400,
+  genre: CATEGORY_BUSINESS,
+});
+
 export const FUNCTIONAL_ERRORS = [
   FUNCTIONAL_ERROR,
   ALREADY_DELETED_ERROR,

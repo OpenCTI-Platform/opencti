@@ -529,6 +529,21 @@ export const redisFinishAsyncCall = async (asyncCallId: string) => {
   );
 };
 // endregion
+// region bundle split tracking
+const BUNDLE_TRACKING_TTL = 300;
+const bundleTrackingKey = (id: string) => `bundle_tracking:${id}`;
+export const redisSetBundleTracking = async (bundleId: string, currentTracking: number) => {
+  await getClientBase().set(
+    bundleTrackingKey(bundleId),
+    currentTracking,
+    'EX',
+    BUNDLE_TRACKING_TTL,
+  );
+};
+export const redisGetBundleTracking = async (bundleId: string) => {
+  return getClientBase().get(bundleTrackingKey(bundleId));
+};
+// endregion
 // region cluster handling
 const CLUSTER_LIST_KEY = 'platform_cluster';
 const CLUSTER_NODE_EXPIRE = 2 * 60; // 2 minutes

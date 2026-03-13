@@ -17,7 +17,7 @@ import createApolloServer from '../graphql/graphql';
 import { applicationSession } from '../database/session';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { userEditField } from '../domain/user';
-import { DraftLockedError, ForbiddenAccess, WorkNotALiveError } from '../config/errors';
+import { BundleAlreadyProcessedError, DraftLockedError, ForbiddenAccess, WorkNotALiveError } from '../config/errors';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
@@ -25,6 +25,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
 import { isWorkAlive } from '../domain/work';
+import { redisGetBundleTracking, redisSetBundleTracking } from '../database/redis';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -139,6 +140,13 @@ const createHttpServer = async () => {
       path: `${basePath}/graphql`,
       context: async ({ req, res }) => {
         const executeContext = await createAuthenticatedContext(req, res, 'api');
+        if (executeContext.bundleId) {
+          const currentBundleTracking = await redisGetBundleTracking(executeContext.bundleId);
+          if (currentBundleTracking && Number(currentBundleTracking) >= Number(executeContext.bundleTracking)) {
+            throw BundleAlreadyProcessedError();
+          }
+          await redisSetBundleTracking(executeContext.bundleId, Number(executeContext.bundleTracking));
+        }
         // When context is related to a work, we need to check work status
         if (executeContext.workId) {
           const workStillAlive = await isWorkAlive(executeContext, executeContext.user, executeContext.workId);

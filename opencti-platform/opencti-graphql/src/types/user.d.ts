@@ -82,4 +82,6 @@ interface AuthContext {
   previousStandard?: string;
   req?: Express.Request;
   blocked_for_lts_validation?: boolean;
+  bundleId?: string;
+  bundleTracking?: number;
 }
