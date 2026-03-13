@@ -13,10 +13,9 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { MenuItem, Tooltip, TooltipProps } from '@mui/material';
 import { Field } from 'formik';
 import AutocompleteField from '../../../../../../components/AutocompleteField';
-import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../../../utils/field';
 import useEntityTranslation from '../../../../../../utils/hooks/useEntityTranslation';
 
 interface Option {
@@ -38,17 +37,16 @@ const PlaybookFlowFieldArray = ({
   multiple = false,
 }: PlaybookFlowFieldArrayProps) => {
   const { translateEntityType } = useEntityTranslation();
-  const fieldOptions = [...options]
+  const fieldOptions: FieldOption[] = [...options]
     .sort((a, b) =>
       translateEntityType(a?.title ?? '').localeCompare(
         translateEntityType(b?.title ?? ''),
       ),
     )
-    .map((o) => o.const);
-
-  const findOption = (value: string) => {
-    return options.find((o) => o.const === value);
-  };
+    .map((o) => ({
+      value: o.const,
+      label: translateEntityType(o.title),
+    }));
 
   return (
     <Field
@@ -62,28 +60,6 @@ const PlaybookFlowFieldArray = ({
       }}
       name={name}
       options={fieldOptions}
-      isOptionEqualToValue={(o: string, val: string) => o === val}
-      renderOption={(props: TooltipProps, value: string) => {
-        const option = findOption(value);
-        if (!option) return null;
-        return (
-          <Tooltip
-            {...props}
-            key={option.const}
-            title={translateEntityType(option.title)}
-            placement="bottom-start"
-          >
-            <MenuItem value={option.const}>
-              {/* value might be an entity type, we try to translate it */}
-              {translateEntityType(option.title)}
-            </MenuItem>
-          </Tooltip>
-        );
-      }}
-      getOptionLabel={(val: string) => {
-        const option = findOption(val);
-        return option ? translateEntityType(option.title) : '';
-      }}
     />
   );
 };
