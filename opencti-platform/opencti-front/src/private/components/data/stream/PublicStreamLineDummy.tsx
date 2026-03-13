@@ -20,11 +20,7 @@ const bodyItemStyle: CSSProperties = {
   paddingRight: 10,
 };
 
-interface PublicStreamLineDummyProps {
-  dataColumns: DataColumns;
-}
-
-const PublicStreamLineDummy = ({ dataColumns }: PublicStreamLineDummyProps) => {
+const PublicStreamLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const theme = useTheme<Theme>();
   return (
     <ListItem
