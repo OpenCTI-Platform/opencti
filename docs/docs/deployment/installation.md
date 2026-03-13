@@ -46,7 +46,24 @@ OpenCTI can be deployed using the *docker-compose* command.
 **:material-linux:{ .middle } Linux**
 
 ```bash
-sudo apt install docker-compose
+sudo apt remove $(dpkg --get-selections docker.io docker-compose docker-compose-v2 docker-doc podman-docker containerd runc | cut -f1)
+# Add Docker's official GPG key:
+sudo apt update
+sudo apt install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+sudo tee /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+Components: stable
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo apt update
 ```
 
 **:material-microsoft-windows:{ .middle } Windows and MacOS**
@@ -106,30 +123,62 @@ Here is an example to quickly generate the `.env` file under Linux, especially a
 sudo apt install -y jq
 cd ~/docker
 (cat << EOF
+###########################
+# DEPENDENCIES            #
+###########################
+
+MINIO_ROOT_USER=$(cat /proc/sys/kernel/random/uuid)
+MINIO_ROOT_PASSWORD=$(cat /proc/sys/kernel/random/uuid)
+RABBITMQ_DEFAULT_USER=opencti
+RABBITMQ_DEFAULT_PASS=$(openssl rand -base64 32)
+SMTP_HOSTNAME=localhost
+OPENSEARCH_ADMIN_PASSWORD=changeme
+ELASTIC_MEMORY_SIZE=4G
+
+###########################
+# COMMON                  #
+###########################
+
+XTM_COMPOSER_ID=8215614c-7139-422e-b825-b20fd2a13a23
+COMPOSE_PROJECT_NAME=xtm
+
+###########################
+# OPENCTI                 #
+###########################
+
+OPENCTI_HOST=localhost
+OPENCTI_PORT=8080
+OPENCTI_EXTERNAL_SCHEME=http
 OPENCTI_ADMIN_EMAIL=admin@opencti.io
 OPENCTI_ADMIN_PASSWORD=ChangeMePlease
 OPENCTI_ADMIN_TOKEN=$(cat /proc/sys/kernel/random/uuid)
-OPENCTI_BASE_URL=http://localhost:8080
 OPENCTI_HEALTHCHECK_ACCESS_KEY=$(cat /proc/sys/kernel/random/uuid)
 OPENCTI_ENCRYPTION_KEY=$(openssl rand -base64 32)
-MINIO_ROOT_USER=$(cat /proc/sys/kernel/random/uuid)
-MINIO_ROOT_PASSWORD=$(cat /proc/sys/kernel/random/uuid)
-RABBITMQ_DEFAULT_USER=guest
-RABBITMQ_DEFAULT_PASS=guest
-ELASTIC_MEMORY_SIZE=4G
-CONNECTOR_HISTORY_ID=$(cat /proc/sys/kernel/random/uuid)
-CONNECTOR_EXPORT_FILE_STIX_ID=$(cat /proc/sys/kernel/random/uuid)
-CONNECTOR_EXPORT_FILE_CSV_ID=$(cat /proc/sys/kernel/random/uuid)
-CONNECTOR_IMPORT_FILE_STIX_ID=$(cat /proc/sys/kernel/random/uuid)
-CONNECTOR_EXPORT_FILE_TXT_ID=$(cat /proc/sys/kernel/random/uuid)
-CONNECTOR_IMPORT_DOCUMENT_ID=$(cat /proc/sys/kernel/random/uuid)
-CONNECTOR_ANALYSIS_ID=$(cat /proc/sys/kernel/random/uuid)
-SMTP_HOSTNAME=localhost
+
+###########################
+# OPENCTI CONNECTORS      #
+###########################
+
+CONNECTOR_EXPORT_FILE_STIX_ID=dd817c8b-abae-460a-9ebc-97b1551e70e6
+CONNECTOR_EXPORT_FILE_CSV_ID=7ba187fb-fde8-4063-92b5-c3da34060dd7
+CONNECTOR_EXPORT_FILE_TXT_ID=ca715d9c-bd64-4351-91db-33a8d728a58b
+CONNECTOR_IMPORT_FILE_STIX_ID=72327164-0b35-482b-b5d6-a5a3f76b845f
+CONNECTOR_IMPORT_DOCUMENT_ID=c3970f8a-ce4b-4497-a381-20b7256f56f0
+CONNECTOR_IMPORT_FILE_YARA_ID=7eb45b60-069b-4f7f-83a2-df4d6891d5ec
+CONNECTOR_IMPORT_EXTERNAL_REFERENCE_ID=d52dcbc8-fa06-42c7-bbc2-044948c87024
+CONNECTOR_ANALYSIS_ID=4dffd77c-ec11-4abe-bca7-fd997f79fa36
+
+###########################
+# OPENCTI DEFAULT DATA    #
+###########################
+
+CONNECTOR_OPENCTI_ID=dd010812-9027-4726-bf7b-4936979955ae
+CONNECTOR_MITRE_ID=8307ea1e-9356-408c-a510-2d7f8b28a0e2
 EOF
 ) > .env
 ```
 
-If your `docker-compose` deployment does not support `.env` files, just export all environment variables before launching the platform:
+If your `docker compose` deployment does not support `.env` files, just export all environment variables before launching the platform:
 
 ```bash
 export $(cat .env | grep -v "#" | xargs)
@@ -171,7 +220,7 @@ After changing your `.env` file run `docker-compose` in detached (-d) mode:
 ```bash
 sudo systemctl start docker.service
 # Run docker-compose in detached
-docker-compose up -d
+sudo docker compose up -d
 ```
 
 #### Using Docker swarm
@@ -180,7 +229,7 @@ In order to have the best experience with Docker, we recommend using the Docker 
 
 ```bash
 # If your virtual machine is not a part of a Swarm cluster, please use:
-docker swarm init
+sudo docker swarm init
 ```
 
 Put your environment variables in `/etc/environment`:
