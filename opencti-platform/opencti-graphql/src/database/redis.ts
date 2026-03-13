@@ -587,6 +587,11 @@ export const getLastPlaybookExecutions = async (playbookId: string) => {
     };
   });
 };
+export const deleteAllPlaybookExecutions = async (playbookId: string) => {
+  const playbookExecutionKeys = await getClientBase().zrange(`playbook_executions_${playbookId}`, 0, -1);
+  await getClientBase().del(playbookExecutionKeys); // delete all keys
+  await getClientBase().del(`playbook_executions_${playbookId}`); // delete list
+};
 // endregion
 
 // region - support package handling
