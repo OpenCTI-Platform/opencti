@@ -12,17 +12,20 @@ import { ENTITY_TYPE_CONTAINER_TASK } from '../../task/task-types';
 import { extractBundleBaseElement } from '../playbook-utils';
 import { now } from '../../../utils/format';
 import { extractStixRepresentative } from '../../../database/stix-representative';
-import { generateStandardId } from '../../../schema/identifier';
+import { generateStandardId, generateInternalId } from '../../../schema/identifier';
 import * as R from 'ramda';
 import { getParentTypes } from '../../../schema/schemaUtils';
 import type { StoreCommon } from '../../../types/store';
 import { convertStoreToStix_2_1 } from '../../../database/stix-2-1-converter';
 import type { StixContainer, StixIncident, StixReport } from '../../../types/stix-2-1-sdo';
 import type { StixDomainObject, StixObject } from '../../../types/stix-2-1-common';
-import { createTaskFromCaseTemplates } from '../playbook-components';
 import { pushAll } from '../../../utils/arrayUtil';
 import { getFileContent } from '../../../database/raw-file-storage';
 import { logApp } from '../../../config/conf';
+import { findAllByCaseTemplateId } from '../../task/task-domain';
+import { type StixTask, type StoreEntityTask } from '../../task/task-types';
+import type { BasicStoreEntityTaskTemplate } from '../../task/task-template/task-template-types';
+import { AUTOMATION_MANAGER_USER, executionContext } from '../../../utils/access';
 
 // For now, only a fixed list of containers are compatible
 // these are the containers that can be created with a name and no specific mandatory fields
@@ -35,6 +38,41 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS = [
   ENTITY_TYPE_CONTAINER_FEEDBACK,
   ENTITY_TYPE_CONTAINER_TASK,
 ];
+
+export const buildStixTaskFromTaskTemplate = (taskTemplate: BasicStoreEntityTaskTemplate, container: StixContainer) => {
+  const taskData = {
+    name: taskTemplate.name,
+    description: taskTemplate.description,
+  };
+  const taskStandardId = generateStandardId(ENTITY_TYPE_CONTAINER_TASK, taskData);
+  const storeTask = {
+    internal_id: generateInternalId(),
+    standard_id: taskStandardId,
+    entity_type: ENTITY_TYPE_CONTAINER_TASK,
+    parent_types: getParentTypes(ENTITY_TYPE_CONTAINER_TASK),
+    ...taskData,
+  } as StoreEntityTask;
+  const task = convertStoreToStix_2_1(storeTask) as StixTask;
+  task.object_refs = [container.id];
+  task.object_marking_refs = container.object_marking_refs;
+  return task;
+};
+
+const createTaskFromCaseTemplates = async (
+  caseTemplates: { label: string; value: string }[],
+  container: StixContainer,
+) => {
+  const context = executionContext('playbook_components');
+  const tasks = [];
+  for (let i = 0; i < caseTemplates.length; i += 1) {
+    const taskTemplates = await findAllByCaseTemplateId(context, AUTOMATION_MANAGER_USER, caseTemplates[i].value);
+    for (let j = 0; j < taskTemplates.length; j += 1) {
+      const task = buildStixTaskFromTaskTemplate(taskTemplates[j], container);
+      tasks.push(task);
+    }
+  }
+  return tasks;
+};
 
 export interface ContainerWrapperConfiguration {
   container_type: string;
