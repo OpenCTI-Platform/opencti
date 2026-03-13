@@ -20,13 +20,17 @@ import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { FormFieldRendererProps } from './FormFieldRenderer';
 import { FormSchemaDefinition } from '../Form.d';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import * as Yup from 'yup';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import type { Theme } from '../../../../../components/Theme';
 import useEntitySettings from '../../../../../utils/hooks/useEntitySettings';
 import { convertFormSchemaToYupSchema, formatFormDataForSubmission } from './FormViewUtils';
 import { environment } from '../../../../../relay/environment';
 import StixCoreObjectsField from '../../../common/form/StixCoreObjectsField';
+import CreatorField from '../../../common/form/CreatorField';
+import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import useGranted, { INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
+import useAuth from '../../../../../utils/hooks/useAuth';
 import useImportAccess from '../../../../../utils/hooks/useImportAccess';
 import Card from '../../../../../components/common/card/Card';
 import FormFields from './FormFields';
@@ -135,6 +139,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
+  const { me } = useAuth();
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [pollingEntityId, setPollingEntityId] = useState<string | null>(null);
@@ -167,14 +172,44 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   }
 
   const schema: FormSchemaDefinition = JSON.parse(form.form_schema);
-  const validationSchema = convertFormSchemaToYupSchema(schema, t_i18n);
   const initialValues: FormInitialValues = {};
 
   // Initialize isDraft based on schema settings or import context override
   const [isDraft, setIsDraft] = useState(isForcedImportToDraft || schema.isDraftByDefault || false);
 
+  const validationSchema = React.useMemo(() => {
+    let baseSchema = convertFormSchemaToYupSchema(schema, t_i18n);
+    const extraShapes: Record<string, Yup.AnySchema> = {};
+    if (isDraft && schema.draftDefaults?.author?.isEditable && schema.draftDefaults?.author?.isRequired) {
+      extraShapes.draftAuthor = Yup.object()
+        .nullable()
+        .required(t_i18n('This field is required'));
+    }
+    if (isDraft && schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults?.authorizedMembers?.isRequired) {
+      extraShapes.draftAuthorizedMembers = Yup.array()
+        .min(1, t_i18n('This field is required'));
+    }
+    if (Object.keys(extraShapes).length > 0) {
+      baseSchema = baseSchema.shape(extraShapes);
+    }
+    return baseSchema;
+  }, [schema, isDraft, t_i18n]);
+
   // Initialize values for main entity fields
   const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+
+  // Initialize draft defaults
+  if (schema.draftDefaults?.author?.isEditable) {
+    if (schema.draftDefaults?.author?.type === 'current_user' && me) {
+      initialValues.draftAuthor = { value: me.id, label: me.name };
+    } else {
+      initialValues.draftAuthor = null;
+    }
+  }
+
+  if (schema.draftDefaults?.authorizedMembers?.enabled) {
+    initialValues.draftAuthorizedMembers = [];
+  }
 
   // If main entity lookup is enabled, initialize the lookup field
   if (schema.mainEntityLookup) {
@@ -858,7 +893,26 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     </>
                   );
                 })()}
-
+                {isDraft && schema.draftDefaults?.author?.isEditable && (
+                  <div style={{ marginTop: 20 }}>
+                    <CreatorField
+                      name="draftAuthor"
+                      label={t_i18n('Draft author')}
+                      containerStyle={{ width: '100%', marginBottom: 20 }}
+                      required={schema.draftDefaults?.author?.isRequired}
+                    />
+                  </div>
+                )}
+                {isDraft && schema.draftDefaults?.authorizedMembers?.enabled && (
+                  <div style={{ marginTop: 20, marginBottom: 20 }}>
+                    <ObjectMembersField
+                      name="draftAuthorizedMembers"
+                      label={t_i18n('Authorized Members')}
+                      multiple={true}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
+                )}
                 <FormControlLabel
                   className={classes.draftCheckbox}
                   control={(

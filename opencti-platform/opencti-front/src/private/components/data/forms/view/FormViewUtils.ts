@@ -665,5 +665,20 @@ export const formatFormDataForSubmission = (
     }
   }
 
+  // Handle draft fields
+  if (values.draftAuthor) {
+    const selectedDraftAuthor = values.draftAuthor as { value: string };
+    if (selectedDraftAuthor && selectedDraftAuthor.value) {
+      formattedData.draftAuthor = selectedDraftAuthor.value;
+    }
+  }
+
+  if (values.draftAuthorizedMembers) {
+    const selectedDraftMembers = values.draftAuthorizedMembers as { value: string }[];
+    if (selectedDraftMembers && selectedDraftMembers.length > 0) {
+      formattedData.draftAuthorizedMembers = selectedDraftMembers.map((member) => member.value);
+    }
+  }
+
   return formattedData;
 };

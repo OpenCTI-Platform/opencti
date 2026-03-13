@@ -521,7 +521,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
         <div style={{ opacity: 0.7, pointerEvents: 'none' }}>
           {fieldContent}
         </div>
-      </div>
+      </div>,
     );
   }
 
