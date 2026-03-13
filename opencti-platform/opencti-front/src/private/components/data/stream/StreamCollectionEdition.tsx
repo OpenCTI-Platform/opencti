@@ -143,7 +143,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
             icon={false}
             sx={{
               width: '100%',
-              marginTop: 20,
+              marginTop: 3,
               '& .MuiAlert-message': {
                 width: '100%',
                 overflow: 'hidden',
