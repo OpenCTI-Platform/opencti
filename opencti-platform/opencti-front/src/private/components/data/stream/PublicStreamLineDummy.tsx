@@ -1,5 +1,5 @@
-import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import React, { CSSProperties } from 'react';
+import { useTheme } from '@mui/material/styles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -8,45 +8,31 @@ import Skeleton from '@mui/material/Skeleton';
 import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: {
-    height: 40,
-    display: 'flex',
-    alignItems: 'center',
-    fontSize: 13,
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    paddingRight: 10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey?.[700],
-  },
-}));
+const bodyItemStyle: CSSProperties = {
+  height: 40,
+  display: 'flex',
+  alignItems: 'center',
+  fontSize: 13,
+  float: 'left',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  paddingRight: 10,
+};
 
 interface PublicStreamLineDummyProps {
   dataColumns: DataColumns;
 }
 
 const PublicStreamLineDummy = ({ dataColumns }: PublicStreamLineDummyProps) => {
-  const classes = useStyles();
+  const theme = useTheme<Theme>();
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      style={{ paddingLeft: 10, height: 50 }}
       divider={true}
-      secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
+      secondaryAction={<MoreVert style={{ color: theme.palette.grey?.[700] }} />}
     >
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon style={{ color: theme.palette.primary.main }}>
         <Skeleton
           animation="wave"
           variant="circular"
@@ -57,10 +43,7 @@ const PublicStreamLineDummy = ({ dataColumns }: PublicStreamLineDummyProps) => {
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.name.width }}
-            >
+            <div style={{ ...bodyItemStyle, width: dataColumns.name.width }}>
               <Skeleton
                 animation="wave"
                 variant="rectangular"
@@ -68,10 +51,7 @@ const PublicStreamLineDummy = ({ dataColumns }: PublicStreamLineDummyProps) => {
                 height="50%"
               />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.description.width }}
-            >
+            <div style={{ ...bodyItemStyle, width: dataColumns.description.width }}>
               <Skeleton
                 animation="wave"
                 variant="rectangular"
@@ -79,10 +59,7 @@ const PublicStreamLineDummy = ({ dataColumns }: PublicStreamLineDummyProps) => {
                 height="50%"
               />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.id.width }}
-            >
+            <div style={{ ...bodyItemStyle, width: dataColumns.id.width }}>
               <Skeleton
                 animation="wave"
                 variant="rectangular"
@@ -90,10 +67,7 @@ const PublicStreamLineDummy = ({ dataColumns }: PublicStreamLineDummyProps) => {
                 height="50%"
               />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.stream_public.width }}
-            >
+            <div style={{ ...bodyItemStyle, width: dataColumns.stream_public.width }}>
               <Skeleton
                 animation="wave"
                 variant="rectangular"
@@ -101,10 +75,7 @@ const PublicStreamLineDummy = ({ dataColumns }: PublicStreamLineDummyProps) => {
                 height="50%"
               />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.stream_live.width }}
-            >
+            <div style={{ ...bodyItemStyle, width: dataColumns.stream_live.width }}>
               <Skeleton
                 animation="wave"
                 variant="rectangular"
@@ -112,10 +83,7 @@ const PublicStreamLineDummy = ({ dataColumns }: PublicStreamLineDummyProps) => {
                 height="50%"
               />
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.consumers.width }}
-            >
+            <div style={{ ...bodyItemStyle, width: dataColumns.consumers.width }}>
               <Skeleton
                 animation="wave"
                 variant="rectangular"
