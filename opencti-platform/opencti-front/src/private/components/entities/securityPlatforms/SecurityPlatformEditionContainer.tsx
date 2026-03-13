@@ -26,7 +26,7 @@ const SecurityPlatformEditionContainer: FunctionComponent<securityPlatformContai
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Security-Platform') } })}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('SecurityPlatform') } })}
       onClose={handleClose}
       context={editContext}
       controlledDial={controlledDial}
