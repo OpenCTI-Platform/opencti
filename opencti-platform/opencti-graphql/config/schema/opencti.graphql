@@ -13664,6 +13664,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | PublicDashboard
   | Pir
   | Theme
+  | CustomView
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -13753,6 +13754,7 @@ union StixObjectOrStixRelationship =
   | PublicDashboard
   | Pir
   | SecurityCoverage
+  | CustomView
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
@@ -13835,6 +13837,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | Workspace
   | PublicDashboard
   | Theme
+  | CustomView
 
 enum StixRelationshipsOrdering {
   entity_type
