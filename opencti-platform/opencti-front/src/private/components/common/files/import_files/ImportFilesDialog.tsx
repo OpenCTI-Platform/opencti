@@ -512,6 +512,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
       open={open}
       size="large"
       title={t_i18n('Import data')}
+      onClose={handleClose}
     >
       {!uploadStatus ? (
         <>
