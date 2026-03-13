@@ -1,13 +1,6 @@
 import React, { FunctionComponent, useState, useMemo, useCallback, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import {
-  Add,
-  DeleteOutlined,
-  AddCircleOutlined,
-  ArrowUpward,
-  ArrowDownward,
-  ExpandMore,
-} from '@mui/icons-material';
+import { Add, DeleteOutlined, AddCircleOutlined, ArrowUpward, ArrowDownward, ExpandMore } from '@mui/icons-material';
 import {
   Box,
   IconButton,
@@ -25,7 +18,11 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Autocomplete,
+  CircularProgress,
 } from '@mui/material';
+import { fetchQuery } from '../../../../relay/environment';
+import { groupsQuery } from '../../common/form/GroupField';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -45,6 +42,73 @@ import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
 import type { FormFieldAttribute, AdditionalEntity, EntityRelationship, FormBuilderData, RelationshipTypeOption } from './Form.d';
 import useAuth from '../../../../utils/hooks/useAuth';
+
+interface GroupOption {
+  label: string;
+  value: string;
+}
+
+const GroupSelector = ({
+  value,
+  onChange,
+}: {
+  value?: string;
+  onChange: (val: string | null) => void;
+}) => {
+  const { t_i18n } = useFormatter();
+  const [open, setOpen] = useState(false);
+  const [options, setOptions] = useState<GroupOption[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setLoading(true);
+    fetchQuery(groupsQuery, { orderBy: 'name', orderMode: 'asc' })
+      .toPromise()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .then((data: any) => {
+        const edges = data?.groups?.edges || [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const newOptions = edges.map((n: any) => ({
+          label: n.node.name,
+          value: n.node.id,
+        }));
+        setOptions(newOptions);
+        setLoading(false);
+      });
+  }, [open]);
+
+  return (
+    <Autocomplete
+      open={open}
+      onOpen={() => setOpen(true)}
+      onClose={() => setOpen(false)}
+      options={options}
+      getOptionLabel={(option) => option.label}
+      // If value exists but not in options, show the ID as label temporarily
+      value={options.find((o) => o.value === value) || (value ? { label: value, value } : null)}
+      onChange={(_, newValue) => onChange(newValue ? newValue.value : null)}
+      isOptionEqualToValue={(option, val) => option.value === val.value}
+      loading={loading}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={t_i18n('Intersection Group (Optional)')}
+          variant="standard"
+          InputProps={{
+            ...params.InputProps,
+            endAdornment: (
+              <>
+                {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                {params.InputProps.endAdornment}
+              </>
+            ),
+          }}
+        />
+      )}
+    />
+  );
+};
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -234,7 +298,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     });
   };
 
-  const handleFieldChange = (path: string, value: string | number | boolean | string[] | Date | null | Array<{ label: string; value: string }>) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleFieldChange = (path: string, value: string | number | boolean | string[] | Date | null | Array<{ label: string; value: string }> | any) => {
     updateFormData((prev) => {
       const keys = path.split('.');
       // Prevent prototype pollution by blocking dangerous property names
@@ -253,6 +318,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           current[key] = [...current[key]];
         } else if (typeof current[key] === 'object' && current[key] !== null) {
           current[key] = { ...current[key] };
+        } else if (current[key] === undefined) {
+          current[key] = {};
         }
         current = current[key] as Record<string, unknown>;
       }
@@ -1679,11 +1746,63 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                         label={t_i18n('Required (Users cannot remove default members)')}
                         style={{ display: 'block', marginBottom: 15 }}
                       />
-                      
-                      {/* 
-                          The dynamic member selection UI (US.5) will be implemented in Step 2.3.
-                          For now, we just ensure the structure is ready.
-                      */}
+                      <Typography variant="subtitle2" style={{ marginTop: 10 }}>{t_i18n('Member Rules')}</Typography>
+
+                      {formData.draftDefaults?.authorizedMembers?.defaults?.map((rule, idx) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, marginBottom: 10 }}>
+                          <FormControl variant="standard" style={{ minWidth: 200 }}>
+                            <InputLabel>{t_i18n('Rule Type')}</InputLabel>
+                            <Select
+                              value={rule.type}
+                              onChange={(e) => {
+                                const newDefaults = [...(formData.draftDefaults?.authorizedMembers?.defaults || [])];
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                newDefaults[idx] = { ...newDefaults[idx], type: e.target.value as any };
+                                handleFieldChange('draftDefaults.authorizedMembers.defaults', newDefaults);
+                              }}
+                            >
+                              <MenuItem value="CREATOR">{t_i18n('Creator')}</MenuItem>
+                              <MenuItem value="AUTHOR_ORG">{t_i18n('Author Organization')}</MenuItem>
+                            </Select>
+                          </FormControl>
+
+                          {rule.type === 'AUTHOR_ORG' && (
+                            <div style={{ flexGrow: 1 }}>
+                              <GroupSelector
+                                value={rule.intersectionGroup}
+                                onChange={(val) => {
+                                  const newDefaults = [...(formData.draftDefaults?.authorizedMembers?.defaults || [])];
+                                  newDefaults[idx] = { ...newDefaults[idx], intersectionGroup: val || undefined };
+                                  handleFieldChange('draftDefaults.authorizedMembers.defaults', newDefaults);
+                                }}
+                              />
+                            </div>
+                          )}
+
+                          <IconButton onClick={() => {
+                            const newDefaults = [...(formData.draftDefaults?.authorizedMembers?.defaults || [])];
+                            newDefaults.splice(idx, 1);
+                            handleFieldChange('draftDefaults.authorizedMembers.defaults', newDefaults);
+                          }}
+                          >
+                            <DeleteOutlined />
+                          </IconButton>
+                        </div>
+                      ))}
+
+                      <Button
+                        style={{ marginTop: 10 }}
+                        variant="primary"
+                        size="small"
+                        startIcon={<Add />}
+                        onClick={() => {
+                          const newDefaults = [...(formData.draftDefaults?.authorizedMembers?.defaults || [])];
+                          newDefaults.push({ type: 'CREATOR' });
+                          handleFieldChange('draftDefaults.authorizedMembers.defaults', newDefaults);
+                        }}
+                      >
+                        {t_i18n('Add Rule')}
+                      </Button>
                     </Box>
                   )}
                 </AccordionDetails>
