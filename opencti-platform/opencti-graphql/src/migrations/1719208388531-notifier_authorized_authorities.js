@@ -15,7 +15,7 @@ export const up = async (next) => {
     for (let i = 0; i < notifiers.length; i += 1) {
       const notifier = notifiers[i];
       const patch = { authorized_authorities: ['SETTINGS_SETCUSTOMIZATION'] };
-      await elReplace(notifier._index, notifier.internal_id, { doc: patch });
+      await elReplace(context, notifier._index, notifier.internal_id, { doc: patch });
     }
   };
   const opts = { types: [ENTITY_TYPE_NOTIFIER], callback };

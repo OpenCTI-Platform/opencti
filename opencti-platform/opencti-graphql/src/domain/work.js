@@ -115,9 +115,9 @@ export const loadExportWorksAsProgressFiles = async (context, user, sourceId) =>
   return filterSuccessCompleted.map((item) => workToExportFile(item));
 };
 
-export const deleteWorksRaw = async (works) => {
+export const deleteWorksRaw = async (context, works) => {
   const workIds = works.map((w) => w.internal_id);
-  await elDeleteInstances(works);
+  await elDeleteInstances(context, works);
   await redisDeleteWorks(workIds);
   return workIds;
 };
@@ -125,7 +125,7 @@ export const deleteWorksRaw = async (works) => {
 export const deleteWork = async (context, user, workId) => {
   const work = await loadWorkById(context, user, workId);
   if (work) {
-    await deleteWorksRaw([work]);
+    await deleteWorksRaw(context, [work]);
     await publishUserAction({
       user,
       event_type: 'mutation',
@@ -142,7 +142,7 @@ export const pingWork = async (context, user, workId) => {
   const currentWork = await loadWorkById(context, user, workId);
   const params = { updated_at: now() };
   const source = 'ctx._source["updated_at"] = params.updated_at;';
-  await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
+  await elUpdate(context, currentWork._index, workId, { script: { source, lang: 'painless', params } });
   return workId;
 };
 
@@ -160,7 +160,7 @@ export const deleteWorkForConnector = async (context, user, connectorId) => {
   }
   let works = await worksForConnector(context, user, connectorId, { first: 500 });
   while (works.length > 0) {
-    await deleteWorksRaw(works);
+    await deleteWorksRaw(context, works);
     works = await worksForConnector(context, user, connectorId, { first: 500 });
   }
   await publishUserAction({
@@ -177,7 +177,7 @@ export const deleteWorkForConnector = async (context, user, connectorId) => {
 export const deleteWorkForFile = async (context, user, fileId) => {
   const works = await worksForSource(context, user, fileId);
   if (works.length > 0) {
-    await deleteWorksRaw(works);
+    await deleteWorksRaw(context, works);
   }
   return true;
 };
@@ -252,7 +252,7 @@ const updateWorkTaskToComplete = async (context, user, work) => {
   const associatedTask = await internalLoadById(context, user, associatedTaskId, { type: ENTITY_TYPE_BACKGROUND_TASK });
   if (associatedTask) {
     const sourceScriptUpdateWork = 'ctx._source["work_completed"] = "true"';
-    await elUpdate(associatedTask._index, associatedTaskId, { script: { source: sourceScriptUpdateWork, lang: 'painless' } });
+    await elUpdate(context, associatedTask._index, associatedTaskId, { script: { source: sourceScriptUpdateWork, lang: 'painless' } });
   } else {
     logApp.warn('The task associated to work cannot be found in database, task work status cannot be updated.', { associatedTaskId });
   }
@@ -286,7 +286,7 @@ export const reportExpectation = async (context, user, workId, errorData) => {
     // Update elastic
     const currentWork = await loadWorkById(context, user, workId);
     if (currentWork) {
-      await elUpdate(currentWork._index, workId, { script: { source: sourceScript, lang: 'painless', params } });
+      await elUpdate(context, currentWork._index, workId, { script: { source: sourceScript, lang: 'painless', params } });
       // If work is associated to a task, we also need to update work to completed on the task
       if (isComplete) {
         await updateWorkTaskToComplete(context, user, currentWork);
@@ -315,7 +315,7 @@ export const updateExpectationsNumber = async (context, user, workId, expectatio
   const params = { updated_at: now(), import_expected_number: expectations };
   let source = 'ctx._source.updated_at = params.updated_at;';
   source += 'ctx._source["import_expected_number"] = ctx._source["import_expected_number"] + params.import_expected_number;';
-  await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
+  await elUpdate(context, currentWork._index, workId, { script: { source, lang: 'painless', params } });
   await redisUpdateActionExpectation(user, workId, expectations);
   // Ensure that work hasn't been deleted in the meantime in case of race condition
   const workAlive = await isWorkAlive(context, user, workId);
@@ -342,7 +342,7 @@ export const addDraftContext = async (context, user, workId, draftContext) => {
   const params = { updated_at: now(), draft_context: draftContext };
   let source = 'ctx._source.updated_at = params.updated_at;';
   source += 'ctx._source["draft_context"] =  params.draft_context;';
-  await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
+  await elUpdate(context, currentWork._index, workId, { script: { source, lang: 'painless', params } });
   return workId;
 };
 
@@ -359,7 +359,7 @@ export const updateReceivedTime = async (context, user, workId, message) => {
     source += 'ctx._source.messages.add(["timestamp": params.received_time, "message": params.message]); ';
   }
   // Update elastic
-  await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
+  await elUpdate(context, currentWork._index, workId, { script: { source, lang: 'painless', params } });
   return workId;
 };
 
@@ -387,7 +387,7 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
     }
   }
   // Update elastic
-  await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
+  await elUpdate(context, currentWork._index, workId, { script: { source, lang: 'painless', params } });
   // Remove redis work if needed
   if (isComplete) {
     await redisDeleteWorks([workId]);

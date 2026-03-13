@@ -40,7 +40,7 @@ const closeOldWorks = async (context, connector) => {
         try {
           // If element is too old, just delete it
           if (sinceNowInDays(element.timestamp) > CONNECTOR_WORK_RANGE) {
-            await elDeleteInstances([element]);
+            await elDeleteInstances(context, [element]);
           } else { // If not, update the status to complete + the number of processed elements
             const currentWorkStatus = await redisGetWork(element.internal_id);
             if (currentWorkStatus) {
@@ -48,7 +48,7 @@ const closeOldWorks = async (context, connector) => {
               const sourceScript = `ctx._source['status'] = "complete";
                   ctx._source['completed_time'] = params.completed_time;
                   ctx._source['completed_number'] = params.completed_number;`;
-              await elUpdate(element._index, element.internal_id, {
+              await elUpdate(context, element._index, element.internal_id, {
                 script: {
                   source: sourceScript,
                   lang: 'painless',
@@ -92,7 +92,7 @@ export const deleteCompletedWorks = async (context, connector) => {
     logApp.info(message);
     const ids = elements.map((w) => w.internal_id);
     await redisDeleteWorks(ids);
-    await elDeleteInstances(elements);
+    await elDeleteInstances(context, elements);
   };
   await elList(context, SYSTEM_USER, [READ_INDEX_HISTORY], {
     filters,

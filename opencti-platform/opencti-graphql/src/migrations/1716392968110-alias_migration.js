@@ -27,7 +27,7 @@ export const up = async (next) => {
         { doc: { [iAliasedIds.name]: aliasIds } },
       ];
     }).flat();
-    await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulkOperations });
+    await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bulkOperations });
     logApp.info(`${message} > progress, ${totalIndex}/${total}`);
   };
 

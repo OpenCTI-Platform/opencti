@@ -57,18 +57,18 @@ export const up = async (next) => {
       attribute_order: 2700,
       standard_id: generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'CSVMAPPERS' }),
     };
-    await elReplace(CSVCapability._index, CSVCapability.internal_id, { doc: CSVCapabilityPatch });
+    await elReplace(context, CSVCapability._index, CSVCapability.internal_id, { doc: CSVCapabilityPatch });
   }
 
   // ------ Update description of Access data sharing & ingestion => Access data sharing
   const accessDataCapability = await elLoadById(context, SYSTEM_USER, 'capability--d258afde-7a8a-5917-8b4b-83119d3f8e52');
   const accessDataCapabilityPatch = { description: 'Access data sharing' };
-  await elReplace(accessDataCapability._index, accessDataCapability.internal_id, { doc: accessDataCapabilityPatch });
+  await elReplace(context, accessDataCapability._index, accessDataCapability.internal_id, { doc: accessDataCapabilityPatch });
 
   // ------ Update description of Manage data sharing & ingestion => Manage data sharing
   const manageDataCapability = await elLoadById(context, SYSTEM_USER, 'capability--24f9401c-8a77-59d5-8a8f-4ea21a1a733b');
   const manageDataCapabilityPatch = { description: 'Manage data sharing' };
-  await elReplace(manageDataCapability._index, manageDataCapability.internal_id, { doc: manageDataCapabilityPatch });
+  await elReplace(context, manageDataCapability._index, manageDataCapability.internal_id, { doc: manageDataCapabilityPatch });
 
   // ------ Update name + description + attribute_order of BYPASSREFERENCE
   const byPassRefCapability = await elLoadById(context, SYSTEM_USER, 'capability--7ad2a72e-8dcd-569c-8d3f-469dce6fa6b0');
@@ -79,13 +79,13 @@ export const up = async (next) => {
       attribute_order: 320,
       standard_id: generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE' }),
     };
-    await elReplace(byPassRefCapability._index, byPassRefCapability.internal_id, { doc: byPassRefCapabilityPatch });
+    await elReplace(context, byPassRefCapability._index, byPassRefCapability.internal_id, { doc: byPassRefCapabilityPatch });
   }
 
   // ------ Update attribute_order of Connector API usage
   const connectorAPICapability = await elLoadById(context, SYSTEM_USER, 'capability--3b45a9ef-b336-5539-be9a-58e3509648e9');
   const connectorAPICapabilityPatch = { attribute_order: 2300 };
-  await elReplace(connectorAPICapability._index, connectorAPICapability.internal_id, { doc: connectorAPICapabilityPatch });
+  await elReplace(context, connectorAPICapability._index, connectorAPICapability.internal_id, { doc: connectorAPICapabilityPatch });
 
   logApp.info(`${message} > done`);
   next();
