@@ -1170,31 +1170,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/pprof@npm:5.13.4":
-  version: 5.13.4
-  resolution: "@datadog/pprof@npm:5.13.4"
+"@datadog/pprof@npm:5.13.5":
+  version: 5.13.5
+  resolution: "@datadog/pprof@npm:5.13.5"
   dependencies:
-    delay: "npm:^5.0.0"
     node-gyp: "npm:latest"
     node-gyp-build: "npm:<4.0"
-    p-limit: "npm:^3.1.0"
     pprof-format: "npm:^2.2.1"
     source-map: "npm:^0.7.4"
-  checksum: 10c0/e00a1c1324953577ec002034904aed326ddeacec70aa4f7f08f892f748d3fd265a466a44f5ca6512341e37f5da0f8f8aae1f0a2d0a7685769c4374d02cb77185
+  checksum: 10c0/ba9d0e9f95bbaaee4f9f3b7581567d651be2f3dc5958e7357ebdb00a62a00407d8a89ced71a5192df60ee6e5b64e93bdea442b42f147bf4fe98b5d6187c13511
   languageName: node
   linkType: hard
 
-"@datadog/pprof@patch:@datadog/pprof@5.13.4#./patch/@datadog-pprof.patch::locator=opencti-graphql%40workspace%3A.":
-  version: 5.13.4
-  resolution: "@datadog/pprof@patch:@datadog/pprof@npm%3A5.13.4#./patch/@datadog-pprof.patch::version=5.13.4&hash=fbd351&locator=opencti-graphql%40workspace%3A."
+"@datadog/pprof@patch:@datadog/pprof@5.13.5#./patch/@datadog-pprof.patch::locator=opencti-graphql%40workspace%3A.":
+  version: 5.13.5
+  resolution: "@datadog/pprof@patch:@datadog/pprof@npm%3A5.13.5#./patch/@datadog-pprof.patch::version=5.13.5&hash=fbd351&locator=opencti-graphql%40workspace%3A."
   dependencies:
-    delay: "npm:^5.0.0"
     node-gyp: "npm:latest"
     node-gyp-build: "npm:<4.0"
-    p-limit: "npm:^3.1.0"
     pprof-format: "npm:^2.2.1"
     source-map: "npm:^0.7.4"
-  checksum: 10c0/027a5821d9883afab711ba7759a4a2b17ffa6435050cbb237fd4fe75ff0f84d7af6cc8482eda1bc821e1e909d665e8a166e7c3f9edf112e89bc45517f5ef1968
+  checksum: 10c0/6d98abe0957dcb8f56c1f93bca80c6635b32c25256c926d2a38d2152bf85332bdcea7c7852390b6fb329d91387261a8bc281d2f0a0f6db6eecb9b447dcc90fa7
   languageName: node
   linkType: hard
 
@@ -6834,13 +6830,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"delay@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "delay@npm:5.0.0"
-  checksum: 10c0/01cdc4cd0cd35fb622518a3df848e67e09763a38e7cdada2232b6fda9ddda72eddcf74f0e24211200fbe718434f2335f2a2633875a6c96037fefa6de42896ad7
-  languageName: node
-  linkType: hard
-
 "delayed-stream@npm:~1.0.0":
   version: 1.0.0
   resolution: "delayed-stream@npm:1.0.0"
@@ -10576,7 +10565,7 @@ __metadata:
     "@aws-sdk/client-sts": "npm:3.1004.0"
     "@aws-sdk/credential-provider-node": "npm:3.972.18"
     "@aws-sdk/lib-storage": "npm:3.1004.0"
-    "@datadog/pprof": "npm:5.13.4"
+    "@datadog/pprof": "npm:5.13.5"
     "@elastic/elasticsearch": "npm:8.19.1"
     "@escape.tech/graphql-armor": "npm:3.2.0"
     "@eslint/js": "npm:10.0.1"
@@ -10834,7 +10823,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"p-limit@npm:3.1.0, p-limit@npm:^3.0.2, p-limit@npm:^3.1.0":
+"p-limit@npm:3.1.0, p-limit@npm:^3.0.2":
   version: 3.1.0
   resolution: "p-limit@npm:3.1.0"
   dependencies:
