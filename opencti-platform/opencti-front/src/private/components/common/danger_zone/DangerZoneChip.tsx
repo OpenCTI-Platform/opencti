@@ -13,6 +13,7 @@ const DangerZoneChip = () => {
       tooltipTitle={t_i18n('DangerZoneTooltip')}
       label={t_i18n('Danger Zone')}
       color={theme.palette.dangerZone.main}
+      labelTextTransform="none"
     />
   );
 };
