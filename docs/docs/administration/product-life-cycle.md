@@ -11,10 +11,10 @@ OpenCTI has adopted a date-based versioning scheme that reflects our continuous 
 
 ### Version Format
 
-| Version Format       | Description          |
-|:---------------------|:---------------------|
-| `x.dddddd.z`         | Non-LTS version <br> `x` = major version number <br> `dddddd` = release date (YYMMDD) <br> `z` = sequential number for same-day releases (including LTS releases)|
-| `x.dddddd.z-lts(.n)` | LTS version <br> `x` = major version number <br> `dddddd` = LTS branching date (YYMMDD) <br> `z` = sequential number for same-day releases (including non-LTS releases) <br> `n` = sequential hotfix number (starts at 1)|
+| Version Format     | Description          |
+|:-------------------|:---------------------|
+| `x.dddddd.z`       | Non-LTS version <br> `x` = major version number <br> `dddddd` = release date (YYMMDD) <br> `z` = sequential number for same-day releases (including LTS releases)|
+| `x.dddddd.z-lts.n` | LTS version <br> `x` = major version number <br> `dddddd` = LTS branching date (YYMMDD) <br> `z` = sequential number for same-day releases (including non-LTS releases) <br> `n` = sequential hotfix number (starts at 1)|
 
 ### Version Examples
 
@@ -26,9 +26,9 @@ OpenCTI has adopted a date-based versioning scheme that reflects our continuous 
 
 **LTS versions:**
 
-- **7.260201.0-lts** — LTS branched February 1, 2026, released March 1, 2026
-- **7.260201.0-lts.1** — First hotfix for the 7.260201-lts release
-- **7.260201.0-lts.2** — Second hotfix for the 7.260201-lts release
+- **7.260201.0-lts.1** — LTS branched February 1, 2026, released March 1, 2026
+- **7.260201.0-lts.2** — Second release of 7.260201-lts
+- **7.260201.0-lts.3** — Third release 7.260201-lts
 
 ### Release Frequency
 
