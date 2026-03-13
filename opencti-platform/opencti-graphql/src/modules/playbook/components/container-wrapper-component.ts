@@ -1,5 +1,5 @@
 import type { JSONSchemaType } from 'ajv';
-import { type PlaybookComponent } from '../playbook-types';
+import { ElementsToApplyList, type ElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { ENTITY_TYPE_CONTAINER_REPORT, STIX_DOMAIN_OBJECT_CONTAINER_CASES } from '../../../schema/stixDomainObject';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../grouping/grouping-types';
@@ -77,8 +77,7 @@ const createTaskFromCaseTemplates = async (
 export interface ContainerWrapperConfiguration {
   container_type: string;
   caseTemplates: { label: string; value: string }[];
-  all: boolean;
-  excludeMainElement: boolean;
+  applyToElements: ElementsToApply;
   copyFiles: boolean;
   newContainer: boolean;
 }
@@ -94,8 +93,16 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<Contain
       $ref: 'Case templates',
       items: { type: 'string', oneOf: [] },
     },
-    all: { type: 'boolean', $ref: 'Wrap all elements included in the bundle', default: false },
-    excludeMainElement: { type: 'boolean', $ref: 'Exclude main element from container', default: false },
+    applyToElements: {
+      type: 'string',
+      default: ElementsToApplyList.onlyMain.value,
+      $ref: 'Apply to',
+      oneOf: [
+        { const: ElementsToApplyList.onlyMain.value, title: ElementsToApplyList.onlyMain.title },
+        { const: ElementsToApplyList.allElements.value, title: ElementsToApplyList.allElements.title },
+        { const: ElementsToApplyList.allExceptMain.value, title: ElementsToApplyList.allExceptMain.title },
+      ],
+    },
     copyFiles: { type: 'boolean', $ref: 'Copy files from main element to the container', default: false },
     newContainer: { type: 'boolean', $ref: 'Create a new container at each run', default: false },
   },
@@ -117,7 +124,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
     return R.mergeDeepRight<JSONSchemaType<ContainerWrapperConfiguration>, any>(PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA, schemaElement);
   },
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
-    const { container_type, all, excludeMainElement, copyFiles, newContainer, caseTemplates } = playbookNode.configuration;
+    const { container_type, applyToElements, copyFiles, newContainer, caseTemplates } = playbookNode.configuration;
     if (!PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS.includes(container_type)) {
       throw FunctionalError('this container type is incompatible with the Container Wrapper playbook component', { container_type });
     }
@@ -149,17 +156,19 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         ...containerData,
       } as StoreCommon;
       const container = convertStoreToStix_2_1(storeContainer) as StixReport | StixCaseIncident;
+      // If we want to apply to all elements except main, exclude the main element from the container
+      if (applyToElements === ElementsToApplyList.allExceptMain.value) {
+        container.object_refs = bundle.objects.filter((o: StixObject) => o.id !== baseData.id).map((o: StixObject) => o.id);
+      }
       // add all objects in the container if requested in the playbook config
-      if (all) {
-        // If excludeMainElement is true and all is true, exclude the main element from the container
-        if (excludeMainElement) {
-          container.object_refs = bundle.objects.filter((o: StixObject) => o.id !== baseData.id).map((o: StixObject) => o.id);
-        } else {
-          container.object_refs = bundle.objects.map((o: StixObject) => o.id);
-        }
-      } else {
+      if (applyToElements === ElementsToApplyList.allElements.value) {
+        container.object_refs = bundle.objects.map((o: StixObject) => o.id);
+      }
+      // Only add main element in the container
+      if (applyToElements === ElementsToApplyList.onlyMain.value) {
         container.object_refs = [baseData.id];
       }
+
       // Specific remapping of some attributes, waiting for a complete binding solution in the UI
       // Following attributes are the same as the base instance: description, content, markings, labels, created_by, assignees, participants
       if ((baseData as StixReport).description) {

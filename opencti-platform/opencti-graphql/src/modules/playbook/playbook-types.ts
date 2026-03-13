@@ -166,10 +166,20 @@ export const PlaybookComponentDefinition: JSONSchemaType<ComponentDefinition> = 
   required: ['nodes', 'links'],
 };
 
-export type ElementsToApply = 'all-elements' | 'only-main' | 'all-except-main';
+export const ElementsToApplyList = {
+  allElements: {
+    value: 'all-elements',
+    title: 'All elements in the bundle',
+  },
+  onlyMain: {
+    value: 'only-main',
+    title: 'Only main element in the bundle',
+  },
+  allExceptMain: {
+    value: 'all-except-main',
+    title: 'All except main element in the bundle',
+  },
+} as const;
 
-export enum ElementsToApplyTitle {
-  ALL = 'All elements in the bundle',
-  MAIN = 'Only main element in the bundle',
-  ALL_EXCEPT_MAIN = 'All except main element in the bundle',
-}
+export type ElementsToApplyKey = keyof typeof ElementsToApplyList;
+export type ElementsToApply = (typeof ElementsToApplyList)[ElementsToApplyKey]['value'];

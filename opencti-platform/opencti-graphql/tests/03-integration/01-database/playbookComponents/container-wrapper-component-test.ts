@@ -3,15 +3,15 @@ import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT, type ContainerWrapperConfiguratio
 import type { StixContainer } from '../../../../src/types/stix-2-1-sdo';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
 import type { StixRelation } from '../../../../src/types/stix-2-1-sro';
+import { ElementsToApplyList } from '../../../../src/modules/playbook/playbook-types';
 
 const componentConfig = (config: Partial<ContainerWrapperConfiguration>) => {
   return {
-    all: false,
+    applyToElements: ElementsToApplyList.onlyMain.value,
     copyFiles: false,
     caseTemplates: [],
     newContainer: true,
     container_type: 'Report',
-    excludeMainElement: false,
     ...config,
   };
 };
@@ -44,8 +44,7 @@ describe('PLAYBOOK_CONTAINER_WRAPPER_COMPONENT', () => {
       mainId: MALWARE_ID,
       bundleObjects: BUNDLE_OBJECTS,
       configuration: componentConfig({
-        all: false,
-        excludeMainElement: false,
+        applyToElements: ElementsToApplyList.onlyMain.value,
       }),
     }));
 
@@ -59,8 +58,7 @@ describe('PLAYBOOK_CONTAINER_WRAPPER_COMPONENT', () => {
       mainId: MALWARE_ID,
       bundleObjects: BUNDLE_OBJECTS,
       configuration: componentConfig({
-        all: true,
-        excludeMainElement: false,
+        applyToElements: ElementsToApplyList.allElements.value,
       }),
     }));
 
@@ -74,8 +72,7 @@ describe('PLAYBOOK_CONTAINER_WRAPPER_COMPONENT', () => {
       mainId: MALWARE_ID,
       bundleObjects: BUNDLE_OBJECTS,
       configuration: componentConfig({
-        all: true,
-        excludeMainElement: true,
+        applyToElements: ElementsToApplyList.allExceptMain.value,
       }),
     }));
 
