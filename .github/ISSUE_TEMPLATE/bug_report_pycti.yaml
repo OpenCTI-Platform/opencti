@@ -6,6 +6,7 @@ type: bug
 labels:
   - needs triage
   - client-python
+  - bug
 assignees: []
 body:
   - type: textarea
