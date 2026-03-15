@@ -42,11 +42,17 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             provider="worker/" + __version__,
         )
 
-    def _push_to_opencti_ng(self, bundle: dict) -> dict:
-        """POST a full STIX bundle to opencti-ng.
+    def _push_to_opencti_ng(self, bundle: dict, ingest_ids: list | None = None) -> dict:
+        """POST a STIX bundle to opencti-ng.
+
+        Args:
+            bundle: The STIX 2.1 bundle dict.
+            ingest_ids: Optional list of STIX IDs to ingest (partial retry).
+                        None/empty = ingest all objects.
 
         Returns the raw response dict with keys:
-          ingested (int), skipped (int), errors (list[str])
+          ingestion_id (str), status (str), total (int),
+          ingested (int, optional), errors (list[dict])
         """
         url = f"{self.opencti_ng_url}/api/v1/stix/bundle"
         headers = {
@@ -54,14 +60,61 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             "Content-Type": "application/json",
             "User-Agent": f"opencti-worker/{__version__}",
         }
+        payload = {"bundle": bundle}
+        if ingest_ids:
+            payload["ingest_ids"] = ingest_ids
         response = http_requests.post(
             url,
-            json=bundle,
+            json=payload,
             headers=headers,
             timeout=300,
         )
         response.raise_for_status()
-        return response.json()
+        result = response.json()
+
+        # If async, poll until complete
+        if result.get("status") == "processing":
+            ingestion_id = result["ingestion_id"]
+            result = self._poll_ingestion(ingestion_id)
+
+        return result
+
+    def _poll_ingestion(self, ingestion_id: str) -> dict:
+        """Poll an async ingestion job until it completes or fails.
+
+        Uses long-polling (?timeout=30) to minimize latency — the server
+        holds the request until the job completes or the timeout expires.
+
+        Args:
+            ingestion_id: The ingestion ID (format: ingestion--{uuid}).
+
+        Returns the final result dict.
+        """
+        # Extract UUID from ingestion--{uuid} format
+        job_uuid = ingestion_id.replace("ingestion--", "")
+        url = f"{self.opencti_ng_url}/api/v1/ingestions/{job_uuid}?timeout=30"
+        headers = {
+            "Authorization": f"Bearer {self.opencti_ng_token}",
+            "User-Agent": f"opencti-worker/{__version__}",
+        }
+        while True:
+            response = http_requests.get(url, headers=headers, timeout=60)
+            response.raise_for_status()
+            result = response.json()
+            status = result.get("status")
+            if status in ("completed", "failed"):
+                return result
+            # Still processing — log progress and long-poll again
+            progress = result.get("progress", 0)
+            total = result.get("total", 0)
+            self.logger.info(
+                "opencti-ng ingestion in progress",
+                {
+                    "ingestion_id": ingestion_id,
+                    "progress": progress,
+                    "total": total,
+                },
+            )
 
     def send_bundle_to_specific_queue(
         self,
@@ -148,45 +201,53 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                     try:
                         result = self._push_to_opencti_ng(content)
                         ingested = result.get("ingested", 0)
-                        skipped = result.get("skipped", 0)
+                        total = result.get("total", nb_objects)
                         ng_errors = result.get("errors", [])
+                        error_count = sum(
+                            g.get("count", 0) for g in ng_errors
+                        )
+                        skipped = total - ingested - error_count
                         imported_items = ["ok"] * ingested
                         if work_id is not None:
-                            # Report success for each ingested + skipped object
-                            for _ in range(ingested + skipped):
-                                self.api.work.report_expectation(work_id, None)
-                            # Report failure for each errored object
-                            for err_obj in ng_errors:
-                                # Structured: {stix_id, error_type, message}
-                                err_msg = err_obj.get("message", str(err_obj)) if isinstance(err_obj, dict) else str(err_obj)
-                                err_source = err_obj.get("stix_id", "unknown") if isinstance(err_obj, dict) else "opencti-ng"
-                                self.api.work.report_expectation(
-                                    work_id,
-                                    {
+                            # Build error list for bulk reporting
+                            error_list = []
+                            for err_group in ng_errors:
+                                err_msg = err_group.get("message", "unknown error")
+                                for stix_id in err_group.get("ids", []):
+                                    error_list.append({
                                         "error": err_msg,
-                                        "source": err_source,
-                                    },
-                                )
+                                        "source": stix_id,
+                                    })
+                            # Report all success + errors in one call
+                            self.api.work.report_expectations(
+                                work_id,
+                                success=ingested + max(0, skipped),
+                                errors=error_list if error_list else None,
+                            )
                         if ng_errors:
                             self.logger.warning(
                                 "opencti-ng ingestion completed with errors",
                                 {
                                     "ingested": ingested,
                                     "skipped": skipped,
-                                    "errors": len(ng_errors),
+                                    "errors": error_count,
                                 },
                             )
                     except Exception as ng_error:
                         # HTTP-level failure — report all objects as failed
                         if work_id is not None:
-                            for _ in range(nb_objects):
-                                self.api.work.report_expectation(
-                                    work_id,
-                                    {
-                                        "error": str(ng_error),
-                                        "source": "opencti-ng ingestion",
-                                    },
-                                )
+                            error_list = [
+                                {
+                                    "error": str(ng_error),
+                                    "source": "opencti-ng ingestion",
+                                }
+                                for _ in range(nb_objects)
+                            ]
+                            self.api.work.report_expectations(
+                                work_id,
+                                success=0,
+                                errors=error_list,
+                            )
                         raise
                 elif len(content["objects"]) == 1 or data.get("no_split", False):
                     update = data.get("update", False)

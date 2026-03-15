@@ -3,7 +3,15 @@ import * as R from 'ramda';
 import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
 import { generateWorkId } from '../schema/identifier';
 import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
-import { isWorkCompleted, redisDeleteWorks, redisGetWork, redisInitializeWork, redisUpdateActionExpectation, redisUpdateWorkFigures } from '../database/redis';
+import {
+  isWorkCompleted,
+  redisDeleteWorks,
+  redisGetWork,
+  redisInitializeWork,
+  redisUpdateActionExpectation,
+  redisUpdateWorkFigures,
+  redisUpdateWorkFiguresBulk,
+} from '../database/redis';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
@@ -100,7 +108,7 @@ export const worksForSource = async (context, user, sourceId, args = {}) => {
     finalFilters = addFilter(finalFilters, 'event_type', type);
   }
   return elPaginate(context, user, READ_INDEX_HISTORY, {
-    type: ENTITY_TYPE_WORK,
+    types: ENTITY_TYPE_WORK,
     connectionFormat: false,
     orderBy: 'timestamp',
     orderMode: 'desc',
@@ -293,6 +301,67 @@ export const reportExpectation = async (context, user, workId, errorData) => {
       }
     } else {
       logApp.warn('The work cannot be found in database, report expectation cannot be updated.', { workId });
+    }
+  }
+  return workId;
+};
+
+/**
+ * Called by worker to report multiple expectations at once (bulk version of reportExpectation).
+ * @param context
+ * @param user
+ * @param workId
+ * @param successCount - number of successful expectations to report
+ * @param errors - array of WorkErrorInput objects to report
+ * @returns {Promise<string>}
+ */
+export const reportExpectations = async (context, user, workId, successCount, errors) => {
+  const totalCount = successCount + (errors ? errors.length : 0);
+  if (totalCount <= 0) {
+    return workId;
+  }
+  const timestamp = now();
+  const { isComplete, total } = await redisUpdateWorkFiguresBulk(workId, totalCount);
+  // Ensure that work hasn't been deleted in the meantime
+  const workAlive = await isWorkAlive(context, user, workId);
+  if (!workAlive) {
+    await redisDeleteWorks(workId);
+    return workId;
+  }
+  const hasErrors = errors && errors.length > 0;
+  if (isComplete || hasErrors) {
+    const params = { now: timestamp };
+    let sourceScript = '';
+    if (isComplete) {
+      params.completed_number = total;
+      sourceScript += `ctx._source['status'] = "complete";
+      ctx._source['completed_number'] = params.completed_number;
+      ctx._source['completed_time'] = params.now;`;
+    }
+    // To avoid maximum string in Elastic and too big memory footprint, arbitrary limit the number of possible errors in a work to 100
+    if (hasErrors) {
+      params.errors = errors.map((e) => ({
+        timestamp,
+        message: e.error || 'unknown error',
+        source: e.source || '',
+      }));
+      sourceScript += `
+        for (int i = 0; i < params.errors.size(); i++) {
+          if (ctx._source.errors.length < 100) {
+            ctx._source.errors.add(["timestamp": params.errors[i].timestamp, "message": params.errors[i].message, "source": params.errors[i].source]);
+          }
+        }`;
+    }
+    // Update elastic
+    const currentWork = await loadWorkById(context, user, workId);
+    if (currentWork) {
+      await elUpdate(currentWork._index, workId, { script: { source: sourceScript, lang: 'painless', params } });
+      // If work is associated to a task, we also need to update work to completed on the task
+      if (isComplete) {
+        await updateWorkTaskToComplete(context, user, currentWork);
+      }
+    } else {
+      logApp.warn('The work cannot be found in database, report expectations cannot be updated.', { workId });
     }
   }
   return workId;

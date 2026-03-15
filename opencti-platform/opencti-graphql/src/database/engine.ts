@@ -14,35 +14,40 @@
 export * from './engine-search';
 
 // Import the search-engine versions of functions we override
-import {
-  elPaginate as elPaginateSearch,
-  elFindByIds as elFindByIdsSearch,
-  elLoadById as elLoadByIdSearch,
-  type PaginateOpts,
-  type ElFindByIdsOpts,
-} from './engine-search';
+import { elPaginate as elPaginateSearch, elFindByIds as elFindByIdsSearch, elLoadById as elLoadByIdSearch, type PaginateOpts, type ElFindByIdsOpts } from './engine-search';
 
 // Import TiDB routing utilities
-import {
-  isTiDBEntityType,
-  isTiDBSupportedFilter,
-  elPaginateTiDB,
-  elFindByIdsTiDB,
-} from './engine-tidb';
+import { elPaginateTiDB, elFindByIdsTiDB } from './engine-tidb';
 
 // Re-export TiDB routing checks for use by middleware-loader (filter decisions)
-export { isTiDBEntityType, isTiDBSupportedFilter } from './engine-tidb';
+export { isTiDBEntityType } from './engine-tidb';
 
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase, BasicConnection } from '../types/store';
-import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { isInternalObject } from '../schema/internalObject';
+import { isInternalRelationship } from '../schema/internalRelationship';
+
+// ---------------------------------------------------------------------------
+// Internal type check — internal objects/relationships are NOT in TiDB
+// ---------------------------------------------------------------------------
+
+const isInternalType = (type: string): boolean => {
+  return isInternalObject(type) || isInternalRelationship(type);
+};
+
+const hasOnlyInternalTypes = (types: string | string[] | null | undefined): boolean => {
+  if (!types) return false;
+  const arr = Array.isArray(types) ? types : [types];
+  return arr.length > 0 && arr.every(isInternalType);
+};
 
 // ---------------------------------------------------------------------------
 // Routed: elPaginate
 // ---------------------------------------------------------------------------
 
 /**
- * Paginate entities — routes to TiDB for supported types, ES for the rest.
+ * Paginate entities — tries TiDB first (all non-internal types), then
+ * falls back to Elasticsearch if nothing found.
  */
 export const elPaginate = async <T extends BasicStoreBase>(
   context: AuthContext,
@@ -55,20 +60,28 @@ export const elPaginate = async <T extends BasicStoreBase>(
     ? (Array.isArray(types) ? types : [types])
     : [];
 
-  if (entityTypes.length > 0 && isTiDBEntityType(entityTypes)) {
-    const hasFilters = options.filters && isFilterGroupNotEmpty(options.filters);
-    const canTiDBHandle = !hasFilters || isTiDBSupportedFilter(options.filters);
-    if (canTiDBHandle) {
-      return elPaginateTiDB<T>(context, user, indexName, {
-        types: entityTypes,
-        first: options.first,
-        after: options.after as string | null | undefined,
-        connectionFormat: options.connectionFormat,
-        filters: hasFilters ? options.filters : undefined,
-      });
-    }
+  // If explicitly internal types, skip TiDB entirely
+  if (entityTypes.length > 0 && entityTypes.every(isInternalType)) {
+    return elPaginateSearch<T>(context, user, indexName, options) as Promise<BasicConnection<T> | T[]>;
   }
 
+  // Try TiDB first if filters are supported
+  const tidbResult = await elPaginateTiDB<T>(context, user, indexName, {
+    types: entityTypes.length > 0 ? entityTypes : undefined,
+    first: options.first,
+    after: options.after as string | null | undefined,
+    connectionFormat: options.connectionFormat,
+    filters: options.filters,
+  });
+
+  // Check if we got results
+  const hasResults = options.connectionFormat === false
+    ? (tidbResult as T[]).length > 0
+    : ((tidbResult as BasicConnection<T>).edges?.length ?? 0) > 0;
+
+  if (hasResults) return tidbResult;
+
+  // Fallback to ES
   return elPaginateSearch<T>(context, user, indexName, options) as Promise<BasicConnection<T> | T[]>;
 };
 
@@ -77,7 +90,8 @@ export const elPaginate = async <T extends BasicStoreBase>(
 // ---------------------------------------------------------------------------
 
 /**
- * Find entities by ID — routes to TiDB for supported types, ES for the rest.
+ * Find entities by ID — tries TiDB first (all non-internal types), then
+ * falls back to Elasticsearch if nothing found.
  */
 export const elFindByIds = async <T extends BasicStoreBase>(
   context: AuthContext,
@@ -85,9 +99,28 @@ export const elFindByIds = async <T extends BasicStoreBase>(
   ids: string[] | string,
   opts: ElFindByIdsOpts = {},
 ): Promise<T[] | Record<string, T>> => {
-  if (opts?.type && isTiDBEntityType(opts.type)) {
-    return elFindByIdsTiDB<T>(context, user, ids, { type: opts.type, toMap: opts.toMap, mapWithAllIds: opts.mapWithAllIds });
+  // If the caller explicitly asks for internal types, skip TiDB entirely
+  if (hasOnlyInternalTypes(opts.type)) {
+    return elFindByIdsSearch<T>(context, user, ids, opts);
   }
+
+  // Try TiDB first (handles all STIX types)
+  const tidbResult = await elFindByIdsTiDB<T>(context, user, ids, {
+    type: opts.type,
+    toMap: opts.toMap,
+    mapWithAllIds: opts.mapWithAllIds,
+  });
+
+  // Check if we got results
+  const tidbHasResults = opts.toMap
+    ? Object.keys(tidbResult as Record<string, T>).length > 0
+    : (tidbResult as T[]).length > 0;
+
+  if (tidbHasResults) {
+    return tidbResult;
+  }
+
+  // No results from TiDB — fallback to ES
   return elFindByIdsSearch<T>(context, user, ids, opts);
 };
 
@@ -96,7 +129,7 @@ export const elFindByIds = async <T extends BasicStoreBase>(
 // ---------------------------------------------------------------------------
 
 /**
- * Load a single entity by ID — routes to TiDB for supported types, ES for the rest.
+ * Load a single entity by ID — tries TiDB first, falls back to ES.
  */
 export const elLoadById = async <T extends BasicStoreBase>(
   context: AuthContext,
@@ -104,9 +137,55 @@ export const elLoadById = async <T extends BasicStoreBase>(
   id: string,
   opts: { ignoreDuplicates?: boolean } & ElFindByIdsOpts = {},
 ) => {
-  if (id && opts?.type && isTiDBEntityType(opts.type)) {
-    const results = await elFindByIdsTiDB<T>(context, user, [id], { type: opts.type });
-    return (results as T[])[0] as T;
+  if (!id) return undefined;
+
+  // If explicitly internal, go to ES directly
+  if (opts?.type && hasOnlyInternalTypes(opts.type)) {
+    return elLoadByIdSearch<T>(context, user, id, opts);
   }
+
+  // Try TiDB first
+  const results = await elFindByIdsTiDB<T>(context, user, [id], { type: opts.type });
+  const found = (results as T[])[0];
+  if (found) return found;
+
+  // Fallback to ES
   return elLoadByIdSearch<T>(context, user, id, opts);
+};
+
+// ---------------------------------------------------------------------------
+// Routed: elBatchIds / elBatchIdsWithRelCount
+// ---------------------------------------------------------------------------
+// The versions in engine-search.ts call their own module's elFindByIds
+// (ES-only). These overrides use the routed elFindByIds above so that
+// TiDB entity types are resolved via the opencti-ng API.
+
+/**
+ * Batch-load entities by ID — uses the routed elFindByIds so TiDB types
+ * are fetched from opencti-ng instead of Elasticsearch.
+ */
+export const elBatchIds = async <T extends BasicStoreBase>(
+  context: AuthContext,
+  user: AuthUser,
+  elements: { id: string; type: string }[],
+) => {
+  const ids = elements.map((e) => e.id);
+  const types = elements.map((e) => e.type);
+  const mapHits = await elFindByIds<T>(context, user, ids, { type: types, toMap: true }) as Record<string, T>;
+  return ids.map((id) => mapHits[id]);
+};
+
+/**
+ * Batch-load entities by ID with relationship count — uses the routed
+ * elFindByIds so TiDB entity types are fetched from opencti-ng.
+ */
+export const elBatchIdsWithRelCount = async <T extends BasicStoreBase>(
+  context: AuthContext,
+  user: AuthUser,
+  elements: { id: string; type: string }[],
+) => {
+  const ids = elements.map((e) => e.id);
+  const types = elements.map((e) => e.type);
+  const hits = await elFindByIds<T>(context, user, ids, { type: types, baseData: true }) as T[];
+  return ids.map((id) => hits.find((h: any) => h.internal_id === id));
 };

@@ -419,5 +419,9 @@
     "local": {
       "strategy": "LocalStrategy"
     }
+  },
+  "opencti_ng": {
+    "url": "http://127.0.0.1:4100",
+    "token": "dev-token-for-local-testing"
   }
 }

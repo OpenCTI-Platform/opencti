@@ -491,6 +491,19 @@ export const redisUpdateWorkFigures = async (workId: string) => {
   });
   return isWorkCompleted(workId);
 };
+export const redisUpdateWorkFiguresBulk = async (workId: string, count: number) => {
+  const timestamp = now();
+  const clientBase = getClientBase();
+  if (workId.includes('_')) { // Handle a connector status.
+    const [, connectorId] = workId.split('_');
+    await clientBase.set(`work:${connectorId}`, workId);
+  }
+  await redisTx(clientBase, async (tx) => {
+    await updateObjectCounterRaw(tx, workId, 'import_processed_number', count);
+    await updateObjectRaw(tx, workId, { import_last_processed: timestamp });
+  });
+  return isWorkCompleted(workId);
+};
 export const redisGetConnectorStatus = async (connectorId: string) => {
   return getClientBase().get(`work:${connectorId}`);
 };

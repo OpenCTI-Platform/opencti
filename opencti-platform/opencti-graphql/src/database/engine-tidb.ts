@@ -37,6 +37,7 @@ const TIDB_SUPPORTED_TYPES = new Set([
   'Location',
   'Malware',
   'Attack-Pattern', 'Intrusion-Set', 'Campaign', 'Tool', 'Course-Of-Action',
+  'Vulnerability',
   'Report',
 ]);
 
@@ -48,43 +49,86 @@ export const isTiDBEntityType = (entityType: string | string[]): boolean => {
 /** Map OpenCTI entity type to the opencti-ng REST API resource path. */
 const typeToApiPath = (entityType: string): string => {
   switch (entityType) {
+    // SDO — Identity subtypes
     case 'Organization': return 'organizations';
     case 'Sector': return 'sectors';
+    case 'Individual': return 'individuals';
+    case 'System': return 'systems';
+    case 'Security-Platform': return 'security-platforms';
+    // SDO — Location subtypes (all served from /locations endpoint)
     case 'Region': return 'regions';
     case 'Country': return 'countries';
     case 'City': return 'cities';
     case 'Position': return 'positions';
+    case 'Administrative-Area': return 'administrative-areas';
     case 'Location': return 'locations';
+    // SDO — Core types
     case 'Malware': return 'malware';
     case 'Attack-Pattern': return 'attack-patterns';
     case 'Intrusion-Set': return 'intrusion-sets';
     case 'Campaign': return 'campaigns';
     case 'Tool': return 'tools';
     case 'Course-Of-Action': return 'courses-of-action';
+    case 'Vulnerability': return 'vulnerabilities';
+    case 'Indicator': return 'indicators';
+    case 'Infrastructure': return 'infrastructures';
+    case 'Incident': return 'incidents';
+    case 'Data-Source': return 'data-sources';
+    case 'Data-Component': return 'data-components';
+    case 'Malware-Analysis': return 'malware-analyses';
+    case 'Software': return 'software';
+    case 'Channel': return 'channels';
+    case 'Narrative': return 'narratives';
+    case 'Event': return 'events';
+    // SDO — Threat actors
+    case 'Threat-Actor-Group': return 'threat-actor-groups';
+    case 'Threat-Actor-Individual': return 'threat-actor-individuals';
+    // SDO — Containers
     case 'Report': return 'reports';
+    case 'Note': return 'notes';
+    case 'Opinion': return 'opinions';
+    case 'Observed-Data': return 'observed-data';
+    case 'Grouping': return 'groupings';
+    case 'Case-Incident': return 'case-incidents';
+    case 'Case-Rfi': return 'case-rfis';
+    case 'Case-Rft': return 'case-rfts';
+    case 'Feedback': return 'feedbacks';
+    case 'Task': return 'tasks';
+    // SRO
+    case 'Relationship':
+    case 'stix-core-relationship': return 'relationships';
+    case 'stix-sighting-relationship': return 'sightings';
+    // SCO
+    case 'IPv4-Addr': return 'ipv4-addrs';
+    case 'IPv6-Addr': return 'ipv6-addrs';
+    case 'Domain-Name': return 'domain-names';
+    case 'Url': return 'urls';
+    case 'Email-Addr': return 'email-addrs';
+    case 'Email-Message': return 'email-messages';
+    case 'Artifact': return 'artifacts';
+    case 'Autonomous-System': return 'autonomous-systems';
+    case 'StixFile': return 'stix-files';
+    case 'Directory': return 'directories';
+    case 'Process': return 'processes';
+    case 'User-Account': return 'user-accounts';
+    case 'Network-Traffic': return 'network-traffic';
+    case 'Windows-Registry-Key': return 'windows-registry-keys';
+    case 'X509-Certificate': return 'x509-certificates';
+    case 'Mac-Addr': return 'mac-addrs';
+    case 'Hostname': return 'hostnames';
+    case 'Credential': return 'credentials';
+    case 'Tracking-Number': return 'tracking-numbers';
+    case 'Bank-Account': return 'bank-accounts';
+    case 'Payment-Card': return 'payment-cards';
+    case 'Media-Content': return 'media-contents';
+    case 'Phone-Number': return 'phone-numbers';
+    case 'Mutex': return 'mutexes';
+    case 'Text': return 'texts';
+    case 'Cryptocurrency-Wallet': return 'cryptocurrency-wallets';
+    case 'Cryptographic-Key': return 'cryptographic-keys';
+    case 'User-Agent': return 'user-agents';
     default:
       return entityType.toLowerCase();
-  }
-};
-
-/** Map opencti-ng REST API resource path back to OpenCTI entity type. */
-const apiPathToType = (apiPath: string): string => {
-  switch (apiPath) {
-    case 'organizations': return 'Organization';
-    case 'sectors': return 'Sector';
-    case 'regions': return 'Region';
-    case 'countries': return 'Country';
-    case 'cities': return 'City';
-    case 'positions': return 'Position';
-    case 'locations': return 'Location';
-    case 'malware': return 'Malware';
-    case 'attack-patterns': return 'Attack-Pattern';
-    case 'intrusion-sets': return 'Intrusion-Set';
-    case 'campaigns': return 'Campaign';
-    case 'tools': return 'Tool';
-    case 'courses-of-action': return 'Course-Of-Action';
-    case 'reports': return 'Report';
-    default: return apiPath;
   }
 };
 
@@ -96,40 +140,17 @@ const PARENT_TYPES: Record<string, string[]> = {
   Country: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object', 'Location'],
   City: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object', 'Location'],
   Position: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object', 'Location'],
+  'Administrative-Area': ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object', 'Location'],
   Malware: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
   'Attack-Pattern': ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
   'Intrusion-Set': ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
   Campaign: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
   Tool: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
   'Course-Of-Action': ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
+  Vulnerability: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
   Report: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object', 'Container'],
-};
-
-// ---------------------------------------------------------------------------
-// Filter support
-// ---------------------------------------------------------------------------
-
-/**
- * Check if a FilterGroup contains only filters that TiDB/opencti-ng can handle.
- * Currently supports: regardingOf, entity_type filters.
- */
-export const isTiDBSupportedFilter = (filterGroup: any): boolean => {
-  if (!filterGroup) return true;
-  const SUPPORTED_KEYS = new Set(['regardingOf', 'entity_type']);
-  const { filters = [], filterGroups = [] } = filterGroup;
-  for (const filter of filters) {
-    const keys = filter.key || [];
-    if (!keys.some((k: string) => SUPPORTED_KEYS.has(k))) {
-      return false;
-    }
-  }
-  // Recursively check nested groups
-  for (const group of filterGroups) {
-    if (!isTiDBSupportedFilter(group)) {
-      return false;
-    }
-  }
-  return true;
+  Relationship: ['Basic-Relationship', 'Stix-Relationship', 'Stix-Core-Relationship'],
+  Sighting: ['Basic-Relationship', 'Stix-Relationship', 'Stix-Sighting-Relationship'],
 };
 
 /**
@@ -165,6 +186,25 @@ const apiGet = async <T>(path: string, token: string): Promise<T> => {
   return response.json() as Promise<T>;
 };
 
+const apiPost = async <T>(path: string, body: Record<string, any>, token: string): Promise<T> => {
+  const url = `${getBaseUrl()}/api/v1/${path}`;
+  logApp.debug('[ENGINE-TIDB] POST', { url });
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const bodyText = await response.text().catch(() => '');
+    throw new Error(`opencti-ng API error ${response.status}: ${bodyText}`);
+  }
+  return response.json() as Promise<T>;
+};
+
 // ---------------------------------------------------------------------------
 // opencti-ng entity → BasicStoreEntity converter
 // ---------------------------------------------------------------------------
@@ -177,7 +217,7 @@ const apiEntityToStoreEntity = (
   entity: Record<string, any>,
   openctiType: string,
 ): Record<string, any> => {
-  const internalId = entity.internal_id;
+  const internalId = entity.internal_id || entity.id;
   const standardId = entity.standard_id;
 
   // For locations, determine the effective entity_type
@@ -247,78 +287,70 @@ const apiEntityToStoreEntity = (
   }
 
   // Organization-specific
-  if (entity.contact_information !== undefined) {
-    store.contact_information = entity.contact_information;
-  }
   if (entity.organization_type !== undefined) {
     store.x_opencti_organization_type = entity.organization_type;
   }
 
-  // Sector-specific
-  if (entity.x_opencti_aliases) {
-    store.x_opencti_aliases = entity.x_opencti_aliases;
+  // Relationship-specific: map source_ref/target_ref → fromId/toId
+  if (entity.source_ref) {
+    store.fromId = entity.source_ref;
+    store.toId = entity.target_ref;
+    store.fromType = entity.source_type || 'Unknown';
+    store.toType = entity.target_type || 'Unknown';
+    store.relationship_type = entity.relationship_type;
+    store.base_type = 'RELATION';
+    if (entity.start_time) store.start_time = entity.start_time;
+    if (entity.stop_time) store.stop_time = entity.stop_time;
   }
 
-  // Location-specific
-  if (entity.latitude !== undefined) store.latitude = entity.latitude;
-  if (entity.longitude !== undefined) store.longitude = entity.longitude;
-  if (entity.x_opencti_location_type !== undefined) {
-    store.x_opencti_location_type = entity.x_opencti_location_type;
-  }
-  if (entity.region !== undefined) store.region = entity.region;
-  if (entity.country !== undefined) store.country = entity.country;
+  return { ...entity, ...store };
+};
 
-  // Malware-specific
-  if (entity.is_family !== undefined) store.is_family = entity.is_family;
-  if (entity.malware_types) store.malware_types = entity.malware_types;
-  if (entity.first_seen !== undefined) store.first_seen = entity.first_seen;
-  if (entity.last_seen !== undefined) store.last_seen = entity.last_seen;
+/**
+ * Convert a lightweight Element (from POST /api/v1/stix/elements) into a
+ * BasicStoreEntity-compatible object. Uses the parent_types returned by the
+ * API directly, avoiding client-side hierarchy duplication.
+ */
+const elementToStoreEntity = (
+  element: Record<string, any>,
+): Record<string, any> => {
+  const internalId = element.internal_id;
+  const entityType = element.entity_type;
 
-  // Attack-Pattern-specific
-  if (entity.x_mitre_id !== undefined) store.x_mitre_id = entity.x_mitre_id;
-  if (entity.x_mitre_detection !== undefined) store.x_mitre_detection = entity.x_mitre_detection;
-  if (entity.x_mitre_platforms) store.x_mitre_platforms = entity.x_mitre_platforms;
-  if (entity.x_mitre_is_subtechnique !== undefined) store.x_mitre_is_subtechnique = entity.x_mitre_is_subtechnique;
+  // Use parent_types from the API response directly, prepend Basic-Object + Stix-Object
+  const apiParentTypes: string[] = element.parent_types || [];
+  const parentTypes = ['Basic-Object', 'Stix-Object', ...apiParentTypes];
 
-  // Intrusion-Set-specific
-  if (entityType === 'Intrusion-Set') {
-    if (entity.first_seen !== undefined) store.first_seen = entity.first_seen;
-    if (entity.last_seen !== undefined) store.last_seen = entity.last_seen;
-    if (entity.goals) store.goals = entity.goals;
-    if (entity.resource_level !== undefined) store.resource_level = entity.resource_level;
-    if (entity.primary_motivation !== undefined) store.primary_motivation = entity.primary_motivation;
-    if (entity.secondary_motivations) store.secondary_motivations = entity.secondary_motivations;
-  }
+  // Extract stix_ids from identifiers
+  const stixIds = (element.identifiers || [])
+    .filter((i: any) => i.identifier_type === 'stix_id')
+    .map((i: any) => i.identifier_value);
 
-  // Campaign-specific
-  if (entityType === 'Campaign') {
-    if (entity.first_seen !== undefined) store.first_seen = entity.first_seen;
-    if (entity.last_seen !== undefined) store.last_seen = entity.last_seen;
-    if (entity.objective !== undefined) store.objective = entity.objective;
-  }
-
-  // Tool-specific
-  if (entity.tool_types) store.tool_types = entity.tool_types;
-  if (entity.tool_version !== undefined) store.tool_version = entity.tool_version;
-
-  // Report-specific
-  if (entity.report_types) store.report_types = entity.report_types;
-  if (entity.published !== undefined) store.published = entity.published;
-
-  // Aliases (shared across Malware, Attack-Pattern, Intrusion-Set, Campaign, Tool)
-  if (entity.aliases) store.aliases = entity.aliases;
-
-  // Kill chain phases (shared across Attack-Pattern, Tool, Malware)
-  if (entity.kill_chain_phases && entity.kill_chain_phases.length > 0) {
-    store.kill_chain_phases = entity.kill_chain_phases;
-  }
-
-  // External references (shared across all SDO types)
-  if (entity.external_references && entity.external_references.length > 0) {
-    store.external_references = entity.external_references;
-  }
-
-  return store;
+  return {
+    _index: 'opencti-ng',
+    _id: internalId,
+    id: internalId,
+    internal_id: internalId,
+    standard_id: element.standard_id,
+    entity_type: entityType,
+    base_type: 'ENTITY',
+    parent_types: parentTypes,
+    spec_version: '2.1',
+    created_at: element.created,
+    updated_at: element.modified,
+    created: element.created,
+    modified: element.modified,
+    name: element.name || '',
+    description: element.description ?? '',
+    confidence: element.confidence ?? 0,
+    revoked: element.revoked ?? false,
+    lang: 'en',
+    x_opencti_stix_ids: stixIds,
+    representative: {
+      main: element.representative?.main ?? element.name ?? '',
+      secondary: element.representative?.secondary ?? element.description ?? '',
+    },
+  };
 };
 
 // ---------------------------------------------------------------------------
@@ -372,23 +404,46 @@ export const elPaginateTiDB = async <T extends BasicStoreBase>(
 
   const token = getApiToken();
 
+  // Detect concrete relationship types (all-lowercase types like 'uses',
+  // 'targets', 'originates-from' that aren't in typeToApiPath's switch).
+  // These route to /api/v1/relationships?type=<rel_type> instead of
+  // generating per-type paths that don't exist.
+  const isConcreteRelType = (t: string): boolean => {
+    // Abstract relationship types are already handled by typeToApiPath
+    if (t === 'stix-core-relationship' || t === 'Relationship'
+      || t === 'stix-sighting-relationship' || t === 'Sighting') return false;
+    // Entity types are PascalCase (start with uppercase)
+    // Concrete relationship types are all lowercase (uses, targets, originates-from)
+    return t.charAt(0) === t.charAt(0).toLowerCase();
+  };
+
   // Group requests by API path (e.g., organizations, sectors, locations)
-  const pathGroups = new Map<string, string[]>();
+  // Concrete relationship types get unique keys to avoid merging
+  const pathGroups = new Map<string, { apiPath: string; relType?: string }>();
   for (const t of entityTypes) {
-    const path = typeToApiPath(t);
-    if (!pathGroups.has(path)) pathGroups.set(path, []);
-    pathGroups.get(path)!.push(t);
+    if (isConcreteRelType(t)) {
+      const key = `relationships:${t}`;
+      pathGroups.set(key, { apiPath: 'relationships', relType: t });
+    } else {
+      const path = typeToApiPath(t);
+      if (!pathGroups.has(path)) pathGroups.set(path, { apiPath: path });
+    }
   }
 
-  let allEntities: Record<string, any>[] = [];
+  const allEntities: Record<string, any>[] = [];
   let totalCount = 0;
 
   // Fetch from each API path
-  for (const [apiPath, groupTypes] of Array.from(pathGroups)) {
+  for (const [_, { apiPath, relType }] of Array.from(pathGroups)) {
     const queryParams = new URLSearchParams({
       limit: String(first),
       offset: String(offset),
     });
+
+    // For concrete relationship types, add type filter
+    if (relType) {
+      queryParams.set('type', relType);
+    }
 
     // Pass filters through to opencti-ng as a JSON query parameter
     if (options.filters) {
@@ -400,10 +455,8 @@ export const elPaginateTiDB = async <T extends BasicStoreBase>(
       token,
     );
 
-    // Use the reverse mapping to get the opencti type
-    const openctiType = apiPathToType(apiPath);
-
-    const entities = result.data.map((e) => apiEntityToStoreEntity(e, openctiType));
+    // Use entity_type from the API response directly (correct casing from DB)
+    const entities = result.data.map((e) => apiEntityToStoreEntity(e, e.entity_type));
     allEntities.push(...entities);
 
     totalCount += result.total;
@@ -416,13 +469,31 @@ export const elPaginateTiDB = async <T extends BasicStoreBase>(
   }
 
   // Build edges with offset-based cursors
+  // opencti-ng has no inference system — default types to ['manual']
+  // so that StixObjectOrStixRelationshipRefEdge.types is never null.
   const edges: BasicNodeEdge<T>[] = typedEntities.map((entity, i) => ({
     node: entity,
     cursor: offsetToCursor([offset + i]),
+    types: ['manual'],
   }));
 
   return buildPaginationFromEdges<T>(first, after, edges, totalCount);
 };
+
+// ---------------------------------------------------------------------------
+// Abstract types — these map to multiple concrete types and don't have
+// a dedicated detail table.
+// ---------------------------------------------------------------------------
+
+const ABSTRACT_TYPES = new Set([
+  'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object',
+  'Stix-Cyber-Observable', 'Stix-Meta-Object',
+  'Identity', 'Location', 'Container',
+  'Basic-Object', 'Basic-Relationship',
+  'stix-core-relationship', 'stix-sighting-relationship',
+]);
+
+const isAbstractType = (type: string): boolean => ABSTRACT_TYPES.has(type);
 
 // ---------------------------------------------------------------------------
 // Public API — elFindByIds (via opencti-ng REST)
@@ -439,7 +510,11 @@ export interface TiDBFindByIdsOpts {
 /**
  * Find entities by ID via the opencti-ng REST API.
  *
- * Fetches each entity individually by its internal UUID via GET /{resource}/{id}.
+ * Uses POST /api/v1/stix/elements to batch-load all IDs in a single HTTP call.
+ * When opts.type contains a single concrete (non-abstract) type, passes it
+ * as `types` in the request body so the backend LEFT JOINs the detail table
+ * and returns type-specific columns in `details`.
+ *
  * Returns T[] by default, or Record<string, T> if toMap is true.
  */
 export const elFindByIdsTiDB = async <T extends BasicStoreBase>(
@@ -448,7 +523,7 @@ export const elFindByIdsTiDB = async <T extends BasicStoreBase>(
   ids: string[] | string,
   opts: TiDBFindByIdsOpts = {},
 ): Promise<T[] | Record<string, T>> => {
-  const { type = null, toMap = false, mapWithAllIds = false } = opts;
+  const { toMap = false, mapWithAllIds = false } = opts;
 
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const processIds = idsArray.filter((id) => id != null && id !== '');
@@ -456,39 +531,30 @@ export const elFindByIdsTiDB = async <T extends BasicStoreBase>(
     return toMap ? {} as Record<string, T> : [] as T[];
   }
 
-  const entityTypes = type
-    ? (Array.isArray(type) ? type : [type])
-    : Array.from(TIDB_SUPPORTED_TYPES);
-
   const token = getApiToken();
 
-  // For each ID, try fetching from each possible API path until found
-  const apiPaths = Array.from(new Set(entityTypes.map(typeToApiPath)));
-  const entities: T[] = [];
+  // Build request body — include types when a single concrete type is specified
+  const typeHints = opts.type
+    ? (Array.isArray(opts.type) ? opts.type : [opts.type])
+    : [];
+  const useDedicatedTypes = typeHints.length === 1 && !isAbstractType(typeHints[0]);
 
-  for (const id of processIds) {
-    let found = false;
-    for (const apiPath of apiPaths) {
-      try {
-        const entity = await apiGet<Record<string, any>>(
-          `${apiPath}/${id}`,
-          token,
-        );
-        // Determine the opencti type for conversion
-        const openctiType = apiPathToType(apiPath);
-        const storeEntity = apiEntityToStoreEntity(entity, openctiType) as T;
-        entities.push(storeEntity);
-        found = true;
-        break;
-      } catch {
-        // Not found on this path — try next
-        continue;
-      }
-    }
-    if (!found) {
-      logApp.debug('[ENGINE-TIDB] Entity not found', { id });
-    }
+  const body: Record<string, any> = { ids: processIds };
+  if (useDedicatedTypes) {
+    body.types = typeHints;
   }
+
+  // Single batch call with optional type hint for detail table JOIN
+  const result = await apiPost<ApiListResponse>('stix/elements', body, token);
+
+  const entities: T[] = result.data.map((e) => {
+    const store = elementToStoreEntity(e);
+    // Merge detail columns into the store entity at top level
+    if (e.details && typeof e.details === 'object') {
+      Object.assign(store, e.details);
+    }
+    return store as T;
+  });
 
   if (toMap) {
     const map: Record<string, T> = {};
