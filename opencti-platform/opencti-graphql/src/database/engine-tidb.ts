@@ -94,6 +94,8 @@ const typeToApiPath = (entityType: string): string => {
     case 'Case-Rft': return 'case-rfts';
     case 'Feedback': return 'feedbacks';
     case 'Task': return 'tasks';
+    // SMO
+    case 'Marking-Definition': return 'marking-definitions';
     // SRO
     case 'Relationship':
     case 'stix-core-relationship': return 'relationships';
@@ -149,6 +151,7 @@ const PARENT_TYPES: Record<string, string[]> = {
   'Course-Of-Action': ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
   Vulnerability: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
   Report: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object', 'Container'],
+  'Marking-Definition': ['Basic-Object', 'Stix-Object', 'Stix-Meta-Object'],
   Relationship: ['Basic-Relationship', 'Stix-Relationship', 'Stix-Core-Relationship'],
   Sighting: ['Basic-Relationship', 'Stix-Relationship', 'Stix-Sighting-Relationship'],
 };
@@ -169,7 +172,7 @@ interface ApiListResponse {
   total: number;
 }
 
-const apiGet = async <T>(path: string, token: string): Promise<T> => {
+const apiGet = async <T>(path: string, token: string): Promise<T | null> => {
   const url = `${getBaseUrl()}/api/v1/${path}`;
   logApp.debug('[ENGINE-TIDB] GET', { url });
   const response = await fetch(url, {
@@ -181,12 +184,16 @@ const apiGet = async <T>(path: string, token: string): Promise<T> => {
   });
   if (!response.ok) {
     const body = await response.text().catch(() => '');
+    if (response.status === 404) {
+      logApp.error('[ENGINE-TIDB] Route not found, returning empty result', { url, status: response.status, body });
+      return null;
+    }
     throw new Error(`opencti-ng API error ${response.status}: ${body}`);
   }
   return response.json() as Promise<T>;
 };
 
-const apiPost = async <T>(path: string, body: Record<string, any>, token: string): Promise<T> => {
+const apiPost = async <T>(path: string, body: Record<string, any>, token: string): Promise<T | null> => {
   const url = `${getBaseUrl()}/api/v1/${path}`;
   logApp.debug('[ENGINE-TIDB] POST', { url });
   const response = await fetch(url, {
@@ -200,6 +207,10 @@ const apiPost = async <T>(path: string, body: Record<string, any>, token: string
   });
   if (!response.ok) {
     const bodyText = await response.text().catch(() => '');
+    if (response.status === 404) {
+      logApp.error('[ENGINE-TIDB] Route not found, returning empty result', { url, status: response.status, body: bodyText });
+      return null;
+    }
     throw new Error(`opencti-ng API error ${response.status}: ${bodyText}`);
   }
   return response.json() as Promise<T>;
@@ -311,6 +322,20 @@ const apiEntityToStoreEntity = (
   // Organization-specific
   if (entity.organization_type !== undefined) {
     store.x_opencti_organization_type = entity.organization_type;
+  }
+
+  // Marking-definition-specific: flatten definition from JSON object to string
+  if (entityType === 'Marking-Definition') {
+    store.definition_type = entity.definition_type;
+    store.x_opencti_order = entity.ordering ?? 0;
+    // ES stores `definition` as a flat string; the Rust API returns a JSON object.
+    // Convert { tlp: "green" } → "tlp:green"
+    if (entity.definition && typeof entity.definition === 'object') {
+      const entries = Object.entries(entity.definition);
+      store.definition = entries.map(([k, v]) => `${k}:${v}`).join(',');
+    } else {
+      store.definition = entity.definition;
+    }
   }
 
   // Relationship-specific: map source_ref/target_ref → fromId/toId
@@ -480,7 +505,7 @@ export const elPaginateTiDB = async <T extends BasicStoreBase>(
       `${apiPath}?${queryParams.toString()}`,
       token,
     );
-
+    if (!result) continue; // 404 — route not supported, skip this path
     // Use entity_type from the API response directly (correct casing from DB)
     const entities = result.data.map((e) => apiEntityToStoreEntity(e, e.entity_type));
     allEntities.push(...entities);
@@ -560,18 +585,15 @@ export const elFindByIdsTiDB = async <T extends BasicStoreBase>(
   const token = getApiToken();
 
   // Build request body — include types when a single concrete type is specified
-  const typeHints = opts.type
-    ? (Array.isArray(opts.type) ? opts.type : [opts.type])
-    : [];
-  const useDedicatedTypes = typeHints.length === 1 && !isAbstractType(typeHints[0]);
-
+  const typeHints = opts.type ? (Array.isArray(opts.type) ? opts.type : [opts.type]) : [];
   const body: Record<string, any> = { ids: processIds };
-  if (useDedicatedTypes) {
-    body.types = typeHints;
-  }
+  body.types = typeHints.filter((t) => !isAbstractType(t));
 
   // Single batch call with optional type hint for detail table JOIN
   const result = await apiPost<ApiListResponse>('stix/elements', body, token);
+  if (!result) {
+    return toMap ? {} as Record<string, T> : [] as T[];
+  }
 
   const entities: T[] = result.data.map((e) => {
     const store = elementToStoreEntity(e);
@@ -600,4 +622,83 @@ export const elFindByIdsTiDB = async <T extends BasicStoreBase>(
   }
 
   return entities;
+};
+
+// ---------------------------------------------------------------------------
+// Public API — elList (via opencti-ng REST, no repagination needed)
+// ---------------------------------------------------------------------------
+
+export interface TiDBListOpts extends TiDBPaginateOpts {
+  maxSize?: number;
+  callback?: (elements: any[], globalCount: number) => Promise<boolean | undefined>;
+}
+
+/**
+ * List all entities matching the given criteria via the opencti-ng REST API.
+ *
+ * Unlike the Elasticsearch version, TiDB does not require repagination
+ * (no max window size). We call `elPaginateTiDB` directly with
+ * `connectionFormat: false` and a large `first` value.
+ *
+ * When `callback` is provided, results are streamed in batches of `first`
+ * (default 500), calling the callback for each batch. The callback
+ * returns `false` to stop iteration early.
+ */
+export const elListTiDB = async <T extends BasicStoreBase>(
+  context: AuthContext,
+  user: AuthUser,
+  _indexName: string | string[] | undefined | null,
+  opts: TiDBListOpts = {},
+): Promise<T[]> => {
+  const {
+    first = 500,
+    maxSize,
+    callback,
+  } = opts;
+
+  if (callback) {
+    // Streaming mode: fetch in batches, pass each to the callback
+    let offset = 0;
+    let emitted = 0;
+    const listing: T[] = [];
+
+    while (true) {
+      const batchSize = maxSize !== undefined ? Math.min(first, maxSize - emitted) : first;
+      if (batchSize <= 0) break;
+
+      // Encode offset as cursor (base64 JSON array, matching elPaginateTiDB's decoder)
+      const afterCursor = offset > 0 ? offsetToCursor([offset]) : null;
+
+      const batch = await elPaginateTiDB<T>(context, user, _indexName, {
+        ...opts,
+        first: batchSize,
+        after: afterCursor,
+        connectionFormat: false,
+      }) as T[];
+
+      if (batch.length === 0) break;
+
+      const callbackResult = await callback(batch, 0);
+      listing.push(...batch);
+      emitted += batch.length;
+
+      if (callbackResult === false) break;
+      if (maxSize !== undefined && emitted >= maxSize) break;
+
+      offset += batch.length;
+      if (batch.length < batchSize) break; // Last page
+    }
+    return listing;
+  }
+
+  // Simple mode: single fetch with large limit
+  const limit = maxSize ?? 10000;
+  const result = await elPaginateTiDB<T>(context, user, _indexName, {
+    ...opts,
+    first: limit,
+    after: null,
+    connectionFormat: false,
+  }) as T[];
+
+  return result;
 };
