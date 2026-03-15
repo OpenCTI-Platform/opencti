@@ -271,14 +271,36 @@ const apiEntityToStoreEntity = (
   };
 
   // Denormalized relationship refs (same shape as ES engine returns)
+  // Both `rel_<type>.internal_id` (for relationship resolution) and flat
+  // `<databaseName>` fields (for batchInternalRels which reads
+  // element[definition.databaseName]) must be set.
   if (markingIds.length > 0) {
     store['rel_object-marking.internal_id'] = markingIds;
+    store['object-marking'] = markingIds;
   }
   if (labelIds.length > 0) {
     store['rel_object-label.internal_id'] = labelIds;
+    store['object-label'] = labelIds;
   }
   if (entity.created_by_ref) {
     store['rel_created-by.internal_id'] = entity.created_by_ref;
+    store['created-by'] = entity.created_by_ref;
+  }
+
+  // External references — flat databaseName for batchInternalRels
+  const extRefIds = (entity.external_references || [])
+    .map((er: any) => er.internal_id || er.id)
+    .filter(Boolean);
+  if (extRefIds.length > 0) {
+    store['external-reference'] = extRefIds;
+  }
+
+  // Kill chain phases — flat databaseName for batchInternalRels
+  const kcpIds = (entity.kill_chain_phases || [])
+    .map((kcp: any) => kcp.internal_id || kcp.id)
+    .filter(Boolean);
+  if (kcpIds.length > 0) {
+    store['kill-chain-phase'] = kcpIds;
   }
 
   // Identity-specific
@@ -350,6 +372,10 @@ const elementToStoreEntity = (
       main: element.representative?.main ?? element.name ?? '',
       secondary: element.representative?.secondary ?? element.description ?? '',
     },
+    // Flat databaseName fields for batchInternalRels
+    ...(element.created_by_ref ? { 'created-by': element.created_by_ref } : {}),
+    ...(element.labels ? { 'object-label': (element.labels ?? []).map((l: any) => l.id) } : {}),
+    ...(element.object_markings ? { 'object-marking': (element.object_markings ?? []).map((l: any) => l.marking.internal_id) } : {}),
   };
 };
 
