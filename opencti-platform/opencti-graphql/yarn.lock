@@ -10721,7 +10721,7 @@ __metadata:
     semver: "npm:7.7.4"
     set-interval-async: "npm:3.0.3"
     source-map: "npm:0.7.6"
-    tough-cookie: "npm:6.0.0"
+    tough-cookie: "npm:6.0.1"
     turndown: "npm:7.2.2"
     typescript: "npm:5.9.3"
     typescript-eslint: "npm:8.57.0"
@@ -12678,12 +12678,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tough-cookie@npm:6.0.0":
-  version: 6.0.0
-  resolution: "tough-cookie@npm:6.0.0"
+"tough-cookie@npm:6.0.1":
+  version: 6.0.1
+  resolution: "tough-cookie@npm:6.0.1"
   dependencies:
     tldts: "npm:^7.0.5"
-  checksum: 10c0/7b17a461e9c2ac0d0bea13ab57b93b4346d0b8c00db174c963af1e46e4ea8d04148d2a55f2358fc857db0c0c65208a98e319d0c60693e32e0c559a9d9cf20cb5
+  checksum: 10c0/ec70bd6b1215efe4ed31a158f0be3e4c9088fcbd8620edc23a5860d4f3d85c757b77e274baaa700f7b25e409f4181552ed189603c2b2e1a9f88104da3a61a37d
   languageName: node
   linkType: hard
 
