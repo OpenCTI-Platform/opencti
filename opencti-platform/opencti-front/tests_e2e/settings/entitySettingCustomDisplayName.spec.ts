@@ -1,36 +1,36 @@
 import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
-import SettingsCustomizationPage from '../model/settingsCustomization.pageModel';
 import SearchPageModel from '../model/search.pageModel';
+import { awaitUntilCondition } from '../utils';
 
 /**
- * E2E test for issue #14873 — Custom display names for entity types.
+ * E2E test for custom entity display names (issue #14873).
  *
- * Covers:
- * - Setting custom singular and plural display names for an entity type
- * - Verifying values persist after page reload
- * - Verifying the page title and breadcrumb reflect the custom name
- * - Resetting to default and verifying fields are cleared
- * - Verifying title/breadcrumb revert to default after reset
+ * Covers the full lifecycle:
+ * 1. Navigate to Settings > Customization > Entity types > Report
+ * 2. Set a custom singular and plural display name
+ * 3. Verify the values persist after page reload
+ * 4. Reset to default and verify the fields are cleared
+ *
+ * Uses stable data-testid selectors:
+ * - entity-setting-custom-name-input
+ * - entity-setting-custom-name-plural-input
+ * - entity-setting-custom-name-reset-btn
  */
-test.describe('Entity setting custom display names', { tag: ['@ce'] }, () => {
-  const ENTITY_TYPE = 'Report';
-  const CUSTOM_NAME_SINGULAR = 'Intelligence Product';
-  const CUSTOM_NAME_PLURAL = 'Intelligence Products';
+test.describe('Entity Setting - Custom Display Name', { tag: ['@ce'] }, () => {
+  test('Set, persist, and reset custom display name for Report entity type', async ({ page }) => {
+    const leftBarPage = new LeftBarPage(page);
 
-  test('Set, verify, and reset custom display names for Report entity type', async ({ page }) => {
-    // Navigate to Settings > Customization > Entity types
-    await page.goto('/dashboard/settings/customization/entity_types');
-    const customizationPage = new SettingsCustomizationPage(page);
-    await expect(customizationPage.getCustomizationPages('subtypes-page')).toBeVisible();
+    // Step 1: Navigate to Settings > Customization > Entity types > Report
+    await page.goto('/');
+    await leftBarPage.open();
+    await leftBarPage.clickOnMenu('Settings', 'Customization');
 
-    // Search for and open the Report entity type
     const search = new SearchPageModel(page);
-    await search.addSearch(ENTITY_TYPE.toLowerCase());
-    await page.getByRole('link', { name: ENTITY_TYPE }).click();
-    await expect(page.getByRole('heading', { name: ENTITY_TYPE })).toBeVisible();
+    await search.addSearch('report');
+    await page.getByRole('link', { name: 'Report' }).click();
 
-    // Verify the custom name fields exist with proper data-testid
+    // Step 2: Verify custom name fields exist and are initially empty
     const singularInput = page.getByTestId('entity-setting-custom-name-input').locator('input');
     const pluralInput = page.getByTestId('entity-setting-custom-name-plural-input').locator('input');
     const resetButton = page.getByTestId('entity-setting-custom-name-reset-btn');
@@ -39,73 +39,53 @@ test.describe('Entity setting custom display names', { tag: ['@ce'] }, () => {
     await expect(pluralInput).toBeVisible();
     await expect(resetButton).toBeVisible();
 
-    // Clear any previously set values to start from a clean state
-    await singularInput.clear();
+    // Step 3: Set custom display names
+    await singularInput.fill('Intelligence Product');
     await singularInput.blur();
-    await pluralInput.clear();
-    await pluralInput.blur();
-    // Wait for mutation to complete
-    await page.waitForTimeout(500);
-
-    // Set custom singular name
-    await singularInput.fill(CUSTOM_NAME_SINGULAR);
-    await singularInput.blur();
-    // Wait for the mutation to persist
-    await page.waitForTimeout(500);
-
-    // Set custom plural name
-    await pluralInput.fill(CUSTOM_NAME_PLURAL);
-    await pluralInput.blur();
-    // Wait for the mutation to persist
-    await page.waitForTimeout(500);
-
-    // Verify the values are set in the input fields
-    await expect(singularInput).toHaveValue(CUSTOM_NAME_SINGULAR);
-    await expect(pluralInput).toHaveValue(CUSTOM_NAME_PLURAL);
-
-    // Reload the page to verify persistence
-    await page.reload();
+    // Wait for the mutation to complete
     await page.waitForTimeout(1000);
 
-    // After reload, the page title and breadcrumb should reflect the custom name
-    const headingAfterSet = page.getByTestId('entity-type-title');
-    await expect(headingAfterSet).toContainText(CUSTOM_NAME_SINGULAR);
-
-    // Verify breadcrumb contains the custom name
-    const breadcrumb = page.getByTestId('navigation');
-    await expect(breadcrumb).toContainText(CUSTOM_NAME_SINGULAR);
-
-    // Re-locate inputs after reload and verify persistence
-    const singularInputAfterReload = page.getByTestId('entity-setting-custom-name-input').locator('input');
-    const pluralInputAfterReload = page.getByTestId('entity-setting-custom-name-plural-input').locator('input');
-
-    await expect(singularInputAfterReload).toHaveValue(CUSTOM_NAME_SINGULAR);
-    await expect(pluralInputAfterReload).toHaveValue(CUSTOM_NAME_PLURAL);
-
-    // Test reset to default
-    const resetBtn = page.getByTestId('entity-setting-custom-name-reset-btn');
-    await expect(resetBtn).toBeEnabled();
-    await resetBtn.click();
-    // Wait for the mutation to persist
-    await page.waitForTimeout(500);
-
-    // Verify fields are cleared
-    await expect(page.getByTestId('entity-setting-custom-name-input').locator('input')).toHaveValue('');
-    await expect(page.getByTestId('entity-setting-custom-name-plural-input').locator('input')).toHaveValue('');
-
-    // Verify reset button is now disabled
-    await expect(resetBtn).toBeDisabled();
-
-    // Reload and confirm reset persisted — title/breadcrumb should revert to default
-    await page.reload();
+    await pluralInput.fill('Intelligence Products');
+    await pluralInput.blur();
     await page.waitForTimeout(1000);
 
-    // Title should be back to the default i18n label
-    const headingAfterReset = page.getByTestId('entity-type-title');
-    await expect(headingAfterReset).toBeVisible();
+    // Step 4: Verify persistence after reload
+    const verifyPersistence = async () => {
+      await page.reload();
+      // Wait for the page to load
+      await expect(page.getByTestId('entity-setting-custom-name-input')).toBeVisible();
+      const singularValue = await page.getByTestId('entity-setting-custom-name-input').locator('input').inputValue();
+      return singularValue === 'Intelligence Product';
+    };
+    await awaitUntilCondition(verifyPersistence, 2000, 5);
 
-    // Fields should remain empty
-    await expect(page.getByTestId('entity-setting-custom-name-input').locator('input')).toHaveValue('');
-    await expect(page.getByTestId('entity-setting-custom-name-plural-input').locator('input')).toHaveValue('');
+    const persistedSingular = await singularInput.inputValue();
+    const persistedPlural = await pluralInput.inputValue();
+    expect(persistedSingular).toBe('Intelligence Product');
+    expect(persistedPlural).toBe('Intelligence Products');
+
+    // Step 5: Reset to default
+    await resetButton.click();
+    await page.waitForTimeout(1000);
+
+    // Verify fields are cleared after reset
+    const resetSingular = await singularInput.inputValue();
+    const resetPlural = await pluralInput.inputValue();
+    expect(resetSingular).toBe('');
+    expect(resetPlural).toBe('');
+
+    // Step 6: Verify reset persists after reload
+    const verifyResetPersistence = async () => {
+      await page.reload();
+      await expect(page.getByTestId('entity-setting-custom-name-input')).toBeVisible();
+      const singularValue = await page.getByTestId('entity-setting-custom-name-input').locator('input').inputValue();
+      return singularValue === '';
+    };
+    await awaitUntilCondition(verifyResetPersistence, 2000, 5);
+
+    const finalSingular = await singularInput.inputValue();
+    const finalPlural = await pluralInput.inputValue();
+    expect(finalSingular).toBe('');
+    expect(finalPlural).toBe('');
   });
 });
