@@ -14,10 +14,18 @@
 export * from './engine-search';
 
 // Import the search-engine versions of functions we override
-import { elPaginate as elPaginateSearch, elFindByIds as elFindByIdsSearch, elLoadById as elLoadByIdSearch, type PaginateOpts, type ElFindByIdsOpts } from './engine-search';
+import {
+  elPaginate as elPaginateSearch,
+  elFindByIds as elFindByIdsSearch,
+  elLoadById as elLoadByIdSearch,
+  elList as elListSearch,
+  type PaginateOpts,
+  type ElFindByIdsOpts,
+  type RepaginateOpts,
+} from './engine-search';
 
 // Import TiDB routing utilities
-import { elPaginateTiDB, elFindByIdsTiDB } from './engine-tidb';
+import { elPaginateTiDB, elFindByIdsTiDB, elListTiDB } from './engine-tidb';
 
 // Re-export TiDB routing checks for use by middleware-loader (filter decisions)
 export { isTiDBEntityType } from './engine-tidb';
@@ -151,6 +159,45 @@ export const elLoadById = async <T extends BasicStoreBase>(
 
   // Fallback to ES
   return elLoadByIdSearch<T>(context, user, id, opts);
+};
+
+// ---------------------------------------------------------------------------
+// Routed: elList
+// ---------------------------------------------------------------------------
+
+/**
+ * List all entities matching criteria — tries TiDB first (no repagination
+ * needed: TiDB handles large offsets natively), falls back to ES.
+ */
+export const elList = async <T extends BasicStoreBase>(
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string | string[] | undefined | null,
+  opts: RepaginateOpts<T> = {},
+): Promise<T[]> => {
+  const { types } = opts;
+  const entityTypes = types
+    ? (Array.isArray(types) ? types : [types])
+    : [];
+
+  // If explicitly internal types, skip TiDB entirely
+  if (entityTypes.length > 0 && entityTypes.every(isInternalType)) {
+    return elListSearch<T>(context, user, indexName, opts);
+  }
+
+  // Try TiDB first — directly via elPaginateTiDB, no repagination
+  const tidbResult = await elListTiDB<T>(context, user, indexName, {
+    types: entityTypes.length > 0 ? entityTypes : undefined,
+    first: opts.first ?? 500,
+    filters: opts.filters,
+    maxSize: opts.maxSize,
+    callback: opts.callback,
+  });
+
+  if (tidbResult.length > 0) return tidbResult;
+
+  // Fallback to ES (with repagination)
+  return elListSearch<T>(context, user, indexName, opts);
 };
 
 // ---------------------------------------------------------------------------
