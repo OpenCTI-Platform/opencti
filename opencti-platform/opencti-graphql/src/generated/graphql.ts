@@ -37876,6 +37876,7 @@ export type WorkEditMutations = {
   delete: Scalars['ID']['output'];
   ping: Scalars['ID']['output'];
   reportExpectation: Scalars['ID']['output'];
+  reportExpectations: Scalars['ID']['output'];
   toProcessed: Scalars['ID']['output'];
   toReceived: Scalars['ID']['output'];
 };
@@ -37893,6 +37894,12 @@ export type WorkEditMutationsAddExpectationsArgs = {
 
 export type WorkEditMutationsReportExpectationArgs = {
   error?: InputMaybe<WorkErrorInput>;
+};
+
+
+export type WorkEditMutationsReportExpectationsArgs = {
+  errors?: InputMaybe<Array<InputMaybe<WorkErrorInput>>>;
+  success: Scalars['Int']['input'];
 };
 
 
@@ -52762,6 +52769,7 @@ export type WorkEditMutationsResolvers<ContextType = any, ParentType extends Res
   delete?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ping?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   reportExpectation?: Resolver<ResolversTypes['ID'], ParentType, ContextType, Partial<WorkEditMutationsReportExpectationArgs>>;
+  reportExpectations?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<WorkEditMutationsReportExpectationsArgs, 'success'>>;
   toProcessed?: Resolver<ResolversTypes['ID'], ParentType, ContextType, Partial<WorkEditMutationsToProcessedArgs>>;
   toReceived?: Resolver<ResolversTypes['ID'], ParentType, ContextType, Partial<WorkEditMutationsToReceivedArgs>>;
 }>;

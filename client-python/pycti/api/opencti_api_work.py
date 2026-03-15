@@ -112,6 +112,53 @@ class OpenCTIApiWork:
             except Exception:
                 self.api.app_logger.error("Cannot report expectation")
 
+    def report_expectations(
+        self,
+        work_id: str,
+        success: int,
+        errors: Optional[List[Dict]] = None,
+    ):
+        """Report multiple work expectations in a single call (bulk).
+
+        :param work_id: the work id
+        :type work_id: str
+        :param success: number of successful expectations to report
+        :type success: int
+        :param errors: list of errors to report, each in WorkErrorInput format
+            (keys: ``error``, ``source``)
+        :type errors: list[dict], optional
+        :return: None
+        :rtype: None
+        """
+        if self.api.bundle_send_to_queue:
+            self.api.app_logger.info(
+                "Report expectations (bulk)",
+                {
+                    "work_id": work_id,
+                    "success": success,
+                    "errors": len(errors) if errors else 0,
+                },
+            )
+            query = """
+                mutation reportExpectations($id: ID!, $success: Int!, $errors: [WorkErrorInput]) {
+                    workEdit(id: $id) {
+                        reportExpectations(success: $success, errors: $errors)
+                    }
+                }
+               """
+            try:
+                self.api.query(
+                    query,
+                    {
+                        "id": work_id,
+                        "success": success,
+                        "errors": errors or [],
+                    },
+                    True,
+                )
+            except Exception:
+                self.api.app_logger.error("Cannot report expectations (bulk)")
+
     def add_expectations(self, work_id: str, expectations: int):
         """Add expectations to a work.
 
