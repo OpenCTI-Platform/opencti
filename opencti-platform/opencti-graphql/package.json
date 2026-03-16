@@ -167,7 +167,7 @@
     "semver": "7.7.4",
     "set-interval-async": "3.0.3",
     "source-map": "0.7.6",
-    "tough-cookie": "6.0.0",
+    "tough-cookie": "6.0.1",
     "turndown": "7.2.2",
     "unzipper": "0.12.3",
     "uuid": "13.0.0",
