@@ -14,6 +14,7 @@ import { offsetToCursor, buildPaginationFromEdges } from './utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase, BasicConnection, BasicNodeEdge } from '../types/store';
 import conf, { logApp } from '../config/conf';
+import {isBasicRelationship} from "../schema/stixRelationship";
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -153,6 +154,7 @@ const PARENT_TYPES: Record<string, string[]> = {
   Report: ['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object', 'Container'],
   'Marking-Definition': ['Basic-Object', 'Stix-Object', 'Stix-Meta-Object'],
   Relationship: ['Basic-Relationship', 'Stix-Relationship', 'Stix-Core-Relationship'],
+  'stix-core-relationship': ['Basic-Relationship', 'Stix-Relationship', 'Stix-Core-Relationship'],
   Sighting: ['Basic-Relationship', 'Stix-Relationship', 'Stix-Sighting-Relationship'],
 };
 
@@ -401,6 +403,25 @@ const elementToStoreEntity = (
     ...(element.created_by_ref ? { 'created-by': element.created_by_ref } : {}),
     ...(element.labels ? { 'object-label': (element.labels ?? []).map((l: any) => l.id) } : {}),
     ...(element.object_markings ? { 'object-marking': (element.object_markings ?? []).map((l: any) => l.marking.internal_id) } : {}),
+    // Relationship-specific: map source_ref/target_ref → fromId/toId
+    ...(element.source_ref ? {
+      fromId: element.source_ref,
+      toId: element.target_ref,
+      fromType: element.source_type || 'Unknown',
+      toType: element.target_type || 'Unknown',
+      relationship_type: element.relationship_type,
+      base_type: 'RELATION',
+      ...(element.start_time ? { start_time: element.start_time } : {}),
+      ...(element.stop_time ? { stop_time: element.stop_time } : {}),
+    } : {}),
+    // Marking-definition-specific: flatten definition to string
+    ...(entityType === 'Marking-Definition' ? {
+      definition_type: element.definition_type,
+      x_opencti_order: element.ordering ?? 0,
+      definition: (element.definition && typeof element.definition === 'object')
+        ? Object.entries(element.definition).map(([k, v]) => `${k}:${v}`).join(',')
+        : element.definition,
+    } : {}),
   };
 };
 
@@ -587,7 +608,7 @@ export const elFindByIdsTiDB = async <T extends BasicStoreBase>(
   // Build request body — include types when a single concrete type is specified
   const typeHints = opts.type ? (Array.isArray(opts.type) ? opts.type : [opts.type]) : [];
   const body: Record<string, any> = { ids: processIds };
-  body.types = typeHints.filter((t) => !isAbstractType(t));
+  body.types = typeHints.filter((t) => t === 'stix-core-relationship' || !isAbstractType(t));
 
   // Single batch call with optional type hint for detail table JOIN
   const result = await apiPost<ApiListResponse>('stix/elements', body, token);
@@ -596,11 +617,11 @@ export const elFindByIdsTiDB = async <T extends BasicStoreBase>(
   }
 
   const entities: T[] = result.data.map((e) => {
-    const store = elementToStoreEntity(e);
     // Merge detail columns into the store entity at top level
     if (e.details && typeof e.details === 'object') {
-      Object.assign(store, e.details);
+      Object.assign(e, e.details);
     }
+    const store = elementToStoreEntity(e);
     return store as T;
   });
 
