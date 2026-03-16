@@ -22,6 +22,9 @@ describe('File storage upload with marking', () => {
     expect(uploadedFileWithMarking.upload.id).toBeDefined();
     // and expect no exception.
 
+    const duplicateUploadedFile = await uploadToStorage(adminContext, ADMIN_USER, SUPPORT_STORAGE_PATH, file, { file_markings: [MARKING_TLP_CLEAR] });
+    expect(duplicateUploadedFile.untouched).toBeTruthy();
+
     const document = await findDocumentById(adminContext, ADMIN_USER, uploadedFileWithMarking.upload.id);
     expect(document.metaData.file_markings).toBeDefined();
     expect(document.metaData.file_markings?.length, 'One marking MARKING_TLP_CLEAR is expected on this document.').toBe(1);
