@@ -1,4 +1,4 @@
-import { ENTITY_TYPE_STREAM_COLLECTION, type BasicStoreEntityStreamCollection } from './streamCollection-types';
+import { ENTITY_TYPE_STREAM_COLLECTION, type BasicStoreEntityStreamCollection, type StoreEntityStreamCollection } from './streamCollection-types';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
@@ -60,7 +60,7 @@ export const streamCollectionEditField = async (context: AuthContext, user: Auth
   const filtersItem = input.find((item) => item.key === 'filters');
   if (filtersItem?.value) {
     // our stix matching is currently limited, we need to validate the input filters
-    validateFilterGroupForStixMatch(JSON.parse(filtersItem.value));
+    validateFilterGroupForStixMatch(JSON.parse(filtersItem.value[0]));
   }
 
   const finalInput = input.map(({ key, value }) => {
@@ -70,7 +70,7 @@ export const streamCollectionEditField = async (context: AuthContext, user: Auth
     }
     return item;
   });
-  const { element } = await updateAttribute(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION, finalInput);
+  const { element } = await updateAttribute<StoreEntityStreamCollection>(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION, finalInput);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -82,7 +82,7 @@ export const streamCollectionEditField = async (context: AuthContext, user: Auth
   return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, element, user);
 };
 export const streamCollectionDelete = async (context: AuthContext, user: AuthUser, collectionId: string) => {
-  const deleted = await deleteElementById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
+  const deleted = await deleteElementById<StoreEntityStreamCollection>(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -136,7 +136,7 @@ export const getStreamCollectionConsumers = async (collectionId: string) => {
 // Stream consumer information
 export const getStreamConsumerInformation = async (channelId: string, lastEventId: string) => {
   const streamInfo = await fetchStreamInfo();
-  const consumerMetrics = getLocalConsumerMetrics(channelId);
+  const consumerMetrics = getLocalConsumerMetrics(channelId)!;
   const productionRate = await getStreamProductionRate();
   const computedLagsMetrics = computeProcessingLagMetrics(lastEventId, streamInfo, consumerMetrics.deliveryRate, productionRate);
   return { ...consumerMetrics, productionRate, ...computedLagsMetrics };

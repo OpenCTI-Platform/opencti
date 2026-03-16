@@ -1,8 +1,8 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
-import { elPaginate } from '../../database/engine';
+import { elPaginate, type PaginateOpts } from '../../database/engine';
 import { isNotEmptyField, READ_STIX_DATA_WITH_INFERRED, READ_STIX_INDICES } from '../../database/utils';
-import { ENTITY_TYPE_TAXII_COLLECTION } from './taxiiCollection-types';
+import { ENTITY_TYPE_TAXII_COLLECTION, type StoreEntityTaxiiCollection } from './taxiiCollection-types';
 import { createEntity, deleteElementById, stixLoadByIds, updateAttribute } from '../../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { FunctionalError } from '../../config/errors';
@@ -21,7 +21,7 @@ import { ABSTRACT_STIX_OBJECT } from '../../schema/general';
 import { TAXIIAPI } from '../../domain/user';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditContext, EditInput, QueryTaxiiCollectionsArgs, TaxiiCollectionAddInput } from '../../generated/graphql';
-import type { BasicStoreEntity } from '../../types/store.d';
+import type { BasicConnection, BasicStoreBase, BasicStoreEntity } from '../../types/store.d';
 
 const MAX_TAXII_PAGINATION = conf.get('app:data_sharing:taxii:max_pagination_result') || 500;
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
@@ -67,7 +67,7 @@ export const taxiiCollectionEditField = async (context: AuthContext, user: AuthU
     return item;
   });
 
-  const { element } = await updateAttribute(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION, finalInput);
+  const { element } = await updateAttribute<StoreEntityTaxiiCollection>(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION, finalInput);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -79,7 +79,7 @@ export const taxiiCollectionEditField = async (context: AuthContext, user: AuthU
   return notify(BUS_TOPICS[ENTITY_TYPE_TAXII_COLLECTION].EDIT_TOPIC, element, user);
 };
 export const taxiiCollectionDelete = async (context: AuthContext, user: AuthUser, collectionId: string) => {
-  const deleted = await deleteElementById(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
+  const deleted = await deleteElementById<StoreEntityTaxiiCollection>(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -127,7 +127,7 @@ export const collectionQuery = async (context: AuthContext, user: AuthUser, coll
     defaultTypes: [STIX_CORE_RELATIONSHIPS, STIX_SIGHTING_RELATIONSHIP, ABSTRACT_STIX_OBJECT],
     after: added_after,
     after_exclude: true,
-  });
+  }) as PaginateOpts;
   options.after = next;
   options.bypassSizeLimit = true;
   let maxSize = MAX_TAXII_PAGINATION;
@@ -139,7 +139,7 @@ export const collectionQuery = async (context: AuthContext, user: AuthUser, coll
   if (type) options.types = type.split(',');
   if (id) options.ids = id.split(',');
   const currentIndex = collection.include_inferences ? READ_STIX_DATA_WITH_INFERRED : READ_STIX_INDICES;
-  return elPaginate(context, user, currentIndex, options);
+  return elPaginate(context, user, currentIndex, options) as Promise<BasicConnection<BasicStoreBase>>;
 };
 export const restCollectionStix = async (context: AuthContext, user: AuthUser, collection: BasicStoreEntity & Record<string, any>, args: Record<string, any>) => {
   const { edges, pageInfo } = await collectionQuery(context, user, collection, args);
