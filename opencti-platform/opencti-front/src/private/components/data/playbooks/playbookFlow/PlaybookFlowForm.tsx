@@ -131,6 +131,8 @@ const PlaybookFlowForm = ({
     }
   };
 
+  const requiredProperties = configurationSchema?.required ?? [];
+
   const addComponentValidation = Yup.object().shape({
     name: Yup.string().trim().required(t_i18n('This field is required')),
   });
@@ -195,6 +197,7 @@ const PlaybookFlowForm = ({
                 value={values.name ? t_i18n(values.name) : ''}
                 label={t_i18n('Name')}
                 fullWidth
+                required
               />
               {Object.entries(configurationSchema?.properties ?? {}).map(
                 ([propName, property]) => {
@@ -289,13 +292,8 @@ const PlaybookFlowForm = ({
                   }
                   if (property.type === 'boolean') {
                     let helperText = '';
-                    let disabled = false;
                     if (propName === 'create_rel') {
                       helperText = t_i18n('If both entities are of interest for selected PIR, then the target is kept');
-                    }
-                    // excludeMainElement depends on 'all' being enabled
-                    if (propName === 'excludeMainElement') {
-                      disabled = !values.all;
                     }
                     return (
                       <PlaybookFlowFieldBoolean
@@ -303,7 +301,6 @@ const PlaybookFlowForm = ({
                         name={propName}
                         helperText={helperText}
                         label={t_i18n(property.$ref ?? propName)}
-                        disabled={disabled}
                       />
                     );
                   }
@@ -314,6 +311,7 @@ const PlaybookFlowForm = ({
                         name={propName}
                         label={t_i18n(property.$ref ?? propName)}
                         options={property.oneOf as PlaybookFlowFieldArrayProps['options']}
+                        required={requiredProperties.includes(propName)}
                       />
                     );
                   }
