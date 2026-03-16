@@ -93,7 +93,7 @@ const startingProviders = new Set<string>();
 export const isProviderStarting = (providerId: string) => startingProviders.has(providerId);
 
 export const registerStrategy = async (authenticationProvider: BasicStoreEntityAuthenticationProvider) => {
-  const { type, name } = authenticationProvider;
+  const { type, name, button_label_override } = authenticationProvider;
   const identifier = resolveProviderIdentifier(authenticationProvider);
   const meta = { name, identifier };
   const logger = createAuthLogger(authenticationProvider.internal_id, type, identifier);
@@ -133,6 +133,7 @@ export const registerStrategy = async (authenticationProvider: BasicStoreEntityA
           strategy: authenticationProvider.type,
           provider: meta.identifier,
           logout_remote: created.logout_remote,
+          button_label_override,
         },
       );
     }
