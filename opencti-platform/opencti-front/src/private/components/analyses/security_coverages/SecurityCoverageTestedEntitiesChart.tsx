@@ -13,11 +13,11 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 
 const securityCoverageRelationshipDistributionFragment = graphql`
     fragment SecurityCoverageTestedEntitiesChart_securityCoverage on SecurityCoverage{
-        totalCountPerEntityType : stixCoreRelationshipsDistribution(field:"entity_type", operation:count ){
+        totalCountPerEntityType : stixCoreRelationshipsDistribution(field:"entity_type", relationship_type: "has-covered", operation:count ){
             label,
             value
         }
-        testedCountPerEntityType: stixCoreRelationshipsDistribution(field:"entity_type", operation:count, filters: {
+        testedCountPerEntityType: stixCoreRelationshipsDistribution(field:"entity_type", relationship_type: "has-covered", operation:count, filters: {
             mode: and
             filters: [
                 {
@@ -67,7 +67,6 @@ const SecurityCoverageTestedEntitiesChart: FunctionComponent<Props> = ({ securit
     );
 
     const sortedEntities = (totalCounts ?? [])
-      .filter(({ label }) => label !== 'Report')
       .sort((a, b) => (a.label).localeCompare(b.label));
 
     const categories: string[] = [];
@@ -85,8 +84,6 @@ const SecurityCoverageTestedEntitiesChart: FunctionComponent<Props> = ({ securit
 
     return { categories, testedData, notCoveredData };
   }, [totalCounts, testedCounts]);
-
-  console.log('categories', categories);
 
   const series = useMemo(() => [
     {
@@ -117,7 +114,7 @@ const SecurityCoverageTestedEntitiesChart: FunctionComponent<Props> = ({ securit
   );
 
   return (
-    <Card title={t_i18n('Entity details')}>
+    <Card title={t_i18n('Tested entity')}>
       {categories.length === 0
         ? <WidgetNoData /> : (
             <Chart

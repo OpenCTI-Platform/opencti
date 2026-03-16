@@ -32,7 +32,7 @@ const SecurityCoverageMainInfo: FunctionComponent<Props> = ({
   const { t_i18n, fndt } = useFormatter();
   const data = useFragment(securityCoverageEntitiesMainInfoFragment, securityCoverage);
   return (
-    <Card title={t_i18n('Entity details')} sx={{ alignContent: 'center' }}>
+    <Card title={t_i18n('Coverage information')} sx={{ alignContent: 'center' }}>
       <Stack
         direction="row"
         divider={<Divider orientation="vertical" flexItem />}
