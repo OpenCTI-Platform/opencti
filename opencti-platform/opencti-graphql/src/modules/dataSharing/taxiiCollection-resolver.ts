@@ -1,15 +1,16 @@
+import type { Resolvers } from '../../generated/graphql';
 import {
+  createTaxiiCollection,
   findById,
   findTaxiiCollectionPaginated,
-  createTaxiiCollection,
-  taxiiCollectionDelete,
-  taxiiCollectionEditField,
-  taxiiCollectionEditContext,
   taxiiCollectionCleanContext,
-} from '../domain/taxii';
-import { getAuthorizedMembers } from '../utils/authorizedMembers';
+  taxiiCollectionDelete,
+  taxiiCollectionEditContext,
+  taxiiCollectionEditField,
+} from './taxiiCollection-domain';
+import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 
-const taxiiResolvers = {
+const taxiiCollectionResolvers: Resolvers = {
   Query: {
     taxiiCollection: (_, { id }, context) => findById(context, context.user, id),
     taxiiCollections: (_, args, context) => findTaxiiCollectionPaginated(context, context.user, args),
@@ -28,4 +29,4 @@ const taxiiResolvers = {
   },
 };
 
-export default taxiiResolvers;
+export default taxiiCollectionResolvers;
