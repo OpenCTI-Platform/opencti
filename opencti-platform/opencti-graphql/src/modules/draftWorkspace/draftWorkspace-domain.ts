@@ -470,7 +470,7 @@ export const draftWorkspaceEditContext = async (context: AuthContext, user: Auth
   if (input) {
     await setEditContext(user, draftId, input);
   }
-  return storeLoadById(context, user, draftId, ENTITY_TYPE_DRAFT_WORKSPACE).then((fintelDesign) => {
-    return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].CONTEXT_TOPIC, fintelDesign, user);
+  return storeLoadById(context, user, draftId, ENTITY_TYPE_DRAFT_WORKSPACE).then((draft) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].CONTEXT_TOPIC, draft, user);
   });
 };

@@ -5,7 +5,7 @@ import FieldOrEmpty from './FieldOrEmpty';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../utils/hooks/useGranted';
 import { truncate } from '../utils/String';
 import { commitMutation, defaultCommitMutation } from '../relay/environment';
-import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
+import { GraphQLTaggedNode } from 'react-relay';
 import Tag from './common/tag/Tag';
 
 interface ItemParticipantsProps {

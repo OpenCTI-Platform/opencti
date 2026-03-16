@@ -6,7 +6,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE } from '../utils/hooks/useGranted';
 import FieldOrEmpty from './FieldOrEmpty';
 import { commitMutation, defaultCommitMutation } from '../relay/environment';
 import Tag from './common/tag/Tag';
-import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
+import { GraphQLTaggedNode } from 'react-relay';
 
 type Node = {
   readonly entity_type: string;

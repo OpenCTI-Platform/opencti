@@ -16,7 +16,7 @@ const DraftDetails: FunctionComponent<DraftDetailsProps> = ({ draft }) => {
 
   return (
     <div style={{ height: '100%' }}>
-      <Card title={t_i18n('Overview')}>
+      <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
           <Grid item xs={6}>
             <Label>
