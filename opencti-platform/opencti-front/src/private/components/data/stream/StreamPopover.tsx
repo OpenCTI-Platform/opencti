@@ -131,7 +131,7 @@ const StreamCollectionPopover: FunctionComponent<StreamCollectionPopoverProps> =
             </MenuItem>
           </>
         </Security>
-        <MenuItem onClick={handleOpenStream}>
+        <MenuItem onClick={handleOpenStream} disabled={!streamCollection.stream_live}>
           <ListItemIcon>
             <OpenInNewOutlined fontSize="small" />
           </ListItemIcon>
