@@ -81,6 +81,22 @@ const ADD_LINK_PLAYBOOK = gql`
     }
 `;
 
+const DELETE_NODE_PLAYBOOK = gql`
+    mutation playbookDeleteNode($id: ID!, $nodeId: ID!) {
+        playbookDeleteNode(id: $id, nodeId: $nodeId) {
+            id
+        }
+    }
+`;
+
+const DELETE_LINK_PLAYBOOK = gql`
+    mutation playbookDeleteLink($id: ID!, $linkId: ID!) {
+        playbookDeleteLink(id: $id, linkId: $linkId) {
+            id
+        }
+    }
+`;
+
 const DELETE_PLAYBOOK = gql`
   mutation playbookDelete($id: ID!) {
     playbookDelete(id:$id)
@@ -572,6 +588,128 @@ describe('Playbook resolver standard behavior', () => {
           input: addLinkInput,
         },
       });
+    });
+  });
+  describe('playbookDeleteLink', () => {
+    it('should not delete a link if no Manage Playbooks capability', async () => {
+      const readResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
+      const playbookDef = JSON.parse(readResult.data?.playbook.playbook_definition);
+      const linkId = playbookDef.links[0].id;
+
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+        query: DELETE_LINK_PLAYBOOK,
+        variables: {
+          id: playbookId,
+          linkId,
+        },
+      });
+    });
+    it('should delete an existing link', async () => {
+      const readResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
+      const playbookDef = JSON.parse(readResult.data?.playbook.playbook_definition);
+      expect(playbookDef.links.length).toEqual(1);
+      const linkId = playbookDef.links[0].id;
+
+      const deleteResult = await adminQueryWithSuccess({
+        query: DELETE_LINK_PLAYBOOK,
+        variables: {
+          id: playbookId,
+          linkId,
+        },
+      });
+      expect(deleteResult.data?.playbookDeleteLink.id).toBeDefined();
+
+      // Verify link was removed but nodes remain
+      const verifyResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
+      const updatedDef = JSON.parse(verifyResult.data?.playbook.playbook_definition);
+      expect(updatedDef.links.length).toEqual(0);
+      expect(updatedDef.nodes.length).toEqual(2);
+    });
+    it('should handle deleting a non-existent link gracefully', async () => {
+      // Deleting a non-existent linkId just filters it out, no error
+      const deleteResult = await adminQueryWithSuccess({
+        query: DELETE_LINK_PLAYBOOK,
+        variables: {
+          id: playbookId,
+          linkId: 'non-existent-link-id',
+        },
+      });
+      expect(deleteResult.data?.playbookDeleteLink.id).toBeDefined();
+    });
+  });
+  describe('playbookDeleteNode', () => {
+    it('should not delete a node if no Manage Playbooks capability', async () => {
+      const readResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
+      const playbookDef = JSON.parse(readResult.data?.playbook.playbook_definition);
+      const nodeId = playbookDef.nodes[0].id;
+
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+        query: DELETE_NODE_PLAYBOOK,
+        variables: {
+          id: playbookId,
+          nodeId,
+        },
+      });
+    });
+    it('should delete a node and its associated links', async () => {
+      // Re-add a link between the two existing nodes to test cascading deletion
+      const readResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
+      const playbookDef = JSON.parse(readResult.data?.playbook.playbook_definition);
+      expect(playbookDef.nodes.length).toEqual(2);
+      const entryNodeId = playbookDef.nodes.find((n: any) => n.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id).id;
+      const matchingNodeId = playbookDef.nodes.find((n: any) => n.component_id === PLAYBOOK_MATCHING_COMPONENT.id).id;
+
+      // Add a link first
+      const addLinkInput: PlaybookAddLinkInput = {
+        from_node: entryNodeId,
+        from_port: 'out',
+        to_node: matchingNodeId,
+      };
+      await adminQueryWithSuccess({
+        query: ADD_LINK_PLAYBOOK,
+        variables: {
+          id: playbookId,
+          input: addLinkInput,
+        },
+      });
+
+      // Now delete the child node (matching-node) — should also remove the link
+      const deleteResult = await adminQueryWithSuccess({
+        query: DELETE_NODE_PLAYBOOK,
+        variables: {
+          id: playbookId,
+          nodeId: matchingNodeId,
+        },
+      });
+      expect(deleteResult.data?.playbookDeleteNode.id).toBeDefined();
+
+      // Verify node and link were removed
+      const verifyResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
+      const updatedDef = JSON.parse(verifyResult.data?.playbook.playbook_definition);
+      expect(updatedDef.nodes.length).toEqual(1);
+      expect(updatedDef.nodes[0].id).toEqual(entryNodeId);
+      expect(updatedDef.links.length).toEqual(0);
+    });
+    it('should delete the entry node', async () => {
+      const readResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
+      const playbookDef = JSON.parse(readResult.data?.playbook.playbook_definition);
+      expect(playbookDef.nodes.length).toEqual(1);
+      const entryNodeId = playbookDef.nodes[0].id;
+
+      const deleteResult = await adminQueryWithSuccess({
+        query: DELETE_NODE_PLAYBOOK,
+        variables: {
+          id: playbookId,
+          nodeId: entryNodeId,
+        },
+      });
+      expect(deleteResult.data?.playbookDeleteNode.id).toBeDefined();
+
+      // Verify the playbook is now empty
+      const verifyResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
+      const updatedDef = JSON.parse(verifyResult.data?.playbook.playbook_definition);
+      expect(updatedDef.nodes.length).toEqual(0);
+      expect(updatedDef.links.length).toEqual(0);
     });
   });
   it('should not delete playbook if no Manage Playbooks capability', async () => {
