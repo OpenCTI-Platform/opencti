@@ -37,7 +37,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { fullRelationsList } from '../database/middleware-loader';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { getEntitiesListFromCache } from '../database/cache';
-import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
+import { ENTITY_TYPE_STREAM_COLLECTION } from '../modules/dataSharing/streamCollection-types';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { generateCreateMessage } from '../database/data-changes';
@@ -48,7 +48,7 @@ import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { doYield } from '../utils/eventloop-utils';
 import { registerConsumer, trackEventDelivered, trackEventsProcessed, trackMissingResolution, unregisterConsumer } from './streamConsumerRegistry';
-import { getStreamConsumerInformation } from '../domain/stream';
+import { getStreamConsumerInformation } from '../modules/dataSharing/streamCollection-domain';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
