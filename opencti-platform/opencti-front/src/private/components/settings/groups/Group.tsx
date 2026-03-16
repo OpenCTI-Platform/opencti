@@ -223,13 +223,15 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                     <ListItemText
                       primary={truncate(group.default_dashboard?.name, 40)}
                     />
-                    <Tooltip
-                      title={t_i18n(
-                        'You need to authorize this group to access this dashboard in the permissions of the workspace.',
-                      )}
-                    >
-                      <WarningOutlined color="warning" />
-                    </Tooltip>
+                    {!canAccessDashboard && (
+                      <Tooltip
+                        title={t_i18n(
+                          'You need to authorize this group to access this dashboard in the permissions of the workspace.',
+                        )}
+                      >
+                        <WarningOutlined color="warning"/>
+                      </Tooltip>
+                    )}
                   </ListItemButton>
                 </FieldOrEmpty>
               </Grid>
