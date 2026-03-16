@@ -1118,11 +1118,9 @@ describe('Upsert and merge entities', () => {
     expect(loadedThreat.goals).toEqual(['MY GOAL']);
     expect(loadedThreat.createdBy).not.toBeUndefined(); // [organizationThreatTarget]
     expect(loadedThreat.createdBy.name).toEqual('organizationThreatTarget'); // [organizationThreatTarget]
-    expect(loadedThreat.objectMarking.length).toEqual(3); // [testMarking (TLP:3), amberMarking (TLP:3), mitreMarking (STATEMENT)] clearMarking must be auto removed
+    expect(loadedThreat.objectMarking.length).toEqual(1); // [testMarking (TLP:3)] only target markings are kept
     const markingIds = loadedThreat.objectMarking.map((o) => o.standard_id);
     expect(markingIds.includes(testMarking)).toBeTruthy();
-    expect(markingIds.includes(amberMarking)).toBeTruthy();
-    expect(markingIds.includes(mitreMarking)).toBeTruthy();
     expect(loadedThreat.objectLabel.length).toEqual(5); // ['report', 'opinion', 'note', 'malware', 'identity']
     // expect(loadedThreat[INTERNAL_FROM_FIELD].uses.length).toEqual(3); // [MALWARE_TEST_01, MALWARE_TEST_02, MALWARE_TEST_03]
     const froms = await fullRelationsList(testContext, ADMIN_USER, 'stix-core-relationship', { fromId: loadedThreat.internal_id });
