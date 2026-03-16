@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 import {
   type AttributeDefinition,
-  authorizedMembers,
   changes,
   createdAt,
   creators,
