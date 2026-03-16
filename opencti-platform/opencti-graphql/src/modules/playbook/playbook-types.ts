@@ -113,7 +113,7 @@ export interface ComponentDefinition {
   links: LinkDefinition[];
 }
 
-export const PlaybookComponentDefinition: JSONSchemaType<ComponentDefinition> = {
+export const playbookComponentDefinition: JSONSchemaType<ComponentDefinition> = {
   type: 'object',
   properties: {
     nodes: {
@@ -166,7 +166,7 @@ export const PlaybookComponentDefinition: JSONSchemaType<ComponentDefinition> = 
   required: ['nodes', 'links'],
 };
 
-export const ElementsToApplyList = {
+export const playbookBundleElementsToApply = {
   allElements: {
     value: 'all-elements',
     title: 'All elements in the bundle',
@@ -181,5 +181,5 @@ export const ElementsToApplyList = {
   },
 } as const;
 
-export type ElementsToApplyKey = keyof typeof ElementsToApplyList;
-export type ElementsToApply = (typeof ElementsToApplyList)[ElementsToApplyKey]['value'];
+type PlaybookElementsToApplyKey = keyof typeof playbookBundleElementsToApply;
+export type PlaybookBundleElementsToApply = (typeof playbookBundleElementsToApply)[PlaybookElementsToApplyKey]['value'];

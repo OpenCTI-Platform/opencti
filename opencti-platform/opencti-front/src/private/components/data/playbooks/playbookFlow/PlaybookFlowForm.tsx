@@ -289,7 +289,6 @@ const PlaybookFlowForm = ({
                   }
                   if (property.type === 'boolean') {
                     let helperText = '';
-                    const disabled = false;
                     if (propName === 'create_rel') {
                       helperText = t_i18n('If both entities are of interest for selected PIR, then the target is kept');
                     }
@@ -299,7 +298,6 @@ const PlaybookFlowForm = ({
                         name={propName}
                         helperText={helperText}
                         label={t_i18n(property.$ref ?? propName)}
-                        disabled={disabled}
                       />
                     );
                   }

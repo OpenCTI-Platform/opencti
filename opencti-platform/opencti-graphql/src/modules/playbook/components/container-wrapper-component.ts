@@ -1,5 +1,5 @@
 import type { JSONSchemaType } from 'ajv';
-import { ElementsToApplyList, type ElementsToApply, type PlaybookComponent } from '../playbook-types';
+import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { ENTITY_TYPE_CONTAINER_REPORT, STIX_DOMAIN_OBJECT_CONTAINER_CASES } from '../../../schema/stixDomainObject';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../grouping/grouping-types';
@@ -77,7 +77,7 @@ const createTaskFromCaseTemplates = async (
 export interface ContainerWrapperConfiguration {
   container_type: string;
   caseTemplates: { label: string; value: string }[];
-  applyToElements: ElementsToApply;
+  applyToElements: PlaybookBundleElementsToApply;
   copyFiles: boolean;
   newContainer: boolean;
 }
@@ -95,12 +95,12 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<Contain
     },
     applyToElements: {
       type: 'string',
-      default: ElementsToApplyList.onlyMain.value,
+      default: playbookBundleElementsToApply.onlyMain.value,
       $ref: 'Apply to',
       oneOf: [
-        { const: ElementsToApplyList.onlyMain.value, title: ElementsToApplyList.onlyMain.title },
-        { const: ElementsToApplyList.allElements.value, title: ElementsToApplyList.allElements.title },
-        { const: ElementsToApplyList.allExceptMain.value, title: ElementsToApplyList.allExceptMain.title },
+        { const: playbookBundleElementsToApply.onlyMain.value, title: playbookBundleElementsToApply.onlyMain.title },
+        { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
+        { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
       ],
     },
     copyFiles: { type: 'boolean', $ref: 'Copy files from main element to the container', default: false },
@@ -156,16 +156,14 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         ...containerData,
       } as StoreCommon;
       const container = convertStoreToStix_2_1(storeContainer) as StixReport | StixCaseIncident;
-      // If we want to apply to all elements except main, exclude the main element from the container
-      if (applyToElements === ElementsToApplyList.allExceptMain.value) {
+      if (applyToElements === playbookBundleElementsToApply.allExceptMain.value) {
+        // If we want to apply to all elements except main, exclude the main element from the container
         container.object_refs = bundle.objects.filter((o: StixObject) => o.id !== baseData.id).map((o: StixObject) => o.id);
-      }
-      // add all objects in the container if requested in the playbook config
-      if (applyToElements === ElementsToApplyList.allElements.value) {
+      } else if (applyToElements === playbookBundleElementsToApply.allElements.value) {
+        // add all objects in the container if requested in the playbook config
         container.object_refs = bundle.objects.map((o: StixObject) => o.id);
-      }
-      // Only add main element in the container
-      if (applyToElements === ElementsToApplyList.onlyMain.value) {
+      } else if (applyToElements === playbookBundleElementsToApply.onlyMain.value) {
+        // Only add main element in the container
         container.object_refs = [baseData.id];
       }
 

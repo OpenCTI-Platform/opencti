@@ -9,7 +9,7 @@ import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from '../../../src/modules/playbook/components/container-wrapper-component';
 import { PLAYBOOK_SHARING_COMPONENT } from '../../../src/modules/playbook/components/sharing-component';
-import { ElementsToApplyList } from '../../../src/modules/playbook/playbook-types';
+import { playbookBundleElementsToApply } from '../../../src/modules/playbook/playbook-types';
 
 const INCIDENT_ID = 'incident--c6c2b96d-fe70-5099-a033-87cbfe2d6be2';
 
@@ -191,7 +191,7 @@ describe('playbook container wrapper component', () => {
       component_id: 'PLAYBOOK_CONTAINER_WRAPPER_COMPONENT',
       configuration: {
         container_type: 'Case-Incident',
-        applyToElements: ElementsToApplyList.onlyMain.value,
+        applyToElements: playbookBundleElementsToApply.onlyMain.value,
         copyFiles: false,
         newContainer: false,
         caseTemplates: [],
