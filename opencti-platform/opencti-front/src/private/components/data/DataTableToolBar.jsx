@@ -72,6 +72,7 @@ import { EMPTY_VALUE, truncate } from '../../../utils/String';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import { getEntityTypeTwoFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { UserContext } from '../../../utils/hooks/useAuth';
+import { isFeatureEnable } from '../../../utils/platformModulesHelper';
 import {
   BYPASS,
   EXPLORE_EXUPDATE_EXDELETE,
@@ -2163,6 +2164,8 @@ class DataTableToolBar extends Component {
         {({ schema, settings, me }) => {
           const isAdmin = me.capabilities.map((o) => o.name).filter((o) => [SETTINGS_SETACCESSES, BYPASS].includes(o)).length > 0;
           const isInDraft = me.draftContext;
+          const isDraftSharingEnabled = isFeatureEnable(settings, 'DRAFT_WORKSPACE_ORG_SHARING');
+          const disabledInDraft = isInDraft && !isDraftSharingEnabled;
           const stixCyberObservableSubTypes = schema.scos.map((sco) => sco.id);
           const stixDomainObjectSubTypes = schema.sdos.map((sdo) => sdo.id);
           const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes(stixCyberObservableSubTypes, stixDomainObjectSubTypes);
@@ -2490,7 +2493,7 @@ class DataTableToolBar extends Component {
                         </Tooltip>
                       </Security>
                     )}
-                    {!trashOperationsEnabled && isShareableType && !removeAuthMembersEnabled && !isUserDatatable && (
+                    {!trashOperationsEnabled && isShareableType && !removeAuthMembersEnabled && !isUserDatatable && !disabledInDraft && (
                       <>
                         <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
                           <EETooltip title={t('Share with organizations')}>
