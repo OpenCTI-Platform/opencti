@@ -69,6 +69,12 @@ const ADD_NODE_PLAYBOOK = gql`
     }
 `;
 
+const REPLACE_NODE_PLAYBOOK = gql`
+    mutation playbookReplaceNode($id: ID!, $nodeId: ID!, $input: PlaybookAddNodeInput!) {
+        playbookReplaceNode(id: $id, nodeId: $nodeId, input: $input)
+    }
+`;
+
 const DELETE_PLAYBOOK = gql`
   mutation playbookDelete($id: ID!) {
     playbookDelete(id:$id)
@@ -280,6 +286,122 @@ describe('Playbook resolver standard behavior', () => {
       'Stix filtering is not compatible with the provided filter key',
       UNSUPPORTED_ERROR,
     );
+  });
+  it('should replace an existing node in the playbook', async () => {
+    // First, get the current playbook definition to find the node id
+    const readResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
+    const playbookNodes = JSON.parse(readResult.data?.playbook.playbook_definition).nodes;
+    expect(playbookNodes.length).toEqual(1);
+    const existingNodeId = playbookNodes[0].id;
+
+    // Replace the existing entry node with updated name and position
+    const configuration = {
+      filters: emptyStringFilters,
+    };
+    const replaceNodeInput: PlaybookAddNodeInput = {
+      component_id: PLAYBOOK_INTERNAL_DATA_CRON.id,
+      configuration: JSON.stringify(configuration),
+      name: 'node1-replaced',
+      position: {
+        x: 10,
+        y: 20,
+      },
+    };
+    const replaceResult = await adminQueryWithSuccess({
+      query: REPLACE_NODE_PLAYBOOK,
+      variables: {
+        id: playbookId,
+        nodeId: existingNodeId,
+        input: replaceNodeInput,
+      },
+    });
+    expect(replaceResult.data?.playbookReplaceNode).toEqual(existingNodeId);
+
+    // Verify the node was replaced correctly
+    const verifyResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
+    const updatedNodes = JSON.parse(verifyResult.data?.playbook.playbook_definition).nodes;
+    expect(updatedNodes.length).toEqual(1);
+    const replacedNode = updatedNodes[0];
+    expect(replacedNode.id).toEqual(existingNodeId);
+    expect(replacedNode.name).toEqual('node1-replaced');
+    expect(replacedNode.position.x).toEqual(10);
+    expect(replacedNode.position.y).toEqual(20);
+    expect(replacedNode.component_id).toEqual(PLAYBOOK_INTERNAL_DATA_CRON.id);
+  });
+  it('should not replace a node with an unknown component', async () => {
+    const readResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
+    const playbookNodes = JSON.parse(readResult.data?.playbook.playbook_definition).nodes;
+    const existingNodeId = playbookNodes[0].id;
+
+    const replaceNodeInput: PlaybookAddNodeInput = {
+      component_id: 'fake_component_id',
+      configuration: JSON.stringify({ filters: emptyStringFilters }),
+      name: 'bad-node',
+      position: { x: 1, y: 1 },
+    };
+    await adminQueryWithError(
+      {
+        query: REPLACE_NODE_PLAYBOOK,
+        variables: {
+          id: playbookId,
+          nodeId: existingNodeId,
+          input: replaceNodeInput,
+        },
+      },
+      'Playbook related component not found',
+      UNSUPPORTED_ERROR,
+    );
+  });
+  it('should not replace a node with incorrect filters', async () => {
+    const readResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
+    const playbookNodes = JSON.parse(readResult.data?.playbook.playbook_definition).nodes;
+    const existingNodeId = playbookNodes[0].id;
+
+    const incorrectStringFilters = JSON.stringify({
+      mode: 'and',
+      filters: [
+        { key: ['fake_key'], values: [], operator: 'nil' },
+      ],
+      filterGroups: [],
+    });
+    const replaceNodeInput: PlaybookAddNodeInput = {
+      component_id: PLAYBOOK_INTERNAL_DATA_CRON.id,
+      configuration: JSON.stringify({ filters: incorrectStringFilters }),
+      name: 'bad-filters-node',
+      position: { x: 1, y: 1 },
+    };
+    await adminQueryWithError(
+      {
+        query: REPLACE_NODE_PLAYBOOK,
+        variables: {
+          id: playbookId,
+          nodeId: existingNodeId,
+          input: replaceNodeInput,
+        },
+      },
+      'Incorrect filter keys not existing in any schema definition',
+      UNSUPPORTED_ERROR,
+    );
+  });
+  it('should not replace a node if no Manage Playbooks capability', async () => {
+    const readResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
+    const playbookNodes = JSON.parse(readResult.data?.playbook.playbook_definition).nodes;
+    const existingNodeId = playbookNodes[0].id;
+
+    const replaceNodeInput: PlaybookAddNodeInput = {
+      component_id: PLAYBOOK_INTERNAL_DATA_CRON.id,
+      configuration: JSON.stringify({ filters: emptyStringFilters }),
+      name: 'forbidden-replace',
+      position: { x: 1, y: 1 },
+    };
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+      query: REPLACE_NODE_PLAYBOOK,
+      variables: {
+        id: playbookId,
+        nodeId: existingNodeId,
+        input: replaceNodeInput,
+      },
+    });
   });
   it('should not delete playbook if no Manage Playbooks capability', async () => {
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
