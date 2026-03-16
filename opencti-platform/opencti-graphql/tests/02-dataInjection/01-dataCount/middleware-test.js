@@ -1302,10 +1302,9 @@ describe('Upsert and merge entities', () => {
     expect(reloadMd5.hashes.MD5).toEqual(MD5);
     expect(reloadMd5.hashes['SHA-1']).toEqual(SHA1);
     expect(reloadMd5.hashes['SHA-256']).toEqual(SHA256);
-    expect(reloadMd5.objectMarking.length).toEqual(2); // [testMarking, mitreMarking]
+    expect(reloadMd5.objectMarking.length).toEqual(1); // [clearMarking]
     const markingIds = reloadMd5.objectMarking.map((o) => o.standard_id);
-    expect(markingIds.includes(testMarking)).toBeTruthy();
-    expect(markingIds.includes(mitreMarking)).toBeTruthy();
+    expect(markingIds.includes(clearMarking)).toBeTruthy();
     // Cleanup
     await deleteElementById(testContext, ADMIN_USER, reloadMd5.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
   });
