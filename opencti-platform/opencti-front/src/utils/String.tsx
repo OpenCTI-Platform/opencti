@@ -12,7 +12,7 @@ export const RELATIVE_DATE_REGEX = /^now([-+]\d+[smhHdwMy](\/[smhHdwMy])?)?$/;
 // the value to display if a field is empty or undefined
 export const EMPTY_VALUE = '-';
 
-export const truncate = (str, limit, truncateSpaces = true) => {
+export const truncate = (str: string | null | undefined, limit: number, truncateSpaces = true) => {
   if (str === undefined || str === null || str.length <= limit) {
     return str;
   }
@@ -26,7 +26,7 @@ export const truncate = (str, limit, truncateSpaces = true) => {
   )}...`;
 };
 
-export const adaptFieldValue = (value) => {
+export const adaptFieldValue = (value: any): any => {
   if (Array.isArray(value)) {
     return value;
   }
@@ -36,9 +36,9 @@ export const adaptFieldValue = (value) => {
   return value.toString();
 };
 
-export const pascalize = (s) => s.replace(/(\w)(\w*)/g, (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase());
+export const pascalize = (s: string) => s.replace(/(\w)(\w*)/g, (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase());
 
-export const convertFromStixType = (s) => {
+export const convertFromStixType = (s: string) => {
   if (!s) {
     return s;
   }
@@ -58,7 +58,7 @@ export const convertFromStixType = (s) => {
   return type;
 };
 
-export const convertToStixType = (type) => {
+export const convertToStixType = (type: string) => {
   if (!type) {
     return type;
   }
@@ -77,7 +77,7 @@ export const convertToStixType = (type) => {
   return type.toLowerCase();
 };
 
-export const isValidStixBundle = (bundle) => {
+export const isValidStixBundle = (bundle: string) => {
   try {
     const data = JSON.parse(bundle);
     return !!(data.objects && data.objects.length > 0);
@@ -86,29 +86,29 @@ export const isValidStixBundle = (bundle) => {
   }
 };
 
-export const toB64 = (str) => Base64.encodeURI(str);
+export const toB64 = (str: string) => Base64.encodeURI(str);
 
-export const toBase64 = (str) => Base64.encode(str);
+export const toBase64 = (str: string) => Base64.encode(str);
 
-export const fromB64 = (str) => Base64.decode(str);
+export const fromB64 = (str: string) => Base64.decode(str);
 
-export const fromBase64 = (str) => Base64.encode(str);
+export const fromBase64 = (str: string) => Base64.encode(str);
 
-export const uniqWithByFields = R.curry((fields, data) => R.uniqWith(R.allPass(R.map(R.eqProps)(fields)))(data));
+export const uniqWithByFields = R.curry((fields: string[], data: any[]) => R.uniqWith(R.allPass(R.map(R.eqProps)(fields)))(data));
 
-export const computeDuplicates = (fields, data) => R.groupWith(R.allPass(R.map(R.eqProps)(fields)), data);
+export const computeDuplicates = (fields: string[], data: any[]) => R.groupWith(R.allPass(R.map(R.eqProps)(fields)), data);
 
-export const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+export const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
-export const capitalizeWords = (str) => str.split(' ').map(capitalizeFirstLetter).join(' ');
+export const capitalizeWords = (str: string) => str.split(' ').map(capitalizeFirstLetter).join(' ');
 
-export const toCamelCase = (str) => {
+export const toCamelCase = (str: string) => {
   return str.replace(/[^a-zA-Z0-9 ]/g, '').replace(/(?:^\w|[A-Z]|\b\w)/g, (word, i) => {
     return i === 0 ? word.toLowerCase() : word.toUpperCase();
   }).replace(/\s+/g, '');
 };
 
-export const renderObservableValue = (observable) => {
+export const renderObservableValue = (observable: any) => {
   switch (observable.entity_type) {
     case 'IPv4-Addr':
     case 'IPv6-Addr':
@@ -142,18 +142,18 @@ export const renderObservableValue = (observable) => {
   }
 };
 
-export const emptyFilled = (str) => (isNotEmptyField(str) ? str : EMPTY_VALUE);
+export const emptyFilled = (str: string) => (isNotEmptyField(str) ? str : EMPTY_VALUE);
 
 /**
  * @param str {string}
  * @returns {string[]}
  */
-export const splitMultilines = (str) => (str ?? '')
+export const splitMultilines = (str: string) => (str ?? '')
   .split(/\r?\n/)
   .filter((v) => !!v)
   .map((s) => s.trim());
 
-export const maskString = (value) => (value ? '•'.repeat(value.length) : '');
+export const maskString = (value: string) => (value ? '•'.repeat(value.length) : '');
 
 /**
  * Add zero-width spaces every 10 characters in a string.
@@ -163,7 +163,7 @@ export const maskString = (value) => (value ? '•'.repeat(value.length) : '');
  * @param value String to make wrappable.
  * @returns {string} Same string but wrappable.
  */
-export const stringWithZeroWidthSpace = (value) => {
+export const stringWithZeroWidthSpace = (value: string) => {
   return (value.match(/.{1,10}/g) ?? []).join('​');
 };
 
@@ -174,7 +174,7 @@ export const stringWithZeroWidthSpace = (value) => {
  * @param stringDate String
  * @returns {boolean} If the string is in a correct date format.
  */
-export const isValidDate = (stringDate) => {
+export const isValidDate = (stringDate: string) => {
   const dateParsed = Date.parse(stringDate);
   if (!dateParsed) return false;
   const dateInstance = new Date(dateParsed);
@@ -190,7 +190,7 @@ export const isValidDate = (stringDate) => {
  * @param {string[]}
  * @returns {boolean} If the array is translatable in a relative date interval phrase
  */
-export const isDateIntervalTranslatable = (filterValues) => {
+export const isDateIntervalTranslatable = (filterValues: string[]) => {
   return filterValues.length === 2
     && filterValues[1] === 'now'
     && filterValues[0].match(RELATIVE_DATE_REGEX)
@@ -204,7 +204,7 @@ export const isDateIntervalTranslatable = (filterValues) => {
  * @param {string[]}
  * @returns {string} Translation in a relative date interval phrase
  */
-export const translateDateInterval = (filterValues, t_i18n) => {
+export const translateDateInterval = (filterValues: string[], t_i18n: (message: string) => string) => {
   if (!isDateIntervalTranslatable(filterValues)) {
     throw Error('The interval of value is not translatable in a relative date interval phrase.');
   }
