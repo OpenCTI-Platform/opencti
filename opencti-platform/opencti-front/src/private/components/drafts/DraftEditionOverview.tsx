@@ -124,8 +124,7 @@ const DraftEditionOverviewComponent: FunctionComponent<
       validateOnChange={true}
       validateOnBlur={true}
       validationSchema={draftValidator}
-      onSubmit={() => {
-      }}
+      onSubmit={() => {}}
     >
       {({ setFieldValue }) => (
         <Form>

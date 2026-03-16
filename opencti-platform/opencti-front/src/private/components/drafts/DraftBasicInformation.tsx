@@ -17,11 +17,11 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../utils/field';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import { Formik } from 'formik';
-import { commitMutation } from '../../../relay/environment';
 import { graphql } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
+import useApiMutation from '../../../utils/hooks/useApiMutation';
 
 const draftEditMutation = graphql`
   mutation DraftBasicInformationMutation(
@@ -48,6 +48,7 @@ interface DraftAddParticipantInput {
 
 const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ draft }) => {
   const { t_i18n } = useFormatter();
+  const [commit] = useApiMutation(draftEditMutation);
   const [openAddAssignee, setOpenAddAssignee] = useState(false);
   const [openAddParticipant, setOpenAddParticipant] = useState(false);
   const currentAccessRight = useGetCurrentUserAccessRight(draft.currentUserAccessRight);
@@ -60,55 +61,27 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
     setOpenAddParticipant(!openAddParticipant);
   };
 
-  const onSubmitAssignees: FormikConfig<DraftAddAssigneeInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
-    const currentAssigneesIds = (draft.objectAssignee || []).map((assignee) => assignee.id);
-    const valuesIds = values.objectAssignee.map((assignee) => assignee.value);
-    const allIds = Array.from(new Set(currentAssigneesIds.concat(valuesIds))); // 'new Set' to merge without duplicates
-    commitMutation({
-      mutation: draftEditMutation,
+  const onSubmit: FormikConfig<DraftAddAssigneeInput | DraftAddParticipantInput>['onSubmit'] = (key, values, { setSubmitting, resetForm }) => {
+    const currentIds = (draft[key] || []).map((assignee) => assignee.id);
+    const valuesIds = values[key].map((user) => user.value);
+    const allIds = Array.from(new Set(currentIds.concat(valuesIds))); // 'new Set' to merge without duplicates
+    commit({
       variables: {
         id: draft.id,
         input: {
-          key: 'objectAssignee',
+          key,
           value: allIds,
         },
       },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleToggleAddAssignee();
+        if (key === 'objectAssignee') {
+          handleToggleAddAssignee();
+        } else {
+          handleToggleAddParticipant();
+        }
       },
-      setSubmitting: undefined,
-      onError: undefined,
-      optimisticResponse: undefined,
-      optimisticUpdater: undefined,
-      updater: undefined,
-    });
-  };
-
-  const onSubmitParticipant: FormikConfig<DraftAddParticipantInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
-    const currentParticipantsIds = (draft.objectParticipant || []).map((participant) => participant.id);
-    const valuesIds = values.objectParticipant.map((participant) => participant.value);
-    const allIds = Array.from(new Set(currentParticipantsIds.concat(valuesIds))); // 'new Set' to merge without duplicates
-    commitMutation({
-      mutation: draftEditMutation,
-      variables: {
-        id: draft.id,
-        input: {
-          key: 'objectParticipant',
-          value: allIds,
-        },
-      },
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        handleToggleAddParticipant();
-      },
-      setSubmitting: undefined,
-      onError: undefined,
-      optimisticResponse: undefined,
-      optimisticUpdater: undefined,
-      updater: undefined,
     });
   };
 
@@ -180,7 +153,7 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
 
       <Formik
         initialValues={assigneeInitialValues}
-        onSubmit={onSubmitAssignees}
+        onSubmit={(values, formikHelpers) => onSubmit('objectAssignee', values, formikHelpers)}
         onReset={handleToggleAddAssignee}
       >
         {({ submitForm, handleReset }) => (
@@ -212,7 +185,7 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
 
       <Formik
         initialValues={participantInitialValues}
-        onSubmit={onSubmitParticipant}
+        onSubmit={(values, formikHelpers) => onSubmit('objectParticipant', values, formikHelpers)}
         onReset={handleToggleAddParticipant}
       >
         {({ submitForm }) => (
