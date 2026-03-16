@@ -44,6 +44,7 @@ const TopBanner = ({ bannerText, bannerColor = 'gradient_blue', buttonText, onBu
       borderRadius: 0,
       backgroundImage: `linear-gradient(to right, ${colors.from}, ${colors.to})`,
       justifyContent: 'center',
+      alignItems: 'center',
       display: 'flex',
       top: isPlatformBannerActivated ? SYSTEM_BANNER_HEIGHT : 0,
       height: TOP_BANNER_HEIGHT,
@@ -57,12 +58,11 @@ const TopBanner = ({ bannerText, bannerColor = 'gradient_blue', buttonText, onBu
           onClick={onButtonClick}
           sx={{
             marginLeft: 1,
+            height: '24px',
             backgroundColor: '#ffffff',
             color: '#000000',
             padding: '1px 6px',
-            fontSize: '0.8rem',
             textTransform: 'none',
-            lineHeight: 1.2,
             '& .MuiButton-endIcon': {
               marginLeft: '2px',
             },
