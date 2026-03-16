@@ -5,11 +5,52 @@ import { unSetOrganization, setOrganization } from '../../utils/testQueryHelper'
 import { PLATFORM_ORGANIZATION, TEST_ORGANIZATION } from '../../utils/testQuery';
 import { getOrganizationEntity } from '../../utils/domainQueryHelper';
 import { sharing_component_bundle } from './playbookComponents/sharing-component-test';
-import { container_wrapper_component_bundle } from './playbookComponents/container-wrapper-component-test';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from '../../../src/modules/playbook/components/container-wrapper-component';
 import { PLAYBOOK_SHARING_COMPONENT } from '../../../src/modules/playbook/components/sharing-component';
+import { playbookBundleElementsToApply } from '../../../src/modules/playbook/playbook-types';
+
+const INCIDENT_ID = 'incident--c6c2b96d-fe70-5099-a033-87cbfe2d6be2';
+
+const container_wrapper_component_bundle: StixBundle = {
+  id: '1c775f39-6cea-4b14-92f8-7843d2443af7',
+  spec_version: '2.1',
+  type: 'bundle',
+  objects: [
+    {
+      id: INCIDENT_ID,
+      spec_version: '2.1',
+      type: 'incident',
+      extensions: {
+        'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+          extension_type: 'new-sdo',
+          id: '25cab01c-46be-48ed-832f-857d35347f15',
+          type: 'Incident',
+          created_at: '2025-02-25T08:13:45.863Z',
+          updated_at: '2025-05-09T10:03:11.288Z',
+          is_inferred: false,
+          granted_refs: ['34a50091-acd7-5b12-88f4-086155cf40d4'],
+          creator_ids: ['88ec0c6a-13ce-5e39-b486-354fe4a7084f'],
+        },
+      },
+      external_references: [
+        {
+          source_name: 'upload_file',
+          external_id: 'upload_file_example.pdf',
+        },
+      ],
+      severity: 'high',
+      created: '2025-02-25T08:13:45.851Z',
+      modified: '2025-05-09T10:03:11.288Z',
+      revoked: false,
+      confidence: 100,
+      lang: 'en',
+      name: 'Test Incident',
+      description: '',
+    },
+  ],
+} as unknown as StixBundle;
 
 describe('playbook sharing component', () => {
   let externalOrganizationEntity: BasicStoreEntityOrganization;
@@ -150,8 +191,7 @@ describe('playbook container wrapper component', () => {
       component_id: 'PLAYBOOK_CONTAINER_WRAPPER_COMPONENT',
       configuration: {
         container_type: 'Case-Incident',
-        all: false,
-        excludeMainElement: false,
+        applyToElements: playbookBundleElementsToApply.onlyMain.value,
         copyFiles: false,
         newContainer: false,
         caseTemplates: [],
