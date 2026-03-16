@@ -1,15 +1,13 @@
+import { propOr } from 'ramda';
 import React, { useMemo, Suspense, useState } from 'react';
-import { Route, Routes, Link, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { Route, Routes, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import { RootOrganizationQuery } from '@components/entities/organizations/__generated__/RootOrganizationQuery.graphql';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import { RootOrganizationSubscription } from '@components/entities/organizations/__generated__/RootOrganizationSubscription.graphql';
-import { propOr } from 'ramda';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
@@ -26,7 +24,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import OrganizationEdition from './OrganizationEdition';
@@ -208,60 +206,19 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               enableEnricher={true}
               enableEnrollPlaybook={true}
             />
-            <Box
-              sx={{
-                borderBottom: 1,
-                borderColor: 'divider',
-                marginBottom: 3,
-              }}
-            >
-              <Tabs
-                value={getCurrentTab(location.pathname, organization.id, '/dashboard/entities/organizations')}
-              >
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/organizations/${organization.id}`}
-                  value={`/dashboard/entities/organizations/${organization.id}`}
-                  label={t_i18n('Overview')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/organizations/${organization.id}/knowledge/overview`}
-                  value={`/dashboard/entities/organizations/${organization.id}/knowledge`}
-                  label={t_i18n('Knowledge')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/organizations/${organization.id}/content`}
-                  value={`/dashboard/entities/organizations/${organization.id}/content`}
-                  label={t_i18n('Content')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/organizations/${organization.id}/analyses`}
-                  value={`/dashboard/entities/organizations/${organization.id}/analyses`}
-                  label={t_i18n('Analyses')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/organizations/${organization.id}/sightings`}
-                  value={`/dashboard/entities/organizations/${organization.id}/sightings`}
-                  label={t_i18n('Sightings')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/organizations/${organization.id}/files`}
-                  value={`/dashboard/entities/organizations/${organization.id}/files`}
-                  label={t_i18n('Data')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/entities/organizations/${organization.id}/history`}
-                  value={`/dashboard/entities/organizations/${organization.id}/history`}
-                  label={t_i18n('History')}
-                />
-              </Tabs>
-            </Box>
+            <StixDomainObjectTabsBox
+              basePath="/dashboard/entities/organizations"
+              entity={organization}
+              tabs={[
+                'overview',
+                'knowledge-overview',
+                'content',
+                'analyses',
+                'sightings',
+                'files',
+                'history',
+              ]}
+            />
             <Routes>
               <Route
                 path="/"

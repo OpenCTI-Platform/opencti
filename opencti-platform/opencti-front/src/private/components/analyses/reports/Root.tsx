@@ -3,12 +3,10 @@
 // @ts-nocheck
 import React, { useMemo } from 'react';
 import { graphql, useSubscription } from 'react-relay';
-import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import Security from 'src/utils/Security';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -26,7 +24,7 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import ReportEdition from './ReportEdition';
 import ReportDeletion from './ReportDeletion';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
@@ -137,61 +135,24 @@ const RootReport = () => {
                     redirectToContent={true}
                     enableEnricher={true}
                   />
-                  <Box
-                    sx={{
-                      borderBottom: 1,
-                      borderColor: 'divider',
-                      marginBottom: 3,
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItem: 'center',
-                    }}
-                  >
-                    <Tabs value={getCurrentTab(location.pathname, report.id, '/dashboard/analyses/reports')}>
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/analyses/reports/${report.id}`}
-                        value={`/dashboard/analyses/reports/${report.id}`}
-                        label={t_i18n('Overview')}
-                      />
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/analyses/reports/${report.id}/knowledge/graph`}
-                        value={`/dashboard/analyses/reports/${report.id}/knowledge`}
-                        label={t_i18n('Knowledge')}
-                      />
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/analyses/reports/${report.id}/content`}
-                        value={`/dashboard/analyses/reports/${report.id}/content`}
-                        label={t_i18n('Content')}
-                      />
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/analyses/reports/${report.id}/entities`}
-                        value={`/dashboard/analyses/reports/${report.id}/entities`}
-                        label={t_i18n('Entities')}
-                      />
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/analyses/reports/${report.id}/observables`}
-                        value={`/dashboard/analyses/reports/${report.id}/observables`}
-                        label={t_i18n('Observables')}
-                      />
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/analyses/reports/${report.id}/files`}
-                        value={`/dashboard/analyses/reports/${report.id}/files`}
-                        label={t_i18n('Data')}
-                      />
-                    </Tabs>
-                    {!isKnowledgeOrContent && (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <StixDomainObjectTabsBox
+                    basePath="/dashboard/analyses/reports"
+                    entity={report}
+                    tabs={[
+                      'overview',
+                      'knowledge-graph',
+                      'content',
+                      'entities',
+                      'observables',
+                      'files',
+                    ]}
+                    extraActions={!isKnowledgeOrContent && (
+                      <>
                         <AIInsights id={report.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
                         <StixCoreObjectSecurityCoverage id={report.id} coverage={report.securityCoverage} />
-                      </div>
+                      </>
                     )}
-                  </Box>
+                  />
                   <Routes>
                     <Route
                       path="/"

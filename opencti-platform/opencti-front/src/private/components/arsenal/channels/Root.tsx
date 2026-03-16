@@ -1,12 +1,10 @@
-import React, { Suspense, useMemo } from 'react';
-import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Suspense, useMemo } from 'react';
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
@@ -21,7 +19,7 @@ import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreO
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import { RootChannelSubscription } from './__generated__/RootChannelSubscription.graphql';
 import { RootChannelQuery } from './__generated__/RootChannelQuery.graphql';
 import Security from '../../../../utils/Security';
@@ -164,54 +162,18 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               redirectToContent={true}
               enableEnrollPlaybook={true}
             />
-            <Box
-              sx={{
-                borderBottom: 1,
-                borderColor: 'divider',
-                marginBottom: 3,
-              }}
-            >
-              <Tabs
-                value={getCurrentTab(location.pathname, channel.id, '/dashboard/arsenal/channels')}
-              >
-                <Tab
-                  component={Link}
-                  to={`/dashboard/arsenal/channels/${channel.id}`}
-                  value={`/dashboard/arsenal/channels/${channel.id}`}
-                  label={t_i18n('Overview')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/arsenal/channels/${channel.id}/knowledge/overview`}
-                  value={`/dashboard/arsenal/channels/${channel.id}/knowledge`}
-                  label={t_i18n('Knowledge')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/arsenal/channels/${channel.id}/content`}
-                  value={`/dashboard/arsenal/channels/${channel.id}/content`}
-                  label={t_i18n('Content')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/arsenal/channels/${channel.id}/analyses`}
-                  value={`/dashboard/arsenal/channels/${channel.id}/analyses`}
-                  label={t_i18n('Analyses')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/arsenal/channels/${channel.id}/files`}
-                  value={`/dashboard/arsenal/channels/${channel.id}/files`}
-                  label={t_i18n('Data')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/arsenal/channels/${channel.id}/history`}
-                  value={`/dashboard/arsenal/channels/${channel.id}/history`}
-                  label={t_i18n('History')}
-                />
-              </Tabs>
-            </Box>
+            <StixDomainObjectTabsBox
+              basePath="/dashboard/arsenal/channels"
+              entity={channel}
+              tabs={[
+                'overview',
+                'knowledge-overview',
+                'content',
+                'analyses',
+                'files',
+                'history',
+              ]}
+            />
             <Routes>
               <Route
                 path="/"

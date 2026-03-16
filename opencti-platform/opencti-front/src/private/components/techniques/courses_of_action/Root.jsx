@@ -1,12 +1,10 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql } from 'react-relay';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import CourseOfAction from './CourseOfAction';
@@ -18,7 +16,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CourseOfActionKnowledge from './CourseOfActionKnowledge';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import CourseOfActionEdition from './CourseOfActionEdition';
@@ -127,42 +125,16 @@ class RootCourseOfAction extends Component {
                       redirectToContent={true}
                       enableEnrollPlaybook={true}
                     />
-                    <Box
-                      sx={{
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        marginBottom: 3,
-                      }}
-                    >
-                      <Tabs
-                        value={getCurrentTab(location.pathname, courseOfAction.id, '/dashboard/techniques/courses_of_action')}
-                      >
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/techniques/courses_of_action/${courseOfAction.id}`}
-                          value={`/dashboard/techniques/courses_of_action/${courseOfAction.id}`}
-                          label={t('Overview')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/techniques/courses_of_action/${courseOfAction.id}/content`}
-                          value={`/dashboard/techniques/courses_of_action/${courseOfAction.id}/content`}
-                          label={t('Content')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/techniques/courses_of_action/${courseOfAction.id}/files`}
-                          value={`/dashboard/techniques/courses_of_action/${courseOfAction.id}/files`}
-                          label={t('Data')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/techniques/courses_of_action/${courseOfAction.id}/history`}
-                          value={`/dashboard/techniques/courses_of_action/${courseOfAction.id}/history`}
-                          label={t('History')}
-                        />
-                      </Tabs>
-                    </Box>
+                    <StixDomainObjectTabsBox
+                      basePath="/dashboard/techniques/courses_of_action"
+                      entity={courseOfAction}
+                      tabs={[
+                        'overview',
+                        'content',
+                        'files',
+                        'history',
+                      ]}
+                    />
                     <Routes>
                       <Route
                         path="/"

@@ -1,13 +1,11 @@
-import React, { Suspense, useMemo } from 'react';
-import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Suspense, useMemo } from 'react';
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import AIInsights from '@components/common/ai/AIInsights';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import IntrusionSet from './IntrusionSet';
@@ -21,7 +19,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import { RootIntrusionSetQuery } from './__generated__/RootIntrusionSetQuery.graphql';
 import { RootIntrusionSetSubscription } from './__generated__/RootIntrusionSetSubscription.graphql';
 import Security from '../../../../utils/Security';
@@ -178,63 +176,24 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               redirectToContent={true}
               enableEnrollPlaybook={true}
             />
-            <Box
-              sx={{
-                borderBottom: 1,
-                borderColor: 'divider',
-                marginBottom: 3,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItem: 'center',
-              }}
-            >
-              <Tabs
-                value={getCurrentTab(location.pathname, intrusionSet.id, '/dashboard/threats/intrusion_sets')}
-              >
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}`}
-                  value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}`}
-                  label={t_i18n('Overview')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge/overview`}
-                  value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`}
-                  label={t_i18n('Knowledge')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/content`}
-                  value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/content`}
-                  label={t_i18n('Content')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/analyses`}
-                  value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/analyses`}
-                  label={t_i18n('Analyses')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/files`}
-                  value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/files`}
-                  label={t_i18n('Data')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/history`}
-                  value={`/dashboard/threats/intrusion_sets/${intrusionSet.id}/history`}
-                  label={t_i18n('History')}
-                />
-              </Tabs>
-              {isOverview && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+            <StixDomainObjectTabsBox
+              basePath="/dashboard/threats/intrusion_sets"
+              entity={intrusionSet}
+              tabs={[
+                'overview',
+                'knowledge-overview',
+                'content',
+                'analyses',
+                'files',
+                'history',
+              ]}
+              extraActions={isOverview && (
+                <>
                   <AIInsights id={intrusionSet.id} />
                   <StixCoreObjectSecurityCoverage id={intrusionSet.id} coverage={intrusionSet.securityCoverage} />
-                </div>
+                </>
               )}
-            </Box>
+            />
             <Routes>
               <Route
                 path="/"

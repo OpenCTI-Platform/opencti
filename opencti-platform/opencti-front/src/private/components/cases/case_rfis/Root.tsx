@@ -2,12 +2,10 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
 import AIInsights from '@components/common/ai/AIInsights';
@@ -27,7 +25,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import CaseRfiEdition from './CaseRfiEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import CaseRfiDeletion from './CaseRfiDeletion';
@@ -127,62 +125,19 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
         redirectToContent={true}
         enableEnricher={true}
       />
-      <Box
-        sx={{
-          borderBottom: 1,
-          borderColor: 'divider',
-          marginBottom: 3,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItem: 'center',
-        }}
-      >
-        <Tabs
-          value={getCurrentTab(location.pathname, caseData.id, '/dashboard/cases/rfis')}
-        >
-          <Tab
-            component={Link}
-            to={`/dashboard/cases/rfis/${caseData.id}`}
-            value={`/dashboard/cases/rfis/${caseData.id}`}
-            label={t_i18n('Overview')}
-          />
-          <Tab
-            component={Link}
-            to={`/dashboard/cases/rfis/${caseData.id}/knowledge/graph`}
-            value={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
-            label={t_i18n('Knowledge')}
-          />
-          <Tab
-            component={Link}
-            to={`/dashboard/cases/rfis/${caseData.id}/content`}
-            value={`/dashboard/cases/rfis/${caseData.id}/content`}
-            label={t_i18n('Content')}
-          />
-          <Tab
-            component={Link}
-            to={`/dashboard/cases/rfis/${caseData.id}/entities`}
-            value={`/dashboard/cases/rfis/${caseData.id}/entities`}
-            label={t_i18n('Entities')}
-          />
-          <Tab
-            component={Link}
-            to={`/dashboard/cases/rfis/${caseData.id}/observables`}
-            value={`/dashboard/cases/rfis/${caseData.id}/observables`}
-            label={t_i18n('Observables')}
-          />
-          <Tab
-            component={Link}
-            to={`/dashboard/cases/rfis/${caseData.id}/files`}
-            value={`/dashboard/cases/rfis/${caseData.id}/files`}
-            label={t_i18n('Data')}
-          />
-        </Tabs>
-        {!isKnowledgeOrContent && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-            <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
-          </div>
-        )}
-      </Box>
+      <StixDomainObjectTabsBox
+        basePath="/dashboard/cases/rfis"
+        entity={caseData}
+        tabs={[
+          'overview',
+          'knowledge-graph',
+          'content',
+          'entities',
+          'observables',
+          'files',
+        ]}
+        extraActions={!isKnowledgeOrContent && <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />}
+      />
       <Routes>
         <Route
           path="/"

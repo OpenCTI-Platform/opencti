@@ -1,9 +1,6 @@
-import React, { Suspense, useMemo } from 'react';
-import { Route, Routes, Link, Navigate, useParams, useLocation } from 'react-router-dom';
+import { Suspense, useMemo } from 'react';
+import { Route, Routes, Navigate, useParams, useLocation } from 'react-router-dom';
 import { graphql, PreloadedQuery, useSubscription, usePreloadedQuery } from 'react-relay';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootCampaignSubscription } from '@components/threats/campaigns/__generated__/RootCampaignSubscription.graphql';
@@ -14,6 +11,7 @@ import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreOb
 import Campaign from './Campaign';
 import CampaignKnowledge from './CampaignKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -22,7 +20,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import { RootCampaignQuery } from './__generated__/RootCampaignQuery.graphql';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -172,63 +170,24 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               redirectToContent={true}
               enableEnrollPlaybook={true}
             />
-            <Box
-              sx={{
-                borderBottom: 1,
-                borderColor: 'divider',
-                marginBottom: 3,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItem: 'center',
-              }}
-            >
-              <Tabs
-                value={getCurrentTab(location.pathname, campaign.id, '/dashboard/threats/campaigns')}
-              >
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/campaigns/${campaign.id}`}
-                  value={`/dashboard/threats/campaigns/${campaign.id}`}
-                  label={t_i18n('Overview')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/campaigns/${campaign.id}/knowledge/overview`}
-                  value={`/dashboard/threats/campaigns/${campaign.id}/knowledge`}
-                  label={t_i18n('Knowledge')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/campaigns/${campaign.id}/content`}
-                  value={`/dashboard/threats/campaigns/${campaign.id}/content`}
-                  label={t_i18n('Content')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/campaigns/${campaign.id}/analyses`}
-                  value={`/dashboard/threats/campaigns/${campaign.id}/analyses`}
-                  label={t_i18n('Analyses')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/campaigns/${campaign.id}/files`}
-                  value={`/dashboard/threats/campaigns/${campaign.id}/files`}
-                  label={t_i18n('Data')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/campaigns/${campaign.id}/history`}
-                  value={`/dashboard/threats/campaigns/${campaign.id}/history`}
-                  label={t_i18n('History')}
-                />
-              </Tabs>
-              {isOverview && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+            <StixDomainObjectTabsBox
+              basePath="/dashboard/threats/campaigns"
+              entity={campaign}
+              tabs={[
+                'overview',
+                'knowledge-overview',
+                'content',
+                'analyses',
+                'files',
+                'history',
+              ]}
+              extraActions={isOverview && (
+                <>
                   <AIInsights id={campaign.id} />
                   <StixCoreObjectSecurityCoverage id={campaign.id} coverage={campaign.securityCoverage} />
-                </div>
+                </>
               )}
-            </Box>
+            />
             <Routes>
               <Route
                 path="/"

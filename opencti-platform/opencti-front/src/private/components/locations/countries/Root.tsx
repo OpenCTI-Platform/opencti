@@ -2,13 +2,11 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Routes, useParams, Link, useLocation, Navigate } from 'react-router-dom';
+import { Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import AIInsights from '@components/common/ai/AIInsights';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
@@ -28,7 +26,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import CountryEdition from './CountryEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -162,68 +160,20 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
               redirectToContent={true}
               enableEnrollPlaybook={true}
             />
-            <Box
-              sx={{
-                borderBottom: 1,
-                borderColor: 'divider',
-                marginBottom: 3,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItem: 'center',
-              }}
-            >
-              <Tabs
-                value={getCurrentTab(location.pathname, country.id, '/dashboard/locations/countries')}
-              >
-                <Tab
-                  component={Link}
-                  to={`/dashboard/locations/countries/${country.id}`}
-                  value={`/dashboard/locations/countries/${country.id}`}
-                  label={t_i18n('Overview')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/locations/countries/${country.id}/knowledge/overview`}
-                  value={`/dashboard/locations/countries/${country.id}/knowledge`}
-                  label={t_i18n('Knowledge')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/locations/countries/${country.id}/content`}
-                  value={`/dashboard/locations/countries/${country.id}/content`}
-                  label={t_i18n('Content')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/locations/countries/${country.id}/analyses`}
-                  value={`/dashboard/locations/countries/${country.id}/analyses`}
-                  label={t_i18n('Analyses')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/locations/countries/${country.id}/sightings`}
-                  value={`/dashboard/locations/countries/${country.id}/sightings`}
-                  label={t_i18n('Sightings')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/locations/countries/${country.id}/files`}
-                  value={`/dashboard/locations/countries/${country.id}/files`}
-                  label={t_i18n('Data')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/locations/countries/${country.id}/history`}
-                  value={`/dashboard/locations/countries/${country.id}/history`}
-                  label={t_i18n('History')}
-                />
-              </Tabs>
-              {isOverview && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                  <AIInsights id={country.id} />
-                </div>
-              )}
-            </Box>
+            <StixDomainObjectTabsBox
+              basePath="/dashboard/locations/countries"
+              entity={country}
+              tabs={[
+                'overview',
+                'knowledge-overview',
+                'content',
+                'analyses',
+                'sightings',
+                'files',
+                'history',
+              ]}
+              extraActions={isOverview && <AIInsights id={country.id} />}
+            />
             <Routes>
               <Route
                 path="/"

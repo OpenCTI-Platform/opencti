@@ -1,11 +1,9 @@
-import React, { useMemo } from 'react';
-import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { useMemo } from 'react';
+import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, useSubscription } from 'react-relay';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import { QueryRenderer } from '../../../../relay/environment';
 import Note from './Note';
@@ -68,7 +66,6 @@ const RootNote = () => {
     }),
     [noteId],
   );
-  const location = useLocation();
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
   return (
@@ -128,28 +125,15 @@ const RootNote = () => {
                       enableEnrollPlaybook={true}
                     />
                   </CollaborativeSecurity>
-                  <Box sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3 }}>
-                    <Tabs value={location.pathname}>
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/analyses/notes/${note.id}`}
-                        value={`/dashboard/analyses/notes/${note.id}`}
-                        label={t_i18n('Overview')}
-                      />
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/analyses/notes/${note.id}/files`}
-                        value={`/dashboard/analyses/notes/${note.id}/files`}
-                        label={t_i18n('Data')}
-                      />
-                      <Tab
-                        component={Link}
-                        to={`/dashboard/analyses/notes/${note.id}/history`}
-                        value={`/dashboard/analyses/notes/${note.id}/history`}
-                        label={t_i18n('History')}
-                      />
-                    </Tabs>
-                  </Box>
+                  <StixDomainObjectTabsBox
+                    basePath="/dashboard/analyses/notes"
+                    entity={note}
+                    tabs={[
+                      'overview',
+                      'files',
+                      'history',
+                    ]}
+                  />
                   <Routes>
                     <Route
                       path="/"
