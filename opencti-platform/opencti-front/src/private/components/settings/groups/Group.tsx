@@ -229,7 +229,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                           'You need to authorize this group to access this dashboard in the permissions of the workspace.',
                         )}
                       >
-                        <WarningOutlined color="warning"/>
+                        <WarningOutlined color="warning" />
                       </Tooltip>
                     )}
                   </ListItemButton>
