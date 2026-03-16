@@ -19,10 +19,9 @@ import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext
 import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import type { BasicStoreRelation, StoreRelation } from '../../types/store';
-import { generateInternalId, generateStandardId } from '../../schema/identifier';
 import { utcDate } from '../../utils/format';
 import type { StixCampaign, StixContainer, StixIncident, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-2-1-sdo';
-import { convertStixToInternalTypes, generateInternalType, getParentTypes } from '../../schema/schemaUtils';
+import { convertStixToInternalTypes, generateInternalType } from '../../schema/schemaUtils';
 import { ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import type { CyberObjectExtension, StixBundle, StixCyberObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
@@ -41,16 +40,12 @@ import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import type { StixRelation } from '../../types/stix-2-1-sro';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
-import { ENTITY_TYPE_CONTAINER_TASK, type StixTask, type StoreEntityTask } from '../task/task-types';
 import { FilterMode } from '../../generated/graphql';
 import { generateCreateMessage } from '../../database/data-changes';
-import { findAllByCaseTemplateId } from '../task/task-domain';
-import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-template-types';
 import type { BasicStoreSettings } from '../../types/settings';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
 import { convertMembersToUsers, extractBundleBaseElement } from './playbook-utils';
 import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
-import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { pushAll } from '../../utils/arrayUtil';
 import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from './components/container-wrapper-component';
 import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT } from './components/manipulate-knowledge-component';
@@ -415,41 +410,6 @@ export const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfigurat
     }
     return { output_port: 'out', bundle: stixBundle };
   },
-};
-
-export const buildStixTaskFromTaskTemplate = (taskTemplate: BasicStoreEntityTaskTemplate, container: StixContainer) => {
-  const taskData = {
-    name: taskTemplate.name,
-    description: taskTemplate.description,
-  };
-  const taskStandardId = generateStandardId(ENTITY_TYPE_CONTAINER_TASK, taskData);
-  const storeTask = {
-    internal_id: generateInternalId(),
-    standard_id: taskStandardId,
-    entity_type: ENTITY_TYPE_CONTAINER_TASK,
-    parent_types: getParentTypes(ENTITY_TYPE_CONTAINER_TASK),
-    ...taskData,
-  } as StoreEntityTask;
-  const task = convertStoreToStix_2_1(storeTask) as StixTask;
-  task.object_refs = [container.id];
-  task.object_marking_refs = container.object_marking_refs;
-  return task;
-};
-
-export const createTaskFromCaseTemplates = async (
-  caseTemplates: { label: string; value: string }[],
-  container: StixContainer,
-) => {
-  const context = executionContext('playbook_components');
-  const tasks = [];
-  for (let i = 0; i < caseTemplates.length; i += 1) {
-    const taskTemplates = await findAllByCaseTemplateId(context, AUTOMATION_MANAGER_USER, caseTemplates[i].value);
-    for (let j = 0; j < taskTemplates.length; j += 1) {
-      const task = buildStixTaskFromTaskTemplate(taskTemplates[j], container);
-      tasks.push(task);
-    }
-  }
-  return tasks;
 };
 
 const DATE_SEEN_RULE = 'seen_dates';
