@@ -106,7 +106,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<Contain
     copyFiles: { type: 'boolean', $ref: 'Copy files from main element to the container', default: false },
     newContainer: { type: 'boolean', $ref: 'Create a new container at each run', default: false },
   },
-  required: ['container_type'],
+  required: ['container_type', 'applyToElements'],
 };
 
 export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperConfiguration> = {

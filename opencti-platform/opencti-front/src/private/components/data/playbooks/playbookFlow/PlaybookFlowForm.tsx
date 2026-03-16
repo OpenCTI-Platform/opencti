@@ -131,6 +131,8 @@ const PlaybookFlowForm = ({
     }
   };
 
+  const requiredProperties = configurationSchema?.required ?? [];
+
   const addComponentValidation = Yup.object().shape({
     name: Yup.string().trim().required(t_i18n('This field is required')),
   });
@@ -195,6 +197,7 @@ const PlaybookFlowForm = ({
                 value={values.name ? t_i18n(values.name) : ''}
                 label={t_i18n('Name')}
                 fullWidth
+                required
               />
               {Object.entries(configurationSchema?.properties ?? {}).map(
                 ([propName, property]) => {
@@ -308,6 +311,7 @@ const PlaybookFlowForm = ({
                         name={propName}
                         label={t_i18n(property.$ref ?? propName)}
                         options={property.oneOf as PlaybookFlowFieldArrayProps['options']}
+                        required={requiredProperties.includes(propName)}
                       />
                     );
                   }
