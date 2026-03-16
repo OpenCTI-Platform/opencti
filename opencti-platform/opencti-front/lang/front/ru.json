@@ -934,6 +934,7 @@
   "CSV URL": "URL CSV",
   "Current cache version date": "Дата текущей версии кэша",
   "Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lost the context of the container in which the template is used.": "Текущая сущность относится к сущности, в которой вы будете использовать шаблон Fintel. Удаление этого фильтра означает, что вы потеряете контекст контейнера, в котором используется шаблон.",
+  "Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lost the context of the entity in which the template is used.": "Текущая сущность относится к сущности, в которой вы будете использовать шаблон Fintel. Удаление этого фильтра означает, что вы потеряете контекст сущности, в которой используется шаблон.",
   "Current instance": "Текущий экземпляр",
   "Current password": "Текущий пароль",
   "Current platform": "Текущая платформа",

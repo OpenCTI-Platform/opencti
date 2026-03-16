@@ -141,7 +141,7 @@ export const widgetContainerObservables: FintelTemplateWidgetAddInput = {
       },
     ],
     parameters: {
-      title: 'Observables contained in the container',
+      title: 'Observables contained in the entity',
     },
   },
 };
@@ -170,7 +170,7 @@ export const widgetIncidentIOC: FintelTemplateWidgetAddInput = {
       },
     ],
     parameters: {
-      title: 'Indicators contained in the container',
+      title: 'Indicators contained in the entity',
     },
   },
 };
@@ -199,7 +199,7 @@ export const widgetIndicators: FintelTemplateWidgetAddInput = {
       },
     ],
     parameters: {
-      title: 'Indicators contained in the container',
+      title: 'Indicators contained in the entity',
     },
   },
 };
@@ -229,7 +229,7 @@ export const widgetIncidentTasksActions: FintelTemplateWidgetAddInput = {
       },
     ],
     parameters: {
-      title: 'Tasks contained in the container',
+      title: 'Tasks contained in the entity',
     },
   },
 };
@@ -258,7 +258,7 @@ export const widgetAttackPatterns: FintelTemplateWidgetAddInput = {
       },
     ],
     parameters: {
-      title: 'Attack Patterns contained in the container',
+      title: 'Attack Patterns contained in the entity',
     },
   },
 };
@@ -288,7 +288,7 @@ export const widgetThreats: FintelTemplateWidgetAddInput = {
       },
     ],
     parameters: {
-      title: 'Threats contained in the container',
+      title: 'Threats contained in the entity',
     },
   },
 };
@@ -318,7 +318,7 @@ export const widgetVictims: FintelTemplateWidgetAddInput = {
       },
     ],
     parameters: {
-      title: 'Victims contained in the container',
+      title: 'Victims contained in the entity',
     },
   },
 };
@@ -347,7 +347,7 @@ export const widgetAllEntitiesAndObservables: FintelTemplateWidgetAddInput = {
       },
     ],
     parameters: {
-      title: 'Entities and Observables contained in the container',
+      title: 'Entities and Observables contained in the entity',
     },
   },
 };

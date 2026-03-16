@@ -14,7 +14,7 @@ import { createEntity, deleteElementById, updateAttribute } from '../../database
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE, type StoreEntityFintelTemplate } from './fintelTemplate-types';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS } from '../../config/conf';
+import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { storeLoadById } from '../../database/middleware-loader';
 import { generateFintelTemplateExecutiveSummary } from '../../utils/fintelTemplate/__executiveSummary.template';
@@ -79,6 +79,8 @@ export const addFintelTemplate = async (
   input: FintelTemplateAddInput,
   preventDefaultWidgets = false,
 ) => {
+  const isFintelForEntityFeatureEnabled = isFeatureEnabled('FINTEL_FOR_ENTITY');
+
   // check rights
   await canCustomizeTemplate(context);
   // check input validity
@@ -101,7 +103,7 @@ export const addFintelTemplate = async (
           columns: [{
             label: 'Representative',
             attribute: 'representative.main',
-            variableName: 'containerRepresentative',
+            variableName: isFintelForEntityFeatureEnabled ? 'entityRepresentative' : 'containerRepresentative',
           }],
           instance_id: SELF_ID,
         }],
