@@ -56,7 +56,7 @@
     "@aws-sdk/credential-provider-node": "3.972.20",
     "@aws-sdk/lib-storage": "3.1008.0",
     "@datadog/pprof": "5.13.5",
-    "@elastic/elasticsearch": "8.19.1",
+    "@elastic/elasticsearch": "9.3.4",
     "@escape.tech/graphql-armor": "3.2.0",
     "@graphql-tools/merge": "9.1.7",
     "@graphql-tools/schema": "10.0.31",
