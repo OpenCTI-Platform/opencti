@@ -115,23 +115,13 @@ const createApp = async (app, schema) => {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: opts.scriptSrc,
-        styleSrc: [
-          "'self'",
-          "'unsafe-inline'",
-          'http://cdn.jsdelivr.net/npm/@apollographql/',
-          'https://fonts.googleapis.com/',
-        ],
-        scriptSrcAttr: [
-          "'self'",
-          "'unsafe-inline'",
-          'http://cdn.jsdelivr.net/npm/@apollographql/',
-          'https://fonts.googleapis.com/',
-        ],
-        fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrcAttr: ["'self'"],
+        fontSrc: ["'self'", 'data:'],
         imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
-        manifestSrc: ["'self'", 'data:', 'https://*', 'http://*'],
-        connectSrc: ["'self'", 'wss://*', 'ws://*', 'data:', 'http://*', 'https://*'],
-        objectSrc: ["'self'", 'data:', 'http://*', 'https://*'],
+        manifestSrc: opts.manifestSrc,
+        connectSrc: opts.connectSrc,
+        objectSrc: opts.objectSrc,
         frameSrc: opts.allowedFrameSrc,
         frameAncestors: opts.frameAncestorDomains,
       },
@@ -142,14 +132,26 @@ const createApp = async (app, schema) => {
   const ancestorsFromConfig = nconf.get('app:public_dashboard_authorized_domains')?.trim() ?? '';
   const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
   const allowedFrameSrc = ["'self'"];
-  const scriptSrc = ["'self'", "'unsafe-inline'", 'http://cdn.jsdelivr.net/npm/@apollographql/', 'https://www.googletagmanager.com/'];
+  const scriptSrc = ["'self'"];
+  const connectSrc = ["'self'", 'wss://*', 'data:', 'https://*'];
+  const objectSrc = ["'self'", 'data:', 'https://*'];
+  const manifestSrc = ["'self'", 'data:', 'https://*', 'http://*'];
+
   if (DEV_MODE) {
     scriptSrc.push("'unsafe-eval'");
+    connectSrc.push('http://*');
+    connectSrc.push('ws://*');
+    objectSrc.push('http://*');
+    manifestSrc.push('http://*');
   }
+
   const securityOpts = {
     frameAncestorDomains: "'none'",
     allowedFrameSrc,
     scriptSrc,
+    connectSrc,
+    objectSrc,
+    manifestSrc,
     isIframeAllowed: false,
   };
 
