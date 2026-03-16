@@ -8613,7 +8613,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"https-proxy-agent@npm:7.0.6, https-proxy-agent@npm:^7.0.1":
+"https-proxy-agent@npm:8.0.0":
+  version: 8.0.0
+  resolution: "https-proxy-agent@npm:8.0.0"
+  dependencies:
+    agent-base: "npm:8.0.0"
+    debug: "npm:^4.3.4"
+  checksum: 10c0/661995ea07f190728b3413ff87ea6e8ab40675e12f7169d328b7e4b86eac2ef528b3d83cc096ace42387eb37f953befd4b95b0b23e910585a0e0234e535f4ddf
+  languageName: node
+  linkType: hard
+
+"https-proxy-agent@npm:^7.0.1":
   version: 7.0.6
   resolution: "https-proxy-agent@npm:7.0.6"
   dependencies:
@@ -10687,7 +10697,7 @@ __metadata:
     graphql-ws: "npm:5.16.2"
     helmet: "npm:8.1.0"
     http-proxy-agent: "npm:8.0.0"
-    https-proxy-agent: "npm:7.0.6"
+    https-proxy-agent: "npm:8.0.0"
     ioredis: "npm:5.8.2"
     ipaddr.js: "npm:2.3.0"
     jose: "npm:6.2.1"

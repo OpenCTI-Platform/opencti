@@ -129,7 +129,7 @@
     "graphql-ws": "5.16.2",
     "helmet": "8.1.0",
     "http-proxy-agent": "8.0.0",
-    "https-proxy-agent": "7.0.6",
+    "https-proxy-agent": "8.0.0",
     "ioredis": "5.8.2",
     "ipaddr.js": "2.3.0",
     "jose": "6.2.1",
