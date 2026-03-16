@@ -1,17 +1,18 @@
+import type { Resolvers } from '../../generated/graphql';
 import {
+  createStreamCollection,
   findById,
   findStreamCollectionPaginated,
-  createStreamCollection,
-  streamCollectionDelete,
-  streamCollectionEditField,
-  streamCollectionEditContext,
-  streamCollectionCleanContext,
   getStreamCollectionConsumers,
-} from '../domain/stream';
-import { getAuthorizedMembers } from '../utils/authorizedMembers';
-import { fetchStreamInfo } from '../database/stream/stream-handler';
+  streamCollectionCleanContext,
+  streamCollectionDelete,
+  streamCollectionEditContext,
+  streamCollectionEditField,
+} from './streamCollection-domain';
+import { getAuthorizedMembers } from '../../utils/authorizedMembers';
+import { fetchStreamInfo } from '../../database/stream/stream-handler';
 
-const streamResolvers = {
+const streamCollectionResolvers: Resolvers = {
   Query: {
     streamCollection: (_, { id }, context) => findById(context, context.user, id),
     streamCollections: (_, args, context) => findStreamCollectionPaginated(context, context.user, args),
@@ -32,4 +33,4 @@ const streamResolvers = {
   },
 };
 
-export default streamResolvers;
+export default streamCollectionResolvers;

@@ -1,0 +1,82 @@
+type RemoteStreamCollection {
+  id: ID!
+  name: String
+  description: String
+  filters: String
+}
+type StreamCollectionConsumer {
+  connectionId: String!
+  userId: String!
+  userEmail: String
+  connectedAt: DateTime!
+  lastEventId: String!
+  lastEventDate: DateTime
+  productionRate: Float!
+  deliveryRate: Float!
+  processingRate: Float!
+  resolutionRate: Float!
+  timeLag: Float!
+  estimatedOutOfDepth: Float
+}
+type StreamCollection {
+  id: ID!
+  name: String
+  description: String
+  filters: String
+  stream_live: Boolean
+  stream_public: Boolean
+  authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI])
+  consumers: [StreamCollectionConsumer!]!
+}
+type StreamCollectionConnection {
+  pageInfo: PageInfo!
+  edges: [StreamCollectionEdge!]!
+}
+type StreamCollectionEdge {
+  cursor: String!
+  node: StreamCollection!
+}
+input StreamCollectionAddInput {
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  description: String
+  filters: String
+  stream_live: Boolean
+  stream_public: Boolean
+  authorized_members: [MemberAccessInput!]
+}
+enum StreamCollectionOrdering {
+  name
+  stream_public
+  id
+  stream_live
+  _score
+}
+type StreamCollectionEditMutations {
+  delete: ID
+  fieldPatch(input: [EditInput]!): StreamCollection
+  addGroup(id: ID!): StreamCollection
+  deleteGroup(id: ID!): StreamCollection
+}
+type RedisStreamInfo {
+  lastEventId: String!
+  firstEventId: String!
+  firstEventDate: String!
+  lastEventDate: String!
+  streamSize: Int!
+}
+extend type Query {
+  streamCollection(id: String!): StreamCollection @auth(for: [TAXIIAPI])
+  streamCollections(
+    first: Int
+    after: ID
+    orderBy: StreamCollectionOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): StreamCollectionConnection! @public # Code protected
+  redisStreamInfo: RedisStreamInfo @auth
+}
+extend type Mutation {
+  streamCollectionAdd(input: StreamCollectionAddInput!): StreamCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  streamCollectionEdit(id: ID!): StreamCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+}
