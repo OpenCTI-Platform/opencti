@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useNavigate, useParams } from 'react-router-dom';
-import RGL, { WidthProvider } from 'react-grid-layout';
+import ReactGridLayout, { useContainerWidth } from 'react-grid-layout';
 import { ErrorBoundary } from '@components/Error';
 import Loader, { LoaderVariant } from '../../components/Loader';
 import { PublicDashboardQuery } from './__generated__/PublicDashboardQuery.graphql';
@@ -33,7 +33,7 @@ const PublicDashboardComponent = ({
   uriKey,
 }: PublicDashboardComponentProps) => {
   const navigate = useNavigate();
-  const ReactGridLayout = useMemo(() => WidthProvider(RGL), []);
+  const { width, containerRef } = useContainerWidth();
   const { t_i18n } = useFormatter();
 
   const { publicDashboardByUriKey } = usePreloadedQuery(publicDashboardQuery, queryRef);
@@ -73,28 +73,29 @@ const PublicDashboardComponent = ({
         onChangeEndDate={onChangeEndDate}
       />
 
-      <ReactGridLayout
-        className="layout"
-        margin={[20, 20]}
-        rowHeight={50}
-        cols={12}
-        isDraggable={false}
-        isResizable={false}
-      >
-        {Object.values(widgets ?? {}).map((widget) => (
-          <div
-            key={widget.id}
-            data-grid={widget.layout}
-          >
-            <ErrorBoundary>
-              {widget.perspective === 'entities' && entityWidget(widget)}
-              {widget.perspective === 'relationships' && relationshipWidget(widget)}
-              {widget.perspective === 'audits' && auditWidget(widget)}
-              {widget.perspective === null && rawWidget(widget)}
-            </ErrorBoundary>
-          </div>
-        ))}
-      </ReactGridLayout>
+      <div ref={containerRef}>
+        <ReactGridLayout
+          className="layout"
+          width={width}
+          layout={Object.values(widgets ?? {}).map((w) => w.layout)}
+          gridConfig={{ margin: [20, 20], rowHeight: 50, cols: 12 }}
+          dragConfig={{ enabled: false }}
+          resizeConfig={{ enabled: false }}
+        >
+          {Object.values(widgets ?? {}).map((widget) => (
+            <div
+              key={widget.id}
+            >
+              <ErrorBoundary>
+                {widget.perspective === 'entities' && entityWidget(widget)}
+                {widget.perspective === 'relationships' && relationshipWidget(widget)}
+                {widget.perspective === 'audits' && auditWidget(widget)}
+                {widget.perspective === null && rawWidget(widget)}
+              </ErrorBoundary>
+            </div>
+          ))}
+        </ReactGridLayout>
+      </div>
 
     </>
   );
