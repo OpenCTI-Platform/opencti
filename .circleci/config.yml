@@ -62,23 +62,24 @@ jobs:
       - run:
           name: check version
           command: |
+            set -x
             cd client-python
             package_version="$(
                 python3 -c 'import pycti; print(pycti.__version__)'
             )"
             # Transform tag version to expected PEP 440 package version:
-            #   7.260309.0        -> 7.260309.0        (standard release)
-            #   7.260309.0-lts    -> 7.260309.0.post0  (lts base)
-            #   7.260309.0-lts1   -> 7.260309.0.post1  (lts bug fix 1)
-            #   7.260309.0-ltsN   -> 7.260309.0.postN  (lts bug fix N)
+            #   7.260309.0          -> 7.260309.0    (standard release)
+            #   7.260309.0-lts.1    -> 7.260309.0.1  (lts bug fix 1)
+            #   7.260309.0-lts.N    -> 7.260309.0.N  (lts bug fix N)
             expected_version="$(
                 echo "${CIRCLE_TAG}" \
-                  | sed 's/-lts$/\.post0/' \
-                  | sed 's/-lts\([0-9]\+\)$/\.post\1/'
+                  | sed 's/-lts\.\([0-9]\+\)$/.\1/'
             )"
-            [ "${expected_version}" = "${package_version}" ] \
-              || printf "Version mismatch: tag %s (expected package %s) is not equal to package version %s\n" \
-                 "${CIRCLE_TAG}" "${expected_version}" "${package_version}"
+            if [ "${expected_version}" != "${package_version}" ]; then
+              printf "Version mismatch: tag %s (expected package %s) is not equal to package version %s\n" \
+                "${CIRCLE_TAG}" "${expected_version}" "${package_version}"
+              exit 1
+            fi
       - run:
           name: build
           command: >
