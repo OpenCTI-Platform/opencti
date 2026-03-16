@@ -1,20 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as middlewareLoader from '../../../../src/database/middleware-loader';
-import * as cache from '../../../../src/database/cache';
-import * as utils from '../../../../src/utils/access';
-import * as playbookUtils from '../../../../src/modules/playbook/playbook-utils';
-import * as streamHandler from '../../../../src/database/stream/stream-handler';
-import * as notificationManager from '../../../../src/manager/notificationManager';
-import * as schemaUtils from '../../../../src/schema/schemaUtils';
-import * as generateMessage from '../../../../src/database/data-changes';
-import * as playbookManagerUtils from '../../../../src/manager/playbookManager/playbookManagerUtils';
-import * as entityRepresentative from '../../../../src/database/entity-representative';
-import type { AuthContext, AuthUser } from '../../../../src/types/user';
-import type { BasicStoreIdentifier } from '../../../../src/types/store';
-import type { StixBundle, StixObject } from '../../../../src/types/stix-2-1-common';
-import { PLAYBOOK_NOTIFIER_COMPONENT, type NotifierConfiguration } from '../../../../src/modules/playbook/components/notifier-component';
-import type { BasicStoreEntityPlaybook, ExecutorParameters, NodeInstance } from '../../../../src/modules/playbook/playbook-types';
-import type { StreamDataEvent } from '../../../../src/types/event';
+import * as middlewareLoader from '../../../../../src/database/middleware-loader';
+import * as cache from '../../../../../src/database/cache';
+import * as utils from '../../../../../src/utils/access';
+import * as playbookUtils from '../../../../../src/modules/playbook/playbook-utils';
+import * as streamHandler from '../../../../../src/database/stream/stream-handler';
+import * as notificationManager from '../../../../../src/manager/notificationManager';
+import * as schemaUtils from '../../../../../src/schema/schemaUtils';
+import * as generateMessage from '../../../../../src/database/data-changes';
+import * as playbookManagerUtils from '../../../../../src/manager/playbookManager/playbookManagerUtils';
+import * as entityRepresentative from '../../../../../src/database/entity-representative';
+import type { AuthContext, AuthUser } from '../../../../../src/types/user';
+import type { BasicStoreIdentifier } from '../../../../../src/types/store';
+import type { StixBundle, StixObject } from '../../../../../src/types/stix-2-1-common';
+import { PLAYBOOK_NOTIFIER_COMPONENT, type NotifierConfiguration } from '../../../../../src/modules/playbook/components/notifier-component';
+import type { BasicStoreEntityPlaybook, ExecutorParameters, NodeInstance } from '../../../../../src/modules/playbook/playbook-types';
+import type { StreamDataEvent } from '../../../../../src/types/event';
 
 describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
   beforeEach(() => {
