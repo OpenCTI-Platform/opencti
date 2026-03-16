@@ -8,6 +8,7 @@ export interface BasicStoreEntityDocument extends BasicStoreEntity {
   metaData: {
     entity_id?: string;
     mimetype: string;
+    sha256?: string;
     order?: number;
     description?: string;
     inCarousel?: boolean;
