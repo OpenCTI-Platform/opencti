@@ -150,7 +150,7 @@
     "@types/react-transition-group": "4.4.12",
     "@types/relay-runtime": "20.1.1",
     "@types/relay-test-utils": "19.0.0",
-    "@vitejs/plugin-react": "5.2.0",
+    "@vitejs/plugin-react": "6.0.1",
     "@vitest/coverage-v8": "4.1.0",
     "babel-plugin-relay": "20.1.1",
     "chokidar": "5.0.0",
