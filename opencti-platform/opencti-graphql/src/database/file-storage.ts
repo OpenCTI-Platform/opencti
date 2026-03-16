@@ -597,14 +597,13 @@ export const upload = async (
     key = `${draftPrefix}${key}`;
   }
 
-  // Read the stream into a buffer to compute SHA256 hash and reuse for upload
-  const readStream = createReadStream();
-  const chunks: Buffer[] = [];
-  for await (const chunk of readStream) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  // Stream the file content while incrementally computing the SHA256 hash to avoid holding the entire file twice in memory.
+  const hashReadStream = createReadStream();
+  const hash = crypto.createHash('sha256');
+  for await (const chunk of hashReadStream) {
+    hash.update(chunk);
   }
-  const fileBuffer = Buffer.concat(chunks);
-  const sha256 = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+  const sha256 = hash.digest('hex');
 
   const currentFile = await documentFindById(context, user, key);
   if (currentFile) {
@@ -626,6 +625,7 @@ export const upload = async (
   const creatorId = (currentFile?.metaData as FileMetadata)?.creator_id ? (currentFile.metaData as FileMetadata).creator_id : user.id;
 
   // Upload the data from the buffered content
+  const uploadReadStream = createReadStream();
   const fileMime = metadata.mimetype ?? guessMimeType(key);
   const fullMetadata: FileMetadata = {
     ...metadata,
@@ -636,7 +636,7 @@ export const upload = async (
     creator_id: creatorId as string,
     entity_id: (entity as BasicStoreEntity)?.internal_id,
   };
-  await rawUpload(key, fileBuffer);
+  await rawUpload(key, uploadReadStream);
   const fileSize = await getFileSize(user, key);
 
   // Register in elastic
