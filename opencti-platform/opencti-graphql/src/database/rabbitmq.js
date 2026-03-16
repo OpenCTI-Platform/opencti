@@ -451,12 +451,13 @@ const amqpExecute = async (execute) => {
  */
 export const send = async (exchangeName, routingKey, message) => {
   let attemptNumber = 0;
+  let retryDelay = RECONNECT_INITIAL_DELAY;
 
   while (true) {
     try {
       return await sendPersistent(exchangeName, routingKey, message);
     } catch (err) {
-      logApp.warn(`[RABBITMQ] Send failed (attempt ${++attemptNumber})`, { cause: err });
+      logApp.warn(`[RABBITMQ] Send failed (attempt ${++attemptNumber}), retrying in ${retryDelay}ms`, { cause: err, exchangeName, routingKey });
 
       // If channel was lost, wait for reconnection before retry
       if (!persistentChannel) {
@@ -464,8 +465,9 @@ export const send = async (exchangeName, routingKey, message) => {
         await getPersistentChannel();
       }
 
-      // Wait before retrying
-      await wait(1000);
+      // Wait with exponential backoff before retrying
+      await wait(retryDelay);
+      retryDelay = Math.min(retryDelay * RECONNECT_MULTIPLIER, RECONNECT_MAX_DELAY);
     }
   }
 };
