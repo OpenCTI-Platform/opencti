@@ -29,6 +29,7 @@ export interface PlaybookFlowFieldArrayProps {
   label: string;
   options: Option[];
   multiple?: boolean;
+  required?: boolean;
 }
 
 const PlaybookFlowFieldArray = ({
@@ -36,6 +37,7 @@ const PlaybookFlowFieldArray = ({
   label,
   options,
   multiple = false,
+  required,
 }: PlaybookFlowFieldArrayProps) => {
   const { translateEntityType } = useEntityTranslation();
   const fieldOptions = [...options]
@@ -53,6 +55,8 @@ const PlaybookFlowFieldArray = ({
   return (
     <Field
       fullWidth
+      required={required}
+      disableClearable={required}
       multiple={multiple}
       component={AutocompleteField}
       style={fieldSpacingContainerStyle}
