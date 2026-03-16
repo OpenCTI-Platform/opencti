@@ -18,7 +18,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import { Formik } from 'formik';
 import { graphql } from 'react-relay';
-import { FormikConfig } from 'formik/dist/types';
+import { FormikHelpers } from 'formik/dist/types';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
@@ -38,13 +38,18 @@ interface DraftBasicInformationProps {
   draft: DraftRootFragment$data;
 }
 
-interface DraftAddAssigneeInput {
-  objectAssignee: FieldOption[];
-}
+type Key = 'objectAssignee' | 'objectParticipant';
 
-interface DraftAddParticipantInput {
+type DraftFormValuesByKey = {
+  objectAssignee: FieldOption[];
   objectParticipant: FieldOption[];
-}
+};
+
+type OnSubmit = <K extends Key>(
+  key: K,
+  values: Pick<DraftFormValuesByKey, K>,
+  formikHelpers: FormikHelpers<Pick<DraftFormValuesByKey, K>>,
+) => void;
 
 const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ draft }) => {
   const { t_i18n } = useFormatter();
@@ -61,7 +66,7 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
     setOpenAddParticipant(!openAddParticipant);
   };
 
-  const onSubmit: FormikConfig<DraftAddAssigneeInput | DraftAddParticipantInput>['onSubmit'] = (key, values, { setSubmitting, resetForm }) => {
+  const onSubmit: OnSubmit = (key, values, { setSubmitting, resetForm }) => {
     const currentIds = (draft[key] || []).map((assignee) => assignee.id);
     const valuesIds = values[key].map((user) => user.value);
     const allIds = Array.from(new Set(currentIds.concat(valuesIds))); // 'new Set' to merge without duplicates
@@ -85,8 +90,8 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
     });
   };
 
-  const assigneeInitialValues: { objectAssignee: FieldOption[] } = { objectAssignee: [] };
-  const participantInitialValues: { objectParticipant: FieldOption[] } = { objectParticipant: [] };
+  const assigneeInitialValues: Pick<DraftFormValuesByKey, 'objectAssignee'> = { objectAssignee: [] };
+  const participantInitialValues: Pick<DraftFormValuesByKey, 'objectParticipant'> = { objectParticipant: [] };
 
   return (
     <>
