@@ -12,6 +12,7 @@ const fragment = graphql`
       name
       type
       provider
+      button_label_override
     }
   }
 `;
