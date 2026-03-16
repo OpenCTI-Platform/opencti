@@ -1,18 +1,18 @@
-import { ENTITY_TYPE_FEED } from '../schema/internalObject';
-import { createEntity, deleteElementById } from '../database/middleware';
-import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
-import type { AuthContext, AuthUser } from '../types/user';
-import type { FeedAddInput, MemberAccessInput, QueryFeedsArgs } from '../generated/graphql';
-import type { BasicStoreEntityFeed, StoreEntity } from '../types/store';
-import { FilterMode } from '../generated/graphql';
-import { elReplace } from '../database/engine';
-import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
-import { isStixCyberObservable } from '../schema/stixCyberObservable';
-import { isStixDomainObject } from '../schema/stixDomainObject';
-import type { DomainFindById } from './domainTypes';
-import { publishUserAction } from '../listener/UserActionListener';
-import { isUserHasCapability, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../utils/access';
-import { TAXIIAPI } from './user';
+import { ENTITY_TYPE_FEED, type BasicStoreEntityFeed } from './feed-types';
+import { createEntity, deleteElementById } from '../../database/middleware';
+import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import type { AuthContext, AuthUser } from '../../types/user';
+import type { FeedAddInput, MemberAccessInput, QueryFeedsArgs } from '../../generated/graphql';
+import type { StoreEntity } from '../../types/store.d';
+import { FilterMode } from '../../generated/graphql';
+import { elReplace } from '../../database/engine';
+import { FunctionalError, UnsupportedError, ValidationError } from '../../config/errors';
+import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { isStixDomainObject } from '../../schema/stixDomainObject';
+import type { DomainFindById } from '../../domain/domainTypes';
+import { publishUserAction } from '../../listener/UserActionListener';
+import { isUserHasCapability, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../../utils/access';
+import { TAXIIAPI } from '../../domain/user';
 
 const VALID_MULTI_MATCH_STRATEGIES = ['first', 'list'];
 
@@ -109,7 +109,7 @@ export const findFeedPaginated = (context: AuthContext, user: AuthUser, opts: Qu
     const options = { ...opts, includeAuthorities: true };
     return pageEntitiesConnection<BasicStoreEntityFeed>(context, user, [ENTITY_TYPE_FEED], options);
   }
-  // No user specify, listing only public csv feeds
+  // No user specified, listing only public csv feeds
   const filters = {
     mode: FilterMode.And,
     filterGroups: [],
