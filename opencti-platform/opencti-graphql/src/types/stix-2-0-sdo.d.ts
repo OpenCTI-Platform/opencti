@@ -1,5 +1,42 @@
 import type { StixDate, StixDomainObject } from './stix-2-0-common';
 
+export interface StixCampaign extends StixDomainObject {
+  name: string;
+  description: string;
+  aliases: Array<string>;
+  first_seen: StixDate;
+  last_seen: StixDate;
+  objective: string;
+}
+
+export interface StixIntrusionSet extends StixDomainObject {
+  name: string;
+  description: string;
+  aliases: Array<string>;
+  first_seen: StixDate;
+  last_seen: StixDate;
+  goals: Array<string>;
+  resource_level: string;
+  primary_motivation: string;
+  secondary_motivations: Array<string>;
+}
+
+export interface StixThreatActor extends StixDomainObject {
+  name: string;
+  description: string;
+  threat_actor_types: Array<string>;
+  aliases: Array<string>;
+  first_seen: StixDate;
+  last_seen: StixDate;
+  roles: Array<string>;
+  goals: Array<string>;
+  sophistication: string;
+  resource_level: string;
+  primary_motivation: string;
+  secondary_motivations: Array<string>;
+  personal_motivations: Array<string>;
+}
+
 export interface StixMalware extends StixDomainObject {
   name: string; // optional
   description: string; // optional

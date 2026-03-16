@@ -6,7 +6,7 @@ export const INCIDENT_INSTANCE = {
   _id: '232a5554-6d8f-4b1b-aaee-48ee6a6c7b0d',
   id: '232a5554-6d8f-4b1b-aaee-48ee6a6c7b0d',
   sort: [
-    1753892766239
+    1753892766239,
   ],
   standard_id: 'incident--4e110b9d-8c95-581e-8618-4be501bcbe06',
   incident_type: 'alert',
@@ -16,45 +16,45 @@ export const INCIDENT_INSTANCE = {
     'Basic-Object',
     'Stix-Object',
     'Stix-Core-Object',
-    'Stix-Domain-Object'
+    'Stix-Domain-Object',
   ],
   i_attributes: [
     {
       updated_at: '2025-07-30T16:28:25.083Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'first_seen'
+      name: 'first_seen',
     },
     {
       updated_at: '2025-07-30T16:28:29.489Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'last_seen'
+      name: 'last_seen',
     },
     {
       updated_at: '2025-07-30T16:30:00.845Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'source'
+      name: 'source',
     },
     {
       updated_at: '2025-07-30T16:30:20.565Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'objective'
+      name: 'objective',
     },
     {
       updated_at: '2025-07-30T16:30:34.591Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'description'
+      name: 'description',
     },
     {
       updated_at: '2025-07-30T16:38:27.946Z',
       user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       confidence: 100,
-      name: 'objectOrganization'
-    }
+      name: 'objectOrganization',
+    },
   ],
   description: 'description',
   created_at: '2025-07-30T16:26:06.239Z',
@@ -73,42 +73,42 @@ export const INCIDENT_INSTANCE = {
   entity_type: 'Incident',
   name: 'Incident Stix 2.0',
   creator_id: [
-    '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+    '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
   ],
   x_opencti_stix_ids: [],
   'rel_created-by.internal_id.keyword': [
-    '81f4b1fa-a1a0-46ff-8782-5f29e23f9a75'
+    '81f4b1fa-a1a0-46ff-8782-5f29e23f9a75',
   ],
   'rel_object-participant.internal_id.keyword': [
-    '51c085a6-612a-463b-9575-27513bf85d99'
+    '51c085a6-612a-463b-9575-27513bf85d99',
   ],
   'rel_object-label.internal_id.keyword': [
-    'ad9a877b-d550-492f-a39e-3be894b16296'
+    'ad9a877b-d550-492f-a39e-3be894b16296',
   ],
   'rel_granted.internal_id.keyword': [
-    '079db495-ef69-402b-b28f-31953b770f0f'
+    '079db495-ef69-402b-b28f-31953b770f0f',
   ],
   'rel_object-marking.internal_id.keyword': [
-    '1af26c84-a670-4ea4-b420-9c9639519142'
+    '1af26c84-a670-4ea4-b420-9c9639519142',
   ],
   'rel_object-assignee.internal_id.keyword': [
-    '51c085a6-612a-463b-9575-27513bf85d99'
+    '51c085a6-612a-463b-9575-27513bf85d99',
   ],
   'created-by': '81f4b1fa-a1a0-46ff-8782-5f29e23f9a75',
   'object-participant': [
-    '51c085a6-612a-463b-9575-27513bf85d99'
+    '51c085a6-612a-463b-9575-27513bf85d99',
   ],
   'object-label': [
-    'ad9a877b-d550-492f-a39e-3be894b16296'
+    'ad9a877b-d550-492f-a39e-3be894b16296',
   ],
   granted: [
-    '079db495-ef69-402b-b28f-31953b770f0f'
+    '079db495-ef69-402b-b28f-31953b770f0f',
   ],
   'object-marking': [
-    '1af26c84-a670-4ea4-b420-9c9639519142'
+    '1af26c84-a670-4ea4-b420-9c9639519142',
   ],
   'object-assignee': [
-    '51c085a6-612a-463b-9575-27513bf85d99'
+    '51c085a6-612a-463b-9575-27513bf85d99',
   ],
   objectMarking: [
     {
@@ -116,7 +116,7 @@ export const INCIDENT_INSTANCE = {
       _id: '1af26c84-a670-4ea4-b420-9c9639519142',
       id: '1af26c84-a670-4ea4-b420-9c9639519142',
       sort: [
-        1752671047216
+        1752671047216,
       ],
       standard_id: 'marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1',
       x_opencti_color: '#2e7d32',
@@ -125,7 +125,7 @@ export const INCIDENT_INSTANCE = {
       parent_types: [
         'Basic-Object',
         'Stix-Object',
-        'Stix-Meta-Object'
+        'Stix-Meta-Object',
       ],
       definition_type: 'PAP',
       created: '2025-07-16T13:04:07.216Z',
@@ -135,7 +135,7 @@ export const INCIDENT_INSTANCE = {
       base_type: 'ENTITY',
       updated_at: '2025-07-16T13:04:07.216Z',
       creator_id: [
-        '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505'
+        '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
       ],
       modified: '2025-07-16T13:04:07.216Z',
       definition: 'PAP:GREEN',
@@ -145,7 +145,7 @@ export const INCIDENT_INSTANCE = {
         _id: '9e733e5a-693d-414c-8eb0-dd0905cf02e2',
         id: '9e733e5a-693d-414c-8eb0-dd0905cf02e2',
         sort: [
-          'relationship-meta--2d65c6b9-ac3b-4d9d-ae4e-03de18714900'
+          'relationship-meta--2d65c6b9-ac3b-4d9d-ae4e-03de18714900',
         ],
         standard_id: 'relationship-meta--2d65c6b9-ac3b-4d9d-ae4e-03de18714900',
         base_type: 'RELATION',
@@ -163,9 +163,9 @@ export const INCIDENT_INSTANCE = {
         toName: 'PAP:GREEN',
         toType: 'Marking-Definition',
         target_ref: 'marking-definition--temporary',
-        relationship_type: 'object-marking'
-      }
-    }
+        relationship_type: 'object-marking',
+      },
+    },
   ],
   objectOrganization: [
     {
@@ -173,7 +173,7 @@ export const INCIDENT_INSTANCE = {
       _id: '079db495-ef69-402b-b28f-31953b770f0f',
       id: '079db495-ef69-402b-b28f-31953b770f0f',
       sort: [
-        1752673177465
+        1752673177465,
       ],
       standard_id: 'identity--18fe5225-fee1-5627-ad3e-20c14435b024',
       identity_class: 'organization',
@@ -183,7 +183,7 @@ export const INCIDENT_INSTANCE = {
         'Stix-Object',
         'Stix-Core-Object',
         'Stix-Domain-Object',
-        'Identity'
+        'Identity',
       ],
       roles: null,
       description: null,
@@ -204,23 +204,23 @@ export const INCIDENT_INSTANCE = {
       entity_type: 'Organization',
       name: 'ANSSI',
       creator_id: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       ],
       x_opencti_stix_ids: [
-        'identity--7b82b010-b1c0-4dae-981f-7756374a17df'
+        'identity--7b82b010-b1c0-4dae-981f-7756374a17df',
       ],
       'rel_object-label.internal_id.keyword': [
-        '7afbdd63-fb77-47c8-bd9f-5a852fe8fbe9'
+        '7afbdd63-fb77-47c8-bd9f-5a852fe8fbe9',
       ],
       'object-label': [
-        '7afbdd63-fb77-47c8-bd9f-5a852fe8fbe9'
+        '7afbdd63-fb77-47c8-bd9f-5a852fe8fbe9',
       ],
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: '1fa76cc2-57c6-4ecd-9578-12ec48594be9',
         id: '1fa76cc2-57c6-4ecd-9578-12ec48594be9',
         sort: [
-          'relationship-meta--3dd03996-933c-4253-9fcd-93fa866b60ee'
+          'relationship-meta--3dd03996-933c-4253-9fcd-93fa866b60ee',
         ],
         standard_id: 'relationship-meta--3dd03996-933c-4253-9fcd-93fa866b60ee',
         base_type: 'RELATION',
@@ -238,9 +238,9 @@ export const INCIDENT_INSTANCE = {
         toName: 'ANSSI',
         toType: 'Organization',
         target_ref: 'identity--temporary',
-        relationship_type: 'granted'
-      }
-    }
+        relationship_type: 'granted',
+      },
+    },
   ],
   objectAssignee: [
     {
@@ -248,13 +248,13 @@ export const INCIDENT_INSTANCE = {
       _id: '51c085a6-612a-463b-9575-27513bf85d99',
       id: '51c085a6-612a-463b-9575-27513bf85d99',
       sort: [
-        1752673654588
+        1752673654588,
       ],
       standard_id: 'user--20e40687-5a83-5a19-ba58-ca14e88fdbd1',
       firstname: '',
       parent_types: [
         'Basic-Object',
-        'Internal-Object'
+        'Internal-Object',
       ],
       api_token: '67231010-56fd-4e2e-9447-82c70b7ffe43',
       description: '',
@@ -276,18 +276,18 @@ export const INCIDENT_INSTANCE = {
       entity_type: 'User',
       personal_notifiers: [
         'f4ee7b33-006a-4b0d-b57d-411ad288653d',
-        '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822'
+        '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822',
       ],
       name: 'Marie',
       creator_id: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       ],
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: '82904238-3f88-4837-bce9-fe95bd214637',
         id: '82904238-3f88-4837-bce9-fe95bd214637',
         sort: [
-          'relationship-meta--7de28e5f-3bed-41cc-a9fa-c2eeda7fa053'
+          'relationship-meta--7de28e5f-3bed-41cc-a9fa-c2eeda7fa053',
         ],
         standard_id: 'relationship-meta--7de28e5f-3bed-41cc-a9fa-c2eeda7fa053',
         base_type: 'RELATION',
@@ -305,9 +305,9 @@ export const INCIDENT_INSTANCE = {
         toName: 'Marie',
         toType: 'User',
         target_ref: 'user--temporary',
-        relationship_type: 'object-assignee'
-      }
-    }
+        relationship_type: 'object-assignee',
+      },
+    },
   ],
   objectLabel: [
     {
@@ -315,7 +315,7 @@ export const INCIDENT_INSTANCE = {
       _id: 'ad9a877b-d550-492f-a39e-3be894b16296',
       id: 'ad9a877b-d550-492f-a39e-3be894b16296',
       sort: [
-        1752673180313
+        1752673180313,
       ],
       standard_id: 'label--11456f4c-8be3-5c50-b9ee-d1279df6730b',
       color: '#d0ac39',
@@ -323,7 +323,7 @@ export const INCIDENT_INSTANCE = {
       parent_types: [
         'Basic-Object',
         'Stix-Object',
-        'Stix-Meta-Object'
+        'Stix-Meta-Object',
       ],
       created: '2025-07-16T13:39:40.313Z',
       confidence: 100,
@@ -332,7 +332,7 @@ export const INCIDENT_INSTANCE = {
       base_type: 'ENTITY',
       updated_at: '2025-07-16T13:39:40.313Z',
       creator_id: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       ],
       modified: '2025-07-16T13:39:40.313Z',
       x_opencti_stix_ids: [],
@@ -342,7 +342,7 @@ export const INCIDENT_INSTANCE = {
         _id: 'ec7ced5c-ab55-4449-98d6-3fa0ea8311a4',
         id: 'ec7ced5c-ab55-4449-98d6-3fa0ea8311a4',
         sort: [
-          'relationship-meta--864567d4-5853-43f2-9514-d042e3606655'
+          'relationship-meta--864567d4-5853-43f2-9514-d042e3606655',
         ],
         standard_id: 'relationship-meta--864567d4-5853-43f2-9514-d042e3606655',
         base_type: 'RELATION',
@@ -360,16 +360,16 @@ export const INCIDENT_INSTANCE = {
         toName: 'covid-19',
         toType: 'Label',
         target_ref: 'label--temporary',
-        relationship_type: 'object-label'
-      }
-    }
+        relationship_type: 'object-label',
+      },
+    },
   ],
   createdBy: {
     _index: 'opencti_stix_domain_objects-000001',
     _id: '81f4b1fa-a1a0-46ff-8782-5f29e23f9a75',
     id: '81f4b1fa-a1a0-46ff-8782-5f29e23f9a75',
     sort: [
-      1752673669323
+      1752673669323,
     ],
     standard_id: 'identity--8cb00c79-ab20-5ed4-b37d-337241b96a29',
     identity_class: 'organization',
@@ -379,20 +379,20 @@ export const INCIDENT_INSTANCE = {
       'Stix-Object',
       'Stix-Core-Object',
       'Stix-Domain-Object',
-      'Identity'
+      'Identity',
     ],
     i_attributes: [
       {
         updated_at: '2025-07-29T14:59:15.851Z',
         user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
         confidence: 100,
-        name: 'authorized_authorities'
-      }
+        name: 'authorized_authorities',
+      },
     ],
     created: '2025-07-16T13:47:49.323Z',
     confidence: 100,
     authorized_authorities: [
-      'a223dd31-d7d9-4ddd-93d5-64d6abe91d36'
+      'a223dd31-d7d9-4ddd-93d5-64d6abe91d36',
     ],
     description: '',
     created_at: '2025-07-16T13:47:49.323Z',
@@ -402,7 +402,7 @@ export const INCIDENT_INSTANCE = {
     updated_at: '2025-07-29T14:59:15.851Z',
     name: 'Filigran',
     creator_id: [
-      '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+      '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
     ],
     modified: '2025-07-29T14:59:15.851Z',
     i_aliases_ids: [],
@@ -413,7 +413,7 @@ export const INCIDENT_INSTANCE = {
       _id: '08d29579-6a78-4722-8619-be010fbc560e',
       id: '08d29579-6a78-4722-8619-be010fbc560e',
       sort: [
-        'relationship-meta--8e2178c6-59f6-4086-be63-d755f7c3864d'
+        'relationship-meta--8e2178c6-59f6-4086-be63-d755f7c3864d',
       ],
       standard_id: 'relationship-meta--8e2178c6-59f6-4086-be63-d755f7c3864d',
       base_type: 'RELATION',
@@ -431,8 +431,8 @@ export const INCIDENT_INSTANCE = {
       toName: 'Filigran',
       toType: 'Organization',
       target_ref: 'identity--temporary',
-      relationship_type: 'created-by'
-    }
+      relationship_type: 'created-by',
+    },
   },
   objectParticipant: [
     {
@@ -440,13 +440,13 @@ export const INCIDENT_INSTANCE = {
       _id: '51c085a6-612a-463b-9575-27513bf85d99',
       id: '51c085a6-612a-463b-9575-27513bf85d99',
       sort: [
-        1752673654588
+        1752673654588,
       ],
       standard_id: 'user--20e40687-5a83-5a19-ba58-ca14e88fdbd1',
       firstname: '',
       parent_types: [
         'Basic-Object',
-        'Internal-Object'
+        'Internal-Object',
       ],
       api_token: '67231010-56fd-4e2e-9447-82c70b7ffe43',
       description: '',
@@ -468,18 +468,18 @@ export const INCIDENT_INSTANCE = {
       entity_type: 'User',
       personal_notifiers: [
         'f4ee7b33-006a-4b0d-b57d-411ad288653d',
-        '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822'
+        '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822',
       ],
       name: 'Marie',
       creator_id: [
-        '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+        '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
       ],
       i_relation: {
         _index: 'opencti_stix_meta_relationships-000001',
         _id: '9566b871-a47c-46c2-8a88-46cf8f862a4a',
         id: '9566b871-a47c-46c2-8a88-46cf8f862a4a',
         sort: [
-          'relationship-meta--b8978e38-7886-4422-95f2-0efc85b55f29'
+          'relationship-meta--b8978e38-7886-4422-95f2-0efc85b55f29',
         ],
         standard_id: 'relationship-meta--b8978e38-7886-4422-95f2-0efc85b55f29',
         base_type: 'RELATION',
@@ -497,10 +497,10 @@ export const INCIDENT_INSTANCE = {
         toName: 'Marie',
         toType: 'User',
         target_ref: 'user--temporary',
-        relationship_type: 'object-participant'
-      }
-    }
-  ]
+        relationship_type: 'object-participant',
+      },
+    },
+  ],
 } as unknown as StoreEntity;
 
 export const EXPECTED_INCIDENT = {
@@ -519,7 +519,7 @@ export const EXPECTED_INCIDENT = {
   severity: 'medium',
   source: 'secret',
   labels: [
-    'covid-19'
+    'covid-19',
   ],
   x_opencti_id: '232a5554-6d8f-4b1b-aaee-48ee6a6c7b0d',
   x_opencti_type: 'Incident',
@@ -527,10 +527,10 @@ export const EXPECTED_INCIDENT = {
   x_opencti_files: [],
   created_by_ref: 'identity--8cb00c79-ab20-5ed4-b37d-337241b96a29',
   x_opencti_granted_refs: [
-    'identity--18fe5225-fee1-5627-ad3e-20c14435b024'
+    'identity--18fe5225-fee1-5627-ad3e-20c14435b024',
   ],
   object_marking_refs: [
-    'marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1'
+    'marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1',
   ],
-  external_references: []
+  external_references: [],
 };
