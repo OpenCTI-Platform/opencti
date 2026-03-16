@@ -62,6 +62,9 @@ const PublicDashboardComponent = ({
     return null;
   }
 
+  const widgetsArray = Object.values(widgets ?? {});
+  const widgetsWithLayout = widgetsArray.filter((w) => w.layout);
+
   return (
     <>
       <PublicTopBar title={t_i18n('Public dashboard')} />
@@ -77,12 +80,12 @@ const PublicDashboardComponent = ({
         <ReactGridLayout
           className="layout"
           width={width}
-          layout={Object.values(widgets ?? {}).flatMap((w) => (w.layout ? [w.layout] : []))}
+          layout={widgetsWithLayout.map((w) => w.layout)}
           gridConfig={{ margin: [20, 20], rowHeight: 50, cols: 12 }}
           dragConfig={{ enabled: false }}
           resizeConfig={{ enabled: false }}
         >
-          {Object.values(widgets ?? {}).map((widget) => (
+          {widgetsWithLayout.map((widget) => (
             <div
               key={widget.id}
             >
