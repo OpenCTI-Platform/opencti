@@ -80,7 +80,7 @@ const PublicDashboardComponent = ({
         <ReactGridLayout
           className="layout"
           width={width}
-          layout={widgetsWithLayout.map((w) => w.layout)}
+          layout={widgetsWithLayout.map((w) => w.layout!)}
           gridConfig={{ margin: [20, 20], rowHeight: 50, cols: 12 }}
           dragConfig={{ enabled: false }}
           resizeConfig={{ enabled: false }}
