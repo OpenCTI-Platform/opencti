@@ -209,7 +209,7 @@ import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCach
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
-import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
+import { handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
 import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified, type RefAttribute, updatedAt } from '../schema/attribute-definition';
@@ -1438,17 +1438,11 @@ const filterTargetByExisting = async (
   redirectSide: 'from' | 'to',
   sourcesDependencies: MergeEntitiesDependency,
   targetDependencies: MergeEntitiesDependency,
-): Promise<{ deletions: BasicStoreRelation[]; redirects: MergeEntityDependency[] }> => {
+): Promise<{ redirects: MergeEntityDependency[] }> => {
   const cache: string[] = [];
   const filtered: MergeEntityDependency[] = [];
   const sources = sourcesDependencies[`i_relations_${redirectSide}`];
   const targets = targetDependencies[`i_relations_${redirectSide}`];
-  const markingSources = sources.filter((r) => r.i_relation.entity_type === RELATION_OBJECT_MARKING);
-  const markingTargets = targets.filter((r) => r.i_relation.entity_type === RELATION_OBJECT_MARKING);
-  const markings = [...markingSources, ...markingTargets];
-  const filteredMarkings = await cleanMarkings(context, markings.map((m) => m.internal_id));
-  const filteredMarkingIds = filteredMarkings.map((m) => m.internal_id);
-  const markingTargetDeletions = markingTargets.filter((m) => !filteredMarkingIds.includes(m.internal_id)).map((m) => m.i_relation);
   for (let index = 0; index < sources.length; index += 1) {
     const source = sources[index];
     // If the relation source is already in target = filtered
@@ -1469,15 +1463,15 @@ const filterTargetByExisting = async (
     // Self ref relationships is not allowed, need to compare the side that will be kept with the target
     const relationSideToKeep = redirectSide === 'from' ? 'toId' : 'fromId';
     const isSelfMeta = isStixRefRelationship(source.i_relation.entity_type) && (targetEntity.internal_id === source.i_relation[relationSideToKeep]);
-    // Markings duplication definition group
-    const isMarkingToKeep = source.i_relation.entity_type === RELATION_OBJECT_MARKING ? filteredMarkingIds.includes(source.internal_id) : true;
+    // Markings are only kept on target entity
+    const isMarkingRel = source.i_relation.entity_type === RELATION_OBJECT_MARKING;
     // Check and add the relation in the processing list if needed
-    if (!existingSingleMeta && !isSelfMeta && isMarkingToKeep && !R.find(finder, targets) && !cache.includes(id)) {
+    if (!existingSingleMeta && !isSelfMeta && !isMarkingRel && !R.find(finder, targets) && !cache.includes(id)) {
       filtered.push(source);
       cache.push(id);
     }
   }
-  return { deletions: markingTargetDeletions, redirects: filtered };
+  return { redirects: filtered };
 };
 
 const mergeEntitiesRaw = async (
@@ -1553,9 +1547,9 @@ const mergeEntitiesRaw = async (
   // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY
   // - EVERYTHING TARGETING ME (-> from) ==> We change to relationship TO -> TARGET ENTITY
   // region CHANGING FROM
-  const { deletions: fromDeletions, redirects: relationsToRedirectFrom } = await filterTargetByExisting(context, targetEntity, 'from', sourcesDependencies, targetDependencies);
+  const { redirects: relationsToRedirectFrom } = await filterTargetByExisting(context, targetEntity, 'from', sourcesDependencies, targetDependencies);
   // region CHANGING TO
-  const { deletions: toDeletions, redirects: relationsFromRedirectTo } = await filterTargetByExisting(context, targetEntity, 'to', sourcesDependencies, targetDependencies);
+  const { redirects: relationsFromRedirectTo } = await filterTargetByExisting(context, targetEntity, 'to', sourcesDependencies, targetDependencies);
   type UpdateConnection = {
     _index: string;
     id: string;
@@ -1716,10 +1710,8 @@ const mergeEntitiesRaw = async (
     await deleteAllObjectFiles(context, SYSTEM_USER, sourceEntities[i]);
   }
 
-  // Take care of relations deletions to prevent duplicate marking definitions.
-  const elementToRemoves = [...sourceEntities, ...fromDeletions, ...toDeletions];
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
-  await elDeleteElements(context, SYSTEM_USER, elementToRemoves);
+  await elDeleteElements(context, SYSTEM_USER, sourceEntities);
   // Everything if fine update remaining attributes
   const updateAttributes: EditInput[] = [];
   // 1. Update all possible attributes
