@@ -6,11 +6,8 @@ import React from 'react';
 import { getCurrentTab } from '../../../../utils/utils';
 import { useFormatter } from '../../../../components/i18n';
 
-interface StixDomainObjectTabsBoxProps {
-  entity: { id: string; entity_type: string };
-  basePath: string;
-  tabs: (
-    | 'overview'
+type StixDomainObjectTabsBoxTab
+  = | 'overview'
     | 'knowledge'
     | 'knowledge-graph'
     | 'knowledge-overview'
@@ -20,7 +17,12 @@ interface StixDomainObjectTabsBoxProps {
     | 'entities'
     | 'observables'
     | 'files'
-    | 'history')[];
+    | 'history';
+
+interface StixDomainObjectTabsBoxProps {
+  entity: { id: string; entity_type: string };
+  basePath: string;
+  tabs: StixDomainObjectTabsBoxTab[];
   extraActions?: React.ReactNode;
 }
 
