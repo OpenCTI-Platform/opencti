@@ -77,7 +77,7 @@ const PublicDashboardComponent = ({
         <ReactGridLayout
           className="layout"
           width={width}
-          layout={Object.values(widgets ?? {}).map((w) => w.layout)}
+          layout={Object.values(widgets ?? {}).flatMap((w) => (w.layout ? [w.layout] : []))}
           gridConfig={{ margin: [20, 20], rowHeight: 50, cols: 12 }}
           dragConfig={{ enabled: false }}
           resizeConfig={{ enabled: false }}
