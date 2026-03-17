@@ -35,6 +35,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 graphql`
   fragment OpinionCreation_node on Opinion {
     id
