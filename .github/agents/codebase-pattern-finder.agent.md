@@ -37,7 +37,6 @@ In user prompt, keywords are in quotes (eg. "kill chain phases").
 3. **Provide Concrete Examples**
    - Include actual code snippets
    - Show multiple variations
-   - Note which approach is preferred
    - Include file:line references
 
 ## Search Strategy

@@ -3,7 +3,6 @@ name: Codebase Research
 description: Document codebase as-is with thoughts directory for historical context
 argument-hint: Explain with human format what you want to know about the code
 agent: agent
-model: Claude Sonnet 4.6 (copilot)
 tools: [vscode, read/readFile, agent, edit/createDirectory, edit/createFile, edit/editFiles, todo]
 ---
 
