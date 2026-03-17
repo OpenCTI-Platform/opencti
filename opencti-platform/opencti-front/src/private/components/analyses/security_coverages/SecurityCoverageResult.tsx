@@ -1,28 +1,27 @@
-import React, {Suspense, useState} from "react";
-import Loader, {LoaderVariant} from "../../../../components/Loader";
-import {graphql} from "react-relay";
-import DataTable from "../../../../components/dataGrid/DataTable";
-import useQueryLoading from "../../../../utils/hooks/useQueryLoading";
+import React, { Suspense, useState } from 'react';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { graphql } from 'react-relay';
+import DataTable from '../../../../components/dataGrid/DataTable';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import {
-  SecurityCoverageResultLinesPaginationQuery, SecurityCoverageResultLinesPaginationQuery$variables
-} from "@components/analyses/security_coverages/__generated__/SecurityCoverageResultLinesPaginationQuery.graphql";
-import {usePaginationLocalStorage} from "../../../../utils/hooks/useLocalStorage";
-import {emptyFilterGroup} from "../../../../utils/filters/filtersUtils";
-import {
-  SecurityCoverageResultLines_data$data
-} from "@components/analyses/security_coverages/__generated__/SecurityCoverageResultLines_data.graphql";
-import {UsePreloadedPaginationFragment} from "../../../../utils/hooks/usePreloadedPaginationFragment";
-import {DataTableProps} from "../../../../components/dataGrid/dataTableTypes";
-import ItemMarkings from "../../../../components/ItemMarkings";
-import {getMainRepresentative} from "../../../../utils/defaultRepresentatives";
-import ItemEntityType from "../../../../components/ItemEntityType";
-import StixCoreObjectLabels from "@components/common/stix_core_objects/StixCoreObjectLabels";
-import ItemIcon from "../../../../components/ItemIcon";
-import SecurityCoverageInformation from "@components/analyses/security_coverages/SecurityCoverageInformation";
-import Tooltip from "@mui/material/Tooltip";
-import {useFormatter} from "../../../../components/i18n";
-import IconButton from "@common/button/IconButton";
-import {InfoOutlined} from "@mui/icons-material";
+  SecurityCoverageResultLinesPaginationQuery,
+  SecurityCoverageResultLinesPaginationQuery$variables,
+} from '@components/analyses/security_coverages/__generated__/SecurityCoverageResultLinesPaginationQuery.graphql';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { SecurityCoverageResultLines_data$data } from '@components/analyses/security_coverages/__generated__/SecurityCoverageResultLines_data.graphql';
+import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
+import ItemMarkings from '../../../../components/ItemMarkings';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import ItemEntityType from '../../../../components/ItemEntityType';
+import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
+import ItemIcon from '../../../../components/ItemIcon';
+import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
+import Tooltip from '@mui/material/Tooltip';
+import { useFormatter } from '../../../../components/i18n';
+import IconButton from '@common/button/IconButton';
+import { InfoOutlined } from '@mui/icons-material';
 
 interface SecurityCoverageResultProps {
   data: { id: string };
@@ -325,9 +324,9 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
       label: 'Coverage',
       percentWidth: 15,
       isSortable: false,
-      render: ({ coverage_information } ) => withDisabledStyle(coverage_information, (
-          coverage_information?.length ?
-            (
+      render: ({ coverage_information }) => withDisabledStyle(coverage_information, (
+        coverage_information?.length
+          ? (
               <SecurityCoverageInformation
                 coverage_information={coverage_information}
                 variant="header"
@@ -337,7 +336,7 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
                 <span>-</span>
               </Tooltip>
             )
-        )
+      ),
       ),
     },
     objectLabel: {
@@ -345,11 +344,11 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
       percentWidth: 20,
       isSortable: false,
       render: ({ to, coverage_information }) => withDisabledStyle(coverage_information, (
-          <StixCoreObjectLabels
-            variant="inList"
-            labels={to?.objectLabel}
-          />
-        )
+        <StixCoreObjectLabels
+          variant="inList"
+          labels={to?.objectLabel}
+        />
+      ),
       ),
     },
     objectMarking: {
@@ -357,11 +356,11 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
       percentWidth: 20,
       isSortable: false,
       render: ({ to, coverage_information }) => withDisabledStyle(coverage_information, (
-          <ItemMarkings
-            markingDefinitions={to?.objectMarking ?? []}
-            limit={1}
-          />
-        )
+        <ItemMarkings
+          markingDefinitions={to?.objectMarking ?? []}
+          limit={1}
+        />
+      ),
       ),
     },
   };
@@ -381,7 +380,7 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
             setNumberOfElements: storageHelpers.handleSetNumberOfElements,
           } as UsePreloadedPaginationFragment<SecurityCoverageResultLinesPaginationQuery>}
           entityTypes={['stix-core-relationship']}
-          availableFilterKeys={[ 'toTypes' ]}
+          availableFilterKeys={['toTypes']}
           resolvePath={(data: SecurityCoverageResultLines_data$data) => data.securityCoverage?.stixCoreRelationships?.edges?.map((n) => n?.node)}
           dataColumns={dataColumns}
           exportContext={{ entity_id: data.id, entity_type: 'stix-core-relationship' }}
@@ -401,7 +400,7 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
       )}
     </div>
   );
-}
+};
 
 const SecurityCoverageResult = ({ data }: SecurityCoverageResultProps) => {
   return (
