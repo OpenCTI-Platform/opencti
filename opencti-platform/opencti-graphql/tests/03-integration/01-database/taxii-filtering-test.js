@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { addAllowedMarkingDefinition } from '../../../src/domain/markingDefinition';
-import { collectionQuery, taxiiCollectionEditField } from '../../../src/domain/taxii';
+import { collectionQuery, taxiiCollectionEditField } from '../../../src/modules/dataSharing/taxiiCollection-domain';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../../../src/schema/internalObject';
 
