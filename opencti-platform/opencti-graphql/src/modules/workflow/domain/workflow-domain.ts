@@ -1,6 +1,7 @@
 import { FunctionalError } from '../../../config/errors';
 import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../database/middleware';
 import { storeLoadById } from '../../../database/middleware-loader';
+import { FilterMode } from '../../../generated/graphql';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
@@ -51,8 +52,8 @@ const findWorkflowInstanceEntity = async (
   const executionContext = bypassDraftContext(context);
   return await loadEntity(executionContext, executionContext.user!, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
     filters: {
-      mode: 'and',
-      filters: [{ key: 'entity_id', values: [entityId] }],
+      mode: FilterMode.And,
+      filters: [{ key: ['entity_id'], values: [entityId] }],
       filterGroups: [],
     },
   }) as WorkflowInstanceStoreEntity;
