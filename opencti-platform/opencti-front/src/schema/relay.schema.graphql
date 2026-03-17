@@ -10677,9 +10677,12 @@ type Mutation {
   exclusionListFieldPatch(id: ID!, input: [EditInput!], file: Upload): ExclusionList
   exclusionListDelete(id: ID!): ID
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
+  draftWorkspaceEdit(id: ID!): DraftWorkspaceEdit
+  draftWorkspaceFieldPatch(id: ID!, input: [EditInput!]!): DraftWorkspace
   draftWorkspaceValidate(id: ID!): Work
   draftWorkspaceDelete(id: ID!): ID
   draftWorkspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): DraftWorkspace
+  draftWorkspaceContextPatch(id: ID!, input: EditContext!): DraftWorkspace
   fintelTemplateAdd(input: FintelTemplateAddInput!): FintelTemplate
   fintelTemplateDelete(id: ID!): ID
   fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate
@@ -14974,6 +14977,11 @@ input DraftWorkspaceAddInput {
   objectAssignee: [String]
   objectParticipant: [String]
   authorized_members: [MemberAccessInput!]
+}
+
+type DraftWorkspaceEdit {
+  relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
+  relationDelete(toId: StixRef!, relationship_type: String!): DraftWorkspace
 }
 
 type FintelTemplateWidget {

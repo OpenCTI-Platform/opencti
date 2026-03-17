@@ -1,8 +1,12 @@
-import type { Resolvers } from '../../generated/graphql';
+import type { Resolvers, StixRefRelationshipAddInput } from '../../generated/graphql';
 import {
   addDraftWorkspace,
   deleteDraftWorkspace,
+  draftWorkspaceAddRelation,
+  draftWorkspaceDeleteRelation,
   draftWorkspaceEditAuthorizedMembers,
+  draftWorkspaceEditContext,
+  draftWorkspaceEditField,
   findById,
   findDraftWorkspacePaginated,
   findDraftWorkspaceRestrictedPaginated,
@@ -53,6 +57,13 @@ const draftWorkspaceResolvers: Resolvers = {
     draftWorkspaceAdd: (_, { input }, context) => {
       return addDraftWorkspace(context, context.user, input);
     },
+    draftWorkspaceEdit: (_, { id }, context): any => ({
+      relationAdd: ({ input }: { input: StixRefRelationshipAddInput }) => draftWorkspaceAddRelation(context, context.user, id, input),
+      relationDelete: (
+        { toId, relationship_type: relationshipType }: { toId: string; relationship_type: string },
+      ) => draftWorkspaceDeleteRelation(context, context.user, id, toId, relationshipType),
+    }),
+    draftWorkspaceFieldPatch: (_, { id, input }, context) => draftWorkspaceEditField(context, context.user, id, input),
     draftWorkspaceEditAuthorizedMembers: (_, { id, input }, context) => {
       return draftWorkspaceEditAuthorizedMembers(context, context.user, id, input);
     },
@@ -61,6 +72,9 @@ const draftWorkspaceResolvers: Resolvers = {
     },
     draftWorkspaceDelete: (_, { id }, context) => {
       return deleteDraftWorkspace(context, context.user, id);
+    },
+    draftWorkspaceContextPatch: (_, { id, input }, context) => {
+      return draftWorkspaceEditContext(context, context.user, id, input);
     },
   },
 };

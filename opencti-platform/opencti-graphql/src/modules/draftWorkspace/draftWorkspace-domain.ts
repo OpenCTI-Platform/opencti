@@ -3,15 +3,17 @@ import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { elDeleteDraftContextFromUsers, elDeleteDraftContextFromWorks, elDeleteDraftElements, resolveDraftUpdateFiles } from '../../database/draft-engine';
 import { buildUpdateFieldPatch } from '../../database/draft-utils';
 import { elAggregationCount, elCount, elList, elLoadById, loadDraftElement } from '../../database/engine';
-import { createEntity, deleteElementById, stixLoadByIds, updateAttribute } from '../../database/middleware';
+import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, stixLoadByIds, updateAttribute } from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRelationsConnection, storeLoadById } from '../../database/middleware-loader';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
-import { notify } from '../../database/redis';
+import { notify, setEditContext } from '../../database/redis';
 import { buildStixBundle } from '../../database/stix-2-1-converter';
 import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import {
   type DraftWorkspaceAddInput,
+  type EditContext,
+  type EditInput,
   FilterMode,
   FilterOperator,
   type MemberAccessInput,
@@ -19,11 +21,12 @@ import {
   type QueryDraftWorkspaceRelationshipsArgs,
   type QueryDraftWorkspacesArgs,
   type QueryDraftWorkspaceSightingRelationshipsArgs,
+  type StixRefRelationshipAddInput,
 } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { addDraftCreationCount, addDraftValidationCount } from '../../manager/telemetryManager';
 import { authorizedMembers } from '../../schema/attribute-definition';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
+import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { isStixRefRelationship } from '../../schema/stixRefRelationship';
@@ -34,7 +37,7 @@ import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { deleteAllDraftFiles } from '../../database/file-storage';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
+import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { getUserAccessRight, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, SYSTEM_USER } from '../../utils/access';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
@@ -45,6 +48,16 @@ import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE 
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
 import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE, type StoreEntityDraftWorkspace } from './draftWorkspace-types';
+import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
+import { extractEntityRepresentativeName } from '../../database/entity-representative';
+
+const bypassDraftContext = (context: AuthContext): AuthContext => {
+  return {
+    ...context,
+    draft_context: undefined,
+    user: context.user ? { ...context.user, draft_context: undefined } : undefined,
+  };
+};
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
@@ -232,6 +245,66 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
   return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].ADDED_TOPIC, createdDraftWorkspace, user);
 };
 
+export const draftWorkspaceAddRelation = async (context: AuthContext, user: AuthUser, draftId: string, input: StixRefRelationshipAddInput) => {
+  const executionContext = bypassDraftContext(context);
+  const executionUser = executionContext.user ?? user;
+  const draft = await findById(executionContext, executionUser, draftId);
+  if (!draft) {
+    throw FunctionalError(`Draft ${draftId} cannot be found`);
+  }
+  const finalInput = { ...input, fromId: draftId };
+  const relationData = await createRelation(executionContext, executionUser, finalInput);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `adds ${relationData.toType} \`${extractEntityRepresentativeName(relationData.to)}\` for draft \`${draft.name}\``,
+    context_data: { id: draft.id, entity_type: ENTITY_TYPE_DRAFT_WORKSPACE, input: finalInput },
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].EDIT_TOPIC, draft, executionUser).then(() => relationData);
+};
+
+export const draftWorkspaceDeleteRelation = async (context: AuthContext, user: AuthUser, draftId: string, toId: string, relationshipType: string) => {
+  const executionContext = bypassDraftContext(context);
+  const executionUser = executionContext.user ?? user;
+  const draft = await findById(executionContext, executionUser, draftId);
+  if (!draft) {
+    throw FunctionalError(`Draft ${draftId} cannot be found`);
+  }
+  const { to } = await deleteRelationsByFromAndTo(executionContext, executionUser, draft.id, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+  const input = { relationship_type: relationshipType, toId };
+  const draftUpdated = await findById(executionContext, executionUser, draftId);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `removes ${to.entity_type} \`${extractEntityRepresentativeName(to)}\` for draft \`${draft.name}\``,
+    context_data: { id: draft.id, entity_type: ENTITY_TYPE_DRAFT_WORKSPACE, input },
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].EDIT_TOPIC, draftUpdated, executionUser);
+};
+
+export const draftWorkspaceEditField = async (context: AuthContext, user: AuthUser, draftId: string, input: EditInput[]) => {
+  const executionContext = bypassDraftContext(context);
+  const executionUser = executionContext.user ?? user;
+  const draft = await findById(executionContext, executionUser, draftId);
+  if (!draft) {
+    throw FunctionalError(`Draft ${draftId} cannot be found`);
+  }
+  const { element } = await updateAttribute<StoreEntity>(executionContext, executionUser, draftId, ENTITY_TYPE_DRAFT_WORKSPACE, input);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for draft \`${element.name}\``,
+    context_data: { id: draftId, entity_type: ENTITY_TYPE_DRAFT_WORKSPACE, input },
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].EDIT_TOPIC, element, executionUser);
+};
+
 export const draftWorkspaceEditAuthorizedMembers = async (
   context: AuthContext,
   user: AuthUser,
@@ -390,4 +463,14 @@ export const validateDraftWorkspace = async (context: AuthContext, user: AuthUse
   await addDraftValidationCount();
 
   return work;
+};
+
+export const draftWorkspaceEditContext = async (context: AuthContext, user: AuthUser, draftId: string, input?: EditContext) => {
+  await checkEnterpriseEdition(context);
+  if (input) {
+    await setEditContext(user, draftId, input);
+  }
+  return storeLoadById(context, user, draftId, ENTITY_TYPE_DRAFT_WORKSPACE).then((draft) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].CONTEXT_TOPIC, draft, user);
+  });
 };
