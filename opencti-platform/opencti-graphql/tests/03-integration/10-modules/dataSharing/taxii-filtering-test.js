@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
-import { addAllowedMarkingDefinition } from '../../../src/domain/markingDefinition';
-import { collectionQuery, taxiiCollectionEditField } from '../../../src/modules/dataSharing/taxiiCollection-domain';
-import { storeLoadById } from '../../../src/database/middleware-loader';
-import { ENTITY_TYPE_TAXII_COLLECTION } from '../../../src/schema/internalObject';
+import { ADMIN_USER, queryAsAdmin, testContext } from '../../../utils/testQuery';
+import { addAllowedMarkingDefinition } from '../../../../src/domain/markingDefinition';
+import { collectionQuery, taxiiCollectionEditField } from '../../../../src/modules/dataSharing/taxiiCollection-domain';
+import { storeLoadById } from '../../../../src/database/middleware-loader';
+import { ENTITY_TYPE_TAXII_COLLECTION } from '../../../../src/schema/internalObject';
 
 // test taxii collections filtering (same behaviors for feeds filtering)
 
@@ -238,7 +238,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
         {
           key: 'name',
           values: ['City2'],
-        }
+        },
       ],
       filterGroups: [],
     });
@@ -257,7 +257,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
         {
           key: 'name',
           values: ['City2'],
-        }
+        },
       ],
       filterGroups: [],
     });
@@ -329,7 +329,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
               key: 'confidence',
               values: ['25'],
               operator: 'gt',
-            }
+            },
           ],
           filterGroups: [],
         }],
@@ -361,7 +361,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
           values: ['City', 'Report'],
           operator: 'eq',
           mode: 'or',
-        }
+        },
       ],
       filterGroups: [],
     });
