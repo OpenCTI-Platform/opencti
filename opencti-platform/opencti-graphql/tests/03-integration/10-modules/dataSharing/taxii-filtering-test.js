@@ -267,7 +267,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
     taxiiCollection = await storeLoadById(testContext, ADMIN_USER, taxiiInternalId, ENTITY_TYPE_TAXII_COLLECTION);
     const { edges: results3_1 } = await collectionQuery(testContext, ADMIN_USER, taxiiCollection, {});
     edgeIds = results3_1.map((e) => e.node.internal_id);
-    expect(edgeIds.length).toEqual(baselines.entityTypeReportOrCity2 + 1); // baseline + the report created by this test (City2 was already counted in baseline)
+    expect(edgeIds.length).toEqual(baselines.entityTypeReportOrCity2 + 2); // baseline + the report created by this test + City2 created by this test (both absent from baseline)
     // global mode = 'and'
     await changeTaxiiFilters({
       mode: 'and',
