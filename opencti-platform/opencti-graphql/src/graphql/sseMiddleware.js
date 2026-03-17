@@ -304,7 +304,11 @@ const createSseMiddleware = () => {
         const message = buildMessage(eventId, topic, event);
         if (!res.write(message)) {
           logApp.debug('[STREAM] Buffer draining', { buffer: res.writableLength, limit: res.writableHighWaterMark });
-          await Promise.race([once(res, 'drain'), once(res, 'close')]);
+          const ac = new AbortController();
+          await Promise.race([
+            once(res, 'drain', { signal: ac.signal }),
+            once(res, 'close', { signal: ac.signal }),
+          ]).finally(() => ac.abort());
         }
         res.flush();
         // Track event delivery in consumer registry (skip heartbeat and connected events)
