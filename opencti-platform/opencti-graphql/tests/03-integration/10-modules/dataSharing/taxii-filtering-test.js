@@ -57,8 +57,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
   const city3StixId = 'city--994491f0-f114-4e41-bcf0-3288c0324f03';
   let city3InternalId;
   let changeTaxiiFilters;
-  let baselineReportCount = 0;
-  let baselineHighConfidenceReportCount = 0;
+  let baselines = {};
   it('should testing environnement created', async () => {
     // Create a marking
     const marking1Input = {
@@ -94,16 +93,27 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
     expect(taxii.data.taxiiCollectionAdd).not.toBeNull();
     expect(taxii.data.taxiiCollectionAdd.name).toEqual('Taxii');
     taxiiInternalId = taxii.data.taxiiCollectionAdd.id;
-    // Measure baseline report counts before creating test entities.
+    // Measure baselines by running each sensitive filter before creating test entities.
     // This makes assertions resilient regardless of which tests ran before (test position in the suite).
-    await taxiiCollectionEditField(testContext, ADMIN_USER, taxiiInternalId, [{
-      key: 'filters', operation: 'replace',
-      value: [JSON.stringify({ mode: 'and', filters: [{ key: 'entity_type', values: ['Report'] }], filterGroups: [] })],
-    }]);
-    const baselineTaxiiCollection = await storeLoadById(testContext, ADMIN_USER, taxiiInternalId, ENTITY_TYPE_TAXII_COLLECTION);
-    const { edges: baselineEdges } = await collectionQuery(testContext, ADMIN_USER, baselineTaxiiCollection, {});
-    baselineReportCount = baselineEdges.length;
-    baselineHighConfidenceReportCount = baselineEdges.filter((e) => (e.node.confidence ?? 0) > 25).length;
+    const runBaseline = async (filters) => {
+      await taxiiCollectionEditField(testContext, ADMIN_USER, taxiiInternalId, [{
+        key: 'filters', operation: 'replace',
+        value: [JSON.stringify(filters)],
+      }]);
+      const coll = await storeLoadById(testContext, ADMIN_USER, taxiiInternalId, ENTITY_TYPE_TAXII_COLLECTION);
+      const { edges } = await collectionQuery(testContext, ADMIN_USER, coll, {});
+      return edges.length;
+    };
+    baselines = {
+      // filter: entity_type = Report (used in: 01, 03-or)
+      entityTypeReport: await runBaseline({ mode: 'and', filters: [{ key: 'entity_type', values: ['Report'] }], filterGroups: [] }),
+      // filter: entity_type = Report OR name = City2 (used in: 03-or)
+      entityTypeReportOrCity2: await runBaseline({ mode: 'or', filters: [{ key: 'entity_type', values: ['Report'] }, { key: 'name', values: ['City2'] }], filterGroups: [] }),
+      // filter: confidence=90 OR (confidence=20 AND not City/Position) (used in: 04)
+      confidenceFilter: await runBaseline({ mode: 'or', filters: [{ key: 'confidence', values: ['90'], operator: 'eq' }], filterGroups: [{ mode: 'and', filters: [{ key: 'confidence', values: ['20'], operator: 'eq' }, { key: 'entity_type', values: ['City', 'Position'], operator: 'not_eq', mode: 'and' }], filterGroups: [] }] }),
+      // filter: (entity_type=City or Report) AND (name=City2 OR (confidence>25 AND entity_type=Report)) (used in: 05)
+      cityOrHighConfidenceReport: await runBaseline({ mode: 'and', filters: [{ key: 'entity_type', values: ['City', 'Report'], mode: 'or' }], filterGroups: [{ mode: 'or', filters: [{ key: 'name', values: ['City2'] }], filterGroups: [{ mode: 'and', filters: [{ key: 'entity_type', values: ['Report'], operator: 'eq' }, { key: 'confidence', values: ['25'], operator: 'gt' }], filterGroups: [] }] }] }),
+    };
     // Create a report
     const CREATE_REPORT_QUERY = gql`
         mutation ReportAdd($input: ReportAddInput!) {
@@ -220,7 +230,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
     const { edges: results1 } = await collectionQuery(testContext, ADMIN_USER, taxiiCollection, {});
     edgeIds = results1.map((e) => e.node.internal_id);
     const edgeNames = results1.map((e) => e.node.name);
-    expect(edgeIds.length).toEqual(baselineReportCount + 1); // baseline reports + the report created by this test
+    expect(edgeIds.length).toEqual(baselines.entityTypeReport + 1); // baseline reports + the report created by this test
     expect(edgeIds).includes(reportInternalId).toBeTruthy();
     expect(edgeNames).includes('Report').toBeTruthy();
     expect(edgeNames).includes('A demo report for testing purposes').toBeTruthy();
@@ -257,7 +267,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
     taxiiCollection = await storeLoadById(testContext, ADMIN_USER, taxiiInternalId, ENTITY_TYPE_TAXII_COLLECTION);
     const { edges: results3_1 } = await collectionQuery(testContext, ADMIN_USER, taxiiCollection, {});
     edgeIds = results3_1.map((e) => e.node.internal_id);
-    expect(edgeIds.length).toEqual(baselineReportCount + 2); // baseline reports + the report created by this test + City2
+    expect(edgeIds.length).toEqual(baselines.entityTypeReportOrCity2 + 1); // baseline + the report created by this test (City2 was already counted in baseline)
     // global mode = 'and'
     await changeTaxiiFilters({
       mode: 'and',
@@ -307,7 +317,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
     taxiiCollection = await storeLoadById(testContext, ADMIN_USER, taxiiInternalId, ENTITY_TYPE_TAXII_COLLECTION);
     const { edges: results4 } = await collectionQuery(testContext, ADMIN_USER, taxiiCollection, {});
     edgeIds = results4.map((e) => e.node.internal_id);
-    expect(edgeIds.length).toEqual(3); // report1 + the 2 relationship with confidence = 20 in DATA-TEXT-STIX2_v2
+    expect(edgeIds.length).toEqual(baselines.confidenceFilter + 1); // baseline + the report created by this test (confidence=90)
     expect(edgeIds).includes(reportInternalId).toBeTruthy();
     // --- 05. filters and filter groups in 3 imbrication levels --- //
     // (entity_type = CITY OR REPORT)
@@ -350,7 +360,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
     taxiiCollection = await storeLoadById(testContext, ADMIN_USER, taxiiInternalId, ENTITY_TYPE_TAXII_COLLECTION);
     const { edges: results5 } = await collectionQuery(testContext, ADMIN_USER, taxiiCollection, {});
     edgeIds = results5.map((e) => e.node.internal_id);
-    expect(edgeIds.length).toEqual(baselineHighConfidenceReportCount + 2); // baseline reports with confidence > 25 + the report created by this test (confidence=90) + City2
+    expect(edgeIds.length).toEqual(baselines.cityOrHighConfidenceReport + 2); // baseline + the report created by this test (confidence=90) + City2 (created by this test)
     expect(edgeIds).includes(reportInternalId).toBeTruthy();
     expect(edgeIds).includes(city2InternalId).toBeTruthy();
     // --- 06. filters with nil operator --- //
