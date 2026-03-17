@@ -119,9 +119,9 @@ const createApp = async (app, schema) => {
         scriptSrcAttr: ["'self'"],
         fontSrc: ["'self'", 'data:'],
         imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
-        manifestSrc: opts.manifestSrc,
-        connectSrc: opts.connectSrc,
-        objectSrc: opts.objectSrc,
+        manifestSrc: ["'self'", 'data:', 'https://*', 'http://*'],
+        connectSrc: ["'self'", 'wss://*', 'ws://*', 'data:', 'http://*', 'https://*'],
+        objectSrc: ["'self'", 'data:', 'http://*', 'https://*'],
         frameSrc: opts.allowedFrameSrc,
         frameAncestors: opts.frameAncestorDomains,
       },
@@ -132,26 +132,14 @@ const createApp = async (app, schema) => {
   const ancestorsFromConfig = nconf.get('app:public_dashboard_authorized_domains')?.trim() ?? '';
   const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
   const allowedFrameSrc = ["'self'"];
-  const scriptSrc = ["'self'", "'unsafe-inline'"];
-  const connectSrc = ["'self'", 'wss://*', 'data:', 'https://*'];
-  const objectSrc = ["'self'", 'data:', 'https://*'];
-  const manifestSrc = ["'self'", 'data:', 'https://*', 'http://*'];
-
+  const scriptSrc = ["'self'"];
   if (DEV_MODE) {
     scriptSrc.push("'unsafe-eval'");
-    connectSrc.push('http://*');
-    connectSrc.push('ws://*');
-    objectSrc.push('http://*');
-    manifestSrc.push('http://*');
   }
-
   const securityOpts = {
     frameAncestorDomains: "'none'",
     allowedFrameSrc,
     scriptSrc,
-    connectSrc,
-    objectSrc,
-    manifestSrc,
     isIframeAllowed: false,
   };
 
