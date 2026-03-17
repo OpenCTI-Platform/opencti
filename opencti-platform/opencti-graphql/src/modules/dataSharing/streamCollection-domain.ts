@@ -41,20 +41,20 @@ export const createStreamCollection = async (context: AuthContext, user: AuthUse
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].ADDED_TOPIC, element, user);
 };
-export const findById = async (context: AuthContext, user: AuthUser, collectionId: string): Promise<BasicStoreEntityStreamCollection> => {
-  return storeLoadById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
+export const findById = (context: AuthContext, user: AuthUser, collectionId: string) => {
+  return storeLoadById<BasicStoreEntityStreamCollection>(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
 };
 export const findStreamCollectionPaginated = (context: AuthContext, user: AuthUser, args: QueryStreamCollectionsArgs) => {
   // If user is logged, list all streams where the user have access.
   if (user && isUserHasCapability(user, TAXIIAPI)) {
     // If user can manage the feeds, list everything related
     const options = { ...args, includeAuthorities: true };
-    return pageEntitiesConnection(context, user, [ENTITY_TYPE_STREAM_COLLECTION], options);
+    return pageEntitiesConnection<BasicStoreEntityStreamCollection>(context, user, [ENTITY_TYPE_STREAM_COLLECTION], options);
   }
   // No user specified, listing only public streams
   const filters = addFilter(args?.filters, 'stream_public', 'true');
   const publicArgs = { ...(args ?? {}), filters };
-  return pageEntitiesConnection(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], publicArgs);
+  return pageEntitiesConnection<BasicStoreEntityStreamCollection>(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], publicArgs);
 };
 export const streamCollectionEditField = async (context: AuthContext, user: AuthUser, collectionId: string, input: EditInput[]) => {
   const filtersItem = input.find((item) => item.key === 'filters');

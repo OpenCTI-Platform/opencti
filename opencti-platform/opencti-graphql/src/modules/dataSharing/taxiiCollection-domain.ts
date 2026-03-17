@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { elPaginate, type PaginateOpts } from '../../database/engine';
 import { isNotEmptyField, READ_STIX_DATA_WITH_INFERRED, READ_STIX_INDICES } from '../../database/utils';
-import { ENTITY_TYPE_TAXII_COLLECTION, type StoreEntityTaxiiCollection } from './taxiiCollection-types';
+import { ENTITY_TYPE_TAXII_COLLECTION, type BasicStoreEntityTaxiiCollection, type StoreEntityTaxiiCollection } from './taxiiCollection-types';
 import { createEntity, deleteElementById, stixLoadByIds, updateAttribute } from '../../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { FunctionalError } from '../../config/errors';
@@ -45,18 +45,18 @@ export const createTaxiiCollection = async (context: AuthContext, user: AuthUser
   }
   return element;
 };
-export const findById = async (context: AuthContext, user: AuthUser, collectionId: string) => {
-  return storeLoadById(context, user, collectionId, [ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_INGESTION_TAXII_COLLECTION]);
+export const findById = (context: AuthContext, user: AuthUser, collectionId: string) => {
+  return storeLoadById<BasicStoreEntityTaxiiCollection>(context, user, collectionId, [ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_INGESTION_TAXII_COLLECTION]);
 };
 export const findTaxiiCollectionPaginated = (context: AuthContext, user: AuthUser, args: QueryTaxiiCollectionsArgs) => {
   if (user && isUserHasCapability(user, TAXIIAPI)) {
     const options = { ...args, includeAuthorities: true };
-    return pageEntitiesConnection(context, user, [ENTITY_TYPE_TAXII_COLLECTION], options);
+    return pageEntitiesConnection<BasicStoreEntityTaxiiCollection>(context, user, [ENTITY_TYPE_TAXII_COLLECTION], options);
   }
   // No user specified, listing only public taxii collections
   const filters = addFilter(args?.filters, 'taxii_public', 'true');
   const publicArgs = { ...(args ?? {}), filters };
-  return pageEntitiesConnection(context, SYSTEM_USER, [ENTITY_TYPE_TAXII_COLLECTION], publicArgs);
+  return pageEntitiesConnection<BasicStoreEntityTaxiiCollection>(context, SYSTEM_USER, [ENTITY_TYPE_TAXII_COLLECTION], publicArgs);
 };
 export const taxiiCollectionEditField = async (context: AuthContext, user: AuthUser, collectionId: string, input: EditInput[]) => {
   const finalInput = input.map(({ key, value }) => {
