@@ -56,8 +56,8 @@ export const xtmHubClient = {
     }
   },
   autoRegister: async (platform: { platformId: string; platformToken: string; platformUrl: string; platformTitle: string },
-                       enterpriseLicense: string,
-                       existing_users_count: number): Promise<Success> => {
+    enterpriseLicense: string,
+    existing_users_count: number): Promise<Success> => {
     const query = `
        mutation AutoRegisterPlatform($input: AutoRegisterPlatformInput!) {
         autoRegisterPlatform(input: $input) {
@@ -75,8 +75,8 @@ export const xtmHubClient = {
           contract: enterpriseLicense,
           version: PLATFORM_VERSION,
         },
-        existing_users_count
-      }
+        existing_users_count,
+      },
     };
     const httpClient = getHttpClient({
       baseURL: HUB_BACKEND_URL,
