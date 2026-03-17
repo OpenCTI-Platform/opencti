@@ -2,14 +2,7 @@ import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import { Avatar, Tooltip } from '@mui/material';
-import {
-  BugReportOutlined,
-  HourglassEmpty,
-  Person,
-  Shield,
-  ShieldOutlined,
-  TrackChangesOutlined
-} from '@mui/icons-material';
+import { BugReportOutlined, HourglassEmpty, Person, ShieldOutlined, TrackChangesOutlined } from '@mui/icons-material';
 import Chart from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
 import { useFormatter } from '../../../../components/i18n';
