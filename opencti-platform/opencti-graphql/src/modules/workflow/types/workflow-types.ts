@@ -57,6 +57,7 @@ export interface Transition<TContext extends Context = Context> {
   event: Event;
   conditions?: ConditionValidator<TContext>[];
   onTransition?: SideEffect<TContext>[];
+  actionTypes?: string[];
 }
 
 /**
@@ -89,6 +90,8 @@ export interface TriggerResult {
   reason?: string;
   newState?: string;
   status?: any;
+  instance?: any;
+  entity?: any;
 }
 
 /**

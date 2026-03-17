@@ -8,20 +8,20 @@ import { Theme } from '../../../components/Theme';
 import DraftProcessingStatus from './DraftProcessingStatus';
 import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
 import ErrorNotFound from '../../../components/ErrorNotFound';
-import DraftApprove from './DraftApprove';
 import DraftExit from './DraftExit';
 import { THIRTY_SECONDS } from '../../../utils/Time';
 import useInterval from '../../../utils/hooks/useInterval';
 import DraftAuthorizedMembers from './DraftAuthorizedMembers';
+import WorkflowStatus, { WorkflowTransitions } from '../common/workflow/WorkflowStatus';
 import { DraftToolbarQuery } from '@components/drafts/__generated__/DraftToolbarQuery.graphql';
 import { DraftToolbarFragment$key } from '@components/drafts/__generated__/DraftToolbarFragment.graphql';
 
 const draftFragment = graphql`
   fragment DraftToolbarFragment on DraftWorkspace {
     name
-    ...DraftApproveFragment
     ...DraftExitFragment
     ...DraftAuthorizedMembersFragment
+    ...WorkflowStatus_data
   }
 `;
 
@@ -71,9 +71,10 @@ const DraftToolbarComponent = ({
 
       <div style={{ flex: 1 }} />
 
+      <WorkflowStatus data={draft} />
+      <WorkflowTransitions data={draft} />
       <DraftAuthorizedMembers data={draft} />
       <DraftExit data={draft} />
-      <DraftApprove data={draft} />
     </Stack>
   );
 };
