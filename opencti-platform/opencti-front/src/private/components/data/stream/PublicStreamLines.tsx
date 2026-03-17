@@ -12,7 +12,7 @@ import { environment } from '../../../../relay/environment';
 import { PublicStreamLinesQuery } from './__generated__/PublicStreamLinesQuery.graphql';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { StreamLineDummy } from './StreamLine';
+import PublicStreamLineDummy from './PublicStreamLineDummy';
 import { DataColumns } from '../../../../components/list_lines';
 import { useFormatter } from '../../../../components/i18n';
 import { PublicStreamLines_node$key } from './__generated__/PublicStreamLines_node.graphql';
@@ -183,7 +183,7 @@ const PublicStreamLines = () => {
           dataColumns={dataColumns}
           dataList={streamCollections.edges}
           LineComponent={PublicStreamLine}
-          DummyLineComponent={<StreamLineDummy />}
+          DummyLineComponent={PublicStreamLineDummy}
         />
       </ListLines>
     </>

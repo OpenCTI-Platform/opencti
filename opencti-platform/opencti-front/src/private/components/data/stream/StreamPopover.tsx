@@ -8,7 +8,6 @@ import ListItemText from '@mui/material/ListItemText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import IconButton from '@common/button/IconButton';
 import { PopoverProps } from '@mui/material/Popover';
-import { StreamLine_node$data } from './__generated__/StreamLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -19,6 +18,7 @@ import Security from '../../../../utils/Security';
 import StreamCollectionEdition, { streamCollectionMutationFieldPatch } from './StreamCollectionEdition';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
+import { StreamLine_node$data } from '../__generated__/StreamLine_node.graphql';
 
 const streamCollectionPopoverDeletionMutation = graphql`
   mutation StreamPopoverDeletionMutation($id: ID!) {
