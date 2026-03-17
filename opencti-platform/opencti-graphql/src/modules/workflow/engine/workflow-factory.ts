@@ -95,7 +95,7 @@ export class WorkflowFactory {
     const definition = new WorkflowDefinition<TContext>(schema.initialState);
 
     schema.states.forEach((state) => {
-      definition.addState(state.name, {
+      definition.addState(state.statusId, {
         onEnter: this.createSideEffects<TContext>(state.onEnter),
         onExit: this.createSideEffects<TContext>(state.onExit),
       });
@@ -105,6 +105,7 @@ export class WorkflowFactory {
       definition.addTransition(t.from, t.to, t.event, {
         conditions: this.createConditions<TContext>(t.conditions),
         onTransition: this.createSideEffects<TContext>(t.actions),
+        actionTypes: t.actions?.map((a) => a.type) || [],
       });
     });
 
