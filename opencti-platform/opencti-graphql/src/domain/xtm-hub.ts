@@ -1,7 +1,7 @@
-import { getEntityFromCache } from '../database/cache';
+import {getEntitiesListFromCache, getEntityFromCache} from '../database/cache';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
-import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import {ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER} from '../schema/internalObject';
 import { xtmHubClient } from '../modules/xtm/hub/xtm-hub-client';
 import { type AutoRegisterInput, XtmHubRegistrationStatus } from '../generated/graphql';
 import { updateAttribute } from '../database/middleware';
@@ -77,6 +77,10 @@ export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, 
   if (!input.platform_token) {
     return { success: false };
   }
+
+  const users = await getEntitiesListFromCache(context, user, ENTITY_TYPE_USER) as AuthUser[];
+  const existing_users_count = users.filter((user) => !user.user_service_account).length;
+
   const response = await xtmHubClient.autoRegister(
     {
       platformId: settings.id,
@@ -85,6 +89,7 @@ export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, 
       platformTitle: settings.platform_title ?? '',
     },
     licenseInfo.license_type,
+    existing_users_count
   );
   if (!response.success) {
     return { success: false };

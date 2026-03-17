@@ -55,23 +55,28 @@ export const xtmHubClient = {
       return 'inactive';
     }
   },
-  autoRegister: async (platform: { platformId: string; platformToken: string; platformUrl: string; platformTitle: string }, enterpriseLicense: string): Promise<Success> => {
+  autoRegister: async (platform: { platformId: string; platformToken: string; platformUrl: string; platformTitle: string },
+                       enterpriseLicense: string,
+                       existing_users_count: number): Promise<Success> => {
     const query = `
-       mutation AutoRegisterPlatform($platform: PlatformInput!) {
-        autoRegisterPlatform(platform: $platform) {
+       mutation AutoRegisterPlatform($input: AutoRegisterPlatformInput!) {
+        autoRegisterPlatform(input: $input) {
           success
         }
       }
     `;
 
     const variables = {
-      platform: {
-        id: platform.platformId,
-        url: platform.platformUrl,
-        title: platform.platformTitle,
-        contract: enterpriseLicense,
-        version: PLATFORM_VERSION,
-      },
+      input: {
+        platform: {
+          id: platform.platformId,
+          url: platform.platformUrl,
+          title: platform.platformTitle,
+          contract: enterpriseLicense,
+          version: PLATFORM_VERSION,
+        },
+        existing_users_count
+      }
     };
     const httpClient = getHttpClient({
       baseURL: HUB_BACKEND_URL,
