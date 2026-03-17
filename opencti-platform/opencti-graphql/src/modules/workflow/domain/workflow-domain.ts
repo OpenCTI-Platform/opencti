@@ -8,19 +8,12 @@ import { findByType as findEntitySettingByType } from '../../entitySetting/entit
 import { WorkflowFactory } from '../engine/workflow-factory';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE, type TriggerResult } from '../types/workflow-types';
 import type { BasicStoreEntity } from '../../../types/store';
+import { bypassDraftContext } from '../../../utils/draftContext';
 
 interface WorkflowInstanceStoreEntity extends BasicStoreEntity {
   currentState: string;
   history: string;
 }
-
-const bypassDraftContext = (context: AuthContext): AuthContext => {
-  return {
-    ...context,
-    draft_context: undefined,
-    user: context.user ? { ...context.user, draft_context: undefined } : undefined,
-  };
-};
 
 const getWorkflowConfig = async (context: AuthContext, user: AuthUser, targetType: string) => {
   const executionContext = bypassDraftContext(context);
