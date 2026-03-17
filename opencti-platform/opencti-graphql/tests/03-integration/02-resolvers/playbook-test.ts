@@ -203,12 +203,8 @@ describe('Playbook resolver standard behavior', () => {
   });
 
   afterAll(async () => {
-    // Final cleanup — delete playbook if it still exists
-    try {
-      await deletePlaybook(playbookId);
-    } catch (_) {
-      // already deleted by the playbookDelete describe
-    }
+    // May already be deleted by the playbookDelete describe
+    await deletePlaybook(playbookId).catch(() => {});
   });
 
   describe('playbook CRUD', () => {
@@ -253,7 +249,7 @@ describe('Playbook resolver standard behavior', () => {
   });
 
   describe('playbookAddNode', () => {
-    // playbook is already empty after global creation
+    // playbook is empty after global creation
 
     it('should add entry node to a playbook', async () => {
       const addNodeInput: PlaybookAddNodeInput = {
@@ -543,112 +539,79 @@ describe('Playbook resolver standard behavior', () => {
   });
 
   describe('playbookDeleteLink', () => {
-    describe('when user has no Manage Playbooks capability', () => {
-      beforeAll(async () => {
-        await clearPlaybook(playbookId);
-        entryNodeId = await addEntryNode(playbookId);
-        matchingNodeId = await addMatchingNode(playbookId);
-        linkId = await addLink(playbookId, entryNodeId, matchingNodeId);
-      });
+    beforeAll(async () => {
+      await clearPlaybook(playbookId);
+      entryNodeId = await addEntryNode(playbookId);
+      matchingNodeId = await addMatchingNode(playbookId);
+      linkId = await addLink(playbookId, entryNodeId, matchingNodeId);
+    });
 
-      it('should not delete a link', async () => {
-        await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
-          query: DELETE_LINK_PLAYBOOK,
-          variables: { id: playbookId, linkId },
-        });
+    it('should not delete a link if no Manage Playbooks capability', async () => {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+        query: DELETE_LINK_PLAYBOOK,
+        variables: { id: playbookId, linkId },
       });
     });
 
-    describe('when deleting an existing link', () => {
-      beforeAll(async () => {
-        await clearPlaybook(playbookId);
-        entryNodeId = await addEntryNode(playbookId);
-        matchingNodeId = await addMatchingNode(playbookId);
-        linkId = await addLink(playbookId, entryNodeId, matchingNodeId);
+    it('should delete an existing link and keep nodes', async () => {
+      const deleteResult = await adminQueryWithSuccess({
+        query: DELETE_LINK_PLAYBOOK,
+        variables: { id: playbookId, linkId },
       });
+      expect(deleteResult.data?.playbookDeleteLink.id).toBeDefined();
 
-      it('should remove the link and keep nodes', async () => {
-        const deleteResult = await adminQueryWithSuccess({
-          query: DELETE_LINK_PLAYBOOK,
-          variables: { id: playbookId, linkId },
-        });
-        expect(deleteResult.data?.playbookDeleteLink.id).toBeDefined();
-
-        const playbookDef = await readPlaybookDefinition(playbookId);
-        expect(playbookDef.links.length).toEqual(0);
-        expect(playbookDef.nodes.length).toEqual(2);
-      });
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      expect(playbookDef.links.length).toEqual(0);
+      expect(playbookDef.nodes.length).toEqual(2);
     });
 
-    describe('when deleting a non-existent link', () => {
-      beforeAll(async () => {
-        await clearPlaybook(playbookId);
+    it('should handle deleting a non-existent link gracefully', async () => {
+      const deleteResult = await adminQueryWithSuccess({
+        query: DELETE_LINK_PLAYBOOK,
+        variables: { id: playbookId, linkId: 'non-existent-link-id' },
       });
-
-      it('should handle gracefully', async () => {
-        const deleteResult = await adminQueryWithSuccess({
-          query: DELETE_LINK_PLAYBOOK,
-          variables: { id: playbookId, linkId: 'non-existent-link-id' },
-        });
-        expect(deleteResult.data?.playbookDeleteLink.id).toBeDefined();
-      });
+      expect(deleteResult.data?.playbookDeleteLink.id).toBeDefined();
     });
   });
 
   describe('playbookDeleteNode', () => {
-    describe('when user has no Manage Playbooks capability', () => {
-      beforeAll(async () => {
-        await clearPlaybook(playbookId);
-        entryNodeId = await addEntryNode(playbookId);
-      });
+    beforeAll(async () => {
+      await clearPlaybook(playbookId);
+      entryNodeId = await addEntryNode(playbookId);
+      matchingNodeId = await addMatchingNode(playbookId);
+      await addLink(playbookId, entryNodeId, matchingNodeId);
+    });
 
-      it('should not delete a node', async () => {
-        await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
-          query: DELETE_NODE_PLAYBOOK,
-          variables: { id: playbookId, nodeId: entryNodeId },
-        });
+    it('should not delete a node if no Manage Playbooks capability', async () => {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+        query: DELETE_NODE_PLAYBOOK,
+        variables: { id: playbookId, nodeId: entryNodeId },
       });
     });
 
-    describe('when deleting a node that has associated links', () => {
-      beforeAll(async () => {
-        await clearPlaybook(playbookId);
-        entryNodeId = await addEntryNode(playbookId);
-        matchingNodeId = await addMatchingNode(playbookId);
-        await addLink(playbookId, entryNodeId, matchingNodeId);
+    it('should delete a node and its associated links', async () => {
+      const deleteResult = await adminQueryWithSuccess({
+        query: DELETE_NODE_PLAYBOOK,
+        variables: { id: playbookId, nodeId: matchingNodeId },
       });
+      expect(deleteResult.data?.playbookDeleteNode.id).toBeDefined();
 
-      it('should delete the node and its associated links', async () => {
-        const deleteResult = await adminQueryWithSuccess({
-          query: DELETE_NODE_PLAYBOOK,
-          variables: { id: playbookId, nodeId: matchingNodeId },
-        });
-        expect(deleteResult.data?.playbookDeleteNode.id).toBeDefined();
-
-        const playbookDef = await readPlaybookDefinition(playbookId);
-        expect(playbookDef.nodes.length).toEqual(1);
-        expect(playbookDef.nodes[0].id).toEqual(entryNodeId);
-        expect(playbookDef.links.length).toEqual(0);
-      });
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      expect(playbookDef.nodes.length).toEqual(1);
+      expect(playbookDef.nodes[0].id).toEqual(entryNodeId);
+      expect(playbookDef.links.length).toEqual(0);
     });
 
-    describe('when deleting the last remaining entry node', () => {
-      beforeAll(async () => {
-        await clearPlaybook(playbookId);
-        entryNodeId = await addEntryNode(playbookId);
+    it('should delete the last remaining entry node and leave the playbook empty', async () => {
+      const deleteResult = await adminQueryWithSuccess({
+        query: DELETE_NODE_PLAYBOOK,
+        variables: { id: playbookId, nodeId: entryNodeId },
       });
+      expect(deleteResult.data?.playbookDeleteNode.id).toBeDefined();
 
-      it('should leave the playbook empty', async () => {
-        const deleteResult = await adminQueryWithSuccess({
-          query: DELETE_NODE_PLAYBOOK,
-          variables: { id: playbookId, nodeId: entryNodeId },
-        });
-        expect(deleteResult.data?.playbookDeleteNode.id).toBeDefined();
-
-        const playbookDef = await readPlaybookDefinition(playbookId);
-        expect(playbookDef.nodes.length).toEqual(0);
-        expect(playbookDef.links.length).toEqual(0);
-      });
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      expect(playbookDef.nodes.length).toEqual(0);
+      expect(playbookDef.links.length).toEqual(0);
     });
   });
 
