@@ -39,7 +39,17 @@ const workflowResolvers = {
   WorkflowInstance: {
     id: (instance: any) => instance.id || instance.internal_id,
     currentState: (instance: any) => instance.currentState,
+    currentStatus: (instance: any) => ({ id: instance.currentState, template_id: instance.currentState }),
     allowedTransitions: (instance: any) => instance.allowedTransitions,
+  },
+  WorkflowTransition: {
+    toStatus: (transition: any) => ({ id: transition.toState, template_id: transition.toState }),
+    actions: (transition: any) => transition.actions ?? [],
+  },
+  WorkflowTriggerResult: {
+    status: (result: any) => (result.newState ? { id: result.newState, template_id: result.newState } : null),
+    instance: (result: any) => result.instance,
+    entity: (result: any) => result.entity,
   },
   DraftWorkspace: {
     workflowInstance: (draft: any, _: any, context: AuthContext) => {
