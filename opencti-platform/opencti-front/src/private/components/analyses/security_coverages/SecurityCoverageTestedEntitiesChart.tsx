@@ -114,7 +114,7 @@ const SecurityCoverageTestedEntitiesChart: FunctionComponent<Props> = ({ securit
   );
 
   return (
-    <Card title={t_i18n('Tested entity')}>
+    <Card title={t_i18n('Tested entities')}>
       {categories.length === 0
         ? <WidgetNoData /> : (
             <Chart
