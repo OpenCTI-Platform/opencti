@@ -253,10 +253,7 @@ describe('Playbook resolver standard behavior', () => {
   });
 
   describe('playbookAddNode', () => {
-    beforeAll(async () => {
-      // Ensure playbook is empty before addNode tests
-      await clearPlaybook(playbookId);
-    });
+    // playbook is already empty after global creation
 
     it('should add entry node to a playbook', async () => {
       const addNodeInput: PlaybookAddNodeInput = {
