@@ -131,6 +131,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
             entity={securityCoverage}
             tabs={[
               'overview',
+              'result',
               'content',
               'files',
               'history',
