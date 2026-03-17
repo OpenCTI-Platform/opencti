@@ -382,6 +382,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_IDENTITY_SYSTEM}_${ENTITY_TYPE_IDENTITY_SYSTEM}`]: [
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN },
   ],
+  [`${ENTITY_TYPE_IDENTITY_SYSTEM}_${ENTITY_SOFTWARE}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED },
+  ],
   // endregion
   // region INCIDENT
   [`${ENTITY_TYPE_INCIDENT}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
@@ -798,6 +801,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_INFRASTRUCTURE}`]: [
     { name: RELATION_OWNS, type: REL_EXTENDED },
+  ],
+  [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_VULNERABILITY}`]: [
+    { name: RELATION_HAS, type: REL_EXTENDED },
   ],
   // endregion
   // region SECURITY_PLATFORM
