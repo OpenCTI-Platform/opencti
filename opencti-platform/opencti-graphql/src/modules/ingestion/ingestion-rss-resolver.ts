@@ -1,4 +1,11 @@
-import { addIngestion, findRssIngestionPaginated, findById, ingestionDelete, ingestionEditField } from './ingestion-rss-domain';
+import {
+  addIngestion,
+  findRssIngestionPaginated,
+  findById,
+  ingestionDelete,
+  ingestionEditField,
+  ingestionAddAutoUser
+} from './ingestion-rss-domain';
 import type { Resolvers } from '../../generated/graphql';
 import { storeLoadByIds } from '../../database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
@@ -26,6 +33,9 @@ const ingestionRssResolvers: Resolvers = {
     },
     ingestionRssFieldPatch: (_, { id, input }, context) => {
       return ingestionEditField(context, context.user, id, input);
+    },
+    ingestionRssAddAutoUser: (_, { id, input }, context) => {
+      return ingestionAddAutoUser(context, context.user, id, input);
     },
   },
 };

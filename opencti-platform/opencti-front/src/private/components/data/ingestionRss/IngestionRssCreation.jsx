@@ -21,6 +21,7 @@ import { insertNode } from '../../../../utils/store';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import IngestionCreationUserHandling from "@components/data/IngestionCreationUserHandling";
 
 const styles = (theme) => ({
   createButton: {
@@ -97,9 +98,11 @@ const IngestionRssCreation = (props) => {
       uri: values.uri,
       report_types: values.report_types,
       user_id: values.user_id?.value,
+      automatic_user: values.automatic_user ?? true,
       current_state_date: values.current_state_date,
       created_by_ref: values.created_by_ref?.value,
       object_marking_refs: values.object_marking_refs?.map((v) => v.value),
+      ...((values.automatic_user !== false) && { confidence_level: Number(values.confidence_level) }),
     };
     commitMutation({
       mutation: IngestionRssCreationMutation,
@@ -130,6 +133,7 @@ const IngestionRssCreation = (props) => {
             scheduling_period: 'PT1H',
             report_types: [],
             user_id: '',
+            automatic_user: true,
             created_by_ref: '',
             objectMarking: [],
             current_state_date: null,
@@ -164,11 +168,9 @@ const IngestionRssCreation = (props) => {
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
-              <CreatorField
-                name="user_id"
-                label={t('User responsible for data creation (empty = System)')}
-                containerStyle={fieldSpacingContainerStyle}
-                showConfidence
+              <IngestionCreationUserHandling
+                default_confidence_level={50}
+                labelTag="F"
               />
               <Field
                 component={DateTimePickerField}

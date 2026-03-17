@@ -12930,7 +12930,14 @@ export type IngestionRss = BasicObject & InternalObject & {
   user?: Maybe<Creator>;
 };
 
+export type IngestionRssAddAutoUserInput = {
+  confidence_level: Scalars['Int']['input'];
+  user_name: Scalars['String']['input'];
+};
+
 export type IngestionRssAddInput = {
+  automatic_user?: InputMaybe<Scalars['Boolean']['input']>;
+  confidence_level?: InputMaybe<Scalars['Int']['input']>;
   created_by_ref?: InputMaybe<Scalars['String']['input']>;
   current_state_date?: InputMaybe<Scalars['DateTime']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
@@ -12940,7 +12947,7 @@ export type IngestionRssAddInput = {
   report_types?: InputMaybe<Array<Scalars['String']['input']>>;
   scheduling_period?: InputMaybe<Scalars['String']['input']>;
   uri: Scalars['String']['input'];
-  user_id?: InputMaybe<Scalars['String']['input']>;
+  user_id: Scalars['String']['input'];
 };
 
 export type IngestionRssConnection = {
@@ -16072,6 +16079,7 @@ export type Mutation = {
   ingestionJsonResetState?: Maybe<IngestionJson>;
   ingestionJsonTester?: Maybe<JsonMapperTestResult>;
   ingestionRssAdd?: Maybe<IngestionRss>;
+  ingestionRssAddAutoUser?: Maybe<IngestionRss>;
   ingestionRssDelete?: Maybe<Scalars['ID']['output']>;
   ingestionRssFieldPatch?: Maybe<IngestionRss>;
   ingestionTaxiiAdd?: Maybe<IngestionTaxii>;
@@ -17389,6 +17397,12 @@ export type MutationIngestionJsonTesterArgs = {
 
 export type MutationIngestionRssAddArgs = {
   input: IngestionRssAddInput;
+};
+
+
+export type MutationIngestionRssAddAutoUserArgs = {
+  id: Scalars['ID']['input'];
+  input: IngestionRssAddAutoUserInput;
 };
 
 
@@ -38014,6 +38028,7 @@ export type ResolversTypes = ResolversObject<{
   IngestionJsonOrdering: IngestionJsonOrdering;
   IngestionQueryAttribute: ResolverTypeWrapper<IngestionQueryAttribute>;
   IngestionRss: ResolverTypeWrapper<BasicStoreEntityIngestionRss>;
+  IngestionRssAddAutoUserInput: IngestionRssAddAutoUserInput;
   IngestionRssAddInput: IngestionRssAddInput;
   IngestionRssConnection: ResolverTypeWrapper<Omit<IngestionRssConnection, 'edges'> & { edges: Array<ResolversTypes['IngestionRssEdge']> }>;
   IngestionRssEdge: ResolverTypeWrapper<Omit<IngestionRssEdge, 'node'> & { node: ResolversTypes['IngestionRss'] }>;
@@ -39039,6 +39054,7 @@ export type ResolversParentTypes = ResolversObject<{
   IngestionJsonEdge: Omit<IngestionJsonEdge, 'node'> & { node: ResolversParentTypes['IngestionJson'] };
   IngestionQueryAttribute: IngestionQueryAttribute;
   IngestionRss: BasicStoreEntityIngestionRss;
+  IngestionRssAddAutoUserInput: IngestionRssAddAutoUserInput;
   IngestionRssAddInput: IngestionRssAddInput;
   IngestionRssConnection: Omit<IngestionRssConnection, 'edges'> & { edges: Array<ResolversParentTypes['IngestionRssEdge']> };
   IngestionRssEdge: Omit<IngestionRssEdge, 'node'> & { node: ResolversParentTypes['IngestionRss'] };
@@ -45220,6 +45236,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ingestionJsonResetState?: Resolver<Maybe<ResolversTypes['IngestionJson']>, ParentType, ContextType, RequireFields<MutationIngestionJsonResetStateArgs, 'id'>>;
   ingestionJsonTester?: Resolver<Maybe<ResolversTypes['JsonMapperTestResult']>, ParentType, ContextType, RequireFields<MutationIngestionJsonTesterArgs, 'input'>>;
   ingestionRssAdd?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationIngestionRssAddArgs, 'input'>>;
+  ingestionRssAddAutoUser?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationIngestionRssAddAutoUserArgs, 'id' | 'input'>>;
   ingestionRssDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIngestionRssDeleteArgs, 'id'>>;
   ingestionRssFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationIngestionRssFieldPatchArgs, 'id' | 'input'>>;
   ingestionTaxiiAdd?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiAddArgs, 'input'>>;
