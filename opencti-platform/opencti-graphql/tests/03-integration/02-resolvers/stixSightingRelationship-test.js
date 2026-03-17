@@ -8,6 +8,7 @@ const READ_QUERY = gql`
       id
       standard_id
       description
+      x_opencti_negative
       toStix
       editContext {
         focusOn
@@ -17,30 +18,32 @@ const READ_QUERY = gql`
   }
 `;
 
+const CREATE_QUERY = gql`
+  mutation StixDomainRelationAdd($input: StixSightingRelationshipAddInput!) {
+    stixSightingRelationshipAdd(input: $input) {
+      id
+      standard_id
+      description
+      x_opencti_negative
+    }
+  }
+`;
+
 describe('stixSightingRelationship resolver standard behavior', () => {
   let stixSightingRelationshipInternalId;
   let stixSightingRelationshipStandardId;
+  const STIX_SIGHTING_TO_CREATE = {
+    input: {
+      fromId: 'indicator--10e9a46e-7edb-496b-a167-e27ea3ed0079',
+      toId: 'location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c',
+      description: 'stixSightingRelationship description',
+      attribute_count: 1,
+      confidence: 15,
+      x_opencti_negative: false,
+    },
+  };
   it('should stixSightingRelationship created', async () => {
-    const CREATE_QUERY = gql`
-      mutation StixDomainRelationAdd($input: StixSightingRelationshipAddInput!) {
-        stixSightingRelationshipAdd(input: $input) {
-          id
-          standard_id
-          description
-        }
-      }
-    `;
     // Create the stixSightingRelationship
-    const STIX_SIGHTING_TO_CREATE = {
-      input: {
-        fromId: 'indicator--10e9a46e-7edb-496b-a167-e27ea3ed0079',
-        toId: 'location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c',
-        description: 'stixSightingRelationship description',
-        attribute_count: 1,
-        confidence: 15,
-        x_opencti_negative: false,
-      },
-    };
     const stixDomainEntity = await queryAsAdmin({
       query: CREATE_QUERY,
       variables: STIX_SIGHTING_TO_CREATE,
@@ -48,10 +51,34 @@ describe('stixSightingRelationship resolver standard behavior', () => {
     expect(stixDomainEntity).not.toBeNull();
     expect(stixDomainEntity.data.stixSightingRelationshipAdd).not.toBeNull();
     expect(stixDomainEntity.data.stixSightingRelationshipAdd.description).toEqual(
-      'stixSightingRelationship description'
+      'stixSightingRelationship description',
     );
     stixSightingRelationshipInternalId = stixDomainEntity.data.stixSightingRelationshipAdd.id;
     stixSightingRelationshipStandardId = stixDomainEntity.data.stixSightingRelationshipAdd.standard_id;
+  });
+  it('should upsert x_opencti_negative when sighting already exists', async () => {
+    // Re-create the same sighting with x_opencti_negative changed to true
+    const upsertResult = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          ...STIX_SIGHTING_TO_CREATE.input,
+          x_opencti_negative: true,
+        },
+      },
+    });
+    expect(upsertResult).not.toBeNull();
+    expect(upsertResult.data.stixSightingRelationshipAdd).not.toBeNull();
+    // Should return the same sighting (upsert, not a new one)
+    expect(upsertResult.data.stixSightingRelationshipAdd.id).toEqual(stixSightingRelationshipInternalId);
+    expect(upsertResult.data.stixSightingRelationshipAdd.x_opencti_negative).toEqual(true);
+
+    // Verify by reading the sighting again
+    const readResult = await queryAsAdmin({
+      query: READ_QUERY,
+      variables: { id: stixSightingRelationshipInternalId },
+    });
+    expect(readResult.data.stixSightingRelationship.x_opencti_negative).toEqual(true);
   });
   it('should stixSightingRelationship loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({
@@ -102,7 +129,7 @@ describe('stixSightingRelationship resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.stixSightingRelationshipEdit.fieldPatch.description).toEqual(
-      'stixSightingRelationship - test'
+      'stixSightingRelationship - test',
     );
   });
   it('should context patch stixSightingRelationship', async () => {
