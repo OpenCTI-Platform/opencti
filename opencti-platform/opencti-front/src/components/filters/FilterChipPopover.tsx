@@ -458,7 +458,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   };
 
   const displayOperatorAndFilter = (fKey: string, subKey?: string, disabled = false) => {
-    const availableOperators = getAvailableOperatorForFilter(filterDefinition, subKey);
+    const isStixFiltering = entityTypes?.includes('Stix-Filtering');
+    const availableOperators = getAvailableOperatorForFilter(filterDefinition, subKey, { isStixFiltering });
     const finalFilterDefinition = useFilterDefinition(fKey, entityTypes, subKey);
     return (
       <>

@@ -48,6 +48,7 @@ import {
   PIR_SCORE_FILTER,
   PIR_SCORE_SUBFILTER,
   PIR_IDS_SUBFILTER,
+  DESCRIPTION_FILTER,
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
@@ -476,6 +477,12 @@ export const testPirScore = (stix: any, filter: Filter) => {
   return stixValues.some((stixValue) => testNumericFilter(pirScoreFilter, stixValue));
 };
 
+export const testDescription = (stix: any, filter: Filter) => {
+  const stixValue: string | null = stix.description ?? stix.extensions?.[STIX_EXT_OCTI_SCO]?.description ?? null;
+  const value = stixValue ? [stixValue] : [];
+  return testStringFilter(filter, value);
+};
+
 /**
  * TODO: This mapping could be given by the schema, like we do with stix converters
  */
@@ -514,6 +521,7 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [CVSS_BASE_SCORE_FILTER]: testCvssScore,
   [CVSS_BASE_SEVERITY_FILTER]: testCvssSeverity,
   [PIR_SCORE_FILTER]: testPirScore,
+  [DESCRIPTION_FILTER]: testDescription,
 
   // special keys (more complex behavior)
   [CONNECTED_TO_INSTANCE_FILTER]: testConnectedTo, // instance trigger, direct events

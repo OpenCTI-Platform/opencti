@@ -70,6 +70,7 @@ export const REQUEST_FOR_INFORMATION_TYPES_FILTER = 'information_types';
 export const REQUEST_FOR_TAKEDOWN_TYPES_FILTER = 'takedown_types';
 export const NOTE_TYPES_FILTER = 'note_types';
 export const INCIDENT_TYPE_FILTER = 'incident_type';
+export const DESCRIPTION_FILTER = 'description';
 
 // special cases
 export const IDS_FILTER = 'ids';
