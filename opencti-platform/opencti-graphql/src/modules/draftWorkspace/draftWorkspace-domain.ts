@@ -43,7 +43,7 @@ import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreEntit
 import type { AuthContext, AuthUser } from '../../types/user';
 import { getUserAccessRight, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, SYSTEM_USER } from '../../utils/access';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
-import { getDraftContext } from '../../utils/draftContext';
+import { bypassDraftContext, getDraftContext } from '../../utils/draftContext';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { now } from '../../utils/format';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from './draftOperations';
@@ -59,14 +59,6 @@ export const checkAndReturnDraft = async (context: AuthContext, user: AuthUser, 
     throw FunctionalError(`Draft ${draftId} cannot be found`);
   }
   return draft;
-};
-
-const bypassDraftContext = (context: AuthContext): AuthContext => {
-  return {
-    ...context,
-    draft_context: undefined,
-    user: context.user ? { ...context.user, draft_context: undefined } : undefined,
-  };
 };
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {

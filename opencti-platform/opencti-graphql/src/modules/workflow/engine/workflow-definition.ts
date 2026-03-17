@@ -42,6 +42,7 @@ export class WorkflowDefinition<TContext extends Context = Context> {
     options?: {
       conditions?: ConditionValidator<TContext>[];
       onTransition?: SideEffect<TContext>[];
+      actionTypes?: string[];
     },
   ) {
     // Ensure states exist
@@ -54,6 +55,7 @@ export class WorkflowDefinition<TContext extends Context = Context> {
       event,
       conditions: options?.conditions || [],
       onTransition: options?.onTransition || [],
+      actionTypes: options?.actionTypes || [],
     });
     return this;
   }

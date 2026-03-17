@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { adminQuery, ADMIN_USER, TEST_ORGANIZATION } from '../../utils/testQuery';
+import { ADMIN_USER, TEST_ORGANIZATION } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 
 const WORKFLOW_DEFINITION_SET_MUTATION = gql`
   mutation WorkflowDefinitionSet($entityType: String!, $definition: String!) {
@@ -58,13 +59,13 @@ describe('Workflow Actions Resolver', () => {
   let draftWorkspaceId: string;
 
   beforeAll(async () => {
-    const result = await adminQuery({
+    const result = await queryAsAdmin({
       query: CREATE_DRAFT_WORKSPACE_QUERY,
       variables: {
         input: { name: 'Workflow Action Test Workspace' },
       },
     });
-    draftWorkspaceId = result.data.draftWorkspaceAdd.id;
+    draftWorkspaceId = result.data?.draftWorkspaceAdd.id;
   });
 
   it('should update authorized members on workflow event', async () => {
@@ -79,14 +80,14 @@ describe('Workflow Actions Resolver', () => {
       name: 'Draft Workflow with Action',
       initialState: 'open',
       states: [
-        { name: 'open' },
+        { statusId: 'open' },
         {
-          name: 'restricted',
+          statusId: 'restricted',
           onEnter: [
             {
               type: 'updateAuthorizedMembers',
               params: {
-                authorized_members: authorizedMembersInput
+                authorized_members: authorizedMembersInput,
               },
             },
           ],
@@ -96,7 +97,7 @@ describe('Workflow Actions Resolver', () => {
     });
 
     // 2. Set the workflow definition
-    await adminQuery({
+    await queryAsAdmin({
       query: WORKFLOW_DEFINITION_SET_MUTATION,
       variables: {
         entityType: 'DraftWorkspace',
@@ -105,23 +106,23 @@ describe('Workflow Actions Resolver', () => {
     });
 
     // 3. Trigger the event
-    const triggerResult = await adminQuery({
+    const triggerResult = await queryAsAdmin({
       query: TRIGGER_WORKFLOW_EVENT_MUTATION,
       variables: {
         entityId: draftWorkspaceId,
         eventName: 'restrict_event',
       },
     });
-    expect(triggerResult.data.triggerWorkflowEvent.success).toBe(true);
-    expect(triggerResult.data.triggerWorkflowEvent.newState).toBe('restricted');
+    expect(triggerResult.data?.triggerWorkflowEvent.success).toBe(true);
+    expect(triggerResult.data?.triggerWorkflowEvent.newState).toBe('restricted');
 
     // 4. Verify authorized members
-    const workspaceResult = await adminQuery({
+    const workspaceResult = await queryAsAdmin({
       query: DRAFT_WORKSPACE_QUERY,
       variables: { id: draftWorkspaceId },
     });
 
-    const { authorizedMembers } = workspaceResult.data.draftWorkspace;
+    const { authorizedMembers } = workspaceResult.data?.draftWorkspace || {};
     expect(authorizedMembers.length).toBe(2);
     expect(authorizedMembers).toEqual(expect.arrayContaining([
       expect.objectContaining({ member_id: ADMIN_USER.id, access_right: 'admin' }),
@@ -130,7 +131,7 @@ describe('Workflow Actions Resolver', () => {
   });
 
   it('should cleanup after tests', async () => {
-    await adminQuery({
+    await queryAsAdmin({
       query: WORKFLOW_DEFINITION_DELETE_MUTATION,
       variables: {
         entityType: 'DraftWorkspace',
