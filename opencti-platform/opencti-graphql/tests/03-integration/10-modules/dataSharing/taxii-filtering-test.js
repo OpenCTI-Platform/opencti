@@ -113,6 +113,8 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
       confidenceFilter: await runBaseline({ mode: 'or', filters: [{ key: 'confidence', values: ['90'], operator: 'eq' }], filterGroups: [{ mode: 'and', filters: [{ key: 'confidence', values: ['20'], operator: 'eq' }, { key: 'entity_type', values: ['City', 'Position'], operator: 'not_eq', mode: 'and' }], filterGroups: [] }] }),
       // filter: (entity_type=City or Report) AND (name=City2 OR (confidence>25 AND entity_type=Report)) (used in: 05)
       cityOrHighConfidenceReport: await runBaseline({ mode: 'and', filters: [{ key: 'entity_type', values: ['City', 'Report'], mode: 'or' }], filterGroups: [{ mode: 'or', filters: [{ key: 'name', values: ['City2'] }], filterGroups: [{ mode: 'and', filters: [{ key: 'entity_type', values: ['Report'], operator: 'eq' }, { key: 'confidence', values: ['25'], operator: 'gt' }], filterGroups: [] }] }] }),
+      // filter: published=nil AND confidence>25 AND (entity_type=City OR Report) (used in: 06)
+      publishedNilHighConfidenceCityOrReport: await runBaseline({ mode: 'and', filters: [{ key: 'published', values: [], operator: 'nil' }, { key: 'confidence', values: ['25'], operator: 'gt' }, { key: 'entity_type', values: ['City', 'Report'], operator: 'eq', mode: 'or' }], filterGroups: [] }),
     };
     // Create a report
     const CREATE_REPORT_QUERY = gql`
