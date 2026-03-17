@@ -59,8 +59,8 @@ interface StreamCollectionConsumer {
 }
 
 interface StreamConsumersDrawerProps {
-  streamCollectionId: string;
-  streamCollectionName: string;
+  streamCollectionId?: string;
+  streamCollectionName: string | null | undefined;
   open: boolean;
   onClose: () => void;
 }
