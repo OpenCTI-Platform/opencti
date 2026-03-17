@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
-import { Alert, AlertTitle, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Menu, MenuItem } from '@mui/material';
+import { Alert, AlertTitle, DialogActions, DialogContentText, Menu, MenuItem } from '@mui/material';
 import { ArrowDropDownOutlined } from '@mui/icons-material';
 import ItemStatus from '../../../../components/ItemStatus';
 import Button from '../../../../components/common/button/Button';
@@ -10,6 +10,8 @@ import { useFormatter } from '../../../../components/i18n';
 import useSwitchDraft from '../../drafts/useSwitchDraft';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { useNavigate } from 'react-router-dom';
+import Transition from '../../../../components/Transition';
+import Dialog from '@common/dialog/Dialog';
 
 export const workflowStatusFragment = graphql`
   fragment WorkflowStatus_data on DraftWorkspace {
@@ -107,7 +109,7 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
 
   const draft = useFragment(workflowStatusFragment, data);
   const { exitDraft } = useSwitchDraft();
-  const [commit] = useMutation<WorkflowStatusTriggerMutation>(workflowStatusTriggerMutation);
+  const [commit, approving] = useMutation<WorkflowStatusTriggerMutation>(workflowStatusTriggerMutation);
 
   if (!draft.workflowInstance || draft.workflowInstance.allowedTransitions.length === 0) {
     return null;
@@ -170,7 +172,6 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
     <>
       <Button
         variant="secondary"
-        size="small"
         onClick={handleOpen}
         endIcon={<ArrowDropDownOutlined />}
       >
@@ -188,27 +189,34 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
       </Menu>
       <Dialog
         open={Boolean(validationTransition)}
+        slotProps={{ paper: { elevation: 1 } }}
+        keepMounted={true}
+        slots={{ transition: Transition }}
         onClose={() => setValidationTransition(null)}
+        title={t_i18n('Are you sure?')}
+        size="small"
       >
-        <DialogTitle>{t_i18n('Approve draft')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Are you sure you want to approve this draft?')}
-            {draft.processingCount > 0 && (
-              <div style={{ marginTop: 20 }}>
-                <Alert severity="warning">
-                  <AlertTitle>{t_i18n('Information')}</AlertTitle>
-                  {t_i18n('Some background tasks are still running for this draft. Confirming might lead to inconsistent data.')}
-                </Alert>
-              </div>
-            )}
-          </DialogContentText>
-        </DialogContent>
+        <DialogContentText>
+          {t_i18n('Do you want to approve this draft and send it to ingestion?')}
+          {draft.processingCount > 0 && (
+            <Alert sx={{ marginTop: 1 }} severity="warning">
+              <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
+              {t_i18n('There are processes still running that could impact the data of the draft. '
+                + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
+            </Alert>
+          )}
+        </DialogContentText>
         <DialogActions>
-          <Button onClick={() => setValidationTransition(null)}>
+          <Button
+            variant="secondary"
+            onClick={() => setValidationTransition(null)}
+          >
             {t_i18n('Cancel')}
           </Button>
-          <Button color="primary" onClick={handleValidateDraft}>
+          <Button
+            onClick={handleValidateDraft}
+            disabled={approving}
+          >
             {t_i18n('Approve')}
           </Button>
         </DialogActions>
