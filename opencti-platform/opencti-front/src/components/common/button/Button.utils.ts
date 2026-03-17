@@ -196,7 +196,7 @@ export const getButtonContentSx = () => ({
 });
 
 export const getSizeConfig = (theme: Theme, size: ButtonSize, iconOnly: boolean) => {
-  const config = theme.button.sizes[size];
+  const config = theme.button.sizes[size] ?? theme.button.sizes['default'];
 
   return {
     ...config,
