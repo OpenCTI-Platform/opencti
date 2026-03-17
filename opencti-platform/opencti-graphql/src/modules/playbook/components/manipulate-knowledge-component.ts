@@ -86,7 +86,7 @@ const attributePathMapping: any = {
   },
 };
 
-interface ManipulateConfiguration {
+export interface ManipulateConfiguration {
   actions: { op: 'add' | 'replace' | 'remove'; attribute: string; value: UpdateValueConfiguration[] }[];
   all: boolean;
 }
