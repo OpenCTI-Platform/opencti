@@ -149,7 +149,6 @@ const DataTableComponent = ({
         const percentWidth = column.percentWidth ?? extendedColumnsMap.get(key)?.percentWidth;
 
         return R.mergeDeepRight(extendedColumnsMap.get(key) as DataTableColumn, {
-          id: key,
           ...column,
           // Override column config with what we have in local storage
           order: useLocalStorage && currentColumn?.index ? currentColumn?.index : index,

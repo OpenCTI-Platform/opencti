@@ -171,6 +171,7 @@ const Stream = () => {
       ),
     },
     stream_public: {
+      id: 'stream_public',
       label: 'Public',
       percentWidth: 10,
       isSortable: true,
@@ -182,6 +183,7 @@ const Stream = () => {
       ),
     },
     stream_live: {
+      id: 'stream_live',
       label: 'Status',
       percentWidth: 10,
       isSortable: true,
@@ -193,6 +195,7 @@ const Stream = () => {
       ),
     },
     consumers: {
+      id: 'consumers',
       label: 'Consumers',
       percentWidth: 10,
       isSortable: false,
@@ -209,6 +212,7 @@ const Stream = () => {
       },
     },
     filters: {
+      id: 'filters',
       label: 'Filters',
       percentWidth: 15,
       isSortable: false,
