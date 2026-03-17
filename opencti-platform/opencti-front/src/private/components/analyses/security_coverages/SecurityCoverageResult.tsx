@@ -261,6 +261,7 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
     sortBy: 'created_at',
     orderAsc: false,
     openExports: false,
+    revoked: false,
   };
 
   const {
