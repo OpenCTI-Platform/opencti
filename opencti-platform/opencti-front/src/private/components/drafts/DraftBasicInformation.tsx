@@ -67,7 +67,7 @@ const DraftBasicInformation: FunctionComponent<DraftBasicInformationProps> = ({ 
   };
 
   const onSubmit: OnSubmit = (key, values, { setSubmitting, resetForm }) => {
-    const currentIds = (draft[key] || []).map((assignee) => assignee.id);
+    const currentIds = (draft[key] || []).map((user) => user.id);
     const valuesIds = values[key].map((user) => user.value);
     const allIds = Array.from(new Set(currentIds.concat(valuesIds))); // 'new Set' to merge without duplicates
     commit({
