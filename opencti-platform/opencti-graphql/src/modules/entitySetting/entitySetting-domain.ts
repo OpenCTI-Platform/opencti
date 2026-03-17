@@ -4,7 +4,7 @@ import { createEntity, loadEntity, updateAttribute } from '../../database/middle
 import type { BasicStoreEntityEntitySetting, StoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type EditInput, type EntitySettingFintelTemplatesArgs, FilterMode, type QueryEntitySettingsArgs } from '../../generated/graphql';
+import { type EditInput, type EntitySettingCustomViewsArgs, type EntitySettingFintelTemplatesArgs, FilterMode, type QueryEntitySettingsArgs } from '../../generated/graphql';
 import { SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -24,6 +24,7 @@ import type { BasicConnection, BasicStoreEntity } from '../../types/store';
 import { emptyPaginationResult } from '../../database/utils';
 import { findAllMembers } from '../../domain/user';
 import { authorizedMembers } from '../../schema/attribute-definition';
+import { type BasicStoreEntityCustomView, ENTITY_TYPE_CUSTOM_VIEW } from '../customView/customView-types';
 
 // -- LOADING --
 
@@ -112,6 +113,16 @@ export const getTemplatesForSetting = async (
   }
   const filters = addFilter(undefined, 'settings_types', [targetType]);
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { ...opts, filters });
+};
+
+export const getCustomViewsForSetting = async (
+  context: AuthContext,
+  user: AuthUser,
+  targetType: string,
+  opts: EntitySettingCustomViewsArgs,
+): Promise<BasicConnection<BasicStoreEntityCustomView>> => {
+  const filters = addFilter(undefined, 'settings_types', [targetType]);
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_CUSTOM_VIEW], { ...opts, filters });
 };
 
 export const entitySettingsEditField = async (context: AuthContext, user: AuthUser, entitySettingIds: string[], input: EditInput[]) => {

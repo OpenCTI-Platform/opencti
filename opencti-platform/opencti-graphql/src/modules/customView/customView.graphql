@@ -12,3 +12,37 @@ type CustomView implements InternalObject & BasicObject {
     manifest: String
     authorizedMembers: [MemberAccess!]!
 }
+
+# Mutation
+input CustomViewAddInput {
+    name: String! @constraint(minLength: 2, format: "not-blank")
+    description: String
+    manifest: String
+    authorizedMembers: [MemberAccessInput!]!
+}
+
+# Relay connections
+type CustomViewEdge {
+    cursor: String!
+    node: CustomView!
+}
+
+type CustomViewConnection {
+    pageInfo: PageInfo!
+    edges: [CustomViewEdge!]!
+}
+
+enum CustomViewOrdering {
+    name
+    _score
+}
+
+type Query {
+    customView(id: ID!): CustomView @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
+}
+
+# Mutations
+type Mutation {
+    customViewAdd(input: CustomViewAddInput!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    customViewDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
+}

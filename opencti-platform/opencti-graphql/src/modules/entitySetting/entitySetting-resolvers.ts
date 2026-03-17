@@ -9,6 +9,7 @@ import {
   queryEntitySettingSchemaAttributes,
   queryMandatoryAttributesForSetting,
   queryScaleAttributesForSetting,
+  getCustomViewsForSetting,
 } from './entitySetting-domain';
 import type { Resolvers } from '../../generated/graphql';
 import { BUS_TOPICS } from '../../config/conf';
@@ -32,6 +33,7 @@ const entitySettingResolvers: Resolvers = {
     overview_layout_customization: (entitySetting, _, __) => getOverviewLayoutCustomization(entitySetting),
     fintelTemplates: (entitySetting, args, context) => getTemplatesForSetting(context, context.user, entitySetting.target_type, args),
     requestAccessConfiguration: (entitySetting, _, context) => getRequestAccessConfiguration(context, context.user, entitySetting),
+    customViews: (entitySetting, args, context) => getCustomViewsForSetting(context, context.user, entitySetting.target_type, args),
   },
   Mutation: {
     entitySettingsFieldPatch: (_, { ids, input }, context) => {

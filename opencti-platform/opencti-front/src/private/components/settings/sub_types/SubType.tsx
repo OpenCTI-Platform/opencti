@@ -25,6 +25,7 @@ export const subTypeQuery = graphql`
         ...EntitySettingSettings_entitySetting
         ...EntitySettingAttributes_entitySetting
         ...FintelTemplatesGrid_templates
+        ...CustomViewsGrid_customViews
         requestAccessConfiguration{
             ...RequestAccessStatusFragment_requestAccess
             ...RequestAccessConfigurationEdition_requestAccess
