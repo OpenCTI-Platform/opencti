@@ -57,6 +57,8 @@ const AuditsNumber = ({
   parameters = {},
   entityType,
   popover,
+  variant,
+  height,
 }) => {
   const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
@@ -81,37 +83,36 @@ const AuditsNumber = ({
   );
 
   return (
-    <QueryRenderer
-      query={auditsNumberNumberQuery}
-      variables={{ types, filters, startDate, endDate: dayAgo() }}
-      render={({ props }) => {
-        if (props && props.auditsNumber) {
-          const { total, count } = props.auditsNumber;
-          return (
-            <CardNumber
-              entityType={entityType}
-              label={translatedTitle}
-              value={total}
-              diffLabel={t_i18n('24 hours')}
-              diffValue={total - count}
-              action={popover}
-            />
-          );
-        }
-        if (props) {
-          return (
-            <WidgetContainer title={title}>
-              <WidgetNoData />
-            </WidgetContainer>
-          );
-        }
-        return (
-          <WidgetContainer title={title}>
-            <Loader variant={LoaderVariant.inElement} />
-          </WidgetContainer>
-        );
-      }}
-    />
+    <WidgetContainer
+      padding="small"
+      height={height}
+      title={translatedTitle}
+      variant={variant}
+      action={popover}
+    >
+      <QueryRenderer
+        query={auditsNumberNumberQuery}
+        variables={{ types, filters, startDate, endDate: dayAgo() }}
+        render={({ props }) => {
+          if (props && props.auditsNumber) {
+            const { total, count } = props.auditsNumber;
+            return (
+              <CardNumber
+                entityType={entityType}
+                label={translatedTitle}
+                value={total}
+                diffLabel={t_i18n('24 hours')}
+                diffValue={total - count}
+              />
+            );
+          }
+          if (props) {
+            return <WidgetNoData />;
+          }
+          return <Loader variant={LoaderVariant.inElement} />;
+        }}
+      />
+    </WidgetContainer>
   );
 };
 

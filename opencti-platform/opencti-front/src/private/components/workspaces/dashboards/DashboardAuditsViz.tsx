@@ -57,6 +57,8 @@ const DashboardAuditsViz = ({
     case 'number':
       return (
         <AuditsNumber
+          variant={undefined}
+          height={undefined}
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
