@@ -171,7 +171,7 @@ const ExternalReferenceEnrichment = (props) => {
                             ? askJob(connector.id)
                             : askEnrich(connector.id))
                           }
-                          size="large"
+                          size="default"
                         >
                           <Refresh />
                         </IconButton>
