@@ -38,7 +38,7 @@ const securityCoverageResultLineFragment = graphql`
         standard_id
         entity_type
         relationship_type
-        to{
+        to {
             ... on StixCoreObject {
                 id
                 draftVersion {
@@ -309,8 +309,8 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
       isSortable: true,
       render: ({ to, coverage_information }) => withDisabledStyle(coverage_information, (
         <>
-          <ItemIcon type={to.entity_type} />
-          <ItemEntityType entityType={to.entity_type} />
+          <ItemIcon type={to?.entity_type} />
+          <ItemEntityType entityType={to?.entity_type} />
         </>
       )),
     },
@@ -318,7 +318,7 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
       label: 'Name',
       percentWidth: 30,
       isSortable: false,
-      render: ({ to, coverage_information }) => withDisabledStyle(coverage_information, (to.x_mitre_id ? `[${to.x_mitre_id}] ${to.name}` : getMainRepresentative(to))),
+      render: ({ to, coverage_information }) => withDisabledStyle(coverage_information, (to?.x_mitre_id ? `[${to?.x_mitre_id}] ${to?.name}` : getMainRepresentative(to))),
     },
     coverage: {
       label: 'Coverage',
@@ -346,7 +346,7 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
       render: ({ to, coverage_information }) => withDisabledStyle(coverage_information, (
           <StixCoreObjectLabels
             variant="inList"
-            labels={to.objectLabel}
+            labels={to?.objectLabel}
           />
         )
       ),
@@ -357,7 +357,7 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
       isSortable: false,
       render: ({ to, coverage_information }) => withDisabledStyle(coverage_information, (
           <ItemMarkings
-            markingDefinitions={to.objectMarking ?? []}
+            markingDefinitions={to?.objectMarking ?? []}
             limit={1}
           />
         )
