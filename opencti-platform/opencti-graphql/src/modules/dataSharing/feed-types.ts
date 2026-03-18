@@ -28,6 +28,8 @@ export interface StoreEntityFeed extends StoreEntity {
   rolling_time: number;
   include_header: boolean;
   feed_public: boolean;
+  feed_public_user_id: string;
+  feed_public_authorized_markings: string[];
   feed_types: string[];
   feed_date_attribute: string;
   feed_attributes: FeedAttributeDefinition[];

@@ -22,6 +22,8 @@ const STREAM_COLLECTION_DEFINITION: ModuleDefinition<StoreEntityStreamCollection
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'filters', label: 'Filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'stream_public', label: 'Public stream', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'stream_public_user_id', label: 'Public stream user id', type: 'string', format: 'id', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: false },
+    { name: 'stream_public_authorized_markings', label: 'Public stream authorized markings', type: 'string', format: 'id', mandatoryType: 'no', editDefault: true, multiple: true, upsert: false, isFilterable: false },
     { name: 'stream_live', label: 'Is live', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     authorizedMembers,
   ],
