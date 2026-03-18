@@ -35,6 +35,21 @@ type IngestionRssEdge {
     node: IngestionRss!
 }
 
+type DefaultMarkingDefinition {
+    label: String!
+    value: String!
+}
+
+type IngestionRssAddInputFromImport {
+    name: String!
+    description: String!
+    scheduling_period: String!
+    uri: String!
+    import_from_date: DateTime
+    report_types: [String!]
+    defaultMarkingDefinitions: [DefaultMarkingDefinition]
+}
+
 # Queries
 type Query {
     ingestionRss(id: String!): IngestionRss @auth(for: [INGESTION])
@@ -47,6 +62,9 @@ type Query {
         includeAuthorities: Boolean
         search: String
     ): IngestionRssConnection @auth(for: [INGESTION])
+    ingestionRssAddInputFromImport(
+        file: Upload!
+    ): IngestionRssAddInputFromImport! @auth(for: [INGESTION])
 }
 
 # Mutations
@@ -62,7 +80,7 @@ input IngestionRssAddInput {
     automatic_user: Boolean
     confidence_level: Int
     created_by_ref: String
-    object_marking_refs: [String!]
+    object_marking_refs: [String]
     report_types: [String!]
 }
 
@@ -76,4 +94,5 @@ type Mutation {
     ingestionRssDelete(id: ID!): ID @auth(for: [INGESTION_SETINGESTIONS])
     ingestionRssFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss @auth(for: [INGESTION_SETINGESTIONS])
     ingestionRssAddAutoUser(id: ID!, input: IngestionRssAddAutoUserInput!): IngestionRss @auth(for:[INGESTION_SETINGESTIONS])
+
 }

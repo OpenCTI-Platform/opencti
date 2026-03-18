@@ -9,6 +9,12 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type {EditInput, IngestionRssAddAutoUserInput, IngestionRssAddInput} from '../../generated/graphql';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import {createOnTheFlyUser} from "../user/user-domain";
+import type {FileHandle} from "fs/promises";
+import {extractContentFrom} from "../../utils/fileToContent";
+import {isCompatibleVersionWithMinimal} from "../../utils/version";
+import {FunctionalError} from "../../config/errors";
+
+const MINIMAL_RSS_FEED_COMPATIBLE_VERSION = '7.260309.0';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionRss>(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS);
@@ -103,3 +109,17 @@ export const ingestionDelete = async (context: AuthContext, user: AuthUser, inge
   });
   return ingestionId;
 };
+
+export const rssFeedAddInputFromImport = async (file: Promise<FileHandle>) => {
+  const parsedData = await extractContentFrom(file);
+
+  // check platform version compatibility
+  if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_RSS_FEED_COMPATIBLE_VERSION)) {
+    throw FunctionalError(
+      `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_RSS_FEED_COMPATIBLE_VERSION}`,
+      { reason: parsedData.openCTI_version },
+    );
+  }
+
+  return parsedData.configuration;
+}

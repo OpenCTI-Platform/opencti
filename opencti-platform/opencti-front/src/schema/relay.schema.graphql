@@ -9709,6 +9709,7 @@ type Query {
   playbooksForEntity(id: String!): [Playbook]
   ingestionRss(id: String!): IngestionRss
   ingestionRsss(first: Int, after: ID, orderBy: IngestionRssOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionRssConnection
+  ingestionRssAddInputFromImport(file: Upload!): IngestionRssAddInputFromImport!
   ingestionTaxii(id: String!): IngestionTaxii
   ingestionTaxiis(first: Int, after: ID, orderBy: IngestionTaxiiOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): IngestionTaxiiConnection
   taxiiFeedAddInputFromImport(file: Upload!): TaxiiFeedAddInputFromImport!
@@ -13544,6 +13545,21 @@ type IngestionRssEdge {
   node: IngestionRss!
 }
 
+type DefaultMarkingDefinition {
+  label: String!
+  value: String!
+}
+
+type IngestionRssAddInputFromImport {
+  name: String!
+  description: String!
+  scheduling_period: String!
+  uri: String!
+  import_from_date: DateTime
+  report_types: [String!]
+  defaultMarkingDefinitions: [DefaultMarkingDefinition]
+}
+
 input IngestionRssAddInput {
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
@@ -13558,7 +13574,7 @@ input IngestionRssAddInput {
   automatic_user: Boolean
   confidence_level: Int
   created_by_ref: String
-  object_marking_refs: [String!]
+  object_marking_refs: [String]
   report_types: [String!]
 }
 
