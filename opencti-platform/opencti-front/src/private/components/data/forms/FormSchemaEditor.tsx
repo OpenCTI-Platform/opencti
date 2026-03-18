@@ -1660,155 +1660,153 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           />
 
           {formData.isDraftByDefault && (
-            <>
+            <FormControlLabel
+              control={(
+                <Switch
+                  checked={formData.allowDraftOverride}
+                  onChange={(e) => handleFieldChange('allowDraftOverride', e.target.checked)}
+                />
+              )}
+              label={t_i18n('Allow users to uncheck draft mode')}
+              style={{ marginTop: 20, display: 'block' }}
+            />
+          )}
+
+          <Accordion variant="outlined" style={{ marginTop: 20 }}>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography>{t_i18n('Advanced Draft Settings')}</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {/* Draft Author Section */}
+              <Typography variant="h6" gutterBottom>{t_i18n('Draft Author')}</Typography>
+              <FormControl fullWidth variant="standard" style={{ marginBottom: 20 }}>
+                <InputLabel>{t_i18n('Author Source')}</InputLabel>
+                <Select
+                  value={formData.draftDefaults?.author?.type || 'none'}
+                  onChange={(e) => {
+                    handleFieldChange('draftDefaults.author.type', e.target.value);
+                  }}
+                  label={t_i18n('Author Source')}
+                >
+                  <MenuItem value="none">{t_i18n('None (Default)')}</MenuItem>
+                  <MenuItem value="current_user">{t_i18n('Current User')}</MenuItem>
+                  <MenuItem value="main_entity_author">{t_i18n('Reuse Main Entity Author')}</MenuItem>
+                </Select>
+              </FormControl>
               <FormControlLabel
                 control={(
                   <Switch
-                    checked={formData.allowDraftOverride}
-                    onChange={(e) => handleFieldChange('allowDraftOverride', e.target.checked)}
+                    checked={formData.draftDefaults?.author?.isEditable || false}
+                    onChange={(e) => handleFieldChange('draftDefaults.author.isEditable', e.target.checked)}
                   />
                 )}
-                label={t_i18n('Allow users to uncheck draft mode')}
-                style={{ marginTop: 20, display: 'block' }}
+                label={t_i18n('Editable by end user')}
+                style={{ display: 'block' }}
+              />
+              <FormControlLabel
+                control={(
+                  <Switch
+                    checked={formData.draftDefaults?.author?.isRequired || false}
+                    onChange={(e) => handleFieldChange('draftDefaults.author.isRequired', e.target.checked)}
+                  />
+                )}
+                label={t_i18n('Required')}
+                style={{ display: 'block', marginBottom: 20 }}
               />
 
-              <Accordion variant="outlined" style={{ marginTop: 20 }}>
-                <AccordionSummary expandIcon={<ExpandMore />}>
-                  <Typography>{t_i18n('Advanced Draft Settings')}</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  {/* Draft Author Section */}
-                  <Typography variant="h6" gutterBottom>{t_i18n('Draft Author')}</Typography>
-                  <FormControl fullWidth variant="standard" style={{ marginBottom: 20 }}>
-                    <InputLabel>{t_i18n('Author Source')}</InputLabel>
-                    <Select
-                      value={formData.draftDefaults?.author?.type || 'none'}
-                      onChange={(e) => {
-                        handleFieldChange('draftDefaults.author.type', e.target.value);
-                      }}
-                      label={t_i18n('Author Source')}
-                    >
-                      <MenuItem value="none">{t_i18n('None (Default)')}</MenuItem>
-                      <MenuItem value="current_user">{t_i18n('Current User')}</MenuItem>
-                      <MenuItem value="main_entity_author">{t_i18n('Reuse Main Entity Author')}</MenuItem>
-                    </Select>
-                  </FormControl>
+              {/* Authorized Members Section */}
+              <Typography variant="h6" gutterBottom>{t_i18n('Authorized Members')}</Typography>
+              <FormControlLabel
+                control={(
+                  <Switch
+                    checked={formData.draftDefaults?.authorizedMembers?.enabled || false}
+                    onChange={(e) => {
+                      const enabled = e.target.checked;
+                      handleFieldChange('draftDefaults.authorizedMembers.enabled', enabled);
+                      // Set default rule if enabling and no rules exist
+                      if (enabled && (!formData.draftDefaults?.authorizedMembers?.defaults || formData.draftDefaults?.authorizedMembers?.defaults.length === 0)) {
+                        handleFieldChange('draftDefaults.authorizedMembers.defaults', [{ type: 'CREATOR' }]);
+                      }
+                    }}
+                  />
+                )}
+                label={t_i18n('Activate access restriction')}
+                style={{ display: 'block' }}
+              />
+
+              {formData.draftDefaults?.authorizedMembers?.enabled && (
+                <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
                   <FormControlLabel
                     control={(
                       <Switch
-                        checked={formData.draftDefaults?.author?.isEditable || false}
-                        onChange={(e) => handleFieldChange('draftDefaults.author.isEditable', e.target.checked)}
+                        checked={formData.draftDefaults?.authorizedMembers?.isRequired || false}
+                        onChange={(e) => handleFieldChange('draftDefaults.authorizedMembers.isRequired', e.target.checked)}
                       />
                     )}
-                    label={t_i18n('Editable by end user')}
-                    style={{ display: 'block' }}
+                    label={t_i18n('Required (Users cannot remove default members)')}
+                    style={{ display: 'block', marginBottom: 15 }}
                   />
-                  <FormControlLabel
-                    control={(
-                      <Switch
-                        checked={formData.draftDefaults?.author?.isRequired || false}
-                        onChange={(e) => handleFieldChange('draftDefaults.author.isRequired', e.target.checked)}
-                      />
-                    )}
-                    label={t_i18n('Required')}
-                    style={{ display: 'block', marginBottom: 20 }}
-                  />
+                  <Typography variant="subtitle2" style={{ marginTop: 10 }}>{t_i18n('Member Rules')}</Typography>
 
-                  {/* Authorized Members Section */}
-                  <Typography variant="h6" gutterBottom>{t_i18n('Authorized Members')}</Typography>
-                  <FormControlLabel
-                    control={(
-                      <Switch
-                        checked={formData.draftDefaults?.authorizedMembers?.enabled || false}
-                        onChange={(e) => {
-                          const enabled = e.target.checked;
-                          handleFieldChange('draftDefaults.authorizedMembers.enabled', enabled);
-                          // Set default rule if enabling and no rules exist
-                          if (enabled && (!formData.draftDefaults?.authorizedMembers?.defaults || formData.draftDefaults?.authorizedMembers?.defaults.length === 0)) {
-                            handleFieldChange('draftDefaults.authorizedMembers.defaults', [{ type: 'CREATOR' }]);
-                          }
-                        }}
-                      />
-                    )}
-                    label={t_i18n('Activate access restriction')}
-                    style={{ display: 'block' }}
-                  />
-
-                  {formData.draftDefaults?.authorizedMembers?.enabled && (
-                    <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
-                      <FormControlLabel
-                        control={(
-                          <Switch
-                            checked={formData.draftDefaults?.authorizedMembers?.isRequired || false}
-                            onChange={(e) => handleFieldChange('draftDefaults.authorizedMembers.isRequired', e.target.checked)}
-                          />
-                        )}
-                        label={t_i18n('Required (Users cannot remove default members)')}
-                        style={{ display: 'block', marginBottom: 15 }}
-                      />
-                      <Typography variant="subtitle2" style={{ marginTop: 10 }}>{t_i18n('Member Rules')}</Typography>
-
-                      {formData.draftDefaults?.authorizedMembers?.defaults?.map((rule, idx) => (
-                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, marginBottom: 10 }}>
-                          <FormControl variant="standard" style={{ minWidth: 200 }}>
-                            <InputLabel>{t_i18n('Rule Type')}</InputLabel>
-                            <Select
-                              value={rule.type}
-                              onChange={(e) => {
-                                const newDefaults = [...(formData.draftDefaults?.authorizedMembers?.defaults || [])];
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                newDefaults[idx] = { ...newDefaults[idx], type: e.target.value as any };
-                                handleFieldChange('draftDefaults.authorizedMembers.defaults', newDefaults);
-                              }}
-                            >
-                              <MenuItem value="CREATOR">{t_i18n('Creator')}</MenuItem>
-                              <MenuItem value="AUTHOR_ORG">{t_i18n('Author Organization')}</MenuItem>
-                            </Select>
-                          </FormControl>
-
-                          {rule.type === 'AUTHOR_ORG' && (
-                            <div style={{ flexGrow: 1 }}>
-                              <GroupSelector
-                                value={rule.intersectionGroup}
-                                onChange={(val) => {
-                                  const newDefaults = [...(formData.draftDefaults?.authorizedMembers?.defaults || [])];
-                                  newDefaults[idx] = { ...newDefaults[idx], intersectionGroup: val || undefined };
-                                  handleFieldChange('draftDefaults.authorizedMembers.defaults', newDefaults);
-                                }}
-                              />
-                            </div>
-                          )}
-
-                          <IconButton onClick={() => {
+                  {formData.draftDefaults?.authorizedMembers?.defaults?.map((rule, idx) => (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, marginBottom: 10 }}>
+                      <FormControl variant="standard" style={{ minWidth: 200 }}>
+                        <InputLabel>{t_i18n('Rule Type')}</InputLabel>
+                        <Select
+                          value={rule.type}
+                          onChange={(e) => {
                             const newDefaults = [...(formData.draftDefaults?.authorizedMembers?.defaults || [])];
-                            newDefaults.splice(idx, 1);
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            newDefaults[idx] = { ...newDefaults[idx], type: e.target.value as any };
                             handleFieldChange('draftDefaults.authorizedMembers.defaults', newDefaults);
                           }}
-                          >
-                            <DeleteOutlined />
-                          </IconButton>
-                        </div>
-                      ))}
+                        >
+                          <MenuItem value="CREATOR">{t_i18n('Creator')}</MenuItem>
+                          <MenuItem value="AUTHOR_ORG">{t_i18n('Author Organization')}</MenuItem>
+                        </Select>
+                      </FormControl>
 
-                      <Button
-                        style={{ marginTop: 10 }}
-                        variant="primary"
-                        size="small"
-                        startIcon={<Add />}
-                        onClick={() => {
-                          const newDefaults = [...(formData.draftDefaults?.authorizedMembers?.defaults || [])];
-                          newDefaults.push({ type: 'CREATOR' });
-                          handleFieldChange('draftDefaults.authorizedMembers.defaults', newDefaults);
-                        }}
+                      {rule.type === 'AUTHOR_ORG' && (
+                        <div style={{ flexGrow: 1 }}>
+                          <GroupSelector
+                            value={rule.intersectionGroup}
+                            onChange={(val) => {
+                              const newDefaults = [...(formData.draftDefaults?.authorizedMembers?.defaults || [])];
+                              newDefaults[idx] = { ...newDefaults[idx], intersectionGroup: val || undefined };
+                              handleFieldChange('draftDefaults.authorizedMembers.defaults', newDefaults);
+                            }}
+                          />
+                        </div>
+                      )}
+
+                      <IconButton onClick={() => {
+                        const newDefaults = [...(formData.draftDefaults?.authorizedMembers?.defaults || [])];
+                        newDefaults.splice(idx, 1);
+                        handleFieldChange('draftDefaults.authorizedMembers.defaults', newDefaults);
+                      }}
                       >
-                        {t_i18n('Add Rule')}
-                      </Button>
-                    </Box>
-                  )}
-                </AccordionDetails>
-              </Accordion>
-            </>
-          )}
+                        <DeleteOutlined />
+                      </IconButton>
+                    </div>
+                  ))}
+
+                  <Button
+                    style={{ marginTop: 10 }}
+                    variant="primary"
+                    size="small"
+                    startIcon={<Add />}
+                    onClick={() => {
+                      const newDefaults = [...(formData.draftDefaults?.authorizedMembers?.defaults || [])];
+                      newDefaults.push({ type: 'CREATOR' });
+                      handleFieldChange('draftDefaults.authorizedMembers.defaults', newDefaults);
+                    }}
+                  >
+                    {t_i18n('Add Rule')}
+                  </Button>
+                </Box>
+              )}
+            </AccordionDetails>
+          </Accordion>
 
           {formData.mainEntityMultiple && !formData.mainEntityLookup && (
             <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
