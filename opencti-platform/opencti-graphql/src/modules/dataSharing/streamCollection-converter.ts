@@ -11,6 +11,8 @@ const convertStreamCollectionToStix = (instance: StoreEntityStreamCollection): S
     description: instance.description,
     filters: instance.filters,
     stream_public: instance.stream_public,
+    stream_public_user_id: instance.stream_public_user_id,
+    stream_public_authorized_markings: instance.stream_public_authorized_markings,
     stream_live: instance.stream_live,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
