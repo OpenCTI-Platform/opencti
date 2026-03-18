@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import * as R from 'ramda';
 import type Express from 'express';
 import nconf from 'nconf';
@@ -6,6 +5,7 @@ import { TAXIIAPI } from '../domain/user';
 import { basePath } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 import { isUserHasCapability, SYSTEM_USER } from '../utils/access';
+import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { findById as findFeed } from '../modules/dataSharing/feed-domain';
 import { fullEntitiesOrRelationsList } from '../database/middleware';
 import { minutesAgo } from '../utils/format';
@@ -302,7 +302,7 @@ const initHttpRollingFeeds = (app: Express.Application) => {
         }
       }
       // User is available or feed is public
-      const user = context.user ?? SYSTEM_USER;
+      const user = context.user ?? await resolvePublicUser(context, feed.feed_public_user_id);
       const filters = feed.filters ? JSON.parse(feed.filters) : undefined;
       const fromDate = minutesAgo(feed.rolling_time);
       const field = feed.feed_date_attribute ?? 'created_at';

@@ -28,6 +28,9 @@ const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
 
 // Taxii graphQL handlers
 export const createTaxiiCollection = async (context: AuthContext, user: AuthUser, input: TaxiiCollectionAddInput) => {
+  if (input.taxii_public && !input.taxii_public_user_id) {
+    throw FunctionalError('A user must be configured when the Taxii collection is public');
+  }
   const data = {
     authorized_authorities: [TAXIIAPI_SETCOLLECTIONS],
     ...input,
@@ -59,6 +62,16 @@ export const findTaxiiCollectionPaginated = (context: AuthContext, user: AuthUse
   return pageEntitiesConnection<BasicStoreEntityTaxiiCollection>(context, SYSTEM_USER, [ENTITY_TYPE_TAXII_COLLECTION], publicArgs);
 };
 export const taxiiCollectionEditField = async (context: AuthContext, user: AuthUser, collectionId: string, input: EditInput[]) => {
+  const settingPublic = input.find(({ key }) => key === 'taxii_public');
+  if (settingPublic?.value?.[0] === 'true') {
+    const hasUserId = input.some(({ key, value }) => key === 'taxii_public_user_id' && value?.[0]);
+    if (!hasUserId) {
+      const current = await findById(context, SYSTEM_USER, collectionId);
+      if (!current?.taxii_public_user_id) {
+        throw FunctionalError('A user must be configured when the Taxii collection is public', { collectionId });
+      }
+    }
+  }
   const finalInput = input.map(({ key, value }) => {
     const item = { key, value };
     if (key === authorizedMembers.name) {

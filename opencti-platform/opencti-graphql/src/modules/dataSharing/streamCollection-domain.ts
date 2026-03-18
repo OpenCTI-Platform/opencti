@@ -3,6 +3,7 @@ import { createEntity, deleteElementById, updateAttribute } from '../../database
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
+import { FunctionalError } from '../../config/errors';
 import { isUserHasCapability, MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { addFilter } from '../../utils/filtering/filtering-utils';
@@ -21,6 +22,9 @@ export const createStreamCollection = async (context: AuthContext, user: AuthUse
   // our stix matching is currently limited, we need to validate the input filters
   if (input.filters) {
     validateFilterGroupForStixMatch(JSON.parse(input.filters));
+  }
+  if (input.stream_public && !input.stream_public_user_id) {
+    throw FunctionalError('A user must be configured when the stream collection is public');
   }
 
   // Insert the collection
@@ -62,7 +66,16 @@ export const streamCollectionEditField = async (context: AuthContext, user: Auth
     // our stix matching is currently limited, we need to validate the input filters
     validateFilterGroupForStixMatch(JSON.parse(filtersItem.value[0]));
   }
-
+  const settingPublic = input.find(({ key }) => key === 'stream_public');
+  if (settingPublic?.value?.[0] === 'true') {
+    const hasUserId = input.some(({ key, value }) => key === 'stream_public_user_id' && value?.[0]);
+    if (!hasUserId) {
+      const current = await findById(context, SYSTEM_USER, collectionId);
+      if (!current?.stream_public_user_id) {
+        throw FunctionalError('A user must be configured when the stream collection is public', { collectionId });
+      }
+    }
+  }
   const finalInput = input.map(({ key, value }) => {
     const item = { key, value };
     if (key === authorizedMembers.name) {
