@@ -103,10 +103,7 @@ export interface FormSchemaDefinition {
     authorizedMembers?: {
       enabled: boolean;
       isRequired: boolean;
-      defaults: Array<{
-        type: 'CREATOR' | 'AUTHOR_ORG';
-        intersectionGroup?: string;
-      }>;
+      defaults: Array<any>;
     };
   };
   mainEntityMultiple?: boolean; // Whether main entity allows multiple instances
@@ -207,10 +204,7 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
               type: 'array',
               items: {
                 type: 'object',
-                properties: {
-                  type: { type: 'string', enum: ['CREATOR', 'AUTHOR_ORG'] },
-                  intersectionGroup: { type: 'string', nullable: true },
-                },
+                additionalProperties: true,
               },
             },
           },

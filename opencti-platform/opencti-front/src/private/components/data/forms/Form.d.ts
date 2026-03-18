@@ -66,10 +66,7 @@ export interface FormBuilderData {
     authorizedMembers?: {
       enabled: boolean;
       isRequired: boolean;
-      defaults: Array<{
-        type: 'CREATOR' | 'AUTHOR_ORG';
-        intersectionGroup?: string;
-      }>;
+      defaults: AuthorizedMemberOption[];
     };
   };
   mainEntityMultiple: boolean; // Whether main entity allows multiple
@@ -87,6 +84,8 @@ export interface FormBuilderData {
   relationships: EntityRelationship[];
   active: boolean;
 }
+
+import { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
 
 export interface FormAddInput {
   name: string;
@@ -118,10 +117,7 @@ export interface FormSchemaDefinition {
     authorizedMembers?: {
       enabled: boolean;
       isRequired: boolean;
-      defaults: Array<{
-        type: 'CREATOR' | 'AUTHOR_ORG';
-        intersectionGroup?: string;
-      }>;
+      defaults: AuthorizedMemberOption[];
     };
   };
   mainEntityMultiple?: boolean;
