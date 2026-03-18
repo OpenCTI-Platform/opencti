@@ -186,6 +186,38 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
     includeInContainer: { type: 'boolean' },
     isDraftByDefault: { type: 'boolean' },
     allowDraftOverride: { type: 'boolean' },
+    draftDefaults: {
+      type: 'object',
+      properties: {
+        author: {
+          type: 'object',
+          properties: {
+            type: { type: 'string', enum: ['none', 'current_user', 'main_entity_author'] },
+            isEditable: { type: 'boolean' },
+            isRequired: { type: 'boolean' },
+          },
+          required: ['type', 'isEditable', 'isRequired'],
+        },
+        authorizedMembers: {
+          type: 'object',
+          properties: {
+            enabled: { type: 'boolean' },
+            isRequired: { type: 'boolean' },
+            defaults: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  type: { type: 'string', enum: ['CREATOR', 'AUTHOR_ORG'] },
+                  intersectionGroup: { type: 'string', nullable: true },
+                },
+              },
+            },
+          },
+          required: ['enabled'],
+        },
+      },
+    },
     additionalEntities: {
       type: 'array',
       items: {

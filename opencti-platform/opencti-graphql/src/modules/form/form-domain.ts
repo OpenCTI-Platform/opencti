@@ -955,7 +955,67 @@ export const formSubmit = async (
 
     let draftId = null;
     if (finalIsDraft) {
-      const draft = await addDraftWorkspace(context, user, { name: `${form.name} - ${nowTime()}` });
+      let createdBy: string | null = null;
+      const authorizedMembersMap = new Map<string, any>();
+
+      // Apply draft defaults for author
+      if (values.draftAuthor) {
+        createdBy = values.draftAuthor;
+      } else if (schema.draftDefaults?.author) {
+        if (schema.draftDefaults.author.type === 'current_user') {
+          createdBy = user.individual_id || null;
+        } else if (schema.draftDefaults.author.type === 'main_entity_author') {
+          const possibleAuthor = values.createdBy
+            || values.mainEntityFields?.createdBy
+            || (values.mainEntityGroups && values.mainEntityGroups.length > 0 ? values.mainEntityGroups[0].createdBy : undefined);
+          if (possibleAuthor) {
+            createdBy = possibleAuthor;
+          }
+        } else if (schema.draftDefaults.author.type === 'none') {
+          createdBy = null;
+        }
+      }
+
+      // Apply draft defaults for authorized members
+      if (values.draftAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
+        values.draftAuthorizedMembers.forEach((id: string) => {
+          authorizedMembersMap.set(id, { id, access_right: 'admin' });
+        });
+      } else if (schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
+        const defaultRules = schema.draftDefaults.authorizedMembers.defaults;
+        defaultRules.forEach((rule) => {
+          if (rule.type === 'CREATOR') {
+            authorizedMembersMap.set(user.id, { id: user.id, access_right: 'admin' });
+          } else if (rule.type === 'AUTHOR_ORG') {
+            if (user.organizations) {
+              user.organizations.forEach((org) => {
+                const existing = authorizedMembersMap.get(org.internal_id) || { id: org.internal_id, access_right: 'admin', groups_restriction_ids: [] };
+                if (rule.intersectionGroup) {
+                  if (!existing.groups_restriction_ids) {
+                    existing.groups_restriction_ids = [];
+                  }
+                  if (!existing.groups_restriction_ids.includes(rule.intersectionGroup)) {
+                    existing.groups_restriction_ids.push(rule.intersectionGroup);
+                  }
+                } else {
+                  existing.groups_restriction_ids = undefined;
+                }
+                authorizedMembersMap.set(org.internal_id, existing);
+              });
+            }
+          }
+        });
+      }
+
+      const authorized_members = Array.from(authorizedMembersMap.values());
+
+      const draftInput: any = {
+        name: `${form.name} - ${nowTime()}`,
+      };
+      if (createdBy) draftInput.createdBy = createdBy;
+      if (authorized_members.length > 0) draftInput.authorized_members = authorized_members;
+
+      const draft = await addDraftWorkspace(context, user, draftInput);
       draftId = draft.id;
     }
     await pushToWorkerForConnector(connectorId, {
