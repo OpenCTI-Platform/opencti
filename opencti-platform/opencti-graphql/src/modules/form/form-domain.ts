@@ -976,16 +976,51 @@ export const formSubmit = async (
         }
       }
 
-      // Apply draft defaults for authorized members
+      // Apply explicit authorized members from form submission
       if (values.draftAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
-        values.draftAuthorizedMembers.forEach((id: string) => {
-          authorizedMembersMap.set(id, { id, access_right: 'admin' });
+        values.draftAuthorizedMembers.forEach((val: any) => {
+          // Handle object (new format) or string (old format / backward compat)
+          const isObject = typeof val === 'object' && val !== null;
+          const id = isObject ? (val.value || val.id) : val;
+          const accessRight = (isObject && val.accessRight) ? val.accessRight : 'admin';
+          const groupsRestriction = (isObject && val.groupsRestriction && Array.isArray(val.groupsRestriction))
+            ? val.groupsRestriction.map((g: any) => g.value || g.id || g)
+            : undefined;
+
+          // Resolve dynamic values
+          if (id === 'CREATORS') {
+            authorizedMembersMap.set(user.id, { id: user.id, access_right: accessRight });
+          } else if (id === 'AUTHOR') {
+             if (user.organizations) {
+              user.organizations.forEach((org) => {
+                const existing = authorizedMembersMap.get(org.internal_id) || { id: org.internal_id, access_right: accessRight, groups_restriction_ids: [] };
+                if (groupsRestriction) {
+                  if (!existing.groups_restriction_ids) {
+                    existing.groups_restriction_ids = [];
+                  }
+                  groupsRestriction.forEach((groupId: string) => {
+                    if (existing.groups_restriction_ids && !existing.groups_restriction_ids.includes(groupId)) {
+                      existing.groups_restriction_ids.push(groupId);
+                    }
+                  });
+                } else {
+                  existing.groups_restriction_ids = undefined;
+                }
+                authorizedMembersMap.set(org.internal_id, existing);
+              });
+            }
+          } else if (id) {
+            // Standard member (User/Group/Organization)
+            authorizedMembersMap.set(id, { id, access_right: accessRight, groups_restriction_ids: groupsRestriction });
+          }
         });
       } else if (schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
         const defaultRules = schema.draftDefaults.authorizedMembers.defaults;
         defaultRules.forEach((rule) => {
+          // Backward compatibility for old rules
           if (rule.type === 'CREATOR') {
             authorizedMembersMap.set(user.id, { id: user.id, access_right: 'admin' });
+            return;
           } else if (rule.type === 'AUTHOR_ORG') {
             if (user.organizations) {
               user.organizations.forEach((org) => {
@@ -1003,6 +1038,38 @@ export const formSubmit = async (
                 authorizedMembersMap.set(org.internal_id, existing);
               });
             }
+            return;
+          }
+
+          // New structure (AuthorizedMemberOption)
+          const accessRight = rule.accessRight || 'admin';
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const groupsRestrictionIds = rule.groupsRestriction?.length > 0 ? rule.groupsRestriction.map((g: any) => g.value) : undefined;
+
+          if (rule.value === 'CREATORS') {
+            authorizedMembersMap.set(user.id, { id: user.id, access_right: accessRight });
+          } else if (rule.value === 'AUTHOR') {
+            if (user.organizations) {
+              user.organizations.forEach((org) => {
+                const existing = authorizedMembersMap.get(org.internal_id) || { id: org.internal_id, access_right: accessRight, groups_restriction_ids: [] };
+                if (groupsRestrictionIds) {
+                  if (!existing.groups_restriction_ids) {
+                    existing.groups_restriction_ids = [];
+                  }
+                  groupsRestrictionIds.forEach((groupId: string) => {
+                    if (existing.groups_restriction_ids && !existing.groups_restriction_ids.includes(groupId)) {
+                      existing.groups_restriction_ids.push(groupId);
+                    }
+                  });
+                } else {
+                  existing.groups_restriction_ids = undefined;
+                }
+                authorizedMembersMap.set(org.internal_id, existing);
+              });
+            }
+          } else if (rule.value) {
+            // Specific selected member (Organization/Group/User)
+            authorizedMembersMap.set(rule.value, { id: rule.value, access_right: accessRight, groups_restriction_ids: groupsRestrictionIds });
           }
         });
       }

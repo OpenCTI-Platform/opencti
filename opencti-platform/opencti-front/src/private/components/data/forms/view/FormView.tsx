@@ -28,6 +28,8 @@ import { convertFormSchemaToYupSchema, formatFormDataForSubmission } from './For
 import { environment } from '../../../../../relay/environment';
 import StixCoreObjectsField from '../../../common/form/StixCoreObjectsField';
 import CreatorField from '../../../common/form/CreatorField';
+import AuthorizedMembersField from '../../../common/form/AuthorizedMembersField';
+import { AuthorizedMemberOption } from '../../../../../utils/authorizedMembers';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
 import useGranted, { INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
 import useAuth from '../../../../../utils/hooks/useAuth';
@@ -189,17 +191,37 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     }
 
     if (parsedSchema.draftDefaults?.authorizedMembers?.enabled) {
-      const defaultMembers: { value: string; label: string; type: string }[] = [];
+      const defaultMembers: AuthorizedMemberOption[] = [];
       if (parsedSchema.draftDefaults.authorizedMembers.defaults) {
         parsedSchema.draftDefaults.authorizedMembers.defaults.forEach((rule) => {
-          if (rule.type === 'CREATOR' && me) {
-            defaultMembers.push({ value: me.id, label: me.name, type: 'User' });
-          } else if (rule.type === 'AUTHOR_ORG' && me?.objectOrganization?.edges) {
-            me.objectOrganization.edges.forEach((edge) => {
-              if (edge?.node) {
-                defaultMembers.push({ value: edge.node.id, label: edge.node.name, type: 'Organization' });
-              }
+          if (rule.type === 'CREATOR') {
+            defaultMembers.push({
+              label: t_i18n('Creators'),
+              value: 'CREATORS',
+              type: t_i18n('Dynamic options'),
+              accessRight: 'admin',
+              groupsRestriction: [],
             });
+          } else if (rule.type === 'AUTHOR_ORG') {
+            const groups = rule.intersectionGroup ? [{ label: rule.intersectionGroup, value: rule.intersectionGroup }] : [];
+            defaultMembers.push({
+              label: t_i18n('Author (organization)'),
+              value: 'AUTHOR',
+              type: t_i18n('Dynamic options'),
+              accessRight: 'admin',
+              groupsRestriction: groups,
+              // Note: we can't fully resolve intersectionGroup label here without fetching groups
+            });
+          } else if (rule.value === 'CREATORS' || rule.value === 'AUTHOR') {
+            // New format dynamic rules, just pass them through but ensure localized labels
+            defaultMembers.push({
+              ...rule,
+              label: rule.value === 'CREATORS' ? t_i18n('Creators') : t_i18n('Author (organization)'),
+              type: t_i18n('Dynamic options'),
+            });
+          } else {
+            // New format specific entities
+            defaultMembers.push(rule);
           }
         });
       }
@@ -925,11 +947,11 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                 )}
                 {isDraft && schema.draftDefaults?.authorizedMembers?.enabled && (
                   <div style={{ marginTop: 20, marginBottom: 20 }}>
-                    <ObjectMembersField
+                    <Field
+                      component={AuthorizedMembersField}
                       name="draftAuthorizedMembers"
                       label={t_i18n('Authorized Members')}
-                      multiple={true}
-                      style={{ width: '100%' }}
+                      dynamicKeysForPlaybooks={true}
                     />
                   </div>
                 )}

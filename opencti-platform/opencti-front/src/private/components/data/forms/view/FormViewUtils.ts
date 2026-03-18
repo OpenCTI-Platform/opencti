@@ -674,9 +674,10 @@ export const formatFormDataForSubmission = (
   }
 
   if (values.draftAuthorizedMembers) {
-    const selectedDraftMembers = values.draftAuthorizedMembers as { value: string }[];
-    if (selectedDraftMembers && selectedDraftMembers.length > 0) {
-      formattedData.draftAuthorizedMembers = selectedDraftMembers.map((member) => member.value);
+    const members = values.draftAuthorizedMembers as any[];
+    if (members && members.length > 0) {
+      // Pass the full member objects to support access rights and group restrictions
+      formattedData.draftAuthorizedMembers = members;
     }
   }
 
