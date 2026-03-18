@@ -34,6 +34,7 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
   };
 
   const getLabel = () => {
+    console.log('entityType', entityType);
     if (isRestricted) return t_i18n('Restricted');
     return t_i18n(isRelationship ? `relationship_${entityType}` : `entity_${entityType}`);
   };

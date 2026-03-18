@@ -29,6 +29,7 @@ const securityCoverageRelationshipDistributionFragment = graphql`
             filterGroups: []
         } ){
             label,
+            entity_type,
             value
         }
     }
@@ -77,7 +78,7 @@ const SecurityCoverageTestedEntitiesChart: FunctionComponent<Props> = ({ securit
       const tested = testedByLabel.get(label) ?? 0;
       const total = value ?? 0;
 
-      categories.push(label ?? '');
+      categories.push(t_i18n(`entity_${label}`) ?? '');
       testedData.push(tested);
       notCoveredData.push(total - tested);
     }

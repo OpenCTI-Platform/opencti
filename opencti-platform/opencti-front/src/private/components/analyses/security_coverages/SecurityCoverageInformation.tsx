@@ -9,6 +9,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
 import { donutChartOptions } from '../../../../utils/Charts';
 import type { Theme } from '../../../../components/Theme';
+import { capitalizeFirstLetter } from '../../../../utils/String';
 
 const useStyles = makeStyles((theme: Theme) => ({
   charts: {
@@ -182,7 +183,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
               {coverageResult.coverage_score}%
             </div>
             <div className={classes.coverageName}>
-              {coverageResult.coverage_name}
+              {capitalizeFirstLetter(coverageResult.coverage_name)}
             </div>
           </div>
         );
