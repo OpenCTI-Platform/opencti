@@ -15,7 +15,7 @@ import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import { ConnectorPriorityGroup, ConnectorType, FilterMode, type FormSubmissionInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
-import { SYSTEM_USER } from '../../utils/access';
+import { BYPASS, isUserHasCapability, SYSTEM_USER } from '../../utils/access';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
@@ -977,7 +977,9 @@ export const formSubmit = async (
       }
 
       // Apply explicit authorized members from form submission
-      if (values.draftAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
+      // Only users with BYPASS capability can override authorized members
+      const isBypass = isUserHasCapability(user, BYPASS);
+      if (isBypass && values.draftAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
         values.draftAuthorizedMembers.forEach((val: any) => {
           // Handle object (new format) or string (old format / backward compat)
           const isObject = typeof val === 'object' && val !== null;

@@ -55,6 +55,7 @@ interface AuthorizedMembersFieldProps
   customInfoMessage?: string;
   style?: CSSProperties;
   isDraftEntity?: boolean;
+  disabled?: boolean;
 }
 
 // Type of data for internal form, not exposed to others.
@@ -96,6 +97,7 @@ const AuthorizedMembersField = ({
   customInfoMessage,
   style,
   isDraftEntity,
+  disabled = false,
 }: AuthorizedMembersFieldProps) => {
   const { t_i18n } = useFormatter();
   const { setFieldValue } = form;
@@ -375,13 +377,13 @@ const AuthorizedMembersField = ({
                 type="checkbox"
                 name="applyAccesses"
                 label={t_i18n('Activate access restriction')}
-                disabled={isDisabledInDraft}
+                disabled={isDisabledInDraft || disabled}
                 onChange={(_: string, val: string) => {
                   changeApplyAccesses(val === 'true', resetForm, setField);
                 }}
               />
             )}
-            {applyAccesses && (
+            {applyAccesses && !disabled && (
               <Alert
                 sx={{
                   mt: '16px',
@@ -493,6 +495,7 @@ const AuthorizedMembersField = ({
                       accessRights={accessRights}
                       ownerId={owner?.id}
                       onChange={changeAllMembersAccess}
+                      disabled={disabled}
                     />
                   )}
                   {showCreatorLine && (
@@ -502,6 +505,7 @@ const AuthorizedMembersField = ({
                       accessRights={accessRights}
                       ownerId={owner?.id}
                       onChange={changeCreatorAccess}
+                      disabled={disabled}
                     />
                   )}
                 </List>
@@ -528,6 +532,7 @@ const AuthorizedMembersField = ({
                             accessRights={accessRights}
                             ownerId={owner?.id}
                             onRemove={() => arrayHelpers.remove(index)}
+                            disabled={disabled}
                           />
                         ) : null))}
                 </List>
