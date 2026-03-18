@@ -43,6 +43,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { generateCreateMessage } from '../database/data-changes';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
+import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
@@ -183,6 +184,19 @@ const authenticateForPublic = async (req, res, next) => {
     res.statusMessage = 'You are not authenticated, please check your credentials';
     sendErrorStatus(req, res, 401);
   } else {
+    try {
+      if (collection?.stream_public) {
+        const publicUser = await resolvePublicUser(context, collection.stream_public_user_id);
+        req.user = publicUser;
+        req.userId = publicUser.id;
+        req.capabilities = publicUser.capabilities;
+        req.allowed_marking = publicUser.allowed_marking;
+      }
+    } catch (e) {
+      res.statusMessage = e.message ?? 'Public stream configuration error';
+      sendErrorStatus(req, res, 500);
+      return;
+    }
     req.collection = collection;
     req.streamFilters = streamFilters;
     next();
