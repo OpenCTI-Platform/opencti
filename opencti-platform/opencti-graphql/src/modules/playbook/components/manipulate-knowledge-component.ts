@@ -93,6 +93,16 @@ export interface ManipulateConfiguration {
 const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<ManipulateConfiguration> = {
   type: 'object',
   properties: {
+    applyToElements: {
+      type: 'string',
+      default: playbookBundleElementsToApply.onlyMain.value,
+      $ref: 'Apply to',
+      oneOf: [
+        { const: playbookBundleElementsToApply.onlyMain.value, title: playbookBundleElementsToApply.onlyMain.title },
+        { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
+        { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
+      ],
+    },
     actions: {
       type: 'array',
       default: [],
@@ -117,18 +127,8 @@ const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<ManipulateC
         required: ['op', 'attribute', 'value'],
       },
     },
-    applyToElements: {
-      type: 'string',
-      default: playbookBundleElementsToApply.onlyMain.value,
-      $ref: 'Apply to',
-      oneOf: [
-        { const: playbookBundleElementsToApply.onlyMain.value, title: playbookBundleElementsToApply.onlyMain.title },
-        { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
-        { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
-      ],
-    },
   },
-  required: ['actions'],
+  required: ['actions', 'applyToElements'],
 };
 
 interface UpdateValueConfiguration {
