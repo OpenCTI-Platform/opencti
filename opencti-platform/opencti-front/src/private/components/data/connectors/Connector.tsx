@@ -331,7 +331,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   }}
                   >
                     <Filters
-                      availableFilterKeys={['entity_type']}
+                      availableFilterKeys={connectorAvailableFilterKeys}
                       helpers={helpers}
                       searchContext={filtersSearchContext}
                     />
