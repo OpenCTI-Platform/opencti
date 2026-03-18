@@ -1,4 +1,4 @@
-import React, { memo, ReactNode } from 'react';
+import { memo, ReactNode } from 'react';
 import { Box } from '@mui/material';
 import StixRelationshipsNumber from '@components/common/stix_relationships/StixRelationshipsNumber';
 import StixRelationshipsList from '@components/common/stix_relationships/StixRelationshipsList';
@@ -16,11 +16,11 @@ import StixRelationshipsMultiHeatMap from '@components/common/stix_relationships
 import StixRelationshipsTreeMap from '@components/common/stix_relationships/StixRelationshipsTreeMap';
 import StixRelationshipsMap from '@components/common/stix_relationships/StixRelationshipsMap';
 import StixRelationshipsWordCloud from '@components/common/stix_relationships/StixRelationshipsWordCloud';
-import { computerRelativeDate, dayStartDate, formatDate } from '../../../../utils/Time';
-import type { Widget, WidgetDataSelection } from '../../../../utils/widget/widget';
-import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import { computerRelativeDate, dayStartDate, formatDate } from '../../../utils/Time';
+import type { Widget, WidgetDataSelection } from '../../../utils/widget/widget';
+import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 
-interface DashboardRelationshipsVizProps {
+interface WidgetRelationshipsVizProps {
   widget: Widget;
   popover?: ReactNode;
   config: {
@@ -30,11 +30,11 @@ interface DashboardRelationshipsVizProps {
   };
 }
 
-const DashboardRelationshipsViz = ({
+const WidgetRelationshipsViz = ({
   widget,
   popover,
   config,
-}: DashboardRelationshipsVizProps) => {
+}: WidgetRelationshipsVizProps) => {
   const startDate = config.relativeDate
     ? computerRelativeDate(config.relativeDate)
     : config.startDate;
@@ -281,4 +281,4 @@ const DashboardRelationshipsViz = ({
   }
 };
 
-export default memo(DashboardRelationshipsViz);
+export default memo(WidgetRelationshipsViz);
