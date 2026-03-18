@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
-import * as PropTypes from 'prop-types';
-import { ExpandMore, ExpandLess } from '@mui/icons-material';
+import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import { truncate } from '../utils/String';
 
-const ExpandablePre = (props) => {
+interface ExpandablePreProps {
+  source: string | null | undefined;
+  limit: number;
+}
+
+const ExpandablePre = ({ source, limit }: ExpandablePreProps) => {
   const [expand, setExpand] = useState(false);
 
   const onClick = () => setExpand(!expand);
 
-  const { source, limit } = props;
   const shouldBeTruncated = (source || '').length > limit;
 
   return (
@@ -24,11 +27,6 @@ const ExpandablePre = (props) => {
       <pre style={{ margin: 0 }}>{expand ? source : truncate(source, limit)}</pre>
     </div>
   );
-};
-
-ExpandablePre.propTypes = {
-  source: PropTypes.string.isRequired,
-  limit: PropTypes.number.isRequired,
 };
 
 export default ExpandablePre;
