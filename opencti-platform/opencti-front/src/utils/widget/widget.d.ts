@@ -1,4 +1,4 @@
-import { FilterGroup } from '../filters/filtersHelpers-types';
+import type { FilterGroup } from '../filters/filtersHelpers-types';
 
 export type WidgetContext = 'workspace' | 'fintelTemplate';
 
