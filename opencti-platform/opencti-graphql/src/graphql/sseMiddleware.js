@@ -633,8 +633,13 @@ const createSseMiddleware = () => {
                     const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(stix), evenContext.reverse_patch);
                     const isPreviouslyVisible = await isStixMatchFilterGroup(context, user, previous, streamFilters);
                     if (isPreviouslyVisible && !isCurrentlyVisible && publishDeletion) { // No longer visible
-                      await client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
-                      cache.set(stix.id, 'hit');
+                      // isCurrentlyVisible=false could be due to filter mismatch OR marking restriction;
+                      // we must not send data the user is not allowed to see.
+                      const isAccessible = await isUserCanAccessStixElement(context, user, stix);
+                      if (isAccessible) {
+                        await client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
+                        cache.set(stix.id, 'hit');
+                      }
                     } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
                       const isValidResolution = await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stix);
                       if (isValidResolution) {
