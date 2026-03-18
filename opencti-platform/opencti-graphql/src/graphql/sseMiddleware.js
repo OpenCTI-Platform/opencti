@@ -168,16 +168,11 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
 
 const authenticateForPublic = async (req, res, next) => {
   const context = await createAuthenticatedContext(req, res, 'stream_authenticate');
-  const user = context.user ?? SYSTEM_USER;
   req.context = context;
-  req.userId = user.id;
-  req.user = user;
-  req.capabilities = user.capabilities;
-  req.allowed_marking = user.allowed_marking;
   req.expirationTime = utcDate().add(1, 'days').toDate();
   const { error, collection, streamFilters } = await computeUserAndCollection(req, res, {
     context,
-    user: req.user,
+    user: context.user ?? SYSTEM_USER,
     id: req.params.id,
   });
   if (error || (!collection?.stream_public && !context.user)) {
@@ -185,13 +180,13 @@ const authenticateForPublic = async (req, res, next) => {
     sendErrorStatus(req, res, 401);
   } else {
     try {
-      if (collection?.stream_public) {
-        const publicUser = await resolvePublicUser(context, collection.stream_public_user_id);
-        req.user = publicUser;
-        req.userId = publicUser.id;
-        req.capabilities = publicUser.capabilities;
-        req.allowed_marking = publicUser.allowed_marking;
-      }
+      const user = collection?.stream_public
+        ? await resolvePublicUser(context, collection.stream_public_user_id)
+        : context.user;
+      req.user = user;
+      req.userId = user.id;
+      req.capabilities = user.capabilities;
+      req.allowed_marking = user.allowed_marking;
     } catch (e) {
       res.statusMessage = e.message ?? 'Public stream configuration error';
       sendErrorStatus(req, res, 500);
