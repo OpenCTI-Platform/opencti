@@ -132,7 +132,7 @@ const createApp = async (app, schema) => {
   const ancestorsFromConfig = nconf.get('app:public_dashboard_authorized_domains')?.trim() ?? '';
   const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
   const allowedFrameSrc = ["'self'"];
-  const scriptSrc = ["'self'"];
+  const scriptSrc = ["'self'", "'unsafe-inline'"];
   if (DEV_MODE) {
     scriptSrc.push("'unsafe-eval'");
   }
