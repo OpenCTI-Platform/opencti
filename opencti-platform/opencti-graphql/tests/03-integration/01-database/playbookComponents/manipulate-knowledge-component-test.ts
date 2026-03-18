@@ -18,8 +18,8 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
       },
     })];
 
-    const configuration = {
-      all: false,
+    const configuration: ManipulateConfiguration = {
+      applyToElements: 'only-main',
       actions: [{
         op: 'replace' as const,
         attribute: 'objectLabel',
@@ -66,8 +66,8 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
       },
     })];
 
-    const configuration = {
-      all: false,
+    const configuration: ManipulateConfiguration = {
+      applyToElements: 'only-main',
       actions: [{
         op: 'remove' as const,
         attribute: 'objectLabel',
@@ -115,7 +115,7 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
       mainId: THREAT_ACTOR_ID,
       bundleObjects,
       configuration: {
-        all: false,
+        applyToElements: 'only-main',
         actions: [{
           op: 'replace' as const,
           attribute: 'confidence',
@@ -134,7 +134,7 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
       mainId: THREAT_ACTOR_ID,
       bundle: result1.bundle,
       configuration: {
-        all: false,
+        applyToElements: 'only-main',
         actions: [{
           op: 'add' as const,
           attribute: 'objectMarking',
@@ -182,7 +182,7 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
 
     const componentConfig = (config?: Partial<ManipulateConfiguration>) => {
       return {
-        all: false,
+        applyToElements: 'only-main' as const,
         actions: [{
           op: 'add' as const,
           attribute: 'objectLabel',
@@ -215,7 +215,7 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
       const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
         mainId: MALWARE_ID,
         bundleObjects: BUNDLE_OBJECTS(),
-        configuration: componentConfig({ all: true }),
+        configuration: componentConfig({ applyToElements: 'all-elements' }),
       }));
 
       const malwareResult = result.bundle.objects.find((o) => o.id === MALWARE_ID);

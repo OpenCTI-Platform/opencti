@@ -23,7 +23,7 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../../case/case-types';
 import { ENTITY_TYPE_INDICATOR } from '../../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organization-types';
 import { ENTITY_TYPE_INCIDENT } from '../../../schema/stixDomainObject';
-import { type PlaybookComponent } from '../playbook-types';
+import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { AUTOMATION_MANAGER_USER, executionContext } from '../../../utils/access';
 import { getParentTypes } from '../../../schema/schemaUtils';
 import * as jsonpatch from 'fast-json-patch';
@@ -88,7 +88,7 @@ const attributePathMapping: any = {
 
 export interface ManipulateConfiguration {
   actions: { op: 'add' | 'replace' | 'remove'; attribute: string; value: UpdateValueConfiguration[] }[];
-  all: boolean;
+  applyToElements: PlaybookBundleElementsToApply;
 }
 const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<ManipulateConfiguration> = {
   type: 'object',
@@ -117,7 +117,16 @@ const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<ManipulateC
         required: ['op', 'attribute', 'value'],
       },
     },
-    all: { type: 'boolean', $ref: 'Manipulate all elements included in the bundle', default: false },
+    applyToElements: {
+      type: 'string',
+      default: playbookBundleElementsToApply.onlyMain.value,
+      $ref: 'Apply to',
+      oneOf: [
+        { const: playbookBundleElementsToApply.onlyMain.value, title: playbookBundleElementsToApply.onlyMain.title },
+        { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
+        { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
+      ],
+    },
   },
   required: ['actions'],
 };
@@ -141,7 +150,7 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
     const cacheIds = await getEntitiesMapFromCache(context, AUTOMATION_MANAGER_USER, ENTITY_TYPE_MARKING_DEFINITION);
-    const { actions, all } = playbookNode.configuration;
+    const { actions, applyToElements } = playbookNode.configuration;
     // Compute if the attribute is defined as multiple in schema definition
     const isAttributeMultiple = (entityType: string, attribute: string) => {
       const baseAttribute = schemaAttributesDefinition.getAttribute(entityType, attribute);
@@ -172,10 +181,14 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
       if (attributeType === 'boolean') return value.toLowerCase() === 'true';
       return value;
     };
+
     const patchOperations: jsonpatch.Operation[] = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
-      if (all || element.id === dataInstanceId) {
+      const all = applyToElements === 'all-elements';
+      const onlyMain = applyToElements === 'only-main' && element.id === dataInstanceId;
+      const exceptMain = applyToElements === 'all-except-main' && element.id !== dataInstanceId;
+      if (all || onlyMain || exceptMain) {
         const { type, id } = element.extensions[STIX_EXT_OCTI];
         const elementOperations = actions
           .map((action) => {
