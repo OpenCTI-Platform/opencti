@@ -3510,21 +3510,19 @@ class DataTableToolBar extends Component {
                 slots={{ transition: Transition }}
                 open={this.state.displayEditMarkings}
                 onClose={() => this.setState({ displayEditMarkings: false })}
+                title={t('Edit markings')}
               >
-                <DialogTitle>{t('Edit markings')}</DialogTitle>
-                <DialogContent>
-                  <ObjectMarkingField
-                    name="bulkMarkings"
-                    label={t('Markings')}
-                    onChange={(name, values) => {
-                      this.setState({ bulkMarkings: values });
-                    }}
-                    setFieldValue={(name, values) => {
-                      this.setState({ bulkMarkings: values });
-                    }}
-                    style={{ marginTop: 20 }}
-                  />
-                </DialogContent>
+                <ObjectMarkingField
+                  name="bulkMarkings"
+                  label={t('Markings')}
+                  onChange={(name, values) => {
+                    this.setState({ bulkMarkings: values });
+                  }}
+                  setFieldValue={(name, values) => {
+                    this.setState({ bulkMarkings: values });
+                  }}
+                  style={{ marginTop: 20 }}
+                />
                 <DialogActions>
                   <Button onClick={this.handleCloseEditMarkings.bind(this)}>
                     {t('Cancel')}
