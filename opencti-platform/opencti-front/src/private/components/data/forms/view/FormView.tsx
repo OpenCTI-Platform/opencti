@@ -31,7 +31,7 @@ import CreatorField from '../../../common/form/CreatorField';
 import AuthorizedMembersField from '../../../common/form/AuthorizedMembersField';
 import { AuthorizedMemberOption } from '../../../../../utils/authorizedMembers';
 import ObjectMembersField from '../../../common/form/ObjectMembersField';
-import useGranted, { INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
+import useGranted, { BYPASS, INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import useImportAccess from '../../../../../utils/hooks/useImportAccess';
 import Card from '../../../../../components/common/card/Card';
@@ -149,6 +149,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const [pollingTimeout, setPollingTimeout] = useState(false);
   const isConnectorReader = useGranted([MODULES]);
   const isGrantedIngestion = useGranted([INGESTION]);
+  const isBypass = useGranted([BYPASS]);
   const { isForcedImportToDraft } = useImportAccess();
 
   const data = usePreloadedQuery(formViewQuery, queryRef);
@@ -952,6 +953,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                       name="draftAuthorizedMembers"
                       label={t_i18n('Authorized Members')}
                       dynamicKeysForPlaybooks={true}
+                      disabled={!isBypass}
                     />
                   </div>
                 )}
