@@ -358,10 +358,15 @@ const RelationshipDetailsComponent: FunctionComponent<
     return <ErrorNotFound />;
   }
 
-  // Typed helper to access coverage_information without using `any`
+  // Typed helper to access coverage_information using a type guard
   type CoverageInfo = { coverage_name: string; coverage_score: number };
   type FromWithCoverage = { coverage_information?: ReadonlyArray<CoverageInfo> | null } | null | undefined;
-  const coverageInfo = (stixRelationship.from as unknown as FromWithCoverage)?.coverage_information;
+  const hasCoverageInformation = (
+    from: typeof stixRelationship.from,
+  ): from is FromWithCoverage => !!from && 'coverage_information' in from;
+  const coverageInfo = hasCoverageInformation(stixRelationship.from)
+    ? stixRelationship.from.coverage_information
+    : null;
 
   const computeNotGenericDetails = () => {
     if (stixRelationship.parent_types.includes('stix-ref-relationship')) {
