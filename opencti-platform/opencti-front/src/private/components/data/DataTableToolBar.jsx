@@ -570,9 +570,13 @@ class DataTableToolBar extends Component {
               this.setState({ processing: false });
               this.handleCloseEditMarkings();
               if (errorCount === 0) {
-                MESSAGING$.notifySuccess(t(`Successfully updated markings for ${successCount} ${successCount === 1 ? 'entity' : 'entities'}`));
+                MESSAGING$.notifySuccess(
+                  t('Successfully updated markings for {{count}} entity', { count: successCount }),
+                );
               } else {
-                MESSAGING$.notifyWarning(t(`Updated ${successCount} ${successCount === 1 ? 'entity' : 'entities'}, ${errorCount} ${errorCount === 1 ? 'error' : 'errors'}`));
+                const updatedMessage = t('Updated {{count}} entity', { count: successCount });
+                const errorMessage = t('{{count}} error', { count: errorCount });
+                MESSAGING$.notifyWarning(`${updatedMessage}, ${errorMessage}`);
               }
             }
             resolve();
@@ -585,7 +589,9 @@ class DataTableToolBar extends Component {
               if (errorCount === total) {
                 MESSAGING$.notifyError(t('Failed to update markings'));
               } else {
-                MESSAGING$.notifyWarning(t(`Updated ${successCount} ${successCount === 1 ? 'entity' : 'entities'}, ${errorCount} ${errorCount === 1 ? 'error' : 'errors'}`));
+                const updatedMessage = t('Updated {{count}} entity', { count: successCount });
+                const errorMessage = t('{{count}} error', { count: errorCount });
+                MESSAGING$.notifyWarning(`${updatedMessage}, ${errorMessage}`);
               }
             }
             resolve();
