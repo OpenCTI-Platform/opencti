@@ -29,7 +29,6 @@ const securityCoverageRelationshipDistributionFragment = graphql`
             filterGroups: []
         } ){
             label,
-            entity_type,
             value
         }
     }
