@@ -3,6 +3,19 @@ import * as R from 'ramda';
 import { pushAll } from '../../utils/arrayUtil';
 import type { ProviderAuthInfo } from './providers';
 
+/**
+ * Looks up a property on a record: first case-sensitive, then case-insensitive fallback.
+ */
+const resolveRecordValue = (record: { [key: string]: unknown }, name: string): unknown => {
+  const exact = record[name];
+  if (exact !== undefined && exact !== null) {
+    return exact;
+  }
+  const lowerName = name.toLowerCase();
+  const key = Object.keys(record).find((k) => k.toLowerCase() === lowerName);
+  return key !== undefined ? record[key] : undefined;
+};
+
 export const resolvePath = (path: string[]) => async (obj: unknown): Promise<any | undefined> => {
   if (obj === undefined || obj === null) {
     return undefined;
@@ -20,7 +33,7 @@ export const resolvePath = (path: string[]) => async (obj: unknown): Promise<any
   }
 
   const [name, ...rest] = path;
-  const { [name]: value } = obj as { [key: string]: unknown };
+  const value = resolveRecordValue(obj as { [key: string]: unknown }, name);
   if (value === undefined || value === null) {
     return undefined;
   }
@@ -103,8 +116,14 @@ const extractSplitMapAndDeduplicate = async (
   }
 
   const mapped = allValues.map(
-    (g) => mapping.find(
-      ({ provider }) => provider === g)?.platform,
+    (g) => {
+      // First try case-sensitive match
+      const exactMatch = mapping.find(({ provider }) => provider === g);
+      if (exactMatch) return exactMatch.platform;
+      // Fallback to case-insensitive match
+      const lowerG = g.toLowerCase();
+      return mapping.find(({ provider }) => provider.toLowerCase() === lowerG)?.platform;
+    },
   ).filter((m): m is string => Boolean(m));
 
   return R.uniq([...defaultValues, ...mapped]);
