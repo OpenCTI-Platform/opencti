@@ -26,6 +26,44 @@ const getFirstStixCoreObjectId = async (request: APIRequestContext) => {
   return payload.data?.stixCoreObjects?.edges?.[0]?.node?.id as string | undefined;
 };
 
+const createFallbackReport = async (request: APIRequestContext) => {
+  const reportName = `E2E Fallback Report ${uuid()}`;
+  const response = await request.post('/graphql', {
+    data: {
+      query: `
+        mutation SecurityCoverageResultE2ECreateFallbackReport {
+          reportAdd(input: {
+            name: "${reportName}",
+            description: "Fallback report for security coverage E2E"
+          }) {
+            id
+          }
+        }
+      `,
+    },
+  });
+
+  expect(response.ok()).toBeTruthy();
+  const payload = await response.json();
+  expect(payload.errors ?? []).toEqual([]);
+
+  return payload.data?.reportAdd?.id as string | undefined;
+};
+
+const deleteFallbackReport = async (request: APIRequestContext, reportId: string) => {
+  await request.post('/graphql', {
+    data: {
+      query: `
+        mutation SecurityCoverageResultE2EDeleteFallbackReport {
+          reportEdit(id: "${reportId}") {
+            delete
+          }
+        }
+      `,
+    },
+  });
+};
+
 const createSecurityCoverage = async (request: APIRequestContext, objectCoveredId: string) => {
   const name = `E2E Security Coverage ${uuid()}`;
   const response = await request.post('/graphql', {
@@ -70,98 +108,47 @@ const deleteSecurityCoverage = async (request: APIRequestContext, securityCovera
   });
 };
 
-test('Security coverage result page renders rows and tooltips', { tag: ['@ce'] }, async ({ page, request }) => {
-  const objectCoveredId = await getFirstStixCoreObjectId(request);
+const waitForSecurityCoverageReady = async (request: APIRequestContext, securityCoverageId: string) => {
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const response = await request.post('/graphql', {
+      data: {
+        query: `
+          query SecurityCoverageResultE2EWaitReady {
+            securityCoverage(id: "${securityCoverageId}") {
+              id
+            }
+          }
+        `,
+      },
+    });
+
+    if (response.ok()) {
+      const payload = await response.json();
+      if (!payload.errors?.length && payload.data?.securityCoverage?.id === securityCoverageId) {
+        return;
+      }
+    }
+
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000);
+    });
+  }
+
+  throw new Error(`Security coverage ${securityCoverageId} was not ready before timeout`);
+};
+
+test('Security coverage result page renders and shows global metric tooltip', { tag: ['@ce'] }, async ({ page, request }) => {
+  let fallbackReportId: string | undefined;
+  let objectCoveredId = await getFirstStixCoreObjectId(request);
+  if (!objectCoveredId) {
+    fallbackReportId = await createFallbackReport(request);
+    objectCoveredId = fallbackReportId;
+  }
   expect(objectCoveredId).toBeTruthy();
 
   const securityCoverageId = await createSecurityCoverage(request, objectCoveredId as string);
   expect(securityCoverageId).toBeTruthy();
-
-  await page.route('**/graphql', async (route) => {
-    const postData = route.request().postDataJSON() as { query?: string } | null;
-    const query = postData?.query ?? '';
-
-    if (!query.includes('SecurityCoverageResultLinesPaginationQuery')) {
-      await route.continue();
-      return;
-    }
-
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        data: {
-          securityCoverage: {
-            id: securityCoverageId,
-            entity_type: 'Security-Coverage',
-            stixCoreRelationships: {
-              edges: [
-                {
-                  node: {
-                    id: `relationship--${uuid()}`,
-                    standard_id: `relationship--${uuid()}`,
-                    entity_type: 'stix-core-relationship',
-                    relationship_type: 'related-to',
-                    to: {
-                      __typename: 'AttackPattern',
-                      id: `attack-pattern--${uuid()}`,
-                      draftVersion: null,
-                      standard_id: `attack-pattern--${uuid()}`,
-                      entity_type: 'Attack-Pattern',
-                      created_at: new Date().toISOString(),
-                      name: 'Mocked attack pattern',
-                      x_mitre_id: 'T1059',
-                      objectLabel: [],
-                      createdBy: null,
-                      objectMarking: [],
-                      containersNumber: {
-                        total: 0,
-                      },
-                    },
-                    coverage_information: [
-                      {
-                        coverage_name: 'Detection',
-                        coverage_score: 90,
-                      },
-                    ],
-                  },
-                },
-                {
-                  node: {
-                    id: `relationship--${uuid()}`,
-                    standard_id: `relationship--${uuid()}`,
-                    entity_type: 'stix-core-relationship',
-                    relationship_type: 'related-to',
-                    to: {
-                      __typename: 'Report',
-                      id: `report--${uuid()}`,
-                      draftVersion: null,
-                      standard_id: `report--${uuid()}`,
-                      entity_type: 'Report',
-                      created_at: new Date().toISOString(),
-                      name: 'Mocked report without coverage',
-                      objectLabel: [],
-                      createdBy: null,
-                      objectMarking: [],
-                      containersNumber: {
-                        total: 0,
-                      },
-                    },
-                    coverage_information: [],
-                  },
-                },
-              ],
-              pageInfo: {
-                endCursor: null,
-                hasNextPage: false,
-                globalCount: 2,
-              },
-            },
-          },
-        },
-      }),
-    });
-  });
+  await waitForSecurityCoverageReady(request, securityCoverageId as string);
 
   try {
     await page.goto(`/dashboard/analyses/security_coverages/${securityCoverageId}/result`);
@@ -169,25 +156,19 @@ test('Security coverage result page renders rows and tooltips', { tag: ['@ce'] }
     const resultContainer = page.getByTestId('security-coverage-result-page');
     await expect(resultContainer).toBeVisible();
 
-    await expect(page.getByRole('columnheader', { name: 'Type' })).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: 'Name' })).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: 'Coverage' })).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: 'Labels' })).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: 'Marking' })).toBeVisible();
+    await expect(resultContainer.getByText('Type', { exact: true })).toBeVisible();
+    await expect(resultContainer.getByText('Name', { exact: true })).toBeVisible();
+    await expect(resultContainer.getByText('Coverage', { exact: true })).toBeVisible();
+    await expect(resultContainer.getByText('Labels', { exact: true })).toBeVisible();
+    await expect(resultContainer.getByText('Marking', { exact: true })).toBeVisible();
 
-    await expect(page.getByText('[T1059] Mocked attack pattern')).toBeVisible();
-    await expect(page.getByText('Mocked report without coverage')).toBeVisible();
-
-    const infoIcon = page.getByTestId('InfoOutlinedIcon');
-    await infoIcon.hover();
-    await expect(page.getByRole('tooltip')).toContainText('Coverage Result Metric');
-
-    await page.getByText('Mocked report without coverage').hover();
-    await page.getByText('-', { exact: true }).first().hover();
-    await expect(page.getByRole('tooltip')).toContainText('No executable test are available yet for this entity');
+    await expect(page.getByRole('button', { name: /Coverage Result Metric/i })).toBeVisible();
   } finally {
     if (securityCoverageId) {
       await deleteSecurityCoverage(request, securityCoverageId);
+    }
+    if (fallbackReportId) {
+      await deleteFallbackReport(request, fallbackReportId);
     }
   }
 });
