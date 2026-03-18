@@ -2,7 +2,7 @@ import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_DAT
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ATTRIBUTE_DATA_SOURCE, RELATION_DATA_SOURCE, type StixDataComponent, type StoreEntityDataComponent } from './dataComponent-types';
 import { INPUT_DATA_SOURCE } from './dataComponent-types';
-import convertDataComponentToStix from './dataComponent-converter';
+import { convertDataComponentToStix_2_1 } from './dataComponent-converter';
 import { RELATION_DERIVED_FROM, RELATION_DETECTS } from '../../schema/stixCoreRelationship';
 import { REL_BUILT_IN, REL_EXTENDED } from '../../database/stix';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
@@ -79,7 +79,7 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
   representative: (stix: StixDataComponent) => {
     return stix.name;
   },
-  converter_2_1: convertDataComponentToStix,
+  converter_2_1: convertDataComponentToStix_2_1,
 };
 
 registerDefinition(DATA_COMPONENT_DEFINITION);

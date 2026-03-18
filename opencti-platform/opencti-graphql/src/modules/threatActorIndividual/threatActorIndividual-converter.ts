@@ -7,7 +7,7 @@ import { assertType, cleanObject, convertObjectReferences, convertToStixDate } f
 import { buildStixDomain as buildStixDomain2 } from '../../database/stix-2-0-converter';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from './threatActorIndividual-types';
 
-const convertThreatActorIndividualToStix = (instance: StoreEntityThreatActorIndividual): StixThreatActorIndividual => {
+export const convertThreatActorIndividualToStix_2_1 = (instance: StoreEntityThreatActorIndividual): StixThreatActorIndividual => {
   const threatActor = buildStixDomain(instance);
   return {
     ...threatActor,
@@ -86,5 +86,3 @@ export const convertThreatActorIndividualToStix_2_0 = (instance: StoreEntityThre
     ethnicity_ref: instance[INPUT_ETHNICITY]?.standard_id,
   };
 };
-
-export default convertThreatActorIndividualToStix;
