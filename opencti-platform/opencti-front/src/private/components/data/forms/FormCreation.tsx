@@ -81,6 +81,7 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
           includeInContainer: schema.includeInContainer || false,
           isDraftByDefault: schema.isDraftByDefault || false,
           allowDraftOverride: schema.allowDraftOverride || false,
+          draftDefaults: schema.draftDefaults || undefined,
           mainEntityMultiple: schema.mainEntityMultiple || false,
           mainEntityLookup: schema.mainEntityLookup || false,
           mainEntityFieldMode: schema.mainEntityFieldMode || 'multiple',
