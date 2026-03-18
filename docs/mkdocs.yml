@@ -185,6 +185,7 @@ nav:
           - JSON Feed: usage/import/json-feed.md
       - Import from files: usage/import-files.md
       - Manual creations: usage/manual-creation.md
+      - Create via form: usage/form-intake.md
       - Draft workspaces: usage/draftWorkspaces.md
       - Analyst workbench: usage/workbench.md
     - Enrich knowledge:
