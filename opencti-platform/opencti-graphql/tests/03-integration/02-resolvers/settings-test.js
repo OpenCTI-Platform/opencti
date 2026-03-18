@@ -16,12 +16,20 @@ const WAIT_FOR_SETTINGS_TIMEOUT_MS = Number(process.env.WAIT_FOR_SETTINGS_TIMEOU
 const WAIT_FOR_SETTINGS_INTERVAL_MS = Number(process.env.WAIT_FOR_SETTINGS_INTERVAL_MS) || 250;
 const WAIT_FOR_SETTINGS_INITIAL_DELAY_MS = Number(process.env.WAIT_FOR_SETTINGS_INITIAL_DELAY_MS) || 250;
 
+const PLATFORM_AI_ENABLED_QUERY = gql`
+  query settingsPlatformAiEnabled {
+    settings {
+      platform_ai_enabled
+    }
+  }
+`;
+
 const waitForPlatformAiEnabled = async (expectedEnabled) => {
   let lastValue = undefined;
   await wait(WAIT_FOR_SETTINGS_INITIAL_DELAY_MS);
   const startTime = Date.now();
   while (Date.now() - startTime < WAIT_FOR_SETTINGS_TIMEOUT_MS) {
-    const settingsResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
+    const settingsResult = await queryAsAdmin({ query: PLATFORM_AI_ENABLED_QUERY, variables: {} });
     lastValue = !!settingsResult.data.settings.platform_ai_enabled;
     if (lastValue === expectedEnabled) {
       return;
