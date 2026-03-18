@@ -28,6 +28,7 @@ const customViewsFragment = graphql`
           id
           name
           description
+          settings_types
         }
       }
     }

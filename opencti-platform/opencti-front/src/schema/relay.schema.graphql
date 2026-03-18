@@ -9820,6 +9820,7 @@ type Query {
   streamCollections(first: Int, after: ID, orderBy: StreamCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): StreamCollectionConnection!
   redisStreamInfo: RedisStreamInfo
   customView(id: ID!): CustomView
+  customViews(first: Int, after: ID, orderBy: CustomViewOrdering, orderMode: OrderingMode, search: String): CustomViewConnection
 }
 
 type Subscription {
@@ -16156,7 +16157,31 @@ type CustomView implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   name: String!
+  settings_types: [String!]!
   description: String
   manifest: String
-  authorizedMembers: [MemberAccess!]!
+  authorizedMembers: [MemberAccess!]
+}
+
+input CustomViewAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  manifest: String
+  authorizedMembers: [MemberAccessInput!]!
+}
+
+type CustomViewEdge {
+  cursor: String!
+  node: CustomView!
+}
+
+type CustomViewConnection {
+  pageInfo: PageInfo!
+  edges: [CustomViewEdge!]!
+}
+
+enum CustomViewOrdering {
+  name
+  _score
 }

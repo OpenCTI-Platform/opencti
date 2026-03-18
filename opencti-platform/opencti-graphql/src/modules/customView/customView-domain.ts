@@ -1,11 +1,15 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { storeLoadById } from '../../database/middleware-loader';
+import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityCustomView, ENTITY_TYPE_CUSTOM_VIEW } from './customView-types';
 import { createEntity, deleteElementById } from '../../database/middleware';
-import type { CustomViewAddInput } from '../../generated/graphql';
+import type { CustomViewAddInput, QueryCustomViewArgs } from '../../generated/graphql';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string): Promise<BasicStoreEntityCustomView> => {
   return storeLoadById(context, user, id, ENTITY_TYPE_CUSTOM_VIEW);
+};
+
+export const findCustomViewsPaginated = async (context: AuthContext, user: AuthUser, args: QueryCustomViewArgs) => {
+  return pageEntitiesConnection<BasicStoreEntityCustomView>(context, user, [ENTITY_TYPE_CUSTOM_VIEW], args);
 };
 
 export const addCustomView = async (
@@ -14,10 +18,7 @@ export const addCustomView = async (
   input: CustomViewAddInput,
 ) => {
   const customViewToCreate = {
-    name: input.name,
-    description: input.description ?? '',
-    manifest: input.manifest ?? '',
-    authorizedMembers: input.authorizedMembers ?? [],
+    ...input,
   };
 
   return createEntity(

@@ -8,9 +8,10 @@ type CustomView implements InternalObject & BasicObject {
     updated_at: DateTime!
     # CustomView
     name: String!
+    settings_types: [String!]!
     description: String
     manifest: String
-    authorizedMembers: [MemberAccess!]!
+    authorizedMembers: [MemberAccess!]
 }
 
 # Mutation
@@ -18,7 +19,8 @@ input CustomViewAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
     manifest: String
-    authorizedMembers: [MemberAccessInput!]!
+    authorizedMembers: [MemberAccessInput!]
+    settings_types: [String!]
 }
 
 # Relay connections
@@ -39,6 +41,13 @@ enum CustomViewOrdering {
 
 type Query {
     customView(id: ID!): CustomView @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
+    customViews(
+        first: Int
+        after: ID
+        orderBy: CustomViewOrdering
+        orderMode: OrderingMode
+        search: String
+    ): CustomViewConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 
 # Mutations
