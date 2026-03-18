@@ -40,8 +40,8 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { getUserAccessRight, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, SYSTEM_USER } from '../../utils/access';
-import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { bypassDraftContext, getDraftContext } from '../../utils/draftContext';
+import { containsValidAdmin, editAuthorizedMembers, sanitizeAuthorizedMembers } from '../../utils/authorizedMembers';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { now } from '../../utils/format';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from './draftOperations';
@@ -211,7 +211,23 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
     created_at: now(),
     draft_status: DRAFT_STATUS_OPEN,
   };
-  const draftWorkspaceInput = { ...input, ...defaultOps };
+  let draftWorkspaceInput: any = { ...input, ...defaultOps };
+  // Validate authorized members
+  if (input.authorized_members && input.authorized_members.length > 0) {
+    const filteredInput = sanitizeAuthorizedMembers(input.authorized_members as MemberAccessInput[]);
+    const hasValidAdmin = await containsValidAdmin(context, filteredInput, [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
+    if (!hasValidAdmin) {
+      throw FunctionalError('It should have at least one valid member with admin access');
+    }
+    const authorized_members = filteredInput.map(({ id, access_right, groups_restriction_ids }) => {
+      const member: any = { id, access_right, groups_restriction_ids };
+      if (!groups_restriction_ids || groups_restriction_ids.length === 0) {
+        delete member.groups_restriction_ids;
+      }
+      return member;
+    });
+    draftWorkspaceInput = { ...draftWorkspaceInput, authorized_members };
+  }
   const createdDraftWorkspace = await createEntity(context, user, draftWorkspaceInput, ENTITY_TYPE_DRAFT_WORKSPACE);
   if (createdDraftWorkspace && input.entity_id) {
     const contextInDraft = { ...context, draft_context: createdDraftWorkspace.id };
