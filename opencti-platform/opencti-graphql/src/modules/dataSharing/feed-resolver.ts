@@ -1,6 +1,6 @@
-import { createFeed, feedDelete, findFeedPaginated, editFeed, findById } from '../domain/feed';
-import type { Resolvers } from '../generated/graphql';
-import { getAuthorizedMembers } from '../utils/authorizedMembers';
+import type { Resolvers } from '../../generated/graphql';
+import { createFeed, feedDelete, findFeedPaginated, editFeed, findById } from './feed-domain';
+import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 
 const feedResolvers: Resolvers = {
   Query: {

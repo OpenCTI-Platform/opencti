@@ -9,7 +9,8 @@ import {
   ENTITY_TYPE_LOCATION,
   ENTITY_TYPE_THREAT_ACTOR,
 } from './general';
-import { ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_TAXII_COLLECTION, ENTITY_TYPE_WORK } from './internalObject';
+import { ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_WORK } from './internalObject';
+import { ENTITY_TYPE_TAXII_COLLECTION } from '../modules/dataSharing/taxiiCollection-types';
 import { aliases, type AttributeDefinition, xOpenctiAliases } from './attribute-definition';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { schemaTypesDefinition } from './schema-types';

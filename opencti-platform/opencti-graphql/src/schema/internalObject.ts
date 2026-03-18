@@ -11,6 +11,14 @@ import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-types';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 import { ENTITY_TYPE_FORM } from '../modules/form/form-types';
+import { ENTITY_TYPE_FEED } from '../modules/dataSharing/feed-types';
+import { ENTITY_TYPE_TAXII_COLLECTION } from '../modules/dataSharing/taxiiCollection-types';
+import { ENTITY_TYPE_STREAM_COLLECTION } from '../modules/dataSharing/streamCollection-types';
+
+// Re-exported for backward compatibility (used by migrations)
+export { ENTITY_TYPE_FEED } from '../modules/dataSharing/feed-types';
+export { ENTITY_TYPE_TAXII_COLLECTION } from '../modules/dataSharing/taxiiCollection-types';
+export { ENTITY_TYPE_STREAM_COLLECTION } from '../modules/dataSharing/streamCollection-types';
 
 export const ENTITY_TYPE_SETTINGS = 'Settings';
 export const ENTITY_TYPE_MIGRATION_STATUS = 'MigrationStatus';
@@ -33,10 +41,7 @@ export const ENTITY_TYPE_RETENTION_RULE = 'RetentionRule';
 //  this should be done for consistency across baseline.  GraphQL
 //  object is named 'Synchronizer'
 export const ENTITY_TYPE_SYNC = 'Sync';
-export const ENTITY_TYPE_TAXII_COLLECTION = 'TaxiiCollection';
 export const ENTITY_TYPE_INTERNAL_FILE = 'InternalFile';
-export const ENTITY_TYPE_FEED = 'Feed';
-export const ENTITY_TYPE_STREAM_COLLECTION = 'StreamCollection';
 export const ENTITY_TYPE_STATUS_TEMPLATE = 'StatusTemplate';
 export const ENTITY_TYPE_STATUS = 'Status';
 export const ENTITY_TYPE_THEME = 'Theme';

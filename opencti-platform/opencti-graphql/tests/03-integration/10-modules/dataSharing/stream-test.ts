@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdminWithSuccess, queryAsUser, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { type StreamCollectionAddInput } from '../../../src/generated/graphql';
-import { logApp } from '../../../src/config/conf';
-import { getGroupEntity } from '../../utils/domainQueryHelper';
-import { AMBER_GROUP, USER_CONNECTOR, USER_PARTICIPATE } from '../../utils/testQuery';
-import { MEMBER_ACCESS_RIGHT_VIEW } from '../../../src/utils/access';
+import { queryAsAdminWithSuccess, queryAsUser, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
+import { type StreamCollectionAddInput } from '../../../../src/generated/graphql';
+import { logApp } from '../../../../src/config/conf';
+import { getGroupEntity } from '../../../utils/domainQueryHelper';
+import { AMBER_GROUP, USER_CONNECTOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { MEMBER_ACCESS_RIGHT_VIEW } from '../../../../src/utils/access';
 
 describe('Stream resolver coverage', () => {
   let publicStreamId: string;

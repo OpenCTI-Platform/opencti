@@ -572,178 +572,6 @@ input WorkErrorInput {
 }
 
 
-############## Taxii
-type TaxiiCollection {
-  id: ID!
-  name: String
-  description: String
-  filters: String
-  include_inferences: Boolean
-  score_to_confidence: Boolean
-  taxii_public: Boolean
-  authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-}
-type TaxiiCollectionConnection {
-  pageInfo: PageInfo!
-  edges: [TaxiiCollectionEdge]!
-}
-
-type TaxiiCollectionEdge {
-  cursor: String!
-  node: TaxiiCollection!
-}
-input TaxiiCollectionAddInput {
-  name: String! @constraint(minLength: 2, format: "not-blank")
-  description: String
-  filters: String
-  taxii_public: Boolean
-  authorized_members: [MemberAccessInput!]
-  include_inferences: Boolean
-  score_to_confidence: Boolean
-}
-enum TaxiiCollectionOrdering {
-  name
-  id
-  _score
-}
-
-type FeedMapping {
-  type: String!
-  attribute: String!
-  relationship_type: String
-  target_entity_type: String
-}
-
-type FeedAttribute {
-  attribute: String!
-  mappings: [FeedMapping!]!
-  multi_match_strategy: String
-  multi_match_separator: String
-}
-
-type Feed {
-  id: ID!
-  standard_id: ID!
-  name: String!
-  description: String
-  filters: String
-  separator: String!
-  rolling_time: Int!
-  feed_date_attribute: String
-  include_header: Boolean!
-  feed_types: [String!]!
-  feed_attributes: [FeedAttribute!]!
-  feed_public: Boolean
-  authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI])
-}
-
-input FeedMappingInput {
-  type: String!
-  attribute: String!
-  relationship_type: String
-  target_entity_type: String
-}
-
-input FeedAttributeMappingInput {
-  attribute: String!
-  mappings: [FeedMappingInput!]!
-  multi_match_strategy: String
-  multi_match_separator: String
-}
-
-input FeedAddInput {
-  name: String! @constraint(minLength: 2, format: "not-blank")
-  description: String
-  filters: String
-  separator: String!
-  feed_date_attribute: String!
-  rolling_time: Int!
-  include_header: Boolean!
-  feed_types: [String!]!
-  feed_public: Boolean
-  feed_attributes: [FeedAttributeMappingInput!]!
-  authorized_members: [MemberAccessInput!]
-}
-
-enum FeedOrdering {
-  name
-  rolling_time
-  feed_types
-  _score
-}
-
-type FeedEdge {
-  cursor: String!
-  node: Feed!
-}
-
-type FeedConnection {
-  pageInfo: PageInfo!
-  edges: [FeedEdge]!
-}
-
-############## Stream
-type RemoteStreamCollection {
-  id: ID!
-  name: String
-  description: String
-  filters: String
-}
-type StreamCollectionConsumer {
-  connectionId: String!
-  userId: String! @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  userEmail: String @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  connectedAt: DateTime!
-  lastEventId: String!
-  lastEventDate: DateTime
-  productionRate: Float!
-  deliveryRate: Float!
-  processingRate: Float!
-  resolutionRate: Float!
-  timeLag: Float!
-  estimatedOutOfDepth: Float
-}
-type StreamCollection {
-  id: ID!
-  name: String
-  description: String
-  filters: String
-  stream_live: Boolean
-  stream_public: Boolean
-  authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI])
-  consumers: [StreamCollectionConsumer!]!
-}
-type StreamCollectionConnection {
-  pageInfo: PageInfo!
-  edges: [StreamCollectionEdge!]!
-}
-type StreamCollectionEdge {
-  cursor: String!
-  node: StreamCollection!
-}
-input StreamCollectionAddInput {
-  name: String! @constraint(minLength:2, format: "not-blank")
-  description: String
-  filters: String
-  stream_live: Boolean
-  stream_public: Boolean
-  authorized_members: [MemberAccessInput!]
-}
-enum StreamCollectionOrdering {
-  name
-  stream_public
-  id
-  stream_live
-  _score
-}
-type RedisStreamInfo {
-  lastEventId: String!
-  firstEventId: String!
-  firstEventDate: String!
-  lastEventDate: String!
-  streamSize: Int!
-}
-
 ############## SubTypes
 enum SubTypesOrdering {
   label
@@ -14473,34 +14301,6 @@ type Query {
     orderBy: RetentionRuleOrdering
     orderMode: OrderingMode
   ): RetentionRuleConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  taxiiCollection(id: String!): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  taxiiCollections(
-    first: Int
-    after: ID
-    orderBy: TaxiiCollectionOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): TaxiiCollectionConnection @public # Code protected
-  streamCollection(id: String!): StreamCollection @auth(for: [TAXIIAPI])
-  feed(id: String!): Feed @auth(for: [TAXIIAPI])
-  feeds(
-    first: Int
-    after: ID
-    orderBy: FeedOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): FeedConnection @public # Code protected
-  streamCollections(
-    first: Int
-    after: ID
-    orderBy: StreamCollectionOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: FilterGroup
-  ): StreamCollectionConnection! @public # Code protected
-  redisStreamInfo: RedisStreamInfo @auth
   statusTemplate(id: String!): StatusTemplate @auth
   statusTemplates(
     first: Int
@@ -15639,18 +15439,6 @@ type AttributeEditMutations {
   fieldPatch(input: [EditInput]!): Attribute
 }
 
-type TaxiiCollectionEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!): TaxiiCollection
-}
-
-type StreamCollectionEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!): StreamCollection
-  addGroup(id: ID!): StreamCollection
-  deleteGroup(id: ID!): StreamCollection
-}
-
 type SynchronizerEditMutations {
   delete: ID
   fieldPatch(input: [EditInput]!): Synchronizer
@@ -16128,13 +15916,6 @@ type Mutation {
   updateConnectorHealth(input: HealthConnectorStatusInput!): ID! @auth(for: [CONNECTORAPI])
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector @auth(for: [MODULES_MODMANAGE])
   connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector! @auth(for: [MODULES_MODMANAGE])
-  feedAdd(input: FeedAddInput!): Feed @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  feedDelete(id: ID!): ID! @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  feedEdit(id: ID!, input: FeedAddInput!): Feed! @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  taxiiCollectionAdd(input: TaxiiCollectionAddInput!): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  streamCollectionAdd(input: StreamCollectionAddInput!): StreamCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  streamCollectionEdit(id: ID!): StreamCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 
   ######## STIX OBJECT
   stixEdit(id: ID!): StixEditMutations @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNMERGE])

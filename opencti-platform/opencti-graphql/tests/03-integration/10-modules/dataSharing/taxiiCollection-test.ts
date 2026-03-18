@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import type { TaxiiCollectionAddInput } from '../../../src/generated/graphql';
-import { queryAsAdminWithSuccess, queryAsUser } from '../../utils/testQueryHelper';
-import { logApp } from '../../../src/config/conf';
-import { getGroupEntity } from '../../utils/domainQueryHelper';
-import { AMBER_GROUP, USER_CONNECTOR, USER_PARTICIPATE } from '../../utils/testQuery';
-import { MEMBER_ACCESS_RIGHT_VIEW } from '../../../src/utils/access';
+import type { TaxiiCollectionAddInput } from '../../../../src/generated/graphql';
+import { queryAsAdminWithSuccess, queryAsUser } from '../../../utils/testQueryHelper';
+import { logApp } from '../../../../src/config/conf';
+import { getGroupEntity } from '../../../utils/domainQueryHelper';
+import { AMBER_GROUP, USER_CONNECTOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { MEMBER_ACCESS_RIGHT_VIEW } from '../../../../src/utils/access';
 
 describe('Taxii collection resolver coverage', () => {
   let publicCollectionId: string;

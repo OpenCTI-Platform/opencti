@@ -4,7 +4,7 @@ import { ADMIN_API_TOKEN, ADMIN_USER, testContext } from '../utils/testQuery';
 import type { EditInput, IngestionTaxiiCollectionAddInput, TaxiiCollectionAddInput } from '../../src/generated/graphql';
 import { getGroupEntityByName } from '../utils/domainQueryHelper';
 import { getBaseUrl } from '../../src/config/conf';
-import { createTaxiiCollection, taxiiCollectionDelete } from '../../src/domain/taxii';
+import { createTaxiiCollection, taxiiCollectionDelete } from '../../src/modules/dataSharing/taxiiCollection-domain';
 
 describe('Taxii push Feed coverage', () => {
   let taxiiPushIngestionId: string;

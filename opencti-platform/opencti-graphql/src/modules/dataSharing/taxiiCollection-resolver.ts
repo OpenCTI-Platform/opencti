@@ -1,15 +1,16 @@
+import type { EditContext, EditInput, Resolvers } from '../../generated/graphql';
 import {
+  createTaxiiCollection,
   findById,
   findTaxiiCollectionPaginated,
-  createTaxiiCollection,
-  taxiiCollectionDelete,
-  taxiiCollectionEditField,
-  taxiiCollectionEditContext,
   taxiiCollectionCleanContext,
-} from '../domain/taxii';
-import { getAuthorizedMembers } from '../utils/authorizedMembers';
+  taxiiCollectionDelete,
+  taxiiCollectionEditContext,
+  taxiiCollectionEditField,
+} from './taxiiCollection-domain';
+import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 
-const taxiiResolvers = {
+const taxiiCollectionResolvers: Resolvers = {
   Query: {
     taxiiCollection: (_, { id }, context) => findById(context, context.user, id),
     taxiiCollections: (_, args, context) => findTaxiiCollectionPaginated(context, context.user, args),
@@ -21,11 +22,11 @@ const taxiiResolvers = {
     taxiiCollectionAdd: (_, { input }, context) => createTaxiiCollection(context, context.user, input),
     taxiiCollectionEdit: (_, { id }, context) => ({
       delete: () => taxiiCollectionDelete(context, context.user, id),
-      fieldPatch: ({ input }) => taxiiCollectionEditField(context, context.user, id, input),
-      contextPatch: ({ input }) => taxiiCollectionEditContext(context, context.user, id, input),
+      fieldPatch: ({ input }: { input: EditInput[] }) => taxiiCollectionEditField(context, context.user, id, input),
+      contextPatch: ({ input }: { input: EditContext }) => taxiiCollectionEditContext(context, context.user, id, input),
       contextClean: () => taxiiCollectionCleanContext(context, context.user, id),
-    }),
+    }) as any,
   },
 };
 
-export default taxiiResolvers;
+export default taxiiCollectionResolvers;
