@@ -225,5 +225,20 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
       expect(malwareExtensions?.opencti_upsert_operations?.length).toEqual(1);
       expect(campaignExtensions?.opencti_upsert_operations?.length).toEqual(1);
     });
+
+    it('should add label to all elements except main', async () => {
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({ applyToElements: 'all-except-main' }),
+      }));
+
+      const malwareResult = result.bundle.objects.find((o) => o.id === MALWARE_ID);
+      const malwareExtensions = malwareResult?.extensions[STIX_EXT_OCTI];
+      const campaignResult = result.bundle.objects.find((o) => o.id === CAMPAIGN_ID);
+      const campaignExtensions = campaignResult?.extensions[STIX_EXT_OCTI];
+      expect(malwareExtensions?.opencti_upsert_operations).toBeUndefined();
+      expect(campaignExtensions?.opencti_upsert_operations?.length).toEqual(1);
+    });
   });
 });
