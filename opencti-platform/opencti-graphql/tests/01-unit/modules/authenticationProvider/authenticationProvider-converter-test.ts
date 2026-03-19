@@ -713,9 +713,11 @@ describe('convertSamlEnvConfig', () => {
       firstname_expr: null,
       lastname_expr: null,
     });
-    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['groups']);
+    // No groups_management configured → groups_expr empty (mirrors legacy isGroupBaseAccess)
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual([]);
     expect(result.configuration.groups_mapping.prevent_default_groups).toBe(false);
-    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual(['organizations']);
+    // No organizations_management configured → organizations_expr empty (mirrors legacy isOrgaMapping)
+    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual([]);
   });
 
   it('should convert SAML config with all first-class boolean fields', () => {
@@ -813,7 +815,7 @@ describe('convertSamlEnvConfig', () => {
     ]);
   });
 
-  it('should default SAML group_attributes to ["groups"] when groups_management is present but empty', () => {
+  it('should return empty groups_expr when groups_management is present but has no groups_mapping', () => {
     const entry: EnvProviderEntry = {
       strategy: 'SamlStrategy',
       config: {
@@ -823,7 +825,8 @@ describe('convertSamlEnvConfig', () => {
     };
 
     const result = convertSamlEnvConfig('saml', entry);
-    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['groups']);
+    // groups_management.groups_mapping is absent → mirrors legacy isGroupBaseAccess = false
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual([]);
     expect(result.configuration.groups_mapping.groups_mapping).toStrictEqual([]);
   });
 
@@ -1765,7 +1768,8 @@ describe('Edge cases', () => {
     };
 
     const result = convertSamlEnvConfig('saml', entry);
-    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual(['organizations']);
+    // organizations_management is empty → mirrors legacy isOrgaMapping = false
+    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual([]);
     expect(result.configuration.organizations_mapping.organizations_mapping).toStrictEqual([]);
   });
 
