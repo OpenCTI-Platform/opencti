@@ -12,7 +12,7 @@ const enteringBundleObjects = () => [
   testBundleObject({
     id: MAIN_ID,
     type: 'report',
-    extension: { type: 'Report' },
+    octiExtension: { type: 'Report' },
     object_refs: [
       INTRUSION_SET_ID,
       CAMPAIGN_ID,
@@ -21,12 +21,12 @@ const enteringBundleObjects = () => [
   testBundleObject({
     id: INTRUSION_SET_ID,
     type: 'intrusion-set',
-    extension: { type: 'Intrusion-Set' },
+    octiExtension: { type: 'Intrusion-Set' },
   }),
   testBundleObject({
     id: CAMPAIGN_ID,
     type: 'campaign',
-    extension: { type: 'Campaign' },
+    octiExtension: { type: 'Campaign' },
   }),
 ];
 
