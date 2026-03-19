@@ -1,100 +1,50 @@
 import { assert, describe, expect, it } from 'vitest';
-import type { StixBundle, StixOpenctiExtension } from '../../../../src/types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
 import type { StixThreatActor } from '../../../../src/types/stix-2-1-sdo';
-import type { StixObject } from '../../../../src/types/stix-2-1-common';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../../../../src/schema/general';
-import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../src/schema/stixDomainObject';
-import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT } from '../../../../src/modules/playbook/components/manipulate-knowledge-component';
+import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT, type ManipulateConfiguration } from '../../../../src/modules/playbook/components/manipulate-knowledge-component';
+import { testBundleObject, testExecutor } from './playbook-components-test-utils';
 
 describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
-  const baseBundle = {
-    type: 'bundle',
-    spec_version: '2.1',
-    id: 'bundle--threat-id',
-  } as StixBundle;
-
-  const threatObjectId = 'threat--obj-uuid';
-  const dataInstanceId = threatObjectId;
-
-  const baseBundleObject = {
-    type: 'threat',
-    spec_version: '2.1',
-    id: threatObjectId,
-    name: 'Playbook Object 1',
-    extensions: {
-      [STIX_EXT_OCTI]: {
-        id: 'internal-uuid',
-        type: ENTITY_TYPE_THREAT_ACTOR,
-        extension_type: 'property-extension',
-      },
-    },
-  } as unknown as StixThreatActor;
-  const basePlaybookNode = {
-    id: 'playbook-node-1',
-    name: 'Update Knowledge Node',
-    component_id: 'test-node-1',
-  };
-
-  const baseExecutorParams = {
-    dataInstanceId,
-    eventId: '',
-    executionId: '',
-    playbookId: '',
-    previousPlaybookNodeId: undefined,
-  };
+  const THREAT_ACTOR_ID = 'threat--09bd862a-f030-55f2-920a-900c4913d9fd';
 
   it('should replace labels by field patch', async () => {
-    const bundle = {
-      ...baseBundle,
-      objects: [{
-        ...baseBundleObject,
-        labels: ['unicorn', 'honey badger', 'pangolin'],
-        extensions: {
-          [STIX_EXT_OCTI]: {
-            id: 'some--id',
-            type: ENTITY_TYPE_CONTAINER_REPORT,
-            extension_type: 'property-extension',
-            labels_ids: ['unicorn-id', 'honey-badger-id', 'pangolin-id'],
-          } as StixOpenctiExtension,
-        },
-      } as StixObject],
-    } as StixBundle;
+    const bundleObjects = [testBundleObject<StixThreatActor>({
+      id: THREAT_ACTOR_ID,
+      type: ENTITY_TYPE_THREAT_ACTOR,
+      labels: ['unicorn', 'honey badger', 'pangolin'],
+      octiExtension: {
+        labels_ids: ['unicorn-id', 'honey-badger-id', 'pangolin-id'],
+      },
+    })];
 
-    const playbookNode = {
-      ...basePlaybookNode,
-      configuration: {
-        all: false,
-        actions: [
+    const configuration: ManipulateConfiguration = {
+      applyToElements: 'only-main',
+      actions: [{
+        op: 'replace' as const,
+        attribute: 'objectLabel',
+        value: [
           {
-            op: 'replace' as const,
-            attribute: 'objectLabel',
-            value: [
-              {
-                label: 'Unicorn',
-                value: 'unicorn-id',
-                patch_value: 'unicorn',
-              },
-              {
-                label: 'Honey badger',
-                value: 'honey-badger-id',
-                patch_value: 'honey badger',
-              },
-            ],
+            label: 'Unicorn',
+            value: 'unicorn-id',
+            patch_value: 'unicorn',
+          },
+          {
+            label: 'Honey badger',
+            value: 'honey-badger-id',
+            patch_value: 'honey badger',
           },
         ],
-      },
+      }],
     };
 
-    const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor({
-      ...baseExecutorParams,
-      previousStepBundle: bundle,
-      dataInstanceId: threatObjectId,
-      playbookNode,
-      bundle,
-    });
+    const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+      mainId: THREAT_ACTOR_ID,
+      bundleObjects,
+      configuration,
+    }));
 
-    const updatedActor = result.bundle.objects.find((o) => o.id === threatObjectId) as StixThreatActor;
+    const updatedActor = result.bundle.objects.find((o) => o.id === THREAT_ACTOR_ID) as StixThreatActor;
     const objectExtensions = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
     if (!objectExtensions.opencti_upsert_operations || !objectExtensions.opencti_upsert_operations[0]) {
       assert.fail('Field patch missing');
@@ -107,56 +57,42 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
   });
 
   it('should remove labels by field patch', async () => {
-    const bundle = {
-      ...baseBundle,
-      objects: [{
-        ...baseBundleObject,
-        labels: ['unicorn', 'honey badger', 'pangolin'],
-        extensions: {
-          [STIX_EXT_OCTI]: {
-            id: 'some--id',
-            type: ENTITY_TYPE_CONTAINER_REPORT,
-            extension_type: 'property-extension',
-            labels_ids: ['unicorn-id', 'honey-badger-id', 'pangolin-id'],
-          } as StixOpenctiExtension,
-        },
-      } as StixObject],
-    } as StixBundle;
+    const bundleObjects = [testBundleObject<StixThreatActor>({
+      id: THREAT_ACTOR_ID,
+      type: ENTITY_TYPE_THREAT_ACTOR,
+      labels: ['unicorn', 'honey badger', 'pangolin'],
+      octiExtension: {
+        labels_ids: ['unicorn-id', 'honey-badger-id', 'pangolin-id'],
+      },
+    })];
 
-    const playbookNode = {
-      ...basePlaybookNode,
-      configuration: {
-        all: false,
-        actions: [
+    const configuration: ManipulateConfiguration = {
+      applyToElements: 'only-main',
+      actions: [{
+        op: 'remove' as const,
+        attribute: 'objectLabel',
+        value: [
           {
-            op: 'remove' as const,
-            attribute: 'objectLabel',
-            value: [
-              {
-                label: 'Unicorn',
-                value: 'unicorn-id',
-                patch_value: 'unicorn',
-              },
-              {
-                label: 'Honey badger',
-                value: 'honey-badger-id',
-                patch_value: 'honey badger',
-              },
-            ],
+            label: 'Unicorn',
+            value: 'unicorn-id',
+            patch_value: 'unicorn',
+          },
+          {
+            label: 'Honey badger',
+            value: 'honey-badger-id',
+            patch_value: 'honey badger',
           },
         ],
-      },
+      }],
     };
 
-    const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor({
-      ...baseExecutorParams,
-      previousStepBundle: bundle,
-      dataInstanceId: threatObjectId,
-      playbookNode,
-      bundle,
-    });
+    const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+      mainId: THREAT_ACTOR_ID,
+      bundleObjects,
+      configuration,
+    }));
 
-    const updatedActor = result.bundle.objects.find((o) => o.id === threatObjectId) as StixThreatActor;
+    const updatedActor = result.bundle.objects.find((o) => o.id === THREAT_ACTOR_ID) as StixThreatActor;
     const objectExtensions = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
     if (!objectExtensions.opencti_upsert_operations || !objectExtensions.opencti_upsert_operations[0]) {
       assert.fail('Field patch missing');
@@ -169,68 +105,49 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
   });
 
   it('should update 2 attributes in successive playbook nodes using field patches (confidence & marking definitions)', async () => {
-    const bundle = {
-      ...baseBundle,
-      objects: [{
-        ...baseBundleObject,
-        confidence: '15',
-      } as StixObject],
-    } as StixBundle;
+    const bundleObjects = [testBundleObject<StixThreatActor>({
+      id: THREAT_ACTOR_ID,
+      type: ENTITY_TYPE_THREAT_ACTOR,
+      confidence: 15,
+    })];
 
-    const playbookNode1 = {
-      ...basePlaybookNode,
+    const result1 = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+      mainId: THREAT_ACTOR_ID,
+      bundleObjects,
       configuration: {
-        all: false,
-        actions: [
-          {
-            op: 'replace' as const,
-            attribute: 'confidence',
-            value: [
-              {
-                label: 'Set confidence to 75',
-                value: '75',
-                patch_value: '75',
-              },
-            ],
-          },
-        ],
+        applyToElements: 'only-main',
+        actions: [{
+          op: 'replace' as const,
+          attribute: 'confidence',
+          value: [
+            {
+              label: 'Set confidence to 75',
+              value: '75',
+              patch_value: '75',
+            },
+          ],
+        }],
       },
-    };
+    }));
 
-    const playbookNode2 = {
-      ...basePlaybookNode,
-      configuration: {
-        all: false,
-        actions: [
-          {
-            op: 'add' as const,
-            attribute: 'objectMarking',
-            value: [
-              {
-                label: 'PAP:GREEN',
-                value: 'pap-green-id',
-                patch_value: 'pap-green-id',
-              },
-            ],
-          },
-        ],
-      },
-    };
-
-    const result1 = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor({
-      ...baseExecutorParams,
-      previousStepBundle: bundle,
-      dataInstanceId: threatObjectId,
-      playbookNode: playbookNode1,
-      bundle,
-    });
-    const result2 = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor({
-      ...baseExecutorParams,
-      previousStepBundle: bundle,
-      dataInstanceId: threatObjectId,
-      playbookNode: playbookNode2,
+    const result2 = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+      mainId: THREAT_ACTOR_ID,
       bundle: result1.bundle,
-    });
+      configuration: {
+        applyToElements: 'only-main',
+        actions: [{
+          op: 'add' as const,
+          attribute: 'objectMarking',
+          value: [
+            {
+              label: 'PAP:GREEN',
+              value: 'pap-green-id',
+              patch_value: 'pap-green-id',
+            },
+          ],
+        }],
+      },
+    }));
 
     const objectExtensions = result2.bundle.objects[0].extensions[STIX_EXT_OCTI];
     if (!objectExtensions.opencti_upsert_operations || !objectExtensions.opencti_upsert_operations[0]) {
@@ -243,8 +160,85 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
     expect(objectExtensions.opencti_upsert_operations[1].key).toBe('objectMarking');
     expect(objectExtensions.opencti_upsert_operations[1].value[0]).toBe('pap-green-id');
 
-    const updatedActor = result2.bundle.objects.find((o) => o.id === threatObjectId) as StixThreatActor;
+    const updatedActor = result2.bundle.objects.find((o) => o.id === THREAT_ACTOR_ID) as StixThreatActor;
     expect(updatedActor.confidence).toBe(75);
     expect(updatedActor.object_marking_refs).toEqual(['pap-green-id']);
+  });
+
+  describe('Bundle scope', () => {
+    const MALWARE_ID = 'malware--09bd862a-f030-55f2-920a-900c4913d9ff';
+    const CAMPAIGN_ID = 'campaign--6bcf59ca-70c8-55ae-ac7d-a6f9b107a35b';
+
+    const BUNDLE_OBJECTS = () => [
+      testBundleObject({
+        id: MALWARE_ID,
+        type: 'Malware',
+      }),
+      testBundleObject({
+        id: CAMPAIGN_ID,
+        type: 'Campaign',
+      }),
+    ];
+
+    const componentConfig = (config?: Partial<ManipulateConfiguration>) => {
+      return {
+        applyToElements: 'only-main' as const,
+        actions: [{
+          op: 'add' as const,
+          attribute: 'objectLabel',
+          value: [{
+            label: 'Duck',
+            value: 'duck-id',
+            patch_value: 'duck',
+          }],
+        }],
+        ...config,
+      };
+    };
+
+    it('should add label only on main element', async () => {
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig(),
+      }));
+
+      const malwareResult = result.bundle.objects.find((o) => o.id === MALWARE_ID);
+      const malwareExtensions = malwareResult?.extensions[STIX_EXT_OCTI];
+      const campaignResult = result.bundle.objects.find((o) => o.id === CAMPAIGN_ID);
+      const campaignExtensions = campaignResult?.extensions[STIX_EXT_OCTI];
+      expect(malwareExtensions?.opencti_upsert_operations?.length).toEqual(1);
+      expect(campaignExtensions?.opencti_upsert_operations).toBeUndefined();
+    });
+
+    it('should add label to all elements', async () => {
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({ applyToElements: 'all-elements' }),
+      }));
+
+      const malwareResult = result.bundle.objects.find((o) => o.id === MALWARE_ID);
+      const malwareExtensions = malwareResult?.extensions[STIX_EXT_OCTI];
+      const campaignResult = result.bundle.objects.find((o) => o.id === CAMPAIGN_ID);
+      const campaignExtensions = campaignResult?.extensions[STIX_EXT_OCTI];
+      expect(malwareExtensions?.opencti_upsert_operations?.length).toEqual(1);
+      expect(campaignExtensions?.opencti_upsert_operations?.length).toEqual(1);
+    });
+
+    it('should add label to all elements except main', async () => {
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({ applyToElements: 'all-except-main' }),
+      }));
+
+      const malwareResult = result.bundle.objects.find((o) => o.id === MALWARE_ID);
+      const malwareExtensions = malwareResult?.extensions[STIX_EXT_OCTI];
+      const campaignResult = result.bundle.objects.find((o) => o.id === CAMPAIGN_ID);
+      const campaignExtensions = campaignResult?.extensions[STIX_EXT_OCTI];
+      expect(malwareExtensions?.opencti_upsert_operations).toBeUndefined();
+      expect(campaignExtensions?.opencti_upsert_operations?.length).toEqual(1);
+    });
   });
 });

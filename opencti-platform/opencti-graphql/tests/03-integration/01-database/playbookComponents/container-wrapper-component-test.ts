@@ -89,7 +89,7 @@ describe('PLAYBOOK_CONTAINER_WRAPPER_COMPONENT', () => {
     const incidentBundleObject = testBundleObject({
       id: INCIDENT_ID,
       type: 'Incident',
-      extension: {
+      octiExtension: {
         created_at: '2025-02-25T08:13:45.863Z',
         updated_at: '2025-05-09T10:03:11.288Z',
         is_inferred: false,
