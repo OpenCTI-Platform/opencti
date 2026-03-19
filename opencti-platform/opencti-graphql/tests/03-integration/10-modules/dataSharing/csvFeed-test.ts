@@ -1,6 +1,6 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { editorQuery, queryAsAdmin, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { ADMIN_USER, editorQuery, queryAsAdmin, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { queryAsAdminWithSuccess, queryAsUser } from '../../../utils/testQueryHelper';
 import { logApp } from '../../../../src/config/conf';
 
@@ -65,6 +65,7 @@ describe('CSV Feed resolver standard behavior', () => {
             mappings: [{ type: 'Country', attribute: 'name' }],
           }],
           feed_public: true,
+          feed_public_user_id: ADMIN_USER.id,
         },
       },
     });
@@ -106,6 +107,7 @@ describe('CSV Feed resolver standard behavior', () => {
             mappings: [{ type: 'Country', attribute: 'name' }],
           }],
           feed_public: true,
+          feed_public_user_id: ADMIN_USER.id,
           authorized_members: [],
         },
       },
