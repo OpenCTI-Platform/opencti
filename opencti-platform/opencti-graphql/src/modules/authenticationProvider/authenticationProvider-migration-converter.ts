@@ -404,7 +404,7 @@ const buildOidcGroupsExpr = (gm: EnvGroupsManagement | undefined): string[] => {
 const buildOidcOrgsExpr = (om: EnvOrganizationsManagement | undefined): string[] => {
   // Always populate with defaults — in the new model we never hide default paths.
   // Old default: organizations_path=['organizations'], token_reference='access_token', read_userinfo=false
-  if (!om) return [];
+  if (!om || Object.keys(om).length === 0) return [];
   const paths = om?.organizations_path ?? ['organizations'];
   const readUserinfo = om?.read_userinfo ?? false;
   const tokenRef = om?.token_reference ?? 'access_token';
