@@ -247,7 +247,7 @@ When the primary entity you listen to is an incident & then use the "Container W
 
 Will create a security coverage for the given elements when type is compatible.
 
-By default, wrapping is applied to the entity triggering the playbook. You can change this behavior with the following options:
+By default, creation is applied to the entity triggering the playbook. You can change this behavior with the following options:
 
 - all elements in the bundle (elements that might result from enrichment for example)
 - all elements except the entity triggering the playbook
