@@ -23,12 +23,15 @@ import useGranted, {
 } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectSharingList from '../../common/stix_core_objects/StixCoreObjectSharingList';
 import StixCyberObservableEdition from './StixCyberObservableEdition';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteComponent, enableEnrollPlaybook }) => {
   const [openSharing, setOpenSharing] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [openEnrollPlaybook, setOpenEnrollPlaybook] = useState(false);
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
+  const isDraftSharingEnabled = isFeatureEnable('DRAFT_WORKSPACE_ORG_SHARING');
   const draftContext = useDraftContext();
   const currentDraftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
   const canEdit = !draftContext || currentDraftAccessRight.canEdit;
@@ -74,6 +77,7 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
                   title={t_i18n('Share with an organization')}
                   handleCloseMenu={closeMenu}
                   needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+                  allowInDraft={isDraftSharingEnabled}
                 />
                 {displayEnrollPlaybook && (
                   <StixCoreObjectMenuItemUnderEE
