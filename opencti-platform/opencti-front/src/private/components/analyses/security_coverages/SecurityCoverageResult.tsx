@@ -16,7 +16,6 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
-import ItemIcon from '../../../../components/ItemIcon';
 import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
 import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
