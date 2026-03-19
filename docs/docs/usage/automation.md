@@ -196,7 +196,12 @@ If the playbook stops from time to time at this step, it might be because the ob
 
 Will add, replace, or remove compatible attributes of the entities contained in the received STIX 2.1 bundle and send out the modified bundle.
 
-By default, modification is applied to entities having triggered the playbook. You can toggle the corresponding option to apply it to all elements in the bundle (elements that might result from enrichment for example).
+By default, modification is applied to the entity triggering the playbook. You can change this behavior with the following options:
+
+- all elements in the bundle (elements that might result from enrichment for example)
+- all elements except the entity triggering the playbook
+
+![Enroll entity in playbook](assets/playbook_select_bundle_scope.png)
 
 **Specificities of the component**
 
@@ -210,8 +215,14 @@ These operations will only remove and & replace data that has been added in the 
 
 ### Container wrapper
 
-Will modify the received STIX 2.1 bundle to include the entities into an container of the type you configured. 
-By default, wrapping is applied to entities having triggered the playbook. You can toggle the corresponding option to apply it to all elements in the bundle (elements that might result from enrichment for example).
+Will modify the received STIX 2.1 bundle to include the entities into an container of the type you configured.
+
+By default, wrapping is applied to the entity triggering the playbook. You can change this behavior with the following options:
+
+- all elements in the bundle (elements that might result from enrichment for example)
+- all elements except the entity triggering the playbook
+
+![Enroll entity in playbook](assets/playbook_select_bundle_scope.png)
 
 **Specificities of the component**
 
