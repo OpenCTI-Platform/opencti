@@ -116,7 +116,7 @@ const createApp = async (app, schema) => {
         defaultSrc: ["'self'"],
         scriptSrc: opts.scriptSrc,
         styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrcAttr: ["'self'"],
+        scriptSrcAttr: ["'none'"],
         fontSrc: ["'self'", 'data:'],
         imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
         manifestSrc: ["'self'", 'data:', 'https://*', 'http://*'],
