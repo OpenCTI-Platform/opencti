@@ -164,14 +164,21 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     }
   }, [isOpen, agentMode?.intent, agentMode?.action]);
 
-  // Auto-execute when agent is selected (skip for tone — wait for tone selection)
+  // Auto-execute when agent is selected
   useEffect(() => {
     if (isOpen && agentMode && selectedAgent && !agentExecuted && !agentLoading) {
-      // For tone action, don't auto-execute — wait for user to pick tone and click refresh
-      if (agentMode.action === 'tone') return;
       executeAgentCall();
     }
   }, [selectedAgent, isOpen, agentMode, agentExecuted, agentLoading]);
+
+  // Re-execute when tone changes
+  const toneRef = useRef(tone);
+  useEffect(() => {
+    if (toneRef.current !== tone && isOpen && agentMode && selectedAgent && agentExecuted) {
+      toneRef.current = tone;
+      executeAgentCall();
+    }
+  }, [tone]);
 
   const executeAgentCall = () => {
     if (!selectedAgent || !agentMode) return;
@@ -191,31 +198,15 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   };
 
   const handleRefresh = () => {
-    if (!selectedAgent) return;
+    if (!selectedAgent || !agentMode) return;
     setContent('');
     setAgentExecuted(false);
-    setAgentLoading(false);
-    // Will re-trigger via useEffect for non-tone actions
-    if (agentMode?.action === 'tone') {
-      // For tone, execute directly
-      setAgentLoading(true);
-      setAgentExecuted(true);
-      const prompt = buildPrompt('tone', agentMode.inputContent, agentMode.format, tone);
-      callAgent(selectedAgent.slug, prompt)
-        .then((result) => {
-          setContent(result);
-          setAgentLoading(false);
-        })
-        .catch((error: Error) => {
-          setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
-          setAgentLoading(false);
-        });
-    }
   };
 
   const handleAgentChange = (_event: unknown, newValue: AgentOption | null) => {
+    if (!newValue) return; // prevent clearing
     setSelectedAgent(newValue);
-    if (newValue && agentMode) {
+    if (agentMode) {
       setAgentExecuted(false);
       setContent('');
     }
@@ -287,6 +278,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           />
         )}
         isOptionEqualToValue={(option, value) => option.id === value.id}
+        clearIcon={null}
       />
     </Box>
   ) : t_i18n('Ask AI');
