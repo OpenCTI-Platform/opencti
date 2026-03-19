@@ -32,7 +32,7 @@ import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { extractRefererPathFromReq, setCookieError, decodeOidcState } from './httpUtils';
-import { getChatbotProxy } from './httpChatbotProxy';
+import { getChatbotAgents, postChatbotSession, postChatbotMessage, postAgentMessage } from './httpChatbotProxy';
 import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
@@ -537,8 +537,11 @@ const createApp = async (app, schema) => {
     }
   });
 
-  // -- Chatbot Proxy
-  app.post(`${basePath}/chatbot`, getChatbotProxy);
+  // -- Chatbot Proxy (Platform Chat API)
+  app.get(`${basePath}/chatbot/agents`, getChatbotAgents);
+  app.post(`${basePath}/chatbot/sessions`, postChatbotSession);
+  app.post(`${basePath}/chatbot/messages`, postChatbotMessage);
+  app.post(`${basePath}/chatbot/agent`, postAgentMessage);
 
   // Other routes - Render index.html
   app.get('*any', async (_, res) => {

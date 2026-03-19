@@ -4,11 +4,32 @@ import conf, { logApp } from '../../../config/conf';
 const XTM_ONE_URL = conf.get('xtm:xtm_one_url');
 const XTM_ONE_TOKEN = conf.get('xtm:xtm_one_token');
 
-export interface XtmOneUserEntry {
-  email: string;
-  display_name: string;
-  api_key: string;
+// ── Intent catalog types ────────────────────────────────────────────────
+
+export interface IntentCatalogAgent {
+  agent_id: string;
+  agent_name: string;
+  agent_slug: string | null;
+  agent_description: string | null;
+  vertical: string | null;
+  priority: number;
+  is_default: boolean;
+  is_locked: boolean;
+  enabled: boolean;
 }
+
+export interface IntentCatalogEntry {
+  intent: string;
+  description: string | null;
+  agents: IntentCatalogAgent[];
+}
+
+export interface IntentInput {
+  name: string;
+  description?: string;
+}
+
+// ── Registration types ──────────────────────────────────────────────────
 
 export interface XtmOneRegistrationInput {
   platform_identifier: string;
@@ -18,8 +39,8 @@ export interface XtmOneRegistrationInput {
   platform_id: string;
   enterprise_license_pem: string | undefined;
   license_type: string | undefined;
-  admin_api_key: string;
-  users: XtmOneUserEntry[];
+  business_vertical: string;
+  intents: IntentInput[];
 }
 
 export interface XtmOneRegistrationResponse {
@@ -28,7 +49,10 @@ export interface XtmOneRegistrationResponse {
   ee_enabled: boolean;
   user_integrations: number;
   chat_web_token: string | null;
+  intent_catalog: IntentCatalogEntry[];
 }
+
+// ── Client ──────────────────────────────────────────────────────────────
 
 const xtmOneClient = {
   isConfigured: (): boolean => {

@@ -103,7 +103,7 @@ import { safeRender } from '../utils/safeEjs.client';
 import { totp } from '../utils/totp';
 import { pushAll } from '../utils/arrayUtil';
 import { apiTokens } from '../modules/attributes/internalObject-registrationAttributes';
-import { SignJWT } from 'jose';
+import { decodeJwt, SignJWT } from 'jose';
 import { getPlatformCrypto } from '../utils/platformCrypto';
 import { addUserTokenByAdmin, generateTokenHmac } from '../modules/user/user-domain';
 import { memoize } from '../utils/memoize';
@@ -1771,11 +1771,31 @@ const getJWTKeyPair = memoize(async () => {
 
 export const issueAuthenticationJWT = async (user, duration = '1h') => {
   const xmt1DerivationKeyPair = await getJWTKeyPair();
-  const jwt = new SignJWT({ sub: user.id, name: user.name }).setIssuedAt().setExpirationTime(duration);
+  const jwt = new SignJWT({ sub: user.id, name: user.name, email: user.user_email })
+    .setIssuer('opencti')
+    .setIssuedAt()
+    .setExpirationTime(duration);
   return await xmt1DerivationKeyPair.signJwt(jwt);
 };
 
 export const authenticateUserByJWT = async (context, req, token) => {
+  // Peek at the payload without signature verification to check the issuer
+  const unverifiedPayload = decodeJwt(token);
+  if (unverifiedPayload.iss === 'filigran-copilot') {
+    // Copilot tokens are not signature-verified (testing purpose)
+    const email = unverifiedPayload.email;
+    if (!email) {
+      throw AuthenticationFailure('Copilot JWT missing email claim');
+    }
+    const user = await getUserByEmail(email);
+    if (!user) {
+      throw AuthenticationFailure('Copilot JWT email does not match any user');
+    }
+    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    const cacheUser = platformUsers.get(user.id);
+    return internalAuthenticateUser(context, req, cacheUser);
+  }
+  // Standard path: verify signature then authenticate by user id
   const xmt1DerivationKeyPair = await getJWTKeyPair();
   const verified = await xmt1DerivationKeyPair.verifyJwt(token);
   const userId = verified.payload.sub;

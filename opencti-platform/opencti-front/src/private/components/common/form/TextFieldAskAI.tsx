@@ -1,24 +1,11 @@
-import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
-import Dialog from '@common/dialog/Dialog';
 import FiligranIcon from '@components/common/FiligranIcon';
-import { TextFieldAskAIChangeToneMutation, TextFieldAskAIChangeToneMutation$data } from '@components/common/form/__generated__/TextFieldAskAIChangeToneMutation.graphql';
-import { TextFieldAskAIExplainMutation, TextFieldAskAIExplainMutation$data } from '@components/common/form/__generated__/TextFieldAskAIExplainMutation.graphql';
-import { TextFieldAskAIFixSpellingMutation, TextFieldAskAIFixSpellingMutation$data } from '@components/common/form/__generated__/TextFieldAskAIFixSpellingMutation.graphql';
-import { TextFieldAskAIMakeLongerMutation, TextFieldAskAIMakeLongerMutation$data } from '@components/common/form/__generated__/TextFieldAskAIMakeLongerMutation.graphql';
-import { TextFieldAskAIMakeShorterMutation, TextFieldAskAIMakeShorterMutation$data } from '@components/common/form/__generated__/TextFieldAskAIMakeShorterMutation.graphql';
-import { TextFieldAskAISummarizeMutation, TextFieldAskAISummarizeMutation$data } from '@components/common/form/__generated__/TextFieldAskAISummarizeMutation.graphql';
-import DialogActions from '@mui/material/DialogActions';
-import FormControl from '@mui/material/FormControl';
 import InputAdornment from '@mui/material/InputAdornment';
-import InputLabel from '@mui/material/InputLabel';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import { useTheme } from '@mui/styles';
 import { LogoXtmOneIcon } from 'filigran-icon';
-import React, { FunctionComponent, useState } from 'react';
-import { graphql } from 'react-relay';
+import React, { FunctionComponent, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useFormatter } from '../../../../components/i18n';
 import EETooltip from '../entreprise_edition/EETooltip';
@@ -26,10 +13,18 @@ import EETooltip from '../entreprise_edition/EETooltip';
 import type { Theme } from '../../../../components/Theme';
 import ResponseDialog from '../../../../utils/ai/ResponseDialog';
 import useAI from '../../../../utils/hooks/useAI';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 // region types
+export type AgentAction = 'spelling' | 'shorter' | 'longer' | 'tone' | 'summarize' | 'explain';
+
+export interface AgentMode {
+  intent: string;
+  action: AgentAction;
+  inputContent: string;
+  format: string;
+}
+
 interface TextFieldAskAiProps {
   currentValue: string;
   setFieldValue: (value: string) => void;
@@ -38,42 +33,6 @@ interface TextFieldAskAiProps {
   disabled?: boolean;
   style?: object;
 }
-
-const textFieldAskAIFixSpellingMutation = graphql`
-  mutation TextFieldAskAIFixSpellingMutation($id: ID!, $content: String!, $format: Format) {
-    aiFixSpelling(id: $id, content: $content, format: $format)
-  }
-`;
-
-const textFieldAskAIMakeShorterMutation = graphql`
-  mutation TextFieldAskAIMakeShorterMutation($id: ID!, $content: String!, $format: Format) {
-    aiMakeShorter(id: $id, content: $content, format: $format)
-  }
-`;
-
-const textFieldAskAIMakeLongerMutation = graphql`
-  mutation TextFieldAskAIMakeLongerMutation($id: ID!, $content: String!, $format: Format) {
-    aiMakeLonger(id: $id, content: $content, format: $format)
-  }
-`;
-
-const textFieldAskAIChangeToneMutation = graphql`
-  mutation TextFieldAskAIChangeToneMutation($id: ID!, $content: String!, $format: Format, $tone: Tone) {
-    aiChangeTone(id: $id, content: $content, format: $format, tone: $tone)
-  }
-`;
-
-const textFieldAskAISummarizeMutation = graphql`
-  mutation TextFieldAskAISummarizeMutation($id: ID!, $content: String!, $format: Format) {
-    aiSummarize(id: $id, content: $content, format: $format)
-  }
-`;
-
-const textFieldAskAIExplainMutation = graphql`
-  mutation TextFieldAskAIExplainMutation($id: ID!, $content: String!) {
-    aiExplain(id: $id, content: $content)
-  }
-`;
 
 const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   currentValue,
@@ -88,13 +47,12 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const isEnterpriseEdition = useEnterpriseEdition();
   const { fullyActive } = useAI();
   const [content, setContent] = useState('');
-  const [disableResponse, setDisableResponse] = useState(false);
-  const [openToneOptions, setOpenToneOptions] = useState(false);
-  const [tone, setTone] = useState<'tactical' | 'operational' | 'strategic'>('tactical');
-  const [isAcceptable, setIsAcceptable] = useState(true);
+  const menuId = useRef(`ask-ai-menu-${uuid()}`).current;
   const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: HTMLButtonElement | null }>({ open: false, anchorEl: null });
   const [busId, setBusId] = useState<string | null>(null);
   const [displayAskAI, setDisplayAskAI] = useState(false);
+  const [agentMode, setAgentMode] = useState<AgentMode | null>(null);
+
   const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (isEnterpriseEdition) {
       event.preventDefault();
@@ -104,181 +62,85 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const handleCloseMenu = () => {
     setMenuOpen({ open: false, anchorEl: null });
   };
-  const handleOpenToneOptions = () => {
-    handleCloseMenu();
-    setOpenToneOptions(true);
-  };
-  const handleCloseToneOptions = () => setOpenToneOptions(false);
-  const handleOpenAskAI = () => setDisplayAskAI(true);
   const handleCloseAskAI = () => {
     setContent('');
     setDisplayAskAI(false);
+    setAgentMode(null);
+    setBusId(null);
   };
 
-  const [commitMutationFixSpelling] = useApiMutation<TextFieldAskAIFixSpellingMutation>(textFieldAskAIFixSpellingMutation);
-  const [commitMutationMakeShorter] = useApiMutation<TextFieldAskAIMakeShorterMutation>(textFieldAskAIMakeShorterMutation);
-  const [commitMutationMakeLonger] = useApiMutation<TextFieldAskAIMakeLongerMutation>(textFieldAskAIMakeLongerMutation);
-  const [commitMutationChangeTone] = useApiMutation<TextFieldAskAIChangeToneMutation>(textFieldAskAIChangeToneMutation);
-  const [commitMutationSummarize] = useApiMutation<TextFieldAskAISummarizeMutation>(textFieldAskAISummarizeMutation);
-  const [commitMutationExplain] = useApiMutation<TextFieldAskAIExplainMutation>(textFieldAskAIExplainMutation);
+  const intentForAction: Record<AgentAction, string> = {
+    spelling: 'fix.spelling',
+    shorter: 'make.it.shorter',
+    longer: 'make.it.longer',
+    tone: 'change.tone',
+    summarize: 'summarize',
+    explain: 'explain',
+  };
 
-  const handleAskAi = (action: string, canBeAccepted = true) => {
-    setDisableResponse(true);
+  const handleAgentAction = (action: AgentAction) => {
     handleCloseMenu();
     const id = uuid();
     setBusId(id);
-    setIsAcceptable(canBeAccepted);
-    handleOpenAskAI();
-    switch (action) {
-      case 'spelling':
-        commitMutationFixSpelling({
-          variables: {
-            id,
-            content: currentValue,
-            format,
-          },
-          onCompleted: (response: TextFieldAskAIFixSpellingMutation$data) => {
-            setContent(response?.aiFixSpelling ?? '');
-            setDisableResponse(false);
-          },
-          onError: (error: Error) => {
-            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
-            setDisableResponse(false);
-          },
-        });
-        break;
-      case 'shorter':
-        commitMutationMakeShorter({
-          variables: {
-            id,
-            content: currentValue,
-            format,
-          },
-          onCompleted: (response: TextFieldAskAIMakeShorterMutation$data) => {
-            setContent(response?.aiMakeShorter ?? '');
-            setDisableResponse(false);
-          },
-          onError: (error: Error) => {
-            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
-            setDisableResponse(false);
-          },
-        });
-        break;
-      case 'longer':
-        commitMutationMakeLonger({
-          variables: {
-            id,
-            content: currentValue,
-            format,
-          },
-          onCompleted: (response: TextFieldAskAIMakeLongerMutation$data) => {
-            setContent(response?.aiMakeLonger ?? '');
-            setDisableResponse(false);
-          },
-          onError: (error: Error) => {
-            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
-            setDisableResponse(false);
-          },
-        });
-        break;
-      case 'tone':
-        commitMutationChangeTone({
-          variables: {
-            id,
-            content: currentValue,
-            format,
-            tone,
-          },
-          onCompleted: (response: TextFieldAskAIChangeToneMutation$data) => {
-            setContent(response?.aiChangeTone ?? '');
-            setDisableResponse(false);
-          },
-          onError: (error: Error) => {
-            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
-            setDisableResponse(false);
-          },
-        });
-        break;
-      case 'summarize':
-        commitMutationSummarize({
-          variables: {
-            id,
-            content: currentValue,
-            format,
-          },
-          onCompleted: (response: TextFieldAskAISummarizeMutation$data) => {
-            setContent(response?.aiSummarize ?? '');
-            setDisableResponse(false);
-          },
-          onError: (error: Error) => {
-            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
-            setDisableResponse(false);
-          },
-        });
-        break;
-      case 'explain':
-        commitMutationExplain({
-          variables: {
-            id,
-            content: currentValue,
-          },
-          onCompleted: (response: TextFieldAskAIExplainMutation$data) => {
-            setContent(response?.aiExplain ?? '');
-            setDisableResponse(false);
-          },
-          onError: (error: Error) => {
-            setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
-            setDisableResponse(false);
-          },
-        });
-        break;
-      default:
-        // do nothing
-    }
+    setContent('');
+    setAgentMode({
+      intent: intentForAction[action],
+      action,
+      inputContent: currentValue,
+      format,
+    });
+    setDisplayAskAI(true);
   };
 
   const renderButton = () => {
+    const isContentTooShort = currentValue.length < 2;
+    const isButtonDisabled = disabled || isContentTooShort;
+    const tooltipTitle = isContentTooShort
+      ? t_i18n('Add more content before using AI')
+      : t_i18n('Ask AI');
     return (
       <>
-        <EETooltip forAi={true} title={t_i18n('Ask AI')}>
-          <IconButton
-            size="small"
-            onClick={(event) => ((isEnterpriseEdition && fullyActive) ? handleOpenMenu(event) : null)}
-            disabled={disabled || currentValue.length < 10}
-            style={{ color: theme.palette.ai.main }}
-          >
-            <FiligranIcon icon={LogoXtmOneIcon} size="small" />
-          </IconButton>
+        <EETooltip forAi={true} title={tooltipTitle}>
+          <span style={{ display: 'inline-flex' }}>
+            <IconButton
+              size="small"
+              onClick={(event) => ((isEnterpriseEdition && fullyActive) ? handleOpenMenu(event) : null)}
+              disabled={isButtonDisabled}
+              style={{ color: isButtonDisabled ? (theme.palette.action?.disabled ?? 'rgba(255,255,255,0.3)') : theme.palette.ai.main }}
+            >
+              <FiligranIcon icon={LogoXtmOneIcon} size="small" />
+            </IconButton>
+          </span>
         </EETooltip>
         <Menu
-          id="menu-appbar"
+          id={menuId}
           anchorEl={menuOpen.anchorEl}
           open={menuOpen.open}
           onClose={handleCloseMenu}
         >
-          <MenuItem onClick={() => handleAskAi('spelling')}>
+          <MenuItem onClick={() => handleAgentAction('spelling')}>
             {t_i18n('Fix spelling & grammar')}
           </MenuItem>
-          <MenuItem onClick={() => handleAskAi('shorter')}>
+          <MenuItem onClick={() => handleAgentAction('shorter')}>
             {t_i18n('Make it shorter')}
           </MenuItem>
-          <MenuItem onClick={() => handleAskAi('longer')}>
+          <MenuItem onClick={() => handleAgentAction('longer')}>
             {t_i18n('Make it longer')}
           </MenuItem>
-          <MenuItem onClick={handleOpenToneOptions}>
+          <MenuItem onClick={() => handleAgentAction('tone')}>
             {t_i18n('Change tone')}
           </MenuItem>
-          <MenuItem onClick={() => handleAskAi('summarize')}>
+          <MenuItem onClick={() => handleAgentAction('summarize')}>
             {t_i18n('Summarize')}
           </MenuItem>
-          <MenuItem onClick={() => handleAskAi('explain', false)}>
+          <MenuItem onClick={() => handleAgentAction('explain')}>
             {t_i18n('Explain')}
           </MenuItem>
         </Menu>
         {busId && (
           <ResponseDialog
             id={busId}
-            isDisabled={disableResponse}
+            isDisabled={false}
             isOpen={displayAskAI}
             handleClose={handleCloseAskAI}
             content={content}
@@ -288,43 +150,12 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
               handleCloseAskAI();
             }}
             handleFollowUp={handleCloseAskAI}
-            followUpActions={[{ key: 'retry', label: t_i18n('Retry') }]}
+            followUpActions={[]}
             format={format}
-            isAcceptable={isAcceptable}
+            isAcceptable={true}
+            agentMode={agentMode}
           />
         )}
-        <Dialog
-          open={openToneOptions}
-          onClose={handleCloseToneOptions}
-          title={t_i18n('Select options')}
-        >
-          <FormControl style={{ width: '100%' }}>
-            <InputLabel id="tone">{t_i18n('Tone')}</InputLabel>
-            <Select
-              labelId="tone"
-              value={tone}
-              onChange={(event) => setTone(event.target.value as unknown as 'tactical' | 'operational' | 'strategic')}
-              fullWidth={true}
-            >
-              <MenuItem value="tactical">{t_i18n('Tactical')}</MenuItem>
-              <MenuItem value="operational">{t_i18n('Operational')}</MenuItem>
-              <MenuItem value="strategic">{t_i18n('Strategic')}</MenuItem>
-            </Select>
-          </FormControl>
-          <DialogActions>
-            <Button variant="secondary" onClick={handleCloseToneOptions}>
-              {t_i18n('Cancel')}
-            </Button>
-            <Button
-              onClick={() => {
-                handleCloseToneOptions();
-                handleAskAi('tone');
-              }}
-            >
-              {t_i18n('Generate')}
-            </Button>
-          </DialogActions>
-        </Dialog>
       </>
     );
   };

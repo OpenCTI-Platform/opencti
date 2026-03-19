@@ -83,8 +83,9 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
       onClose={onClose}
       onModeChange={onModeChange}
       topOffset={topOffset}
-      backendType="legacy"
+      backendType="rest"
       apiBaseUrl={`${APP_BASE_PATH}/chatbot`}
+      apiEndpoints={{ agents: '/agents', messages: '/messages', sessions: '/sessions' }}
       user={{ firstName }}
       t={t_i18n}
       accentColor={accentColor}
@@ -95,7 +96,7 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
       onResizeStart={onResizeStart}
       onResizeEnd={onResizeEnd}
     />,
-    container
+    container,
   );
 };
 
