@@ -13,6 +13,7 @@ import { createMapper } from './mappings-utils';
 import { flatExtraConf, retrieveSecrets } from './authenticationProvider-domain';
 import { handleProviderLogin } from './providers';
 import { skipSubjectCheck } from 'oauth4webapi';
+import { encodeOidcState } from '../../http/httpUtils';
 
 const buildProxiedFetch = (issuerUrl: URL): typeof fetch => {
   const dispatcher = getPlatformHttpProxyAgent(issuerUrl.toString(), true);
@@ -96,14 +97,22 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
   const openIDStrategy = new OpenIDStrategy(options, verify);
 
   const { audience } = conf;
-  if (audience) {
-    const original = openIDStrategy.authorizationRequestParams.bind(openIDStrategy);
-    openIDStrategy.authorizationRequestParams = (req, options) => {
-      const params = original(req, options) as URLSearchParams;
+
+  // Always override authorizationRequestParams to relay application state (referer)
+  // through the OIDC state parameter, similar to how SAML uses RelayState.
+  // With openid-client v6, the state parameter is no longer always generated
+  // (PKCE is used instead), so we must set it explicitly to relay the referer.
+  const originalParams = openIDStrategy.authorizationRequestParams.bind(openIDStrategy);
+  openIDStrategy.authorizationRequestParams = (req: any, options: any) => {
+    const params = originalParams(req, options) as URLSearchParams;
+    if (audience) {
       params.set('audience', audience);
-      return params;
-    };
-  }
+    }
+    // Encode the referer into the state parameter so it survives the OIDC redirect
+    const referer = req.session?.referer ?? '';
+    params.set('state', encodeOidcState(referer));
+    return params;
+  };
 
   const logout = (_: Request, callback: (err: Error | null, uri: string) => void) => {
     const logoutCallbackUrl = conf.logout_callback_url;
