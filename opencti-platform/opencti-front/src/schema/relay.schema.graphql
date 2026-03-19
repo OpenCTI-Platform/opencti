@@ -10123,7 +10123,7 @@ type Mutation {
   ruleApplyAsync(elementId: ID!, ruleId: ID!, executionId: ID!): Boolean
   ruleClear(elementId: ID!, ruleId: ID!): Boolean
   rulesRescan(elementId: ID!): Boolean
-  rulesRescanAsnyc(elementId: ID!): Boolean
+  rulesRescanAsync(elementId: ID!, executionId: ID!): Boolean
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean
   token(input: UserLoginInput): String
   connectorJWT: String!
