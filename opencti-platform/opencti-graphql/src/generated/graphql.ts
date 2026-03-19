@@ -16208,6 +16208,7 @@ export type Mutation = {
   ruleManagerClean: RuleManager;
   ruleSetActivation: Rule;
   rulesRescan?: Maybe<Scalars['Boolean']['output']>;
+  rulesRescanAsnyc?: Maybe<Scalars['Boolean']['output']>;
   samlProviderAdd?: Maybe<AuthenticationProvider>;
   samlProviderDelete?: Maybe<Scalars['ID']['output']>;
   samlProviderEdit?: Maybe<AuthenticationProvider>;
@@ -18126,6 +18127,11 @@ export type MutationRuleSetActivationArgs = {
 
 
 export type MutationRulesRescanArgs = {
+  elementId: Scalars['ID']['input'];
+};
+
+
+export type MutationRulesRescanAsnycArgs = {
   elementId: Scalars['ID']['input'];
 };
 
@@ -45356,6 +45362,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ruleManagerClean?: Resolver<ResolversTypes['RuleManager'], ParentType, ContextType, Partial<MutationRuleManagerCleanArgs>>;
   ruleSetActivation?: Resolver<ResolversTypes['Rule'], ParentType, ContextType, RequireFields<MutationRuleSetActivationArgs, 'enable' | 'id'>>;
   rulesRescan?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRulesRescanArgs, 'elementId'>>;
+  rulesRescanAsnyc?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRulesRescanAsnycArgs, 'elementId'>>;
   samlProviderAdd?: Resolver<Maybe<ResolversTypes['AuthenticationProvider']>, ParentType, ContextType, RequireFields<MutationSamlProviderAddArgs, 'input'>>;
   samlProviderDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSamlProviderDeleteArgs, 'id'>>;
   samlProviderEdit?: Resolver<Maybe<ResolversTypes['AuthenticationProvider']>, ParentType, ContextType, RequireFields<MutationSamlProviderEditArgs, 'id' | 'input'>>;

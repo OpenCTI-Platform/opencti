@@ -15868,6 +15868,7 @@ type Mutation {
   ruleApplyAsync(elementId: ID!, ruleId: ID!, executionId: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
   ruleClear(elementId: ID!, ruleId: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
   rulesRescan(elementId: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
+  rulesRescanAsync(elementId: ID!, executionId: ID!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## INTERNAL OBJECT ENTITIES
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean @auth
