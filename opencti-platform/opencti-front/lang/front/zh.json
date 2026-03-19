@@ -2817,6 +2817,7 @@
   "No enrichment connectors on this platform": "此平台上没有富化连接器",
   "No entities added in this context.": "此上下文中未添加任何实体。",
   "No entities were found for this search.": "未找到此搜索的实体。",
+  "No executable tests are currently set for this entity, these can be set in OpenAEV": "目前未为该实体设置可执行测试，这些测试可在 OpenAEV 中设置",
   "No export connector available to generate an export": "没有可以用于生成导出的导出连接器",
   "No external secrets configured": "未配置外部机密",
   "No extra configuration entries. Click + to add one.": "没有额外的配置条目。点击 + 添加一个。",

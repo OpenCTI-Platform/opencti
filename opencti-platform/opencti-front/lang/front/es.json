@@ -2817,6 +2817,7 @@
   "No enrichment connectors on this platform": "Ningún conector de enriquecimiento en esta plataforma",
   "No entities added in this context.": "No hay entidades añadidas en este contexto.",
   "No entities were found for this search.": "Ninguna entidad fue encontrada en esta búsqueda.",
+  "No executable tests are currently set for this entity, these can be set in OpenAEV": "Actualmente no hay pruebas ejecutables establecidas para esta entidad, éstas pueden establecerse en OpenAEV",
   "No export connector available to generate an export": "Ningún conector de exportación disponible para generar la exportación",
   "No external secrets configured": "No hay secretos externos configurados",
   "No extra configuration entries. Click + to add one.": "No hay entradas de configuración adicionales. Haga clic en + para agregar una.",

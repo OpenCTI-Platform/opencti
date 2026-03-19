@@ -12,16 +12,13 @@ import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { SecurityCoverageResultLines_data$data } from '@components/analyses/security_coverages/__generated__/SecurityCoverageResultLines_data.graphql';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
-import ItemMarkings from '../../../../components/ItemMarkings';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import ItemEntityType from '../../../../components/ItemEntityType';
-import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
 import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import IconButton from '@common/button/IconButton';
 import { InfoOutlined } from '@mui/icons-material';
-import {useTheme} from "@mui/material/styles";
+import { useTheme } from '@mui/material/styles';
 
 interface SecurityCoverageResultProps {
   id: string;
@@ -302,10 +299,11 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
       label: 'Name',
       percentWidth: 35,
       isSortable: false,
-      render: ({ to, coverage_information }) =>
+      render: ({ to, coverage_information }) => (
         <span style={coverage_information?.length ? {} : { color: theme.palette.text.disabled }}>
           {to?.x_mitre_id ? `[${to?.x_mitre_id}] ${to?.name}` : getMainRepresentative(to)}
-        </span>,
+        </span>
+      ),
     },
     coverage: {
       label: 'Coverage',
@@ -322,7 +320,7 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
               <Tooltip title={t_i18n('No executable tests are currently set for this entity, these can be set in OpenAEV')}>
                 <span style={{ width: '100%' }}>-</span>
               </Tooltip>
-            )
+            ),
     },
     to_object_label: {
       label: 'Labels',
