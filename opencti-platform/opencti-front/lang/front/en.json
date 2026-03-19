@@ -2833,6 +2833,7 @@
   "No enrichment connectors on this platform": "No enrichment connectors on this platform",
   "No entities added in this context.": "No entities added in this context.",
   "No entities were found for this search.": "No entities were found for this search.",
+  "No executable tests are currently set for this entity, these can be set in OpenAEV": "No executable tests are currently set for this entity, these can be set in OpenAEV",
   "No export connector available to generate an export": "No export connector available to generate an export",
   "No external secrets configured": "No external secrets configured",
   "No extra configuration entries. Click + to add one.": "No extra configuration entries. Click + to add one.",

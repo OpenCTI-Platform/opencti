@@ -2832,6 +2832,7 @@
   "No enrichment connectors on this platform": "有効なエンリッチ用コネクタがありません",
   "No entities added in this context.": "このコンテキストにエンティティは追加されていません。",
   "No entities were found for this search.": "エンティティは見つかりませんでした。",
+  "No executable tests are currently set for this entity, these can be set in OpenAEV": "現在、このエンティティには実行可能テストが設定されていません。",
   "No export connector available to generate an export": "対応する出力用コネクタがありません",
   "No external secrets configured": "外部秘密設定なし",
   "No extra configuration entries. Click + to add one.": "追加の設定エントリはありません。+をクリックして追加してください。",
