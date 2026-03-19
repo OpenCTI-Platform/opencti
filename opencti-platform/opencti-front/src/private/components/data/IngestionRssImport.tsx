@@ -8,10 +8,10 @@ import XtmHubDialogConnectivityLost from '@components/xtm_hub/dialog/connectivit
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
 import useXtmHubDownloadDocument from '../../../utils/hooks/useXtmHubDownloadDocument';
-import IngestionRssCreation from "@components/data/ingestionRss/IngestionRssCreation";
-import {IngestionRssImportQuery$data} from "@components/data/__generated__/IngestionRssImportQuery.graphql";
-import {useFormatter} from "../../../components/i18n";
-import {PaginationOptions} from "../../../components/list_lines";
+import IngestionRssCreation from '@components/data/ingestionRss/IngestionRssCreation';
+import { IngestionRssImportQuery$data } from '@components/data/__generated__/IngestionRssImportQuery.graphql';
+import { useFormatter } from '../../../components/i18n';
+import { PaginationOptions } from '../../../components/list_lines';
 
 export const rssFeedImportQuery = graphql`
   query IngestionRssImportQuery($file: Upload!) {
@@ -64,7 +64,7 @@ const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({ pagina
 
   const handleDownloadError = () => {
     navigate('/dashboard/data/ingestion/rss');
-    MESSAGING$.notifyError(t_i18n('An error occurred while importing Rss Feed configuration.'));
+    MESSAGING$.notifyError(t_i18n('An error occurred while importing RSS Feed configuration.'));
   };
 
   const { dialogConnectivityLostStatus } = useXtmHubDownloadDocument({
@@ -93,7 +93,7 @@ const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({ pagina
         value="import"
         size="small"
         sx={{ marginLeft: 1 }}
-        title={t_i18n('Import a Rss Feed')}
+        title={t_i18n('Import a RSS Feed')}
         onClick={() => inputFileRef?.current?.click()}
       >
         <FileUploadOutlined fontSize="small" color="primary" />

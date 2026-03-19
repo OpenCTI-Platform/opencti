@@ -10,7 +10,7 @@ import Slide from '@mui/material/Slide';
 import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import React, { Component, UIEvent } from 'react';
+import React, { Component } from 'react';
 import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
@@ -19,7 +19,6 @@ import IngestionRssEdition, { ingestionRssMutationFieldPatch } from './Ingestion
 import { fetchQuery } from '../../../../relay/environment';
 import fileDownload from 'js-file-download';
 import stopEvent from '../../../../utils/domEvent';
-import { IngestionRssPopoverExportQuery$data } from '@components/data/ingestionRss/__generated__/IngestionRssPopoverExportQuery.graphql';
 
 const styles = (theme) => ({
   container: {
@@ -167,7 +166,6 @@ class IngestionRssPopover extends Component {
   };
 
   async handleExport(e) {
-    console.log("coucoucou export")
     stopEvent(e);
     this.handleClose();
     await this.exportRssFeed();

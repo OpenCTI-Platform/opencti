@@ -1,4 +1,4 @@
-import React, {FunctionComponent} from 'react';
+import React, { FunctionComponent } from 'react';
 import { Field, Form, Formik, FormikHelpers } from 'formik';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
@@ -8,7 +8,7 @@ import IngestionSchedulingField from '../IngestionSchedulingField';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import {FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -16,21 +16,12 @@ import { insertNode } from '../../../../utils/store';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import IngestionCreationUserHandling from "@components/data/IngestionCreationUserHandling";
-import {IngestionRssImportQuery$data} from "@components/data/__generated__/IngestionRssImportQuery.graphql";
-import {PaginationOptions} from "../../../../components/list_lines";
-import useApiMutation from "../../../../utils/hooks/useApiMutation";
+import IngestionCreationUserHandling from '@components/data/IngestionCreationUserHandling';
+import { IngestionRssImportQuery$data } from '@components/data/__generated__/IngestionRssImportQuery.graphql';
+import { PaginationOptions } from '../../../../components/list_lines';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-const IngestionRssCreationMutation = graphql`
-  mutation IngestionRssCreationMutation($input: IngestionRssAddInput!) {
-    ingestionRssAdd(input: $input) {
-      ...IngestionRssLine_node
-    }
-  }
-`;
-
-const ingestionRssCreationValidation = () =>
-{
+const ingestionRssCreationValidation = () => {
   const { t_i18n } = useFormatter();
 
   return Yup.object().shape({
@@ -45,7 +36,7 @@ const ingestionRssCreationValidation = () =>
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .nullable(),
   });
-}
+};
 
 const CreateIngestionRssControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
@@ -59,7 +50,7 @@ interface IngestionRssAddInput {
   description?: string;
   scheduling_period?: string;
   uri: string;
-  object_marking_refs?: {label:string,value:string}[];
+  object_marking_refs?: { label: string; value: string }[];
   report_types?: string[];
   created_by_ref?: FieldOption;
   current_state_date?: Date;
@@ -67,6 +58,15 @@ interface IngestionRssAddInput {
   automatic_user?: boolean;
   confidence_level?: string;
 }
+
+const IngestionRssCreationMutation = graphql`
+  mutation IngestionRssCreationMutation($input: IngestionRssAddInput!) {
+    ingestionRssAdd(input: $input) {
+      ...IngestionRssLine_node
+    }
+  }
+`;
+
 interface IngestionRssCreationProps {
   paginationOptions?: PaginationOptions;
   handleClose?: () => void;
@@ -79,24 +79,24 @@ interface IngestionRssCreationProps {
   };
 }
 
-const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({paginationOptions,
-                                                                              handleClose,
-                                                                              ingestionRssData,
-                                                                              triggerButton = true,
-                                                                              open = false,
-                                                                              drawerSettings,
-                                                                            }) => {
+const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({ paginationOptions,
+  handleClose,
+  ingestionRssData,
+  triggerButton = true,
+  open = false,
+  drawerSettings,
+}) => {
   const { t_i18n } = useFormatter();
   const [commit] = useApiMutation(IngestionRssCreationMutation);
   const handleSubmit = (values: IngestionRssAddInput, { setSubmitting, resetForm }: FormikHelpers<IngestionRssAddInput>) => {
     const userId
       = typeof values.user_id === 'object'
-      ? values.user_id?.value
-      : values.user_id;
-    console.log("values", values)
+        ? values.user_id?.value
+        : values.user_id;
     const input = {
       name: values.name,
       description: values.description,
+      scheduling_period: values.scheduling_period,
       uri: values.uri,
       report_types: values.report_types,
       user_id: userId,
@@ -134,9 +134,10 @@ const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({pag
     created_by_ref: undefined,
     object_marking_refs: ingestionRssData?.object_marking_refs
       ? ingestionRssData.object_marking_refs
-        .filter((v): v is { label: string; value: string } => Boolean(v))
-      : []
-  }
+          .filter((v): v is { label: string; value: string } => Boolean(v))
+      : [],
+  };
+
   return (
     <Drawer
       title={drawerSettings?.title ?? t_i18n('Create a RSS ingester')}

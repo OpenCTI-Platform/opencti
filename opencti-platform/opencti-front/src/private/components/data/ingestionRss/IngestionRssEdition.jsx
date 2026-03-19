@@ -16,7 +16,7 @@ import CreatorField from '../../common/form/CreatorField';
 import { convertCreatedBy, convertMarkingsWithoutEdges, convertUser } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import Drawer from '../../common/drawer/Drawer';
-import IngestionEditionUserHandling from "@components/data/IngestionEditionUserHandling";
+import IngestionEditionUserHandling from '@components/data/IngestionEditionUserHandling';
 
 export const ingestionRssMutationFieldPatch = graphql`
   mutation IngestionRssEditionFieldPatchMutation(
@@ -110,7 +110,6 @@ const IngestionRssEditionContainer = ({
       'current_state_date',
     ]),
   )(ingestionRss);
-  console.log("ingestionRss", ingestionRss)
   return (
     <Drawer
       title={t('Update a RSS ingester')}

@@ -4,7 +4,9 @@ import {
   findById,
   ingestionDelete,
   ingestionEditField,
-  ingestionAddAutoUser, rssFeedAddInputFromImport, rssFeedExport
+  ingestionAddAutoUser,
+  rssFeedAddInputFromImport,
+  rssFeedExport,
 } from './ingestion-rss-domain';
 import type { Resolvers } from '../../generated/graphql';
 import { storeLoadByIds } from '../../database/middleware-loader';
