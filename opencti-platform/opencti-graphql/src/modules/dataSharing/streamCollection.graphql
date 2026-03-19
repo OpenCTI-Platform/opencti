@@ -25,8 +25,8 @@ type StreamCollection {
   filters: String
   stream_live: Boolean
   stream_public: Boolean
-  stream_public_user_id: String
-  stream_public_authorized_markings: [String!]
+  stream_public_user_id: String @auth(for: [SETTINGS_SETACCESSES])
+  stream_public_authorized_markings: [String!] @auth(for: [SETTINGS_SETACCESSES])
   authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI])
   consumers: [StreamCollectionConsumer!]!
 }
