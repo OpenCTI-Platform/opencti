@@ -393,6 +393,7 @@ const quotePathSegment = (segment: string): string => {
 const buildOidcGroupsExpr = (gm: EnvGroupsManagement | undefined): string[] => {
   // Always populate with defaults — in the new model we never hide default paths.
   // Old default: groups_path=['groups'], token_reference='access_token', read_userinfo=false
+  if (!gm?.groups_mapping || gm.groups_mapping.length === 0) return [];
   const paths = gm?.groups_path ?? ['groups'];
   const readUserinfo = gm?.read_userinfo ?? false;
   const tokenRef = gm?.token_reference ?? 'access_token';
@@ -403,6 +404,7 @@ const buildOidcGroupsExpr = (gm: EnvGroupsManagement | undefined): string[] => {
 const buildOidcOrgsExpr = (om: EnvOrganizationsManagement | undefined): string[] => {
   // Always populate with defaults — in the new model we never hide default paths.
   // Old default: organizations_path=['organizations'], token_reference='access_token', read_userinfo=false
+  if (!om) return [];
   const paths = om?.organizations_path ?? ['organizations'];
   const readUserinfo = om?.read_userinfo ?? false;
   const tokenRef = om?.token_reference ?? 'access_token';

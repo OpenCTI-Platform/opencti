@@ -338,9 +338,9 @@ describe('convertOidcEnvConfig', () => {
       firstname_expr: 'user_info.given_name',
       lastname_expr: 'user_info.family_name',
     });
-    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['tokens.access_token.groups']);
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual([]);
     expect(result.configuration.groups_mapping.prevent_default_groups).toBe(false);
-    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual(['tokens.access_token.organizations']);
+    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual([]);
   });
 
   it('should merge scopes from default + groups_scope + organizations_scope', () => {
@@ -466,7 +466,7 @@ describe('convertOidcEnvConfig', () => {
     };
 
     const result = convertOidcEnvConfig('oic', entry);
-    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['user_info.groups']);
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual([]);
   });
 
   it('should convert organizations management', () => {
@@ -1749,9 +1749,9 @@ describe('Edge cases', () => {
 
     const result = convertOidcEnvConfig('oic', entry);
     // groups_path defaults to ['groups'], with default token_reference and read_userinfo
-    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['tokens.access_token.groups']);
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual([]);
     expect(result.configuration.groups_mapping.groups_mapping).toStrictEqual([]);
-    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual(['tokens.access_token.organizations']);
+    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual([]);
     expect(result.configuration.organizations_mapping.organizations_mapping).toStrictEqual([]);
   });
 
