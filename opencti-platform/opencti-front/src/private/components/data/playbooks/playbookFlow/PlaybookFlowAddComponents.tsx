@@ -20,7 +20,7 @@ import Drawer from '../../../common/drawer/Drawer';
 import { useFormatter } from '../../../../../components/i18n';
 import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
 import PlaybookFlowForm from './PlaybookFlowForm';
-import { PlaybookComponents, PlaybookNode } from '../types/playbook-types';
+import { PlaybookComponent, PlaybookComponents, PlaybookNode } from '../types/playbook-types';
 
 interface PlaybookFlowAddComponentsProps {
   action: string | null;
@@ -45,10 +45,12 @@ const PlaybookFlowAddComponents = ({
 }: PlaybookFlowAddComponentsProps) => {
   const { t_i18n } = useFormatter();
   const [componentId, setComponentId] = useState<string | null>(null);
+  const [selectedComponent, setSelectedComponent] = useState<PlaybookComponent | null>(null);
 
   useEffect(() => {
     if (action === 'config' && selectedNode?.data?.component) {
       setComponentId(selectedNode?.data?.component?.id);
+      setSelectedComponent(selectedNode.data.component);
     }
   }, [selectedNode, action]);
 
@@ -56,16 +58,27 @@ const PlaybookFlowAddComponents = ({
     setSelectedNode(null);
     setSelectedEdge(null);
     setComponentId(null);
+    setSelectedComponent(null);
+  };
+
+  const handleSelectComponent = (component: PlaybookComponent) => { // ✅
+    setComponentId(component.id);
+    setSelectedComponent(component);
   };
 
   const isActionValid = action === 'config' || action === 'add' || action === 'replace';
   const hasSelection = selectedNode !== null || selectedEdge !== null;
   const open = isActionValid && hasSelection;
 
+  const isUpdate = action === 'config' && selectedNode?.type === 'workflow';
+  const componentName = selectedComponent?.name ?? selectedNode?.data?.component?.name;
+
+  const drawerTitle = `${isUpdate ? t_i18n('Update') : t_i18n('Add')} ${componentName} ${t_i18n('component')}`;
+
   return (
     <Drawer
       open={open}
-      title={t_i18n('Add components')}
+      title={componentName ? drawerTitle : t_i18n('Add component')}
       onClose={handleClose}
     >
       {({ onClose }) => (
@@ -75,7 +88,7 @@ const PlaybookFlowAddComponents = ({
               {isEmptyField(componentId) && (
                 <PlaybookFlowSelectComponent
                   components={playbookComponents}
-                  onSelect={setComponentId}
+                  onSelect={handleSelectComponent}
                   selectedNode={selectedNode}
                 />
               )}
