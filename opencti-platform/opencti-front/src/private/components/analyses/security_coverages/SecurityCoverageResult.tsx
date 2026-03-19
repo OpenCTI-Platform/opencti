@@ -21,6 +21,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import IconButton from '@common/button/IconButton';
 import { InfoOutlined } from '@mui/icons-material';
+import {useTheme} from "@mui/material/styles";
 
 interface SecurityCoverageResultProps {
   id: string;
@@ -247,6 +248,7 @@ export const securityCoverageResultLinesQuery = graphql`
 
 const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
   const LOCAL_STORAGE_KEY = `container-${id}-security-coverage-result`;
   const initialValues = {
@@ -278,12 +280,6 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
     queryPaginationOptions,
   );
 
-  const withDisabledStyle = (coverage_information: { coverage_name: string; coverage_score: number | string }[], content: React.ReactNode) => (
-    <span style={{ display: 'flex', flex: 1, opacity: coverage_information?.length ? 1 : 0.5 }}>
-      {content}
-    </span>
-  );
-
   const contextFilters = {
     mode: 'and',
     filters: [
@@ -298,25 +294,24 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
   };
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    entity_type: {
+    to_entity_type: {
       label: 'Type',
-      percentWidth: 15,
-      isSortable: true,
-      render: ({ to, coverage_information }) => withDisabledStyle(coverage_information, (
-        <ItemEntityType showIcon={true} entityType={to?.entity_type} />
-      )),
+      percentWidth: 10,
     },
-    toName: {
+    to_name: {
       label: 'Name',
-      percentWidth: 30,
+      percentWidth: 35,
       isSortable: false,
-      render: ({ to, coverage_information }) => withDisabledStyle(coverage_information, (to?.x_mitre_id ? `[${to?.x_mitre_id}] ${to?.name}` : getMainRepresentative(to))),
+      render: ({ to, coverage_information }) =>
+        <span style={coverage_information?.length ? {} : { color: theme.palette.text.disabled }}>
+          {to?.x_mitre_id ? `[${to?.x_mitre_id}] ${to?.name}` : getMainRepresentative(to)}
+        </span>,
     },
     coverage: {
       label: 'Coverage',
       percentWidth: 15,
       isSortable: false,
-      render: ({ coverage_information }) => withDisabledStyle(coverage_information, (
+      render: ({ coverage_information }) =>
         coverage_information?.length
           ? (
               <SecurityCoverageInformation
@@ -324,36 +319,16 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
                 variant="header"
               />
             ) : (
-              <Tooltip title={t_i18n('No executable test are available yet for this entity')}>
+              <Tooltip title={t_i18n('No executable tests are currently set for this entity, these can be set in OpenAEV')}>
                 <span style={{ width: '100%' }}>-</span>
               </Tooltip>
             )
-      ),
-      ),
     },
-    objectLabel: {
+    to_object_label: {
       label: 'Labels',
-      percentWidth: 20,
-      isSortable: false,
-      render: ({ to, coverage_information }) => withDisabledStyle(coverage_information, (
-        <StixCoreObjectLabels
-          variant="inList"
-          labels={to?.objectLabel}
-        />
-      ),
-      ),
     },
-    objectMarking: {
+    to_object_marking: {
       label: 'Marking',
-      percentWidth: 20,
-      isSortable: false,
-      render: ({ to, coverage_information }) => withDisabledStyle(coverage_information, (
-        <ItemMarkings
-          markingDefinitions={to?.objectMarking ?? []}
-          limit={1}
-        />
-      ),
-      ),
     },
   };
 

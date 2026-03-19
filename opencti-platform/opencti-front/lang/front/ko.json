@@ -2817,7 +2817,6 @@
   "No enrichment connectors on this platform": "이 플랫폼에서 풍부화 커넥터가 없습니다",
   "No entities added in this context.": "이 컨텍스트에 추가된 엔터티가 없습니다.",
   "No entities were found for this search.": "이 검색에 대한 엔터티가 발견되지 않았습니다.",
-  "No executable test are available yet for this entity": "이 엔터티에 대해 아직 사용할 수 있는 실행 테스트가 없습니다",
   "No export connector available to generate an export": "내보내기를 생성할 수 있는 내보내기 커넥터가 없습니다",
   "No external secrets configured": "구성된 외부 비밀이 없음",
   "No extra configuration entries. Click + to add one.": "추가 구성 항목이 없습니다. 추가하려면 +를 클릭하십시오.",

@@ -2817,7 +2817,6 @@
   "No enrichment connectors on this platform": "Nessun connettore di arricchimento su questa piattaforma",
   "No entities added in this context.": "Nessuna entità aggiunta in questo contesto.",
   "No entities were found for this search.": "Nessuna entità è stata trovata per questa ricerca.",
-  "No executable test are available yet for this entity": "Non sono ancora disponibili test eseguibili per questa entità",
   "No export connector available to generate an export": "Nessun connettore di esportazione disponibile per generare un'esportazione",
   "No external secrets configured": "Nessun segreto esterno configurato",
   "No extra configuration entries. Click + to add one.": "Nessuna voce di configurazione extra. Clicca + per aggiungerne una.",

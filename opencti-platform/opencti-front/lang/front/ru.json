@@ -2817,7 +2817,6 @@
   "No enrichment connectors on this platform": "На этой платформе нет коннекторов для обогащения",
   "No entities added in this context.": "В данном контексте сущности не добавляются.",
   "No entities were found for this search.": "Для этого поиска не найдено ни одного объекта.",
-  "No executable test are available yet for this entity": "Для этой сущности пока не доступно ни одного исполняемого теста",
   "No export connector available to generate an export": "Отсутствует коннектор экспорта для создания экспорта",
   "No external secrets configured": "Внешние секреты не настроены",
   "No extra configuration entries. Click + to add one.": "Нет дополнительных записей конфигурации. Нажмите +, чтобы добавить.",
