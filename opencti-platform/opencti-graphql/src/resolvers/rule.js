@@ -1,4 +1,4 @@
-import { cleanRuleManager, getManagerInfo, ruleApply, ruleApplyAsync, ruleClear, rulesRescan } from '../manager/ruleManager';
+import { cleanRuleManager, getManagerInfo, ruleApply, ruleApplyAsync, ruleClear, rulesRescan, rulesRescanAsync } from '../manager/ruleManager';
 import { getRules, setRuleActivation, getRule } from '../domain/rules';
 import { internalLoadById } from '../database/middleware-loader';
 
@@ -19,6 +19,7 @@ const ruleResolvers = {
     ruleApplyAsync: (_, { elementId, ruleId, executionId }, context) => ruleApplyAsync(context, context.user, elementId, ruleId, executionId),
     ruleClear: (_, { elementId, ruleId }, context) => ruleClear(context, context.user, elementId, ruleId),
     rulesRescan: (_, { elementId }, context) => rulesRescan(context, context.user, elementId),
+    rulesRescanAsync: (_, { elementId, executionId }, context) => rulesRescanAsync(context, context.user, elementId, executionId),
   },
 };
 

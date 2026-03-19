@@ -443,6 +443,19 @@ export const rulesRescan = async (context: AuthContext, user: AuthUser, elementI
   }
   return false;
 };
+export const rulesRescanAsync = async (context: AuthContext, user: AuthUser, elementId: string, executionId: string): Promise<boolean> => {
+  const elem = await internalLoadById(context, user, elementId, { baseData: true });
+  if (elem) {
+    const dataCanonicalize = jsonCanonicalize({ elementId, executionId }) as string;
+    const ruleRescanId = uuidv5(dataCanonicalize, OPENCTI_NAMESPACE);
+    const ruleRescanFunction = async () => {
+      await executeRuleElementRescan(context, user, elem);
+    };
+    return runFunctionAsLongRunning(context, user, ruleRescanFunction, ruleRescanId);
+  }
+  // If the element is not found, we consider that the rescan is done (nothing to do)
+  return true;
+};
 
 export const cleanRuleManager = async (context: AuthContext, user: AuthUser, eventId: string) => {
   const isRuleEngineActivated = await isModuleActivated('RULE_ENGINE');

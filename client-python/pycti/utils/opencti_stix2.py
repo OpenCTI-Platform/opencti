@@ -2895,13 +2895,15 @@ class OpenCTIStix2:
             rule_id = item["opencti_rule"]
         self.opencti.stix_core_object.rule_clear(element_id=item["id"], rule_id=rule_id)
 
-    def rules_rescan(self, item):
+    def rules_rescan(self, item, bundle_id):
         """Rescan rules for an item.
 
         :param item: Item to rescan rules for
         :type item: dict
         """
-        self.opencti.stix_core_object.rules_rescan(element_id=item["id"])
+        self.opencti.stix_core_object.rules_rescan_async(
+            element_id=item["id"], execution_id=bundle_id
+        )
 
     def organization_share(self, item):
         """Share an item with organizations.
@@ -3152,7 +3154,7 @@ class OpenCTIStix2:
         elif operation == "rule_clear":
             self.rule_clear(item=item)
         elif operation == "rules_rescan":
-            self.rules_rescan(item=item)
+            self.rules_rescan(item=item, bundle_id=bundle_id)
         elif operation == "share":
             self.organization_share(item=item)
         elif operation == "unshare":

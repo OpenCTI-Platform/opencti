@@ -1974,6 +1974,38 @@ class StixCoreObject:
             )
             return None
 
+    def rule_rescan_async(self, **kwargs):
+        """Apply rules rescan to Stix-Core-Object object.
+
+        :param element_id: the Stix-Core-Object id
+        :type element_id: str
+        """
+        element_id = kwargs.get("element_id", None)
+        execution_id = kwargs.get("execution_id", None)
+        rule_rescan_complete = False
+        if element_id is not None and execution_id is not None:
+            while not rule_rescan_complete:
+                self.opencti.app_logger.info(
+                    "Apply rules rescan stix_core_object", {"id": element_id}
+                )
+                query = """
+                    mutation StixCoreRescanRules($elementId: ID!) {
+                        rulesRescanAsync(elementId: $elementId, $executionId: ID!)
+                    }
+                """
+                result = self.opencti.query(
+                    query, {"elementId": element_id, "executionId": execution_id}
+                )
+                rule_rescan_complete = result["data"]["rulesRescanAsync"]
+                self.opencti.app_logger.info(
+                    "Rescan rule async stix_core_object complete", {"id": element_id}
+                )
+        else:
+            self.opencti.app_logger.error(
+                "[stix_core_object] Cannot rescan rule, missing parameters: id"
+            )
+            return None
+
     def clear_access_restriction(self, **kwargs):
         """Ask clear restriction on a Stix-Core-Object.
 
