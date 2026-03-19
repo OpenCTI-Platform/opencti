@@ -201,6 +201,15 @@ const PlaybookHeaderComponent = ({
               </React.Fragment>
             );
           })}
+          {(playbook.last_executions ?? []).length > 0 ? (
+            <div style={{ paddingTop: 10 }}>
+              {t_i18n('Last 20 execution traces are displayed above')}
+            </div>
+          ) : (
+            <div>
+              {t_i18n('There are no execution traces to display')}
+            </div>
+          )}
         </List>
       </Drawer>
       <Dialog
