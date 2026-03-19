@@ -115,19 +115,9 @@ const createApp = async (app, schema) => {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: opts.scriptSrc,
-        styleSrc: [
-          "'self'",
-          "'unsafe-inline'",
-          'http://cdn.jsdelivr.net/npm/@apollographql/',
-          'https://fonts.googleapis.com/',
-        ],
-        scriptSrcAttr: [
-          "'self'",
-          "'unsafe-inline'",
-          'http://cdn.jsdelivr.net/npm/@apollographql/',
-          'https://fonts.googleapis.com/',
-        ],
-        fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrcAttr: ["'none'"],
+        fontSrc: ["'self'", 'data:'],
         imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
         manifestSrc: ["'self'", 'data:', 'https://*', 'http://*'],
         connectSrc: ["'self'", 'wss://*', 'ws://*', 'data:', 'http://*', 'https://*'],
@@ -142,7 +132,7 @@ const createApp = async (app, schema) => {
   const ancestorsFromConfig = nconf.get('app:public_dashboard_authorized_domains')?.trim() ?? '';
   const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
   const allowedFrameSrc = ["'self'"];
-  const scriptSrc = ["'self'", "'unsafe-inline'", 'http://cdn.jsdelivr.net/npm/@apollographql/', 'https://www.googletagmanager.com/'];
+  const scriptSrc = ["'self'", "'unsafe-inline'"];
   if (DEV_MODE) {
     scriptSrc.push("'unsafe-eval'");
   }
