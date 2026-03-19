@@ -411,12 +411,12 @@ In this list, you will find:
 
 ## Monitor playbook activity
 
-At the top right of the interface, you can access execution trace of your playbook and consult the raw data after every step of your playbook execution.
+After you start a playbook, you can monitor its activity to verify that it runs as expected and to troubleshoot issues. In an open playbook at the top right of the interface, you can access the execution traces of your playbook. When this is open you can see the last 20 executions for upto 90 days. Each executed step is shown allowing you to review the raw data after every step of your playbook execution.
 
 ### Useful for troubleshooting
 
-- Fewer steps than the number of steps of your playbook: If your playbook contains, for instance, 5 steps and only 4 steps are shown, it means that the playbook stopped at the 4th step.
-- Data created/ingested by the playbook does not contain the right modifications applied in the manipulate step: verify that your step is present, and that the operations you wanted to apply are well applied (you need to see the operation type, the field & the value)
+- If you see fewer steps than the number of steps of your playbook then you know immediately that the playbook had an error and stopped earlier: For instance, if your playbook has 7 steps and only 4 steps are shown, it means that the playbook stopped at the 4th step.
 - Use the different routes to help troubleshoot your playbook: if you're using multiple components that involves multiple routes, it is sometimes useful to test your playbook by adding a "manipulate knowledge" step to add a label for instance, to understand the route your bundle is taking if you feel that the data created by your playbook is not the one you expect.
+- Manipulate knowledge execution traces. If your data is not changed as expected, first verify that the 'Manipulate Knowledge' step was executed. If it was, open the execution trace details to check that the operation type (e.g. add, replace, remove), field, and value are correct. Also verify that the step's scope is configured to target the right entities — either the main triggering entity only, or all elements in the bundle.
 
 ![Steps monitoring](assets/playbook_traces.png)
