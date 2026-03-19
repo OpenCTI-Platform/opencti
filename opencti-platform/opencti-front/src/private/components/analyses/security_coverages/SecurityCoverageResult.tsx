@@ -24,11 +24,7 @@ import IconButton from '@common/button/IconButton';
 import { InfoOutlined } from '@mui/icons-material';
 
 interface SecurityCoverageResultProps {
-  data: { id: string };
-}
-
-interface SecurityCoverageResultComponentProps {
-  data: { id: string };
+  id: string;
 }
 
 const securityCoverageResultLineFragment = graphql`
@@ -250,10 +246,10 @@ export const securityCoverageResultLinesQuery = graphql`
     }
 `;
 
-const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultComponentProps) => {
+const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) => {
   const { t_i18n } = useFormatter();
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
-  const LOCAL_STORAGE_KEY = `container-${data.id}-security-coverage-result`;
+  const LOCAL_STORAGE_KEY = `container-${id}-security-coverage-result`;
   const initialValues = {
     filters: { ...emptyFilterGroup },
     searchTerm: '',
@@ -269,7 +265,7 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
   } = usePaginationLocalStorage<SecurityCoverageResultLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
-      id: data.id,
+      id,
       ...initialValues,
     },
   );
@@ -284,7 +280,7 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
   );
 
   const withDisabledStyle = (coverage_information: { coverage_name: string; coverage_score: number | string }[], content: React.ReactNode) => (
-    <span style={{ display: 'flex', opacity: coverage_information?.length ? 1 : 0.5 }}>
+    <span style={{ display: 'flex', flex: 1, opacity: coverage_information?.length ? 1 : 0.5 }}>
       {content}
     </span>
   );
@@ -294,7 +290,7 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
     filters: [
       {
         key: 'fromOrToId',
-        values: [data.id],
+        values: [id],
         operator: 'eq',
         mode: 'or',
       },
@@ -308,10 +304,7 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
       percentWidth: 15,
       isSortable: true,
       render: ({ to, coverage_information }) => withDisabledStyle(coverage_information, (
-        <>
-          <ItemIcon type={to?.entity_type} />
-          <ItemEntityType entityType={to?.entity_type} />
-        </>
+        <ItemEntityType showIcon={true} entityType={to?.entity_type} />
       )),
     },
     toName: {
@@ -333,7 +326,7 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
               />
             ) : (
               <Tooltip title={t_i18n('No executable test are available yet for this entity')}>
-                <span>-</span>
+                <span style={{ width: '100%' }}>-</span>
               </Tooltip>
             )
       ),
@@ -383,13 +376,13 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
           availableFilterKeys={['toTypes']}
           resolvePath={(data: SecurityCoverageResultLines_data$data) => data.securityCoverage?.stixCoreRelationships?.edges?.map((n) => n?.node)}
           dataColumns={dataColumns}
-          exportContext={{ entity_id: data.id, entity_type: 'stix-core-relationship' }}
+          exportContext={{ entity_id: id, entity_type: 'stix-core-relationship' }}
           contextFilters={contextFilters}
           rootRef={tableRootRef ?? undefined}
           additionalHeaderButtons={[
             <Tooltip
               key="security-coverage-result-global-information-tooltip"
-              title={t_i18n('The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\n Coverage may be partial if some injects were not executed, if placeholders were not resolved, or if the platform does not support certain actions')}
+              title={t_i18n('The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions')}
             >
               <IconButton color="primary" style={{ height: '100%' }}>
                 <InfoOutlined />
@@ -402,10 +395,10 @@ const SecurityCoverageResultComponent = ({ data }: SecurityCoverageResultCompone
   );
 };
 
-const SecurityCoverageResult = ({ data }: SecurityCoverageResultProps) => {
+const SecurityCoverageResult = ({ id }: SecurityCoverageResultProps) => {
   return (
     <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-      <SecurityCoverageResultComponent data={data} />
+      <SecurityCoverageResultComponent id={id} />
     </Suspense>
   );
 };
