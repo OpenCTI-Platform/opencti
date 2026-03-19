@@ -672,7 +672,9 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
   const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
   const gm = resolveGroupsManagement(ext, 'ldap', warnings);
-  const groupsExpr = [quotePathSegment(gm?.group_attribute ?? 'cn')];
+  const groupsExpr = (gm?.groups_mapping && gm.groups_mapping.length > 0)
+    ? [quotePathSegment(gm.group_attribute ?? 'cn')]
+    : [];
   const groupsMapping: GroupsMappingInput = {
     auto_create_groups: autoCreateGroup,
     prevent_default_groups: preventDefaultGroups,
@@ -682,13 +684,15 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   };
 
   // Organizations mapping
-  // Always populate with defaults — old default: organizations_path=['organizations']
+  // Mirror legacy isOrgaMapping: organizations_expr only populated when organizations_management is non-empty.
   const om = ext.get<EnvOrganizationsManagement | undefined>('organizations_management', undefined);
   const organizationsDefault = ext.get<string[]>('organizations_default', []);
   const organizationsMapping: OrganizationsMappingInput = {
     auto_create_organizations: false,
     default_organizations: organizationsDefault,
-    organizations_expr: (om?.organizations_path ?? ['organizations']).map(quotePathSegment),
+    organizations_expr: (om && Object.keys(om).length > 0)
+      ? (om.organizations_path ?? ['organizations']).map(quotePathSegment)
+      : [],
     organizations_mapping: convertMappingEntries(om?.organizations_mapping),
   };
 
