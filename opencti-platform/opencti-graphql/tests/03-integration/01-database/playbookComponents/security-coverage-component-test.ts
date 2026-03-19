@@ -8,7 +8,7 @@ const MAIN_ID = 'report--b4754e7d-88b4-51d9-aac4-86edaad66c4d';
 const INTRUSION_SET_ID = 'intrusion-set--1ad04810-ab05-5873-96f5-a89d19607e1c';
 const CAMPAIGN_ID = 'campaign--c85bcdd3-1042-5f74-ab5d-05fddf30bdb8';
 
-const enteringBundleObjects = [
+const enteringBundleObjects = () => [
   testBundleObject({
     id: MAIN_ID,
     type: 'report',
@@ -46,7 +46,7 @@ describe('Security coverage component', () => {
     const result = await PLAYBOOK_SECURITY_COVERAGE_COMPONENT.executor(
       testExecutor({
         mainId: MAIN_ID,
-        bundleObjects: enteringBundleObjects,
+        bundleObjects: enteringBundleObjects(),
         configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.onlyMain.value }),
       }),
     );
@@ -63,7 +63,7 @@ describe('Security coverage component', () => {
     const result = await PLAYBOOK_SECURITY_COVERAGE_COMPONENT.executor(
       testExecutor({
         mainId: MAIN_ID,
-        bundleObjects: enteringBundleObjects,
+        bundleObjects: enteringBundleObjects(),
         configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.allElements.value }),
       }),
     );
@@ -87,7 +87,7 @@ describe('Security coverage component', () => {
     const result = await PLAYBOOK_SECURITY_COVERAGE_COMPONENT.executor(
       testExecutor({
         mainId: MAIN_ID,
-        bundleObjects: enteringBundleObjects,
+        bundleObjects: enteringBundleObjects(),
         configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.allExceptMain.value }),
       }),
     );
