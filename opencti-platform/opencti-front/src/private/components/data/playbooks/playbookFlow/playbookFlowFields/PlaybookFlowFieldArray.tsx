@@ -13,10 +13,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
+import { AutocompleteRenderGetTagProps, MenuItem, Tooltip, TooltipProps } from '@mui/material';
 import { Field } from 'formik';
 import AutocompleteField from '../../../../../../components/AutocompleteField';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../../../../utils/field';
+import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 import useEntityTranslation from '../../../../../../utils/hooks/useEntityTranslation';
+import Tag from '../../../../../../components/common/tag/Tag';
 
 interface Option {
   const: string;
@@ -37,16 +39,17 @@ const PlaybookFlowFieldArray = ({
   multiple = false,
 }: PlaybookFlowFieldArrayProps) => {
   const { translateEntityType } = useEntityTranslation();
-  const fieldOptions: FieldOption[] = [...options]
+  const fieldOptions = [...options]
     .sort((a, b) =>
       translateEntityType(a?.title ?? '').localeCompare(
         translateEntityType(b?.title ?? ''),
       ),
     )
-    .map((o) => ({
-      value: o.const,
-      label: translateEntityType(o.title),
-    }));
+    .map((o) => o.const);
+
+  const findOption = (value: string) => {
+    return options.find((o) => o.const === value);
+  };
 
   return (
     <Field
@@ -60,6 +63,39 @@ const PlaybookFlowFieldArray = ({
       }}
       name={name}
       options={fieldOptions}
+      renderTags={(values: string[], getTagProps: AutocompleteRenderGetTagProps) => (
+        values.map((value, index) => {
+          const option = findOption(value);
+          return (
+            <Tag
+              {...getTagProps({ index })}
+              key={value}
+              label={option?.title}
+            />
+          );
+        })
+      )}
+      renderOption={(props: TooltipProps, value: string) => {
+        const option = findOption(value);
+        if (!option) return null;
+        return (
+          <Tooltip
+            {...props}
+            key={option.const}
+            title={translateEntityType(option.title)}
+            placement="bottom-start"
+          >
+            <MenuItem value={option.const}>
+              {/* value might be an entity type, we try to translate it */}
+              {translateEntityType(option.title)}
+            </MenuItem>
+          </Tooltip>
+        );
+      }}
+      getOptionLabel={(val: string) => {
+        const option = findOption(val);
+        return option ? translateEntityType(option.title) : '';
+      }}
     />
   );
 };
