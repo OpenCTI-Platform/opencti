@@ -10,12 +10,16 @@ import Slide from '@mui/material/Slide';
 import withStyles from '@mui/styles/withStyles';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import React, { Component } from 'react';
+import React, { Component, UIEvent } from 'react';
 import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { deleteNode } from '../../../../utils/store';
 import IngestionRssEdition, { ingestionRssMutationFieldPatch } from './IngestionRssEdition';
+import { fetchQuery } from '../../../../relay/environment';
+import fileDownload from 'js-file-download';
+import stopEvent from '../../../../utils/domEvent';
+import { IngestionRssPopoverExportQuery$data } from '@components/data/ingestionRss/__generated__/IngestionRssPopoverExportQuery.graphql';
 
 const styles = (theme) => ({
   container: {
@@ -42,6 +46,15 @@ Transition.displayName = 'TransitionSlide';
 const ingestionRssPopoverDeletionMutation = graphql`
   mutation IngestionRssPopoverDeletionMutation($id: ID!) {
     ingestionRssDelete(id: $id)
+  }
+`;
+
+const ingestionRssPopoverExportQuery = graphql`
+  query IngestionRssPopoverExportQuery($id: String!) {
+    ingestionRss(id: $id) {
+      name
+      toConfigurationExport
+    }
   }
 `;
 
@@ -139,6 +152,27 @@ class IngestionRssPopover extends Component {
     });
   }
 
+  async exportRssFeed() {
+    const { ingestionRss } = await fetchQuery(
+      ingestionRssPopoverExportQuery,
+      { id: this.props.ingestionRssId },
+    ).toPromise();
+
+    if (ingestionRss) {
+      const blob = new Blob([ingestionRss.toConfigurationExport], { type: 'text/json' });
+      const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
+      const fileName = `${year}${month}${day}_rssFeed_${ingestionRss.name}.json`;
+      fileDownload(blob, fileName);
+    }
+  };
+
+  async handleExport(e) {
+    console.log("coucoucou export")
+    stopEvent(e);
+    this.handleClose();
+    await this.exportRssFeed();
+  };
+
   submitStart() {
     this.setState({ starting: true });
     commitMutation({
@@ -201,6 +235,9 @@ class IngestionRssPopover extends Component {
           </MenuItem>
           <MenuItem onClick={this.handleOpenDelete.bind(this)}>
             {t('Delete')}
+          </MenuItem>
+          <MenuItem onClick={this.handleExport.bind(this)}>
+            {t('Export')}
           </MenuItem>
         </Menu>
         <QueryRenderer

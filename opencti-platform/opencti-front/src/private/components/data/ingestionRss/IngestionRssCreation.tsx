@@ -130,10 +130,10 @@ const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({pag
       : [],
     user_id: '',
     automatic_user: true,
-    current_state_date: ingestionRssData?.import_from_date ? new Date(ingestionRssData.import_from_date) : undefined,
+    current_state_date: ingestionRssData?.current_state_date ? new Date(ingestionRssData.current_state_date) : undefined,
     created_by_ref: undefined,
-    object_marking_refs: ingestionRssData?.defaultMarkingDefinitions
-      ? ingestionRssData.defaultMarkingDefinitions
+    object_marking_refs: ingestionRssData?.object_marking_refs
+      ? ingestionRssData.object_marking_refs
         .filter((v): v is { label: string; value: string } => Boolean(v))
       : []
   }

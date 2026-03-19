@@ -1,7 +1,12 @@
 import { type BasicStoreEntityIngestionRss, ENTITY_TYPE_INGESTION_RSS, type StoreEntityIngestionRss } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
-import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { BUS_TOPICS } from '../../config/conf';
+import {
+  fullEntitiesList,
+  pageEntitiesConnection,
+  storeLoadById,
+  storeLoadByIds
+} from '../../database/middleware-loader';
+import {BUS_TOPICS, PLATFORM_VERSION} from '../../config/conf';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
@@ -13,6 +18,8 @@ import type {FileHandle} from "fs/promises";
 import {extractContentFrom} from "../../utils/fileToContent";
 import {isCompatibleVersionWithMinimal} from "../../utils/version";
 import {FunctionalError} from "../../config/errors";
+import type {BasicStoreEntityMarkingDefinition} from "../../types/store";
+import {ENTITY_TYPE_MARKING_DEFINITION} from "../../schema/stixMetaObject";
 
 const MINIMAL_RSS_FEED_COMPATIBLE_VERSION = '7.260309.0';
 
@@ -123,3 +130,33 @@ export const rssFeedAddInputFromImport = async (file: Promise<FileHandle>) => {
 
   return parsedData.configuration;
 }
+
+export const rssFeedExport = async ( context: AuthContext,
+                                     user: AuthUser,ingestionRss: BasicStoreEntityIngestionRss) => {
+  const {
+    name,
+    description,
+    scheduling_period,
+    uri,
+    current_state_date,
+    report_types,
+    object_marking_refs
+  } = ingestionRss;
+  const basicMarkingDefinitions = await storeLoadByIds<BasicStoreEntityMarkingDefinition>(context, user, object_marking_refs ?? [], ENTITY_TYPE_MARKING_DEFINITION)
+  const markingDefinitionsFormated = basicMarkingDefinitions.map((marking) => {
+    return {label: marking.definition, value: marking.internal_id}
+  })
+  return JSON.stringify({
+    openCTI_version: PLATFORM_VERSION,
+    type: 'rssFeeds',
+    configuration: {
+      name,
+      description,
+      scheduling_period,
+      uri,
+      current_state_date,
+      report_types,
+      object_marking_refs: markingDefinitionsFormated
+    },
+  });
+};

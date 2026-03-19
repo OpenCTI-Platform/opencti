@@ -20,9 +20,9 @@ export const rssFeedImportQuery = graphql`
       description
       scheduling_period
       uri
-      import_from_date
+      current_state_date
       report_types
-      defaultMarkingDefinitions {
+      object_marking_refs {
         label
         value
       }

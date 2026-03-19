@@ -12931,6 +12931,7 @@ export type IngestionRss = BasicObject & InternalObject & {
   report_types?: Maybe<Array<Scalars['String']['output']>>;
   scheduling_period?: Maybe<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
+  toConfigurationExport: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   uri: Scalars['String']['output'];
   user?: Maybe<Creator>;
@@ -12958,13 +12959,13 @@ export type IngestionRssAddInput = {
 
 export type IngestionRssAddInputFromImport = {
   __typename?: 'IngestionRssAddInputFromImport';
-  defaultMarkingDefinitions?: Maybe<Array<Maybe<DefaultMarkingDefinition>>>;
-  description: Scalars['String']['output'];
-  import_from_date?: Maybe<Scalars['DateTime']['output']>;
+  current_state_date?: Maybe<Scalars['DateTime']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
+  object_marking_refs?: Maybe<Array<Maybe<DefaultMarkingDefinition>>>;
   report_types?: Maybe<Array<Scalars['String']['output']>>;
-  scheduling_period: Scalars['String']['output'];
-  uri: Scalars['String']['output'];
+  scheduling_period?: Maybe<Scalars['String']['output']>;
+  uri?: Maybe<Scalars['String']['output']>;
 };
 
 export type IngestionRssConnection = {
@@ -43894,6 +43895,7 @@ export type IngestionRssResolvers<ContextType = any, ParentType extends Resolver
   report_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
@@ -43901,13 +43903,13 @@ export type IngestionRssResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type IngestionRssAddInputFromImportResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionRssAddInputFromImport'] = ResolversParentTypes['IngestionRssAddInputFromImport']> = ResolversObject<{
-  defaultMarkingDefinitions?: Resolver<Maybe<Array<Maybe<ResolversTypes['DefaultMarkingDefinition']>>>, ParentType, ContextType>;
-  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  import_from_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  object_marking_refs?: Resolver<Maybe<Array<Maybe<ResolversTypes['DefaultMarkingDefinition']>>>, ParentType, ContextType>;
   report_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
-  scheduling_period?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type IngestionRssConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionRssConnection'] = ResolversParentTypes['IngestionRssConnection']> = ResolversObject<{

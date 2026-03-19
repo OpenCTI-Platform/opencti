@@ -18,6 +18,7 @@ type IngestionRss implements InternalObject & BasicObject {
     current_state_date: DateTime
     last_execution_date: DateTime
     ingestion_running: Boolean
+    toConfigurationExport: String!
 }
 enum IngestionRssOrdering {
     name
@@ -42,12 +43,12 @@ type DefaultMarkingDefinition {
 
 type IngestionRssAddInputFromImport {
     name: String!
-    description: String!
-    scheduling_period: String!
-    uri: String!
-    import_from_date: DateTime
+    description: String
+    scheduling_period: String
+    uri: String
+    current_state_date: DateTime
     report_types: [String!]
-    defaultMarkingDefinitions: [DefaultMarkingDefinition]
+    object_marking_refs: [DefaultMarkingDefinition]
 }
 
 # Queries
