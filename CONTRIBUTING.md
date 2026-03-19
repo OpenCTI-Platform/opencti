@@ -48,16 +48,17 @@ For general suggestions or questions about the project or the documentation, you
 
 * If you are interested in contributing to developing OpenCTI, please refer to the [detailed documentation](https://docs.opencti.io/latest/). It can be either a to fix an issue which is meaningful to you, or to develop a feature requested by others.
 
-* All commits messages must be formatted as: `[component] Message (#issuenumber)` where component should be:
+* All Pull Request title messages must be formatted as: `[component] Message (#issuenumber)` where component should be:
   * backend
   * frontend
+  * brackend/frontend
   * client-python
   * worker
   * docs
   * tools
-  * CI
+  * ci
 
-* All commit must be signed, if you need to configure your git environement please see [Github documentation on signed commit][https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits]
+* All commit must be signed, if you need to configure your git environment please see [Github documentation on signed commit][https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits]
 
 ### How can you get in touch for other questions?
 
