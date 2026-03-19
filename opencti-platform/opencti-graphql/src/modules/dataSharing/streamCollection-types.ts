@@ -10,8 +10,8 @@ export interface BasicStoreEntityStreamCollection extends BasicStoreEntity {
   description: string;
   filters: string;
   stream_public: boolean;
-  stream_public_user_id: string;
-  stream_public_authorized_markings: string[];
+  stream_public_user_id?: string | null;
+  stream_public_authorized_markings?: string[] | null;
   stream_live: boolean;
   restricted_members: AuthorizedMember[];
 }
@@ -21,8 +21,8 @@ export interface StoreEntityStreamCollection extends StoreEntity {
   description: string;
   filters: string;
   stream_public: boolean;
-  stream_public_user_id: string;
-  stream_public_authorized_markings: string[];
+  stream_public_user_id?: string | null;
+  stream_public_authorized_markings?: string[] | null;
   stream_live: boolean;
 }
 
@@ -31,8 +31,8 @@ export interface StixStreamCollection extends StixObject {
   description: string;
   filters: string;
   stream_public: boolean;
-  stream_public_user_id: string;
-  stream_public_authorized_markings: string[];
+  stream_public_user_id?: string | null;
+  stream_public_authorized_markings?: string[] | null;
   stream_live: boolean;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;

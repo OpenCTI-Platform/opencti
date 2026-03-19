@@ -9,8 +9,8 @@ export interface BasicStoreEntityTaxiiCollection extends BasicStoreEntity {
   description: string;
   filters: string;
   taxii_public: boolean;
-  taxii_public_user_id: string;
-  taxii_public_authorized_markings: string[];
+  taxii_public_user_id?: string | null;
+  taxii_public_authorized_markings?: string[] | null;
   include_inferences: boolean;
   score_to_confidence: boolean;
 }
@@ -20,8 +20,8 @@ export interface StoreEntityTaxiiCollection extends StoreEntity {
   description: string;
   filters: string;
   taxii_public: boolean;
-  taxii_public_user_id: string;
-  taxii_public_authorized_markings: string[];
+  taxii_public_user_id?: string | null;
+  taxii_public_authorized_markings?: string[] | null;
   include_inferences: boolean;
   score_to_confidence: boolean;
 }
@@ -31,8 +31,8 @@ export interface StixTaxiiCollection extends StixObject {
   description: string;
   filters: string;
   taxii_public: boolean;
-  taxii_public_user_id: string;
-  taxii_public_authorized_markings: string[];
+  taxii_public_user_id?: string | null;
+  taxii_public_authorized_markings?: string[] | null;
   include_inferences: boolean;
   score_to_confidence: boolean;
   extensions: {
