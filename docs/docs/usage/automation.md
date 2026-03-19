@@ -243,6 +243,17 @@ When the primary entity you listen to is an incident & then use the "Container W
 - Marking
 - Severity (only if the severity value of the incident exists in the severity value of the case. Make sure it exists by editing your openVocab within the [taxonomy page](https://docs.opencti.io/6.7.X/reference/taxonomy/) )
 
+### Security coverage
+
+Will create a security coverage for the given elements when type is compatible.
+
+By default, wrapping is applied to the entity triggering the playbook. You can change this behavior with the following options:
+
+- all elements in the bundle (elements that might result from enrichment for example)
+- all elements except the entity triggering the playbook
+
+![Enroll entity in playbook](assets/playbook_select_bundle_scope.png)
+
 ### Share with organizations
 
 Will share every entity in the received STIX 2.1 bundle with Organizations you configured. Your platform needs to have declared a platform main organization in Settings/Parameters.
