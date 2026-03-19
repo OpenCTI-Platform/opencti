@@ -29,10 +29,18 @@ export default defineConfig({
       // global coverage report options
       coverage: {
         outputDir: './test-results/coverage',
-        entryFilter: (entry) => true,
-        sourceFilter: (sourcePath) => sourcePath.search(/src\//) !== -1 && !sourcePath.includes('node_modules'),
+        entryFilter: (entry) => !entry.url.includes('.css') && !entry.url.includes('.map') && !entry.url.includes('node_modules'),
+        sourceFilter: (sourcePath) => !sourcePath.includes('.css') && !sourcePath.includes('.map') && !sourcePath.includes('node_modules'),
+        sourcePath: (sourcePath) => {
+          if (sourcePath.startsWith('localhost-3000') || sourcePath.startsWith('http://localhost:3000') || sourcePath.startsWith('https://localhost:3000')) {
+            return sourcePath.replace(/^(localhost-3000|https?:\/\/localhost:3000)/, '/home/workspace/opencti-platform/opencti-front');
+          }
+          return sourcePath;
+        },
         reports: [
-          ['codecov'],
+          ['codecov', {
+            file: 'codecov.json'
+          }],
         ],
       },
       /*

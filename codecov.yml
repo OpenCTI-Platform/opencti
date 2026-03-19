@@ -1,0 +1,31 @@
+codecov:
+  require_ci_to_pass: false
+
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+    patch:
+      default:
+        target: auto
+        threshold: 1%
+
+flags:
+  opencti-front:
+    paths:
+      - opencti-platform/opencti-front/src
+      - opencti-platform/opencti-front/coverage/unit
+    carryforward: true
+
+  opencti-front-e2e:
+    paths:
+      - opencti-platform/opencti-front/src
+      - opencti-platform/opencti-front/test-results/coverage
+      - /home/workspace/opencti-platform/opencti-front
+    carryforward: true
+    if_not_found: success
