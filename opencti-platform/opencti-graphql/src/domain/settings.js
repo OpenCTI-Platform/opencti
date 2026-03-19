@@ -24,6 +24,7 @@ import { LOCAL_PROVIDER } from '../modules/authenticationProvider/provider-local
 import { AuthType, EnvStrategyType, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
+import { CguStatus } from '../generated/graphql';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -250,6 +251,14 @@ export const settingsEditField = async (context, user, settingsId, input) => {
       }
     }
   }
+  const cguStatus = data.find((inputData) => inputData.key === 'filigran_chatbot_ai_cgu_status');
+  if (cguStatus && cguStatus.value) {
+    const validStatuses = Object.values(CguStatus);
+    if (!validStatuses.includes(cguStatus.value)) {
+      throw UnsupportedError(`Invalid CGU status, expected one of ${validStatuses.join(', ')}`);
+    }
+  }
+
   await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);
   await publishUserAction({
     user,
