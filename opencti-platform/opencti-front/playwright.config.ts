@@ -32,8 +32,11 @@ export default defineConfig({
         entryFilter: (entry) => !entry.url.includes('.css') && !entry.url.includes('.map') && !entry.url.includes('node_modules'),
         sourceFilter: (sourcePath) => !sourcePath.includes('.css') && !sourcePath.includes('.map') && !sourcePath.includes('node_modules'),
         sourcePath: (sourcePath) => {
+          if (sourcePath.startsWith('/home/workspace/')) {
+            return sourcePath.replace('/home/workspace/', '');
+          }
           if (sourcePath.startsWith('localhost-3000') || sourcePath.startsWith('http://localhost:3000') || sourcePath.startsWith('https://localhost:3000')) {
-            return sourcePath.replace(/^(localhost-3000|https?:\/\/localhost:3000)/, '/home/workspace/opencti-platform/opencti-front');
+            return sourcePath.replace(/^(localhost-3000|https?:\/\/localhost:3000)/, '');
           }
           return sourcePath;
         },
