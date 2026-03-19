@@ -4085,7 +4085,7 @@
   "The connector instance has been modified, changes could take few minutes to take effect.": "连接器实例已被修改，必须重新启动才能生效。",
   "The connector instance has been modified.": "连接器实例已被修改。",
   "The connector state has been reset": "连接器状态已重置",
-  "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved, or if the platform does not support certain actions": "覆盖率结果度量显示了特定实体在 AEV 场景执行中的参与程度。如果某些注入未执行、占位符未解析或平台不支持某些操作，则覆盖率可能是部分的",
+  "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions": "覆盖率结果度量显示了特定实体在 AEV 场景执行中的参与程度。如果某些注入未执行、占位符未解析或平台不支持某些操作，则覆盖率可能是部分的",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "CSV文件已使用视图的参数生成，并已准备好下载。",
   "The dashboard has been duplicated. You can manage it": "仪表板已被复制。你可以管理它",
   "the dedicated page": "专用页面",

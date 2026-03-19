@@ -4085,7 +4085,7 @@
   "The connector instance has been modified, changes could take few minutes to take effect.": "The connector instance has been modified, changes could take few minutes to take effect.",
   "The connector instance has been modified.": "The connector instance has been modified.",
   "The connector state has been reset": "The connector state has been reset",
-  "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved, or if the platform does not support certain actions": "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved, or if the platform does not support certain actions",
+  "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions": "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "The CSV file has been generated with the parameters of the view and is ready for download.",
   "The dashboard has been duplicated. You can manage it": "The dashboard has been duplicated. You can manage it",
   "the dedicated page": "the dedicated page",

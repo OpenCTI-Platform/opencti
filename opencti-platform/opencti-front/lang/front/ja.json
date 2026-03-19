@@ -4085,7 +4085,7 @@
   "The connector instance has been modified, changes could take few minutes to take effect.": "コネクタ・インスタンスが変更された場合、変更を有効にするには再起動する必要があります。",
   "The connector instance has been modified.": "コネクタのインスタンスが変更されました。",
   "The connector state has been reset": "コネクタの状態を初期化しました",
-  "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved, or if the platform does not support certain actions": "カバレッジ結果メトリクスは、特定のエンティティがAEVシナリオの実行にどの程度関与したかを示し ます。",
+  "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions": "カバレッジ結果メトリクスは、特定のエンティティがAEVシナリオの実行にどの程度関与したかを示し ます。",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "指定されたパラメータでCSVが生成され、ダウンロードできるようになりました。",
   "The dashboard has been duplicated. You can manage it": "ダッシュボードが複製されました。管理できるよ",
   "the dedicated page": "専用ページ",
