@@ -88,3 +88,31 @@ export const getCustomViewsContext = async (context: AuthContext, user: AuthUser
     return acc;
   }, [] as CustomViewsContext[]);
 };
+
+// Settings Use Cases (admin users)
+
+export const getCustomViewsSettings = async (context: AuthContext, user: AuthUser, entityType: string) => {
+  if (!isCustomViewsAvailableForEntityType(entityType)) {
+    return {
+      can_have_custom_views: false,
+      custom_views_info: [],
+    };
+  }
+  const customViewEntities = await fullEntitiesList<BasicStoreEntityCustomView>(context, user, [ENTITY_TYPE_CUSTOM_VIEW], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['target_entity_type'], values: [entityType] }],
+      filterGroups: [],
+    },
+  });
+  return {
+    can_have_custom_views: true,
+    custom_views_info: customViewEntities.map((entity) => ({
+      id: entity.id,
+      name: entity.name,
+      description: entity.description,
+      created_at: entity.created_at,
+      updated_at: entity.updated_at,
+    })),
+  };
+};

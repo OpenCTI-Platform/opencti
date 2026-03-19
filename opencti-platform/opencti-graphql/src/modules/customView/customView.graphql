@@ -24,8 +24,22 @@ type CustomViewsContext {
     custom_views_info: [CustomViewsInfo!]!
 }
 
+type CustomViewsInfoForSettings {
+    id: ID!
+    name: String!
+    description: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type CustomViewsSettings {
+    can_have_custom_views: Boolean!
+    custom_views_info: [CustomViewsInfoForSettings!]!
+}
+
 # Queries
 type Query {
   customViewsContext: [CustomViewsContext!]! @auth
   customView(id: String!): CustomView @auth(for: [EXPLORE])
+  customViewsSettings(id: String!): CustomViewsSettings! @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
