@@ -31,7 +31,6 @@ import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { Policies$key } from './__generated__/Policies.graphql';
 import { PoliciesQuery } from './__generated__/PoliciesQuery.graphql';
-import AccessesMenu from './AccessesMenu';
 import { DialogActions } from '@mui/material';
 
 const PoliciesFragment = graphql`
@@ -143,7 +142,6 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
       }}
       data-testid="policies-settings-page"
     >
-      <AccessesMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Policies'), current: true }]} />
       <Grid container={true} spacing={3}>
         <Grid item xs={12}>

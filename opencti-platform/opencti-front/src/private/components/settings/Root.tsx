@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import AccessesMenu from './AccessesMenu';
 import useGranted, {
   isOnlyOrganizationAdmin,
   VIRTUAL_ORGANIZATION_ADMIN,
@@ -128,6 +129,7 @@ const Root = () => {
 
   return (
     <div data-testid="settings-page">
+      <AccessesMenu />
       <Suspense fallback={<Loader />}>
         <Routes>
           <Route

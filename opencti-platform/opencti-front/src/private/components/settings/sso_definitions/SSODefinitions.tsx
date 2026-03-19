@@ -1,6 +1,5 @@
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
-import AccessesMenu from '@components/settings/AccessesMenu';
 import React, { useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, useLazyLoadQuery, usePreloadedQuery } from 'react-relay';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -326,7 +325,6 @@ const SSODefinitions = () => {
         { label: t_i18n('Security') },
         { label: t_i18n('Authentications'), current: true }]}
       />
-      <AccessesMenu />
       {settings.is_authentication_by_env && (
         <Alert severity="error" variant="outlined" sx={{ mt: 2 }}>
           <AlertTitle>{t_i18n('Deprecated — Authentication management is disabled by environment configuration')}</AlertTitle>

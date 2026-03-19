@@ -13,7 +13,6 @@ import { ListItemButton, Stack } from '@mui/material';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import AccessesMenu from '../AccessesMenu';
 import SettingsOrganizationDetails from './SettingsOrganizationDetails';
 import SettingsOrganizationUsers from '../users/SettingsOrganizationUsers';
 import Triggers from '../common/Triggers';
@@ -143,7 +142,6 @@ const SettingsOrganization = ({
     .includes(organization.id);
   return (
     <div className={classes.container}>
-      <AccessesMenu />
       <Stack direction="row" alignItems="center" marginBottom={3}>
         <TitleMainEntity sx={{ flex: 1 }}>
           {organization.name}

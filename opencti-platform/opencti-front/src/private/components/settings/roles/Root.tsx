@@ -3,7 +3,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, useLazyLoadQuery, usePreloadedQuery } from 'react-relay';
-import AccessesMenu from '@components/settings/AccessesMenu';
 import { Box, Stack } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import RoleDeletionDialog from '@components/settings/roles/RoleDeletionDialog';
@@ -77,7 +76,6 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
       <>
-        <AccessesMenu />
         <Breadcrumbs
           isSensitive={isSensitive}
           elements={[
