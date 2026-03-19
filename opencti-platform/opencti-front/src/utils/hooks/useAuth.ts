@@ -51,6 +51,7 @@ export interface UserContextType {
   settings: RootSettings$data | undefined;
   bannerSettings: BannerSettings | undefined;
   entitySettings: RootPrivateQuery$data['entitySettings'] | undefined;
+  customViewsContext: RootPrivateQuery$data['customViewsContext'] | undefined;
   platformModuleHelpers: ModuleHelper | undefined;
   schema: SchemaType | undefined;
   isXTMHubAccessible: boolean | null | undefined;
@@ -64,6 +65,7 @@ export interface UserContextType {
 const defaultContext = {
   me: undefined,
   settings: undefined,
+  customViewsContext: undefined,
   bannerSettings: undefined,
   entitySettings: undefined,
   platformModuleHelpers: undefined,
@@ -81,6 +83,7 @@ const useAuth = () => {
   const {
     me,
     settings,
+    customViewsContext,
     bannerSettings,
     entitySettings,
     platformModuleHelpers,
@@ -92,12 +95,24 @@ const useAuth = () => {
     locale,
     tz,
   } = useContext(UserContext);
-  if (!me || !settings || !bannerSettings || !entitySettings || !platformModuleHelpers || !schema || !about || !themes) {
+  if (!me || !settings || !bannerSettings || !entitySettings || !platformModuleHelpers || !schema || !about || !themes || !customViewsContext) {
     throw new Error('Invalid user context !');
   }
-  return { me, settings, bannerSettings, entitySettings,
-    platformModuleHelpers, schema, isXTMHubAccessible,
-    about, themes, locale, tz, unitSystem };
+  return {
+    me,
+    settings,
+    bannerSettings,
+    customViewsContext,
+    entitySettings,
+    platformModuleHelpers,
+    schema,
+    isXTMHubAccessible,
+    about,
+    themes,
+    locale,
+    tz,
+    unitSystem,
+  };
 };
 
 export default useAuth;

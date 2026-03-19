@@ -2,9 +2,13 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { Link, useLocation } from 'react-router-dom';
-import React from 'react';
+import React, { MouseEvent, useState } from 'react';
 import { getCurrentTab } from '../../../../utils/utils';
 import { useFormatter } from '../../../../components/i18n';
+import { useCustomViews } from '../../custom_views/useCustomViews';
+import Menu from '@mui/material/Menu';
+import { MenuItem, PopoverProps } from '@mui/material';
+import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 
 export type StixDomainObjectTabsBoxTab
   = | 'overview'
@@ -27,6 +31,18 @@ interface StixDomainObjectTabsBoxProps {
 const StixDomainObjectTabsBox = ({ basePath, entity, extraActions, tabs }: StixDomainObjectTabsBoxProps) => {
   const { t_i18n } = useFormatter();
   const location = useLocation();
+  const { customViews } = useCustomViews(entity.entity_type);
+  const [anchorPopover, setAnchorPopover] = useState<PopoverProps['anchorEl']>(null);
+
+  const onOpenPopover = (event: MouseEvent) => {
+    event.stopPropagation();
+    setAnchorPopover(event.currentTarget);
+  };
+
+  const onClosePopover = (event: MouseEvent) => {
+    event.stopPropagation();
+    setAnchorPopover(null);
+  };
   return (
     <Box
       sx={{
@@ -113,7 +129,61 @@ const StixDomainObjectTabsBox = ({ basePath, entity, extraActions, tabs }: StixD
             label={t_i18n('History')}
           />
         )}
+        {customViews.length === 1 ? (
+          <Tab
+            component={Link}
+            to={`${basePath}/${entity.id}/custom-views/${customViews[0].id}`}
+            value={`${basePath}/${entity.id}/custom-views`}
+            label={customViews[0].name}
+          />
+        ) : customViews.length > 1 ? (
+          <Tab
+            component="div"
+            value={`${basePath}/${entity.id}/custom-views`}
+            label={(
+              <div style={{
+                display: 'flex',
+                textTransform: 'none',
+              }}
+              >
+                Custom views
+                {anchorPopover ? <ArrowDropUp sx={{ fontSize: '20px' }} /> : <ArrowDropDown sx={{ fontSize: '20px' }} />}
+              </div>
+            )}
+            onClick={onOpenPopover}
+          />
+        ) : null
+        }
       </Tabs>
+      <Menu
+        anchorEl={anchorPopover}
+        open={Boolean(anchorPopover)}
+        onClose={onClosePopover}
+        aria-label={t_i18n('Popover menu')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <>
+          {
+            customViews.map(({ id, name }) => (
+              <MenuItem
+                key={id}
+                style={{
+                  padding: 0,
+                }}
+              >
+                <Link
+                  style={{
+                    padding: '10px',
+                  }}
+                  to={`${basePath}/${entity.id}/custom-views/${customViews[0].id}`}
+                >{name}
+                </Link>
+              </MenuItem>
+            ))
+          }
+        </>
+      </Menu>
       {extraActions ? (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
           {extraActions}

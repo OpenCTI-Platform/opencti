@@ -51,7 +51,7 @@ const middleware = (target, ws = false) => createProxyMiddleware({
       target: ["chrome58"],
       minify: true,
       keepNames: true,
-      sourcemap: true,
+      sourcemap: "inline",
       outdir: "builder/dev/build",
     })
   await builder.rebuild();

@@ -10,5 +10,22 @@ type CustomView implements InternalObject & BasicObject {
     name: String!
     description: String
     manifest: String
+    target_entity_type: String!
     authorizedMembers: [MemberAccess!]!
+}
+
+type CustomViewsInfo {
+    id: ID!
+    name: String!
+}
+
+type CustomViewsContext {
+    entity_type: String!
+    custom_views_info: [CustomViewsInfo!]!
+}
+
+# Queries
+type Query {
+  customViewsContext: [CustomViewsContext!]! @auth
+  customView(id: String!): CustomView @auth(for: [EXPLORE])
 }

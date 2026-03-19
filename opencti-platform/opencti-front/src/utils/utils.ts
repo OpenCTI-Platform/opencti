@@ -48,6 +48,7 @@ export const uniqueArray = <T>(items: IterableIterator<T> | Array<T>) => Array.f
 export const getCurrentTab = (locationPath: string, entityId: string, entityTypePath: string) => {
   if (locationPath.includes(`${entityTypePath}/${entityId}/knowledge`)) return `${entityTypePath}/${entityId}/knowledge`;
   if (locationPath.includes(`${entityTypePath}/${entityId}/content`)) return `${entityTypePath}/${entityId}/content`;
+  if (locationPath.includes(`${entityTypePath}/${entityId}/custom-views`)) return `${entityTypePath}/${entityId}/custom-views`;
   return locationPath;
 };
 
