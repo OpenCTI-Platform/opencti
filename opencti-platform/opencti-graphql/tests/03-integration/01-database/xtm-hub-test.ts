@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import * as cache from '../../../src/database/cache';
-import * as confModule from '../../../src/config/conf';
 import { autoRegisterOpenCTI, checkXTMHubConnectivity } from '../../../src/domain/xtm-hub';
 import { testContext } from '../../utils/testQuery';
 import { HUB_REGISTRATION_MANAGER_USER } from '../../../src/utils/access';
@@ -297,13 +296,13 @@ describe('XTM hub', () => {
   describe('autoRegisterOpenCTI', () => {
     let autoRegisterSpy: MockInstance;
     let settingsEditFieldSpy: MockInstance;
-    let confGetSpy: MockInstance;
     let getEntityFromCacheSpy: MockInstance;
+    let getEntitiesListFromCacheSpy: MockInstance;
     beforeEach(() => {
       autoRegisterSpy = vi.spyOn(xtmHubClient, 'autoRegister');
       settingsEditFieldSpy = vi.spyOn(settingsModule, 'settingsEditField');
       getEntityFromCacheSpy = vi.spyOn(cache, 'getEntityFromCache');
-      confGetSpy = vi.spyOn(confModule.default, 'get');
+      getEntitiesListFromCacheSpy = vi.spyOn(cache, 'getEntitiesListFromCache');
     });
 
     afterEach(() => {
@@ -320,12 +319,26 @@ describe('XTM hub', () => {
       });
 
       settingsEditFieldSpy.mockResolvedValue({});
-      confGetSpy.mockReturnValue('platform_id');
       getEntityFromCacheSpy.mockResolvedValue({
         id: 'settings_id'
       });
+      getEntitiesListFromCacheSpy.mockResolvedValue([
+        { user_service_account: false },
+        { user_service_account: true },
+        { user_service_account: false }
+      ]);
 
       await autoRegisterOpenCTI(testContext, HUB_REGISTRATION_MANAGER_USER, input);
+      expect(autoRegisterSpy).toHaveBeenCalledWith(
+        {
+          platformId: 'settings_id',
+          platformToken: 'test-token',
+          platformUrl: undefined,
+          platformTitle: ''
+        },
+        expect.any(String),
+        2
+      );
       expect(settingsEditFieldSpy).toHaveBeenCalledWith(
         testContext,
         HUB_REGISTRATION_MANAGER_USER,
@@ -346,6 +359,12 @@ describe('XTM hub', () => {
       });
 
       settingsEditFieldSpy.mockResolvedValue({});
+      getEntityFromCacheSpy.mockResolvedValue({
+        id: 'settings_id'
+      });
+      getEntitiesListFromCacheSpy.mockResolvedValue([
+        { user_service_account: false }
+      ]);
 
       await autoRegisterOpenCTI(testContext, HUB_REGISTRATION_MANAGER_USER, input);
       expect(settingsEditFieldSpy).not.toHaveBeenCalled();
