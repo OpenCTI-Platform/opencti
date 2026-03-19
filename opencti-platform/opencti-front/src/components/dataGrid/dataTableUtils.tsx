@@ -1262,6 +1262,27 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value);
     },
   },
+  to_object_label: {
+    id: 'to_object_label',
+    label: 'Labels',
+    percentWidth: 20,
+    isSortable: false,
+    render: ({ to }) =>
+      <StixCoreObjectLabels
+        variant="inList"
+        labels={to?.objectLabel}
+      />,
+  },
+  to_object_marking: {
+    label: 'Marking',
+    percentWidth: 20,
+    isSortable: false,
+    render: ({ to }) =>
+      <ItemMarkings
+        markingDefinitions={to?.objectMarking ?? []}
+        limit={1}
+      />,
+  },
   updated_at: {
     id: 'updated_at',
     label: 'Modification date',
