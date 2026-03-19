@@ -58,6 +58,11 @@ In order to enable this feature, you must first ensure the following items:
 
 * An active OpenAEV instance, [here is the dedicated documentation](https://docs.openaev.io/)
 * That same instance must be configured as an Enrichment Connector ([see the specific documentation](https://docs.openaev.io/latest/usage/xtm-suite-connector/))
+ 
+!!! note "Compatibility requirement"
+
+    The Security Coverage **Result** tab requires OpenAEV version **2.3.1** or later to display automated coverage results correctly.
+
 
 When the above is completed, you should see OpenAEV being listed as an Enrichment Connector in **Data > Ingestion** :
 
@@ -101,6 +106,55 @@ the previous attempt had failed or if it is necessary to request an updated asse
 linked report has changed):
 
 ![Security Coverage enrichment retrigger](assets/security-coverage-enrichment-retrigger.png)
+
+### Result tab
+
+The **Result tab** provides a detailed, entity-by-entity view of the coverage outcome linked to a Security Coverage. It helps analysts understand what was effectively evaluated and how much each related entity was covered during the executed simulation.
+For each related entity, the table displays:
+
+| Column                  | Description                                                                                  |
+|-------------------------|----------------------------------------------------------------------------------------------|
+| **Type**                | The entity type.                                                                             |
+| **Name**                | The main entity label. For attack patterns, the MITRE ATT&CK ID is displayed when available. |
+| **Coverage**            | The coverage metric returned for that entity.                                                |
+| **Labels and Markings** | Contextual metadata to support triage and review.                                            |
+
+Use this tab to quickly identify entities with meaningful coverage results versus entities for which no executable tests are currently configured. In that case, a dash (`—`) is displayed, and a tooltip explains that executable tests must be set up in OpenAEV.
+An information icon in the table header explains how to interpret the **Coverage Result Metric**: it represents how much an entity was involved in the executed AEV scenario. This metric may be partial when some injects were not run, placeholders were not resolved, or certain actions are not supported by the target platform.
+
+#### Understanding Placeholder Injects
+
+When an entity displays a dash (`—`) or a low coverage score, it means OpenAEV generated a **Placeholder Inject** instead of a concrete one. This happens when one of the following conditions is not met:
+
+1. The Attack Pattern exists in OpenAEV (matched by MITRE ATT&CK ID or name), **and**
+2. A compatible payload exists for the platforms and architectures derived from the Asset Groups assigned via the **Default Asset Rules** (`opencti` tag).
+
+#### Improving coverage results
+The following steps can help resolve missing or partial coverage.
+
+**1. Verify your Default Asset Rules**
+
+In OpenAEV, go to **Settings → Customization → Default Asset Rules** and confirm that the `opencti` tag is correctly mapped to the relevant Asset Groups. These groups define which platforms and architectures are used to match payloads — if misconfigured, no concrete inject can be generated.
+> The `opencti` tag is automatically applied to all scenarios generated from OpenCTI. This default rule cannot be removed.
+
+**2. Check payload availability and enable collectors**
+
+In OpenAEV, go to **Payloads** and search by the MITRE ATT&CK ID of the uncovered technique. If no payload exists for the required platform or architecture, expand your coverage by enabling one or both of the following collectors under **Integrations → Collectors**:
+- **OpenAEV curated payloads** — Filigran-maintained, verified payloads mapped to MITRE ATT&CK.
+- **Atomic Red Team** — A broad community-maintained library of atomic tests.
+
+**3. Create a custom payload**
+If no existing payload covers the technique you need, you can create one directly in OpenAEV:
+
+1. Go to **Payloads** and click the **+** button.
+2. Fill in the general information: name, description, and **Attack Pattern mapping** (MITRE ATT&CK ID).
+3. In the **Commands** tab, select the payload type (Command Line, Executable, File Drop, DNS Resolution), specify the **target platform**, and provide the command details.
+4. Optionally, add **Output Parsers** to extract findings from the execution output.
+
+Once saved, the payload becomes immediately available for future scenario generation.
+
+**4. Retrigger the enrichment**
+Once any of the above steps are completed, return to the Security Coverage page in OpenCTI and use the **Enrichment menu** to manually retrigger the assessment. OpenAEV will rebuild the scenario using the updated payload and asset configuration.
 
 ## Manual Security Coverage
 
