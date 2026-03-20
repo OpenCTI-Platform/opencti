@@ -31,6 +31,7 @@ import { authorizedMembersToOptions, CAN_USE_ENTITY_TYPES, useGetCurrentUserAcce
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import useHelper from '../../../../utils/hooks/useHelper';
 import useGranted, {
   AUTOMATION,
   BYPASS,
@@ -303,6 +304,9 @@ const StixDomainObjectHeader = (props) => {
   const currentDraftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
   const canEdit = currentAccessRight.canEdit && (!draftContext || currentDraftAccessRight.canEdit);
 
+  const { isFeatureEnable } = useHelper();
+  const isDraftSharingEnabled = isFeatureEnable('DRAFT_WORKSPACE_ORG_SHARING');
+
   const openAliasesCreate = false;
   const [openAlias, setOpenAlias] = useState(false);
   const [openAliases, setOpenAliases] = useState(false);
@@ -569,6 +573,7 @@ const StixDomainObjectHeader = (props) => {
                         title={t_i18n('Share with an organization')}
                         handleCloseMenu={closeMenu}
                         needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+                        allowInDraft={isDraftSharingEnabled}
                       />
                     )}
                     {enableManageAuthorizedMembers && (
