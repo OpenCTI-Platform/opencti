@@ -83,3 +83,26 @@ jobs:
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets: inherit
+
+  ci-status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - detect-changes
+      - wf-build-image
+      - wf-backend-test
+      - wf-frontend-test
+      - wf-client-python-test
+      - wf-license-check
+    steps:
+      - name: Check all jobs status
+        run: |
+          results="${{ join(needs.*.result, ' ') }}"
+          for result in $results; do
+            if [ "$result" == "failure" ] || [ "$result" == "cancelled" ]; then
+              echo "::error::One or more jobs failed or were cancelled: $results"
+              exit 1
+            fi
+          done
+          echo "All jobs passed or were skipped."
