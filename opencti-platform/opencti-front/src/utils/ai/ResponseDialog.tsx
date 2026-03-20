@@ -76,17 +76,29 @@ const fetchAgentsForIntent = async (intent: string): Promise<AgentOption[]> => {
   }
 };
 
-const callAgent = async (agentSlug: string, content: string): Promise<string> => {
+interface AgentResponse {
+  content: string;
+  status: 'success' | 'error';
+  error?: string;
+  code?: number;
+}
+
+const callAgent = async (agentSlug: string, content: string): Promise<AgentResponse> => {
   const response = await fetch('/chatbot/agent', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ agent_slug: agentSlug, content }),
   });
   if (!response.ok) {
-    throw new Error(`Agent call failed: ${response.statusText}`);
+    return { content: '', status: 'error', error: `Agent call failed: ${response.statusText}`, code: response.status };
   }
   const data = await response.json();
-  return data.content ?? '';
+  return {
+    content: data.content ?? '',
+    status: data.status ?? 'success',
+    error: data.error,
+    code: data.code,
+  };
 };
 
 const buildPrompt = (
@@ -138,6 +150,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const [loadingAgents, setLoadingAgents] = useState(false);
   const [agentLoading, setAgentLoading] = useState(false);
   const [agentExecuted, setAgentExecuted] = useState(false);
+  const [agentError, setAgentError] = useState<string | null>(null);
 
   // Tone selector (for change tone action)
   const [tone, setTone] = useState<string>('tactical');
@@ -184,15 +197,22 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     if (!selectedAgent || !agentMode) return;
     setAgentLoading(true);
     setAgentExecuted(true);
+    setAgentError(null);
 
     const prompt = buildPrompt(agentMode.action, agentMode.inputContent, agentMode.format, tone);
     callAgent(selectedAgent.slug, prompt)
       .then((result) => {
-        setContent(result);
+        if (result.status === 'error') {
+          setAgentError(result.error ?? t_i18n('An unknown error occurred'));
+          setContent('');
+        } else {
+          setContent(result.content);
+        }
         setAgentLoading(false);
       })
       .catch((error: Error) => {
-        setContent(t_i18n(`An unknown error occurred, please ask your platform administrator: ${error.toString()}`));
+        setAgentError(error.toString());
+        setContent('');
         setAgentLoading(false);
       });
   };
@@ -201,6 +221,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     if (!selectedAgent || !agentMode) return;
     setContent('');
     setAgentExecuted(false);
+    setAgentError(null);
   };
 
   const handleAgentChange = (_event: unknown, newValue: AgentOption | null) => {
@@ -362,8 +383,24 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
             </Box>
           )}
 
-          {/* Content area — hidden while loading */}
-          {!agentLoading && !loadingAgents && !noAgents && (
+          {/* Agent error alert */}
+          {agentError && !agentLoading && (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+              }}
+            >
+              <Alert severity="error" variant="outlined">
+                {agentError}
+              </Alert>
+            </Box>
+          )}
+
+          {/* Content area — hidden while loading or on error */}
+          {!agentLoading && !loadingAgents && !noAgents && !agentError && (
             <>
               {(format === 'text' || format === 'json') && (
                 <TextField
@@ -426,7 +463,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           </Button>
           {isAcceptable && (
             <Button
-              disabled={effectiveDisabled}
+              disabled={effectiveDisabled || !!agentError}
               onClick={() => handleAccept(content)}
             >
               {t_i18n('Accept')}

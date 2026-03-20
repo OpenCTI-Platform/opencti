@@ -94,11 +94,12 @@ export const postChatbotSession = async (req: Express.Request, res: Express.Resp
     logApp.error('Error in chatbot session', { cause: e });
     const { message } = e as Error;
     if (axios.isAxiosError(e) && e.response) {
+      setCookieError(res, message);
       res.status(e.response.status).send({ status: e.response.status, error: message });
     } else {
+      setCookieError(res, message);
       res.status(503).send({ status: 503, error: message });
     }
-    setCookieError(res, message);
   }
 };
 
@@ -160,11 +161,47 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
     const { message } = e as Error;
 
     if (axios.isAxiosError(e) && e.response) {
-      res.status(e.response.status).send({ status: e.response.status, error: message });
+      const code = e.response.status;
+
+      // For streaming responses, e.response.data may be a stream, not parsed JSON.
+      // Try to extract the detail from the response body.
+      let detail = message;
+      try {
+        if (typeof e.response.data === 'object' && e.response.data !== null) {
+          if ('detail' in e.response.data) {
+            detail = e.response.data.detail;
+          } else if (typeof e.response.data.pipe === 'function') {
+            // It's a stream — read the buffer
+            const chunks: Buffer[] = [];
+            for await (const chunk of e.response.data) {
+              chunks.push(Buffer.from(chunk));
+            }
+            const body = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
+            detail = body.detail ?? message;
+          }
+        }
+      } catch {
+        // If parsing fails, fall back to the error message
+      }
+
+      // Return errors as SSE stream so the chatbot displays
+      // the message instead of crashing with a generic error.
+      setCookieError(res, message);
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache, no-transform');
+      res.setHeader('Connection', 'keep-alive');
+      res.status(200);
+
+      const errorContent = code === 429
+        ? `⚠️ **Quota exceeded** — ${detail}`
+        : `⚠️ **Error** — ${detail}`;
+
+      res.write(`data: ${JSON.stringify({ type: 'error', content: errorContent, code })}\n\n`);
+      res.end();
     } else {
+      setCookieError(res, message);
       res.status(503).send({ status: 503, error: message });
     }
-    setCookieError(res, message);
   }
 };
 
@@ -202,15 +239,17 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
     });
 
     // XTM One returns { message_id, content } for non-streaming requests
-    res.json({ content: response.data?.content ?? '' });
+    res.json({ content: response.data?.content ?? '', status: 'success' });
   } catch (e: unknown) {
     logApp.error('Error in agent message proxy', { cause: e });
     const { message } = e as Error;
     if (axios.isAxiosError(e) && e.response) {
-      res.status(e.response.status).send({ status: e.response.status, error: message });
+      const detail = e.response.data?.detail ?? message;
+      setCookieError(res, message);
+      res.status(200).json({ content: '', status: 'error', error: detail, code: e.response.status });
     } else {
-      res.status(503).send({ status: 503, error: message });
+      setCookieError(res, message);
+      res.status(200).json({ content: '', status: 'error', error: message, code: 503 });
     }
-    setCookieError(res, message);
   }
 };
