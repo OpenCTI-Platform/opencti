@@ -11,7 +11,7 @@ import {
 import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
-import { authorizedAuthorities, authorizedMembers } from '../../schema/attribute-definition';
+import { authorizedAuthorities, authorizedMembers, created } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_NOTIFIER } from '../notifier/notifier-types';
 import { DIGEST_PERIOD_VALUES, TRIGGER_EVENT_TYPES_VALUES, TRIGGER_SCOPE_VALUES, TRIGGER_TYPE_VALUES } from '../../manager/notificationManager';
@@ -35,7 +35,7 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'created', label: 'Created', type: 'date', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { ...created, mandatoryType: 'external', upsert: false },
     { name: 'updated', label: 'Updated', type: 'date', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'event_types', label: 'Event types', type: 'string', format: 'enum', values: TRIGGER_EVENT_TYPES_VALUES, mandatoryType: 'external', editDefault: true, multiple: true, upsert: false, isFilterable: true },
     { name: 'trigger_scope', label: 'Trigger scope', type: 'string', format: 'enum', values: TRIGGER_SCOPE_VALUES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },

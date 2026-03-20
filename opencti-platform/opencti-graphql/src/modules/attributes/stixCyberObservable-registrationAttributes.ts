@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import type { AttributeDefinition } from '../../schema/attribute-definition';
+import { type AttributeDefinition, created } from '../../schema/attribute-definition';
 import { xOpenctiModifiedAt } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import {
@@ -313,7 +313,7 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'fingerprint_md5', label: 'Fingerprint MD5', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'key_length', label: 'Key length', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'comment', label: 'Comment', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
-    { name: 'created', label: 'Created', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    created,
     { name: 'expiration_date', label: 'Expiration date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
   [ENTITY_AI_PROMPT]: [
