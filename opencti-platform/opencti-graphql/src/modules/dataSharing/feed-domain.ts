@@ -86,9 +86,6 @@ export const findById: DomainFindById<BasicStoreEntityFeed> = async (context: Au
 };
 export const editFeed = async (context: AuthContext, user: AuthUser, id: string, input: FeedAddInput): Promise<BasicStoreEntityFeed> => {
   checkFeedIntegrity(input);
-  if (input.feed_public && !input.feed_public_user_id) {
-    throw FunctionalError('A user must be configured when the feed is public', { id });
-  }
   const feed = await findById(context, user, id);
   if (!feed) {
     throw FunctionalError(`Feed ${id} cant be found`);

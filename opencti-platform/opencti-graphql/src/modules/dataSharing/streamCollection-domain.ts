@@ -66,16 +66,6 @@ export const streamCollectionEditField = async (context: AuthContext, user: Auth
     // our stix matching is currently limited, we need to validate the input filters
     validateFilterGroupForStixMatch(JSON.parse(filtersItem.value[0]));
   }
-  const settingPublic = input.find(({ key }) => key === 'stream_public');
-  if (settingPublic?.value?.[0] === 'true') {
-    const hasUserId = input.some(({ key, value }) => key === 'stream_public_user_id' && value?.[0]);
-    if (!hasUserId) {
-      const current = await findById(context, SYSTEM_USER, collectionId);
-      if (!current?.stream_public_user_id) {
-        throw FunctionalError('A user must be configured when the stream collection is public', { collectionId });
-      }
-    }
-  }
   const finalInput = input.map(({ key, value }) => {
     const item = { key, value };
     if (key === authorizedMembers.name) {
