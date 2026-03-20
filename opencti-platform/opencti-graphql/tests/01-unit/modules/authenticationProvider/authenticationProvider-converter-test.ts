@@ -338,9 +338,9 @@ describe('convertOidcEnvConfig', () => {
       firstname_expr: 'user_info.given_name',
       lastname_expr: 'user_info.family_name',
     });
-    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['tokens.access_token.groups']);
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual([]);
     expect(result.configuration.groups_mapping.prevent_default_groups).toBe(false);
-    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual(['tokens.access_token.organizations']);
+    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual([]);
   });
 
   it('should merge scopes from default + groups_scope + organizations_scope', () => {
@@ -466,7 +466,7 @@ describe('convertOidcEnvConfig', () => {
     };
 
     const result = convertOidcEnvConfig('oic', entry);
-    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['user_info.groups']);
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual([]);
   });
 
   it('should convert organizations management', () => {
@@ -713,9 +713,11 @@ describe('convertSamlEnvConfig', () => {
       firstname_expr: null,
       lastname_expr: null,
     });
-    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['groups']);
+    // No groups_management configured → groups_expr empty (mirrors legacy isGroupBaseAccess)
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual([]);
     expect(result.configuration.groups_mapping.prevent_default_groups).toBe(false);
-    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual(['organizations']);
+    // No organizations_management configured → organizations_expr empty (mirrors legacy isOrgaMapping)
+    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual([]);
   });
 
   it('should convert SAML config with all first-class boolean fields', () => {
@@ -813,7 +815,7 @@ describe('convertSamlEnvConfig', () => {
     ]);
   });
 
-  it('should default SAML group_attributes to ["groups"] when groups_management is present but empty', () => {
+  it('should return empty groups_expr when groups_management is present but has no groups_mapping', () => {
     const entry: EnvProviderEntry = {
       strategy: 'SamlStrategy',
       config: {
@@ -823,7 +825,8 @@ describe('convertSamlEnvConfig', () => {
     };
 
     const result = convertSamlEnvConfig('saml', entry);
-    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['groups']);
+    // groups_management.groups_mapping is absent → mirrors legacy isGroupBaseAccess = false
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual([]);
     expect(result.configuration.groups_mapping.groups_mapping).toStrictEqual([]);
   });
 
@@ -1044,9 +1047,9 @@ describe('convertLdapEnvConfig', () => {
       firstname_expr: null,
       lastname_expr: null,
     });
-    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['cn']);
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual([]);
     expect(result.configuration.groups_mapping.prevent_default_groups).toBe(false);
-    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual(['organizations']);
+    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual([]);
   });
 
   it('should convert bind_credentials to string when it is a number', () => {
@@ -1132,7 +1135,7 @@ describe('convertLdapEnvConfig', () => {
     ]);
   });
 
-  it('should default LDAP group_attribute to "cn" when groups_management is present but empty', () => {
+  it('should return empty groups_expr when groups_management is present but has no groups_mapping', () => {
     const entry: EnvProviderEntry = {
       strategy: 'LdapStrategy',
       config: {
@@ -1142,7 +1145,8 @@ describe('convertLdapEnvConfig', () => {
     };
 
     const result = convertLdapEnvConfig('ldap', entry);
-    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['cn']);
+    // groups_management.groups_mapping is absent → mirrors legacy isGroupBaseAccess = false
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual([]);
     expect(result.configuration.groups_mapping.groups_mapping).toStrictEqual([]);
   });
 
@@ -1749,9 +1753,9 @@ describe('Edge cases', () => {
 
     const result = convertOidcEnvConfig('oic', entry);
     // groups_path defaults to ['groups'], with default token_reference and read_userinfo
-    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual(['tokens.access_token.groups']);
+    expect(result.configuration.groups_mapping.groups_expr).toStrictEqual([]);
     expect(result.configuration.groups_mapping.groups_mapping).toStrictEqual([]);
-    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual(['tokens.access_token.organizations']);
+    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual([]);
     expect(result.configuration.organizations_mapping.organizations_mapping).toStrictEqual([]);
   });
 
@@ -1765,7 +1769,8 @@ describe('Edge cases', () => {
     };
 
     const result = convertSamlEnvConfig('saml', entry);
-    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual(['organizations']);
+    // organizations_management is empty → mirrors legacy isOrgaMapping = false
+    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual([]);
     expect(result.configuration.organizations_mapping.organizations_mapping).toStrictEqual([]);
   });
 
@@ -1797,7 +1802,8 @@ describe('Edge cases', () => {
     };
 
     const result = convertLdapEnvConfig('ldap', entry);
-    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual(['organizations']);
+    // organizations_management is empty → mirrors legacy isOrgaMapping = false
+    expect(result.configuration.organizations_mapping.organizations_expr).toStrictEqual([]);
     expect(result.configuration.organizations_mapping.organizations_mapping).toStrictEqual([]);
   });
 });
