@@ -326,7 +326,7 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
       label: 'Labels',
     },
     to_object_marking: {
-      label: 'Marking',
+      label: 'Markings',
     },
   };
 

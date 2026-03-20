@@ -1275,7 +1275,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     ),
   },
   to_object_marking: {
-    label: 'Marking',
+    label: 'Markings',
     percentWidth: 20,
     isSortable: false,
     render: ({ to }) => (
