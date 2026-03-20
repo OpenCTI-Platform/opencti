@@ -157,6 +157,7 @@ import './xtm/hub/xtm-hub-graphql';
 import './metrics/metrics-graphql';
 import './authenticationProvider/authenticationProvider-graphql';
 import './customView/customView-graphql';
+import './deadLetterMessage/deadLetterMessage-graphql';
 import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';

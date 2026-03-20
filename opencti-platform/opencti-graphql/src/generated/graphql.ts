@@ -1,6 +1,7 @@
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
 import type { BasicStoreBase, BasicStoreEntityFeed } from '../types/store.d';
 import type { BasicStoreEntityChannel } from '../modules/channel/channel-types';
+import type { BasicStoreEntityDeadLetterMessage } from '../modules/deadLetterMessage/deadLetterMessage-types';
 import type { GraphqlCatalog } from '../modules/catalog/catalog-types';
 import type { BasicStoreEntityLanguage } from '../modules/language/language-types';
 import type { BasicStoreEntityEvent } from '../modules/event/event-types';
@@ -6889,6 +6890,34 @@ export enum DataSourcesOrdering {
   Name = 'name',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
+}
+
+export type DeadLetterMessage = BasicObject & InternalObject & {
+  __typename?: 'DeadLetterMessage';
+  created_at: Scalars['DateTime']['output'];
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  original_connector_id?: Maybe<Scalars['String']['output']>;
+  parent_types: Array<Scalars['String']['output']>;
+  standard_id: Scalars['String']['output'];
+};
+
+export type DeadLetterMessageConnection = {
+  __typename?: 'DeadLetterMessageConnection';
+  edges?: Maybe<Array<Maybe<DeadLetterMessageEdge>>>;
+  pageInfo: PageInfo;
+};
+
+export type DeadLetterMessageEdge = {
+  __typename?: 'DeadLetterMessageEdge';
+  cursor: Scalars['String']['output'];
+  node: DeadLetterMessage;
+};
+
+export enum DeadLetterMessagesOrdering {
+  Score = '_score',
+  CreatedAt = 'created_at'
 }
 
 export type DecayChartData = {
@@ -23080,6 +23109,8 @@ export type Query = {
   dataComponents?: Maybe<DataComponentConnection>;
   dataSource?: Maybe<DataSource>;
   dataSources?: Maybe<DataSourceConnection>;
+  deadLetterMessage?: Maybe<DeadLetterMessage>;
+  deadLetterMessages?: Maybe<DeadLetterMessageConnection>;
   decayExclusionRule?: Maybe<DecayExclusionRule>;
   decayExclusionRules?: Maybe<DecayExclusionRuleConnection>;
   decayRule?: Maybe<DecayRule>;
@@ -23888,6 +23919,21 @@ export type QueryDataSourcesArgs = {
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<DataSourcesOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryDeadLetterMessageArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryDeadLetterMessagesArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<DeadLetterMessagesOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
@@ -37108,6 +37154,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntityCustomView )
     | ( BasicStoreEntityDataComponent )
     | ( BasicStoreEntityDataSource )
+    | ( BasicStoreEntityDeadLetterMessage )
     | ( BasicStoreEntityDecayExclusionRule )
     | ( BasicStoreEntityDecayRule )
     | ( BasicStoreEntityDeleteOperation )
@@ -37250,6 +37297,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( ConnectorManager )
     | ( BasicStoreEntityCsvMapper )
     | ( BasicStoreEntityCustomView )
+    | ( BasicStoreEntityDeadLetterMessage )
     | ( BasicStoreEntityDecayExclusionRule )
     | ( BasicStoreEntityDecayRule )
     | ( BasicStoreEntityDeleteOperation )
@@ -37787,6 +37835,10 @@ export type ResolversTypes = ResolversObject<{
   DataSourceEdge: ResolverTypeWrapper<Omit<DataSourceEdge, 'node'> & { node: ResolversTypes['DataSource'] }>;
   DataSourcesOrdering: DataSourcesOrdering;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
+  DeadLetterMessage: ResolverTypeWrapper<BasicStoreEntityDeadLetterMessage>;
+  DeadLetterMessageConnection: ResolverTypeWrapper<Omit<DeadLetterMessageConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['DeadLetterMessageEdge']>>> }>;
+  DeadLetterMessageEdge: ResolverTypeWrapper<Omit<DeadLetterMessageEdge, 'node'> & { node: ResolversTypes['DeadLetterMessage'] }>;
+  DeadLetterMessagesOrdering: DeadLetterMessagesOrdering;
   DecayChartData: ResolverTypeWrapper<DecayChartData>;
   DecayData: ResolverTypeWrapper<DecayData>;
   DecayExclusionRule: ResolverTypeWrapper<BasicStoreEntityDecayExclusionRule>;
@@ -38850,6 +38902,9 @@ export type ResolversParentTypes = ResolversObject<{
   DataSourceConnection: Omit<DataSourceConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['DataSourceEdge']>>> };
   DataSourceEdge: Omit<DataSourceEdge, 'node'> & { node: ResolversParentTypes['DataSource'] };
   DateTime: Scalars['DateTime']['output'];
+  DeadLetterMessage: BasicStoreEntityDeadLetterMessage;
+  DeadLetterMessageConnection: Omit<DeadLetterMessageConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['DeadLetterMessageEdge']>>> };
+  DeadLetterMessageEdge: Omit<DeadLetterMessageEdge, 'node'> & { node: ResolversParentTypes['DeadLetterMessage'] };
   DecayChartData: DecayChartData;
   DecayData: DecayData;
   DecayExclusionRule: BasicStoreEntityDecayExclusionRule;
@@ -40296,7 +40351,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type BasicObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['BasicObject'] = ResolversParentTypes['BasicObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DeadLetterMessage' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -41820,6 +41875,27 @@ export type DataSourceEdgeResolvers<ContextType = any, ParentType extends Resolv
 export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
   name: 'DateTime';
 }
+
+export type DeadLetterMessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeadLetterMessage'] = ResolversParentTypes['DeadLetterMessage']> = ResolversObject<{
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  original_connector_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type DeadLetterMessageConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeadLetterMessageConnection'] = ResolversParentTypes['DeadLetterMessageConnection']> = ResolversObject<{
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['DeadLetterMessageEdge']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type DeadLetterMessageEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeadLetterMessageEdge'] = ResolversParentTypes['DeadLetterMessageEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['DeadLetterMessage'], ParentType, ContextType>;
+}>;
 
 export type DecayChartDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayChartData'] = ResolversParentTypes['DecayChartData']> = ResolversObject<{
   live_score_serie?: Resolver<Maybe<Array<ResolversTypes['DecayHistory']>>, ParentType, ContextType>;
@@ -43938,7 +44014,7 @@ export type IngestionTaxiiEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type InternalObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalObject'] = ResolversParentTypes['InternalObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomView' | 'DeadLetterMessage' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
 }>;
@@ -46913,6 +46989,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType, Partial<QueryDataComponentsArgs>>;
   dataSource?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<QueryDataSourceArgs, 'id'>>;
   dataSources?: Resolver<Maybe<ResolversTypes['DataSourceConnection']>, ParentType, ContextType, Partial<QueryDataSourcesArgs>>;
+  deadLetterMessage?: Resolver<Maybe<ResolversTypes['DeadLetterMessage']>, ParentType, ContextType, RequireFields<QueryDeadLetterMessageArgs, 'id'>>;
+  deadLetterMessages?: Resolver<Maybe<ResolversTypes['DeadLetterMessageConnection']>, ParentType, ContextType, Partial<QueryDeadLetterMessagesArgs>>;
   decayExclusionRule?: Resolver<Maybe<ResolversTypes['DecayExclusionRule']>, ParentType, ContextType, RequireFields<QueryDecayExclusionRuleArgs, 'id'>>;
   decayExclusionRules?: Resolver<Maybe<ResolversTypes['DecayExclusionRuleConnection']>, ParentType, ContextType, Partial<QueryDecayExclusionRulesArgs>>;
   decayRule?: Resolver<Maybe<ResolversTypes['DecayRule']>, ParentType, ContextType, RequireFields<QueryDecayRuleArgs, 'id'>>;
@@ -50782,6 +50860,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   DataSourceConnection?: DataSourceConnectionResolvers<ContextType>;
   DataSourceEdge?: DataSourceEdgeResolvers<ContextType>;
   DateTime?: GraphQLScalarType;
+  DeadLetterMessage?: DeadLetterMessageResolvers<ContextType>;
+  DeadLetterMessageConnection?: DeadLetterMessageConnectionResolvers<ContextType>;
+  DeadLetterMessageEdge?: DeadLetterMessageEdgeResolvers<ContextType>;
   DecayChartData?: DecayChartDataResolvers<ContextType>;
   DecayData?: DecayDataResolvers<ContextType>;
   DecayExclusionRule?: DecayExclusionRuleResolvers<ContextType>;

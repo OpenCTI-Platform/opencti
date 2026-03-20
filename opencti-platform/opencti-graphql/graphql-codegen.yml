@@ -19,6 +19,7 @@ generates:
         BasicObject: ../types/store.d#BasicStoreBase
         Feed: ../types/store.d#BasicStoreEntityFeed
         Channel: ../modules/channel/channel-types#BasicStoreEntityChannel
+        DeadLetterMessage: ../modules/deadLetterMessage/deadLetterMessage-types#BasicStoreEntityDeadLetterMessage
         Catalog: ../modules/catalog/catalog-types#GraphqlCatalog
         Language: ../modules/language/language-types#BasicStoreEntityLanguage
         Event: ../modules/event/event-types#BasicStoreEntityEvent

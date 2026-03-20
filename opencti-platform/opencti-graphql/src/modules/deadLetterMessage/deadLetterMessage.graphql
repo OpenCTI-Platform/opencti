@@ -1,0 +1,40 @@
+type DeadLetterMessage implements InternalObject & BasicObject {
+    id: ID!
+    standard_id: String!
+    entity_type: String!
+    parent_types: [String!]!
+    metrics:[Metric]
+    created_at: DateTime!
+    original_connector_id: String
+}
+
+# Ordering
+enum DeadLetterMessagesOrdering {
+    created_at
+    _score
+}
+
+# Relay connections
+type DeadLetterMessageConnection {
+    pageInfo: PageInfo!
+    edges: [DeadLetterMessageEdge]
+}
+type DeadLetterMessageEdge {
+    cursor: String!
+    node: DeadLetterMessage!
+}
+
+# Queries
+type Query {
+    deadLetterMessage(id: String!): DeadLetterMessage @auth(for: [CONNECTORAPI])
+    deadLetterMessages(
+        first: Int
+        after: ID
+        orderBy: DeadLetterMessagesOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): DeadLetterMessageConnection @auth(for: [CONNECTORAPI])
+}
+
+# Mutations
