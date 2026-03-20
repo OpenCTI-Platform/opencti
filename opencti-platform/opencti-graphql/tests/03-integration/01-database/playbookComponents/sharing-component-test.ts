@@ -8,6 +8,8 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organ
 import * as middlewareLoader from '../../../../src/database/middleware-loader';
 import * as access from '../../../../src/utils/access';
 import { PLAYBOOK_SHARING_COMPONENT } from '../../../../src/modules/playbook/components/sharing-component';
+import { testBundleObject } from './playbook-components-test-utils';
+import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
 
 export const sharing_component_bundle = {
   id: '411628bf-745b-43f6-8194-cbe441edecfd',
@@ -75,8 +77,7 @@ export const sharing_component_bundle = {
 } as unknown as StixBundle;
 
 describe('PLAYBOOK_SHARING_COMPONENT', () => {
-  const reportId = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
-  const secondObjectId = 'indicator--second-object';
+  const MAIN_REPORT_ID = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
 
   const inputBundle: StixBundle = {
     id: '81b65094-7fe7-40df-a695-43d30b3656b1',
@@ -84,7 +85,7 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
     type: 'bundle',
     objects: [
       {
-        id: reportId,
+        id: MAIN_REPORT_ID,
         spec_version: '2.1',
         type: 'report',
         extensions: {
@@ -113,23 +114,23 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
     ],
   } as StixBundle;
 
-  const createPlaybookNode = (organizations: string[], all = false) => ({
+  const createPlaybookNode = (organizations: string[], applyToElements: PlaybookBundleElementsToApply = playbookBundleElementsToApply.onlyMain.value) => ({
     id: 'playbook-node',
     name: 'share-node',
     component_id: 'PLAYBOOK_SHARING_COMPONENT',
     configuration: {
       organizations,
-      all,
+      applyToElements,
     },
   });
 
-  const createPlaybookNodeWithObjectOrgs = (organizations: { label: string; value: string }[], all = false) => ({
+  const createPlaybookNodeWithObjectOrgs = (organizations: { label: string; value: string }[], applyToElements: PlaybookBundleElementsToApply) => ({
     id: 'playbook-node',
     name: 'share-node',
     component_id: 'PLAYBOOK_SHARING_COMPONENT',
     configuration: {
       organizations,
-      all,
+      applyToElements,
     },
   });
 
@@ -137,19 +138,6 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
     id: `org-internal-${name}`,
     standard_id: generateStandardId(ENTITY_TYPE_IDENTITY_ORGANIZATION, { name }) as StixId,
   });
-
-  const createSecondObject = (): StixObject => ({
-    id: secondObjectId,
-    spec_version: '2.1',
-    type: 'indicator',
-    extensions: {
-      [STIX_EXT_OCTI]: {
-        extension_type: 'property-extension',
-        id: 'second-ext-id',
-        type: 'Indicator',
-      } as StixOpenctiExtension,
-    },
-  } as StixObject);
 
   const getExtension = (bundle: StixBundle, objectId: string): StixOpenctiExtension => {
     const obj = bundle.objects.find((o) => o.id === objectId) as StixObject;
@@ -176,7 +164,7 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
       const bundle = structuredClone(inputBundle);
 
       const result = await PLAYBOOK_SHARING_COMPONENT.executor({
-        dataInstanceId: reportId,
+        dataInstanceId: MAIN_REPORT_ID,
         eventId: '',
         executionId: '',
         playbookId: '',
@@ -187,7 +175,7 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
       });
 
       expect(result.output_port).toBe('out');
-      expect(getExtension(result.bundle, reportId).granted_refs).toBeUndefined();
+      expect(getExtension(result.bundle, MAIN_REPORT_ID).granted_refs).toBeUndefined();
     });
 
     it('should return bundle unchanged when no matching organizations found in database', async () => {
@@ -196,7 +184,7 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
       const bundle = structuredClone(inputBundle);
 
       const result = await PLAYBOOK_SHARING_COMPONENT.executor({
-        dataInstanceId: reportId,
+        dataInstanceId: MAIN_REPORT_ID,
         eventId: '',
         executionId: '',
         playbookId: '',
@@ -207,7 +195,7 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
       });
 
       expect(result.output_port).toBe('out');
-      expect(getExtension(result.bundle, reportId).granted_refs).toBeUndefined();
+      expect(getExtension(result.bundle, MAIN_REPORT_ID).granted_refs).toBeUndefined();
     });
   });
 
@@ -220,20 +208,20 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
       const bundle = structuredClone(inputBundle);
 
       const result = await PLAYBOOK_SHARING_COMPONENT.executor({
-        dataInstanceId: reportId,
+        dataInstanceId: MAIN_REPORT_ID,
         eventId: '',
         executionId: '',
         playbookId: '',
         previousPlaybookNodeId: undefined,
         previousStepBundle: null as StixBundle | null,
         bundle,
-        playbookNode: createPlaybookNode([mockOrg.id!], false),
+        playbookNode: createPlaybookNode([mockOrg.id!], playbookBundleElementsToApply.onlyMain.value),
       });
 
       expect(internalFindByIdsSpy).toHaveBeenCalled();
       expect(result.output_port).toBe('out');
 
-      const ext = getExtension(result.bundle, reportId);
+      const ext = getExtension(result.bundle, MAIN_REPORT_ID);
       expect(ext.granted_refs).toBeDefined();
       expect(ext.granted_refs).toContain(mockOrg.standard_id);
       expect(ext.granted_refs).toHaveLength(1);
@@ -247,19 +235,19 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
       const bundle = structuredClone(inputBundle);
 
       const result = await PLAYBOOK_SHARING_COMPONENT.executor({
-        dataInstanceId: reportId,
+        dataInstanceId: MAIN_REPORT_ID,
         eventId: '',
         executionId: '',
         playbookId: '',
         previousPlaybookNodeId: undefined,
         previousStepBundle: null as StixBundle | null,
         bundle,
-        playbookNode: createPlaybookNodeWithObjectOrgs([{ label: 'Test Organization', value: mockOrg.id! }], false),
+        playbookNode: createPlaybookNodeWithObjectOrgs([{ label: 'Test Organization', value: mockOrg.id! }], playbookBundleElementsToApply.onlyMain.value),
       });
 
       expect(result.output_port).toBe('out');
 
-      const ext = getExtension(result.bundle, reportId);
+      const ext = getExtension(result.bundle, MAIN_REPORT_ID);
       expect(ext.granted_refs).toContain(mockOrg.standard_id);
     });
 
@@ -275,17 +263,17 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
       const bundle = structuredClone(inputBundle);
 
       const result = await PLAYBOOK_SHARING_COMPONENT.executor({
-        dataInstanceId: reportId,
+        dataInstanceId: MAIN_REPORT_ID,
         eventId: '',
         executionId: '',
         playbookId: '',
         previousPlaybookNodeId: undefined,
         previousStepBundle: null as StixBundle | null,
         bundle,
-        playbookNode: createPlaybookNode([mockOrg1.id!, mockOrg2.id!], false),
+        playbookNode: createPlaybookNode([mockOrg1.id!, mockOrg2.id!], playbookBundleElementsToApply.onlyMain.value),
       });
 
-      const ext = getExtension(result.bundle, reportId);
+      const ext = getExtension(result.bundle, MAIN_REPORT_ID);
       expect(ext.granted_refs).toContain(mockOrg1.standard_id);
       expect(ext.granted_refs).toContain(mockOrg2.standard_id);
       expect(ext.granted_refs).toHaveLength(2);
@@ -301,17 +289,17 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
       (bundle.objects[0].extensions[STIX_EXT_OCTI] as StixOpenctiExtension).granted_refs = [existingOrg.standard_id!];
 
       const result = await PLAYBOOK_SHARING_COMPONENT.executor({
-        dataInstanceId: reportId,
+        dataInstanceId: MAIN_REPORT_ID,
         eventId: '',
         executionId: '',
         playbookId: '',
         previousPlaybookNodeId: undefined,
         previousStepBundle: null as StixBundle | null,
         bundle,
-        playbookNode: createPlaybookNode([newOrg.id!], false),
+        playbookNode: createPlaybookNode([newOrg.id!], playbookBundleElementsToApply.onlyMain.value),
       });
 
-      const ext = getExtension(result.bundle, reportId);
+      const ext = getExtension(result.bundle, MAIN_REPORT_ID);
       expect(ext.granted_refs).toContain(existingOrg.standard_id);
       expect(ext.granted_refs).toContain(newOrg.standard_id);
       expect(ext.granted_refs).toHaveLength(2);
@@ -319,31 +307,105 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
   });
 
   describe('when bundle contains multiple objects', () => {
-    // TODO: add test for all=true when cascading of sharing/unshare will be resolved
-    it.skip('should add granted_refs to all objects when all=true', async () => {
+    const MALWARE_ID = 'malware--09bd862a-f030-55f2-920a-900c4913d9ff';
+    const CAMPAIGN_ID = 'campaign--6bcf59ca-70c8-55ae-ac7d-a6f9b107a35b';
+
+    const bundleAddedObjects = () => [
+      testBundleObject({
+        id: MALWARE_ID,
+        type: 'Malware',
+      }),
+      testBundleObject({
+        id: CAMPAIGN_ID,
+        type: 'Campaign',
+      }),
+    ];
+
+    it('should add granted_refs to all objects when all=true', async () => {
       const mockOrg = createMockOrganization('TestOrg');
 
       internalFindByIdsSpy.mockResolvedValue([mockOrg as BasicStoreObject]);
 
       const bundle = structuredClone(inputBundle);
-      bundle.objects.push(createSecondObject());
+      bundle.objects.push(...bundleAddedObjects());
 
       const result = await PLAYBOOK_SHARING_COMPONENT.executor({
-        dataInstanceId: reportId,
+        dataInstanceId: MAIN_REPORT_ID,
         eventId: '',
         executionId: '',
         playbookId: '',
         previousPlaybookNodeId: undefined,
         previousStepBundle: null as StixBundle | null,
         bundle,
-        playbookNode: createPlaybookNode([mockOrg.id!], true),
+        playbookNode: createPlaybookNode([mockOrg.id!], playbookBundleElementsToApply.allElements.value),
       });
 
-      const reportExt = getExtension(result.bundle, reportId);
-      expect(reportExt.granted_refs).toContain(mockOrg.standard_id);
+      const mainElementExtension = getExtension(result.bundle, MAIN_REPORT_ID);
+      expect(mainElementExtension.granted_refs).toContain(mockOrg.standard_id);
 
-      const secondExt = getExtension(result.bundle, secondObjectId);
-      expect(secondExt.granted_refs).toContain(mockOrg.standard_id);
+      const secondElementExtension = getExtension(result.bundle, MALWARE_ID);
+      expect(secondElementExtension.granted_refs).toContain(mockOrg.standard_id);
+
+      const thirdElementExtension = getExtension(result.bundle, MALWARE_ID);
+      expect(thirdElementExtension.granted_refs).toContain(mockOrg.standard_id);
+    });
+
+    it('should add granted_refs to only main when option is only main', async () => {
+      const mockOrg = createMockOrganization('TestOrg');
+
+      internalFindByIdsSpy.mockResolvedValue([mockOrg as BasicStoreObject]);
+
+      const bundle = structuredClone(inputBundle);
+      bundle.objects.push(...bundleAddedObjects());
+
+      const result = await PLAYBOOK_SHARING_COMPONENT.executor({
+        dataInstanceId: MAIN_REPORT_ID,
+        eventId: '',
+        executionId: '',
+        playbookId: '',
+        previousPlaybookNodeId: undefined,
+        previousStepBundle: null as StixBundle | null,
+        bundle,
+        playbookNode: createPlaybookNode([mockOrg.id!], playbookBundleElementsToApply.onlyMain.value),
+      });
+
+      const mainElementExtension = getExtension(result.bundle, MAIN_REPORT_ID);
+      expect(mainElementExtension.granted_refs).toContain(mockOrg.standard_id);
+
+      const secondElementExtension = getExtension(result.bundle, MALWARE_ID);
+      expect(secondElementExtension.granted_refs).not.toBeDefined();
+
+      const thirdElementExtension = getExtension(result.bundle, MALWARE_ID);
+      expect(thirdElementExtension.granted_refs).not.toBeDefined();
+    });
+
+    it('should add granted_refs to all objects except main when all except main option chosen', async () => {
+      const mockOrg = createMockOrganization('TestOrg');
+
+      internalFindByIdsSpy.mockResolvedValue([mockOrg as BasicStoreObject]);
+
+      const bundle = structuredClone(inputBundle);
+      bundle.objects.push(...bundleAddedObjects());
+
+      const result = await PLAYBOOK_SHARING_COMPONENT.executor({
+        dataInstanceId: MAIN_REPORT_ID,
+        eventId: '',
+        executionId: '',
+        playbookId: '',
+        previousPlaybookNodeId: undefined,
+        previousStepBundle: null as StixBundle | null,
+        bundle,
+        playbookNode: createPlaybookNode([mockOrg.id!], playbookBundleElementsToApply.allExceptMain.value),
+      });
+
+      const mainElementExtension = getExtension(result.bundle, MAIN_REPORT_ID);
+      expect(mainElementExtension.granted_refs).not.toBeDefined();
+
+      const secondElementExtension = getExtension(result.bundle, MALWARE_ID);
+      expect(secondElementExtension.granted_refs).toContain(mockOrg.standard_id);
+
+      const thirdElementExtension = getExtension(result.bundle, MALWARE_ID);
+      expect(thirdElementExtension.granted_refs).toContain(mockOrg.standard_id);
     });
   });
 });
