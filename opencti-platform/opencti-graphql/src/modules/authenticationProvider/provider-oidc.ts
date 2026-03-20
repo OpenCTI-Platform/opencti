@@ -1,6 +1,7 @@
 import { getBaseUrl, getPlatformHttpProxyAgent } from '../../config/conf';
+import type { Request } from 'express';
 import { allowInsecureRequests, buildEndSessionUrl, customFetch, discovery as oidcDiscovery, fetchUserInfo } from 'openid-client';
-import type { StrategyOptions, VerifyFunction } from 'openid-client/passport';
+import type { AuthenticateOptions, StrategyOptionsWithRequest, VerifyFunctionWithRequest } from 'openid-client/passport';
 import { Strategy as OpenIDStrategy } from 'openid-client/passport';
 import type { AuthenticateCallback } from 'passport';
 import * as R from 'ramda';
@@ -13,7 +14,7 @@ import { createMapper } from './mappings-utils';
 import { flatExtraConf, retrieveSecrets } from './authenticationProvider-domain';
 import { handleProviderLogin } from './providers';
 import { skipSubjectCheck } from 'oauth4webapi';
-import { encodeOidcState } from '../../http/httpUtils';
+import { decodeOidcState, encodeOidcState } from '../../http/httpUtils';
 
 const buildProxiedFetch = (issuerUrl: URL): typeof fetch => {
   const dispatcher = getPlatformHttpProxyAgent(issuerUrl.toString(), true);
@@ -44,11 +45,11 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
     },
   );
 
-  const options: StrategyOptions = {
+  const options: StrategyOptionsWithRequest = {
     config,
     scope: R.uniq(conf.scopes.length > 0 ? conf.scopes : ['openid', 'email', 'profile']).join(' '),
     callbackURL,
-    passReqToCallback: false,
+    passReqToCallback: true,
     ...extraConf,
   };
 
@@ -63,17 +64,24 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
     return undefined;
   };
 
-  const verify: VerifyFunction = async (tokens, verified: AuthenticateCallback) => {
-    try {
-      logger.info('Successfully logged on IdP', {
-        tokens: {
-          access_token: tryJwtDecode(tokens.access_token),
-          id_token: tryJwtDecode(tokens.id_token),
-          refresh_token: tryJwtDecode(tokens.refresh_token),
-        },
-        scope: tokens.scope,
-      });
+  const verify: VerifyFunctionWithRequest = async (req: Request, tokens, verified: AuthenticateCallback) => {
+    logger.info('Successfully logged on IdP', {
+      tokens: {
+        access_token: tryJwtDecode(tokens.access_token),
+        id_token: tryJwtDecode(tokens.id_token),
+        refresh_token: tryJwtDecode(tokens.refresh_token),
+      },
+      scope: tokens.scope,
+    });
 
+    const sessionNonce = req.session?.nonce;
+    const state = decodeOidcState(req.query?.state as string);
+    if (sessionNonce !== state?.nonce) {
+      logger.info('Nonce mismatch in OIDC state parameter', { sessionNonce, stateNonce: state?.nonce });
+      return verified(new Error('Invalid state parameter'));
+    }
+
+    try {
       const user_info = memoize(async () => {
         const userInfo = await fetchUserInfo(config, tokens.access_token, skipSubjectCheck);
         logger.info('User info fetched', userInfo);
@@ -103,14 +111,19 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
   // With openid-client v6, the state parameter is no longer always generated
   // (PKCE is used instead), so we must set it explicitly to relay the referer.
   const originalParams = openIDStrategy.authorizationRequestParams.bind(openIDStrategy);
-  openIDStrategy.authorizationRequestParams = (req: any, options: any) => {
+  openIDStrategy.authorizationRequestParams = (req: Request, options: AuthenticateOptions) => {
     const params = originalParams(req, options) as URLSearchParams;
     if (audience) {
       params.set('audience', audience);
     }
-    // Encode the referer into the state parameter so it survives the OIDC redirect
-    const referer = req.session?.referer ?? '';
-    params.set('state', encodeOidcState(referer));
+
+    const session = req.session;
+    if (session) {
+      const referer = session.referer ?? '';
+      const { nonce, state } = encodeOidcState(referer);
+      session.nonce = nonce;
+      params.set('state', state);
+    }
     return params;
   };
 

@@ -34,10 +34,10 @@ export const extractRefererPathFromReq = (req: Express.Request) => {
  * This parallels SAML's RelayState mechanism for relaying application state
  * through the authentication flow.
  */
-export const encodeOidcState = (referer: string): string => {
+export const encodeOidcState = (referer: string) => {
   const nonce = crypto.randomBytes(16).toString('hex');
   const payload = JSON.stringify({ n: nonce, r: referer });
-  return Buffer.from(payload).toString('base64url');
+  return { nonce, state: Buffer.from(payload).toString('base64url') };
 };
 
 /**
@@ -45,15 +45,15 @@ export const encodeOidcState = (referer: string): string => {
  * Returns undefined if the state is not a valid encoded referer
  * (e.g. a random state from a different strategy or a corrupted value).
  */
-export const decodeOidcState = (state: string | undefined): string | undefined => {
+export const decodeOidcState = (state: string | undefined) => {
   if (!state) return undefined;
   try {
     const payload = JSON.parse(Buffer.from(state, 'base64url').toString('utf8'));
-    const referer = payload?.r;
-    if (typeof referer === 'string' && referer.length > 0) {
-      return referer;
-    }
-    return undefined;
+    const r = payload?.r;
+    const n = payload?.n;
+    const referer = typeof r === 'string' && r.length > 0 ? r : undefined;
+    const nonce = typeof n === 'string' && n.length > 0 ? n : undefined;
+    return { referer, nonce };
   } catch {
     return undefined;
   }

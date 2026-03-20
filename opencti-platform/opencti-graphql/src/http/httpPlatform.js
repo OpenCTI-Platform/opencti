@@ -499,7 +499,7 @@ const createApp = async (app, schema) => {
       // 1. SAML: RelayState is sent as a body parameter
       // 2. OIDC (v6): referer is encoded in the OAuth state query parameter
       // 3. Fallback: session-based referer (backward compatibility)
-      const referer = req.body?.RelayState ?? decodeOidcState(req.query?.state) ?? req.session.referer;
+      const referer = req.body?.RelayState ?? decodeOidcState(req.query?.state)?.referer ?? req.session.referer;
       const sanitizedReferer = sanitizeReferer(referer) ?? (basePath || '/');
       res.redirect(sanitizedReferer);
     }
