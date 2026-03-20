@@ -31,7 +31,7 @@ import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
-import { extractRefererPathFromReq, setCookieError } from './httpUtils';
+import { extractRefererPathFromReq, setCookieError, decodeOidcState } from './httpUtils';
 import { getChatbotProxy } from './httpChatbotProxy';
 import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
@@ -495,7 +495,11 @@ const createApp = async (app, schema) => {
         setCookieError(res, 'Invalid authentication, please ask your administrator');
       }
     } finally {
-      const referer = req.body?.RelayState ?? req.session.referer;
+      // Retrieve the application state (referer) relayed through the auth flow:
+      // 1. SAML: RelayState is sent as a body parameter
+      // 2. OIDC (v6): referer is encoded in the OAuth state query parameter
+      // 3. Fallback: session-based referer (backward compatibility)
+      const referer = req.body?.RelayState ?? decodeOidcState(req.query?.state)?.referer ?? req.session.referer;
       const sanitizedReferer = sanitizeReferer(referer);
       res.redirect(sanitizedReferer);
     }
