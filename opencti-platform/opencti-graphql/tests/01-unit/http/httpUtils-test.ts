@@ -21,14 +21,14 @@ describe('httpUtils: OIDC state encoding/decoding', () => {
   describe('decodeOidcState', () => {
     it('should round-trip a referer path', () => {
       const referer = '/dashboard/entities/malware';
-      const state = encodeOidcState(referer);
-      expect(decodeOidcState(state)).toBe(referer);
+      const state = encodeOidcState(referer).state;
+      expect(decodeOidcState(state)?.referer).toBe(referer);
     });
 
     it('should round-trip a referer with query parameters', () => {
       const referer = '/dashboard?tab=overview&id=123';
-      const state = encodeOidcState(referer);
-      expect(decodeOidcState(state)).toBe(referer);
+      const state = encodeOidcState(referer).state;
+      expect(decodeOidcState(state)?.referer).toBe(referer);
     });
 
     it('should return undefined for undefined input', () => {
@@ -45,7 +45,7 @@ describe('httpUtils: OIDC state encoding/decoding', () => {
     });
 
     it('should return undefined when referer is empty string', () => {
-      const state = encodeOidcState('');
+      const state = encodeOidcState('').state;
       expect(decodeOidcState(state)).toBeUndefined();
     });
 
