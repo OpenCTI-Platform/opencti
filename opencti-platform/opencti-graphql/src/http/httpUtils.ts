@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { booleanConf, logApp } from '../config/conf';
 import { isEmptyField } from '../database/utils';
 import { URL } from 'node:url';
+import { getPublicAuthorizedDomainsFromConfiguration, isDevMode, isUnsecureHttpResourceAllowed } from './httpConfig';
 
 export const setCookieError = (res: Express.Response, message: string) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -57,4 +58,101 @@ export const decodeOidcState = (state: string | undefined) => {
   } catch {
     return undefined;
   }
+};
+
+// Region helmet configuration
+
+const buildScriptSrc = () => {
+  const scriptSrc = ["'self'", "'unsafe-inline'"];
+  if (isDevMode()) {
+    scriptSrc.push("'unsafe-eval'");
+  }
+  return scriptSrc;
+};
+
+const buildImgSrcSrc = () => {
+  const imgSrc = ["'self'", 'data:', 'https://*'];
+  if (isUnsecureHttpResourceAllowed()) {
+    imgSrc.push('http://*');
+  }
+  return imgSrc;
+};
+
+const buildManifestSrc = () => {
+  const manifestSrc = ["'self'", 'data:', 'https://*'];
+  if (isUnsecureHttpResourceAllowed()) {
+    manifestSrc.push('http://*');
+  }
+  return manifestSrc;
+};
+
+const buildConnectSrc = () => {
+  const connectSrc = ["'self'", 'wss://*', 'data:', 'https://*'];
+  if (isUnsecureHttpResourceAllowed()) {
+    connectSrc.push('http://*');
+    connectSrc.push('ws://*');
+  }
+  return connectSrc;
+};
+
+const buildObjectSrc = () => {
+  const objectSrc = ["'self'", 'data:', 'https://*'];
+  if (isUnsecureHttpResourceAllowed()) {
+    objectSrc.push('http://*');
+  }
+  return objectSrc;
+};
+
+export const buildPublicHelmetParameters = () => {
+  const ancestorsFromConfig = getPublicAuthorizedDomainsFromConfiguration();
+  const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
+  const allowedFrameSrc = ["'self'"];
+  return {
+    referrerPolicy: { policy: 'unsafe-url' },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: buildScriptSrc(),
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrcAttr: ["'none'"],
+        fontSrc: ["'self'", 'data:'],
+        imgSrc: buildImgSrcSrc(),
+        manifestSrc: buildManifestSrc(),
+        connectSrc: buildConnectSrc(),
+        objectSrc: buildObjectSrc(),
+        frameSrc: allowedFrameSrc,
+        frameAncestors: frameAncestorDomains,
+      },
+    },
+    // false means disable the header when frame-ancestors allows external domains
+    xFrameOptions: frameAncestorDomains === "'none'" ? { action: 'deny' } : false,
+  };
+};
+
+export const buildDefaultHelmetParameters = () => {
+  return {
+    referrerPolicy: { policy: 'unsafe-url' },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: buildScriptSrc(),
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrcAttr: ["'none'"],
+        fontSrc: ["'self'", 'data:'],
+        imgSrc: buildImgSrcSrc(),
+        manifestSrc: buildManifestSrc(),
+        connectSrc: buildConnectSrc(),
+        objectSrc: buildObjectSrc(),
+        frameAncestors: "'none'",
+      },
+    },
+  };
 };
