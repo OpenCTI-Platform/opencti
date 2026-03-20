@@ -21,6 +21,7 @@ jobs:
       backend: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.backend == 'true' }}
       frontend: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.frontend == 'true' }}
       client_python: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.client_python == 'true' }}
+      worker: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.worker == 'true' }}
     steps:
       - uses: actions/checkout@v4
         if: github.event_name != 'workflow_dispatch'
@@ -37,11 +38,13 @@ jobs:
               - 'opencti-platform/opencti-front/**'
             client_python:
               - 'client-python/**'
+            worker:
+              - 'opencti-worker/**'
 
   wf-build-image:
       name: Build image
       needs: detect-changes
-      if: needs.detect-changes.outputs.backend == 'true' || needs.detect-changes.outputs.client_python == 'true'
+      if: needs.detect-changes.outputs.backend == 'true' || needs.detect-changes.outputs.client_python == 'true' || needs.detect-changes.outputs.worker == 'true'
       uses: ./.github/workflows/ci-docker-build.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
@@ -62,7 +65,7 @@ jobs:
   wf-frontend-test:
       name: Frontend
       needs: detect-changes
-      if: needs.detect-changes.outputs.frontend == 'true' || needs.detect-changes.outputs.backend == 'true'
+      if: needs.detect-changes.outputs.frontend == 'true' || needs.detect-changes.outputs.backend == 'true' || needs.detect-changes.outputs.client_python == 'true' || needs.detect-changes.outputs.worker == 'true'
       uses: ./.github/workflows/ci-test-frontend.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
@@ -71,7 +74,7 @@ jobs:
   wf-client-python-test:
       name: Client Python
       needs: [detect-changes, wf-build-image]
-      if: needs.detect-changes.outputs.client_python == 'true'
+      if: needs.detect-changes.outputs.client_python == 'true' || needs.detect-changes.outputs.backend == 'true' || needs.detect-changes.outputs.worker == 'true'
       uses: ./.github/workflows/ci-test-client-python.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
