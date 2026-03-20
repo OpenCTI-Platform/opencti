@@ -2,8 +2,16 @@ name: OpenCTI CI
 on:
   workflow_dispatch:
   push:
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '.github/*.md'
   pull_request:
     types: [opened, synchronize, reopened]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '.github/*.md'
 
 jobs:
   wf-build-image:
