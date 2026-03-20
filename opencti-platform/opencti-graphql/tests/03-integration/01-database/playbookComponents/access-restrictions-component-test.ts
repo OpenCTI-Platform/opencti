@@ -57,7 +57,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
-          all: false,
+          applyToElements: 'only-main',
         },
       }));
 
@@ -84,7 +84,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
           access_restrictions: [createAccessRestriction(USER_ID, 'edit', {
             groupsRestriction: [{ label: 'Test Group', value: GROUP_ID, type: 'Group' }],
           })],
-          all: false,
+          applyToElements: 'only-main',
         },
       }));
 
@@ -111,7 +111,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
             createAccessRestriction(USER_ID, 'admin'),
             createAccessRestriction(ORGA_ID, 'view', { type: 'Organization' }),
           ],
-          all: false,
+          applyToElements: 'only-main',
         },
       }));
 
@@ -136,7 +136,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
           access_restrictions: [createAccessRestriction(USER_ID, 'admin', {
             groupsRestriction: [{ label: 'Test Group', value: GROUP_ID, type: 'Group' }],
           })],
-          all: false,
+          applyToElements: 'only-main',
         },
       }));
 
@@ -177,7 +177,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('AUTHOR', 'admin')],
-          all: false,
+          applyToElements: 'only-main',
         },
       }));
 
@@ -208,7 +208,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('AUTHOR', 'admin')],
-          all: false,
+          applyToElements: 'only-main',
         },
       }));
 
@@ -230,7 +230,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('AUTHOR', 'admin')],
-          all: false,
+          applyToElements: 'only-main',
         },
       }));
 
@@ -260,7 +260,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('CREATORS', 'edit')],
-          all: false,
+          applyToElements: 'only-main',
         },
       }));
 
@@ -295,7 +295,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('ASSIGNEES', 'view')],
-          all: false,
+          applyToElements: 'only-main',
         },
       }));
 
@@ -329,7 +329,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('PARTICIPANTS', 'view')],
-          all: false,
+          applyToElements: 'only-main',
         },
       }));
 
@@ -367,7 +367,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
             createAccessRestriction(USER_ID, 'admin'),
             createAccessRestriction('CREATORS', 'edit'),
           ],
-          all: false,
+          applyToElements: 'only-main',
         },
       }));
 
@@ -403,13 +403,13 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
       }),
     ];
 
-    it('should add authorized_members to all objects when all=true', async () => {
+    it('should add authorized_members to all objects in the bundle', async () => {
       const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
         mainId: REPORT_ID,
         bundleObjects: BUNDLE_OBJECTS(),
         configuration: {
           access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
-          all: true,
+          applyToElements: 'all-elements',
         },
       }));
 
@@ -422,13 +422,13 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
       expect(secondReportExt.authorized_members).toEqual(expectedAccessRestriction);
     });
 
-    it('should only add authorized_members to dataInstanceId when all=false', async () => {
+    it('should only add authorized_members to only main element of the bundle', async () => {
       const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
         mainId: REPORT_ID,
         bundleObjects: BUNDLE_OBJECTS(),
         configuration: {
           access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
-          all: false,
+          applyToElements: 'only-main',
         },
       }));
 
@@ -439,6 +439,25 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
       // Check second object - should NOT have authorized_members
       const secondReportExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
       expect(secondReportExt.authorized_members).toBeUndefined();
+    });
+
+    it('should add authorized_members to all except main element of the bundle', async () => {
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: {
+          access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
+          applyToElements: 'all-except-main',
+        },
+      }));
+
+      expect(result.output_port).toBe('out');
+      // Check first object - should have authorized_members
+      const reportExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
+      expect(reportExt.authorized_members).toBeUndefined();
+      // Check second object - should NOT have authorized_members
+      const secondReportExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
+      expect(secondReportExt.authorized_members).toEqual(expectedAccessRestriction);
     });
   });
 
@@ -452,7 +471,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('AUTHOR', 'admin')],
-          all: false,
+          applyToElements: 'only-main',
         },
       }));
 
@@ -474,7 +493,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('CREATORS', 'edit')],
-          all: false,
+          applyToElements: 'only-main',
         },
       }));
 
@@ -493,7 +512,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('BUNDLE_ORGANIZATIONS', 'view')],
-          all: false,
+          applyToElements: 'only-main',
         },
       }));
 
