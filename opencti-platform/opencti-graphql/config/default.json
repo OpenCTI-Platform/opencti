@@ -4,7 +4,6 @@
     "base_path": "",
     "base_url": "http://localhost:4000/",
     "enterprise_edition_license": "",
-    "public_dashboard_authorized_domains": "",
     "enabled": true,
     "enabled_ui": true,
     "enabled_dev_features": [],
@@ -14,6 +13,10 @@
       "crt": null,
       "reject_unauthorized": true,
       "cookie_secure": false
+    },
+    "http_server": {
+      "allow_http_resources": true,
+      "public_dashboard_authorized_domains": ""
     },
     "app_logs": {
       "logs_level": "info",

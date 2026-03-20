@@ -14,7 +14,7 @@ import archiverZipEncrypted from 'archiver-zip-encrypted';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
 import { printSchema } from 'graphql/utilities';
-import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
+import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl, booleanConf } from '../config/conf';
 import { sessionAuthenticateUser, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, isStorageAlive } from '../database/raw-file-storage';
 import { loadFile } from '../database/file-storage';
@@ -110,50 +110,85 @@ const createApp = async (app, schema) => {
     crossOriginEmbedderPolicy: false,
     crossOriginOpenerPolicy: false,
     crossOriginResourcePolicy: false,
+    contentSecurityPolicy: opts.contentSecurityPolicy,
+    xFrameOptions: !opts.isIframeAllowed,
+  });
+
+  // old path was app:public_dashboard_authorized_domains
+  // and new is under http_server so we keep them both for compatibility
+  const publicDashboardAuthorizedDomains = nconf.get('app:public_dashboard_authorized_domains');
+  const ancestorsFromConfig = publicDashboardAuthorizedDomains?.trim() ?? '';
+
+  const isHttpResourceAllowed = booleanConf('app:allow_http_resources', true);
+
+  const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
+  const allowedFrameSrc = ["'self'"];
+  const scriptSrc = ["'self'", "'unsafe-inline'"];
+  const imgSrc = ["'self'", 'data:', 'https://*'];
+  const manifestSrc = ["'self'", 'data:', 'https://*'];
+  const connectSrc = ["'self'", 'wss://*', 'data:', 'https://*'];
+  const objectSrc = ["'self'", 'data:', 'https://*'];
+
+  if (DEV_MODE) {
+    scriptSrc.push("'unsafe-eval'");
+  }
+
+  if (isHttpResourceAllowed) {
+    imgSrc.push('http://*');
+    manifestSrc.push('http://*');
+    connectSrc.push('http://*');
+    connectSrc.push('ws://*');
+    objectSrc.push('http://*');
+  }
+
+  const indexSecurityOpts = {
+    isIframeAllowed: false,
     contentSecurityPolicy: {
       useDefaults: false,
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: opts.scriptSrc,
+        scriptSrc,
         styleSrc: ["'self'", "'unsafe-inline'"],
         scriptSrcAttr: ["'none'"],
         fontSrc: ["'self'", 'data:'],
-        imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
-        manifestSrc: ["'self'", 'data:', 'https://*', 'http://*'],
-        connectSrc: ["'self'", 'wss://*', 'ws://*', 'data:', 'http://*', 'https://*'],
-        objectSrc: ["'self'", 'data:', 'http://*', 'https://*'],
-        frameSrc: opts.allowedFrameSrc,
-        frameAncestors: opts.frameAncestorDomains,
+        imgSrc,
+        manifestSrc,
+        connectSrc,
+        objectSrc,
+        frameSrc: allowedFrameSrc,
+        frameAncestors: "'none'",
       },
     },
-    xFrameOptions: !opts.isIframeAllowed,
-  });
+  };
 
-  const ancestorsFromConfig = nconf.get('app:public_dashboard_authorized_domains')?.trim() ?? '';
-  const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
-  const allowedFrameSrc = ["'self'"];
-  const scriptSrc = ["'self'", "'unsafe-inline'"];
-  if (DEV_MODE) {
-    scriptSrc.push("'unsafe-eval'");
-  }
-  const securityOpts = {
-    frameAncestorDomains: "'none'",
-    allowedFrameSrc,
-    scriptSrc,
-    isIframeAllowed: false,
+  const publicSecurity = {
+    isIframeAllowed: frameAncestorDomains !== "'none'",
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc,
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrcAttr: ["'none'"],
+        fontSrc: ["'self'", 'data:'],
+        imgSrc,
+        manifestSrc,
+        connectSrc,
+        objectSrc,
+        frameSrc: allowedFrameSrc,
+        frameAncestors: frameAncestorDomains,
+      },
+    },
   };
 
   app.use((req, res, next) => {
     const urlString = req.url;
     if (urlString && (urlString.startsWith(`${basePath}/public`))) {
-      const securityMiddleware = buildSecurity({
-        ...securityOpts,
-        frameAncestorDomains,
-        isIframeAllowed: frameAncestorDomains !== "'none'",
-      });
+      console.log('Security for /public');
+      const securityMiddleware = buildSecurity(publicSecurity);
       securityMiddleware(req, res, next);
     } else {
-      const securityMiddleware = buildSecurity(securityOpts);
+      const securityMiddleware = buildSecurity(indexSecurityOpts);
       securityMiddleware(req, res, next);
     }
   });
