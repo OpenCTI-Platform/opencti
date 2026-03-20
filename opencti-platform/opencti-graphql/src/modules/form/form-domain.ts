@@ -960,7 +960,8 @@ export const formSubmit = async (
 
       // Apply draft defaults for author
       if (values.draftAuthor) {
-        createdBy = values.draftAuthor;
+        const isObject = typeof values.draftAuthor === 'object' && values.draftAuthor !== null;
+        createdBy = isObject ? (values.draftAuthor.value || values.draftAuthor.id) : values.draftAuthor;
       } else if (schema.draftDefaults?.author) {
         if (schema.draftDefaults.author.type === 'current_user') {
           createdBy = user.individual_id || null;
@@ -969,7 +970,8 @@ export const formSubmit = async (
             || values.mainEntityFields?.createdBy
             || (values.mainEntityGroups && values.mainEntityGroups.length > 0 ? values.mainEntityGroups[0].createdBy : undefined);
           if (possibleAuthor) {
-            createdBy = possibleAuthor;
+            const isObject = typeof possibleAuthor === 'object' && possibleAuthor !== null;
+            createdBy = isObject ? (possibleAuthor.value || possibleAuthor.id) : possibleAuthor;
           }
         } else if (schema.draftDefaults.author.type === 'none') {
           createdBy = null;
