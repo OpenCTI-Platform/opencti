@@ -394,7 +394,7 @@ const buildOidcGroupsExpr = (gm: EnvGroupsManagement | undefined): string[] => {
   // Always populate with defaults — in the new model we never hide default paths.
   // Old default: groups_path=['groups'], token_reference='access_token', read_userinfo=false
   if (!gm?.groups_mapping || gm.groups_mapping.length === 0) return [];
-  const paths = gm?.groups_path ?? ['groups'];
+  const paths = gm?.groups_path || ['groups'];
   const readUserinfo = gm?.read_userinfo ?? false;
   const tokenRef = gm?.token_reference ?? 'access_token';
   const prefix = readUserinfo ? 'user_info' : `tokens.${tokenRef}`;
@@ -405,7 +405,7 @@ const buildOidcOrgsExpr = (om: EnvOrganizationsManagement | undefined): string[]
   // Always populate with defaults — in the new model we never hide default paths.
   // Old default: organizations_path=['organizations'], token_reference='access_token', read_userinfo=false
   if (!om || Object.keys(om).length === 0) return [];
-  const paths = om?.organizations_path ?? ['organizations'];
+  const paths = om?.organizations_path || ['organizations'];
   const readUserinfo = om?.read_userinfo ?? false;
   const tokenRef = om?.token_reference ?? 'access_token';
   const prefix = readUserinfo ? 'user_info' : `tokens.${tokenRef}`;
@@ -566,7 +566,7 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
   const gm = resolveGroupsManagement(ext, 'saml', warnings);
   const groupsExpr = (gm?.groups_mapping && gm.groups_mapping.length > 0)
-    ? (gm.group_attributes ?? ['groups']).map(quotePathSegment)
+    ? (gm.group_attributes || ['groups']).map(quotePathSegment)
     : [];
   const groupsMapping: GroupsMappingInput = {
     auto_create_groups: autoCreateGroup,
@@ -588,7 +588,7 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
     auto_create_organizations: false,
     default_organizations: organizationsDefault,
     organizations_expr: (om && Object.keys(om).length > 0)
-      ? [(om.organizations_path ?? ['organizations']).map(quotePathSegment).join('.')]
+      ? [(om.organizations_path || ['organizations']).map(quotePathSegment).join('.')]
       : [],
     organizations_mapping: convertMappingEntries(om?.organizations_mapping),
   };
@@ -691,7 +691,7 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
     auto_create_organizations: false,
     default_organizations: organizationsDefault,
     organizations_expr: (om && Object.keys(om).length > 0)
-      ? (om.organizations_path ?? ['organizations']).map(quotePathSegment)
+      ? (om.organizations_path || ['organizations']).map(quotePathSegment)
       : [],
     organizations_mapping: convertMappingEntries(om?.organizations_mapping),
   };
