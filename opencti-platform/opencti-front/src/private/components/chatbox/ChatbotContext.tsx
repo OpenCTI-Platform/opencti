@@ -86,7 +86,7 @@ export const useChatbot = (): ChatbotContextType => {
 export const useChatbotContentMargin = (): number => {
   const context = useContext(ChatbotContext);
   if (!context) return 0;
-  
+
   const { isOpen, mode, sidebarWidth } = context;
   if (isOpen && mode === 'sidebar') {
     return sidebarWidth;
@@ -95,13 +95,13 @@ export const useChatbotContentMargin = (): number => {
 };
 
 // Hook to get transition style for content
-export const useChatbotContentTransition = (theme: { transitions: { create: Function; easing: { easeInOut: string }; duration: { enteringScreen: number } } }): string => {
+export const useChatbotContentTransition = (theme: { transitions: { create: (props: string | string[], options?: { easing?: string; duration?: number }) => string; easing: { easeInOut: string }; duration: { enteringScreen: number } } }): string => {
   const context = useContext(ChatbotContext);
   if (!context) return 'none';
-  
+
   const { isResizing } = context;
   if (isResizing) return 'none';
-  
+
   return theme.transitions.create(['margin-right'], {
     easing: theme.transitions.easing.easeInOut,
     duration: theme.transitions.duration.enteringScreen,
