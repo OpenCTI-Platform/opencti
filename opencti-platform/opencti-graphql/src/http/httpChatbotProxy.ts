@@ -43,6 +43,21 @@ const authenticateAndVerify = async (req: Express.Request, res: Express.Response
   return context;
 };
 
+// ── GET /chatbot/config ──────────────────────────────────────────────────
+// Returns chatbot configuration (XTM One URL) for the frontend.
+
+export const getChatbotConfig = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context) return;
+
+    res.json({ xtm_one_url: XTM_ONE_URL || null });
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot config', { cause: e });
+    res.status(503).send({ status: 'error', error: (e as Error).message });
+  }
+};
+
 // ── GET /chatbot/agents ─────────────────────────────────────────────────
 // Returns available agents from the stored intent catalog (no XTM One call).
 

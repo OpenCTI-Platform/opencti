@@ -32,6 +32,7 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
   const { me } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
+  const [xtmOneUrl, setXtmOneUrl] = useState<string | null>(null);
 
   const topOffset = 64 + settingsMessagesBannerHeight;
 
@@ -43,7 +44,7 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
     <FiligranIcon
       icon={LogoXtmOneIcon}
       size="small"
-      style={{ color: 'white' }}
+      style={{ color: 'inherit' }}
     />
   );
 
@@ -54,6 +55,15 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
     t_i18n('Show me recent reports'),
     t_i18n('Analyze this indicator'),
   ];
+
+  useEffect(() => {
+    fetch(`${APP_BASE_PATH}/chatbot/config`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.xtm_one_url) setXtmOneUrl(data.xtm_one_url);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const div = document.createElement('div');
@@ -90,6 +100,7 @@ const AskArianePanel: React.FC<AskArianePanelProps> = ({
       t={t_i18n}
       accentColor={accentColor}
       logoIcon={logoIcon}
+      agentDashboardUrl={xtmOneUrl || undefined}
       promptSuggestions={promptSuggestions}
       resizable={mode === 'sidebar'}
       onWidthChange={onWidthChange}
