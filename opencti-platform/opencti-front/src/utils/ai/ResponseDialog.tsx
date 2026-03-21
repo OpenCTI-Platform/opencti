@@ -23,6 +23,10 @@ import MarkdownDisplay from '../../components/MarkdownDisplay';
 import { isNotEmptyField } from '../utils';
 import { ResponseDialogAskAISubscription, ResponseDialogAskAISubscription$data } from './__generated__/ResponseDialogAskAISubscription.graphql';
 import type { AgentAction } from '../../private/components/common/form/TextFieldAskAI';
+// Circular dependency is intentional: TextFieldAskAI opens ResponseDialog,
+// and in legacy mode ResponseDialog embeds TextFieldAskAI for follow-up actions.
+import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI';
+import useAI from '../hooks/useAI';
 
 // region types
 
@@ -64,7 +68,7 @@ const subscription = graphql`
     }
 `;
 
-// ── Helpers ─────────────────────────────────────────────────────────────
+// ── XTM One agent helpers ───────────────────────────────────────────────
 
 const fetchAgentsForIntent = async (intent: string): Promise<AgentOption[]> => {
   try {
@@ -143,8 +147,10 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const markdownFieldRef = useRef<HTMLTextAreaElement>(null);
   const { t_i18n } = useFormatter();
   const [markdownSelectedTab, setMarkdownSelectedTab] = useState<'write' | 'preview' | undefined>('write');
+  const { fullyActive } = useAI();
+  const isLegacyMode = !agentMode;
 
-  // Agent mode state
+  // Agent mode state (XTM One path)
   const [agentOptions, setAgentOptions] = useState<AgentOption[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<AgentOption | null>(null);
   const [loadingAgents, setLoadingAgents] = useState(false);
@@ -152,7 +158,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const [agentExecuted, setAgentExecuted] = useState(false);
   const [agentError, setAgentError] = useState<string | null>(null);
 
-  // Tone selector (for change tone action)
+  // Tone selector (for change tone action in agent mode)
   const [tone, setTone] = useState<string>('tactical');
 
   // Load agents when dialog opens in agent mode
@@ -225,7 +231,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   };
 
   const handleAgentChange = (_event: unknown, newValue: AgentOption | null) => {
-    if (!newValue) return; // prevent clearing
+    if (!newValue) return;
     setSelectedAgent(newValue);
     if (agentMode) {
       setAgentExecuted(false);
@@ -233,6 +239,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     }
   };
 
+  // GraphQL subscription (used in both modes, fires when aiBus emits)
   const handleResponse = (response: ResponseDialogAskAISubscription$data | null | undefined) => {
     const newContent = response ? (response as ResponseDialogAskAISubscription$data).aiBus?.content : null;
     if (format === 'text' || format === 'json') {
@@ -267,6 +274,8 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
 
   const effectiveDisabled = isDisabled || agentLoading;
   const noAgents = agentMode && !loadingAgents && agentOptions.length === 0;
+
+  // ── Title ─────────────────────────────────────────────────────────────
 
   const dialogTitle = agentMode ? (
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: 2 }}>
@@ -304,7 +313,6 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     </Box>
   ) : t_i18n('Ask AI');
 
-  // Refresh button (replaces the old embedded TextFieldAskAI)
   const renderRefreshButton = () => {
     if (!agentMode) return null;
     return (
@@ -319,6 +327,88 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     );
   };
 
+  // ── Content editors ───────────────────────────────────────────────────
+
+  const renderContentEditors = () => (
+    <>
+      {(format === 'text' || format === 'json') && (
+        <TextField
+          inputRef={textFieldRef}
+          disabled={effectiveDisabled}
+          rows={Math.round(height / 23)}
+          value={content}
+          multiline={true}
+          onChange={(event) => setContent(event.target.value)}
+          fullWidth={true}
+          slotProps={isLegacyMode && fullyActive ? {
+            input: {
+              endAdornment: (
+                <TextFieldAskAI
+                  currentValue={content ?? ''}
+                  setFieldValue={(val) => setContent(val)}
+                  format="text"
+                  variant="text"
+                  disabled={isDisabled}
+                />
+              ),
+            },
+          } : undefined}
+        />
+      )}
+      {format === 'html' && (
+        <CKEditor
+          id="response-dialog-editor"
+          data={content}
+          onChange={(_, editor) => {
+            setContent(editor.getData());
+          }}
+          disabled={effectiveDisabled}
+          disableWatchdog={true}
+        />
+      )}
+      {format === 'markdown' && (
+        <ReactMde
+          childProps={{
+            textArea: {
+              ref: markdownFieldRef,
+            },
+          }}
+          readOnly={effectiveDisabled}
+          value={content}
+          minEditorHeight={height - 80}
+          maxEditorHeight={height - 80}
+          onChange={setContent}
+          selectedTab={markdownSelectedTab}
+          onTabChange={setMarkdownSelectedTab}
+          generateMarkdownPreview={(markdown) => Promise.resolve(
+            <MarkdownDisplay
+              content={markdown}
+              remarkGfmPlugin={true}
+              commonmark={true}
+            />,
+          )}
+          l18n={{
+            write: t_i18n('Write'),
+            preview: t_i18n('Preview'),
+            uploadingImage: t_i18n('Uploading image'),
+            pasteDropSelect: t_i18n('Paste'),
+          }}
+        />
+      )}
+      {/* Legacy embedded TextFieldAskAI for html/markdown formats */}
+      {isLegacyMode && (format === 'markdown' || format === 'html') && (
+        <TextFieldAskAI
+          currentValue={content ?? ''}
+          setFieldValue={(val) => setContent(val)}
+          format={format}
+          variant={format}
+          disabled={isDisabled}
+          style={format === 'html' ? { position: 'absolute', top: 2, right: 45 } : undefined}
+        />
+      )}
+    </>
+  );
+
   return (
     <>
       <Dialog
@@ -329,7 +419,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         }}
         title={dialogTitle}
       >
-        {/* Tone selector for change tone action */}
+        {/* Agent mode: tone selector */}
         {agentMode?.action === 'tone' && (
           <Box sx={{ mb: 2 }}>
             <FormControl size="small" fullWidth>
@@ -350,113 +440,48 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         )}
 
         <div style={{ width: '100%', minHeight: height, height, position: 'relative' }}>
-          {/* Refresh button */}
-          {renderRefreshButton()}
-
-          {/* Loader shown while fetching agents or agent is processing */}
-          {(agentLoading || loadingAgents) && (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100%',
-              }}
-            >
-              <CircularProgress size={40} />
-            </Box>
-          )}
-
-          {/* No agents warning */}
-          {noAgents && !agentLoading && (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100%',
-              }}
-            >
-              <Alert severity="info" variant="outlined">
-                {t_i18n('No agent available for this action. Ask your administrator to configure XTM One.')}
-              </Alert>
-            </Box>
-          )}
-
-          {/* Agent error alert */}
-          {agentError && !agentLoading && (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100%',
-              }}
-            >
-              <Alert severity="error" variant="outlined">
-                {agentError}
-              </Alert>
-            </Box>
-          )}
-
-          {/* Content area — hidden while loading or on error */}
-          {!agentLoading && !loadingAgents && !noAgents && !agentError && (
+          {agentMode && (
             <>
-              {(format === 'text' || format === 'json') && (
-                <TextField
-                  inputRef={textFieldRef}
-                  disabled={effectiveDisabled}
-                  rows={Math.round(height / 23)}
-                  value={content}
-                  multiline={true}
-                  onChange={(event) => setContent(event.target.value)}
-                  fullWidth={true}
-                />
+              {renderRefreshButton()}
+
+              {(agentLoading || loadingAgents) && (
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                  <CircularProgress size={40} />
+                </Box>
               )}
-              {format === 'html' && (
-                <CKEditor
-                  id="response-dialog-editor"
-                  data={content}
-                  onChange={(_, editor) => {
-                    setContent(editor.getData());
-                  }}
-                  disabled={effectiveDisabled}
-                  disableWatchdog={true}
-                />
+
+              {noAgents && !agentLoading && (
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                  <Alert severity="info" variant="outlined">
+                    {t_i18n('No agent available for this action. Ask your administrator to configure XTM One.')}
+                  </Alert>
+                </Box>
               )}
-              {format === 'markdown' && (
-                <ReactMde
-                  childProps={{
-                    textArea: {
-                      ref: markdownFieldRef,
-                    },
-                  }}
-                  readOnly={effectiveDisabled}
-                  value={content}
-                  minEditorHeight={height - 80}
-                  maxEditorHeight={height - 80}
-                  onChange={setContent}
-                  selectedTab={markdownSelectedTab}
-                  onTabChange={setMarkdownSelectedTab}
-                  generateMarkdownPreview={(markdown) => Promise.resolve(
-                    <MarkdownDisplay
-                      content={markdown}
-                      remarkGfmPlugin={true}
-                      commonmark={true}
-                    />,
-                  )}
-                  l18n={{
-                    write: t_i18n('Write'),
-                    preview: t_i18n('Preview'),
-                    uploadingImage: t_i18n('Uploading image'),
-                    pasteDropSelect: t_i18n('Paste'),
-                  }}
-                />
+
+              {agentError && !agentLoading && (
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                  <Alert severity="error" variant="outlined">
+                    {agentError}
+                  </Alert>
+                </Box>
               )}
+
+              {!agentLoading && !loadingAgents && !noAgents && !agentError && renderContentEditors()}
             </>
           )}
+
+          {/* Legacy mode: always show content editors */}
+          {isLegacyMode && renderContentEditors()}
         </div>
         <div className="clearfix" />
+
+        {/* Legacy mode: beta warning */}
+        {isLegacyMode && (
+          <Alert severity="warning" variant="outlined" style={format === 'html' ? { marginTop: 30 } : {}}>
+            {t_i18n('Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.')}
+          </Alert>
+        )}
+
         <DialogActions>
           <Button variant="secondary" onClick={handleClose}>
             {t_i18n('Close')}

@@ -10,6 +10,7 @@ import { getChatbotUrl, logApp, PLATFORM_VERSION } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { setCookieError } from './httpUtils';
 import { getDiscoveredIntentCatalog } from '../modules/xtm/one/xtm-one';
+import xtmOneClient from '../modules/xtm/one/xtm-one-client';
 import { issueAuthenticationJWT } from '../domain/user';
 
 const XTM_ONE_URL = nconf.get('xtm:xtm_one_url');
@@ -51,7 +52,10 @@ export const getChatbotConfig = async (req: Express.Request, res: Express.Respon
     const context = await authenticateAndVerify(req, res);
     if (!context) return;
 
-    res.json({ xtm_one_url: XTM_ONE_URL || null });
+    res.json({
+      xtm_one_url: XTM_ONE_URL || null,
+      xtm_one_configured: xtmOneClient.isConfigured(),
+    });
   } catch (e: unknown) {
     logApp.error('Error in chatbot config', { cause: e });
     res.status(503).send({ status: 'error', error: (e as Error).message });
@@ -266,5 +270,111 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
       setCookieError(res, message);
       res.status(200).json({ content: '', status: 'error', error: message, code: 503 });
     }
+  }
+};
+
+// ── POST /chatbot (legacy Flowise proxy) ────────────────────────────────
+// Used when XTM One is NOT configured (no xtm_one_token).
+// Proxies to the Flowise-based chatbot at ${XTM_ONE_URL}/chatbot with
+// PEM-based authentication.
+
+export const getLegacyChatbotProxy = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await createAuthenticatedContext(req, res, 'chatbot');
+    if (!context.user) {
+      res.sendStatus(403);
+      return;
+    }
+
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, context.user, ENTITY_TYPE_SETTINGS);
+    const isChatbotCGUAccepted: boolean = settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled;
+    const { pem } = getEnterpriseEditionActivePem(settings);
+    const licenseInfo = getEnterpriseEditionInfo(settings);
+    const isLicenseValidated = pem !== undefined && licenseInfo.license_validated;
+
+    if (!isChatbotCGUAccepted || !isLicenseValidated) {
+      logApp.error('Error in legacy chatbot proxy', {
+        cguStatus: settings.filigran_chatbot_ai_cgu_status,
+        isLicenseValidated,
+        chatbotUrl: XTM_ONE_CHATBOT_URL,
+      });
+      res.status(400).json({ error: 'Chatbot is not enabled' });
+      return;
+    }
+
+    const jwt = await issueAuthenticationJWT(context.user);
+    const vars = {
+      OPENCTI_URL: getChatbotUrl(req),
+      OPENCTI_TOKEN: jwt,
+      'X-API-KEY': Buffer.from(pem as string, 'utf-8').toString('base64'),
+      X_XTM_PRODUCT: 'OpenCTI',
+      X_OPENCTI_VERSION: PLATFORM_VERSION,
+    };
+
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'text/event-stream',
+      ...vars,
+    };
+    if (!req.body) {
+      res.status(400).json({ error: 'Chatbot request body is missing' });
+      return;
+    }
+    const enhancedBody = {
+      ...req.body,
+      overrideConfig: {
+        ...req.body?.overrideConfig,
+        vars: {
+          ...req.body?.overrideConfig?.vars,
+          ...vars,
+        },
+      },
+    };
+
+    const response = await axios.post(XTM_ONE_CHATBOT_URL, enhancedBody, {
+      headers,
+      responseType: 'stream',
+      decompress: false,
+      timeout: 0,
+    });
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.setHeader('Transfer-Encoding', 'chunked');
+    const headersToForward = ['content-type', 'cache-control', 'connection'];
+    Object.entries(response.headers).forEach(([key, value]) => {
+      const lowerKey = key.toLowerCase();
+      if (headersToForward.includes(lowerKey) && value) {
+        res.setHeader(key, value);
+      }
+    });
+
+    response.data.pipe(res);
+
+    req.on('close', () => {
+      response.data.destroy();
+    });
+
+    response.data.on('error', (error: Error) => {
+      logApp.error('Stream error in legacy chatbot proxy', { cause: error });
+      if (!res.headersSent) {
+        res.status(500).send({ status: 'error', error: error.message });
+      } else {
+        res.end();
+      }
+    });
+  } catch (e: unknown) {
+    logApp.error('Error in legacy chatbot proxy', { cause: e });
+    const { message } = e as Error;
+
+    if (axios.isAxiosError(e) && e.response) {
+      res.status(e.response.status).send({ status: e.response.status, error: message });
+    } else {
+      res.status(503).send({ status: 503, error: message });
+    }
+    setCookieError(res, message);
   }
 };
