@@ -94,8 +94,15 @@ export const useChatbotContentMargin = (): number => {
   return 0;
 };
 
-// Hook to get transition style for content
-export const useChatbotContentTransition = (theme: { transitions: { create: (props: string | string[], options?: { easing?: string; duration?: number }) => string; easing: { easeInOut: string }; duration: { enteringScreen: number } } }): string => {
+interface TransitionTheme {
+  transitions: {
+    create: (props: string | string[], options?: { easing?: string; duration?: number }) => string;
+    easing: { easeInOut: string };
+    duration: { enteringScreen: number };
+  };
+}
+
+export const useChatbotContentTransition = (theme: TransitionTheme): string => {
   const context = useContext(ChatbotContext);
   if (!context) return 'none';
 
