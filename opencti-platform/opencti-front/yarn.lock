@@ -1686,15 +1686,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/chatbot@file:.yalc/@filigran/chatbot::locator=opencti-front%40workspace%3A.":
+"@filigran/chatbot@https://github.com/FiligranHQ/filigran-ui.git#commit=53823bf6c863595353d774643437d7dffd9abde6&workspace=@filigran/chatbot":
   version: 2.0.0
-  resolution: "@filigran/chatbot@file:.yalc/@filigran/chatbot#.yalc/@filigran/chatbot::hash=0e0ac2&locator=opencti-front%40workspace%3A."
+  resolution: "@filigran/chatbot@https://github.com/FiligranHQ/filigran-ui.git#workspace=%40filigran%2Fchatbot&commit=53823bf6c863595353d774643437d7dffd9abde6"
   peerDependencies:
     react: ">=18"
     react-dom: ">=18"
     react-markdown: ">=10"
     remark-gfm: ">=4"
-  checksum: 10c0/043ad0ed6d7fa619b167607bebb8cf40f3f7450f5867221c48f2092e31d57c35640745028289f3ad23058b330ec74f8c9a15e85a9d8dfc98b3f561dc5a91b427
+  checksum: 10c0/88892152c52208f2604fee4fa760f04a251292ed88c500089a68f7b328ffae569c7f8d4d051b751b9a4e35370280260a25d39a9fc03e7557aa683e66b3a29545
   languageName: node
   linkType: hard
 
@@ -12173,7 +12173,7 @@ __metadata:
     "@ckeditor/ckeditor5-react": "npm:9.5.0"
     "@eslint/js": "npm:10.0.1"
     "@faker-js/faker": "npm:10.3.0"
-    "@filigran/chatbot": "file:.yalc/@filigran/chatbot"
+    "@filigran/chatbot": "https://github.com/FiligranHQ/filigran-ui.git#commit=53823bf6c863595353d774643437d7dffd9abde6&workspace=@filigran/chatbot"
     "@fontsource/geologica": "npm:5.2.8"
     "@fontsource/ibm-plex-sans": "npm:5.2.8"
     "@graphiql/toolkit": "npm:0.11.3"
