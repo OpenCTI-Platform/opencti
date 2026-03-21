@@ -12,6 +12,7 @@ import './static/css/CKEditorDark.css';
 import './static/css/CKEditorLight.css';
 import 'react-grid-layout/css/styles.css';
 import 'react-mde/lib/styles/css/react-mde-all.css';
+import '@filigran/chatbot/styles.css';
 import App from './app';
 import { environment } from './relay/environment';
 import Loader from './components/Loader';

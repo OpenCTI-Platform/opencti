@@ -2,19 +2,23 @@ import type { Theme } from '../../../components/Theme';
 import { APP_BASE_PATH, fileUri } from '../../../relay/environment';
 import embleme from '../../../static/images/embleme_filigran_white.png';
 import { DARK_BLUE } from '../../../utils/htmlToPdf/utils/constants';
-import { BubbleProps } from '@filigran/chatbot';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore — legacy v1 package installed under an npm alias
+import type { BubbleProps } from '@filigran/chatbot-legacy';
 
 type FiligranChatbotElement = HTMLElement & BubbleProps;
 
 /**
- * ChatbotManager is necessary to be sure one instance only runs when we initialized it
- * It creates the web component filigran-chatbot and appends it to the body
+ * ChatbotManager manages the legacy v1 web-component chatbot (<filigran-chatbot>).
+ * It is used as a fallback when XTM One is not configured (no xtm_one_token).
+ * A singleton ensures only one web-component instance exists at a time.
  */
 class ChatbotManager {
   private static instance: ChatbotManager;
   private chatbotElement: FiligranChatbotElement | null = null;
   private container: HTMLDivElement | null = null;
   private isInitialized = false;
+  private webComponentRegistered = false;
   private theme: Theme | null = null;
   private t_i18n: ((message: string) => string) | null = null;
   private bannerHeight: number = 0;
@@ -75,6 +79,15 @@ class ChatbotManager {
     };
 
     this.chatbotElement.theme = chatBotTheme;
+  }
+
+  private async ensureWebComponentRegistered(): Promise<void> {
+    if (this.webComponentRegistered) return;
+    // Side-effect import registers the <filigran-chatbot> custom element
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore — legacy v1 package installed under an npm alias
+    await import('@filigran/chatbot-legacy');
+    this.webComponentRegistered = true;
   }
 
   private initialize() {
@@ -158,8 +171,9 @@ class ChatbotManager {
     this.isInitialized = true;
   }
 
-  open() {
+  async open() {
     if (!this.isInitialized) {
+      await this.ensureWebComponentRegistered();
       this.initialize();
     }
 

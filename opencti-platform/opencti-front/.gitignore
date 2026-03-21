@@ -8,6 +8,10 @@ config/development.json
 /builder/dev/build
 /builder/prod/build
 
+# yalc
+.yalc/
+yalc.lock
+
 # misc
 .env.local
 .env.development.local

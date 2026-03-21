@@ -205,7 +205,7 @@ export default defineConfig({
 
   optimizeDeps: {
     include: depsToOptimize,
-    exclude: ['@filigran/chatbot']
+    exclude: ['@filigran/chatbot', '@filigran/chatbot-legacy']
   },
 
   customLogger: logger,
