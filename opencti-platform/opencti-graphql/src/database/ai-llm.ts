@@ -182,12 +182,13 @@ export const setAiEnabled = (enabled: boolean) => {
         return;
       }
 
-      // Enabling AI: initialize clients and then update the flag.
-      initClients();
-      AI_ENABLED = true;
+// Enabling AI: update the flag and then initialize clients.
+            AI_ENABLED = true;
+            initClients();
     })
     .catch((err) => {
       logApp.error('[AI] Failed to apply AI enabled state change', { enabled, cause: err });
+            AI_ENABLED = previousEnabled;
       resetClients();
       throw UnknownError('Failed to apply AI enabled state change', { cause: err });
     });
