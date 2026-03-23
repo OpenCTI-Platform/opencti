@@ -1,5 +1,5 @@
 import { Suspense, useMemo } from 'react';
-import { Route, Routes, Navigate, useParams, useLocation } from 'react-router-dom';
+import { Route, Routes, useParams, useLocation } from 'react-router-dom';
 import { graphql, PreloadedQuery, useSubscription, usePreloadedQuery } from 'react-relay';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
@@ -11,7 +11,7 @@ import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreOb
 import Campaign from './Campaign';
 import CampaignKnowledge from './CampaignKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -170,17 +170,35 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               redirectToContent={true}
               enableEnrollPlaybook={true}
             />
-            <StixDomainObjectTabsBox
+            <StixDomainObjectMain
               basePath="/dashboard/threats/campaigns"
               entity={campaign}
-              tabs={[
-                'overview',
-                'knowledge-overview',
-                'content',
-                'analyses',
-                'files',
-                'history',
-              ]}
+              pages={{
+                overview:
+                  <Campaign campaignData={campaign} />,
+                knowledge: (
+                  <div key={forceUpdate}>
+                    <CampaignKnowledge campaignData={campaign} />
+                  </div>
+                ),
+                content: (
+                  <StixCoreObjectContentRoot
+                    stixCoreObject={campaign}
+                  />
+                ),
+                analyses:
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={campaign} />,
+                files: (
+                  <FileManager
+                    id={campaignId}
+                    connectorsImport={connectorsForImport}
+                    connectorsExport={connectorsForExport}
+                    entity={campaign}
+                  />
+                ),
+                history:
+                  <StixCoreObjectHistory stixCoreObjectId={campaignId} />,
+              }}
               extraActions={isOverview && (
                 <>
                   <AIInsights id={campaign.id} />
@@ -188,59 +206,6 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                 </>
               )}
             />
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <Campaign campaignData={campaign} />
-                }
-              />
-              <Route
-                path="/knowledge"
-                element={
-                  <Navigate to={`/dashboard/threats/campaigns/${campaignId}/knowledge/overview`} replace={true} />
-                }
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
-                  <div key={forceUpdate}>
-                    <CampaignKnowledge campaignData={campaign} />
-                  </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={campaign}
-                  />
-                )}
-              />
-              <Route
-                path="/analyses"
-                element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={campaign} />
-                }
-              />
-              <Route
-                path="/files"
-                element={(
-                  <FileManager
-                    id={campaignId}
-                    connectorsImport={connectorsForImport}
-                    connectorsExport={connectorsForExport}
-                    entity={campaign}
-                  />
-                )}
-              />
-              <Route
-                path="/history"
-                element={
-                  <StixCoreObjectHistory stixCoreObjectId={campaignId} />
-                }
-              />
-            </Routes>
           </div>
         </>
       ) : (

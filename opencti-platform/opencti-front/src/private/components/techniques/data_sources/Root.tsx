@@ -2,12 +2,12 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Routes, useParams, useLocation } from 'react-router-dom';
+import { Route, useParams, useLocation } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -113,60 +113,44 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             redirectToContent={true}
             enableEnrollPlaybook={true}
           />
-          <StixDomainObjectTabsBox
+          <StixDomainObjectMain
             basePath="/dashboard/techniques/data_sources"
             entity={dataSource}
-            tabs={[
-              'overview',
-              'content',
-              'files',
-              'history',
-            ]}
-          />
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <DataSource dataSourceData={dataSource} />
-              }
-            />
-            <Route
-              path="/knowledge/*"
-              element={(
-                <DataSourceKnowledgeComponent
-                  data={dataSource}
-                  enableReferences={settings?.platform_enable_reference?.includes(
-                    'Data-Source',
-                  )}
-                />
-              )}
-            />
-            <Route
-              path="/content/*"
-              element={(
+            pages={{
+              overview:
+                <DataSource dataSourceData={dataSource} />,
+              content: (
                 <StixCoreObjectContentRoot
                   stixCoreObject={dataSource}
                 />
-              )}
-            />
-            <Route
-              path="/files"
-              element={(
+              ),
+              files: (
                 <FileManager
                   id={dataSourceId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
                   entity={dataSource}
                 />
-              )}
-            />
-            <Route
-              path="/history"
-              element={
-                <StixCoreObjectHistory stixCoreObjectId={dataSourceId} />
-              }
-            />
-          </Routes>
+              ),
+              history:
+                <StixCoreObjectHistory stixCoreObjectId={dataSourceId} />,
+            }}
+            extraRoutes={(
+              <>
+                <Route
+                  path="/knowledge/*"
+                  element={(
+                    <DataSourceKnowledgeComponent
+                      data={dataSource}
+                      enableReferences={settings?.platform_enable_reference?.includes(
+                        'Data-Source',
+                      )}
+                    />
+                  )}
+                />,
+              </>
+            )}
+          />
         </div>
       ) : (
         <ErrorNotFound />

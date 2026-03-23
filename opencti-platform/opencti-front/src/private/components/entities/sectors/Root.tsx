@@ -1,5 +1,5 @@
 import { Suspense, useMemo } from 'react';
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootSectorQuery } from '@components/entities/sectors/__generated__/RootSectorQuery.graphql';
@@ -7,8 +7,8 @@ import { RootSectorSubscription } from '@components/entities/sectors/__generated
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import AIInsights from '@components/common/ai/AIInsights';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Sector from './Sector';
@@ -163,63 +163,28 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               redirectToContent={true}
               enableEnrollPlaybook={true}
             />
-            <StixDomainObjectTabsBox
+            <StixDomainObjectMain
               basePath="/dashboard/entities/sectors"
               entity={sector}
-              tabs={[
-                'overview',
-                'knowledge-overview',
-                'content',
-                'analyses',
-                'sightings',
-                'files',
-                'history',
-              ]}
-              extraActions={isOverview && <AIInsights id={sector.id} />}
-            />
-            <Routes>
-              <Route
-                path="/"
-                element={(
-                  <Sector sectorData={sector} />
-                )}
-              />
-              <Route
-                path="/knowledge"
-                element={(
-                  <Navigate
-                    replace={true}
-                    to={`/dashboard/entities/sectors/${sectorId}/knowledge/overview`}
-                  />
-                )}
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
+              pages={{
+                overview:
+                  <Sector sectorData={sector} />,
+                knowledge: (
                   <div key={forceUpdate}>
                     <SectorKnowledge sectorData={sector} />
                   </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
+                ),
+                content: (
                   <StixCoreObjectContentRoot
                     stixCoreObject={sector}
                   />
-                )}
-              />
-              <Route
-                path="/analyses"
-                element={(
+                ),
+                analyses: (
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={sector}
                   />
-                )}
-              />
-              <Route
-                path="/sightings"
-                element={(
+                ),
+                sightings: (
                   <EntityStixSightingRelationships
                     entityId={sector.id}
                     entityLink={link}
@@ -236,28 +201,23 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                       'System',
                     ]}
                   />
-                )}
-              />
-              <Route
-                path="/files"
-                element={(
+                ),
+                files: (
                   <FileManager
                     id={sectorId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={sector}
                   />
-                )}
-              />
-              <Route
-                path="/history"
-                element={(
+                ),
+                history: (
                   <StixCoreObjectHistory
                     stixCoreObjectId={sectorId}
                   />
-                )}
-              />
-            </Routes>
+                ),
+              }}
+              extraActions={isOverview && <AIInsights id={sector.id} />}
+            />
           </div>
         </>
       ) : (

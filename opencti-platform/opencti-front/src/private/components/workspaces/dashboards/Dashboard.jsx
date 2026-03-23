@@ -1,12 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import * as R from 'ramda';
 import { graphql, useFragment } from 'react-relay';
 import ReactGridLayout, { useContainerWidth } from 'react-grid-layout';
 import { v4 as uuid } from 'uuid';
-import DashboardRawViz from './DashboardRawViz';
-import DashboardRelationshipsViz from './DashboardRelationshipsViz';
-import DashboardAuditsViz from './DashboardAuditsViz';
-import DashboardEntitiesViz from './DashboardEntitiesViz';
+import WidgetRawViz from '../../widgets/WidgetRawViz';
+import WidgetRelationshipsViz from '../../widgets/WidgetRelationshipsViz';
+import WidgetAuditsViz from '../../widgets/WidgetAuditsViz';
+import WidgetEntitiesViz from '../../widgets/WidgetEntitiesViz';
 import DashboardTimeFilters from './DashboardTimeFilters';
 import WorkspaceHeader from '../workspaceHeader/WorkspaceHeader';
 import { commitMutation, handleError } from '../../../../relay/environment';
@@ -326,28 +326,28 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
                 {widget.id === idToResize ? <div /> : (
                   <>
                     {widget.perspective === 'entities' && (
-                      <DashboardEntitiesViz
+                      <WidgetEntitiesViz
                         widget={widget}
                         config={manifest.config}
                         popover={popover}
                       />
                     )}
                     {widget.perspective === 'relationships' && (
-                      <DashboardRelationshipsViz
+                      <WidgetRelationshipsViz
                         widget={widget}
                         config={manifest.config}
                         popover={popover}
                       />
                     )}
                     {widget.perspective === 'audits' && (
-                      <DashboardAuditsViz
+                      <WidgetAuditsViz
                         widget={widget}
                         config={manifest.config}
                         popover={popover}
                       />
                     )}
                     {widget.perspective === null && (
-                      <DashboardRawViz
+                      <WidgetRawViz
                         widget={widget}
                         popover={popover}
                       />

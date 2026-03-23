@@ -6,8 +6,6 @@ import StixDomainObjectTabsBox from './StixDomainObjectTabsBox';
 const TABS_TEST_DATA = [
   ['Overview', 'overview', ''],
   ['Knowledge', 'knowledge', '/knowledge'],
-  ['Knowledge', 'knowledge-graph', '/knowledge/graph'],
-  ['Knowledge', 'knowledge-overview', '/knowledge/overview'],
   ['Content', 'content', '/content'],
   ['Analyses', 'analyses', '/analyses'],
   ['Sightings', 'sightings', '/sightings'],

@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { propOr } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -16,7 +16,6 @@ import ReportKnowledgeTimeLine, { reportKnowledgeTimeLineQuery } from './ReportK
 import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
-import withRouter from '../../../../utils/compat_router/withRouter';
 
 class ReportKnowledgeComponent extends Component {
   constructor(props) {
@@ -291,6 +290,7 @@ class ReportKnowledgeComponent extends Component {
               />
             )}
           />
+          <Route index element={<Navigate replace={true} to="graph" />} />
         </Routes>
       </div>
     );
@@ -317,4 +317,4 @@ const ReportKnowledge = createFragmentContainer(ReportKnowledgeComponent, {
   `,
 });
 
-export default R.compose(withRouter)(ReportKnowledge);
+export default ReportKnowledge;

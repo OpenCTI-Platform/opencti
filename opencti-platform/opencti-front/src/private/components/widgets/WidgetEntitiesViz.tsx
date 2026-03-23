@@ -1,23 +1,26 @@
-import React, { memo, ReactNode } from 'react';
+import { memo, ReactNode } from 'react';
+import StixDomainObjectBookmarksList from '@components/common/stix_domain_objects/StixDomainObjectBookmarksList';
+import StixCoreObjectsNumber from '@components/common/stix_core_objects/StixCoreObjectsNumber';
+import StixCoreObjectsList from '@components/common/stix_core_objects/StixCoreObjectsList';
+import StixCoreObjectsDistributionList from '@components/common/stix_core_objects/StixCoreObjectsDistributionList';
+import StixCoreObjectsMultiVerticalBars from '@components/common/stix_core_objects/StixCoreObjectsMultiVerticalBars';
+import StixCoreObjectsMultiLineChart from '@components/common/stix_core_objects/StixCoreObjectsMultiLineChart';
+import StixCoreObjectsMultiAreaChart from '@components/common/stix_core_objects/StixCoreObjectsMultiAreaChart';
+import StixCoreObjectsTimeline from '@components/common/stix_core_objects/StixCoreObjectsTimeline';
+import StixCoreObjectsDonut from '@components/common/stix_core_objects/StixCoreObjectsDonut';
+import StixCoreObjectsPolarArea from '@components/common/stix_core_objects/StixCoreObjectsPolarArea';
+import StixCoreObjectsMultiHorizontalBars from '@components/common/stix_core_objects/StixCoreObjectsMultiHorizontalBars';
+import StixCoreObjectsHorizontalBars from '@components/common/stix_core_objects/StixCoreObjectsHorizontalBars';
+import StixCoreObjectsRadar from '@components/common/stix_core_objects/StixCoreObjectsRadar';
+import StixCoreObjectsMultiHeatMap from '@components/common/stix_core_objects/StixCoreObjectsMultiHeatMap';
+import StixCoreObjectsTreeMap from '@components/common/stix_core_objects/StixCoreObjectsTreeMap';
+import StixCoreObjectsWordCloud from '@components/common/stix_core_objects/StixCoreObjectsWordCloud';
+import type { Widget } from '../../../utils/widget/widget';
+import { computerRelativeDate, dayStartDate, formatDate } from '../../../utils/Time';
+import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 import { Box } from '@mui/material';
-import AuditsNumber from '@components/common/audits/AuditsNumber';
-import AuditsList from '@components/common/audits/AuditsList';
-import AuditsDistributionList from '@components/common/audits/AuditsDistributionList';
-import AuditsMultiVerticalBars from '@components/common/audits/AuditsMultiVerticalBars';
-import AuditsMultiLineChart from '@components/common/audits/AuditsMultiLineChart';
-import AuditsMultiAreaChart from '@components/common/audits/AuditsMultiAreaChart';
-import AuditsDonut from '@components/common/audits/AuditsDonut';
-import AuditsPolarArea from '@components/common/audits/AuditsPolarArea';
-import AuditsHorizontalBars from '@components/common/audits/AuditsHorizontalBars';
-import AuditsRadar from '@components/common/audits/AuditsRadar';
-import AuditsMultiHeatMap from '@components/common/audits/AuditsMultiHeatMap';
-import AuditsTreeMap from '@components/common/audits/AuditsTreeMap';
-import AuditsWordCloud from '@components/common/audits/AuditsWordCloud';
-import { computerRelativeDate, dayStartDate, formatDate } from '../../../../utils/Time';
-import type { Widget } from '../../../../utils/widget/widget';
-import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
-interface DashboardAuditsVizProps {
+interface WidgetEntitiesVizProps {
   widget: Widget;
   popover?: ReactNode;
   config: {
@@ -27,11 +30,11 @@ interface DashboardAuditsVizProps {
   };
 }
 
-const DashboardAuditsViz = ({
+const WidgetEntitiesViz = ({
   widget,
   popover,
   config,
-}: DashboardAuditsVizProps) => {
+}: WidgetEntitiesVizProps) => {
   const startDate = config.relativeDate
     ? computerRelativeDate(config.relativeDate)
     : config.startDate;
@@ -54,9 +57,19 @@ const DashboardAuditsViz = ({
   }));
 
   switch (widget.type) {
+    case 'bookmark':
+      return (
+        <StixDomainObjectBookmarksList
+          variant={undefined} // because calling js component in ts
+          dataSelection={dataSelection}
+          parameters={widget.parameters as object} // because calling js component in ts
+          height={undefined} // because calling js component in ts
+          popover={popover}
+        />
+      );
     case 'number':
       return (
-        <AuditsNumber
+        <StixCoreObjectsNumber
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
@@ -67,19 +80,21 @@ const DashboardAuditsViz = ({
       );
     case 'list':
       return (
-        <AuditsList
+        <StixCoreObjectsList
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
+          widgetId={widget.id}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
           height={undefined} // because calling js component in ts
+          title={undefined} // because calling js component in ts
           popover={popover}
         />
       );
     case 'distribution-list':
       return (
-        <AuditsDistributionList
+        <StixCoreObjectsDistributionList
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
@@ -91,7 +106,7 @@ const DashboardAuditsViz = ({
       );
     case 'vertical-bar':
       return (
-        <AuditsMultiVerticalBars
+        <StixCoreObjectsMultiVerticalBars
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
@@ -103,7 +118,7 @@ const DashboardAuditsViz = ({
       );
     case 'line':
       return (
-        <AuditsMultiLineChart
+        <StixCoreObjectsMultiLineChart
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
@@ -115,7 +130,19 @@ const DashboardAuditsViz = ({
       );
     case 'area':
       return (
-        <AuditsMultiAreaChart
+        <StixCoreObjectsMultiAreaChart
+          variant={undefined} // because calling js component in ts
+          endDate={endDate}
+          startDate={startDate}
+          dataSelection={dataSelection}
+          parameters={widget.parameters as object} // because calling js component in ts
+          height={undefined} // because calling js component in ts
+          popover={popover}
+        />
+      );
+    case 'timeline':
+      return (
+        <StixCoreObjectsTimeline
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
@@ -127,31 +154,46 @@ const DashboardAuditsViz = ({
       );
     case 'donut':
       return (
-        <AuditsDonut
+        <StixCoreObjectsDonut
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
-          height={undefined} // because calling js component in ts
+          height={undefined}
           popover={popover}
         />
       );
     case 'polar-area':
       return (
-        <AuditsPolarArea
+        <StixCoreObjectsPolarArea
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
-          parameters={widget.parameters as object} // because calling js component in ts
-          height={undefined} // because calling js component in ts
+          parameters={widget.parameters}
           popover={popover}
         />
       );
     case 'horizontal-bar':
+      if (
+        dataSelection.length > 1
+        && dataSelection[0].attribute?.endsWith('_id')
+      ) {
+        return (
+          <StixCoreObjectsMultiHorizontalBars
+            variant={undefined} // because calling js component in ts
+            endDate={endDate}
+            startDate={startDate}
+            dataSelection={dataSelection}
+            parameters={widget.parameters as object} // because calling js component in ts
+            height={undefined} // because calling js component in ts
+            popover={popover}
+          />
+        );
+      }
       return (
-        <AuditsHorizontalBars
+        <StixCoreObjectsHorizontalBars
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
@@ -163,7 +205,7 @@ const DashboardAuditsViz = ({
       );
     case 'radar':
       return (
-        <AuditsRadar
+        <StixCoreObjectsRadar
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
@@ -175,7 +217,7 @@ const DashboardAuditsViz = ({
       );
     case 'heatmap':
       return (
-        <AuditsMultiHeatMap
+        <StixCoreObjectsMultiHeatMap
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
@@ -187,7 +229,7 @@ const DashboardAuditsViz = ({
       );
     case 'tree':
       return (
-        <AuditsTreeMap
+        <StixCoreObjectsTreeMap
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
@@ -199,13 +241,13 @@ const DashboardAuditsViz = ({
       );
     case 'wordcloud':
       return (
-        <AuditsWordCloud
+        <StixCoreObjectsWordCloud
           variant={undefined} // because calling js component in ts
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
           parameters={widget.parameters as object} // because calling js component in ts
-          height={undefined} // because calling js component in ts
+          height={undefined}
           popover={popover}
         />
       );
@@ -214,4 +256,4 @@ const DashboardAuditsViz = ({
   }
 };
 
-export default memo(DashboardAuditsViz);
+export default memo(WidgetEntitiesViz);

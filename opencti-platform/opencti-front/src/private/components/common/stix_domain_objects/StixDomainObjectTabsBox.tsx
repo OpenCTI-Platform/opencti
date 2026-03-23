@@ -1,16 +1,59 @@
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import Tab, { TabProps } from '@mui/material/Tab';
 import { Link, useLocation } from 'react-router-dom';
-import React from 'react';
+import React, { MouseEvent, ReactNode, useState } from 'react';
 import { getCurrentTab } from '../../../../utils/utils';
 import { useFormatter } from '../../../../components/i18n';
+import { useCustomViews } from '../../custom_views/useCustomViews';
+import Menu from '@mui/material/Menu';
+import { MenuItem, PopoverProps } from '@mui/material';
+import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 
-type StixDomainObjectTabsBoxTab
+type TabWithDropDownMenuProps = TabProps & {
+  MenuItems: ReactNode[];
+};
+
+const TabWithDropDownMenu = (props: TabWithDropDownMenuProps) => {
+  const { t_i18n } = useFormatter();
+  const [anchorPopover, setAnchorPopover] = useState<PopoverProps['anchorEl']>(null);
+
+  const onOpenPopover = (event: MouseEvent) => {
+    event.stopPropagation();
+    setAnchorPopover(event.currentTarget);
+  };
+
+  const onClosePopover = (event: MouseEvent) => {
+    event.stopPropagation();
+    setAnchorPopover(null);
+  };
+  return (
+    <>
+      <Tab
+        component="div"
+        value={props.value}
+        icon={anchorPopover ? <ArrowDropUp sx={{ fontSize: '20px' }} /> : <ArrowDropDown sx={{ fontSize: '20px' }} />}
+        iconPosition="end"
+        label={props.label}
+        onClick={onOpenPopover}
+      />
+      <Menu
+        anchorEl={anchorPopover}
+        open={Boolean(anchorPopover)}
+        onClose={onClosePopover}
+        aria-label={t_i18n('Popover menu')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        {props.MenuItems}
+      </Menu>
+    </>
+  );
+};
+
+export type StixDomainObjectTabsBoxTab
   = | 'overview'
     | 'knowledge'
-    | 'knowledge-graph'
-    | 'knowledge-overview'
     | 'content'
     | 'analyses'
     | 'sightings'
@@ -29,6 +72,7 @@ interface StixDomainObjectTabsBoxProps {
 const StixDomainObjectTabsBox = ({ basePath, entity, extraActions, tabs }: StixDomainObjectTabsBoxProps) => {
   const { t_i18n } = useFormatter();
   const location = useLocation();
+  const { customViews } = useCustomViews(entity.entity_type);
   return (
     <Box
       sx={{
@@ -41,6 +85,7 @@ const StixDomainObjectTabsBox = ({ basePath, entity, extraActions, tabs }: StixD
       }}
     >
       <Tabs
+        textColor="primary"
         value={getCurrentTab(location.pathname, entity.id, basePath)}
       >
         {tabs.includes('overview') && (
@@ -55,22 +100,6 @@ const StixDomainObjectTabsBox = ({ basePath, entity, extraActions, tabs }: StixD
           <Tab
             component={Link}
             to={`${basePath}/${entity.id}/knowledge`}
-            value={`${basePath}/${entity.id}/knowledge`}
-            label={t_i18n('Knowledge')}
-          />
-        )}
-        {tabs.includes('knowledge-overview') && (
-          <Tab
-            component={Link}
-            to={`${basePath}/${entity.id}/knowledge/overview`}
-            value={`${basePath}/${entity.id}/knowledge`}
-            label={t_i18n('Knowledge')}
-          />
-        )}
-        {tabs.includes('knowledge-graph') && (
-          <Tab
-            component={Link}
-            to={`${basePath}/${entity.id}/knowledge/graph`}
             value={`${basePath}/${entity.id}/knowledge`}
             label={t_i18n('Knowledge')}
           />
@@ -131,6 +160,38 @@ const StixDomainObjectTabsBox = ({ basePath, entity, extraActions, tabs }: StixD
             label={t_i18n('History')}
           />
         )}
+        {customViews.length === 1 ? (
+          <Tab
+            component={Link}
+            to={`${basePath}/${entity.id}/custom-views/${customViews[0].id}`}
+            value={`${basePath}/${entity.id}/custom-views`}
+            label={customViews[0].name}
+          />
+        ) : customViews.length > 1 ? (
+          <TabWithDropDownMenu
+            value={`${basePath}/${entity.id}/custom-views`}
+            label="Custom views"
+            MenuItems={
+              customViews.map(({ id, name }) => (
+                <MenuItem
+                  key={id}
+                  style={{
+                    padding: 0,
+                  }}
+                >
+                  <Link
+                    style={{
+                      padding: '10px',
+                    }}
+                    to={`${basePath}/${entity.id}/custom-views/${customViews[0].id}`}
+                  >{name}
+                  </Link>
+                </MenuItem>
+              ))
+            }
+          />
+        ) : null
+        }
       </Tabs>
       {extraActions ? (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
