@@ -15,7 +15,6 @@ import {
   elIndexGetAlias,
   elLoadById,
   elPaginate,
-  elRebuildRelation,
   elReindexElements,
   ES_INDEX_PATTERN_SUFFIX,
   ES_MAX_PAGINATION,
@@ -40,6 +39,7 @@ import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { buildAggregationRelationFilter } from '../../../src/database/middleware-loader';
 import { mapCountPerEntityType, mapEdgesCountPerEntityType } from '../../utils/domainQueryHelper';
 import { entitiesCounter, entitiesCounterTotal, relationsCounter } from './entityCountHelper';
+import { elRebuildRelation } from '../../../src/database/engine-data-converter';
 
 const elWhiteUser = async () => {
   const opts = { types: ['Marking-Definition'], connectionFormat: false };
