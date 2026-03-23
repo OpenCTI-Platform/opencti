@@ -28,6 +28,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import IndicatorEdition from './IndicatorEdition';
 import IndicatorDeletion from './IndicatorDeletion';
+import IndicatorKnowledge from './IndicatorKnowledge';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -209,33 +210,13 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
               )}
             />
             <Route
-              path="/knowledge"
+              path="/knowledge/*"
               element={(
                 <div key={forceUpdate}>
-                  <IndicatorEntities
+                  <IndicatorKnowledge
                     indicatorId={indicatorId}
-                    relationshipType={undefined}
-                    defaultStartTime={undefined}
-                    defaultStopTime={undefined}
                   />
                 </div>
-              )}
-            />
-            <Route
-              path="/knowledge/relations/:relationId"
-              element={(
-                <StixCoreRelationship
-                  entityId={indicatorId}
-                />
-              )}
-            />
-            <Route
-              path="/knowledge/sightings/:sightingId"
-              element={(
-                <StixSightingRelationship
-                  entityId={indicatorId}
-                  paddingRight
-                />
               )}
             />
           </Routes>
