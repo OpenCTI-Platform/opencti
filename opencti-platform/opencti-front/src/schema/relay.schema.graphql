@@ -9812,6 +9812,10 @@ type Query {
   Auth log history by provider id: internal_id for DB providers, or static id for singletons (Headers, Cert).
   """
   authLogHistoryById(id: String!): [AuthLogEntry!]!
+  customViewsContext: [CustomViewsContext!]!
+  customView(id: String!): CustomView
+  customViewsSettings(id: String!): CustomViewsSettings!
+  customViewSettings(id: ID!): CustomView
   taxiiCollection(id: String!): TaxiiCollection
   taxiiCollections(first: Int, after: ID, orderBy: TaxiiCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): TaxiiCollectionConnection
   feed(id: String!): Feed
@@ -9819,8 +9823,6 @@ type Query {
   streamCollection(id: String!): StreamCollection
   streamCollections(first: Int, after: ID, orderBy: StreamCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): StreamCollectionConnection!
   redisStreamInfo: RedisStreamInfo
-  customView(id: ID!): CustomView
-  customViews(first: Int, after: ID, orderBy: CustomViewOrdering, orderMode: OrderingMode, search: String): CustomViewConnection
 }
 
 type Subscription {
@@ -10756,6 +10758,15 @@ type Mutation {
   ldapProviderAdd(input: LdapInput!): AuthenticationProvider
   ldapProviderEdit(id: ID!, input: LdapInput!): AuthenticationProvider
   ldapProviderDelete(id: ID!): ID
+  customViewAdd(input: CustomViewAddInput!): CustomView
+  customViewDelete(id: ID!): ID
+  taxiiCollectionAdd(input: TaxiiCollectionAddInput!): TaxiiCollection
+  taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations
+  feedAdd(input: FeedAddInput!): Feed
+  feedDelete(id: ID!): ID!
+  feedEdit(id: ID!, input: FeedAddInput!): Feed!
+  streamCollectionAdd(input: StreamCollectionAddInput!): StreamCollection
+  streamCollectionEdit(id: ID!): StreamCollectionEditMutations
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -12952,7 +12963,6 @@ type EntitySetting implements InternalObject & BasicObject {
   overview_layout_customization: [OverviewWidgetCustomization!]
   fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
   requestAccessConfiguration: RequestAccessConfiguration
-  customViews(first: Int, after: ID, orderBy: CustomViewOrdering, orderMode: OrderingMode, search: String): CustomViewConnection
 }
 
 enum EntitySettingsOrdering {
@@ -16157,10 +16167,10 @@ type CustomView implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   name: String!
-  settings_types: [String!]!
   description: String
   manifest: String
-  authorizedMembers: [MemberAccess!]
+  target_entity_type: String!
+  authorizedMembers: [MemberAccess!]!
 }
 
 input CustomViewAddInput {
@@ -16168,20 +16178,224 @@ input CustomViewAddInput {
   name: String!
   description: String
   manifest: String
-  authorizedMembers: [MemberAccessInput!]!
+  target_entity_type: String!
+  authorizedMembers: [MemberAccessInput!]
 }
 
-type CustomViewEdge {
-  cursor: String!
-  node: CustomView!
+type CustomViewsInfo {
+  id: ID!
+  name: String!
 }
 
-type CustomViewConnection {
+type CustomViewsContext {
+  entity_type: String!
+  custom_views_info: [CustomViewsInfo!]!
+}
+
+type CustomViewsInfoForSettings {
+  id: ID!
+  name: String!
+  description: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+
+type CustomViewsSettings {
+  can_have_custom_views: Boolean!
+  custom_views_info: [CustomViewsInfoForSettings!]!
+}
+
+type TaxiiCollection {
+  id: ID!
+  name: String
+  description: String
+  filters: String
+  include_inferences: Boolean
+  score_to_confidence: Boolean
+  taxii_public: Boolean
+  authorized_members: [MemberAccess!]
+}
+
+type TaxiiCollectionConnection {
   pageInfo: PageInfo!
-  edges: [CustomViewEdge!]!
+  edges: [TaxiiCollectionEdge]!
 }
 
-enum CustomViewOrdering {
+type TaxiiCollectionEdge {
+  cursor: String!
+  node: TaxiiCollection!
+}
+
+input TaxiiCollectionAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  filters: String
+  taxii_public: Boolean
+  authorized_members: [MemberAccessInput!]
+  include_inferences: Boolean
+  score_to_confidence: Boolean
+}
+
+enum TaxiiCollectionOrdering {
   name
+  id
   _score
+}
+
+type TaxiiCollectionEditMutations {
+  delete: ID
+  fieldPatch(input: [EditInput]!): TaxiiCollection
+}
+
+type FeedMapping {
+  type: String!
+  attribute: String!
+  relationship_type: String
+  target_entity_type: String
+}
+
+type FeedAttribute {
+  attribute: String!
+  mappings: [FeedMapping!]!
+  multi_match_strategy: String
+  multi_match_separator: String
+}
+
+type Feed {
+  id: ID!
+  standard_id: ID!
+  name: String!
+  description: String
+  filters: String
+  separator: String!
+  rolling_time: Int!
+  feed_date_attribute: String
+  include_header: Boolean!
+  feed_types: [String!]!
+  feed_attributes: [FeedAttribute!]!
+  feed_public: Boolean
+  authorized_members: [MemberAccess!]
+}
+
+input FeedMappingInput {
+  type: String!
+  attribute: String!
+  relationship_type: String
+  target_entity_type: String
+}
+
+input FeedAttributeMappingInput {
+  attribute: String!
+  mappings: [FeedMappingInput!]!
+  multi_match_strategy: String
+  multi_match_separator: String
+}
+
+input FeedAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  filters: String
+  separator: String!
+  feed_date_attribute: String!
+  rolling_time: Int!
+  include_header: Boolean!
+  feed_types: [String!]!
+  feed_public: Boolean
+  feed_attributes: [FeedAttributeMappingInput!]!
+  authorized_members: [MemberAccessInput!]
+}
+
+enum FeedOrdering {
+  name
+  rolling_time
+  feed_types
+  _score
+}
+
+type FeedEdge {
+  cursor: String!
+  node: Feed!
+}
+
+type FeedConnection {
+  pageInfo: PageInfo!
+  edges: [FeedEdge]!
+}
+
+type RemoteStreamCollection {
+  id: ID!
+  name: String
+  description: String
+  filters: String
+}
+
+type StreamCollectionConsumer {
+  connectionId: String!
+  userId: String!
+  userEmail: String
+  connectedAt: DateTime!
+  lastEventId: String!
+  lastEventDate: DateTime
+  productionRate: Float!
+  deliveryRate: Float!
+  processingRate: Float!
+  resolutionRate: Float!
+  timeLag: Float!
+  estimatedOutOfDepth: Float
+}
+
+type StreamCollection {
+  id: ID!
+  name: String
+  description: String
+  filters: String
+  stream_live: Boolean
+  stream_public: Boolean
+  authorized_members: [MemberAccess!]
+  consumers: [StreamCollectionConsumer!]!
+}
+
+type StreamCollectionConnection {
+  pageInfo: PageInfo!
+  edges: [StreamCollectionEdge!]!
+}
+
+type StreamCollectionEdge {
+  cursor: String!
+  node: StreamCollection!
+}
+
+input StreamCollectionAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  filters: String
+  stream_live: Boolean
+  stream_public: Boolean
+  authorized_members: [MemberAccessInput!]
+}
+
+enum StreamCollectionOrdering {
+  name
+  stream_public
+  id
+  stream_live
+  _score
+}
+
+type StreamCollectionEditMutations {
+  delete: ID
+  fieldPatch(input: [EditInput]!): StreamCollection
+  addGroup(id: ID!): StreamCollection
+  deleteGroup(id: ID!): StreamCollection
+}
+
+type RedisStreamInfo {
+  lastEventId: String!
+  firstEventId: String!
+  firstEventDate: String!
+  lastEventDate: String!
+  streamSize: Int!
 }

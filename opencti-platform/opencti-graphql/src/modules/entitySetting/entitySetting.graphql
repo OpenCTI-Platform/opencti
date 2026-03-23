@@ -64,13 +64,6 @@ type EntitySetting implements InternalObject & BasicObject {
     search: String
   ): FintelTemplateConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
   requestAccessConfiguration: RequestAccessConfiguration @auth
-  customViews(
-    first: Int
-    after: ID
-    orderBy: CustomViewOrdering
-    orderMode: OrderingMode
-    search: String
-  ): CustomViewConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 
 # Ordering

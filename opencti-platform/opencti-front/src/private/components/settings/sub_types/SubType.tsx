@@ -25,7 +25,6 @@ export const subTypeQuery = graphql`
         ...EntitySettingSettings_entitySetting
         ...EntitySettingAttributes_entitySetting
         ...FintelTemplatesGrid_templates
-        ...CustomViewsGrid_customViews
         requestAccessConfiguration{
             ...RequestAccessStatusFragment_requestAccess
             ...RequestAccessConfigurationEdition_requestAccess
@@ -33,6 +32,9 @@ export const subTypeQuery = graphql`
       }
       ...GlobalWorkflowSettings_global
       ...RequestAccessSettings_requestAccess
+    }
+    customViewsSettings(id: $id) {
+      ...CustomViewsGrid_customViews
     }
   }
 `;
@@ -44,7 +46,7 @@ interface SubTypeProps {
 const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { t_i18n } = useFormatter();
 
-  const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
+  const { subType, customViewsSettings } = usePreloadedQuery(subTypeQuery, queryRef);
   if (!subType) return <ErrorNotFound />;
 
   const subTypeSettingsId = subType.settings?.id;
