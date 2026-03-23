@@ -50,7 +50,7 @@ const PLAYBOOK_SECURITY_COVERAGE_COMPONENT_SCHEMA: JSONSchemaType<SecurityCovera
       items: { type: 'string', oneOf: [] },
     },
   },
-  required: ['periodicity', 'duration', 'type_affinity', 'platforms_affinity'],
+  required: ['periodicity', 'duration', 'type_affinity', 'platforms_affinity', 'applyToElements'],
 };
 
 const SECURITY_COVERAGE_COMPATIBLE_TYPES = [
