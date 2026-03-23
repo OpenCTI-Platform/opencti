@@ -24,6 +24,9 @@ const StixDomainObjectMain = ({ basePath, entity, extraActions, pages, extraRout
         {tabs.includes('overview') && (
           <Route path="/" element={pages.overview} />
         )}
+        {tabs.includes('result') && (
+          <Route path="/result" element={pages.result} />
+        )}
         {tabs.includes('knowledge') && (
           <Route path="/knowledge/*" element={pages.knowledge} />
         )}

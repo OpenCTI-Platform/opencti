@@ -2,13 +2,13 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootReportSubscription } from '@components/analyses/reports/__generated__/RootReportSubscription.graphql';
 import Security from 'src/utils/Security';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import GroupingDeletion from '@components/analyses/groupings/GroupingDeletion';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import AIInsights from '@components/common/ai/AIInsights';
@@ -135,70 +135,37 @@ const RootGrouping = () => {
                     enableEnricher={true}
                     enableEnrollPlaybook={true}
                   />
-                  <StixDomainObjectTabsBox
+                  <StixDomainObjectMain
                     basePath="/dashboard/analyses/groupings"
                     entity={grouping}
-                    tabs={[
-                      'overview',
-                      'knowledge',
-                      'content',
-                      'entities',
-                      'observables',
-                      'files',
-                    ]}
-                    extraActions={!isKnowledgeOrContent && (
-                      <>
-                        <AIInsights id={grouping.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
-                        <StixCoreObjectSecurityCoverage id={grouping.id} coverage={grouping.securityCoverage} />
-                      </>
-                    )}
-                  />
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={
-                        <Grouping grouping={grouping} />
-                      }
-                    />
-                    <Route
-                      path="/entities"
-                      element={(
-                        <ContainerStixDomainObjects
-                          container={grouping}
-                          enableReferences={enableReferences}
-                        />
-                      )}
-                    />
-                    <Route
-                      path="/observables"
-                      element={(
-                        <ContainerStixCyberObservables
-                          container={grouping}
-                          enableReferences={enableReferences}
-                        />
-                      )}
-                    />
-                    <Route
-                      path="/content/*"
-                      element={(
-                        <StixCoreObjectContentRoot
-                          stixCoreObject={grouping}
-                          isContainer={true}
-                        />
-                      )}
-                    />
-                    <Route
-                      path="/knowledge/*"
-                      element={(
+                    pages={{
+                      overview:
+                        <Grouping grouping={grouping} />,
+                      knowledge: (
                         <GroupingKnowledge
                           grouping={grouping}
                           enableReferences={enableReferences}
                         />
-                      )}
-                    />
-                    <Route
-                      path="/files"
-                      element={(
+                      ),
+                      content: (
+                        <StixCoreObjectContentRoot
+                          stixCoreObject={grouping}
+                          isContainer={true}
+                        />
+                      ),
+                      entities: (
+                        <ContainerStixDomainObjects
+                          container={grouping}
+                          enableReferences={enableReferences}
+                        />
+                      ),
+                      observables: (
+                        <ContainerStixCyberObservables
+                          container={grouping}
+                          enableReferences={enableReferences}
+                        />
+                      ),
+                      files: (
                         <StixCoreObjectFilesAndHistory
                           id={groupingId}
                           connectorsExport={props.connectorsForExport}
@@ -207,9 +174,15 @@ const RootGrouping = () => {
                           withoutRelations={true}
                           bypassEntityId={true}
                         />
-                      )}
-                    />
-                  </Routes>
+                      ),
+                    }}
+                    extraActions={!isKnowledgeOrContent && (
+                      <>
+                        <AIInsights id={grouping.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
+                        <StixCoreObjectSecurityCoverage id={grouping.id} coverage={grouping.securityCoverage} />
+                      </>
+                    )}
+                  />
                 </div>
               );
             }
