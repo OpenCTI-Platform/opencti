@@ -67,6 +67,7 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
       version: '6.7.17',
     },
     themes: (themes ?? {}) as UserContextType['themes'],
+    customViewsDisplayContext: ({}) as UserContextType['customViewsDisplayContext'],
   };
 };
 

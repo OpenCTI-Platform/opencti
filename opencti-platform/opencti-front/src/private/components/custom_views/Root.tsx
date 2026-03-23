@@ -10,10 +10,7 @@ import CustomView from './CustomView';
 
 const customViewQuery = graphql`
   query RootCustomViewQuery($id: String!) {
-    customView(id: $id) {
-      id
-      name
-      description
+    customViewDisplay(id: $id) {
       manifest
     }
   }
@@ -24,11 +21,11 @@ interface RootCustomViewComponentProps {
 }
 
 const RootCustomViewComponent = ({ queryRef }: RootCustomViewComponentProps) => {
-  const { customView } = usePreloadedQuery(customViewQuery, queryRef);
-  if (!customView) {
+  const { customViewDisplay } = usePreloadedQuery(customViewQuery, queryRef);
+  if (!customViewDisplay) {
     return <ErrorNotFound />;
   }
-  if (!customView.manifest) {
+  if (!customViewDisplay.manifest) {
     throw new Error('Unable to load custom view');
   }
 
@@ -42,12 +39,12 @@ const RootCustomViewComponent = ({ queryRef }: RootCustomViewComponentProps) => 
         height: '100%',
       }}
     >
-      <CustomView manifest={customView.manifest} />
+      <CustomView manifest={customViewDisplay.manifest} />
     </div>
   );
 };
 
-const RootCustomView = () => {
+export const RootCustomView = () => {
   const { customViewId } = useParams();
   if (!customViewId) {
     return <ErrorNotFound />;

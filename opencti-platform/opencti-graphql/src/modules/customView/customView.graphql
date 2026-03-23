@@ -6,7 +6,7 @@ type CustomView implements InternalObject & BasicObject {
     metrics:[Metric]
     created_at: DateTime!
     updated_at: DateTime!
-    # CustomView
+    # CustomView-specific fields
     name: String!
     description: String
     manifest: String
@@ -14,32 +14,91 @@ type CustomView implements InternalObject & BasicObject {
     authorizedMembers: [MemberAccess!]!
 }
 
-type CustomViewsInfo {
+type CustomViewDisplay {
+    manifest: String
+}
+
+type CustomViewDisplayContext {
     id: ID!
     name: String!
 }
 
-type CustomViewsContext {
+type CustomViewsDisplayContext {
     entity_type: String!
-    custom_views_info: [CustomViewsInfo!]!
+    custom_views_info: [CustomViewDisplayContext!]!
 }
 
-type CustomViewsInfoForSettings {
-    id: ID!
-    name: String!
-    description: String!
-    created_at: DateTime!
-    updated_at: DateTime!
-}
-
-type CustomViewsSettings {
-    can_have_custom_views: Boolean!
-    custom_views_info: [CustomViewsInfoForSettings!]!
-}
+# type CustomViewInfoForSettings {
+#     id: ID!
+#     name: String!
+#     description: String!
+#     created_at: DateTime!
+#     updated_at: DateTime!
+# }
+# 
+# type PaginatedCustomView {
+#   cursor: String!
+#   node: CustomViewInfoForSettings!
+# }
+# 
+# type PaginatedCustomViews {
+#   pageInfo: PageInfo!
+#   edges: [PaginatedCustomView!]!
+# }
+# 
+# type CustomViewsSettings {
+#     canEntityTypeHaveCustomViews: Boolean!
+#     customViews: PaginatedCustomViews
+# }
+# 
+# enum CustomViewsOrdering {
+#     name
+#     _score
+# }
+# 
+# type CustomViewsSettingsPaginationOptions {
+#     first: Int
+#     after: ID
+#     orderBy: CustomViewsOrdering
+#     orderMode: OrderingMode
+#     search: String
+# }
 
 # Queries
 type Query {
-  customViewsContext: [CustomViewsContext!]! @auth
-  customView(id: String!): CustomView @auth(for: [EXPLORE])
-  customViewsSettings(id: String!): CustomViewsSettings! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  ## Platform user use cases
+
+  # Provides context when browsing to know which custom views are
+  # available for which entity types
+  customViewsDisplayContext: [CustomViewsDisplayContext!]! @auth
+  # Display a custom view
+  customViewDisplay(id: String!): CustomViewDisplay @auth
+
+  ## Administration use cases
+
+#   # For a given entity type provides whether it is eligible to having custom
+#   # views, along with the list of current custom views.
+#   # Optionally allows passing pagination/sorting/filtering options.
+#   customViewsSettings(
+#      entityType: String!
+#      options: CustomViewsSettingsPaginationOptions
+#   ): CustomViewsSettings! @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
+
+# # Mutations
+# type Mutation {
+#   ## Administration use cases
+# 
+#   # Add a new custom view
+#   customViewAdd(input: CustomViewAddInput!): CustomView! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+#   # Delete a custom view
+#   customViewDelete(id: ID!): ID! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+# }
+# 
+# # Subscriptions
+# type Subscription {
+#   ## Administration use cases
+# 
+#   # Subscribe to changes on a custom view while editing it
+#   customView(id: ID!): CustomView! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+# }

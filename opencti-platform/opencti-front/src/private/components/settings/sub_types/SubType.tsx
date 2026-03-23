@@ -33,16 +33,6 @@ export const subTypeQuery = graphql`
       ...GlobalWorkflowSettings_global
       ...RequestAccessSettings_requestAccess
     }
-    customViewsSettings(id: $id) {
-      is_available
-      info {
-        id
-        name
-        description
-        created_at
-        updated_at
-      }
-    }
   }
 `;
 
@@ -53,7 +43,7 @@ interface SubTypeProps {
 const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { t_i18n } = useFormatter();
 
-  const { subType, customViewsSettings } = usePreloadedQuery(subTypeQuery, queryRef);
+  const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
   if (!subType) return <ErrorNotFound />;
 
   const subTypeSettingsId = subType.settings?.id;
@@ -80,7 +70,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
         {t_i18n(`entity_${subType.label}`)}
       </TitleMainEntity>
 
-      <Outlet context={{ subType, customViewsSettings }} />
+      <Outlet context={{ subType }} />
     </div>
   );
 };

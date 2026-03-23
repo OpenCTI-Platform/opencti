@@ -292,7 +292,7 @@ const rootPrivateQuery = graphql`
         }
       }
     }
-    customViewsContext {
+    customViewsDisplayContext {
       entity_type
       custom_views_info {
         id
@@ -428,7 +428,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
     me: meFragment,
     settings: settingsFragment,
     entitySettings,
-    customViewsContext,
+    customViewsDisplayContext,
     schemaSCOs,
     schemaSDOs,
     schemaSMOs,
@@ -495,7 +495,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
       value={{
         me,
         settings,
-        customViewsContext,
+        customViewsDisplayContext,
         bannerSettings,
         entitySettings,
         platformModuleHelpers,

@@ -51,7 +51,7 @@ export interface UserContextType {
   settings: RootSettings$data | undefined;
   bannerSettings: BannerSettings | undefined;
   entitySettings: RootPrivateQuery$data['entitySettings'] | undefined;
-  customViewsContext: RootPrivateQuery$data['customViewsContext'] | undefined;
+  customViewsDisplayContext: RootPrivateQuery$data['customViewsDisplayContext'] | undefined;
   platformModuleHelpers: ModuleHelper | undefined;
   schema: SchemaType | undefined;
   isXTMHubAccessible: boolean | null | undefined;
@@ -65,7 +65,7 @@ export interface UserContextType {
 const defaultContext = {
   me: undefined,
   settings: undefined,
-  customViewsContext: undefined,
+  customViewsDisplayContext: undefined,
   bannerSettings: undefined,
   entitySettings: undefined,
   platformModuleHelpers: undefined,
@@ -83,7 +83,7 @@ const useAuth = () => {
   const {
     me,
     settings,
-    customViewsContext,
+    customViewsDisplayContext,
     bannerSettings,
     entitySettings,
     platformModuleHelpers,
@@ -95,14 +95,14 @@ const useAuth = () => {
     locale,
     tz,
   } = useContext(UserContext);
-  if (!me || !settings || !bannerSettings || !entitySettings || !platformModuleHelpers || !schema || !about || !themes || !customViewsContext) {
+  if (!me || !settings || !bannerSettings || !entitySettings || !platformModuleHelpers || !schema || !about || !themes || !customViewsDisplayContext) {
     throw new Error('Invalid user context !');
   }
   return {
     me,
     settings,
     bannerSettings,
-    customViewsContext,
+    customViewsDisplayContext,
     entitySettings,
     platformModuleHelpers,
     schema,

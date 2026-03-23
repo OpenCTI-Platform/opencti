@@ -687,6 +687,17 @@ const ThemeDark = (
             textTransform: 'uppercase',
           },
         },
+        labelIcon: {
+          minHeight: '48px',
+          display: 'flex',
+          alignItems: 'center',
+          '& > *': {
+            textTransform: 'lowercase',
+            '&::first-letter': {
+              textTransform: 'uppercase',
+            },
+          },
+        },
       },
     },
     MuiFab: {

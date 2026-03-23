@@ -4,13 +4,13 @@ import useHelper from '../../../utils/hooks/useHelper';
 export const useCustomViews = (entityType: string) => {
   const { isFeatureEnable } = useHelper();
   const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
-  const { customViewsContext } = useAuth();
+  const { customViewsDisplayContext } = useAuth();
   if (!isCustomViewFeatureEnabled) {
     return {
       customViews: [],
     };
   }
-  const customViewsContextForType = customViewsContext.find(({ entity_type }) => entity_type === entityType);
+  const customViewsContextForType = customViewsDisplayContext.find(({ entity_type }) => entity_type === entityType);
   if (!customViewsContextForType) {
     return {
       customViews: [],

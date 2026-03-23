@@ -30,9 +30,8 @@ const SubTypeOverview = () => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  const { subType, customViewsSettings } = useOutletContext<{
+  const { subType } = useOutletContext<{
     subType: SubTypeQuery['response']['subType'];
-    customViewsSettings: SubTypeQuery['response']['customViewsSettings'];
   }>();
   if (!subType) return <ErrorNotFound />;
 

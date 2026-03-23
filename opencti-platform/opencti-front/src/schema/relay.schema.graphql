@@ -9604,9 +9604,8 @@ type Query {
   Auth log history by provider id: internal_id for DB providers, or static id for singletons (Headers, Cert).
   """
   authLogHistoryById(id: String!): [AuthLogEntry!]!
-  customViewsContext: [CustomViewsContext!]!
-  customView(id: String!): CustomView
-  customViewsSettings(id: String!): CustomViewsSettings!
+  customViewsDisplayContext: [CustomViewsDisplayContext!]!
+  customViewDisplay(id: String!): CustomViewDisplay
   taxiiCollection(id: String!): TaxiiCollection
   taxiiCollections(first: Int, after: ID, orderBy: TaxiiCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): TaxiiCollectionConnection
   feed(id: String!): Feed
@@ -15913,27 +15912,18 @@ type CustomView implements InternalObject & BasicObject {
   authorizedMembers: [MemberAccess!]!
 }
 
-type CustomViewsInfo {
+type CustomViewDisplay {
+  manifest: String
+}
+
+type CustomViewDisplayContext {
   id: ID!
   name: String!
 }
 
-type CustomViewsContext {
+type CustomViewsDisplayContext {
   entity_type: String!
-  custom_views_info: [CustomViewsInfo!]!
-}
-
-type CustomViewsInfoForSettings {
-  id: ID!
-  name: String!
-  description: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-}
-
-type CustomViewsSettings {
-  is_available: Boolean!
-  info: [CustomViewsInfoForSettings!]!
+  custom_views_info: [CustomViewDisplayContext!]!
 }
 
 type TaxiiCollection {
