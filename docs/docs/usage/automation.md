@@ -273,7 +273,13 @@ Compared to other components, this component **makes a direct call to the databa
 ### Manage Access Restriction
 
 Will apply authorized members on the bundle within the playbook. It is only compatible with entities supporting authorized members (Containers, Drafts, Organization).
-You can decide to only apply restrictions on the triggering element or the whole bundle by enabling the toggle.
+
+By default, creation is applied to the entity triggering the playbook. You can change this behavior with the following options:
+
+- all elements in the bundle (elements that might result from enrichment for example)
+- all elements except the entity triggering the playbook
+
+![Enroll entity in playbook](assets/playbook_select_bundle_scope.png)
 
 More details on [Authorize members](https://docs.opencti.io/latest/administration/authorized-members/?h=me)
 
