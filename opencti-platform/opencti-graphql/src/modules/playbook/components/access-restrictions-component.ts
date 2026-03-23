@@ -117,9 +117,9 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       const internalType = generateInternalType(element);
-      const all = applyToElements === 'all-elements';
-      const onlyMain = applyToElements === 'only-main' && element.id === dataInstanceId;
-      const exceptMain = applyToElements === 'all-except-main' && element.id !== dataInstanceId;
+      const all = applyToElements === playbookBundleElementsToApply.allElements.value;
+      const onlyMain = applyToElements === playbookBundleElementsToApply.onlyMain.value && element.id === dataInstanceId;
+      const exceptMain = applyToElements === playbookBundleElementsToApply.allExceptMain.value && element.id !== dataInstanceId;
       const shouldTakeObject = all || onlyMain || exceptMain;
       if (AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType) && shouldTakeObject) {
         const args = {
