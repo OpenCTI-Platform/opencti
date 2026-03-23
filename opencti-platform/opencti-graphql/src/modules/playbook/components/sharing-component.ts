@@ -4,7 +4,7 @@ import { executionContext, SYSTEM_USER } from '../../../utils/access';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { internalFindByIds } from '../../../database/middleware-loader';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organization-types';
-import type { StixDomainObject, StixObject } from '../../../types/stix-2-1-common';
+import type { StixObject } from '../../../types/stix-2-1-common';
 
 export interface SharingConfiguration {
   organizations: string[] | { label: string; value: string }[];
