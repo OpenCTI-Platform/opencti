@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
-import { type PlaybookComponent } from '../playbook-types';
+import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { AUTOMATION_MANAGER_USER, executionContext } from '../../../utils/access';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_THREAT_ACTOR } from '../../../schema/general';
 import type { StoreCommon, StoreRelation } from '../../../types/store';
@@ -35,7 +35,7 @@ import { convertStoreToStix_2_1 } from '../../../database/stix-2-1-converter';
 import { pushAll } from '../../../utils/arrayUtil';
 
 interface CreateIndicatorConfiguration {
-  all: boolean;
+  applyToElements: PlaybookBundleElementsToApply;
   wrap_in_container: boolean;
   types: string[];
 }
@@ -48,10 +48,19 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT_SCHEMA: JSONSchemaType<CreateIndicator
       $ref: 'Types',
       items: { type: 'string', oneOf: [] },
     },
-    all: { type: 'boolean', $ref: 'Create indicators from all observables in the bundle', default: false },
+    applyToElements: {
+      type: 'string',
+      default: playbookBundleElementsToApply.onlyMain.value,
+      $ref: 'Apply to',
+      oneOf: [
+        { const: playbookBundleElementsToApply.onlyMain.value, title: playbookBundleElementsToApply.onlyMain.title },
+        { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
+        { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
+      ],
+    },
     wrap_in_container: { type: 'boolean', $ref: 'If main entity is a container, wrap indicators in container', default: false },
   },
-  required: [],
+  required: ['applyToElements'],
 };
 export const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConfiguration> = {
   id: 'PLAYBOOK_CREATE_INDICATOR_COMPONENT',
@@ -70,13 +79,22 @@ export const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndica
     return R.mergeDeepRight<JSONSchemaType<CreateIndicatorConfiguration>, any>(PLAYBOOK_CREATE_INDICATOR_COMPONENT_SCHEMA, schemaElement);
   },
   executor: async ({ playbookNode, dataInstanceId, bundle }) => {
-    const { all, wrap_in_container, types } = playbookNode.configuration;
+    const { applyToElements, wrap_in_container, types } = playbookNode.configuration;
     const context = executionContext('playbook_components');
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    const observables = [baseData];
-    if (all) {
-      pushAll(observables, bundle.objects);
+
+    let observables: StixObject[];
+    if (applyToElements === playbookBundleElementsToApply.allElements.value) {
+      // add all objects in the bundle if requested in the playbook config
+      observables = [...bundle.objects];
+    } else if (applyToElements === playbookBundleElementsToApply.allExceptMain.value) {
+      // If we want to apply to all elements except main, exclude the main element from the bundle
+      observables = bundle.objects.filter((o) => o.id !== baseData.id);
+    } else {
+      // Only add main element in the bundle (default: onlyMain)
+      observables = [baseData];
     }
+
     const { type: baseDataType, id } = baseData.extensions[STIX_EXT_OCTI];
     const isBaseDataAContainer = isStixDomainObjectContainer(baseDataType);
     const objectsToPush: StixObject[] = [];
