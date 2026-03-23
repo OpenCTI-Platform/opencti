@@ -34,6 +34,7 @@ jobs:
           filters: |
             backend:
               - 'opencti-platform/opencti-graphql/**'
+              - 'opencti-platform/*'
             frontend:
               - 'opencti-platform/opencti-front/**'
             client_python:
