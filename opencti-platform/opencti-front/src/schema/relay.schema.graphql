@@ -13124,6 +13124,8 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   result: String
   analysisSco: StixCyberObservableConnection
   sample: StixCyberObservable
+  first_seen: DateTime
+  last_seen: DateTime
 }
 
 enum MalwareAnalysesOrdering {
