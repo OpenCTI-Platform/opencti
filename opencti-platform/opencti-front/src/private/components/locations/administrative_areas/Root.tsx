@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
@@ -178,12 +178,6 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                 path="/"
                 element={
                   <AdministrativeArea administrativeAreaData={administrativeArea} />
-                }
-              />
-              <Route
-                path="/knowledge"
-                element={
-                  <Navigate to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`} replace={true} />
                 }
               />
               <Route

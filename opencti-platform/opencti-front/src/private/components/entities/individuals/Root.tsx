@@ -1,5 +1,5 @@
 import React, { useMemo, Suspense, useState } from 'react';
-import { Route, Routes, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { propOr } from 'ramda';
@@ -216,15 +216,6 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
                   <Individual
                     individualData={individual}
                     viewAs={viewAs}
-                  />
-                )}
-              />
-              <Route
-                path="/knowledge"
-                element={(
-                  <Navigate
-                    replace={true}
-                    to={`/dashboard/entities/individuals/${individualId}/knowledge/overview`}
                   />
                 )}
               />

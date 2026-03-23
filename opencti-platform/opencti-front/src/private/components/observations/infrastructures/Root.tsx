@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, useParams, Routes, useLocation, Navigate } from 'react-router-dom';
+import { Route, useParams, Routes, useLocation } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
@@ -148,15 +148,6 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             <Route
               path="/"
               element={<Infrastructure data={infrastructure} />}
-            />
-            <Route
-              path="/knowledge"
-              element={(
-                <Navigate
-                  replace={true}
-                  to={`/dashboard/observations/infrastructures/${infrastructureId}/knowledge/overview`}
-                />
-              )}
             />
             <Route
               path="/knowledge/*"
