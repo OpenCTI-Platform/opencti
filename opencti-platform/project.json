@@ -1,0 +1,31 @@
+{
+  "name": "opencti-platform",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "opencti-platform",
+  "projectType": "application",
+  "targets": {
+    "build-ubi9": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform",
+        "command": "podman build -f Dockerfile_ubi9 -t opencti/platform:{args.ver}-ubi9 ."
+      },
+      "metadata": {
+        "description": "Build the OpenCTI platform UBI9 Docker image"
+      }
+    },
+    "push-ubi9": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build-ubi9"],
+      "options": {
+        "cwd": "opencti-platform",
+        "command": "podman push opencti/platform:{args.ver}-ubi9"
+      },
+      "metadata": {
+        "description": "Push the OpenCTI platform UBI9 Docker image"
+      }
+    }
+  }
+}
+
+
