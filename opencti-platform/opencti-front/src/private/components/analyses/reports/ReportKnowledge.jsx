@@ -16,7 +16,6 @@ import ReportKnowledgeTimeLine, { reportKnowledgeTimeLineQuery } from './ReportK
 import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
-import withRouter from '../../../../utils/compat_router/withRouter';
 
 class ReportKnowledgeComponent extends Component {
   constructor(props) {
@@ -318,4 +317,4 @@ const ReportKnowledge = createFragmentContainer(ReportKnowledgeComponent, {
   `,
 });
 
-export default R.compose(withRouter)(ReportKnowledge);
+export default ReportKnowledge;
