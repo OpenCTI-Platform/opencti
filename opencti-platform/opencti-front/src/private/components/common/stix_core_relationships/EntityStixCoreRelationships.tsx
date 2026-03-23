@@ -22,11 +22,11 @@ interface EntityStixCoreRelationshipsProps {
   defaultStopTime?: string;
   relationshipTypes: string[];
   stixCoreObjectTypes?: string[];
-  currentView: string;
+  currentView?: string;
   enableNestedView?: boolean;
-  enableContextualView: boolean;
+  enableContextualView?: boolean;
   enableEntitiesView?: boolean;
-  isRelationReversed: boolean;
+  isRelationReversed?: boolean;
   allDirections?: boolean;
   role?: string;
   paddingRightButtonAdd?: number;
@@ -46,7 +46,7 @@ const EntityStixCoreRelationships: FunctionComponent<
   enableNestedView,
   enableContextualView,
   enableEntitiesView = true,
-  isRelationReversed,
+  isRelationReversed = false,
   allDirections,
   role,
   paddingRightButtonAdd,
