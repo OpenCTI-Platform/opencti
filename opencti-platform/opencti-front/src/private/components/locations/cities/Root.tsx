@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
@@ -173,12 +173,6 @@ const RootCityComponent = ({ queryRef, cityId }) => {
               <Route
                 path="/"
                 element={<City cityData={city} />}
-              />
-              <Route
-                path="/knowledge"
-                element={
-                  <Navigate to={`/dashboard/locations/cities/${cityId}/knowledge/overview`} replace={true} />
-                }
               />
               <Route
                 path="/knowledge/*"

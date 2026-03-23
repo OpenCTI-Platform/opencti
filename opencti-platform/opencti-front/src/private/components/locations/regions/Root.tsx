@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
+import { Route, Routes, useParams, useLocation } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
@@ -179,12 +179,6 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
               <Route
                 path="/"
                 element={<Region regionData={region} />}
-              />
-              <Route
-                path="/knowledge"
-                element={
-                  <Navigate to={`/dashboard/locations/regions/${regionId}/knowledge/overview`} replace={true} />
-                }
               />
               <Route
                 path="/knowledge/*"

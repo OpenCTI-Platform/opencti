@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
@@ -200,12 +200,6 @@ const RootThreatActorIndividualComponent = ({
                 path="/"
                 element={
                   <ThreatActorIndividual threatActorIndividualData={threatActorIndividual} />
-                }
-              />
-              <Route
-                path="/knowledge"
-                element={
-                  <Navigate to={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge/overview`} replace={true} />
                 }
               />
               <Route

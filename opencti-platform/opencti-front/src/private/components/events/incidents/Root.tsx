@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
+import { Route, Routes, useParams, useLocation } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
@@ -194,15 +194,6 @@ const RootIncidentComponent = ({ queryRef }) => {
               <Route
                 path="/"
                 element={<Incident incidentData={incident} />}
-              />
-              <Route
-                path="/knowledge"
-                element={(
-                  <Navigate
-                    replace={true}
-                    to={`/dashboard/events/incidents/${incidentId}/knowledge/overview`}
-                  />
-                )}
               />
               <Route
                 path="/knowledge/*"

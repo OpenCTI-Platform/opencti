@@ -3,7 +3,7 @@
 // @ts-nocheck
 import React, { useMemo } from 'react';
 import { graphql, useSubscription } from 'react-relay';
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
@@ -175,15 +175,6 @@ const RootReport = () => {
                         <ContainerStixCyberObservables
                           container={report}
                           enableReferences={enableReferences}
-                        />
-                      )}
-                    />
-                    <Route
-                      path="/knowledge"
-                      element={(
-                        <Navigate
-                          replace={true}
-                          to={`/dashboard/analyses/reports/${reportId}/knowledge/graph`}
                         />
                       )}
                     />

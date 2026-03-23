@@ -1,5 +1,5 @@
 import { useMemo, Suspense } from 'react';
-import { Route, Routes, Navigate, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootEventQuery } from '@components/entities/events/__generated__/RootEventQuery.graphql';
@@ -177,15 +177,6 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
                 element={
                   <Event eventData={event} />
                 }
-              />
-              <Route
-                path="/knowledge"
-                element={(
-                  <Navigate
-                    replace={true}
-                    to={`/dashboard/entities/events/${eventId}/knowledge/overview`}
-                  />
-                )}
               />
               <Route
                 path="/knowledge/*"
