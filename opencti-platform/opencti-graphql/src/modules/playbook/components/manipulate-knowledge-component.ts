@@ -185,9 +185,9 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
     const patchOperations: jsonpatch.Operation[] = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
-      const all = applyToElements === 'all-elements';
-      const onlyMain = applyToElements === 'only-main' && element.id === dataInstanceId;
-      const exceptMain = applyToElements === 'all-except-main' && element.id !== dataInstanceId;
+      const all = applyToElements === playbookBundleElementsToApply.allElements.value;
+      const onlyMain = applyToElements === playbookBundleElementsToApply.onlyMain.value && element.id === dataInstanceId;
+      const exceptMain = applyToElements === playbookBundleElementsToApply.allExceptMain.value && element.id !== dataInstanceId;
       if (all || onlyMain || exceptMain) {
         const { type, id } = element.extensions[STIX_EXT_OCTI];
         const elementOperations = actions
