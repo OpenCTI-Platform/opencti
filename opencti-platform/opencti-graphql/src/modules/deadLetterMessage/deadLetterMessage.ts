@@ -7,7 +7,7 @@ import { convertDeadLetterMessageToStix } from './deadLetterMessage-converter';
 
 export const DEAD_LETTER_MESSAGE_DEFINITION: ModuleDefinition<StoreEntityDeadLetterMessage, StixDeadLetterMessage> = {
   type: {
-    id: 'dead-letters',
+    id: 'dead-letter-message',
     name: ENTITY_TYPE_DEAD_LETTER_MESSAGE,
     category: ABSTRACT_INTERNAL_OBJECT,
     aliased: false,
@@ -18,7 +18,23 @@ export const DEAD_LETTER_MESSAGE_DEFINITION: ModuleDefinition<StoreEntityDeadLet
     },
   },
   attributes: [
-    { name: 'original_connector_id', label: 'OriginalConnectorId', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    { name: 'original_connector_id', label: 'OriginalConnectorId', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    {
+      name: 'rejection_info',
+      label: 'Rejection info',
+      type: 'object',
+      format: 'standard',
+      mandatoryType: 'internal',
+      editDefault: false,
+      multiple: false,
+      upsert: false,
+      isFilterable: false,
+      mappings: [
+        { name: 'reject_reason', label: 'Rejection reason', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+        { name: 'last_error_msg', label: 'Last error message', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+      ],
+    },
+    { name: 'file_id', label: 'File Id', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
   representative: (stix: StixDeadLetterMessage) => {

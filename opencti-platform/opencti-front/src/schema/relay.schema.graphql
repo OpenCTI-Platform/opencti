@@ -9604,8 +9604,6 @@ type Query {
   Auth log history by provider id: internal_id for DB providers, or static id for singletons (Headers, Cert).
   """
   authLogHistoryById(id: String!): [AuthLogEntry!]!
-  deadLetterMessage(id: String!): DeadLetterMessage
-  deadLetterMessages(first: Int, after: ID, orderBy: DeadLetterMessagesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DeadLetterMessageConnection
   taxiiCollection(id: String!): TaxiiCollection
   taxiiCollections(first: Int, after: ID, orderBy: TaxiiCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): TaxiiCollectionConnection
   feed(id: String!): Feed
@@ -9613,6 +9611,9 @@ type Query {
   streamCollection(id: String!): StreamCollection
   streamCollections(first: Int, after: ID, orderBy: StreamCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): StreamCollectionConnection!
   redisStreamInfo: RedisStreamInfo
+  deadLetterMessage(id: String!): DeadLetterMessage
+  deadLetterMessages(first: Int, after: ID, orderBy: DeadLetterMessagesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DeadLetterMessageConnection
+  deadLetterQueueMessageCount: Int
 }
 
 type Subscription {
@@ -10554,6 +10555,9 @@ type Mutation {
   feedEdit(id: ID!, input: FeedAddInput!): Feed!
   streamCollectionAdd(input: StreamCollectionAddInput!): StreamCollection
   streamCollectionEdit(id: ID!): StreamCollectionEditMutations
+  importDeadLetterMessages: Boolean
+  deadLetterMessageDelete(id: String!): String
+  deadLetterMessageRetry(id: String!): String
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -15910,31 +15914,6 @@ type CustomView implements InternalObject & BasicObject {
   authorizedMembers: [MemberAccess!]!
 }
 
-type DeadLetterMessage implements InternalObject & BasicObject {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String!]!
-  metrics: [Metric]
-  created_at: DateTime!
-  original_connector_id: String
-}
-
-enum DeadLetterMessagesOrdering {
-  created_at
-  _score
-}
-
-type DeadLetterMessageConnection {
-  pageInfo: PageInfo!
-  edges: [DeadLetterMessageEdge]
-}
-
-type DeadLetterMessageEdge {
-  cursor: String!
-  node: DeadLetterMessage!
-}
-
 type TaxiiCollection {
   id: ID!
   name: String
@@ -16128,4 +16107,29 @@ type RedisStreamInfo {
   firstEventDate: String!
   lastEventDate: String!
   streamSize: Int!
+}
+
+type DeadLetterMessage implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created_at: DateTime!
+  original_connector_id: String
+}
+
+enum DeadLetterMessagesOrdering {
+  created_at
+  _score
+}
+
+type DeadLetterMessageConnection {
+  pageInfo: PageInfo!
+  edges: [DeadLetterMessageEdge]
+}
+
+type DeadLetterMessageEdge {
+  cursor: String!
+  node: DeadLetterMessage!
 }

@@ -35,6 +35,13 @@ type Query {
         filters: FilterGroup
         search: String
     ): DeadLetterMessageConnection @auth(for: [CONNECTORAPI])
+    deadLetterQueueMessageCount: Int @auth(for: [CONNECTORAPI])
 }
 
 # Mutations
+
+type Mutation {
+    importDeadLetterMessages: Boolean @auth(for: [CONNECTORAPI])
+    deadLetterMessageDelete(id: String!): String @auth(for: [CONNECTORAPI])
+    deadLetterMessageRetry(id: String!): String @auth(for: [CONNECTORAPI])
+}

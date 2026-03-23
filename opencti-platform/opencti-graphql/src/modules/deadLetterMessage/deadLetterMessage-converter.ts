@@ -8,6 +8,8 @@ export const convertDeadLetterMessageToStix = (instance: StoreEntityDeadLetterMe
   return {
     ...stixObject,
     original_connector_id: instance.original_connector_id,
+    file_id: instance.file_id,
+    rejection_info: instance.rejection_info,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

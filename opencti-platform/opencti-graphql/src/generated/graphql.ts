@@ -16007,6 +16007,8 @@ export type Mutation = {
   dataSourceFieldPatch?: Maybe<DataSource>;
   dataSourceRelationAdd?: Maybe<StixRefRelationship>;
   dataSourceRelationDelete?: Maybe<DataSource>;
+  deadLetterMessageDelete?: Maybe<Scalars['String']['output']>;
+  deadLetterMessageRetry?: Maybe<Scalars['String']['output']>;
   decayExclusionRuleAdd?: Maybe<DecayExclusionRule>;
   decayExclusionRuleDelete?: Maybe<Scalars['ID']['output']>;
   decayExclusionRuleFieldPatch?: Maybe<DecayExclusionRule>;
@@ -16077,6 +16079,7 @@ export type Mutation = {
   groupingRelationDelete?: Maybe<Grouping>;
   identityAdd?: Maybe<Identity>;
   identityEdit?: Maybe<IdentityEditMutations>;
+  importDeadLetterMessages?: Maybe<Scalars['Boolean']['output']>;
   incidentAdd?: Maybe<Incident>;
   incidentEdit?: Maybe<IncidentEditMutations>;
   indicatorAdd?: Maybe<Indicator>;
@@ -16893,6 +16896,16 @@ export type MutationDataSourceRelationDeleteArgs = {
   id: Scalars['ID']['input'];
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
+};
+
+
+export type MutationDeadLetterMessageDeleteArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type MutationDeadLetterMessageRetryArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -23111,6 +23124,7 @@ export type Query = {
   dataSources?: Maybe<DataSourceConnection>;
   deadLetterMessage?: Maybe<DeadLetterMessage>;
   deadLetterMessages?: Maybe<DeadLetterMessageConnection>;
+  deadLetterQueueMessageCount?: Maybe<Scalars['Int']['output']>;
   decayExclusionRule?: Maybe<DecayExclusionRule>;
   decayExclusionRules?: Maybe<DecayExclusionRuleConnection>;
   decayRule?: Maybe<DecayRule>;
@@ -45209,6 +45223,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   dataSourceFieldPatch?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceFieldPatchArgs, 'id' | 'input'>>;
   dataSourceRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationDataSourceRelationAddArgs, 'id' | 'input'>>;
   dataSourceRelationDelete?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
+  deadLetterMessageDelete?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationDeadLetterMessageDeleteArgs, 'id'>>;
+  deadLetterMessageRetry?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationDeadLetterMessageRetryArgs, 'id'>>;
   decayExclusionRuleAdd?: Resolver<Maybe<ResolversTypes['DecayExclusionRule']>, ParentType, ContextType, RequireFields<MutationDecayExclusionRuleAddArgs, 'input'>>;
   decayExclusionRuleDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDecayExclusionRuleDeleteArgs, 'id'>>;
   decayExclusionRuleFieldPatch?: Resolver<Maybe<ResolversTypes['DecayExclusionRule']>, ParentType, ContextType, RequireFields<MutationDecayExclusionRuleFieldPatchArgs, 'id' | 'input'>>;
@@ -45279,6 +45295,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   groupingRelationDelete?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   identityAdd?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, RequireFields<MutationIdentityAddArgs, 'input'>>;
   identityEdit?: Resolver<Maybe<ResolversTypes['IdentityEditMutations']>, ParentType, ContextType, RequireFields<MutationIdentityEditArgs, 'id'>>;
+  importDeadLetterMessages?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   incidentAdd?: Resolver<Maybe<ResolversTypes['Incident']>, ParentType, ContextType, RequireFields<MutationIncidentAddArgs, 'input'>>;
   incidentEdit?: Resolver<Maybe<ResolversTypes['IncidentEditMutations']>, ParentType, ContextType, RequireFields<MutationIncidentEditArgs, 'id'>>;
   indicatorAdd?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType, RequireFields<MutationIndicatorAddArgs, 'input'>>;
@@ -46991,6 +47008,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   dataSources?: Resolver<Maybe<ResolversTypes['DataSourceConnection']>, ParentType, ContextType, Partial<QueryDataSourcesArgs>>;
   deadLetterMessage?: Resolver<Maybe<ResolversTypes['DeadLetterMessage']>, ParentType, ContextType, RequireFields<QueryDeadLetterMessageArgs, 'id'>>;
   deadLetterMessages?: Resolver<Maybe<ResolversTypes['DeadLetterMessageConnection']>, ParentType, ContextType, Partial<QueryDeadLetterMessagesArgs>>;
+  deadLetterQueueMessageCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   decayExclusionRule?: Resolver<Maybe<ResolversTypes['DecayExclusionRule']>, ParentType, ContextType, RequireFields<QueryDecayExclusionRuleArgs, 'id'>>;
   decayExclusionRules?: Resolver<Maybe<ResolversTypes['DecayExclusionRuleConnection']>, ParentType, ContextType, Partial<QueryDecayExclusionRulesArgs>>;
   decayRule?: Resolver<Maybe<ResolversTypes['DecayRule']>, ParentType, ContextType, RequireFields<QueryDecayRuleArgs, 'id'>>;
