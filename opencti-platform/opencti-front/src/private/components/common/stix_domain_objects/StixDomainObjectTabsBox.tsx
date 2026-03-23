@@ -10,8 +10,6 @@ type StixDomainObjectTabsBoxTab
   = | 'overview'
     | 'result'
     | 'knowledge'
-    | 'knowledge-graph'
-    | 'knowledge-overview'
     | 'content'
     | 'analyses'
     | 'sightings'
@@ -64,22 +62,6 @@ const StixDomainObjectTabsBox = ({ basePath, entity, extraActions, tabs }: StixD
           <Tab
             component={Link}
             to={`${basePath}/${entity.id}/knowledge`}
-            value={`${basePath}/${entity.id}/knowledge`}
-            label={t_i18n('Knowledge')}
-          />
-        )}
-        {tabs.includes('knowledge-overview') && (
-          <Tab
-            component={Link}
-            to={`${basePath}/${entity.id}/knowledge/overview`}
-            value={`${basePath}/${entity.id}/knowledge`}
-            label={t_i18n('Knowledge')}
-          />
-        )}
-        {tabs.includes('knowledge-graph') && (
-          <Tab
-            component={Link}
-            to={`${basePath}/${entity.id}/knowledge/graph`}
             value={`${basePath}/${entity.id}/knowledge`}
             label={t_i18n('Knowledge')}
           />

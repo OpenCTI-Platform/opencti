@@ -187,7 +187,7 @@ const RootThreatActorIndividualComponent = ({
               entity={threatActorIndividual}
               tabs={[
                 'overview',
-                'knowledge-overview',
+                'knowledge',
                 'content',
                 'analyses',
                 'files',

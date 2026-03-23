@@ -161,7 +161,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
               entity={city}
               tabs={[
                 'overview',
-                'knowledge-overview',
+                'knowledge',
                 'content',
                 'analyses',
                 'sightings',
