@@ -6,9 +6,7 @@ import * as R from 'ramda';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
-import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixCyberObservable from '../stix_cyber_observables/StixCyberObservable';
-import StixCyberObservableKnowledge from '../stix_cyber_observables/StixCyberObservableKnowledge';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCyberObservableHeader from '../stix_cyber_observables/StixCyberObservableHeader';
@@ -16,13 +14,13 @@ import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/Stix
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import FileManager from '../../common/files/FileManager';
-import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import StixCyberObservableDeletion from '../stix_cyber_observables/StixCyberObservableDeletion';
+import ArtifactKnowledge from './ArtifactKnowledge';
 
 const subscription = graphql`
   subscription RootArtifactSubscription($id: ID!) {
@@ -142,10 +140,10 @@ class RootArtifact extends Component {
                         )}
                       />
                       <Route
-                        path="/knowledge"
+                        path="/knowledge/*"
                         element={(
-                          <StixCyberObservableKnowledge
-                            stixCyberObservable={stixCyberObservable}
+                          <ArtifactKnowledge
+                            artifact={stixCyberObservable}
                             connectorsForImport={props.connectorsForImport}
                           />
                         )}
@@ -197,23 +195,6 @@ class RootArtifact extends Component {
                         element={(
                           <StixCoreObjectHistory
                             stixCoreObjectId={observableId}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/knowledge/relations/:relationId"
-                        element={(
-                          <StixCoreRelationship
-                            entityId={observableId}
-                          />
-                        )}
-                      />
-                      <Route
-                        path="/knowledge/sightings/:sightingId"
-                        element={(
-                          <StixSightingRelationship
-                            entityId={observableId}
-                            paddingRight
                           />
                         )}
                       />
