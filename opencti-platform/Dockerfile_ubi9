@@ -1,0 +1,108 @@
+FROM registry.access.redhat.com/ubi9/ubi AS base
+
+
+##############################
+### Build builder
+##############################
+
+FROM base AS builder
+
+# For layer optimisation, start by installing resources not dependant from source code
+RUN set -eux; \
+    dnf -y module enable nodejs:22; \
+    dnf -y --setopt=install_weak_deps=0 install nodejs python3.12 python3.12-devel gcc-c++ make; \
+    dnf clean all; \
+    ln -s ../lib/node_modules/npm/bin/npm-cli.js /usr/bin/npm; \
+    alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 2; \
+    alternatives --install /usr/bin/python3-config python3-config /usr/bin/python3.12-config 2; \
+    alternatives --set python3 /usr/bin/python3.12; \
+    alternatives --set python3-config /usr/bin/python3.12-config; \
+    npm install -g corepack;
+
+COPY .yarnrc.yml /opt/opencti/
+
+
+##############################
+### Build back
+##############################
+
+FROM builder AS builder-back
+
+# TAG_VERSION used to generate connector manifest on a tag during yarn build. Default to rolling manifest
+ARG TAG_VERSION
+ENV TAG_VERSION="${TAG_VERSION}"
+
+WORKDIR /opt/opencti/opencti-graphql
+
+# Copy sources necessary for install (preserve cache if no dependency changes)
+COPY opencti-graphql/package.json opencti-graphql/yarn.lock opencti-graphql/patch ./
+COPY opencti-graphql/patch/ ./patch/
+
+RUN yarn install --immutable
+
+# Copy all remaining sources
+COPY opencti-graphql/ ./
+RUN yarn build:prod
+
+##############################
+### Build front
+##############################
+
+FROM builder AS builder-front
+WORKDIR /opt/opencti/opencti-front
+
+# Copy sources necessary for install (preserve cache if no dependency changes)
+COPY opencti-front/package.json opencti-front/yarn.lock ./
+COPY opencti-front/packages/ ./packages/
+
+RUN yarn install --immutable
+
+# Copy all remaining sources
+COPY opencti-front/ ./
+RUN set -eux; \
+    mkdir -p ../opencti-graphql/public; \
+    yarn build;
+
+###############################
+#### Build production image
+###############################
+
+FROM base AS app
+
+COPY opencti-graphql/src/python/requirements.txt /opt/opencti/src/python/requirements.txt
+
+RUN set -eux; \
+    dnf -y module enable nodejs:22; \
+    dnf -y --setopt=install_weak_deps=0 install nodejs python3.12 python3.12-devel; \
+    dnf clean all; \
+    curl -L -o /sbin/tini https://github.com/krallin/tini/releases/latest/download/tini; \
+    chmod +x /sbin/tini; \
+    alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 2; \
+    alternatives --install /usr/bin/python3-config python3-config /usr/bin/python3.12-config 2; \
+    alternatives --set python3 /usr/bin/python3.12; \
+    alternatives --set python3-config /usr/bin/python3.12-config; \
+    python3 -m ensurepip; \
+    pip3 install --no-cache-dir --upgrade pip setuptools wheel; \
+    pip3 install --no-cache-dir --requirement /opt/opencti/src/python/requirements.txt ;
+
+WORKDIR /opt/opencti
+
+COPY --from=builder-back /opt/opencti/opencti-graphql/build/ ./build/
+COPY --from=builder-back /opt/opencti/opencti-graphql/static/ ./static/
+COPY --from=builder-front /opt/opencti/opencti-graphql/public/ ./public/
+COPY opencti-graphql/src/python/ ./src/python/
+COPY opencti-graphql/config/ ./config/
+
+ENV PYTHONUNBUFFERED="1"
+ENV NODE_OPTIONS="--max_old_space_size=12288"
+ENV NODE_ENV="production"
+
+RUN set -eux; \
+    install -m 0777 -d '/opt/opencti/logs'; \
+    install -m 0777 -d '/opt/opencti/telemetry'; \
+    install -m 0777 -d '/opt/opencti/.support';
+
+VOLUME ["/opt/opencti/logs", "/opt/opencti/telemetry", "/opt/opencti/.support"]
+
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["node", "build/back.js"]
