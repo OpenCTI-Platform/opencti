@@ -31,7 +31,7 @@ const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = 
       ],
     },
   },
-  required: ['organizations'],
+  required: ['organizations', 'applyToElements'],
 };
 export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
   id: 'PLAYBOOK_SHARING_COMPONENT',
