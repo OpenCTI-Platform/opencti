@@ -118,6 +118,7 @@ import {
 } from '../modules/authenticationProvider/providers-configuration';
 import { addOrganization } from '../modules/organization/organization-domain';
 import validator from 'validator';
+import xtmOneClient from '../modules/xtm/one/xtm-one-client';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -1781,7 +1782,11 @@ export const issueAuthenticationJWT = async (user, duration = '1h') => {
 export const authenticateUserByJWT = async (context, req, token) => {
   // Peek at the payload without signature verification to check the issuer
   const unverifiedPayload = decodeJwt(token);
-  if (unverifiedPayload.iss === 'filigran-copilot') {
+  // This authentication shortcut is only for tokens issued by xtm-one,
+  // which are used in testing environments and are not signature-verified.
+  // For all other tokens, we require signature verification.
+  // Will be removed soon after introduction of xtm-one.
+  if (xtmOneClient.isConfigured() && unverifiedPayload.iss === 'filigran-copilot') {
     // Copilot tokens are not signature-verified (testing purpose)
     const email = unverifiedPayload.email;
     if (!email) {
