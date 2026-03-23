@@ -1,5 +1,5 @@
 import { useMemo, Suspense } from 'react';
-import { Route, Routes, Navigate, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
@@ -175,12 +175,6 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
                 path="/"
                 element={
                   <AttackPattern attackPatternData={attackPattern} />
-                }
-              />
-              <Route
-                path="/knowledge"
-                element={
-                  <Navigate to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/overview`} replace={true} />
                 }
               />
               <Route

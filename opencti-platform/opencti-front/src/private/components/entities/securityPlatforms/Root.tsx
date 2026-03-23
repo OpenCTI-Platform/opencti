@@ -1,5 +1,5 @@
 import { useMemo, Suspense } from 'react';
-import { Route, Routes, Navigate, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
@@ -174,15 +174,6 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                 element={(
                   <SecurityPlatform
                     securityPlatformData={securityPlatform}
-                  />
-                )}
-              />
-              <Route
-                path="/knowledge"
-                element={(
-                  <Navigate
-                    replace={true}
-                    to={`/dashboard/entities/security_platforms/${securityPlatformId}/knowledge/overview`}
                   />
                 )}
               />

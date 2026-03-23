@@ -1,5 +1,5 @@
 import { useMemo, Suspense } from 'react';
-import { Route, Routes, Navigate, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootNarrativeQuery } from '@components/techniques/narratives/__generated__/RootNarrativeQuery.graphql';
@@ -170,12 +170,6 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
                 path="/"
                 element={
                   <Narrative narrativeData={narrative} />
-                }
-              />
-              <Route
-                path="/knowledge"
-                element={
-                  <Navigate to={`/dashboard/techniques/narratives/${narrativeId}/knowledge/overview`} replace={true} />
                 }
               />
               <Route

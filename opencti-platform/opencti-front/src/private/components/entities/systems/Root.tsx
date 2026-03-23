@@ -1,5 +1,5 @@
 import React, { useMemo, Suspense, useState } from 'react';
-import { Route, Routes, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { propOr } from 'ramda';
@@ -209,15 +209,6 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
                   <System
                     systemData={system}
                     viewAs={viewAs}
-                  />
-                )}
-              />
-              <Route
-                path="/knowledge"
-                element={(
-                  <Navigate
-                    replace={true}
-                    to={`/dashboard/entities/systems/${systemId}/knowledge/overview`}
                   />
                 )}
               />
