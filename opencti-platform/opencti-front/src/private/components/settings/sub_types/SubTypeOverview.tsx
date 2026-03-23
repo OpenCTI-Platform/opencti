@@ -65,6 +65,7 @@ const SubTypeOverview = () => {
   const isDraftWorkspaceType = subType.label === 'DraftWorkspace' && isDraftWorkflowFeatureEnabled;
 
   const isCustomViewsFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
+  const { customViewsSettings } = useOutletContext();
 
   return (
     <Grid container spacing={3}>
@@ -138,7 +139,7 @@ const SubTypeOverview = () => {
         entitySettingsData={subType.settings}
       />
 
-      {isCustomViewsFeatureEnabled && <CustomViewsGrid data={subType.settings} />}
+      {isCustomViewsFeatureEnabled && <CustomViewsGrid data={customViewsSettings} />}
     </Grid>
   );
 };

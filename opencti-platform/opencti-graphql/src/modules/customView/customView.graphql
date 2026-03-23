@@ -8,10 +8,10 @@ type CustomView implements InternalObject & BasicObject {
     updated_at: DateTime!
     # CustomView
     name: String!
-    settings_types: [String!]!
     description: String
     manifest: String
-    authorizedMembers: [MemberAccess!]
+    target_entity_type: String!
+    authorizedMembers: [MemberAccess!]!
 }
 
 # Mutation
@@ -19,35 +19,40 @@ input CustomViewAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
     manifest: String
+    target_entity_type: String!
     authorizedMembers: [MemberAccessInput!]
-    settings_types: [String!]
 }
 
 # Relay connections
-type CustomViewEdge {
-    cursor: String!
-    node: CustomView!
+
+type CustomViewsInfo {
+    id: ID!
+    name: String!
 }
 
-type CustomViewConnection {
-    pageInfo: PageInfo!
-    edges: [CustomViewEdge!]!
+type CustomViewsContext {
+    entity_type: String!
+    custom_views_info: [CustomViewsInfo!]!
 }
 
-enum CustomViewOrdering {
-    name
-    _score
+type CustomViewsInfoForSettings {
+    id: ID!
+    name: String!
+    description: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type CustomViewsSettings {
+    can_have_custom_views: Boolean!
+    custom_views_info: [CustomViewsInfoForSettings!]!
 }
 
 type Query {
-    customView(id: ID!): CustomView @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
-    customViews(
-        first: Int
-        after: ID
-        orderBy: CustomViewOrdering
-        orderMode: OrderingMode
-        search: String
-    ): CustomViewConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    customViewsContext: [CustomViewsContext!]! @auth
+    customView(id: String!): CustomView @auth(for: [EXPLORE])
+    customViewsSettings(id: String!): CustomViewsSettings! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    customViewSettings(id: ID!): CustomView @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
 }
 
 # Mutations

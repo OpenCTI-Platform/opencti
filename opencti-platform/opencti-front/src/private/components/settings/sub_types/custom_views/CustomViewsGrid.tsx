@@ -9,28 +9,18 @@ import CustomViewsLines from '@components/settings/sub_types/custom_views/Custom
 import { graphql, useFragment } from 'react-relay';
 import { CustomViewsGrid_customViews$data, CustomViewsGrid_customViews$key } from '@components/settings/sub_types/custom_views/__generated__/CustomViewsGrid_customViews.graphql';
 
-// A bouger dans CustomViewForm.tsx
-export interface CustomViewFormInputs {
-  name: string;
-  description: string | null;
-  published: boolean;
-}
-
-export type CustomViewType = NonNullable<CustomViewsGrid_customViews$data['customViews']>['edges'][0]['node'];
+export type CustomViewType
+  = NonNullable<CustomViewsGrid_customViews$data['custom_views_info']>;
 
 const customViewsFragment = graphql`
-  fragment CustomViewsGrid_customViews on EntitySetting {
-    id
-    target_type
-    customViews (orderBy: name, orderMode: asc) {
-      edges {
-        node {
-          id
-          name
-          description
-          settings_types
-        }
-      }
+  fragment CustomViewsGrid_customViews on CustomViewsSettings {
+    can_have_custom_views
+    custom_views_info {
+      id
+      name
+      description
+      created_at
+      updated_at
     }
   }
 `;
@@ -42,62 +32,33 @@ interface CustomViewsGridProps {
 const CustomViewsGrid = ({ data }: CustomViewsGridProps) => {
   const { t_i18n } = useFormatter();
   const [dataTableRef, setDataTableRef] = useState<HTMLDivElement | null>(null);
-  const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const [customViewToEdit, setcustomViewToEdit] = useState<{ id: string } & CustomViewFormInputs>();
 
   const dataResolved = useFragment(customViewsFragment, data);
-  if (!dataResolved) return null;
-  const { target_type, customViews, id: entitySettingId } = dataResolved;
-
-  // const onUpdate = (customView: CustomViewType) => {
-  //   setcustomViewToEdit({
-  //     id: customView.id,
-  //     name: customView.name,
-  //     description: customView.description ?? null,
-  //   });
-  //   setDrawerOpen(true);
-  // };
+  const { custom_views_info } = dataResolved;
 
   return (
-    <>
-      <Grid item xs={12}>
-        <Card
-          title={t_i18n('Custom Views')}
-          action={(
-            <div>
-              <Tooltip title={t_i18n('Create a new custom view')}>
-                <IconButton
-                  onClick={() => setDrawerOpen(true)}
-                  size="small"
-                >
-                  <AddIcon fontSize="small" color="primary" />
-                </IconButton>
-              </Tooltip>
-            </div>
-          )}
+    <Grid item xs={12}>
+      <Card
+        title={t_i18n('Custom Views')}
+        action={(
+          <Tooltip title={t_i18n('Create a new custom view')}>
+            <IconButton size="small">
+              <AddIcon fontSize="small" color="primary" />
+            </IconButton>
+          </Tooltip>
+        )}
+      >
+        <div
+          style={{ height: '100%', width: '100%' }}
+          ref={(r) => setDataTableRef(r)}
         >
-          <div style={{ height: '100%', width: '100%' }} ref={(r) => setDataTableRef(r)}>
-            <CustomViewsLines
-              customViews={customViews}
-              dataTableRef={dataTableRef}
-              // onUpdate={onUpdate}
-              entitySettingId={entitySettingId}
-              targetType={target_type}
-            />
-          </div>
-        </Card>
-      </Grid>
-      {/* <CustomViewFormDrawer */}
-      {/*  entitySettingId={entitySettingId} */}
-      {/*  isOpen={isDrawerOpen} */}
-      {/*  customView={customViewToEdit} */}
-      {/*  entityType={target_type} */}
-      {/*  onClose={() => { */}
-      {/*    setDrawerOpen(false); */}
-      {/*    setcustomViewToEdit(undefined); */}
-      {/*  }} */}
-      {/* /> */}
-    </>
+          <CustomViewsLines
+            customViews={custom_views_info}
+            dataTableRef={dataTableRef}
+          />
+        </div>
+      </Card>
+    </Grid>
   );
 };
 
