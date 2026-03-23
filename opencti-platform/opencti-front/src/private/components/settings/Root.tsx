@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import AccessesMenu from './AccessesMenu';
 import useGranted, {
   isOnlyOrganizationAdmin,
@@ -127,9 +127,12 @@ const Root = () => {
     return '/dashboard';
   };
 
+  const location = useLocation();
+  const showAccessesMenu = location.pathname.startsWith('/dashboard/settings/accesses');
+
   return (
     <div data-testid="settings-page">
-      <AccessesMenu />
+      {showAccessesMenu && <AccessesMenu />}
       <Suspense fallback={<Loader />}>
         <Routes>
           <Route
