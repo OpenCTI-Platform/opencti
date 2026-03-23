@@ -2,10 +2,9 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Routes, useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, Route } from 'react-router-dom';
 import { graphql, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import { QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
@@ -13,6 +12,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import DataComponent from './DataComponent';
 import FileManager from '../../common/files/FileManager';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import { RootDataComponentQuery$data } from './__generated__/RootDataComponentQuery.graphql';
 import DataComponentKnowledge from './DataComponentKnowledge';
@@ -120,55 +120,37 @@ const RootDataComponent = () => {
                     redirectToContent={true}
                     enableEnrollPlaybook={true}
                   />
-                  <StixDomainObjectTabsBox
+                  <StixDomainObjectMain
                     basePath="/dashboard/techniques/data_components"
                     entity={dataComponent}
-                    tabs={[
-                      'overview',
-                      'content',
-                      'files',
-                      'history',
-                    ]}
-                  />
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={
-                        <DataComponent dataComponentData={dataComponent} />
-                      }
-                    />
-                    <Route
-                      path="/knowledge/*"
-                      element={
-                        <DataComponentKnowledge data={dataComponent} />
-                      }
-                    />
-                    <Route
-                      path="/content/*"
-                      element={(
+                    pages={{
+                      overview:
+                        <DataComponent dataComponentData={dataComponent} />,
+                      content: (
                         <StixCoreObjectContentRoot
                           stixCoreObject={dataComponent}
                         />
-                      )}
-                    />
-                    <Route
-                      path="/files"
-                      element={(
+                      ),
+                      files: (
                         <FileManager
                           id={dataComponentId}
                           connectorsImport={props.connectorsForImport}
                           connectorsExport={props.connectorsForExport}
                           entity={dataComponent}
                         />
-                      )}
-                    />
-                    <Route
-                      path="/history"
-                      element={
-                        <StixCoreObjectHistory stixCoreObjectId={dataComponentId} />
-                      }
-                    />
-                  </Routes>
+                      ),
+                      history:
+                        <StixCoreObjectHistory stixCoreObjectId={dataComponentId} />,
+                    }}
+                    extraRoutes={(
+                      <Route
+                        path="/knowledge/*"
+                        element={
+                          <DataComponentKnowledge data={dataComponent} />
+                        }
+                      />
+                    )}
+                  />
                 </div>
               );
             }

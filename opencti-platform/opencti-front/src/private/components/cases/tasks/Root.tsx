@@ -2,11 +2,11 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import Security from 'src/utils/Security';
 import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from 'src/utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -113,32 +113,17 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
             disableAuthorizedMembers={true}
             enableEnrollPlaybook={true}
           />
-          <StixDomainObjectTabsBox
+          <StixDomainObjectMain
             basePath="/dashboard/cases/tasks"
             entity={data}
-            tabs={[
-              'overview',
-              'content',
-              'files',
-              'history',
-            ]}
-          />
-          <Routes>
-            <Route
-              path="/"
-              element={<CaseTask taskData={data} enableReferences={enableReferences} />}
-            />
-            <Route
-              path="/content/*"
-              element={(
+            pages={{
+              overview: <CaseTask taskData={data} enableReferences={enableReferences} />,
+              content: (
                 <StixCoreObjectContentRoot
                   stixCoreObject={data}
                 />
-              )}
-            />
-            <Route
-              path="/files"
-              element={(
+              ),
+              files: (
                 <StixCoreObjectFilesAndHistory
                   id={taskId}
                   connectorsExport={connectorsForExport}
@@ -147,15 +132,11 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
                   withoutRelations={true}
                   bypassEntityId={true}
                 />
-              )}
-            />
-            <Route
-              path="/history"
-              element={
-                <StixCoreObjectHistory stixCoreObjectId={taskId} />
-              }
-            />
-          </Routes>
+              ),
+              history:
+                <StixCoreObjectHistory stixCoreObjectId={taskId} />,
+            }}
+          />
         </div>
       ) : (
         <ErrorNotFound />
