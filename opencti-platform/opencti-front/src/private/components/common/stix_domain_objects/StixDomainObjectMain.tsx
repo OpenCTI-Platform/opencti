@@ -1,7 +1,6 @@
 import { ReactNode } from 'react';
-import StixDomainObjectTabsBox, { StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
 import { Route, Routes } from 'react-router-dom';
-import RootCustomView from '@components/custom_views/Root';
+import StixDomainObjectTabsBox, { type StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
 
 interface StixDomainObjectMainProps {
   entity: { id: string; entity_type: string };
@@ -49,7 +48,6 @@ const StixDomainObjectMain = ({ basePath, entity, extraActions, pages, extraRout
         {tabs.includes('history') && (
           <Route path="/history" element={pages.history} />
         )}
-        <Route path="/custom-views/:customViewId" element={<RootCustomView />} />
         {extraRoutes}
       </Routes>
     </>
