@@ -14937,6 +14937,7 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  first_seen?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
   hostVm?: Maybe<Software>;
   id: Scalars['ID']['output'];
@@ -14945,6 +14946,7 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_seen?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   modules?: Maybe<Array<Scalars['String']['output']>>;
@@ -44603,6 +44605,7 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MalwareAnalysisExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<MalwareAnalysisExternalReferencesArgs>>;
+  first_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<MalwareAnalysisGroupingsArgs>>;
   hostVm?: Resolver<Maybe<ResolversTypes['Software']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -44611,6 +44614,7 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MalwareAnalysisJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   modules?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
