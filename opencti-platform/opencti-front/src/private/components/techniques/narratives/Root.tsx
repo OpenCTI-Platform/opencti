@@ -158,7 +158,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
               entity={narrative}
               tabs={[
                 'overview',
-                'knowledge-overview',
+                'knowledge',
                 'content',
                 'analyses',
                 'files',

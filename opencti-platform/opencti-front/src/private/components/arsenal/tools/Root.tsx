@@ -167,7 +167,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               entity={tool}
               tabs={[
                 'overview',
-                'knowledge-overview',
+                'knowledge',
                 'content',
                 'analyses',
                 'files',

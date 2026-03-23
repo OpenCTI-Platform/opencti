@@ -211,7 +211,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               entity={organization}
               tabs={[
                 'overview',
-                'knowledge-overview',
+                'knowledge',
                 'content',
                 'analyses',
                 'sightings',

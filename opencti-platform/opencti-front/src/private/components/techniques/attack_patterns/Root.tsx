@@ -163,7 +163,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               entity={attackPattern}
               tabs={[
                 'overview',
-                'knowledge-overview',
+                'knowledge',
                 'content',
                 'analyses',
                 'files',

@@ -168,7 +168,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               entity={sector}
               tabs={[
                 'overview',
-                'knowledge-overview',
+                'knowledge',
                 'content',
                 'analyses',
                 'sightings',

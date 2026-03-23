@@ -165,7 +165,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
               entity={administrativeArea}
               tabs={[
                 'overview',
-                'knowledge-overview',
+                'knowledge',
                 'content',
                 'analyses',
                 'sightings',
