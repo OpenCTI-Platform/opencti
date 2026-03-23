@@ -15,7 +15,7 @@
       "cookie_secure": false
     },
     "allow_http_resources": true,
-    "public_dashboard_authorized_domains": ""
+    "public_dashboard_authorized_domains": "",
     "app_logs": {
       "logs_level": "info",
       "logs_files": true,
