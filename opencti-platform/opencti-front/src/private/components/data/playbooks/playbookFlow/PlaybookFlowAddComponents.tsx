@@ -44,25 +44,23 @@ const PlaybookFlowAddComponents = ({
   onConfigReplace,
 }: PlaybookFlowAddComponentsProps) => {
   const { t_i18n } = useFormatter();
-  const [componentId, setComponentId] = useState<string | null>(null);
   const [selectedComponent, setSelectedComponent] = useState<PlaybookComponent | null>(null);
 
   useEffect(() => {
     if (action === 'config' && selectedNode?.data?.component) {
-      setComponentId(selectedNode?.data?.component?.id);
       setSelectedComponent(selectedNode.data.component);
     }
   }, [selectedNode, action]);
 
+  const componentId = selectedComponent?.id ?? null;
+
   const handleClose = () => {
     setSelectedNode(null);
     setSelectedEdge(null);
-    setComponentId(null);
     setSelectedComponent(null);
   };
 
-  const handleSelectComponent = (component: PlaybookComponent) => { // ✅
-    setComponentId(component.id);
+  const handleSelectComponent = (component: PlaybookComponent) => {
     setSelectedComponent(component);
   };
 
@@ -73,7 +71,9 @@ const PlaybookFlowAddComponents = ({
   const isUpdate = action === 'config' && selectedNode?.type === 'workflow';
   const componentName = selectedComponent?.name ?? selectedNode?.data?.component?.name;
 
-  const drawerTitle = `${isUpdate ? t_i18n('Update') : t_i18n('Add')} ${componentName} ${t_i18n('component')}`;
+  const drawerTitle = isUpdate
+    ? t_i18n('Update a {component_name} component', { values: { component_name: componentName ? t_i18n(componentName) : '' } })
+    : t_i18n('Add a {component_name} component', { values: { component_name: componentName ? t_i18n(componentName) : '' } });
 
   return (
     <Drawer
