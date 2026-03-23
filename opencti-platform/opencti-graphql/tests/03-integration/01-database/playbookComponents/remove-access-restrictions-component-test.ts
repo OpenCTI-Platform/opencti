@@ -1,154 +1,113 @@
 import { describe, expect, it } from 'vitest';
-import type { StixBundle, StixObject } from '../../../../src/types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../src/schema/stixDomainObject';
 import { PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT } from '../../../../src/modules/playbook/components/remove-access-restrictions-component';
+import { testBundleObject, testExecutor } from './playbook-components-test-utils';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../../src/modules/grouping/grouping-types';
 
 describe('PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT', () => {
-  const reportId = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
-  const secondReportId = 'report--second-report';
-  const baseBundle: StixBundle = {
-    type: 'bundle',
-    spec_version: '2.1',
-    id: 'bundle--test-id',
-    objects: [],
-  } as StixBundle;
+  const REPORT_ID = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
+  const GROUPING_ID = 'grouping--09bd862a-f030-55f2-920a-900c4913d9ff';
 
-  const createBaseBundleObject = (options?: {
-    id?: string;
-    authorizedMembers?: any[];
-    openctiUpsertOperations?: any[];
-    restrictedMembers?: any[];
-  }): StixObject => ({
-    id: options?.id ?? reportId,
-    spec_version: '2.1',
-    type: 'report',
-    name: 'Test Report',
-    extensions: {
-      [STIX_EXT_OCTI]: {
-        id: 'internal-uuid',
+  const access = [{
+    id: 'user-uuid-1',
+    access_right: 'admin',
+    groups_restriction_ids: [],
+  }];
+
+  describe('Bundle scope', () => {
+    const BUNDLE_OBJECTS = () => [
+      testBundleObject({
+        id: REPORT_ID,
         type: ENTITY_TYPE_CONTAINER_REPORT,
-        extension_type: 'property-extension',
-        ...(options?.authorizedMembers && { authorized_members: options.authorizedMembers }),
-        ...(options?.openctiUpsertOperations && {
-          opencti_upsert_operations: options.openctiUpsertOperations,
-        }),
-        ...(options?.restrictedMembers && { restrictedMembers: options.restrictedMembers }),
-      },
-    },
-  } as unknown as StixObject);
+        octiExtension: {
+          authorized_members: access,
+        },
+      }),
+      testBundleObject({
+        id: GROUPING_ID,
+        type: ENTITY_TYPE_CONTAINER_GROUPING,
+        octiExtension: {
+          authorized_members: access,
+        },
+      }),
+    ];
 
-  const basePlaybookNode = {
-    id: 'playbook-node-1',
-    name: 'Remove Access Restrictions Node',
-    component_id: 'PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT',
-  };
+    it('should remove authorized_members only on main element', async () => {
+      const result = await PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: {
+          all: false,
+        },
+      }));
 
-  const baseExecutorParams = {
-    dataInstanceId: reportId,
-    eventId: '',
-    executionId: '',
-    playbookId: '',
-    previousPlaybookNodeId: undefined,
-    previousStepBundle: null as StixBundle | null,
-  };
+      expect(result.output_port).toBe('out');
+      const reportResult = result.bundle.objects.find((o) => o.id === REPORT_ID);
+      const reportExtension = reportResult?.extensions[STIX_EXT_OCTI];
+      const groupingResult = result.bundle.objects.find((o) => o.id === GROUPING_ID);
+      const groupingExtension = groupingResult?.extensions[STIX_EXT_OCTI];
+      expect(reportExtension?.opencti_upsert_operations?.length).toEqual(1);
+      expect(reportExtension?.opencti_upsert_operations?.[0].key).toEqual('restricted_members');
+      expect(reportExtension?.opencti_upsert_operations?.[0].value).toEqual([]);
+      expect(groupingExtension?.opencti_upsert_operations).toBeUndefined();
+    });
 
-  const createPlaybookNode = (all = false) => ({
-    ...basePlaybookNode,
-    configuration: {
-      all,
-    },
+    it('should remove authorized_members of all objects in the bundle', async () => {
+      const result = await PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: {
+          all: true,
+        },
+      }));
+
+      expect(result.output_port).toBe('out');
+      const reportResult = result.bundle.objects.find((o) => o.id === REPORT_ID);
+      const reportExtension = reportResult?.extensions[STIX_EXT_OCTI];
+      const groupingResult = result.bundle.objects.find((o) => o.id === GROUPING_ID);
+      const groupingExtension = groupingResult?.extensions[STIX_EXT_OCTI];
+      expect(reportExtension?.opencti_upsert_operations?.length).toEqual(1);
+      expect(reportExtension?.opencti_upsert_operations?.[0].key).toEqual('restricted_members');
+      expect(reportExtension?.opencti_upsert_operations?.[0].value).toEqual([]);
+      expect(groupingExtension?.opencti_upsert_operations?.length).toEqual(1);
+      expect(groupingExtension?.opencti_upsert_operations?.[0].key).toEqual('restricted_members');
+      expect(groupingExtension?.opencti_upsert_operations?.[0].value).toEqual([]);
+    });
   });
 
-  describe('when removing access restrictions', () => {
-    it('should remove authorized_members from dataInstanceId object when all=false', async () => {
-      const authorizedMembers = [
-        { id: 'user-uuid-1', access_right: 'admin', groups_restriction_ids: [] },
-      ];
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject({ authorizedMembers })],
-      };
+  it('should not modify bundle when dataInstanceId does not match any object', async () => {
+    const result = await PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+      mainId: REPORT_ID,
+      bundleObjects: [testBundleObject({
+        id: 'report--wrong-id',
+        type: ENTITY_TYPE_CONTAINER_REPORT,
+        octiExtension: {
+          authorized_members: access,
+        },
+      })],
+      configuration: {
+        all: false,
+      },
+    }));
 
-      const result = await PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode(false),
-      });
-
-      const authorizedMembersResult = [
-        { id: 'user-uuid-1', access_right: 'admin', groups_restriction_ids: [] },
-      ];
-
-      expect(result.output_port).toBe('out');
-      const ext = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
-      expect(ext.authorized_members).toEqual(authorizedMembersResult);
+    expect(result.output_port).toBe('out');
+    result.bundle.objects.forEach((object) => {
+      const extension = object.extensions[STIX_EXT_OCTI];
+      expect(extension?.opencti_upsert_operations).toBeUndefined();
     });
+  });
 
-    // TODO: remove the skip when cascading of share/unshare/restrict will be done
-    it.skip('should remove authorized_members from all objects when all=true', async () => {
-      const authorizedMembers = [
-        { id: 'user-uuid-1', access_right: 'admin', groups_restriction_ids: [] },
-      ];
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [
-          createBaseBundleObject({ authorizedMembers }),
-          createBaseBundleObject({ id: secondReportId, authorizedMembers }),
-        ],
-      };
+  it('should handle empty bundle', async () => {
+    const result = await PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+      mainId: REPORT_ID,
+      bundleObjects: [],
+      configuration: {
+        all: false,
+      },
+    }));
 
-      const result = await PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode(true),
-      });
-
-      const authorizedMembersResult = [
-        { id: 'user-uuid-1', access_right: 'admin', groups_restriction_ids: [] },
-      ];
-
-      expect(result.output_port).toBe('out');
-      const firstExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
-      expect(firstExt.authorized_members).toEqual(authorizedMembersResult);
-      const secondExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
-      expect(secondExt.authorized_members).toEqual([]);
-    });
-
-    it('should not modify bundle when dataInstanceId does not match any object', async () => {
-      const authorizedMembers = [
-        { id: 'user-uuid-1', access_right: 'admin', groups_restriction_ids: [] },
-      ];
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject({ id: secondReportId, authorizedMembers })],
-      };
-
-      const originalBundle = structuredClone(bundle);
-      const result = await PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode(false),
-      });
-
-      expect(result.output_port).toBe('out');
-      expect(result.bundle).toEqual(originalBundle);
-    });
-
-    it('should handle empty bundle', async () => {
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [],
-      };
-
-      const result = await PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode(true),
-      });
-
-      expect(result.output_port).toBe('out');
-      expect(result.bundle.objects).toEqual([]);
-    });
+    expect(result.output_port).toBe('out');
+    expect(result.bundle.objects).toEqual([]);
   });
 });
