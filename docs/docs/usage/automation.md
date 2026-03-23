@@ -215,7 +215,7 @@ These operations will only remove and & replace data that has been added in the 
 
 ### Container wrapper
 
-Will modify the received STIX 2.1 bundle to include the entities into an container of the type you configured.
+Will modify the received STIX 2.1 bundle to include the entities into a container of the type you configured.
 
 By default, wrapping is applied to the entity triggering the playbook. You can change this behavior with the following options:
 
