@@ -8,7 +8,6 @@ import { RootStixCyberObservableSubscription } from '@components/observations/st
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
-import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixCyberObservable from './StixCyberObservable';
 import StixCyberObservableKnowledge from './StixCyberObservableKnowledge';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -16,7 +15,6 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixCyberObservableHeader from './StixCyberObservableHeader';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import FileManager from '../../common/files/FileManager';
 import { useFormatter } from '../../../../components/i18n';
@@ -139,7 +137,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
               )}
             />
             <Route
-              path="/knowledge"
+              path="/knowledge/*"
               element={(
                 <div key={forceUpdate}>
                   <StixCyberObservableKnowledge
@@ -203,23 +201,6 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
               element={(
                 <StixCoreObjectHistory
                   stixCoreObjectId={observableId}
-                />
-              )}
-            />
-            <Route
-              path="/knowledge/relations/:relationId"
-              element={(
-                <StixCoreRelationship
-                  entityId={observableId}
-                />
-              )}
-            />
-            <Route
-              path="/sightings/:sightingId"
-              element={(
-                <StixSightingRelationship
-                  entityId={observableId}
-                  paddingRight
                 />
               )}
             />
