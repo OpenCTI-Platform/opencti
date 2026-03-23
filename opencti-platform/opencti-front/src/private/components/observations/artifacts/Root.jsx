@@ -1,6 +1,5 @@
 import { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Routes } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
@@ -10,7 +9,7 @@ import StixCyberObservable from '../stix_cyber_observables/StixCyberObservable';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCyberObservableHeader from '../stix_cyber_observables/StixCyberObservableHeader';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import FileManager from '../../common/files/FileManager';
@@ -117,48 +116,29 @@ class RootArtifact extends Component {
                         </Security>
                       )}
                     />
-                    <StixDomainObjectTabsBox
+                    <StixDomainObjectMain
                       basePath="/dashboard/observations/artifacts"
                       entity={stixCyberObservable}
-                      tabs={[
-                        'overview',
-                        'knowledge',
-                        'content',
-                        'analyses',
-                        'sightings',
-                        'files',
-                        'history',
-                      ]}
-                    />
-                    <Routes>
-                      <Route
-                        path="/"
-                        element={(
+                      pages={{
+                        overview: (
                           <StixCyberObservable
                             stixCyberObservableData={stixCyberObservable}
                           />
-                        )}
-                      />
-                      <Route
-                        path="/knowledge/*"
-                        element={(
+                        ),
+                        knowledge: (
                           <ArtifactKnowledge
                             artifact={stixCyberObservable}
                             connectorsForImport={props.connectorsForImport}
                           />
-                        )}
-                      />
-                      <Route
-                        path="/content/*"
-                        element={(
+                        ),
+                        content: (
                           <StixCoreObjectContentRoot
                             stixCoreObject={stixCyberObservable}
                           />
-                        )}
-                      />
-                      <Route
-                        path="/sightings"
-                        element={(
+                        ),
+                        // A TAB with no corresponding route !!
+                        analyses: <ErrorNotFound />,
+                        sightings: (
                           <EntityStixSightingRelationships
                             entityId={observableId}
                             entityLink={link}
@@ -175,11 +155,8 @@ class RootArtifact extends Component {
                               'System',
                             ]}
                           />
-                        )}
-                      />
-                      <Route
-                        path="/files"
-                        element={(
+                        ),
+                        files: (
                           <FileManager
                             id={observableId}
                             connectorsImport={props.connectorsForImport}
@@ -188,17 +165,14 @@ class RootArtifact extends Component {
                             isArtifact={true}
                             directDownload={true}
                           />
-                        )}
-                      />
-                      <Route
-                        path="/history"
-                        element={(
+                        ),
+                        history: (
                           <StixCoreObjectHistory
                             stixCoreObjectId={observableId}
                           />
-                        )}
-                      />
-                    </Routes>
+                        ),
+                      }}
+                    />
                   </div>
                 );
               }

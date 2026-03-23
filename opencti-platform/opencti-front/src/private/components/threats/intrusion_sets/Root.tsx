@@ -5,12 +5,12 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import AIInsights from '@components/common/ai/AIInsights';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import IntrusionSet from './IntrusionSet';
 import IntrusionSetKnowledge from './IntrusionSetKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -176,17 +176,35 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               redirectToContent={true}
               enableEnrollPlaybook={true}
             />
-            <StixDomainObjectTabsBox
+            <StixDomainObjectMain
               basePath="/dashboard/threats/intrusion_sets"
               entity={intrusionSet}
-              tabs={[
-                'overview',
-                'knowledge',
-                'content',
-                'analyses',
-                'files',
-                'history',
-              ]}
+              pages={{
+                overview:
+                  <IntrusionSet intrusionSetData={intrusionSet} />,
+                knowledge: (
+                  <div key={forceUpdate}>
+                    <IntrusionSetKnowledge intrusionSetData={intrusionSet} />
+                  </div>
+                ),
+                content: (
+                  <StixCoreObjectContentRoot
+                    stixCoreObject={intrusionSet}
+                  />
+                ),
+                analyses:
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={intrusionSet} />,
+                files: (
+                  <FileManager
+                    id={intrusionSetId}
+                    connectorsImport={connectorsForImport}
+                    connectorsExport={connectorsForExport}
+                    entity={intrusionSet}
+                  />
+                ),
+                history:
+                  <StixCoreObjectHistory stixCoreObjectId={intrusionSetId} />,
+              }}
               extraActions={isOverview && (
                 <>
                   <AIInsights id={intrusionSet.id} />
@@ -194,53 +212,6 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
                 </>
               )}
             />
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <IntrusionSet intrusionSetData={intrusionSet} />
-                }
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
-                  <div key={forceUpdate}>
-                    <IntrusionSetKnowledge intrusionSetData={intrusionSet} />
-                  </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={intrusionSet}
-                  />
-                )}
-              />
-              <Route
-                path="/analyses"
-                element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={intrusionSet} />
-                }
-              />
-              <Route
-                path="/files"
-                element={(
-                  <FileManager
-                    id={intrusionSetId}
-                    connectorsImport={connectorsForImport}
-                    connectorsExport={connectorsForExport}
-                    entity={intrusionSet}
-                  />
-                )}
-              />
-              <Route
-                path="/history"
-                element={
-                  <StixCoreObjectHistory stixCoreObjectId={intrusionSetId} />
-                }
-              />
-            </Routes>
           </div>
         </>
       ) : (

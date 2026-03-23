@@ -8,11 +8,11 @@ import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Narrative from './Narrative';
 import NarrativeKnowledge from './NarrativeKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -153,65 +153,36 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
                 </Security>
               )}
             />
-            <StixDomainObjectTabsBox
+            <StixDomainObjectMain
               basePath="/dashboard/techniques/narratives"
               entity={narrative}
-              tabs={[
-                'overview',
-                'knowledge',
-                'content',
-                'analyses',
-                'files',
-                'history',
-              ]}
-            />
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <Narrative narrativeData={narrative} />
-                }
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
+              pages={{
+                overview:
+                  <Narrative narrativeData={narrative} />,
+                knowledge: (
                   <div key={forceUpdate}>
                     <NarrativeKnowledge narrativeData={narrative} />
                   </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
+                ),
+                content: (
                   <StixCoreObjectContentRoot
                     stixCoreObject={narrative}
                   />
-                )}
-              />
-              <Route
-                path="/analyses"
-                element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={narrative} />
-                }
-              />
-              <Route
-                path="/files"
-                element={(
+                ),
+                analyses:
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={narrative} />,
+                files: (
                   <FileManager
                     id={narrativeId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={narrative}
                   />
-                )}
-              />
-              <Route
-                path="/history"
-                element={
-                  <StixCoreObjectHistory stixCoreObjectId={narrativeId} />
-                }
-              />
-            </Routes>
+                ),
+                history:
+                  <StixCoreObjectHistory stixCoreObjectId={narrativeId} />,
+              }}
+            />
           </div>
         </>
       ) : (

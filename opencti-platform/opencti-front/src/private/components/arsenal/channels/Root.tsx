@@ -4,13 +4,13 @@ import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'rea
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Channel from './Channel';
 import ChannelKnowledge from './ChannelKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -162,69 +162,42 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               redirectToContent={true}
               enableEnrollPlaybook={true}
             />
-            <StixDomainObjectTabsBox
+            <StixDomainObjectMain
               basePath="/dashboard/arsenal/channels"
               entity={channel}
-              tabs={[
-                'overview',
-                'knowledge',
-                'content',
-                'analyses',
-                'files',
-                'history',
-              ]}
-            />
-            <Routes>
-              <Route
-                path="/"
-                element={(
-                  <Channel channelData={channel} />
-                )}
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
+              pages={{
+                overview:
+                  <Channel channelData={channel} />,
+                knowledge: (
                   <div key={forceUpdate}>
                     <ChannelKnowledge channelData={channel} />
                   </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
+                ),
+                content: (
                   <StixCoreObjectContentRoot
                     stixCoreObject={channel}
                   />
-                )}
-              />
-              <Route
-                path="/analyses/*"
-                element={(
+                ),
+                analyses: (
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={channel}
                   />
-                )}
-              />
-              <Route
-                path="/files"
-                element={(
+                ),
+                files: (
                   <FileManager
                     id={channelId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={channel}
                   />
-                )}
-              />
-              <Route
-                path="/history"
-                element={(
+                ),
+                history: (
                   <StixCoreObjectHistory
                     stixCoreObjectId={channelId}
                   />
-                )}
-              />
-            </Routes>
+                ),
+              }}
+            />
           </div>
         </>
       ) : (

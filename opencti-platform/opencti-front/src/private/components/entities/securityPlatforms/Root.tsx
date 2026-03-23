@@ -10,11 +10,11 @@ import SecurityPlatformKnowledge from '@components/entities/securityPlatforms/Se
 import SecurityPlatformEdition from '@components/entities/securityPlatforms/SecurityPlatformEdition';
 import SecurityPlatformAnalysis from '@components/entities/securityPlatforms/SecurityPlatformAnalysis';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import SecurityPlatform from './SecurityPlatform';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -156,74 +156,48 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
               enableEnricher={true}
               enableEnrollPlaybook={true}
             />
-            <StixDomainObjectTabsBox
+            <StixDomainObjectMain
               basePath="/dashboard/entities/security_platforms"
               entity={securityPlatform}
-              tabs={[
-                'overview',
-                'knowledge',
-                'content',
-                'analyses',
-                'files',
-                'history',
-              ]}
-            />
-            <Routes>
-              <Route
-                path="/"
-                element={(
+              pages={{
+                overview: (
                   <SecurityPlatform
                     securityPlatformData={securityPlatform}
                   />
-                )}
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
+                ),
+                knowledge: (
                   <div key={forceUpdate}>
                     <SecurityPlatformKnowledge
                       securityPlatformData={securityPlatform}
                       relatedRelationshipTypes={['should-cover']}
                     />
                   </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
+                ),
+                content: (
                   <StixCoreObjectContentRoot
                     stixCoreObject={securityPlatform}
                   />
-                )}
-              />
-              <Route
-                path="/analyses"
-                element={(
+                ),
+                analyses: (
                   <SecurityPlatformAnalysis
                     securityPlatform={securityPlatform}
                   />
-                )}
-              />
-              <Route
-                path="/files"
-                element={(
+                ),
+                files: (
                   <FileManager
                     id={securityPlatformId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={securityPlatform}
                   />
-                )}
-              />
-              <Route
-                path="/history"
-                element={(
+                ),
+                history: (
                   <StixCoreObjectHistory
                     stixCoreObjectId={securityPlatformId}
                   />
-                )}
-              />
-            </Routes>
+                ),
+              }}
+            />
           </div>
         </>
       ) : (

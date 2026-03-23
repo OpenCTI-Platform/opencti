@@ -7,7 +7,7 @@ import { RootOrganizationQuery } from '@components/entities/organizations/__gene
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import { RootOrganizationSubscription } from '@components/entities/organizations/__generated__/RootOrganizationSubscription.graphql';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
@@ -206,61 +206,37 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               enableEnricher={true}
               enableEnrollPlaybook={true}
             />
-            <StixDomainObjectTabsBox
+            <StixDomainObjectMain
               basePath="/dashboard/entities/organizations"
               entity={organization}
-              tabs={[
-                'overview',
-                'knowledge',
-                'content',
-                'analyses',
-                'sightings',
-                'files',
-                'history',
-              ]}
-            />
-            <Routes>
-              <Route
-                path="/"
-                element={(
+              pages={{
+                overview: (
                   <Organization
                     organizationData={organization}
                     viewAs={viewAs}
                   />
-                )}
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
+                ),
+                knowledge: (
                   <div key={forceUpdate}>
                     <OrganizationKnowledge
                       organizationData={organization}
                       viewAs={viewAs}
                     />
                   </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
+                ),
+                content: (
                   <StixCoreObjectContentRoot
                     stixCoreObject={organization}
                   />
-                )}
-              />
-              <Route
-                path="/analyses"
-                element={(
+                ),
+                analyses: (
                   <OrganizationAnalysis
                     organization={organization}
                     viewAs={viewAs}
                     onViewAs={handleChangeViewAs}
                   />
-                )}
-              />
-              <Route
-                path="/sightings"
-                element={(
+                ),
+                sightings: (
                   <EntityStixSightingRelationships
                     entityId={organization.id}
                     entityLink={link}
@@ -277,28 +253,22 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                       'System',
                     ]}
                   />
-                )}
-              />
-              <Route
-                path="/files"
-                element={(
+                ),
+                files: (
                   <FileManager
                     id={organizationId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={organization}
                   />
-                )}
-              />
-              <Route
-                path="/history"
-                element={(
+                ),
+                history: (
                   <StixCoreObjectHistory
                     stixCoreObjectId={organizationId}
                   />
-                )}
-              />
-            </Routes>
+                ),
+              }}
+            />
           </div>
         </>
       ) : (
