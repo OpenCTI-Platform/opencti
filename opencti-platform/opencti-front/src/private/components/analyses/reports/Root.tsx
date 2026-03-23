@@ -140,7 +140,7 @@ const RootReport = () => {
                     entity={report}
                     tabs={[
                       'overview',
-                      'knowledge-graph',
+                      'knowledge',
                       'content',
                       'entities',
                       'observables',

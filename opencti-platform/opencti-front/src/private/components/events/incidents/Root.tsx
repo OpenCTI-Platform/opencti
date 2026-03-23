@@ -177,7 +177,7 @@ const RootIncidentComponent = ({ queryRef }) => {
               entity={incident}
               tabs={[
                 'overview',
-                'knowledge-overview',
+                'knowledge',
                 'content',
                 'analyses',
                 'files',

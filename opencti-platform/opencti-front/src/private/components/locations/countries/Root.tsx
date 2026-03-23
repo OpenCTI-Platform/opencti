@@ -165,7 +165,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
               entity={country}
               tabs={[
                 'overview',
-                'knowledge-overview',
+                'knowledge',
                 'content',
                 'analyses',
                 'sightings',

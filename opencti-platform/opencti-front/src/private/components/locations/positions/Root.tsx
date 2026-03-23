@@ -168,7 +168,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
               entity={position}
               tabs={[
                 'overview',
-                'knowledge-overview',
+                'knowledge',
                 'content',
                 'analyses',
                 'sightings',
