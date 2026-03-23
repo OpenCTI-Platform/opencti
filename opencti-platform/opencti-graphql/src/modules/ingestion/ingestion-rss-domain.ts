@@ -16,7 +16,7 @@ import { FunctionalError } from '../../config/errors';
 import type { BasicStoreEntityMarkingDefinition } from '../../types/store';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 
-const MINIMAL_RSS_FEED_COMPATIBLE_VERSION = '7.260317.0';
+const MINIMAL_RSS_FEED_COMPATIBLE_VERSION = '7.260309.0';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionRss>(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS);

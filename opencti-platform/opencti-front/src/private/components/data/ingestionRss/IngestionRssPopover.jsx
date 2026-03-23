@@ -231,11 +231,11 @@ class IngestionRssPopover extends Component {
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
           </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
           <MenuItem onClick={this.handleExport.bind(this)}>
             {t('Export')}
+          </MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+            {t('Delete')}
           </MenuItem>
         </Menu>
         <QueryRenderer
