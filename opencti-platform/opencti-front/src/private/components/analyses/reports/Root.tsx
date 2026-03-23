@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { graphql, useSubscription } from 'react-relay';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
@@ -89,7 +89,6 @@ const RootReport = () => {
     [reportId],
   );
   const location = useLocation();
-  const navigate = useNavigate();
   const enableReferences = useIsEnforceReference('Report') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
@@ -141,7 +140,6 @@ const RootReport = () => {
                         <Report reportFragment={report} />,
                       knowledge: (
                         <ReportKnowledge
-                          navigate={navigate}
                           report={report}
                           enableReferences={enableReferences}
                         />
