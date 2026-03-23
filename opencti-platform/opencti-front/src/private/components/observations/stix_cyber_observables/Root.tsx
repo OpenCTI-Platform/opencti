@@ -1,12 +1,12 @@
 import { Suspense, useMemo } from 'react';
-import { Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { RootStixCyberObservableQuery } from '@components/observations/stix_cyber_observables/__generated__/RootStixCyberObservableQuery.graphql';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootStixCyberObservableSubscription } from '@components/observations/stix_cyber_observables/__generated__/RootStixCyberObservableSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCyberObservable from './StixCyberObservable';
 import StixCyberObservableKnowledge from './StixCyberObservableKnowledge';
@@ -114,59 +114,35 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
               </Security>
             )}
           />
-          <StixDomainObjectTabsBox
+          <StixDomainObjectMain
             basePath="/dashboard/observations/observables"
             entity={stixCyberObservable}
-            tabs={[
-              'overview',
-              'knowledge',
-              'content',
-              'analyses',
-              'sightings',
-              'files',
-              'history',
-            ]}
-          />
-          <Routes>
-            <Route
-              path="/"
-              element={(
+            pages={{
+              overview: (
                 <StixCyberObservable
                   stixCyberObservableData={stixCyberObservable}
                 />
-              )}
-            />
-            <Route
-              path="/knowledge/*"
-              element={(
+              ),
+              knowledge: (
                 <div key={forceUpdate}>
                   <StixCyberObservableKnowledge
                     stixCyberObservable={stixCyberObservable}
                   />
                 </div>
-              )}
-            />
-            <Route
-              path="/content/*"
-              element={(
+              ),
+              content: (
                 <StixCoreObjectContentRoot
                   stixCoreObject={stixCyberObservable}
                 />
-              )}
-            />
-            <Route
-              path="/analyses"
-              element={(
+              ),
+              analyses: (
                 <StixCoreObjectOrStixCoreRelationshipContainers
                   stixDomainObjectOrStixCoreRelationship={
                     stixCyberObservable
                   }
                 />
-              )}
-            />
-            <Route
-              path="/sightings"
-              element={(
+              ),
+              sightings: (
                 <EntityStixSightingRelationships
                   entityId={observableId}
                   entityLink={link}
@@ -183,28 +159,22 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
                     'System',
                   ]}
                 />
-              )}
-            />
-            <Route
-              path="/files"
-              element={(
+              ),
+              files: (
                 <FileManager
                   id={observableId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
                   entity={stixCyberObservable}
                 />
-              )}
-            />
-            <Route
-              path="/history"
-              element={(
+              ),
+              history: (
                 <StixCoreObjectHistory
                   stixCoreObjectId={observableId}
                 />
-              )}
-            />
-          </Routes>
+              ),
+            }}
+          />
         </div>
       ) : (
         <ErrorNotFound />

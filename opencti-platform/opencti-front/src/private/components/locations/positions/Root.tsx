@@ -6,13 +6,13 @@ import { RootPositionQuery } from '@components/locations/positions/__generated__
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { RootPositionsSubscription } from '@components/locations/positions/__generated__/RootPositionsSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Position from './Position';
 import PositionKnowledge from './PositionKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -163,51 +163,25 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
               redirectToContent={true}
               enableEnrollPlaybook={true}
             />
-            <StixDomainObjectTabsBox
+            <StixDomainObjectMain
               basePath="/dashboard/locations/positions"
               entity={position}
-              tabs={[
-                'overview',
-                'knowledge',
-                'content',
-                'analyses',
-                'sightings',
-                'files',
-                'history',
-              ]}
-            />
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <Position position={position} />
-                }
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
+              pages={{
+                overview:
+                  <Position position={position} />,
+                knowledge: (
                   <div key={forceUpdate}>
                     <PositionKnowledge positionData={position} />
                   </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
+                ),
+                content: (
                   <StixCoreObjectContentRoot
                     stixCoreObject={position}
                   />
-                )}
-              />
-              <Route
-                path="/analyses"
-                element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={position} />
-                }
-              />
-              <Route
-                path="/sightings"
-                element={(
+                ),
+                analyses:
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={position} />,
+                sightings: (
                   <EntityStixSightingRelationships
                     entityId={position.id}
                     entityLink={link}
@@ -224,26 +198,19 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
                       'System',
                     ]}
                   />
-                )}
-              />
-              <Route
-                path="/files"
-                element={(
+                ),
+                files: (
                   <FileManager
                     id={positionId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={position}
                   />
-                )}
-              />
-              <Route
-                path="/history"
-                element={
-                  <StixCoreObjectHistory stixCoreObjectId={positionId} />
-                }
-              />
-            </Routes>
+                ),
+                history:
+                  <StixCoreObjectHistory stixCoreObjectId={positionId} />,
+              }}
+            />
           </div>
         </>
       ) : (

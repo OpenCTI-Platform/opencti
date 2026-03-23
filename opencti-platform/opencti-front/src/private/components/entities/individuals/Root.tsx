@@ -7,7 +7,7 @@ import { RootIndividualQuery } from '@components/entities/individuals/__generate
 import { RootIndicatorSubscription } from '@components/observations/indicators/__generated__/RootIndicatorSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
@@ -196,60 +196,36 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               disableSharing={individual.isUser}
               enableEnrollPlaybook={true}
             />
-            <StixDomainObjectTabsBox
+            <StixDomainObjectMain
               basePath="/dashboard/entities/individuals"
               entity={individual}
-              tabs={[
-                'overview',
-                'knowledge',
-                'content',
-                'analyses',
-                'sightings',
-                'files',
-                'history',
-              ]}
-            />
-            <Routes>
-              <Route
-                path="/"
-                element={(
+              pages={{
+                overview: (
                   <Individual
                     individualData={individual}
                     viewAs={viewAs}
                   />
-                )}
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
+                ),
+                knowledge: (
                   <div key={forceUpdate}>
                     <IndividualKnowledge
                       individualData={individual}
                       viewAs={viewAs}
                     />
                   </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
+                ),
+                content: (
                   <StixCoreObjectContentRoot
                     stixCoreObject={individual}
                   />
-                )}
-              />
-              <Route
-                path="/analyses"
-                element={(
+                ),
+                analyses: (
                   <IndividualAnalysis
                     individual={individual}
                     viewAs={viewAs}
                   />
-                )}
-              />
-              <Route
-                path="/sightings"
-                element={(
+                ),
+                sightings: (
                   <EntityStixSightingRelationships
                     entityId={individual.id}
                     entityLink={link}
@@ -266,28 +242,22 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
                       'System',
                     ]}
                   />
-                )}
-              />
-              <Route
-                path="/files"
-                element={(
+                ),
+                files: (
                   <FileManager
                     id={individualId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={individual}
                   />
-                )}
-              />
-              <Route
-                path="/history"
-                element={(
+                ),
+                history: (
                   <StixCoreObjectHistory
                     stixCoreObjectId={individualId}
                   />
-                )}
-              />
-            </Routes>
+                ),
+              }}
+            />
           </div>
         </>
       ) : (
