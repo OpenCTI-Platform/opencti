@@ -6,7 +6,7 @@ import React from 'react';
 import { getCurrentTab } from '../../../../utils/utils';
 import { useFormatter } from '../../../../components/i18n';
 
-type StixDomainObjectTabsBoxTab
+export type StixDomainObjectTabsBoxTab
   = | 'overview'
     | 'knowledge'
     | 'content'
