@@ -194,7 +194,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
               entity={system}
               tabs={[
                 'overview',
-                'knowledge-overview',
+                'knowledge',
                 'content',
                 'analyses',
                 'sightings',

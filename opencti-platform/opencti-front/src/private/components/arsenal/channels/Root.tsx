@@ -167,7 +167,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               entity={channel}
               tabs={[
                 'overview',
-                'knowledge-overview',
+                'knowledge',
                 'content',
                 'analyses',
                 'files',

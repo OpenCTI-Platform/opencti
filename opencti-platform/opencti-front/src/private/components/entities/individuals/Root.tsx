@@ -201,7 +201,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               entity={individual}
               tabs={[
                 'overview',
-                'knowledge-overview',
+                'knowledge',
                 'content',
                 'analyses',
                 'sightings',

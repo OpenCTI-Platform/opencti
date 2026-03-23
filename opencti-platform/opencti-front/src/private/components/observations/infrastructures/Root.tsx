@@ -137,7 +137,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             entity={infrastructure}
             tabs={[
               'overview',
-              'knowledge-overview',
+              'knowledge',
               'content',
               'analyses',
               'files',

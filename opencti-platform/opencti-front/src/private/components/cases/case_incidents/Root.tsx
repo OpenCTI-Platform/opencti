@@ -138,7 +138,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
         entity={caseData}
         tabs={[
           'overview',
-          'knowledge-graph',
+          'knowledge',
           'content',
           'entities',
           'observables',

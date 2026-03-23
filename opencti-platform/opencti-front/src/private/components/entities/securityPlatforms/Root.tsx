@@ -161,7 +161,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
               entity={securityPlatform}
               tabs={[
                 'overview',
-                'knowledge-overview',
+                'knowledge',
                 'content',
                 'analyses',
                 'files',

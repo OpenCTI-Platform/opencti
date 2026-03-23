@@ -163,7 +163,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
               entity={event}
               tabs={[
                 'overview',
-                'knowledge-overview',
+                'knowledge',
                 'content',
                 'analyses',
                 'sightings',

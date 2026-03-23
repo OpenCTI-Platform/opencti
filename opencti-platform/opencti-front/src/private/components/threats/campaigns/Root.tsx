@@ -175,7 +175,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               entity={campaign}
               tabs={[
                 'overview',
-                'knowledge-overview',
+                'knowledge',
                 'content',
                 'analyses',
                 'files',
