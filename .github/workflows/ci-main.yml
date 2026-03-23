@@ -35,12 +35,23 @@ jobs:
             backend:
               - 'opencti-platform/opencti-graphql/**'
               - 'opencti-platform/*'
+              - '.github/workflows/**'
+              - 'scripts/ci/**'
+              - 'package.json'
+              - 'yarn.lock'
+              - '.yarnrc.yml'
             frontend:
               - 'opencti-platform/opencti-front/**'
+              - '.github/workflows/**'
+              - 'scripts/ci/**'
             client_python:
               - 'client-python/**'
+              - '.github/workflows/**'
+              - 'scripts/ci/**'
             worker:
               - 'opencti-worker/**'
+              - '.github/workflows/**'
+              - 'scripts/ci/**'
 
   wf-build-image:
       name: Build image
