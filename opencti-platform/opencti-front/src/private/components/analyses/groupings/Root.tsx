@@ -140,7 +140,7 @@ const RootGrouping = () => {
                     entity={grouping}
                     tabs={[
                       'overview',
-                      'knowledge',
+                      'knowledge-graph',
                       'content',
                       'entities',
                       'observables',
