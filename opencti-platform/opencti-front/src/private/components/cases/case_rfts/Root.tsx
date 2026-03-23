@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
@@ -165,15 +165,6 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
             <StixCoreObjectContentRoot
               stixCoreObject={caseData}
               isContainer={true}
-            />
-          )}
-        />
-        <Route
-          path="/knowledge"
-          element={(
-            <Navigate
-              replace={true}
-              to={`/dashboard/cases/rfts/${caseId}/knowledge/graph`}
             />
           )}
         />

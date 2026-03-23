@@ -1,5 +1,5 @@
 import { Suspense, useMemo } from 'react';
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
@@ -179,15 +179,6 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                 path="/"
                 element={(
                   <Channel channelData={channel} />
-                )}
-              />
-              <Route
-                path="/knowledge"
-                element={(
-                  <Navigate
-                    replace={true}
-                    to={`/dashboard/arsenal/channels/${channelId}/knowledge/overview`}
-                  />
                 )}
               />
               <Route

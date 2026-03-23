@@ -1,5 +1,5 @@
 import { Suspense, useMemo } from 'react';
-import { Route, Routes, Navigate, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { RootThreatActorGroupQuery } from '@components/threats/threat_actors_group/__generated__/RootThreatActorGroupQuery.graphql';
@@ -186,12 +186,6 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                 path="/"
                 element={
                   <ThreatActorGroup threatActorGroupData={threatActorGroup} />
-                }
-              />
-              <Route
-                path="/knowledge"
-                element={
-                  <Navigate to={`/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge/overview`} replace={true} />
                 }
               />
               <Route

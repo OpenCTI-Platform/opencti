@@ -1,5 +1,5 @@
 import { Suspense, useMemo } from 'react';
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootSectorQuery } from '@components/entities/sectors/__generated__/RootSectorQuery.graphql';
@@ -182,15 +182,6 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                 path="/"
                 element={(
                   <Sector sectorData={sector} />
-                )}
-              />
-              <Route
-                path="/knowledge"
-                element={(
-                  <Navigate
-                    replace={true}
-                    to={`/dashboard/entities/sectors/${sectorId}/knowledge/overview`}
-                  />
                 )}
               />
               <Route
