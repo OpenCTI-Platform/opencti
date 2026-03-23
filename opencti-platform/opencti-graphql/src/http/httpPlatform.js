@@ -104,21 +104,8 @@ const createApp = async (app, schema) => {
   }
 
   // Configure server security
-  const buildSecurity = (opts) => helmet({
-    expectCt: { enforce: true, maxAge: 30 },
-    referrerPolicy: { policy: 'unsafe-url' },
-    crossOriginEmbedderPolicy: false,
-    crossOriginOpenerPolicy: false,
-    crossOriginResourcePolicy: false,
-    contentSecurityPolicy: opts.contentSecurityPolicy,
-    xFrameOptions: !opts.isIframeAllowed,
-  });
-
-  // old path was app:public_dashboard_authorized_domains
-  // and new is under http_server so we keep them both for compatibility
   const publicDashboardAuthorizedDomains = nconf.get('app:public_dashboard_authorized_domains');
   const ancestorsFromConfig = publicDashboardAuthorizedDomains?.trim() ?? '';
-
   const isHttpResourceAllowed = booleanConf('app:allow_http_resources', true);
 
   const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
@@ -141,28 +128,11 @@ const createApp = async (app, schema) => {
     objectSrc.push('http://*');
   }
 
-  const indexSecurityOpts = {
-    isIframeAllowed: false,
-    contentSecurityPolicy: {
-      useDefaults: false,
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc,
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrcAttr: ["'none'"],
-        fontSrc: ["'self'", 'data:'],
-        imgSrc,
-        manifestSrc,
-        connectSrc,
-        objectSrc,
-        frameSrc: allowedFrameSrc,
-        frameAncestors: "'none'",
-      },
-    },
-  };
-
-  const publicSecurity = {
-    isIframeAllowed: frameAncestorDomains !== "'none'",
+  const publicSecurityMiddleware = helmet({
+    referrerPolicy: { policy: 'unsafe-url' },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
     contentSecurityPolicy: {
       useDefaults: false,
       directives: {
@@ -179,17 +149,52 @@ const createApp = async (app, schema) => {
         frameAncestors: frameAncestorDomains,
       },
     },
-  };
+    xFrameOptions: frameAncestorDomains === "'none'",
+  });
+
+  const indexSecurityMiddleware = helmet({
+    referrerPolicy: { policy: 'unsafe-url' },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc,
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrcAttr: ["'none'"],
+        fontSrc: ["'self'", 'data:'],
+        imgSrc,
+        manifestSrc,
+        connectSrc,
+        objectSrc,
+        frameAncestors: "'none'",
+      },
+    },
+  });
+
+  // CSP with scriptSrc is required for the window.BASE_PATH propagation on frontend.
+  const defaultSecurityMiddleware = helmet({
+    referrerPolicy: { policy: 'unsafe-url' },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        scriptSrc,
+      },
+    },
+  });
 
   app.use((req, res, next) => {
     const urlString = req.url;
     if (urlString && (urlString.startsWith(`${basePath}/public`))) {
-      console.log('Security for /public');
-      const securityMiddleware = buildSecurity(publicSecurity);
-      securityMiddleware(req, res, next);
+      publicSecurityMiddleware(req, res, next);
+    } else if (urlString && (urlString.includes('/dashboard'))) {
+      indexSecurityMiddleware(req, res, next);
     } else {
-      const securityMiddleware = buildSecurity(indexSecurityOpts);
-      securityMiddleware(req, res, next);
+      defaultSecurityMiddleware(req, res, next);
     }
   });
 
