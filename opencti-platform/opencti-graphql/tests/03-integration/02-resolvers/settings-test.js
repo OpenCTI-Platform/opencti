@@ -211,7 +211,12 @@ describe('Settings resolver standard behavior', () => {
       expect(aiResult.errors).toBeDefined();
       expect(aiResult.errors.length).toEqual(1);
       const errorMessage = aiResult.errors.at(0).message;
-      expect(['AI is disabled in platform settings', 'Enterprise edition is not enabled']).toContain(errorMessage);
+      if (errorMessage === 'Enterprise edition is not enabled') {
+        // eslint-disable-next-line no-console
+        console.warn('Skipping platform_ai_enabled guard assertion: enterprise edition is not enabled.');
+        return;
+      }
+      expect(errorMessage).toBe('AI is disabled in platform settings');
     } finally {
       try {
         await queryAsAdmin({
