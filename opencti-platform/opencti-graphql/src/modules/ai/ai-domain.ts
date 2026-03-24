@@ -19,7 +19,7 @@ import nconf from 'nconf';
 import { logApp } from '../../config/conf';
 import { FunctionalError, UnknownError } from '../../config/errors';
 import { getEntityFromCache } from '../../database/cache';
-import { queryAi, queryNLQAi, setAiEnabled } from '../../database/ai-llm';
+import { queryAi, queryNLQAi, setAiEnabled, setAiEnabledWithOptions } from '../../database/ai-llm';
 import { elSearchFiles } from '../../database/file-search';
 import { storeLoadById } from '../../database/middleware-loader';
 import { isEmptyField } from '../../database/utils';
@@ -64,10 +64,7 @@ const checkPlatformAiEnabled = async (context: AuthContext) => {
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const aiEnabled = settings.platform_ai_enabled !== false;
     if (lastPlatformAiEnabled === null) {
-      // First check: only (re)initialize AI clients if the platform starts with AI enabled.
-      if (aiEnabled) {
-        await setAiEnabled(true);
-      }
+      await setAiEnabledWithOptions(aiEnabled, { initializeClients: false });
     } else if (lastPlatformAiEnabled !== aiEnabled) {
       // Subsequent checks: propagate actual state changes.
       await setAiEnabled(aiEnabled);

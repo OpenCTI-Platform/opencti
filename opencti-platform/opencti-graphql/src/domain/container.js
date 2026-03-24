@@ -35,7 +35,10 @@ import { paginatedForPathWithEnrichment } from '../modules/internal/document/doc
 import { checkEnterpriseEdition, isEnterpriseEdition } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 import { getContainerKnowledge, resolveFiles } from '../utils/ai/dataResolutionHelpers';
-import { queryAi } from '../database/ai-llm';
+import { queryAi, setAiEnabledWithOptions } from '../database/ai-llm';
+import { getEntityFromCache } from '../database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { SYSTEM_USER } from '../utils/access';
 import { notify } from '../database/redis';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
@@ -43,6 +46,15 @@ import { toB64 } from '../utils/base64';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
+
+const checkPlatformAiEnabled = async (context) => {
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const aiEnabled = settings.platform_ai_enabled !== false;
+  await setAiEnabledWithOptions(aiEnabled, { initializeClients: false });
+  if (!aiEnabled) {
+    throw FunctionalError('AI is disabled in platform settings');
+  }
+};
 
 export const findById = async (context, user, containerId) => {
   return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);
@@ -396,6 +408,7 @@ export const aiSummary = async (context, user, args) => {
   ${JSON.stringify(content)}
   `;
 
+  await checkPlatformAiEnabled(context);
   const result = await queryAi(busId, systemPrompt, userPromptReport, user);
   const topics = await queryAi(null, systemPrompt, userPromptTopics, user);
 

@@ -57,7 +57,7 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '
 import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
-import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { defaultValidationMode, deleteFile, loadFile, storeFileConverter, uploadToStorage } from '../database/file-storage';
 import { getFileContent } from '../database/raw-file-storage';
 import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
@@ -95,7 +95,8 @@ import {
   getVictimologyStats,
   systemPrompt,
 } from '../utils/ai/dataResolutionHelpers';
-import { queryAi } from '../database/ai-llm';
+import { queryAi, setAiEnabledWithOptions } from '../database/ai-llm';
+import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
@@ -128,6 +129,15 @@ const victims = [
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_EVENT,
 ];
+
+const checkPlatformAiEnabled = async (context) => {
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const aiEnabled = settings.platform_ai_enabled !== false;
+  await setAiEnabledWithOptions(aiEnabled, { initializeClients: false });
+  if (!aiEnabled) {
+    throw FunctionalError('AI is disabled in platform settings');
+  }
+};
 
 const extractStixCoreObjectTypesFromArgs = (args) => {
   let types = [];
@@ -1144,6 +1154,7 @@ export const aiForecast = async (context, user, args) => {
 
 export const aiHistory = async (context, user, args) => {
   await checkEnterpriseEdition(context);
+  await checkPlatformAiEnabled(context);
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
   const identifier = `${id}-history`;
@@ -1189,6 +1200,7 @@ export const aiHistory = async (context, user, args) => {
 
 // region prompts for threats
 export const aiActivityForThreats = async (context, user, stixCoreObject, language) => {
+  await checkPlatformAiEnabled(context);
   const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topSectors = {};
@@ -1261,6 +1273,7 @@ export const aiActivityForThreats = async (context, user, stixCoreObject, langua
 };
 
 export const aiActivityTrendForThreats = async (context, user, stixCoreObject) => {
+  await checkPlatformAiEnabled(context);
   const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
 
@@ -1305,6 +1318,7 @@ export const aiActivityTrendForThreats = async (context, user, stixCoreObject) =
 };
 
 export const aiForecastForThreats = async (context, user, stixCoreObject, language) => {
+  await checkPlatformAiEnabled(context);
   const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topSectors = {};
