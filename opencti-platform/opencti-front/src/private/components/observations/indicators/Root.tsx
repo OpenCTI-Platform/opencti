@@ -26,6 +26,7 @@ import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../uti
 import IndicatorEdition from './IndicatorEdition';
 import IndicatorDeletion from './IndicatorDeletion';
 import IndicatorKnowledge from './IndicatorKnowledge';
+import { PATH_INDICATOR, PATH_INDICATORS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -96,15 +97,16 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
   } = usePreloadedQuery<RootIndicatorQuery>(indicatorQuery, queryRef);
 
   const { forceUpdate } = useForceUpdate();
-  const link = `/dashboard/observations/indicators/${indicatorId}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, indicatorId, '/dashboard/observations/indicators', false);
+  const basePath = PATH_INDICATOR(indicatorId);
+  const link = `${basePath}/knowledge`;
+  const paddingRight = getPaddingRight(location.pathname, basePath, false);
   return (
     <CreateRelationshipContextProvider>
       {indicator ? (
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Observations') },
-            { label: t_i18n('Indicators'), link: '/dashboard/observations/indicators' },
+            { label: t_i18n('Indicators'), link: PATH_INDICATORS },
             { label: (indicator.name ?? indicator.pattern ?? ''), current: true },
           ]}
           />
@@ -134,8 +136,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
             redirectToContent={true}
           />
           <StixDomainObjectMain
-            basePath="/dashboard/observations/indicators"
-            entity={indicator}
+            basePath={basePath}
             pages={{
               overview: <Indicator indicatorData={indicator} />,
               knowledge: (

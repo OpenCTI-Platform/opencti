@@ -24,6 +24,7 @@ import Security from '../../../../utils/Security';
 import DataComponentEdition from './DataComponentEdition';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import DataComponentDeletion from './DataComponentDeletion';
+import { PATH_DATA_COMPONENT, PATH_DATA_COMPONENTS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootDataComponentSubscription($id: ID!) {
@@ -94,12 +95,13 @@ const RootDataComponent = () => {
           if (props) {
             if (props.dataComponent) {
               const { dataComponent } = props;
-              const paddingRight = getPaddingRight(location.pathname, dataComponent.id, '/dashboard/techniques/data_components', false);
+              const basePath = PATH_DATA_COMPONENT(dataComponentId);
+              const paddingRight = getPaddingRight(location.pathname, basePath, false);
               return (
                 <div style={{ paddingRight }}>
                   <Breadcrumbs elements={[
                     { label: t_i18n('Techniques') },
-                    { label: t_i18n('Data components'), link: '/dashboard/techniques/data_components' },
+                    { label: t_i18n('Data components'), link: PATH_DATA_COMPONENTS },
                     { label: dataComponent.name, current: true },
                   ]}
                   />
@@ -121,8 +123,7 @@ const RootDataComponent = () => {
                     enableEnrollPlaybook={true}
                   />
                   <StixDomainObjectMain
-                    basePath="/dashboard/techniques/data_components"
-                    entity={dataComponent}
+                    basePath={basePath}
                     pages={{
                       overview:
                         <DataComponent dataComponentData={dataComponent} />,

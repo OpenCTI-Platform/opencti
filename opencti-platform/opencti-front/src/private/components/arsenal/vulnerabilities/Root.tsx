@@ -26,6 +26,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import VulnerabilityEdition from './VulnerabilityEdition';
 import VulnerabilityDeletion from './VulnerabilityDeletion';
+import { PATH_VULNERABILITIES, PATH_VULNERABILITY } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootVulnerabilitySubscription($id: ID!) {
@@ -99,8 +100,9 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
 
   const { forceUpdate } = useForceUpdate();
 
-  const paddingRight = getPaddingRight(location.pathname, vulnerabilityId, '/dashboard/arsenal/vulnerabilities');
-  const link = `/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge`;
+  const basePath = PATH_VULNERABILITY(vulnerabilityId);
+  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
       {vulnerability ? (
@@ -133,7 +135,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Arsenal') },
-              { label: t_i18n('Vulnerabilities'), link: '/dashboard/arsenal/vulnerabilities' },
+              { label: t_i18n('Vulnerabilities'), link: PATH_VULNERABILITIES },
               { label: vulnerability.name, current: true },
             ]}
             />
@@ -164,8 +166,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/arsenal/vulnerabilities"
-              entity={vulnerability}
+              basePath={basePath}
               pages={{
                 overview: (
                   <Vulnerability

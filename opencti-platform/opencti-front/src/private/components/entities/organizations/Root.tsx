@@ -29,6 +29,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import OrganizationEdition from './OrganizationEdition';
 import OrganizationDeletion from './OrganizationDeletion';
+import { PATH_ORGANIZATION, PATH_ORGANIZATIONS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -135,8 +136,9 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
 
   const { forceUpdate } = useForceUpdate();
 
-  const link = `/dashboard/entities/organizations/${organizationId}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, organizationId, '/dashboard/entities/organizations', viewAs === 'knowledge');
+  const basePath = PATH_ORGANIZATION(organizationId);
+  const link = `${basePath}/knowledge`;
+  const paddingRight = getPaddingRight(location.pathname, basePath, viewAs === 'knowledge');
   return (
     <CreateRelationshipContextProvider>
       {organization ? (
@@ -172,7 +174,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: t_i18n('Organizations'), link: '/dashboard/entities/organizations' },
+              { label: t_i18n('Organizations'), link: PATH_ORGANIZATIONS },
               { label: organization.name, current: true },
             ]}
             />
@@ -207,8 +209,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/entities/organizations"
-              entity={organization}
+              basePath={basePath}
               pages={{
                 overview: (
                   <Organization

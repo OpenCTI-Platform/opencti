@@ -29,6 +29,7 @@ import IndividualEdition from './IndividualEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import IndividualDeletion from './IndividualDeletion';
+import { PATH_INDIVIDUAL, PATH_INDIVIDUALS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {
@@ -127,10 +128,11 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
 
   const { forceUpdate } = useForceUpdate();
 
-  const link = `/dashboard/entities/individuals/${individualId}/knowledge`;
+  const basePath = PATH_INDIVIDUAL(individualId);
+  const link = `${basePath}/knowledge`;
   let paddingRight = 0;
   if (viewAs === 'knowledge') {
-    paddingRight = getPaddingRight(location.pathname, individualId, '/dashboard/entities/individuals');
+    paddingRight = getPaddingRight(location.pathname, basePath);
   }
 
   return (
@@ -164,7 +166,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: t_i18n('Individuals'), link: '/dashboard/entities/individuals' },
+              { label: t_i18n('Individuals'), link: PATH_INDIVIDUALS },
               { label: individual.name, current: true },
             ]}
             />
@@ -197,8 +199,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/entities/individuals"
-              entity={individual}
+              basePath={basePath}
               pages={{
                 overview: (
                   <Individual

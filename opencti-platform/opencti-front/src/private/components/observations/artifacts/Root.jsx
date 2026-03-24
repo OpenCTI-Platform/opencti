@@ -20,6 +20,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import StixCyberObservableDeletion from '../stix_cyber_observables/StixCyberObservableDeletion';
 import ArtifactKnowledge from './ArtifactKnowledge';
+import { PATH_ARTIFACT, PATH_ARTIFACTS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootArtifactSubscription($id: ID!) {
@@ -88,7 +89,8 @@ class RootArtifact extends Component {
       location,
       params: { observableId },
     } = this.props;
-    const link = `/dashboard/observations/artifacts/${observableId}/knowledge`;
+    const basePath = PATH_ARTIFACT(observableId);
+    const link = `${basePath}/knowledge`;
     return (
       <>
         <QueryRenderer
@@ -98,12 +100,12 @@ class RootArtifact extends Component {
             if (props) {
               if (props.stixCyberObservable) {
                 const { stixCyberObservable } = props;
-                const paddingRight = getPaddingRight(location.pathname, stixCyberObservable.id, '/dashboard/observations/artifacts', false);
+                const paddingRight = getPaddingRight(location.pathname, basePath, false);
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs elements={[
                       { label: t('Observations') },
-                      { label: t('Artifacts'), link: '/dashboard/observations/artifacts' },
+                      { label: t('Artifacts'), link: PATH_ARTIFACTS },
                       { label: stixCyberObservable.observable_value, current: true },
                     ]}
                     />
@@ -117,8 +119,7 @@ class RootArtifact extends Component {
                       )}
                     />
                     <StixDomainObjectMain
-                      basePath="/dashboard/observations/artifacts"
-                      entity={stixCyberObservable}
+                      basePath={basePath}
                       pages={{
                         overview: (
                           <StixCyberObservable
@@ -136,8 +137,6 @@ class RootArtifact extends Component {
                             stixCoreObject={stixCyberObservable}
                           />
                         ),
-                        // A TAB with no corresponding route !!
-                        analyses: <ErrorNotFound />,
                         sightings: (
                           <EntityStixSightingRelationships
                             entityId={observableId}

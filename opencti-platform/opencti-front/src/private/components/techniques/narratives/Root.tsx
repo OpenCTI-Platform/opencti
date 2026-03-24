@@ -26,6 +26,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import NarrativeEdition from './NarrativeEdition';
 import NarrativeDeletion from './NarrativeDeletion';
+import { PATH_NARRATIVE, PATH_NARRATIVES } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootNarrativeSubscription($id: ID!) {
@@ -98,8 +99,9 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
 
   const { forceUpdate } = useForceUpdate();
 
-  const paddingRight = getPaddingRight(location.pathname, narrativeId, '/dashboard/techniques/narratives');
-  const link = `/dashboard/techniques/narratives/${narrativeId}/knowledge`;
+  const basePath = PATH_NARRATIVE(narrativeId);
+  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
       {narrative ? (
@@ -127,7 +129,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Techniques') },
-              { label: t_i18n('Narratives'), link: '/dashboard/techniques/narratives' },
+              { label: t_i18n('Narratives'), link: PATH_NARRATIVES },
               { label: narrative.name, current: true },
             ]}
             />
@@ -154,8 +156,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
               )}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/techniques/narratives"
-              entity={narrative}
+              basePath={basePath}
               pages={{
                 overview:
                   <Narrative narrativeData={narrative} />,

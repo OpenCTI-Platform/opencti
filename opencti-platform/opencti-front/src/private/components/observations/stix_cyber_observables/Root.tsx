@@ -23,6 +23,7 @@ import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import StixCyberObservableDeletion from './StixCyberObservableDeletion';
+import { PATH_OBSERVABLE, PATH_OBSERVABLES } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootStixCyberObservableSubscription($id: ID!) {
@@ -92,8 +93,9 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
 
   const { forceUpdate } = useForceUpdate();
 
-  const paddingRight = getPaddingRight(location.pathname, observableId, '/dashboard/observations/observables', false);
-  const link = `/dashboard/observations/observables/${observableId}/knowledge`;
+  const basePath = PATH_OBSERVABLE(observableId);
+  const paddingRight = getPaddingRight(location.pathname, basePath, false);
+  const link = `${basePath}/knowledge`;
 
   return (
     <>
@@ -101,7 +103,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Observations') },
-            { label: t_i18n('Observables'), link: '/dashboard/observations/observables' },
+            { label: t_i18n('Observables'), link: PATH_OBSERVABLES },
             { label: stixCyberObservable.observable_value, current: true },
           ]}
           />
@@ -115,8 +117,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
             )}
           />
           <StixDomainObjectMain
-            basePath="/dashboard/observations/observables"
-            entity={stixCyberObservable}
+            basePath={basePath}
             pages={{
               overview: (
                 <StixCyberObservable

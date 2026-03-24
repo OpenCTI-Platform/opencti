@@ -30,6 +30,7 @@ import AdministrativeAreaEdition from './AdministrativeAreaEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import AdministrativeAreaDeletion from './AdministrativeAreaDeletion';
+import { PATH_ADMINISTRATIVE_AREA, PATH_ADMINISTRATIVE_AREAS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootAdministrativeAreasSubscription($id: ID!) {
@@ -93,8 +94,9 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
   const data = usePreloadedQuery(administrativeAreaQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
   const { administrativeArea, connectorsForImport, connectorsForExport } = data;
-  const link = `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, administrativeArea?.id, '/dashboard/locations/administrative_areas');
+  const basePath = PATH_ADMINISTRATIVE_AREA(administrativeAreaId);
+  const link = `${basePath}/knowledge`;
+  const paddingRight = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
       {administrativeArea ? (
@@ -128,7 +130,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
-              { label: t_i18n('Administrative areas'), link: '/dashboard/locations/administrative_areas' },
+              { label: t_i18n('Administrative areas'), link: PATH_ADMINISTRATIVE_AREAS },
               { label: administrativeArea.name, current: true },
             ]}
             />
@@ -161,8 +163,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/locations/administrative_areas"
-              entity={administrativeArea}
+              basePath={basePath}
               pages={{
                 overview:
                   <AdministrativeArea administrativeAreaData={administrativeArea} />,

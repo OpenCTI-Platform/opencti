@@ -1,4 +1,4 @@
-import { SyntheticEvent, useReducer } from 'react';
+import { SyntheticEvent, useEffect, useReducer, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
@@ -132,6 +132,7 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
   const location = useLocation();
   const { '*': mode = 'graph' } = useParams();
   const LOCAL_STORAGE_KEY = `report-knowledge-${props.report.id}`;
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [state, dispatch] = useReducer<
     ReportKnowledgeComponentState,
     ReturnType<typeof buildViewParamsFromUrlAndStorage>,
@@ -156,14 +157,21 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
     state,
   );
 
+  useEffect(() => {
+    if (hasUnsavedChanges) {
+      saveView();
+      setHasUnsavedChanges(false);
+    }
+  }, [hasUnsavedChanges]);
+
   const handleToggleTimeLineDisplayRelationships = () => {
     dispatch({ type: 'toggle-timeline-display-relationships' });
-    saveView();
+    setHasUnsavedChanges(true);
   };
 
   const handleToggleTimeLineFunctionalDate = () => {
     dispatch({ type: 'toggle-timeline-functional-date' });
-    saveView();
+    setHasUnsavedChanges(true);
   };
 
   const handleAddTimeLineFilter = (
@@ -184,7 +192,7 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
       filterKeysSchema,
       op,
     });
-    saveView();
+    setHasUnsavedChanges(true);
   };
 
   const handleRemoveTimeLineFilter = (key: string, op: string = 'eq') => {
@@ -193,7 +201,7 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
       key,
       op,
     });
-    saveView();
+    setHasUnsavedChanges(true);
   };
 
   const handleSwitchFilterLocalMode = (localFilter: Filter) => {
@@ -201,12 +209,12 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
       type: 'switch-filter-local-mode',
       localFilter,
     });
-    saveView();
+    setHasUnsavedChanges(true);
   };
 
   const handleSwitchFilterGlobalMode = () => {
     dispatch({ type: 'switch-filter-global-mode' });
-    saveView();
+    setHasUnsavedChanges(true);
   };
 
   const handleTimeLineSearch = (value: string) => {
@@ -214,7 +222,7 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
       type: 'timeline-search',
       value,
     });
-    saveView();
+    setHasUnsavedChanges(true);
   };
 
   const { report, enableReferences } = props;
@@ -228,8 +236,8 @@ const ReportKnowledgeComponent = (props: ReportKnowledgeComponentProps) => {
   const defaultTypes = timeLineDisplayRelationships
     ? ['stix-core-relationship']
     : ['Stix-Core-Object'];
-  const types = timeLineFilters.filters.filter((n) => n.key === 'entity_type').at(0)
-    ?.values?.length ?? 0 > 0
+  const types = (timeLineFilters.filters.filter((n) => n.key === 'entity_type').at(0)
+    ?.values?.length ?? 0) > 0
     ? []
     : defaultTypes;
   let orderBy = 'created_at';

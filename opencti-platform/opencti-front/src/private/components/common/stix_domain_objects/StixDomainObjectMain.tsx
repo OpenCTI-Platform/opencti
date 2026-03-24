@@ -1,23 +1,21 @@
-import { ReactNode } from 'react';
+import { ReactElement, ReactNode } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import StixDomainObjectTabsBox, { type StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
 
 interface StixDomainObjectMainProps {
-  entity: { id: string; entity_type: string };
   basePath: string;
   pages: Partial<Record<StixDomainObjectTabsBoxTab, ReactNode>>;
   extraActions?: ReactNode;
-  extraRoutes?: ReactNode;
+  extraRoutes?: ReactElement<typeof Route> | ReactElement<typeof Route>[];
 }
 
-const StixDomainObjectMain = ({ basePath, entity, extraActions, pages, extraRoutes }: StixDomainObjectMainProps) => {
+const StixDomainObjectMain = ({ basePath, extraActions, pages, extraRoutes }: StixDomainObjectMainProps) => {
   const tabs = Object.keys(pages) as StixDomainObjectTabsBoxTab[];
   return (
     <>
       <StixDomainObjectTabsBox
         basePath={basePath}
         tabs={tabs}
-        entity={entity}
         extraActions={extraActions}
       />
       <Routes>

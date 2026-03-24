@@ -21,6 +21,7 @@ import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../uti
 import ObservedDataDeletion from './ObservedDataDeletion';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { PATH_OBSERVED_DATA, PATH_OBSERVED_DATAS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootObservedDataSubscription($id: ID!) {
@@ -88,12 +89,13 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
     return <ErrorNotFound />;
   }
 
+  const basePath = PATH_OBSERVED_DATA(observedDataId);
   return (
     <>
       <div>
         <Breadcrumbs elements={[
           { label: t_i18n('Events') },
-          { label: t_i18n('Observed datas'), link: '/dashboard/events/observed_data' },
+          { label: t_i18n('Observed datas'), link: PATH_OBSERVED_DATAS },
           { label: observedData.name, current: true },
         ]}
         />
@@ -114,8 +116,7 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
           enableEnricher={false}
         />
         <StixDomainObjectMain
-          basePath="/dashboard/events/observed_data"
-          entity={observedData}
+          basePath={basePath}
           pages={{
             overview:
               <ObservedData observedDataData={observedData} />,

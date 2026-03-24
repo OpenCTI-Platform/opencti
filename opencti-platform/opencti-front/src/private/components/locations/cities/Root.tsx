@@ -30,6 +30,7 @@ import CityEdition from './CityEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import CityDeletion from './CityDeletion';
+import { PATH_CITY } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {
@@ -91,8 +92,9 @@ const RootCityComponent = ({ queryRef, cityId }) => {
   const data = usePreloadedQuery(cityQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
   const { city, connectorsForImport, connectorsForExport } = data;
-  const link = `/dashboard/locations/cities/${cityId}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, city?.id, '/dashboard/locations/cities');
+  const basePath = PATH_CITY(cityId);
+  const link = `${basePath}/knowledge`;
+  const paddingRight = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
       {city ? (
@@ -157,8 +159,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
               redirectToContent={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/locations/cities"
-              entity={city}
+              basePath={basePath}
               pages={{
                 overview: <City cityData={city} />,
                 knowledge: (
