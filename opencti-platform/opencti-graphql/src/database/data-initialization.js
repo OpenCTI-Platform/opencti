@@ -529,8 +529,10 @@ export const setPlatformId = async (context, platformId) => {
     if (platformSettings.id !== platformId) {
       logApp.warn(`[INIT] Switching platform identifier from [${platformSettings.id}] to [${platformId}]`);
       // to change the id in elastic, we have no choice but to create a patched copy and delete the old document
+      // Use the concrete index name from the loaded entity (_index) instead of the alias (INDEX_INTERNAL_OBJECTS).
+      const settingCurrentIndex = platformSettings._index;
       const response = await elRawGet({
-        index: INDEX_INTERNAL_OBJECTS,
+        index: settingCurrentIndex,
         id: platformSettings.id,
       });
       await elRawIndex({
@@ -544,7 +546,7 @@ export const setPlatformId = async (context, platformId) => {
         refresh: true,
       });
       await elRawDelete({
-        index: INDEX_INTERNAL_OBJECTS,
+        index: settingCurrentIndex,
         id: platformSettings.id,
         refresh: true,
       });
