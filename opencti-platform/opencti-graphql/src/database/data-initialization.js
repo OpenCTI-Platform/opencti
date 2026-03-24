@@ -18,7 +18,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rf
 import { loadEntity, updateAttribute } from './middleware';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import conf, { logApp } from '../config/conf';
-import { INDEX_INTERNAL_OBJECTS, isNotEmptyField } from './utils';
+import { isNotEmptyField } from './utils';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elRawDelete, elRawGet, elRawIndex } from './engine';
 import { ConfigurationError } from '../config/errors';
@@ -536,7 +536,7 @@ export const setPlatformId = async (context, platformId) => {
         id: platformSettings.id,
       });
       await elRawIndex({
-        index: INDEX_INTERNAL_OBJECTS,
+        index: settingCurrentIndex,
         id: platformId,
         body: {
           ...response._source,
