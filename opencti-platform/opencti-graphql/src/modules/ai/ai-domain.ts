@@ -18,8 +18,7 @@ import { TimeoutError } from '@opentelemetry/sdk-metrics';
 import nconf from 'nconf';
 import { logApp } from '../../config/conf';
 import { FunctionalError, UnknownError } from '../../config/errors';
-import { getEntityFromCache } from '../../database/cache';
-import { queryAi, queryNLQAi, setAiEnabled, setAiEnabledWithOptions } from '../../database/ai-llm';
+import { queryAi, queryNLQAi, setAiEnabled } from '../../database/ai-llm';
 import { elSearchFiles } from '../../database/file-search';
 import { storeLoadById } from '../../database/middleware-loader';
 import { isEmptyField } from '../../database/utils';
@@ -38,16 +37,15 @@ import type {
 } from '../../generated/graphql';
 import { Format, Tone } from '../../generated/graphql';
 import { ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER } from '../../schema/general';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../../schema/stixMetaObject';
 import { RELATION_EXTERNAL_REFERENCE } from '../../schema/stixRefRelationship';
 import type { BasicStoreEntity } from '../../types/store';
-import type { BasicStoreSettings } from '../../types/settings';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { SYSTEM_USER } from '../../utils/access';
 import { getContainerKnowledge } from '../../utils/ai/dataResolutionHelpers';
+import { syncPlatformAiEnabled } from '../../utils/ai/platformAiEnabled';
 import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
 import { addFilter, checkFiltersValidity, emptyFilterGroup, extractFilterGroupValues, filtersEntityIdsMappingResult } from '../../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
@@ -61,10 +59,9 @@ let lastPlatformAiEnabled: boolean | null = null;
 let platformAiEnabledUpdate: Promise<boolean | null> = Promise.resolve(null);
 const checkPlatformAiEnabled = async (context: AuthContext) => {
   platformAiEnabledUpdate = platformAiEnabledUpdate.then(async () => {
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    const aiEnabled = settings.platform_ai_enabled !== false;
+    const aiEnabled = await syncPlatformAiEnabled(context, { initializeClients: false });
     if (lastPlatformAiEnabled === null) {
-      await setAiEnabledWithOptions(aiEnabled, { initializeClients: false });
+      // First check: sync the lower-level state without eagerly initializing clients.
     } else if (lastPlatformAiEnabled !== aiEnabled) {
       // Subsequent checks: propagate actual state changes.
       await setAiEnabled(aiEnabled);
