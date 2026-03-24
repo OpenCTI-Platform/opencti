@@ -65,6 +65,9 @@ const attributesByEntityType: Map<string, { attribute: string; label: string }[]
   ['Incident', [
     { attribute: 'first_seen', label: 'First seen' },
     { attribute: 'last_seen', label: 'Last seen' },
+    { attribute: 'incident_type', label: 'Incident type' },
+    { attribute: 'severity', label: 'Severity' },
+    { attribute: 'source', label: 'Source' },
   ]],
   ['Case-Incident', [
     { attribute: 'severity', label: 'Severity' },
@@ -119,11 +122,6 @@ const attributesByEntityType: Map<string, { attribute: string; label: string }[]
     { attribute: 'hair_color', label: 'Hair color' },
     { attribute: 'height.measure', label: 'Height' },
     { attribute: 'weight.measure', label: 'Weight' },
-  ]],
-  ['Incident', [
-    { attribute: 'incident_type', label: 'Incident type' },
-    { attribute: 'severity', label: 'Severity' },
-    { attribute: 'source', label: 'Source' },
   ]],
   ['Indicator', [
     { attribute: 'indicator_types', label: 'Indicator types' },
