@@ -210,6 +210,7 @@ const ACCESS_SETTINGS_RESTRICTED_KEYS = [
 const PARAMETERS_SETTINGS_RESTRICTED_KEYS = [
   'filigran_chatbot_ai_cgu_status',
   'platform_ai_enabled',
+  'platform_mcp_enabled',
 ];
 
 const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [

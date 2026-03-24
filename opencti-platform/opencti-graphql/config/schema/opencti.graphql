@@ -1434,6 +1434,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   xtm_hub_backend_is_reachable: Boolean
   # AI insight
   platform_ai_enabled: Boolean!
+  # MCP server
+  platform_mcp_enabled: Boolean!
   platform_ai_type: String
   platform_ai_model: String
   platform_ai_has_token: Boolean!

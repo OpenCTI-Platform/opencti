@@ -2671,6 +2671,8 @@
   "MCP client configuration": "Configuration client MCP",
   "MCP documentation": "Documentation MCP",
   "MCP endpoint": "Point d'accès MCP",
+  "MCP server": "Serveur MCP",
+  "Enable MCP server to allow AI assistants to connect via Model Context Protocol": "Activer le serveur MCP pour permettre aux assistants IA de se connecter via le Model Context Protocol",
   "MD5 values can only include A-F and 0-9, 32 characters": "Les valeurs MD5 ne peuvent inclure que A-F et 0-9, 32 caractères",
   "MD5, SHA-1, SHA-256, SHA-512, or name is required": "MD5, SHA-1, SHA-256, SHA-512, ou nom requis",
   "Med": "Moyen",

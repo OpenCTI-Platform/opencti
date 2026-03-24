@@ -76,6 +76,7 @@ const ExperienceFragment = graphql`
       license_global
     }
     platform_ai_enabled
+    platform_mcp_enabled
     filigran_chatbot_ai_cgu_status
   }
 `;
@@ -111,7 +112,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   setTitle(t_i18n('Filigran Experience | Settings'));
   const theme = useTheme<Theme>();
   const classes = useStyles();
-  const { settings: { filigran_chatbot_ai_cgu_status, platform_ai_enabled } } = useAuth();
+  const { settings: { filigran_chatbot_ai_cgu_status, platform_ai_enabled, platform_mcp_enabled } } = useAuth();
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
   const isGrantedToSupport = useGranted([SETTINGS_SUPPORT]);
   const data = usePreloadedQuery(experienceQuery, queryRef);
@@ -124,6 +125,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
     enterprise_license: Yup.string().nullable(),
     filigran_chatbot_ai_cgu_status: Yup.mixed<CGUStatus>().oneOf([CGUStatus.enabled, CGUStatus.disabled, CGUStatus.pending]),
     platform_ai_enabled: Yup.boolean(),
+    platform_mcp_enabled: Yup.boolean(),
   });
   const isLtsPlatform = settings.platform_type === 'LTS';
   const [commitField] = useApiMutation(experienceFieldPatch);
@@ -161,6 +163,10 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
 
   const handlePlatformAiEnabledChange = (event: ChangeEvent<HTMLInputElement>) => {
     handleSubmitField('platform_ai_enabled', event.target.checked);
+  };
+
+  const handlePlatformMcpEnabledChange = (event: ChangeEvent<HTMLInputElement>) => {
+    handleSubmitField('platform_mcp_enabled', event.target.checked);
   };
 
   const handleValidateTermsOfUse = () => {
@@ -283,6 +289,18 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                     <Switch
                       checked={platform_ai_enabled}
                       onChange={handlePlatformAiEnabledChange}
+                    />
+                  </Box>
+                </ListItem>
+                <ListItem divider={true}>
+                  <ListItemText
+                    primary={t_i18n('MCP server')}
+                    secondary={t_i18n('Enable MCP server to allow AI assistants to connect via Model Context Protocol')}
+                  />
+                  <Box sx={{ marginBlock: -6 }}>
+                    <Switch
+                      checked={platform_mcp_enabled}
+                      onChange={handlePlatformMcpEnabledChange}
                     />
                   </Box>
                 </ListItem>

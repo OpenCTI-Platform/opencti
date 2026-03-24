@@ -1,12 +1,19 @@
-import { graphql } from 'graphql';
+import { graphql, type GraphQLSchema } from 'graphql';
 import { z } from 'zod';
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp';
 
 // ---------------------------------------------------------------------------
 // Observable type mapping for creation
 // Maps: display type → { varName, inputType, fieldName }
 // ---------------------------------------------------------------------------
 
-const OBSERVABLE_TYPES = {
+interface ObservableTypeInfo {
+  varName: string;
+  inputType: string;
+  fieldName: string;
+}
+
+const OBSERVABLE_TYPES: Record<string, ObservableTypeInfo> = {
   'Autonomous-System': { varName: 'AutonomousSystem', inputType: 'AutonomousSystemAddInput', fieldName: 'number' },
   Directory: { varName: 'Directory', inputType: 'DirectoryAddInput', fieldName: 'path' },
   'Domain-Name': { varName: 'DomainName', inputType: 'DomainNameAddInput', fieldName: 'value' },
@@ -33,7 +40,13 @@ const OBSERVABLE_TYPES = {
 // STIX pattern mapping for automatic indicator pattern generation
 // ---------------------------------------------------------------------------
 
-const STIX_PATTERN_MAP = {
+interface StixPatternEntry {
+  scoType: string;
+  prop: string;
+  isInt: boolean;
+}
+
+const STIX_PATTERN_MAP: Record<string, StixPatternEntry> = {
   'IPv4-Addr': { scoType: 'ipv4-addr', prop: 'value', isInt: false },
   'IPv6-Addr': { scoType: 'ipv6-addr', prop: 'value', isInt: false },
   'Domain-Name': { scoType: 'domain-name', prop: 'value', isInt: false },
@@ -56,7 +69,7 @@ const STIX_PATTERN_MAP = {
   'Bank-Account': { scoType: 'bank-account', prop: 'iban', isInt: false },
 };
 
-const HASH_ALGORITHMS = {
+const HASH_ALGORITHMS: Record<string, string> = {
   MD5: 'hashes.MD5',
   'SHA-1': "hashes.'SHA-1'",
   SHA1: "hashes.'SHA-1'",
@@ -71,7 +84,12 @@ const HASH_ALGORITHMS = {
 // Container-type mutation mapping
 // ---------------------------------------------------------------------------
 
-const CONTAINER_MUTATIONS = {
+interface MutationInfo {
+  mutationName: string;
+  inputType: string;
+}
+
+const CONTAINER_MUTATIONS: Record<string, MutationInfo> = {
   Report: { mutationName: 'reportAdd', inputType: 'ReportAddInput' },
   'Case-Incident': { mutationName: 'caseIncidentAdd', inputType: 'CaseIncidentAddInput' },
   'Case-Rfi': { mutationName: 'caseRfiAdd', inputType: 'CaseRfiAddInput' },
@@ -83,7 +101,7 @@ const CONTAINER_MUTATIONS = {
 // SDO-type mutation mapping for generic domain object creation
 // ---------------------------------------------------------------------------
 
-const SDO_MUTATIONS = {
+const SDO_MUTATIONS: Record<string, MutationInfo> = {
   'Threat-Actor-Group': { mutationName: 'threatActorGroupAdd', inputType: 'ThreatActorGroupAddInput' },
   'Threat-Actor-Individual': { mutationName: 'threatActorIndividualAdd', inputType: 'ThreatActorIndividualAddInput' },
   'Intrusion-Set': { mutationName: 'intrusionSetAdd', inputType: 'IntrusionSetAddInput' },
@@ -261,7 +279,6 @@ const RELATIONSHIP_FIELDS = `
     }
 `;
 
-// Compact from/to resolution for relationship endpoints inside containers
 const FROM_TO_FRAGMENT = `
     ... on BasicObject { id entity_type }
     ... on StixCyberObservable { observable_value }
@@ -278,27 +295,37 @@ const FROM_TO_FRAGMENT = `
 // Helpers
 // ---------------------------------------------------------------------------
 
-const executeGraphQL = async (schema, context, query, variables = {}) => {
+interface GraphQLResult {
+  data: Record<string, any> | null;
+  error: string | null;
+}
+
+const executeGraphQL = async (
+  schema: GraphQLSchema,
+  context: Record<string, any>,
+  query: string,
+  variables: Record<string, any> = {},
+): Promise<GraphQLResult> => {
   const result = await graphql({ schema, source: query, variableValues: variables, contextValue: context });
   if (result.errors && result.errors.length > 0) {
     const msgs = result.errors.map((e) => e.message).join('; ');
     return { data: null, error: `GraphQL error: ${msgs}` };
   }
-  return { data: result.data, error: null };
+  return { data: result.data as Record<string, any>, error: null };
 };
 
-const textResult = (text) => ({ content: [{ type: 'text', text }] });
+const textResult = (text: string) => ({ content: [{ type: 'text' as const, text }] });
 
-const edges = (data, key) => {
+const edges = (data: Record<string, any> | null, key: string): any[] => {
   if (!data) return [];
   const container = data[key];
   if (!container) return [];
-  if (container.edges) return container.edges.filter((e) => e.node).map((e) => e.node);
+  if (container.edges) return container.edges.filter((e: any) => e.node).map((e: any) => e.node);
   if (Array.isArray(container)) return container;
   return [];
 };
 
-const buildStixPattern = (observableType, value, hashAlgorithm = '') => {
+const buildStixPattern = (observableType: string, value: string, hashAlgorithm = ''): string | null => {
   if (hashAlgorithm) {
     const prop = HASH_ALGORITHMS[hashAlgorithm.toUpperCase()];
     if (prop) return `[file:${prop} = '${value}']`;
@@ -310,11 +337,17 @@ const buildStixPattern = (observableType, value, hashAlgorithm = '') => {
   return `[${entry.scoType}:${entry.prop} = '${value}']`;
 };
 
+// Shared enum for order_by fields used by list tools
+const ORDER_BY_ENUM = z.enum(['created_at', 'updated_at', 'created', 'modified', 'name', 'confidence']);
+
 // ---------------------------------------------------------------------------
-// Tool registration
+// Tool registration — context is provided via a getter so the McpServer can
+// be created once and reused across requests.
 // ---------------------------------------------------------------------------
 
-export const registerAllTools = (server, schema, context) => {
+export type ContextGetter = () => Record<string, any>;
+
+export const registerAllTools = (server: McpServer, schema: GraphQLSchema, getContext: ContextGetter): void => {
   // ── 1. Search ──
   server.tool(
     'search_opencti',
@@ -325,6 +358,7 @@ export const registerAllTools = (server, schema, context) => {
       limit: z.number().int().optional().default(10).describe('Max results (default 10, max 50)'),
     },
     async ({ search, types, limit }) => {
+      const context = getContext();
       const query = `query SearchEntities($types: [String], $search: String, $first: Int, $orderBy: StixCoreObjectsOrdering, $orderMode: OrderingMode) {
         stixCoreObjects(types: $types, search: $search, first: $first, orderBy: $orderBy, orderMode: $orderMode) {
           edges { node { ${ENTITY_FIELDS} } }
@@ -335,7 +369,7 @@ export const registerAllTools = (server, schema, context) => {
         search, types: types || null, first: Math.min(limit || 10, 50), orderBy: 'created_at', orderMode: 'desc',
       });
       if (error) return textResult(error);
-      return textResult(JSON.stringify(data.stixCoreObjects));
+      return textResult(JSON.stringify(data!.stixCoreObjects));
     },
   );
 
@@ -345,11 +379,12 @@ export const registerAllTools = (server, schema, context) => {
     'Get full details of a specific entity by its OpenCTI ID or STIX ID. Returns comprehensive information including description, labels, markings, author, external references, and type-specific fields.',
     { entity_id: z.string().describe("The entity's OpenCTI internal ID or STIX ID (e.g. indicator--...)") },
     async ({ entity_id }) => {
+      const context = getContext();
       const query = `query GetEntity($id: String!) { stixCoreObject(id: $id) { ${ENTITY_FIELDS} } }`;
       const { data, error } = await executeGraphQL(schema, context, query, { id: entity_id });
       if (error) return textResult(error);
-      if (!data.stixCoreObject) return textResult(`Entity '${entity_id}' not found.`);
-      return textResult(JSON.stringify(data.stixCoreObject));
+      if (!data!.stixCoreObject) return textResult(`Entity '${entity_id}' not found.`);
+      return textResult(JSON.stringify(data!.stixCoreObject));
     },
   );
 
@@ -359,11 +394,12 @@ export const registerAllTools = (server, schema, context) => {
     'Get full details of a specific STIX core relationship by its OpenCTI ID or STIX ID. Returns the relationship type, source and target entities, description, confidence, time range, labels, markings, and author.',
     { relationship_id: z.string().describe("The relationship's OpenCTI internal ID or STIX ID (e.g. relationship--...)") },
     async ({ relationship_id }) => {
+      const context = getContext();
       const query = `query GetRelationship($id: String!) { stixCoreRelationship(id: $id) { ${RELATIONSHIP_FIELDS} } }`;
       const { data, error } = await executeGraphQL(schema, context, query, { id: relationship_id });
       if (error) return textResult(error);
-      if (!data.stixCoreRelationship) return textResult(`Relationship '${relationship_id}' not found.`);
-      return textResult(JSON.stringify(data.stixCoreRelationship));
+      if (!data!.stixCoreRelationship) return textResult(`Relationship '${relationship_id}' not found.`);
+      return textResult(JSON.stringify(data!.stixCoreRelationship));
     },
   );
 
@@ -375,18 +411,19 @@ export const registerAllTools = (server, schema, context) => {
       types: z.array(z.string()).optional().describe('Filter by entity types. Examples: Threat-Actor, Malware, Indicator, Report, Incident, Campaign, Vulnerability, Intrusion-Set, Tool, Attack-Pattern, Infrastructure, Note, Opinion, Course-Of-Action, Grouping, Observed-Data'),
       search: z.string().optional().default('').describe('Search keyword (optional)'),
       limit: z.number().int().optional().default(15).describe('Max results (default 15, max 50)'),
-      order_by: z.string().optional().default('created_at').describe('Field to order by (default: created_at). Options: created_at, updated_at, created, modified, name, confidence'),
+      order_by: ORDER_BY_ENUM.optional().default('created_at').describe('Field to order by (default: created_at)'),
       order_mode: z.enum(['asc', 'desc']).optional().default('desc').describe('Sort order (default: desc)'),
       filters: z.string().optional().default('').describe('OpenCTI FilterGroup as JSON string (optional). Example: {"mode":"and","filters":[{"key":"confidence","values":["80"],"operator":"gte"}],"filterGroups":[]}'),
     },
     async ({ types, search, limit, order_by, order_mode, filters }) => {
+      const context = getContext();
       const query = `query ListSDOs($types: [String], $filters: FilterGroup, $search: String, $first: Int, $orderBy: StixDomainObjectsOrdering, $orderMode: OrderingMode) {
         stixDomainObjects(types: $types, filters: $filters, search: $search, first: $first, orderBy: $orderBy, orderMode: $orderMode) {
           edges { node { ${SDO_ENTITY_FIELDS} } }
           pageInfo { globalCount }
         }
       }`;
-      const variables = {
+      const variables: Record<string, any> = {
         types: types || null, search: search || null, first: Math.min(limit || 15, 50),
         orderBy: order_by || 'created_at', orderMode: order_mode || 'desc',
       };
@@ -399,7 +436,7 @@ export const registerAllTools = (server, schema, context) => {
       }
       const { data, error } = await executeGraphQL(schema, context, query, variables);
       if (error) return textResult(error);
-      return textResult(JSON.stringify(data.stixDomainObjects));
+      return textResult(JSON.stringify(data!.stixDomainObjects));
     },
   );
 
@@ -411,10 +448,11 @@ export const registerAllTools = (server, schema, context) => {
       types: z.array(z.string()).optional().describe('Filter by observable types. Examples: IPv4-Addr, IPv6-Addr, Domain-Name, Url, Email-Addr, StixFile, Hostname, Mac-Addr, User-Agent, Artifact, Process, Software, Autonomous-System, X509-Certificate'),
       search: z.string().optional().default('').describe('Search keyword (optional)'),
       limit: z.number().int().optional().default(15).describe('Max results (default 15, max 50)'),
-      order_by: z.string().optional().default('created_at').describe('Field to order by'),
+      order_by: ORDER_BY_ENUM.optional().default('created_at').describe('Field to order by'),
       order_mode: z.enum(['asc', 'desc']).optional().default('desc').describe('Sort order'),
     },
     async ({ types, search, limit, order_by, order_mode }) => {
+      const context = getContext();
       const query = `query ListSCOs($types: [String], $search: String, $first: Int, $orderBy: StixCyberObservablesOrdering, $orderMode: OrderingMode) {
         stixCyberObservables(types: $types, search: $search, first: $first, orderBy: $orderBy, orderMode: $orderMode) {
           edges { node { ${SCO_ENTITY_FIELDS} } }
@@ -426,7 +464,7 @@ export const registerAllTools = (server, schema, context) => {
         orderBy: order_by || 'created_at', orderMode: order_mode || 'desc',
       });
       if (error) return textResult(error);
-      return textResult(JSON.stringify(data.stixCyberObservables));
+      return textResult(JSON.stringify(data!.stixCyberObservables));
     },
   );
 
@@ -442,13 +480,14 @@ export const registerAllTools = (server, schema, context) => {
       limit: z.number().int().optional().default(20).describe('Max results (default 20)'),
     },
     async ({ entity_id, relationship_type, from_types, to_types, limit }) => {
+      const context = getContext();
       const query = `query ListRels($fromOrToId: [String], $relationship_type: [String], $fromTypes: [String], $toTypes: [String], $first: Int, $orderBy: StixCoreRelationshipsOrdering, $orderMode: OrderingMode) {
         stixCoreRelationships(fromOrToId: $fromOrToId, relationship_type: $relationship_type, fromTypes: $fromTypes, toTypes: $toTypes, first: $first, orderBy: $orderBy, orderMode: $orderMode) {
           edges { node { ${RELATIONSHIP_FIELDS} } }
           pageInfo { globalCount }
         }
       }`;
-      const variables = {
+      const variables: Record<string, any> = {
         fromOrToId: [entity_id], first: Math.min(limit || 20, 50), orderBy: 'created_at', orderMode: 'desc',
       };
       if (relationship_type) variables.relationship_type = [relationship_type];
@@ -456,7 +495,7 @@ export const registerAllTools = (server, schema, context) => {
       if (to_types) variables.toTypes = to_types;
       const { data, error } = await executeGraphQL(schema, context, query, variables);
       if (error) return textResult(error);
-      return textResult(JSON.stringify(data.stixCoreRelationships));
+      return textResult(JSON.stringify(data!.stixCoreRelationships));
     },
   );
 
@@ -474,6 +513,7 @@ export const registerAllTools = (server, schema, context) => {
       stop_time: z.string().optional().default('').describe('Stop time ISO 8601 (optional)'),
     },
     async ({ from_id, to_id, relationship_type, description, confidence, start_time, stop_time }) => {
+      const context = getContext();
       const query = `mutation CreateRelationship($input: StixCoreRelationshipAddInput!) {
         stixCoreRelationshipAdd(input: $input) {
           id standard_id entity_type relationship_type
@@ -481,14 +521,14 @@ export const registerAllTools = (server, schema, context) => {
           to { ... on BasicObject { id entity_type } ... on StixCyberObservable { observable_value } ${FROM_TO_FRAGMENT} }
         }
       }`;
-      const input = { fromId: from_id, toId: to_id, relationship_type };
+      const input: Record<string, any> = { fromId: from_id, toId: to_id, relationship_type };
       if (description) input.description = description;
       if (confidence !== undefined) input.confidence = confidence;
       if (start_time) input.start_time = start_time;
       if (stop_time) input.stop_time = stop_time;
       const { data, error } = await executeGraphQL(schema, context, query, { input });
       if (error) return textResult(error);
-      return textResult(JSON.stringify(data.stixCoreRelationshipAdd));
+      return textResult(JSON.stringify(data!.stixCoreRelationshipAdd));
     },
   );
 
@@ -504,24 +544,35 @@ export const registerAllTools = (server, schema, context) => {
       create_indicator: z.boolean().optional().default(false).describe('Also create a STIX indicator for this observable (default: false)'),
     },
     async ({ type, value, x_opencti_score, x_opencti_description, create_indicator }) => {
+      const context = getContext();
       const typeInfo = OBSERVABLE_TYPES[type];
       if (!typeInfo) return textResult(`Unsupported observable type: '${type}'. Supported: ${Object.keys(OBSERVABLE_TYPES).sort().join(', ')}`);
       const { varName, inputType, fieldName } = typeInfo;
+
+      let fieldValue: string | number = value;
+      if (type === 'Autonomous-System') {
+        const parsed = Number.parseInt(value, 10);
+        if (!Number.isInteger(parsed)) {
+          return textResult(`Invalid Autonomous-System value '${value}'. Expected an integer ASN.`);
+        }
+        fieldValue = parsed;
+      }
+
       const query = `mutation CreateObservable($type: String!, $x_opencti_score: Int, $x_opencti_description: String, $createIndicator: Boolean, $${varName}: ${inputType}) {
         stixCyberObservableAdd(type: $type, x_opencti_score: $x_opencti_score, x_opencti_description: $x_opencti_description, createIndicator: $createIndicator, ${varName}: $${varName}) {
           id entity_type observable_value x_opencti_score
         }
       }`;
-      const variables = {
+      const variables: Record<string, any> = {
         type,
-        [varName]: { [fieldName]: type === 'Autonomous-System' ? parseInt(value, 10) : value },
+        [varName]: { [fieldName]: fieldValue },
         createIndicator: create_indicator || false,
       };
       if (x_opencti_score !== undefined) variables.x_opencti_score = x_opencti_score;
       if (x_opencti_description) variables.x_opencti_description = x_opencti_description;
       const { data, error } = await executeGraphQL(schema, context, query, variables);
       if (error) return textResult(error);
-      return textResult(JSON.stringify(data.stixCyberObservableAdd));
+      return textResult(JSON.stringify(data!.stixCyberObservableAdd));
     },
   );
 
@@ -537,13 +588,14 @@ export const registerAllTools = (server, schema, context) => {
       confidence: z.number().int().optional().describe('Confidence level 0-100 (optional)'),
     },
     async ({ content, object_ids, attribute_abstract, note_types, confidence }) => {
+      const context = getContext();
       const query = 'mutation CreateNote($input: NoteAddInput!) { noteAdd(input: $input) { id entity_type attribute_abstract } }';
-      const input = { content, note_types: note_types || ['internal-note'], objects: object_ids };
+      const input: Record<string, any> = { content, note_types: note_types || ['internal-note'], objects: object_ids };
       input.attribute_abstract = attribute_abstract || content.substring(0, 200);
       if (confidence !== undefined) input.confidence = confidence;
       const { data, error } = await executeGraphQL(schema, context, query, { input });
       if (error) return textResult(error);
-      return textResult(JSON.stringify(data.noteAdd));
+      return textResult(JSON.stringify(data!.noteAdd));
     },
   );
 
@@ -557,11 +609,12 @@ export const registerAllTools = (server, schema, context) => {
       value: z.union([z.string(), z.array(z.string())]).describe('New value (string or array of strings)'),
     },
     async ({ entity_id, key, value }) => {
+      const context = getContext();
       const query = 'mutation UpdateSDO($id: ID!, $input: [EditInput]!) { stixDomainObjectEdit(id: $id) { fieldPatch(input: $input) { id entity_type } } }';
       const inputVal = Array.isArray(value) ? value : [value];
       const { data, error } = await executeGraphQL(schema, context, query, { id: entity_id, input: [{ key, value: inputVal }] });
       if (error) return textResult(error);
-      const result = data.stixDomainObjectEdit?.fieldPatch || {};
+      const result = data!.stixDomainObjectEdit?.fieldPatch || {};
       return textResult(JSON.stringify(result));
     },
   );
@@ -576,11 +629,12 @@ export const registerAllTools = (server, schema, context) => {
       value: z.union([z.string(), z.array(z.string())]).describe('New value (string or array of strings)'),
     },
     async ({ relationship_id, key, value }) => {
+      const context = getContext();
       const query = 'mutation UpdateRel($id: ID!, $input: [EditInput]!) { stixCoreRelationshipEdit(id: $id) { fieldPatch(input: $input) { id entity_type } } }';
       const inputVal = Array.isArray(value) ? value : [value];
       const { data, error } = await executeGraphQL(schema, context, query, { id: relationship_id, input: [{ key, value: inputVal }] });
       if (error) return textResult(error);
-      const result = data.stixCoreRelationshipEdit?.fieldPatch || {};
+      const result = data!.stixCoreRelationshipEdit?.fieldPatch || {};
       return textResult(JSON.stringify(result));
     },
   );
@@ -591,6 +645,7 @@ export const registerAllTools = (server, schema, context) => {
     'Delete any STIX core object (domain object or cyber observable) from OpenCTI by its ID. This is permanent and cannot be undone.',
     { entity_id: z.string().describe("The entity's OpenCTI ID to delete") },
     async ({ entity_id }) => {
+      const context = getContext();
       const query = 'mutation DeleteEntity($id: ID!) { stixCoreObjectEdit(id: $id) { delete } }';
       const { error } = await executeGraphQL(schema, context, query, { id: entity_id });
       if (error) return textResult(error);
@@ -604,6 +659,7 @@ export const registerAllTools = (server, schema, context) => {
     'Delete a STIX core relationship from OpenCTI by its ID. This is permanent and cannot be undone.',
     { relationship_id: z.string().describe("The relationship's OpenCTI ID to delete") },
     async ({ relationship_id }) => {
+      const context = getContext();
       const query = 'mutation DeleteRelationship($id: ID!) { stixCoreRelationshipEdit(id: $id) { delete } }';
       const { error } = await executeGraphQL(schema, context, query, { id: relationship_id });
       if (error) return textResult(error);
@@ -620,6 +676,7 @@ export const registerAllTools = (server, schema, context) => {
       label_name: z.string().describe("Label name (e.g. 'reviewed', 'high-priority')"),
     },
     async ({ entity_id, label_name }) => {
+      const context = getContext();
       const findQ = 'query FindLabel($filters: FilterGroup) { labels(filters: $filters, first: 1) { edges { node { id value } } } }';
       const createQ = 'mutation CreateLabel($input: LabelAddInput!) { labelAdd(input: $input) { id value } }';
       const addQ = 'mutation AddLabel($id: ID!, $input: StixRefRelationshipAddInput!) { stixDomainObjectEdit(id: $id) { relationAdd(input: $input) { id } } }';
@@ -629,14 +686,14 @@ export const registerAllTools = (server, schema, context) => {
       const { data: labelData, error: findErr } = await executeGraphQL(schema, context, findQ, { filters: exactFilter });
       if (findErr) return textResult(findErr);
 
-      let labelId;
+      let labelId: string;
       const labelEdges = edges(labelData, 'labels');
       if (labelEdges.length > 0 && labelEdges[0].value === label_name) {
         labelId = labelEdges[0].id;
       } else {
         const { data: createData, error: createErr } = await executeGraphQL(schema, context, createQ, { input: { value: label_name } });
         if (createErr) return textResult(createErr);
-        labelId = createData.labelAdd?.id;
+        labelId = createData!.labelAdd?.id;
         if (!labelId) return textResult(`Failed to create label '${label_name}'.`);
       }
 
@@ -645,7 +702,7 @@ export const registerAllTools = (server, schema, context) => {
 
       const { data: entityData, error: readErr } = await executeGraphQL(schema, context, readQ, { id: entity_id });
       if (readErr) return textResult(readErr);
-      return textResult(JSON.stringify(entityData.stixCoreObject));
+      return textResult(JSON.stringify(entityData!.stixCoreObject));
     },
   );
 
@@ -658,6 +715,7 @@ export const registerAllTools = (server, schema, context) => {
       label_name: z.string().describe('Label name to remove'),
     },
     async ({ entity_id, label_name }) => {
+      const context = getContext();
       const findQ = 'query FindLabel($filters: FilterGroup) { labels(filters: $filters, first: 1) { edges { node { id value } } } }';
       const removeQ = 'mutation RemoveLabel($id: ID!, $toId: StixRef!, $relationship_type: String!) { stixDomainObjectEdit(id: $id) { relationDelete(toId: $toId, relationship_type: $relationship_type) { id } } }';
 
@@ -685,6 +743,7 @@ export const registerAllTools = (server, schema, context) => {
       marking_definition_id: z.string().describe("The marking definition's OpenCTI ID"),
     },
     async ({ entity_id, marking_definition_id }) => {
+      const context = getContext();
       const query = 'mutation AddMarking($id: ID!, $input: StixRefRelationshipAddInput!) { stixDomainObjectEdit(id: $id) { relationAdd(input: $input) { id } } }';
       const { error } = await executeGraphQL(schema, context, query, {
         id: entity_id, input: { toId: marking_definition_id, relationship_type: 'object-marking' },
@@ -703,6 +762,7 @@ export const registerAllTools = (server, schema, context) => {
       marking_definition_id: z.string().describe("The marking definition's OpenCTI ID"),
     },
     async ({ entity_id, marking_definition_id }) => {
+      const context = getContext();
       const query = 'mutation RemoveMarking($id: ID!, $toId: StixRef!, $relationship_type: String!) { stixDomainObjectEdit(id: $id) { relationDelete(toId: $toId, relationship_type: $relationship_type) { id } } }';
       const { error } = await executeGraphQL(schema, context, query, {
         id: entity_id, toId: marking_definition_id, relationship_type: 'object-marking',
@@ -721,6 +781,7 @@ export const registerAllTools = (server, schema, context) => {
       limit: z.number().int().optional().default(200).describe('Max objects to return (default 200, max 1000). Start with small limits and increase only if needed.'),
     },
     async ({ container_id, limit }) => {
+      const context = getContext();
       const nd = `
         ... on BasicObject { id entity_type } ... on BasicRelationship { id entity_type }
         ... on AttackPattern { name description } ... on Campaign { name description }
@@ -762,8 +823,8 @@ export const registerAllTools = (server, schema, context) => {
       const first = Math.min(Math.max(limit || 200, 1), 1000);
       const { data, error } = await executeGraphQL(schema, context, query, { id: container_id, first });
       if (error) return textResult(error);
-      if (!data.stixDomainObject) return textResult(`Container ${container_id} not found.`);
-      return textResult(JSON.stringify(data.stixDomainObject));
+      if (!data!.stixDomainObject) return textResult(`Container ${container_id} not found.`);
+      return textResult(JSON.stringify(data!.stixDomainObject));
     },
   );
 
@@ -790,6 +851,7 @@ export const registerAllTools = (server, schema, context) => {
       description, confidence, x_opencti_score, indicator_types,
       valid_from, valid_until, create_observables,
     }) => {
+      const context = getContext();
       let finalPattern = pattern;
       if (!finalPattern) {
         if (!observable_type || !observable_value) {
@@ -804,28 +866,28 @@ export const registerAllTools = (server, schema, context) => {
       let mainObsType = observable_type || '';
       if (hash_algorithm && !observable_type) mainObsType = 'StixFile';
       if (!mainObsType) {
-        const inferMap = {
+        const inferMap: Record<string, string> = {
           'ipv4-addr:': 'IPv4-Addr', 'ipv6-addr:': 'IPv6-Addr', 'domain-name:': 'Domain-Name',
           'url:': 'Url', 'email-addr:': 'Email-Addr', 'mac-addr:': 'Mac-Addr', 'file:': 'StixFile',
           'hostname:': 'Hostname', 'autonomous-system:': 'Autonomous-System', 'directory:': 'Directory',
           'mutex:': 'Mutex', 'software:': 'Software', 'user-agent:': 'User-Agent',
         };
-        mainObsType = Object.entries(inferMap).find(([token]) => finalPattern.includes(token))?.[1] || 'Unknown';
+        mainObsType = Object.entries(inferMap).find(([token]) => finalPattern!.includes(token))?.[1] || 'Unknown';
       }
       const query = `mutation CreateIndicator($input: IndicatorAddInput!) {
         indicatorAdd(input: $input) { id entity_type standard_id name pattern pattern_type valid_from valid_until x_opencti_score x_opencti_main_observable_type }
       }`;
-      const input = { name: name || finalPattern, pattern: finalPattern, pattern_type: 'stix', x_opencti_main_observable_type: mainObsType };
+      const input: Record<string, any> = { name: name || finalPattern, pattern: finalPattern, pattern_type: 'stix', x_opencti_main_observable_type: mainObsType };
       if (description) input.description = description;
       if (confidence !== undefined) input.confidence = confidence;
       if (x_opencti_score !== undefined) input.x_opencti_score = x_opencti_score;
       if (indicator_types) input.indicator_types = indicator_types;
       if (valid_from) input.valid_from = valid_from;
       if (valid_until) input.valid_until = valid_until;
-      if (create_observables) input.x_create_opencti_observables = true;
+      if (create_observables) input.createObservables = true;
       const { data, error } = await executeGraphQL(schema, context, query, { input });
       if (error) return textResult(error);
-      return textResult(JSON.stringify(data.indicatorAdd));
+      return textResult(JSON.stringify(data!.indicatorAdd));
     },
   );
 
@@ -834,7 +896,7 @@ export const registerAllTools = (server, schema, context) => {
     'create_opencti_container',
     'Create a container in OpenCTI: Report, Case-Incident, Case-Rfi (Request for Information), Case-Rft (Request for Takedown), or Grouping. Containers hold references to other STIX objects. Optionally pass object_ids to add entities/relationships at creation.',
     {
-      container_type: z.enum(Object.keys(CONTAINER_MUTATIONS).sort()).describe('Container type to create'),
+      container_type: z.enum(Object.keys(CONTAINER_MUTATIONS).sort() as [string, ...string[]]).describe('Container type to create'),
       name: z.string().describe('Container name'),
       description: z.string().optional().default('').describe('Description (Markdown supported)'),
       content: z.string().optional().default('').describe('Rich content body (Markdown, optional)'),
@@ -847,12 +909,13 @@ export const registerAllTools = (server, schema, context) => {
       object_ids: z.array(z.string()).optional().describe('List of entity/relationship IDs to include in the container at creation'),
     },
     async ({ container_type, name, description, content, published, context: ctx, report_types, severity, priority, confidence, object_ids }) => {
+      const context = getContext();
       const mutInfo = CONTAINER_MUTATIONS[container_type];
       if (!mutInfo) return textResult(`Unsupported container type: '${container_type}'. Supported: ${Object.keys(CONTAINER_MUTATIONS).sort().join(', ')}`);
       if (container_type === 'Report' && !published) return textResult("Error: 'published' date is required for Report (ISO 8601 format).");
       if (container_type === 'Grouping' && !ctx) return textResult("Error: 'context' is required for Grouping.");
 
-      const containerFragments = {
+      const containerFragments: Record<string, string> = {
         Report: 'name description published report_types',
         'Case-Incident': 'name description severity priority',
         'Case-Rfi': 'name description severity priority',
@@ -861,7 +924,7 @@ export const registerAllTools = (server, schema, context) => {
       };
       const fields = containerFragments[container_type] || 'name description';
       const query = `mutation CreateContainer($input: ${mutInfo.inputType}!) { ${mutInfo.mutationName}(input: $input) { id entity_type standard_id ${fields} } }`;
-      const input = { name };
+      const input: Record<string, any> = { name };
       if (description) input.description = description;
       if (content) input.content = content;
       if (confidence !== undefined) input.confidence = confidence;
@@ -877,7 +940,7 @@ export const registerAllTools = (server, schema, context) => {
       }
       const { data, error } = await executeGraphQL(schema, context, query, { input });
       if (error) return textResult(error);
-      return textResult(JSON.stringify(data[mutInfo.mutationName]));
+      return textResult(JSON.stringify(data![mutInfo.mutationName]));
     },
   );
 
@@ -886,7 +949,7 @@ export const registerAllTools = (server, schema, context) => {
     'create_opencti_entity',
     `Create a STIX domain object (entity) in OpenCTI. Supports: ${Object.keys(SDO_MUTATIONS).sort().join(', ')}. Use this for threat actors, malware, campaigns, incidents, vulnerabilities, attack patterns, tools, intrusion sets, etc.`,
     {
-      type: z.enum(Object.keys(SDO_MUTATIONS).sort()).describe('STIX domain object type to create'),
+      type: z.enum(Object.keys(SDO_MUTATIONS).sort() as [string, ...string[]]).describe('STIX domain object type to create'),
       name: z.string().describe('Entity name'),
       description: z.string().optional().default('').describe('Description (Markdown supported)'),
       aliases: z.array(z.string()).optional().describe('Alternative names / aliases (for types that support them)'),
@@ -906,6 +969,7 @@ export const registerAllTools = (server, schema, context) => {
       severity, objective, malware_types, is_family,
       threat_actor_types, tool_types, infrastructure_types,
     }) => {
+      const context = getContext();
       const mutInfo = SDO_MUTATIONS[type];
       if (!mutInfo) return textResult(`Unsupported entity type: '${type}'. Supported: ${Object.keys(SDO_MUTATIONS).sort().join(', ')}`);
       const query = `mutation CreateSDO($input: ${mutInfo.inputType}!) {
@@ -921,7 +985,7 @@ export const registerAllTools = (server, schema, context) => {
           ... on Tool { name description } ... on Vulnerability { name description }
         }
       }`;
-      const input = { name };
+      const input: Record<string, any> = { name };
       if (description) input.description = description;
       if (confidence !== undefined) input.confidence = confidence;
       if (aliases) input.aliases = aliases;
@@ -936,7 +1000,7 @@ export const registerAllTools = (server, schema, context) => {
       if (infrastructure_types && type === 'Infrastructure') input.infrastructure_types = infrastructure_types;
       const { data, error } = await executeGraphQL(schema, context, query, { input });
       if (error) return textResult(error);
-      return textResult(JSON.stringify(data[mutInfo.mutationName]));
+      return textResult(JSON.stringify(data![mutInfo.mutationName]));
     },
   );
 
@@ -949,15 +1013,16 @@ export const registerAllTools = (server, schema, context) => {
       entity_ids: z.array(z.string()).describe('List of entity or relationship IDs to add to the container'),
     },
     async ({ container_id, entity_ids }) => {
+      const context = getContext();
       const query = 'mutation AddToContainer($id: ID!, $input: StixRefRelationshipAddInput!) { stixDomainObjectEdit(id: $id) { relationAdd(input: $input) { id } } }';
-      const added = [];
-      const errors = [];
+      const added: string[] = [];
+      const errors: string[] = [];
       for (const eid of entity_ids) {
         const { error } = await executeGraphQL(schema, context, query, { id: container_id, input: { toId: eid, relationship_type: 'object' } });
         if (error) errors.push(`${eid}: ${error}`);
         else added.push(eid);
       }
-      const parts = [];
+      const parts: string[] = [];
       if (added.length > 0) parts.push(`Added ${added.length} object(s) to container ${container_id}: ${added.join(', ')}`);
       if (errors.length > 0) parts.push(`Errors: ${errors.join('; ')}`);
       return textResult(parts.length > 0 ? parts.join('\n') : 'No objects were added.');
@@ -973,15 +1038,16 @@ export const registerAllTools = (server, schema, context) => {
       entity_ids: z.array(z.string()).describe('List of entity or relationship IDs to remove from the container'),
     },
     async ({ container_id, entity_ids }) => {
+      const context = getContext();
       const query = 'mutation RemoveFromContainer($id: ID!, $toId: StixRef!, $relationship_type: String!) { stixDomainObjectEdit(id: $id) { relationDelete(toId: $toId, relationship_type: $relationship_type) { id } } }';
-      const removed = [];
-      const errors = [];
+      const removed: string[] = [];
+      const errors: string[] = [];
       for (const eid of entity_ids) {
         const { error } = await executeGraphQL(schema, context, query, { id: container_id, toId: eid, relationship_type: 'object' });
         if (error) errors.push(`${eid}: ${error}`);
         else removed.push(eid);
       }
-      const parts = [];
+      const parts: string[] = [];
       if (removed.length > 0) parts.push(`Removed ${removed.length} object(s) from container ${container_id}: ${removed.join(', ')}`);
       if (errors.length > 0) parts.push(`Errors: ${errors.join('; ')}`);
       return textResult(parts.length > 0 ? parts.join('\n') : 'No objects were removed.');
@@ -998,10 +1064,11 @@ export const registerAllTools = (server, schema, context) => {
       indicator_types: z.array(z.string()).optional().describe('Indicator types: malicious-activity, anomalous-activity, benign, compromised, unknown'),
     },
     async ({ entity_id, x_opencti_score, indicator_types }) => {
+      const context = getContext();
       const readQ = `query ReadObs($id: String!) { stixCoreObject(id: $id) { ${ENTITY_FIELDS} } }`;
       const { data: readData, error: readErr } = await executeGraphQL(schema, context, readQ, { id: entity_id });
       if (readErr) return textResult(readErr);
-      const entity = readData.stixCoreObject;
+      const entity = readData!.stixCoreObject;
       if (!entity) return textResult(`Entity '${entity_id}' not found.`);
 
       const entityType = entity.entity_type || '';
@@ -1017,7 +1084,7 @@ export const registerAllTools = (server, schema, context) => {
       if (entityType === 'StixFile' || entityType === 'Artifact') {
         const hashes = entity.hashes || [];
         for (const pref of ['SHA-256', 'SHA-1', 'MD5']) {
-          const found = hashes.find((h) => h && h.algorithm === pref);
+          const found = hashes.find((h: any) => h && h.algorithm === pref);
           if (found) {
             hashAlg = pref;
             obsValue = found.hash;
@@ -1030,58 +1097,18 @@ export const registerAllTools = (server, schema, context) => {
       if (!stixPattern) return textResult(`Cannot auto-generate STIX pattern for ${entityType} '${obsValue}'. Use create_opencti_indicator with a manual pattern.`);
 
       const createQ = 'mutation CreateIndicator($input: IndicatorAddInput!) { indicatorAdd(input: $input) { id entity_type standard_id name pattern pattern_type x_opencti_main_observable_type x_opencti_score } }';
-      const indInput = { name: `Indicator: ${obsValue}`, pattern: stixPattern, pattern_type: 'stix', x_opencti_main_observable_type: entityType };
+      const indInput: Record<string, any> = { name: `Indicator: ${obsValue}`, pattern: stixPattern, pattern_type: 'stix', x_opencti_main_observable_type: entityType };
       if (x_opencti_score !== undefined) indInput.x_opencti_score = x_opencti_score;
       if (indicator_types) indInput.indicator_types = indicator_types;
       const { data: indData, error: indErr } = await executeGraphQL(schema, context, createQ, { input: indInput });
       if (indErr) return textResult(indErr);
-      const ind = indData.indicatorAdd || {};
+      const ind = indData!.indicatorAdd || {};
 
       const relQ = 'mutation CreateBasedOn($input: StixCoreRelationshipAddInput!) { stixCoreRelationshipAdd(input: $input) { id } }';
       const { error: relErr } = await executeGraphQL(schema, context, relQ, { input: { fromId: ind.id, toId: entity_id, relationship_type: 'based-on' } });
       if (relErr) return textResult(relErr);
 
       return textResult(JSON.stringify({ observable: { entity_type: entityType, value: obsValue, id: entity_id }, indicator: ind, pattern: stixPattern, relationship: 'based-on' }));
-    },
-  );
-
-  // ── 25. Upload file to entity ──
-  server.tool(
-    'upload_opencti_file',
-    'Upload or attach a file to an existing OpenCTI entity. Supports any entity type (reports, incidents, indicators, observables, etc.). Provide the file content as text (UTF-8) or base64-encoded binary.',
-    {
-      entity_id: z.string().describe('The OpenCTI entity ID to attach the file to'),
-      file_name: z.string().describe("File name with extension (e.g. 'report.pdf', 'iocs.csv', 'analysis.md')"),
-      file_content: z.string().describe("File content — plain text (UTF-8) by default, or base64-encoded if encoding is set to 'base64'"),
-      encoding: z.enum(['text', 'base64']).optional().default('text').describe("Content encoding: 'text' for UTF-8 text content (default), 'base64' for binary files"),
-      mime_type: z.string().optional().default('application/octet-stream').describe("MIME type (e.g. 'text/csv', 'application/pdf'). Default: 'application/octet-stream'"),
-      no_trigger_import: z.boolean().optional().default(true).describe('Skip triggering import connectors for this file (default: true)'),
-    },
-    async ({ entity_id, file_name, _file_content, _encoding, _mime_type, _no_trigger_import }) => {
-      // File upload requires multipart GraphQL which cannot be done via internal graphql() execution.
-      // Return a helpful message indicating this limitation.
-      return textResult(
-        'File upload via MCP is not supported in the embedded server because it requires multipart form data. '
-        + `Use the OpenCTI REST API or UI to upload files. Entity ID: ${entity_id}, File: ${file_name}`,
-      );
-    },
-  );
-
-  // ── 26. Import dashboard ──
-  server.tool(
-    'import_opencti_dashboard',
-    "Import a custom dashboard into OpenCTI from a JSON configuration. Provide the exact JSON object as exported from OpenCTI. The 'configuration.manifest' field must be a base64-encoded string (standard OpenCTI export format). Returns the new workspace/dashboard ID.",
-    {
-      dashboard_json: z.string().describe("The dashboard configuration as a JSON string. Required top-level fields: 'type' (must be 'dashboard'), 'openCTI_version', and 'configuration' object with 'name' and 'manifest' (base64-encoded JSON)."),
-      raw_widgets: z.boolean().optional().default(false).describe('When true, dashboard_json contains raw widget configurations that will be auto-encoded.'),
-    },
-    async ({ _dashboard_json, _raw_widgets }) => {
-      // Dashboard import requires multipart file upload which cannot be done via internal graphql() execution.
-      // Return a helpful message indicating this limitation.
-      return textResult(
-        'Dashboard import via MCP is not supported in the embedded server because it requires multipart file upload. '
-        + 'Use the OpenCTI REST API or UI to import dashboards.',
-      );
     },
   );
 };

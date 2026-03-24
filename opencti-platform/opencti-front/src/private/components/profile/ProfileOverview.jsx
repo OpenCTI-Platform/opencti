@@ -201,6 +201,19 @@ const OtpComponent = ({ closeFunction }) => (
   />
 );
 
+const getMcpEndpointUrl = () => `${window.location.origin}${APP_BASE_PATH}/mcp`;
+
+const buildMcpClientConfig = () => JSON.stringify({
+  mcpServers: {
+    opencti: {
+      url: getMcpEndpointUrl(),
+      headers: {
+        Authorization: 'Bearer <your-api-token>',
+      },
+    },
+  },
+}, null, 2);
+
 const ProfileOverviewComponent = (props) => {
   const { t, me, classes, about, settings, themes } = props;
   const { external, otp_activated: useOtp } = me;
@@ -587,7 +600,7 @@ const ProfileOverviewComponent = (props) => {
           </Stack>
         </div>
       </Card>
-      {hasAccessTokenCapability && (
+      {hasAccessTokenCapability && settings.platform_mcp_enabled && (
         <Card title={t('MCP access')}>
           <div>
             <Alert
@@ -607,7 +620,7 @@ const ProfileOverviewComponent = (props) => {
               </a>
             </Alert>
             <Label>{t('MCP endpoint')}</Label>
-            <pre>{`${window.location.origin}${APP_BASE_PATH}/mcp`}</pre>
+            <pre>{getMcpEndpointUrl()}</pre>
             <Label style={{ marginTop: 16 }}>{t('MCP client configuration')}</Label>
             <Alert
               severity="info"
@@ -617,32 +630,11 @@ const ProfileOverviewComponent = (props) => {
               {t('Copy the JSON configuration below to connect your MCP client (Claude Desktop, Cursor, etc.) to this OpenCTI instance.')}
             </Alert>
             <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-              {JSON.stringify({
-                mcpServers: {
-                  opencti: {
-                    url: `${window.location.origin}${APP_BASE_PATH}/mcp`,
-                    headers: {
-                      Authorization: 'Bearer <your-api-token>',
-                    },
-                  },
-                },
-              }, null, 2)}
+              {buildMcpClientConfig()}
             </pre>
             <Stack direction="row" justifyContent="flex-end" style={{ marginTop: 8 }}>
               <Button
-                onClick={() => copyToClipboard(
-                  t,
-                  JSON.stringify({
-                    mcpServers: {
-                      opencti: {
-                        url: `${window.location.origin}${APP_BASE_PATH}/mcp`,
-                        headers: {
-                          Authorization: 'Bearer <your-api-token>',
-                        },
-                      },
-                    },
-                  }, null, 2),
-                )}
+                onClick={() => copyToClipboard(t, buildMcpClientConfig())}
               >
                 {t('Copy configuration')}
               </Button>
@@ -705,6 +697,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
   settings: graphql`
     fragment ProfileOverview_settings on Settings {
       otp_mandatory
+      platform_mcp_enabled
     }
   `,
 });

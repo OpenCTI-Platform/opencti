@@ -184,7 +184,7 @@ const createApp = async (app, schema) => {
   initHttpRollingFeeds(app);
 
   // -- Init MCP server api
-  initMcpApi(app);
+  initMcpApi(app, schema);
 
   // -- Register the encryption module
   archiver.registerFormat('zip-encrypted', archiverZipEncrypted);
