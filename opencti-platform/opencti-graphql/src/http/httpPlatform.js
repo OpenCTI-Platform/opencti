@@ -172,6 +172,7 @@ const createApp = async (app, schema) => {
         frameAncestors: "'none'",
       },
     },
+    xFrameOptions: true,
   });
 
   // CSP with scriptSrc is required for the window.BASE_PATH propagation on frontend.
