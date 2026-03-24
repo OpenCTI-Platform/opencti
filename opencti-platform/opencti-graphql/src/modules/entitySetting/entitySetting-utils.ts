@@ -94,14 +94,6 @@ export const availableSettings: Record<string, Array<string>> = {
   [STIX_SIGHTING_RELATIONSHIP]: ['attributes_configuration', 'enforce_reference', 'platform_hidden_type', 'workflow_configuration'],
   [ABSTRACT_STIX_CYBER_OBSERVABLE]: ['platform_hidden_type'],
   [ENTITY_TYPE_EXTERNAL_REFERENCE]: ['platform_hidden_type'],
-  // add templates for :
-  // - containers
-  // - threat actors
-  // - intrusion set
-  // - campaign
-  // - malware
-  // - vulnerability
-  // - incident
   [ENTITY_TYPE_CONTAINER]: templateObjectSettings,
   [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL]: templateObjectSettings,
   [ENTITY_TYPE_THREAT_ACTOR_GROUP]: templateObjectSettings,
