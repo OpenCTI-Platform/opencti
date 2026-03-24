@@ -61,8 +61,8 @@ const FilterValuesContent: FunctionComponent<
           style={{ marginLeft: 3, marginTop: -5, paddingTop: 7 }}
           title={
             isFintelForEntityFeatureEnabled
-              ? t_i18n('Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lost the context of the entity in which the template is used.')
-              : t_i18n('Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lost the context of the container in which the template is used.')
+              ? t_i18n('Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lose the context of the entity in which the template is used.')
+              : t_i18n('Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lose the context of the container in which the template is used.')
           }
         >
           <InformationOutline color="primary" />

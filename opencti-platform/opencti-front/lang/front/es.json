@@ -933,6 +933,8 @@
   "CSV separator": "Separador de CSV",
   "CSV URL": "URL CSV",
   "Current cache version date": "Fecha de la versión actual de la caché",
+  "Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lose the context of the container in which the template is used.": "Entidad actual se refiere a la entidad en la que utilizará la plantilla Fintel. Eliminar este filtro significa que perderá el contexto del contenedor en el que se utiliza la plantilla.",
+  "Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lose the context of the entity in which the template is used.": "La entidad actual se refiere a la entidad en la que se utilizará la plantilla Fintel. Eliminar este filtro significa que perderá el contexto de la entidad en la que se utiliza la plantilla.",
   "Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lost the context of the container in which the template is used.": "Entidad actual se refiere a la entidad en la que utilizará la plantilla Fintel. Eliminar este filtro significa que perderá el contexto del contenedor en el que se utiliza la plantilla.",
   "Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lost the context of the entity in which the template is used.": "La entidad actual se refiere a la entidad en la que se utilizará la plantilla Fintel. Eliminar este filtro significa que se perderá el contexto de la entidad en la que se utiliza la plantilla.",
   "Current instance": "Instancia actual",
