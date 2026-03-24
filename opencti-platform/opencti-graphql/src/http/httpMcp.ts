@@ -8,8 +8,9 @@ import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { registerAllTools } from '../mcp/mcpTools';
 import type { BasicStoreSettings } from '../types/settings';
+import type { AuthContext } from '../types/user';
 
-let currentContext: Record<string, any> | null = null;
+let currentContext: AuthContext | null = null;
 
 const initMcpApi = (app: Express.Application, schema: GraphQLSchema): void => {
   const server = new McpServer({
