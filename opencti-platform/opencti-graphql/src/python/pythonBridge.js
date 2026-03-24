@@ -173,9 +173,14 @@ export const checkIndicatorSyntax = async (context, user, patternType, indicator
   return checkChildIndicatorSyntax(context, user, patternType, indicatorValue);
 };
 export const checkPythonAvailability = async (context, user) => {
+  logApp.info('[CHECK] Checking if Python is available');
   if (USE_NATIVE_EXEC) {
-    return checkNativePythonAvailability(context, user);
+    const result = checkNativePythonAvailability(context, user);
+    logApp.info('[CHECK] Python is alive');
+    return result;
   }
-  return checkChildPythonAvailability(context, user);
+  const result = checkChildPythonAvailability(context, user);
+  logApp.info('[CHECK] Python is alive');
+  return result;
 };
 // endregion
