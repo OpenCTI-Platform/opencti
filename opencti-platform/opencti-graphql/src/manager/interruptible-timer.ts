@@ -1,18 +1,18 @@
 /**
- * A timer that can be skipped early, resolving the promise immediately.
+ * A timer that can be interrupted, resolving the promise immediately.
  * Used in manager loops to allow clean shutdown without waiting for the full delay.
  *
  * Usage:
- *   const timer = new SkippableTimer();
+ *   const timer = new InterruptibleTimer();
  *   await timer.start(5_000); // waits up to 5 seconds
- *   timer.skip(); // resolves immediately from another context
+ *   timer.interrupt(); // resolves immediately from another context
  */
-export class SkippableTimer {
+export class InterruptibleTimer {
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   private resolve: (() => void) | null = null;
 
-  skip() {
+  interrupt() {
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;

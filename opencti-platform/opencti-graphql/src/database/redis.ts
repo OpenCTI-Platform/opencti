@@ -309,11 +309,12 @@ export const redisIsAlive = async () => {
   }
 };
 export const redisInit = async () => {
+  logApp.info('[CHECK] Checking if Search engine is available');
   try {
     await initializeRedisClients();
     await redisIsAlive();
     const redisMode: string = conf.get('redis:mode');
-    logApp.info('[REDIS] Clients initialized', { redisMode });
+    logApp.info('[REDIS] Clients initialized, Redis is alive', { redisMode });
     return true;
   } catch {
     throw DatabaseError('Redis seems down');
