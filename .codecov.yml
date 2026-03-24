@@ -1,0 +1,16 @@
+coverage:
+  status:
+    patch:
+      default:
+        target: 80%
+        informational: true
+      opencti-front:
+        target: 80%
+        informational: true
+        flags:
+          - opencti-front
+      opencti-graphql:
+        target: 80%
+        informational: false
+        flags:
+          - opencti-graphql
