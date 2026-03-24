@@ -7,5 +7,10 @@ coverage:
       opencti-front:
         target: 80%
         informational: true
-      opencti-back-end:
+        flags:
+          - opencti-front
+      opencti-graphql:
         target: 80%
+        informational: false
+        flags:
+          - opencti-graphql
