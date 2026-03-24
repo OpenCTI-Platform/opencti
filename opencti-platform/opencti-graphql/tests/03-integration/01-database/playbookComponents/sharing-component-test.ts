@@ -8,7 +8,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organ
 import * as middlewareLoader from '../../../../src/database/middleware-loader';
 import * as access from '../../../../src/utils/access';
 import { PLAYBOOK_SHARING_COMPONENT } from '../../../../src/modules/playbook/components/sharing-component';
-import { testBundleObject } from './playbook-components-test-utils';
+import { testBundleObject, testExecutor } from './playbook-components-test-utils';
 import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
 
 describe('PLAYBOOK_SHARING_COMPONENT', () => {
@@ -23,25 +23,19 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
     ],
   };
 
-  const createPlaybookNode = (organizations: string[], applyToElements: PlaybookBundleElementsToApply = playbookBundleElementsToApply.onlyMain.value) => ({
-    id: 'playbook-node',
-    name: 'share-node',
-    component_id: 'PLAYBOOK_SHARING_COMPONENT',
-    configuration: {
-      organizations,
-      applyToElements,
-    },
-  });
+  const inputBundleObjects = () => [
+    testBundleObject({ id: MAIN_REPORT_ID, type: 'report' }),
+  ];
 
-  const createPlaybookNodeWithObjectOrgs = (organizations: { label: string; value: string }[], applyToElements: PlaybookBundleElementsToApply) => ({
-    id: 'playbook-node',
-    name: 'share-node',
-    component_id: 'PLAYBOOK_SHARING_COMPONENT',
-    configuration: {
+  const componentConfig = ({ elementsToApply, organizations }:
+  { elementsToApply: PlaybookBundleElementsToApply;
+    organizations: string[] | { label: string; value: string }[];
+  }) => {
+    return {
       organizations,
-      applyToElements,
-    },
-  });
+      applyToElements: elementsToApply,
+    };
+  };
 
   const createMockOrganization = (name: string): Partial<BasicStoreObject> => ({
     id: `org-internal-${name}`,
@@ -68,40 +62,26 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
 
   describe('when organizations array is empty or not found', () => {
     it('should return bundle unchanged when organizations array is empty', async () => {
-      internalFindByIdsSpy.mockResolvedValue([]);
-
-      const bundle = structuredClone(inputBundle);
-
-      const result = await PLAYBOOK_SHARING_COMPONENT.executor({
-        dataInstanceId: MAIN_REPORT_ID,
-        eventId: '',
-        executionId: '',
-        playbookId: '',
-        previousPlaybookNodeId: undefined,
-        previousStepBundle: null as StixBundle | null,
-        bundle,
-        playbookNode: createPlaybookNode([]),
-      });
+      const result = await PLAYBOOK_SHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: inputBundleObjects(),
+          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.onlyMain.value, organizations: [] }),
+        }),
+      );
 
       expect(result.output_port).toBe('out');
       expect(getExtension(result.bundle, MAIN_REPORT_ID).granted_refs).toBeUndefined();
     });
 
     it('should return bundle unchanged when no matching organizations found in database', async () => {
-      internalFindByIdsSpy.mockResolvedValue([]);
-
-      const bundle = structuredClone(inputBundle);
-
-      const result = await PLAYBOOK_SHARING_COMPONENT.executor({
-        dataInstanceId: MAIN_REPORT_ID,
-        eventId: '',
-        executionId: '',
-        playbookId: '',
-        previousPlaybookNodeId: undefined,
-        previousStepBundle: null as StixBundle | null,
-        bundle,
-        playbookNode: createPlaybookNode(['org-not-found']),
-      });
+      const result = await PLAYBOOK_SHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: inputBundleObjects(),
+          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.onlyMain.value, organizations: ['org-not-found'] }),
+        }),
+      );
 
       expect(result.output_port).toBe('out');
       expect(getExtension(result.bundle, MAIN_REPORT_ID).granted_refs).toBeUndefined();
@@ -114,18 +94,13 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
 
       internalFindByIdsSpy.mockResolvedValue([mockOrg as BasicStoreObject]);
 
-      const bundle = structuredClone(inputBundle);
-
-      const result = await PLAYBOOK_SHARING_COMPONENT.executor({
-        dataInstanceId: MAIN_REPORT_ID,
-        eventId: '',
-        executionId: '',
-        playbookId: '',
-        previousPlaybookNodeId: undefined,
-        previousStepBundle: null as StixBundle | null,
-        bundle,
-        playbookNode: createPlaybookNode([mockOrg.id!], playbookBundleElementsToApply.onlyMain.value),
-      });
+      const result = await PLAYBOOK_SHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: inputBundleObjects(),
+          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.onlyMain.value, organizations: [mockOrg.id!] }),
+        }),
+      );
 
       expect(internalFindByIdsSpy).toHaveBeenCalled();
       expect(result.output_port).toBe('out');
@@ -141,18 +116,13 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
 
       internalFindByIdsSpy.mockResolvedValue([mockOrg as BasicStoreObject]);
 
-      const bundle = structuredClone(inputBundle);
-
-      const result = await PLAYBOOK_SHARING_COMPONENT.executor({
-        dataInstanceId: MAIN_REPORT_ID,
-        eventId: '',
-        executionId: '',
-        playbookId: '',
-        previousPlaybookNodeId: undefined,
-        previousStepBundle: null as StixBundle | null,
-        bundle,
-        playbookNode: createPlaybookNodeWithObjectOrgs([{ label: 'Test Organization', value: mockOrg.id! }], playbookBundleElementsToApply.onlyMain.value),
-      });
+      const result = await PLAYBOOK_SHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: inputBundleObjects(),
+          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.onlyMain.value, organizations: [{ label: 'Test Organization', value: mockOrg.id! }] }),
+        }),
+      );
 
       expect(result.output_port).toBe('out');
 
@@ -169,18 +139,13 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
         mockOrg2 as BasicStoreObject,
       ]);
 
-      const bundle = structuredClone(inputBundle);
-
-      const result = await PLAYBOOK_SHARING_COMPONENT.executor({
-        dataInstanceId: MAIN_REPORT_ID,
-        eventId: '',
-        executionId: '',
-        playbookId: '',
-        previousPlaybookNodeId: undefined,
-        previousStepBundle: null as StixBundle | null,
-        bundle,
-        playbookNode: createPlaybookNode([mockOrg1.id!, mockOrg2.id!], playbookBundleElementsToApply.onlyMain.value),
-      });
+      const result = await PLAYBOOK_SHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: inputBundleObjects(),
+          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.onlyMain.value, organizations: [mockOrg1.id!, mockOrg2.id!] }),
+        }),
+      );
 
       const ext = getExtension(result.bundle, MAIN_REPORT_ID);
       expect(ext.granted_refs).toContain(mockOrg1.standard_id);
@@ -191,22 +156,19 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
     it('should append to existing granted_refs', async () => {
       const existingOrg = createMockOrganization('ExistingOrg');
       const newOrg = createMockOrganization('NewOrg');
+      const inputBundleObjectsWithRefs = [
+        testBundleObject({ id: MAIN_REPORT_ID, type: 'report', octiExtension: { granted_refs: [existingOrg.standard_id!] } }),
+      ];
 
       internalFindByIdsSpy.mockResolvedValue([newOrg as BasicStoreObject]);
 
-      const bundle = structuredClone(inputBundle);
-      (bundle.objects[0].extensions[STIX_EXT_OCTI] as StixOpenctiExtension).granted_refs = [existingOrg.standard_id!];
-
-      const result = await PLAYBOOK_SHARING_COMPONENT.executor({
-        dataInstanceId: MAIN_REPORT_ID,
-        eventId: '',
-        executionId: '',
-        playbookId: '',
-        previousPlaybookNodeId: undefined,
-        previousStepBundle: null as StixBundle | null,
-        bundle,
-        playbookNode: createPlaybookNode([newOrg.id!], playbookBundleElementsToApply.onlyMain.value),
-      });
+      const result = await PLAYBOOK_SHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: inputBundleObjectsWithRefs,
+          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.onlyMain.value, organizations: [newOrg.id!] }),
+        }),
+      );
 
       const ext = getExtension(result.bundle, MAIN_REPORT_ID);
       expect(ext.granted_refs).toContain(existingOrg.standard_id);
@@ -230,7 +192,22 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
       }),
     ];
 
-    it('should add granted_refs to all objects when all=true', async () => {
+    const inputBundleMultipleObjects = () => [
+      testBundleObject({
+        id: MAIN_REPORT_ID,
+        type: 'report',
+      }),
+      testBundleObject({
+        id: MALWARE_ID,
+        type: 'Malware',
+      }),
+      testBundleObject({
+        id: CAMPAIGN_ID,
+        type: 'Campaign',
+      }),
+    ];
+
+    it('should add granted_refs to all objects when elementsToApply=all-elements', async () => {
       const mockOrg = createMockOrganization('TestOrg');
 
       internalFindByIdsSpy.mockResolvedValue([mockOrg as BasicStoreObject]);
@@ -238,16 +215,13 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
       const bundle = structuredClone(inputBundle);
       bundle.objects.push(...bundleAddedObjects());
 
-      const result = await PLAYBOOK_SHARING_COMPONENT.executor({
-        dataInstanceId: MAIN_REPORT_ID,
-        eventId: '',
-        executionId: '',
-        playbookId: '',
-        previousPlaybookNodeId: undefined,
-        previousStepBundle: null as StixBundle | null,
-        bundle,
-        playbookNode: createPlaybookNode([mockOrg.id!], playbookBundleElementsToApply.allElements.value),
-      });
+      const result = await PLAYBOOK_SHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: inputBundleMultipleObjects(),
+          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.allElements.value, organizations: [mockOrg.id!] }),
+        }),
+      );
 
       const mainElementExtension = getExtension(result.bundle, MAIN_REPORT_ID);
       expect(mainElementExtension.granted_refs).toContain(mockOrg.standard_id);
@@ -264,19 +238,13 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
 
       internalFindByIdsSpy.mockResolvedValue([mockOrg as BasicStoreObject]);
 
-      const bundle = structuredClone(inputBundle);
-      bundle.objects.push(...bundleAddedObjects());
-
-      const result = await PLAYBOOK_SHARING_COMPONENT.executor({
-        dataInstanceId: MAIN_REPORT_ID,
-        eventId: '',
-        executionId: '',
-        playbookId: '',
-        previousPlaybookNodeId: undefined,
-        previousStepBundle: null as StixBundle | null,
-        bundle,
-        playbookNode: createPlaybookNode([mockOrg.id!], playbookBundleElementsToApply.onlyMain.value),
-      });
+      const result = await PLAYBOOK_SHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: inputBundleMultipleObjects(),
+          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.onlyMain.value, organizations: [mockOrg.id!] }),
+        }),
+      );
 
       const mainElementExtension = getExtension(result.bundle, MAIN_REPORT_ID);
       expect(mainElementExtension.granted_refs).toContain(mockOrg.standard_id);
@@ -293,19 +261,13 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
 
       internalFindByIdsSpy.mockResolvedValue([mockOrg as BasicStoreObject]);
 
-      const bundle = structuredClone(inputBundle);
-      bundle.objects.push(...bundleAddedObjects());
-
-      const result = await PLAYBOOK_SHARING_COMPONENT.executor({
-        dataInstanceId: MAIN_REPORT_ID,
-        eventId: '',
-        executionId: '',
-        playbookId: '',
-        previousPlaybookNodeId: undefined,
-        previousStepBundle: null as StixBundle | null,
-        bundle,
-        playbookNode: createPlaybookNode([mockOrg.id!], playbookBundleElementsToApply.allExceptMain.value),
-      });
+      const result = await PLAYBOOK_SHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: inputBundleMultipleObjects(),
+          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.allExceptMain.value, organizations: [mockOrg.id!] }),
+        }),
+      );
 
       const mainElementExtension = getExtension(result.bundle, MAIN_REPORT_ID);
       expect(mainElementExtension.granted_refs).not.toBeDefined();
