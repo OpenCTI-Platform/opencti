@@ -16,25 +16,13 @@ import { createSyncHttpUri, httpBase } from '../domain/connector-utils';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { storeSyncConsumerMetrics, clearSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { createParser } from 'eventsource-parser';
+import { SkippableTimer } from '../utils/skippable-timer';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
 const WAIT_TIME_ACTION = 2000;
 
-let wakeWaitLoop = null;
-const waitOrShutdownLoop = (ms) => {
-  return new Promise((resolve) => {
-    const timer = setTimeout(() => {
-      wakeWaitLoop = null;
-      resolve();
-    }, ms);
-    wakeWaitLoop = () => {
-      clearTimeout(timer);
-      wakeWaitLoop = null;
-      resolve();
-    };
-  });
-};
+const waitLoopTimer = new SkippableTimer();
 
 const syncManagerInstance = (syncId) => {
   // Variables
@@ -108,7 +96,7 @@ const syncManagerInstance = (syncId) => {
       const startTime = new Date().getTime();
       logApp.info(`[OPENCTI] Sync ${syncId}: stopping manager`);
       running = false;
-      wakeWaitLoop?.();
+      waitLoopTimer.skip();
       if (abortController) abortController.abort();
       clearSyncConsumerMetrics(syncId).catch(() => {});
       logApp.info(`[OPENCTI] Sync ${syncId}: manager stopped in ${new Date().getTime() - startTime} ms`);
@@ -250,7 +238,7 @@ const initSyncManager = () => {
     while (syncListening) {
       lock.signal.throwIfAborted();
       await processStep();
-      await waitOrShutdownLoop(WAIT_TIME_ACTION);
+      await waitLoopTimer.start(WAIT_TIME_ACTION);
     }
     // Stopping
     for (const syncManager of syncManagers.values()) {
