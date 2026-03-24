@@ -28,6 +28,7 @@ import CampaignEdition from './CampaignEdition';
 import CampaignDeletion from './CampaignDeletion';
 import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
+import { PATH_CAMPAIGN } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
@@ -104,9 +105,10 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
     connectorsForImport,
   } = usePreloadedQuery<RootCampaignQuery>(campaignQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
-  const link = `/dashboard/threats/campaigns/${campaignId}/knowledge`;
-  const isOverview = location.pathname === `/dashboard/threats/campaigns/${campaignId}`;
-  const paddingRight = getPaddingRight(location.pathname, campaignId, '/dashboard/threats/campaigns');
+  const basePath = PATH_CAMPAIGN(campaignId);
+  const link = `${basePath}/knowledge`;
+  const isOverview = location.pathname === basePath;
+  const paddingRight = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
       {campaign ? (

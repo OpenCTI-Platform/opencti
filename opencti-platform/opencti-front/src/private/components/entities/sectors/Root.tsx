@@ -28,6 +28,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import SectorEdition from './SectorEdition';
 import SectorDeletion from './SectorDeletion';
+import { PATH_SECTOR, PATH_SECTORS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -100,9 +101,10 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
 
   const { forceUpdate } = useForceUpdate();
 
-  const isOverview = location.pathname === `/dashboard/entities/sectors/${sectorId}`;
-  const paddingRight = getPaddingRight(location.pathname, sectorId, '/dashboard/entities/sectors');
-  const link = `/dashboard/entities/sectors/${sectorId}/knowledge`;
+  const basePath = PATH_SECTOR(sectorId);
+  const isOverview = location.pathname === basePath;
+  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
       {sector ? (
@@ -133,7 +135,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: t_i18n('Sectors'), link: '/dashboard/entities/sectors' },
+              { label: t_i18n('Sectors'), link: PATH_SECTORS },
               { label: sector.name, current: true },
             ]}
             />
@@ -164,8 +166,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/entities/sectors"
-              entity={sector}
+              basePath={basePath}
               pages={{
                 overview:
                   <Sector sectorData={sector} />,

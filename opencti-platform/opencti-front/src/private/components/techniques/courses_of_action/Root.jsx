@@ -21,6 +21,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import CourseOfActionEdition from './CourseOfActionEdition';
 import CourseOfActionDeletion from './CouseOfActionDeletion';
+import { PATH_COURSE_OF_ACTION, PATH_COURSES_OF_ACTION } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
@@ -99,12 +100,13 @@ class RootCourseOfAction extends Component {
             if (props) {
               if (props.courseOfAction) {
                 const { courseOfAction } = props;
-                const paddingRight = getPaddingRight(location.pathname, courseOfAction.id, '/dashboard/techniques/courses_of_action', false);
+                const basePath = PATH_COURSE_OF_ACTION(courseOfActionId);
+                const paddingRight = getPaddingRight(location.pathname, basePath, false);
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs elements={[
                       { label: t('Techniques') },
-                      { label: t('Courses of action'), link: '/dashboard/techniques/courses_of_action' },
+                      { label: t('Courses of action'), link: PATH_COURSES_OF_ACTION },
                       { label: courseOfAction.name, current: true },
                     ]}
                     />
@@ -126,8 +128,7 @@ class RootCourseOfAction extends Component {
                       enableEnrollPlaybook={true}
                     />
                     <StixDomainObjectMain
-                      basePath="/dashboard/techniques/courses_of_action"
-                      entity={courseOfAction}
+                      basePath={basePath}
                       pages={{
                         overview:
                           <CourseOfAction courseOfActionData={props.courseOfAction} />,

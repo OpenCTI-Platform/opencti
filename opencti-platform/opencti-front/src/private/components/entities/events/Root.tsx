@@ -27,6 +27,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import EventEdition from './EventEdition';
 import EventDeletion from './EventDeletion';
+import { PATH_EVENT, PATH_EVENTS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootEventsSubscription($id: ID!) {
@@ -98,8 +99,9 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
 
   const { forceUpdate } = useForceUpdate();
 
-  const link = `/dashboard/entities/events/${eventId}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, eventId, '/dashboard/entities/events');
+  const basePath = PATH_EVENT(eventId);
+  const link = `${basePath}/knowledge`;
+  const paddingRight = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
       {event ? (
@@ -130,7 +132,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: t_i18n('Events'), link: '/dashboard/entities/events' },
+              { label: t_i18n('Events'), link: PATH_EVENTS },
               { label: event.name, current: true },
             ]}
             />
@@ -159,8 +161,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/entities/events"
-              entity={event}
+              basePath={basePath}
               pages={{
                 overview:
                   <Event eventData={event} />,

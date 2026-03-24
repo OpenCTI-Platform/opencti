@@ -30,6 +30,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import IncidentEdition from './IncidentEdition';
 import IncidentDeletion from './IncidentDeletion';
+import { PATH_INCIDENT, PATH_INCIDENTS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -102,12 +103,13 @@ const RootIncidentComponent = ({ queryRef }) => {
   const data = usePreloadedQuery(incidentQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
   const { incident, connectorsForImport, connectorsForExport } = data;
-  const link = `/dashboard/events/incidents/${incidentId}/knowledge`;
-  const isOverview = location.pathname === `/dashboard/events/incidents/${incident?.id}`;
+  const basePath = PATH_INCIDENT(incidentId);
+  const link = `${basePath}/knowledge`;
+  const isOverview = location.pathname === basePath;
   const paddingRightValue = () => {
-    if (location.pathname.includes(`/dashboard/events/incidents/${incident.id}/knowledge`)) return 200;
-    if (location.pathname.includes(`/dashboard/events/incidents/${incident.id}/content`)) return 350;
-    if (location.pathname.includes(`/dashboard/events/incidents/${incident.id}/content/mapping`)) return 0;
+    if (location.pathname.includes(`${basePath}/knowledge`)) return 200;
+    if (location.pathname.includes(`${basePath}/content`)) return 350;
+    if (location.pathname.includes(`${basePath}/content/mapping`)) return 0;
     return 0;
   };
   return (
@@ -143,7 +145,7 @@ const RootIncidentComponent = ({ queryRef }) => {
           >
             <Breadcrumbs elements={[
               { label: t_i18n('Events') },
-              { label: t_i18n('Incidents'), link: '/dashboard/events/incidents' },
+              { label: t_i18n('Incidents'), link: PATH_INCIDENTS },
               { label: incident.name, current: true },
             ]}
             />
@@ -173,8 +175,7 @@ const RootIncidentComponent = ({ queryRef }) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/events/incidents"
-              entity={incident}
+              basePath={basePath}
               pages={{
                 overview: <Incident incidentData={incident} />,
                 knowledge: (

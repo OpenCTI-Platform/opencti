@@ -26,6 +26,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import AttackPatternEdition from './AttackPatternEdition';
 import AttackPatternDeletion from './AttackPatternDeletion';
+import { PATH_ATTACK_PATTERN, PATH_ATTACK_PATTERNS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -80,6 +81,7 @@ type RootAttackPatternProps = {
   attackPatternId: string;
   queryRef: PreloadedQuery<RootAttackPatternQuery>;
 };
+
 const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps) => {
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootAttackPatternSubscription>>(() => ({
     subscription,
@@ -98,8 +100,8 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
 
   const { forceUpdate } = useForceUpdate();
 
-  const paddingRight = getPaddingRight(location.pathname, attackPatternId, '/dashboard/techniques/attack_patterns');
-  const link = `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`;
+  const basePath = PATH_ATTACK_PATTERN(attackPatternId);
+  const paddingRight = getPaddingRight(location.pathname, basePath);
 
   return (
     <CreateRelationshipContextProvider>
@@ -110,7 +112,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               path="/knowledge/*"
               element={(
                 <StixCoreObjectKnowledgeBar
-                  stixCoreObjectLink={link}
+                  stixCoreObjectLink={`${basePath}/knowledge`}
                   availableSections={[
                     'victimology',
                     'threat_actors',
@@ -131,7 +133,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Techniques') },
-              { label: t_i18n('Attack patterns'), link: '/dashboard/techniques/attack_patterns' },
+              { label: t_i18n('Attack patterns'), link: PATH_ATTACK_PATTERNS },
               { label: attackPattern.name, current: true },
             ]}
             />
@@ -159,8 +161,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/techniques/attack_patterns"
-              entity={attackPattern}
+              basePath={basePath}
               pages={{
                 overview:
                   <AttackPattern attackPatternData={attackPattern} />,

@@ -31,6 +31,7 @@ import RegionEdition from './RegionEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import RegionDeletion from './RegionDeletion';
+import { PATH_REGION, PATH_REGIONS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -94,9 +95,10 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
   const data = usePreloadedQuery(regionQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
   const { region, connectorsForImport, connectorsForExport } = data;
-  const link = `/dashboard/locations/regions/${regionId}/knowledge`;
-  const isOverview = location.pathname === `/dashboard/locations/regions/${regionId}`;
-  const paddingRight = getPaddingRight(location.pathname, region?.id, '/dashboard/locations/regions');
+  const basePath = PATH_REGION(regionId);
+  const link = `${basePath}/knowledge`;
+  const isOverview = location.pathname === basePath;
+  const paddingRight = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
       {region ? (
@@ -131,7 +133,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
-              { label: t_i18n('Regions'), link: '/dashboard/locations/regions' },
+              { label: t_i18n('Regions'), link: PATH_REGIONS },
               { label: region.name, current: true },
             ]}
             />
@@ -162,8 +164,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/locations/regions"
-              entity={region}
+              basePath={basePath}
               pages={{
                 overview: <Region regionData={region} />,
                 knowledge: (

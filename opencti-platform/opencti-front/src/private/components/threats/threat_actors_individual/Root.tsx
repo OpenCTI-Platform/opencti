@@ -27,6 +27,7 @@ import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
 import ThreatActorIndividualDeletion from './ThreatActorIndividualDeletion';
 import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
+import { PATH_THREAT_ACTORS_INDIVIDUAL, PATH_THREAT_ACTORS_INDIVIDUALS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootThreatActorIndividualSubscription($id: ID!) {
@@ -111,9 +112,10 @@ const RootThreatActorIndividualComponent = ({
     queryRef,
   );
   const { forceUpdate } = useForceUpdate();
-  const isOverview = location.pathname === `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}`;
-  const paddingRight = getPaddingRight(location.pathname, threatActorIndividualId, '/dashboard/threats/threat_actors_individual');
-  const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/knowledge`;
+  const basePath = PATH_THREAT_ACTORS_INDIVIDUAL(threatActorIndividualId);
+  const isOverview = location.pathname === basePath;
+  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
       {threatActorIndividual ? (
@@ -151,7 +153,7 @@ const RootThreatActorIndividualComponent = ({
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Threats') },
-              { label: t_i18n('Threat actors (individual)'), link: '/dashboard/threats/threat_actors_individual' },
+              { label: t_i18n('Threat actors (individual)'), link: PATH_THREAT_ACTORS_INDIVIDUALS },
               { label: threatActorIndividual.name, current: true },
             ]}
             />
@@ -183,8 +185,7 @@ const RootThreatActorIndividualComponent = ({
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/threats/threat_actors_individual"
-              entity={threatActorIndividual}
+              basePath={basePath}
               pages={{
                 overview:
                   <ThreatActorIndividual threatActorIndividualData={threatActorIndividual} />,

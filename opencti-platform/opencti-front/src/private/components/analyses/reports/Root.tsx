@@ -26,6 +26,7 @@ import ReportEdition from './ReportEdition';
 import ReportDeletion from './ReportDeletion';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import AIInsights from '@components/common/ai/AIInsights';
+import { PATH_REPORT, PATH_REPORTS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -92,6 +93,7 @@ const RootReport = () => {
   const enableReferences = useIsEnforceReference('Report') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
+  const basePath = PATH_REPORT(reportId);
   return (
     <>
       <QueryRenderer
@@ -101,15 +103,15 @@ const RootReport = () => {
           if (props) {
             if (props.report) {
               const { report } = props;
-              const isOverview = location.pathname === `/dashboard/analyses/reports/${report.id}`;
-              const paddingRight = getPaddingRight(location.pathname, reportId, '/dashboard/analyses/reports', false);
+              const isOverview = location.pathname === basePath;
+              const paddingRight = getPaddingRight(location.pathname, basePath, false);
               const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
               const currentAccessRight = useGetCurrentUserAccessRight(report.currentUserAccessRight);
               return (
                 <div style={{ paddingRight }} data-testid="report-details-page">
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
-                    { label: t_i18n('Reports'), link: '/dashboard/analyses/reports' },
+                    { label: t_i18n('Reports'), link: PATH_REPORTS },
                     { label: report.name, current: true },
                   ]}
                   />
@@ -133,8 +135,7 @@ const RootReport = () => {
                     enableEnricher={true}
                   />
                   <StixDomainObjectMain
-                    basePath="/dashboard/analyses/reports"
-                    entity={report}
+                    basePath={basePath}
                     pages={{
                       overview:
                         <Report reportFragment={report} />,
