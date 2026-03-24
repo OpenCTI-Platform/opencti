@@ -4,6 +4,7 @@ import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../src/schema/stixDomainO
 import { PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT } from '../../../../src/modules/playbook/components/remove-access-restrictions-component';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../../src/modules/grouping/grouping-types';
+import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
 
 describe('PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT', () => {
   const REPORT_ID = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
@@ -38,7 +39,7 @@ describe('PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT', () => {
         mainId: REPORT_ID,
         bundleObjects: BUNDLE_OBJECTS(),
         configuration: {
-          all: false,
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
         },
       }));
 
@@ -58,7 +59,7 @@ describe('PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT', () => {
         mainId: REPORT_ID,
         bundleObjects: BUNDLE_OBJECTS(),
         configuration: {
-          all: true,
+          applyToElements: playbookBundleElementsToApply.allElements.value,
         },
       }));
 
@@ -70,6 +71,26 @@ describe('PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT', () => {
       expect(reportExtension?.opencti_upsert_operations?.length).toEqual(1);
       expect(reportExtension?.opencti_upsert_operations?.[0].key).toEqual('restricted_members');
       expect(reportExtension?.opencti_upsert_operations?.[0].value).toEqual([]);
+      expect(groupingExtension?.opencti_upsert_operations?.length).toEqual(1);
+      expect(groupingExtension?.opencti_upsert_operations?.[0].key).toEqual('restricted_members');
+      expect(groupingExtension?.opencti_upsert_operations?.[0].value).toEqual([]);
+    });
+
+    it('should remove authorized_members of all objects except main in the bundle', async () => {
+      const result = await PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: {
+          applyToElements: playbookBundleElementsToApply.allExceptMain.value,
+        },
+      }));
+
+      expect(result.output_port).toBe('out');
+      const reportResult = result.bundle.objects.find((o) => o.id === REPORT_ID);
+      const reportExtension = reportResult?.extensions[STIX_EXT_OCTI];
+      const groupingResult = result.bundle.objects.find((o) => o.id === GROUPING_ID);
+      const groupingExtension = groupingResult?.extensions[STIX_EXT_OCTI];
+      expect(reportExtension?.opencti_upsert_operations).toBeUndefined();
       expect(groupingExtension?.opencti_upsert_operations?.length).toEqual(1);
       expect(groupingExtension?.opencti_upsert_operations?.[0].key).toEqual('restricted_members');
       expect(groupingExtension?.opencti_upsert_operations?.[0].value).toEqual([]);
@@ -87,7 +108,7 @@ describe('PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT', () => {
         },
       })],
       configuration: {
-        all: false,
+        applyToElements: playbookBundleElementsToApply.onlyMain.value,
       },
     }));
 
@@ -103,7 +124,7 @@ describe('PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT', () => {
       mainId: REPORT_ID,
       bundleObjects: [],
       configuration: {
-        all: false,
+        applyToElements: playbookBundleElementsToApply.onlyMain.value,
       },
     }));
 
