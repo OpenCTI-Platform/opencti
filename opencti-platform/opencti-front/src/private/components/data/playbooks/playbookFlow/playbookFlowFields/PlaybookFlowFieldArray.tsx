@@ -13,11 +13,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { MenuItem, Tooltip, TooltipProps } from '@mui/material';
+import { AutocompleteRenderGetTagProps, MenuItem, Tooltip, TooltipProps } from '@mui/material';
 import { Field } from 'formik';
 import AutocompleteField from '../../../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 import useEntityTranslation from '../../../../../../utils/hooks/useEntityTranslation';
+import Tag from '../../../../../../components/common/tag/Tag';
 
 interface Option {
   const: string;
@@ -62,7 +63,18 @@ const PlaybookFlowFieldArray = ({
       }}
       name={name}
       options={fieldOptions}
-      isOptionEqualToValue={(o: string, val: string) => o === val}
+      renderTags={(values: string[], getTagProps: AutocompleteRenderGetTagProps) => (
+        values.map((value, index) => {
+          const option = findOption(value);
+          return (
+            <Tag
+              {...getTagProps({ index })}
+              key={value}
+              label={option?.title}
+            />
+          );
+        })
+      )}
       renderOption={(props: TooltipProps, value: string) => {
         const option = findOption(value);
         if (!option) return null;
