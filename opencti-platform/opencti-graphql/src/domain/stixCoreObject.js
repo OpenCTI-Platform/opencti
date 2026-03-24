@@ -1193,7 +1193,6 @@ export const aiHistory = async (context, user, args) => {
 
 // region prompts for threats
 export const aiActivityForThreats = async (context, user, stixCoreObject, language) => {
-  await checkPlatformAiEnabled(context);
   const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topSectors = {};
@@ -1266,7 +1265,6 @@ export const aiActivityForThreats = async (context, user, stixCoreObject, langua
 };
 
 export const aiActivityTrendForThreats = async (context, user, stixCoreObject) => {
-  await checkPlatformAiEnabled(context);
   const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
 
@@ -1311,7 +1309,6 @@ export const aiActivityTrendForThreats = async (context, user, stixCoreObject) =
 };
 
 export const aiForecastForThreats = async (context, user, stixCoreObject, language) => {
-  await checkPlatformAiEnabled(context);
   const indicatorsStats = await getIndicatorsStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const victimologyStats = await getVictimologyStats(context, user, stixCoreObject.id, monthsAgo(24), now());
   const topSectors = {};
