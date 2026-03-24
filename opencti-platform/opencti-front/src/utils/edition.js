@@ -22,9 +22,13 @@ export const convertMarking = (element) => ({
   },
 });
 
-export const convertMarkings = (element) => (element?.objectMarking ?? []).map((n) => convertMarking(n));
+export const convertMarkings = (element) => (element?.objectMarking ?? [])
+  .filter(Boolean)
+  .map((n) => convertMarking(n));
 
-export const convertMarkingsWithoutEdges = (element, field = 'objectMarking') => (element?.[field] ?? []).map((n) => convertMarking(n));
+export const convertMarkingsWithoutEdges = (element, field = 'objectMarking') => (element?.[field] ?? [])
+  .filter(Boolean)
+  .map((n) => convertMarking(n));
 
 export const convertTriggers = (element) => (element?.triggers ?? []).map((n) => ({
   label: n.name,

@@ -117,6 +117,9 @@ const IngestionRssCreation: FunctionComponent<IngestionRssCreationProps> = ({ pa
         setSubmitting(false);
         resetForm();
       },
+      onError: () => {
+        setSubmitting(false);
+      },
     });
   };
 
