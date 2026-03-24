@@ -2,19 +2,9 @@ import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { head } from 'ramda';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { awaitUntilCondition } from '../../utils/testQueryHelper';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
-
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// NOTE:
-// These timings are tuned for cache invalidation / settings propagation in tests:
-// - Timeout: generous upper bound to avoid flakiness under load while still failing eventually.
-// - Interval: trade-off between responsiveness and not overloading the GraphQL API with queries.
-// They can be overridden per environment using the corresponding environment variables.
-const WAIT_FOR_SETTINGS_TIMEOUT_MS = Number(process.env.WAIT_FOR_SETTINGS_TIMEOUT_MS) || 10000;
-const WAIT_FOR_SETTINGS_INTERVAL_MS = Number(process.env.WAIT_FOR_SETTINGS_INTERVAL_MS) || 250;
-const WAIT_FOR_SETTINGS_INITIAL_DELAY_MS = Number(process.env.WAIT_FOR_SETTINGS_INITIAL_DELAY_MS) || 250;
 
 const PLATFORM_AI_ENABLED_QUERY = gql`
   query settingsPlatformAiEnabled {
@@ -25,19 +15,21 @@ const PLATFORM_AI_ENABLED_QUERY = gql`
 `;
 
 const waitForPlatformAiEnabled = async (expectedEnabled) => {
+  const WAIT_FOR_SETTINGS_TIMEOUT_MS = Number(process.env.WAIT_FOR_SETTINGS_TIMEOUT_MS) || 10000;
+  const WAIT_FOR_SETTINGS_INTERVAL_MS = Number(process.env.WAIT_FOR_SETTINGS_INTERVAL_MS) || 250;
+  const loopCount = Math.ceil(WAIT_FOR_SETTINGS_TIMEOUT_MS / WAIT_FOR_SETTINGS_INTERVAL_MS);
   let lastValue = undefined;
-  await wait(WAIT_FOR_SETTINGS_INITIAL_DELAY_MS);
-  const startTime = Date.now();
-  while (Date.now() - startTime < WAIT_FOR_SETTINGS_TIMEOUT_MS) {
-    const settingsResult = await queryAsAdmin({ query: PLATFORM_AI_ENABLED_QUERY, variables: {} });
-    lastValue = settingsResult?.data?.settings?.platform_ai_enabled;
-    if (lastValue === expectedEnabled) {
-      return;
-    }
-    await wait(WAIT_FOR_SETTINGS_INTERVAL_MS);
-  }
-  throw new Error(
-    `Timed out waiting for settings.platform_ai_enabled to become ${expectedEnabled} (last observed: ${lastValue})`
+
+  await awaitUntilCondition(
+    async () => {
+      const settingsResult = await queryAsAdmin({ query: PLATFORM_AI_ENABLED_QUERY, variables: {} });
+      lastValue = settingsResult?.data?.settings?.platform_ai_enabled;
+      return lastValue === expectedEnabled;
+    },
+    WAIT_FOR_SETTINGS_INTERVAL_MS,
+    loopCount,
+    true,
+    `Timed out waiting for settings.platform_ai_enabled to become ${expectedEnabled} (last observed: ${lastValue})`,
   );
 };
 
@@ -192,11 +184,6 @@ describe('Settings resolver standard behavior', () => {
     const settingsInternalId = await settingsId();
     const initialSettingsResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
     const platformAiEnabled = initialSettingsResult.data.settings.platform_ai_enabled;
-    if (platformAiEnabled === null || platformAiEnabled === undefined) {
-      throw new Error(
-        'settings.platform_ai_enabled is not initialized; ensure the corresponding migration and configuration are applied.'
-      );
-    }
     const initialAiEnabled = platformAiEnabled;
     if (!initialAiEnabled) {
       await queryAsAdmin({
