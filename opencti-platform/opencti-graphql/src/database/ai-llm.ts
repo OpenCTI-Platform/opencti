@@ -52,7 +52,7 @@ const initClients = () => {
         hasClient: !!client,
         hasNlqChat: !!nlqChat,
         aiType: AI_TYPE,
-      }
+      },
     );
     resetClients();
   }
@@ -164,9 +164,10 @@ const ensureClientsInitialized = async () => {
 export const setAiEnabled = (enabled: boolean) => {
   // Similar pattern to `ensureClientsInitialized`: the `operation` promise reflects
   // the real outcome for the caller, while `clientsUpdate` is kept reusable.
+  let previousEnabled: boolean | undefined;
   const operation = clientsUpdate
     .then(() => {
-      const previousEnabled = AI_ENABLED;
+      previousEnabled = AI_ENABLED;
 
       // If there is no actual state change requested, do nothing.
       if (previousEnabled === enabled) {
@@ -182,13 +183,15 @@ export const setAiEnabled = (enabled: boolean) => {
         return;
       }
 
-// Enabling AI: update the flag and then initialize clients.
-            AI_ENABLED = true;
-            initClients();
+      // Enabling AI: update the flag and then initialize clients.
+      AI_ENABLED = true;
+      initClients();
     })
     .catch((err) => {
       logApp.error('[AI] Failed to apply AI enabled state change', { enabled, cause: err });
-            AI_ENABLED = previousEnabled;
+      if (previousEnabled !== undefined) {
+        AI_ENABLED = previousEnabled;
+      }
       resetClients();
       throw UnknownError('Failed to apply AI enabled state change', { cause: err });
     });
