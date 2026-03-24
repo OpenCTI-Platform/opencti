@@ -37,6 +37,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { lockResources } from '../lock/master-lock';
 import { ACTIVITY_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
+import { SkippableTimer } from '../utils/skippable-timer';
 
 const ACTIVITY_ENGINE_KEY = conf.get('activity_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -147,20 +148,7 @@ const initActivityManager = () => {
   let streamProcessor: StreamProcessor;
   let running = false;
   let shutdown = false;
-  let wakeWait: (() => void) | null = null;
-  const waitOrShutdown = (ms: number) => {
-    return new Promise<void>((resolve) => {
-      const timer = setTimeout(() => {
-        wakeWait = null;
-        resolve();
-      }, ms);
-      wakeWait = () => {
-        clearTimeout(timer);
-        wakeWait = null;
-        resolve();
-      };
-    });
-  };
+  const waitTimer = new SkippableTimer();
   const activityHandler = async (lastEventId: string) => {
     let lock;
     try {
@@ -173,7 +161,7 @@ const initActivityManager = () => {
       await streamProcessor.start(lastEventId);
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
-        await waitOrShutdown(WAIT_TIME_ACTION);
+        await waitTimer.start(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of Activity manager processing');
     } catch (e: any) {
@@ -227,7 +215,7 @@ const initActivityManager = () => {
       const startTime = new Date().getTime();
       logApp.info('[OPENCTI-MODULE] Stopping activity manager');
       shutdown = true;
-      wakeWait?.();
+      waitTimer.skip();
       if (scheduler) {
         await clearIntervalAsync(scheduler);
       }

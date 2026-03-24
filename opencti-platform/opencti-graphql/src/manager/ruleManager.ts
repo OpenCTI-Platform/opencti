@@ -43,6 +43,7 @@ import jsonCanonicalize from 'canonicalize';
 import { v5 as uuidv5 } from 'uuid';
 
 import { pushAll } from '../utils/arrayUtil';
+import { SkippableTimer } from '../utils/skippable-timer';
 
 const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 
@@ -296,20 +297,7 @@ const initRuleManager = () => {
   let streamProcessor: StreamProcessor;
   let running = false;
   let shutdown = false;
-  let wakeWait: (() => void) | null = null;
-  const waitOrShutdown = (ms: number) => {
-    return new Promise<void>((resolve) => {
-      const timer = setTimeout(() => {
-        wakeWait = null;
-        resolve();
-      }, ms);
-      wakeWait = () => {
-        clearTimeout(timer);
-        wakeWait = null;
-        resolve();
-      };
-    });
-  };
+  const waitTimer = new SkippableTimer();
   const ruleHandler = async () => {
     let lock;
     try {
@@ -332,7 +320,7 @@ const initRuleManager = () => {
       await streamProcessor.start(lastEventState ?? 'live');
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
-        await waitOrShutdown(WAIT_TIME_ACTION);
+        await waitTimer.start(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of rule manager processing');
     } catch (e: any) {
@@ -364,7 +352,7 @@ const initRuleManager = () => {
     shutdown: async () => {
       logApp.info('[OPENCTI-MODULE] Stopping rule engine');
       shutdown = true;
-      wakeWait?.();
+      waitTimer.skip();
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }
