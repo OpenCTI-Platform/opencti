@@ -97,6 +97,7 @@ export const ProvidersWrapper = ({ children, relayEnv, userContext }: ProvidersW
 interface TestRenderOptions {
   relayConfig?: Partial<EnvironmentConfig>;
   userContext?: Partial<UserContextType>;
+  route?: string;
 }
 
 /**
@@ -107,11 +108,15 @@ interface TestRenderOptions {
  * @returns Rendered component we can manipulate and make assertions on.
  */
 const testRender = (ui: ReactNode, options?: TestRenderOptions) => {
-  const { relayConfig, userContext } = options ?? {};
+  const { relayConfig, userContext, route } = options ?? {};
   // TODO Fix this
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const relayEnv = createMockEnvironment(relayConfig);
+
+  if (route) {
+    window.history.pushState({}, 'Test page', route);
+  }
 
   return {
     user: userEvent.setup(),
