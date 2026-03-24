@@ -28,6 +28,7 @@ import type { StixBundle, StixObject } from '../../types/stix-2-1-common';
 import { streamEventId, utcDate } from '../../utils/format';
 import { findById, findPlaybooksForEntity } from '../../modules/playbook/playbook-domain';
 import { type CronConfiguration, PLAYBOOK_INTERNAL_DATA_CRON, type StreamConfiguration } from '../../modules/playbook/playbook-components';
+import { SkippableTimer } from '../../utils/skippable-timer';
 import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../../modules/playbook/playbook-types';
@@ -186,28 +187,8 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
   return false;
 };
 
-let wakeWaitCron: (() => void) | null = null;
-
-const waitOrShutdownCron = (ms: number) => {
-  return new Promise<void>((resolve) => {
-    const timer = setTimeout(resolve, ms);
-    wakeWaitCron = () => {
-      clearTimeout(timer);
-      resolve();
-    };
-  });
-};
-
-let wakeWaitStream: (() => void) | null = null;
-const waitOrShutdownStream = (ms: number) => {
-  return new Promise<void>((resolve) => {
-    const timer = setTimeout(resolve, ms);
-    wakeWaitStream = () => {
-      clearTimeout(timer);
-      resolve();
-    };
-  });
-};
+const cronTimer = new SkippableTimer();
+const streamTimer = new SkippableTimer();
 
 const initPlaybookManager = () => {
   const WAIT_TIME_ACTION = 2000;
@@ -229,7 +210,7 @@ const initPlaybookManager = () => {
       await streamProcessor.start(lastEventState ?? 'live');
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
-        await waitOrShutdownStream(WAIT_TIME_ACTION);
+        await streamTimer.start(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of playbook manager processing (live)');
     } catch (e: any) {
@@ -390,7 +371,7 @@ const initPlaybookManager = () => {
       while (!shutdown) {
         lock.signal.throwIfAborted();
         await handlePlaybookCrons(context);
-        await waitOrShutdownCron(CRON_SCHEDULE_TIME);
+        await cronTimer.start(CRON_SCHEDULE_TIME);
       }
       logApp.info('[OPENCTI-MODULE] End of playbook manager processing (cron)');
     } catch (e: any) {
@@ -423,8 +404,8 @@ const initPlaybookManager = () => {
       const startTime = new Date().getTime();
       logApp.info('[OPENCTI-MODULE] Stopping playbook manager');
       shutdown = true;
-      wakeWaitStream?.();
-      wakeWaitCron?.();
+      streamTimer.skip();
+      cronTimer.skip();
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
       if (cronScheduler) await clearIntervalAsync(cronScheduler);
       logApp.info(`[OPENCTI-MODULE] Playbook manager stopped in ${new Date().getTime() - startTime} ms`);
