@@ -24,6 +24,6 @@ const useAI = (): {
   return { enabled: settings.platform_ai_enabled, configured: settings.platform_ai_has_token, fullyActive: settings.platform_ai_enabled && settings.platform_ai_has_token };
 };
 
-const dummyFunction = (input: number) => input * 2;
+export const dummyFunction = (input: number) => input * 2;
 
 export default useAI;
