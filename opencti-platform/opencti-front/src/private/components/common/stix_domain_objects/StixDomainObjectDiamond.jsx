@@ -46,7 +46,7 @@ const StixDomainObjectDiamondComponent = ({ entityLink, data }) => {
         stixDomainObject,
         entityLink,
       },
-      position: { x: 490, y: 60 },
+      position: { x: 490, y: 84 },
     },
     {
       id: 'adversary',
@@ -76,7 +76,7 @@ const StixDomainObjectDiamondComponent = ({ entityLink, data }) => {
         stixDomainObject,
         entityLink,
       },
-      position: { x: -470, y: 60 },
+      position: { x: -470, y: 84 },
     },
   ];
   const initialEdges = [
