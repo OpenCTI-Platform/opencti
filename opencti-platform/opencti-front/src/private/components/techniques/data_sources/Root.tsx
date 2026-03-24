@@ -24,6 +24,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import DataSourceEdition from './DataSourceEdition';
 import DataSourceDeletion from './DataSourceDeletion';
+import { PATH_DATA_SOURCE, PATH_DATA_SOURCES } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootDataSourcesSubscription($id: ID!) {
@@ -85,14 +86,15 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
-  const paddingRight = getPaddingRight(location.pathname, dataSource?.id, '/dashboard/techniques/data_sources', false);
+  const basePath = PATH_DATA_SOURCE(dataSourceId);
+  const paddingRight = getPaddingRight(location.pathname, basePath, false);
   return (
     <>
       {dataSource ? (
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Techniques') },
-            { label: t_i18n('Data sources'), link: '/dashboard/techniques/data_sources' },
+            { label: t_i18n('Data sources'), link: PATH_DATA_SOURCES },
             { label: dataSource.name, current: true },
           ]}
           />
@@ -114,8 +116,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             enableEnrollPlaybook={true}
           />
           <StixDomainObjectMain
-            basePath="/dashboard/techniques/data_sources"
-            entity={dataSource}
+            basePath={basePath}
             pages={{
               overview:
                 <DataSource dataSourceData={dataSource} />,

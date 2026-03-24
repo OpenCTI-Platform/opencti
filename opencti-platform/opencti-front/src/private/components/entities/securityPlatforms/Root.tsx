@@ -26,6 +26,7 @@ import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import SecurityPlatformDeletion from './SecurityPlatformDeletion';
+import { PATH_SECURITY_PLATFORM, PATH_SECURITY_PLATFORMS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootSecurityPlatformSubscription($id: ID!) {
@@ -104,8 +105,9 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
 
   const { forceUpdate } = useForceUpdate();
 
-  const link = `/dashboard/entities/security_platforms/${securityPlatformId}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, securityPlatformId, '/dashboard/entities/security_platforms');
+  const basePath = PATH_SECURITY_PLATFORM(securityPlatformId);
+  const link = `${basePath}/knowledge`;
+  const paddingRight = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
       {securityPlatform ? (
@@ -127,7 +129,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: t_i18n('Security platforms'), link: '/dashboard/entities/security_platforms' },
+              { label: t_i18n('Security platforms'), link: PATH_SECURITY_PLATFORMS },
               { label: securityPlatform.name, current: true },
             ]}
             />
@@ -157,8 +159,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/entities/security_platforms"
-              entity={securityPlatform}
+              basePath={basePath}
               pages={{
                 overview: (
                   <SecurityPlatform

@@ -28,6 +28,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE, K
 import { getPaddingRight } from '../../../../utils/utils';
 import GroupingEdition from './GroupingEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import { PATH_GROUPING, PATH_GROUPINGS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootGroupingSubscription($id: ID!) {
@@ -97,6 +98,7 @@ const RootGrouping = () => {
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
 
+  const basePath = PATH_GROUPING(groupingId);
   return (
     <>
       <QueryRenderer
@@ -107,13 +109,13 @@ const RootGrouping = () => {
             if (props.grouping) {
               const { grouping } = props;
               const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
-              const paddingRight = getPaddingRight(location.pathname, grouping.id, '/dashboard/analyses/groupings', false);
+              const paddingRight = getPaddingRight(location.pathname, basePath, false);
               const currentAccessRight = useGetCurrentUserAccessRight(grouping.currentUserAccessRight);
               return (
                 <div style={{ paddingRight }}>
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
-                    { label: t_i18n('Groupings'), link: '/dashboard/analyses/groupings' },
+                    { label: t_i18n('Groupings'), link: PATH_GROUPINGS },
                     { label: grouping.name, current: true },
                   ]}
                   />
@@ -136,8 +138,7 @@ const RootGrouping = () => {
                     enableEnrollPlaybook={true}
                   />
                   <StixDomainObjectMain
-                    basePath="/dashboard/analyses/groupings"
-                    entity={grouping}
+                    basePath={basePath}
                     pages={{
                       overview:
                         <Grouping grouping={grouping} />,

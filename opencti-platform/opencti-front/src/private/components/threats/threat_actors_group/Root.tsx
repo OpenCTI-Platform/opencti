@@ -27,6 +27,7 @@ import ThreatActorGroupEdition from './ThreatActorGroupEdition';
 import ThreatActorGroupDeletion from './ThreatActorGroupDeletion';
 import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
+import { PATH_THREAT_ACTORS_GROUP, PATH_THREAT_ACTORS_GROUPS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootThreatActorsGroupSubscription($id: ID!) {
@@ -100,9 +101,10 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
     connectorsForImport,
   } = usePreloadedQuery<RootThreatActorGroupQuery>(ThreatActorGroupQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
-  const isOverview = location.pathname === `/dashboard/threats/threat_actors_group/${threatActorGroupId}`;
-  const paddingRight = getPaddingRight(location.pathname, threatActorGroupId, '/dashboard/threats/threat_actors_group');
-  const link = `/dashboard/threats/threat_actors_group/${threatActorGroupId}/knowledge`;
+  const basePath = PATH_THREAT_ACTORS_GROUP(threatActorGroupId);
+  const isOverview = location.pathname === basePath;
+  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
       {threatActorGroup ? (
@@ -139,7 +141,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
             <Breadcrumbs
               elements={[
                 { label: t_i18n('Threats') },
-                { label: t_i18n('Threat actors (group)'), link: '/dashboard/threats/threat_actors_group' },
+                { label: t_i18n('Threat actors (group)'), link: PATH_THREAT_ACTORS_GROUPS },
                 { label: threatActorGroup.name, current: true },
               ]}
             />
@@ -169,8 +171,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/threats/threat_actors_group"
-              entity={threatActorGroup}
+              basePath={basePath}
               pages={{
                 overview:
                   <ThreatActorGroup threatActorGroupData={threatActorGroup} />,

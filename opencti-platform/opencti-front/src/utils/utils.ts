@@ -51,33 +51,17 @@ export const getCurrentTab = (locationPath: string, entityId: string, entityType
   return locationPath;
 };
 
-export const getPaddingRight = (locationPath: string, entityId: string, entityTypePath: string, applyKnowledgePadding = true) => {
+export const getPaddingRight = (locationPath: string, entityBasePath: string, applyKnowledgePadding = true) => {
   let paddingRight = 0;
-  if (entityId) {
-    if (
-      applyKnowledgePadding && locationPath.includes(
-        `${entityTypePath}/${entityId}/knowledge`,
-      )
-    ) {
-      paddingRight = 200;
-    }
-    if (
-      locationPath.includes(
-        `${entityTypePath}/${entityId}/content`,
-      )
-    ) {
-      paddingRight = 350;
-    }
-    if (
-      locationPath.includes(
-        `${entityTypePath}/${entityId}/content/mapping`,
-      )
-      || locationPath.includes(
-        `${entityTypePath}/${entityId}/content/suggested_mapping`,
-      )
-    ) {
-      paddingRight = 0;
-    }
+  if (
+    applyKnowledgePadding && locationPath.includes(
+      `${entityBasePath}/knowledge`,
+    )
+  ) {
+    paddingRight = 200;
+  }
+  if (locationPath.includes(`${entityBasePath}/content`)) {
+    paddingRight = 350;
   }
   return paddingRight;
 };

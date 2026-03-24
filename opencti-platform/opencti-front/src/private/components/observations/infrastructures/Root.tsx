@@ -27,6 +27,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import InfrastructureEdition from './InfrastructureEdition';
 import InfrastructureDeletion from './InfrastructureDeletion';
+import { PATH_INFRASTRUCTURE, PATH_INFRASTRUCTURES } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {
@@ -89,10 +90,11 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
   const data = usePreloadedQuery(infrastructureQuery, queryRef);
   const { infrastructure, connectorsForImport, connectorsForExport } = data;
   const { forceUpdate } = useForceUpdate();
+  const basePath = PATH_INFRASTRUCTURE(infrastructureId);
   const paddingRightValue = () => {
-    if (location.pathname.includes(`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`)) return 200;
-    if (location.pathname.includes(`/dashboard/observations/infrastructures/${infrastructure.id}/content`)) return 350;
-    if (location.pathname.includes(`/dashboard/observations/infrastructures/${infrastructure.id}/content/mapping`)) return 0;
+    if (location.pathname.includes(`${basePath}/knowledge`)) return 200;
+    if (location.pathname.includes(`${basePath}/content`)) return 350;
+    if (location.pathname.includes(`${basePath}/content/mapping`)) return 0;
     return 0;
   };
   return (
@@ -104,7 +106,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
         >
           <Breadcrumbs elements={[
             { label: t_i18n('Observations') },
-            { label: t_i18n('Infrastructures'), link: '/dashboard/observations/infrastructures' },
+            { label: t_i18n('Infrastructures'), link: PATH_INFRASTRUCTURES },
             { label: infrastructure.name, current: true },
           ]}
           />
@@ -133,8 +135,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             enableEnrollPlaybook={true}
           />
           <StixDomainObjectMain
-            basePath="/dashboard/observations/infrastructures"
-            entity={infrastructure}
+            basePath={basePath}
             pages={{
               overview: <Infrastructure data={infrastructure} />,
               knowledge: (

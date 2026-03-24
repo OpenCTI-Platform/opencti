@@ -26,6 +26,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import ToolKnowledge from './ToolKnowledge';
 import ToolDeletion from './ToolDeletion';
+import { PATH_TOOL, PATH_TOOLS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootToolSubscription($id: ID!) {
@@ -100,8 +101,9 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
 
   const { forceUpdate } = useForceUpdate();
 
-  const paddingRight = getPaddingRight(location.pathname, toolId, '/dashboard/arsenal/tools');
-  const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
+  const basePath = PATH_TOOL(toolId);
+  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
       {tool ? (
@@ -133,7 +135,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Arsenal') },
-              { label: t_i18n('Tools'), link: '/dashboard/arsenal/tools' },
+              { label: t_i18n('Tools'), link: PATH_TOOLS },
               { label: tool.name, current: true },
             ]}
             />
@@ -163,8 +165,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/arsenal/tools"
-              entity={tool}
+              basePath={basePath}
               pages={{
                 overview:
                   <Tool toolData={tool} />,

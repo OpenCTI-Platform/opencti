@@ -31,6 +31,7 @@ import CountryEdition from './CountryEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import CountryDeletion from './CountryDeletion';
+import { PATH_COUNTRIES, PATH_COUNTRY } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootCountriesSubscription($id: ID!) {
@@ -94,9 +95,10 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
   const data = usePreloadedQuery(countryQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
   const { country, connectorsForImport, connectorsForExport } = data;
-  const link = `/dashboard/locations/countries/${countryId}/knowledge`;
-  const isOverview = location.pathname === `/dashboard/locations/countries/${countryId}`;
-  const paddingRight = getPaddingRight(location.pathname, country?.id, '/dashboard/locations/countries');
+  const basePath = PATH_COUNTRY(countryId);
+  const link = `${basePath}/knowledge`;
+  const isOverview = location.pathname === basePath;
+  const paddingRight = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
       {country ? (
@@ -130,7 +132,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
-              { label: t_i18n('Countries'), link: '/dashboard/locations/countries' },
+              { label: t_i18n('Countries'), link: PATH_COUNTRIES },
               { label: country.name, current: true },
             ]}
             />
@@ -161,8 +163,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/locations/countries"
-              entity={country}
+              basePath={basePath}
               pages={{
                 overview: <Country countryData={country} />,
                 knowledge: (

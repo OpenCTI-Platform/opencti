@@ -24,6 +24,7 @@ import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings
 import { getPaddingRight } from '../../../../utils/utils';
 import TaskEdition from './TaskEdition';
 import TaskDeletion from './TaskDeletion';
+import { PATH_TASK, PATH_TASKS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootTaskSubscription($id: ID!) {
@@ -84,15 +85,15 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
     connectorsForImport,
   } = usePreloadedQuery<RootTaskQuery>(TaskQuery, queryRef);
 
-  const paddingRight = getPaddingRight(location.pathname, data?.id, '/dashboard/cases/tasks');
-
+  const basePath = PATH_TASK(taskId);
+  const paddingRight = getPaddingRight(location.pathname, basePath);
   return (
     <>
       {data ? (
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Cases') },
-            { label: t_i18n('Tasks'), link: '/dashboard/cases/tasks' },
+            { label: t_i18n('Tasks'), link: PATH_TASKS },
             { label: data.name, current: true },
           ]}
           />
@@ -114,8 +115,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
             enableEnrollPlaybook={true}
           />
           <StixDomainObjectMain
-            basePath="/dashboard/cases/tasks"
-            entity={data}
+            basePath={basePath}
             pages={{
               overview: <CaseTask taskData={data} enableReferences={enableReferences} />,
               content: (

@@ -26,6 +26,7 @@ import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 import { RootSecurityCoverageSubscription } from '@components/analyses/security_coverages/__generated__/RootSecurityCoverageSubscription.graphql';
 import SecurityCoverageResult from '@components/analyses/security_coverages/SecurityCoverageResult';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { PATH_SECURITY_COVERAGE, PATH_SECURITY_COVERAGES } from '@components/common/routes/paths';
 
 const subscription = graphql`
     subscription RootSecurityCoverageSubscription($id: ID!) {
@@ -94,7 +95,8 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
 
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
   const hasExternalUri = isNotEmptyField(securityCoverage?.external_uri);
-  const paddingRight = getPaddingRight(location.pathname, securityCoverageId, '/dashboard/analyses/security_coverages', false);
+  const basePath = PATH_SECURITY_COVERAGE(securityCoverageId);
+  const paddingRight = getPaddingRight(location.pathname, basePath, false);
   const isContent = location.pathname.includes('content');
   return (
     <>
@@ -102,7 +104,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Analyses') },
-            { label: t_i18n('Security coverages'), link: '/dashboard/analyses/security_coverages' },
+            { label: t_i18n('Security coverages'), link: PATH_SECURITY_COVERAGES },
             { label: securityCoverage.name, current: true },
           ]}
           />
@@ -126,8 +128,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
             enableEnrollPlaybook={true}
           />
           <StixDomainObjectMain
-            basePath="/dashboard/analyses/security_coverages"
-            entity={securityCoverage}
+            basePath={basePath}
             pages={{
               overview:
                 <SecurityCoverage data={securityCoverage} />,

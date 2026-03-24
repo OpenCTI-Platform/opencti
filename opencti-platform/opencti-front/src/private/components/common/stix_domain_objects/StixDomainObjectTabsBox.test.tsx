@@ -16,25 +16,18 @@ const TABS_TEST_DATA = [
 ] as const;
 
 describe('StixDomainObjectTabsBox', () => {
-  const entityId = 'entity-id';
-  const entityType = 'entity-type';
-  const basePath = `base/${entityType}`;
   it.each(TABS_TEST_DATA)('renders a %s link when %s prop is passed targeting %s', (tabName, prop, subroute) => {
     testRender(
       <StixDomainObjectTabsBox
         tabs={[prop]}
-        entity={{
-          id: entityId,
-          entity_type: entityType,
-        }}
-        basePath={basePath}
+        basePath=""
       />,
     );
     const tabElem = screen.getByRole('tab', { name: new RegExp(tabName, 'i') });
     expect(tabElem).toBeInTheDocument();
     expect(tabElem).toHaveAttribute(
       'href',
-      expect.stringMatching(new RegExp(`${basePath}/${entityId}${subroute}$`)),
+      expect.stringMatching(new RegExp(`${subroute}$`)),
     );
   });
 
@@ -42,11 +35,7 @@ describe('StixDomainObjectTabsBox', () => {
     testRender(
       <StixDomainObjectTabsBox
         tabs={[]}
-        entity={{
-          id: entityId,
-          entity_type: entityType,
-        }}
-        basePath={basePath}
+        basePath=""
         extraActions={<>Some Extra Action</>}
       />,
     );

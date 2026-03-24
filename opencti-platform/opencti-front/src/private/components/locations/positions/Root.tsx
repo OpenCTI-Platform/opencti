@@ -27,6 +27,7 @@ import PositionEdition from './PositionEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import PositionDeletion from './PositionDeletion';
+import { PATH_POSITION, PATH_POSITIONS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootPositionsSubscription($id: ID!) {
@@ -97,8 +98,9 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
 
   const { forceUpdate } = useForceUpdate();
 
-  const link = `/dashboard/locations/positions/${positionId}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, positionId, '/dashboard/locations/positions');
+  const basePath = PATH_POSITION(positionId);
+  const link = `${basePath}/knowledge`;
+  const paddingRight = getPaddingRight(location.pathname, basePath);
 
   return (
     <CreateRelationshipContextProvider>
@@ -133,7 +135,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
-              { label: t_i18n('Positions'), link: '/dashboard/locations/positions' },
+              { label: t_i18n('Positions'), link: PATH_POSITIONS },
               { label: position.name, current: true },
             ]}
             />
@@ -164,8 +166,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/locations/positions"
-              entity={position}
+              basePath={basePath}
               pages={{
                 overview:
                   <Position position={position} />,

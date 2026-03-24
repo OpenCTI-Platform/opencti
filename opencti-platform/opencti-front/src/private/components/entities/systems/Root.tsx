@@ -29,6 +29,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import SystemEdition from './SystemEdition';
 import SystemDeletion from './SystemDeletion';
+import { PATH_SYSTEM, PATH_SYSTEMS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootSystemsSubscription($id: ID!) {
@@ -123,8 +124,9 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
 
   const { forceUpdate } = useForceUpdate();
 
-  const link = `/dashboard/entities/systems/${systemId}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, systemId, '/dashboard/entities/systems');
+  const basePath = PATH_SYSTEM(systemId);
+  const link = `${basePath}/knowledge`;
+  const paddingRight = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
       {system ? (
@@ -157,7 +159,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: t_i18n('Systems'), link: '/dashboard/entities/systems' },
+              { label: t_i18n('Systems'), link: PATH_SYSTEMS },
               { label: system.name, current: true },
             ]}
             />
@@ -190,8 +192,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/entities/systems"
-              entity={system}
+              basePath={basePath}
               pages={{
                 overview: (
                   <System

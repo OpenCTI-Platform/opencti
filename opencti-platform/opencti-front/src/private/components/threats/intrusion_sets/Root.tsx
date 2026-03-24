@@ -28,6 +28,7 @@ import IntrusionSetEdition from './IntrusionSetEdition';
 import IntrusionSetDeletion from './IntrusionSetDeletion';
 import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
+import { PATH_INTRUSION_SET, PATH_INTRUSION_SETS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootIntrusionSetSubscription($id: ID!) {
@@ -109,9 +110,10 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
     connectorsForImport,
   } = usePreloadedQuery<RootIntrusionSetQuery>(intrusionSetQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
-  const isOverview = location.pathname === `/dashboard/threats/intrusion_sets/${intrusionSetId}`;
-  const paddingRight = getPaddingRight(location.pathname, intrusionSetId, '/dashboard/threats/intrusion_sets');
-  const link = `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`;
+  const basePath = PATH_INTRUSION_SET(intrusionSetId);
+  const isOverview = location.pathname === basePath;
+  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
       {intrusionSet ? (
@@ -147,7 +149,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
           <div style={{ paddingRight }} data-testid="intrusionSet-details-page">
             <Breadcrumbs elements={[
               { label: t_i18n('Threats') },
-              { label: t_i18n('Intrusion sets'), link: '/dashboard/threats/intrusion_sets' },
+              { label: t_i18n('Intrusion sets'), link: PATH_INTRUSION_SETS },
               { label: intrusionSet.name, current: true },
             ]}
             />
@@ -177,8 +179,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/threats/intrusion_sets"
-              entity={intrusionSet}
+              basePath={basePath}
               pages={{
                 overview:
                   <IntrusionSet intrusionSetData={intrusionSet} />,

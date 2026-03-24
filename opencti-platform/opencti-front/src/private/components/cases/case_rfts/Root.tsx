@@ -28,6 +28,7 @@ import { getPaddingRight } from '../../../../utils/utils';
 import CaseRftEdition from './CaseRftEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import CaseRftDeletion from './CaseRftDeletion';
+import { PATH_RFT, PATH_RFTS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootCaseRftCaseSubscription($id: ID!) {
@@ -95,14 +96,15 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
   if (!caseData) {
     return <ErrorNotFound />;
   }
-  const paddingRight = getPaddingRight(location.pathname, caseData.id, '/dashboard/cases/rfts', false);
+  const basePath = PATH_RFT(caseId);
+  const paddingRight = getPaddingRight(location.pathname, basePath, false);
   const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
   return (
     <div style={{ paddingRight }}>
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
-        { label: t_i18n('Requests for takedown'), link: '/dashboard/cases/rfts' },
+        { label: t_i18n('Requests for takedown'), link: PATH_RFTS },
         { label: caseData.name, current: true },
       ]}
       />
@@ -124,8 +126,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
         enableEnricher={true}
       />
       <StixDomainObjectMain
-        basePath="/dashboard/cases/rfts"
-        entity={caseData}
+        basePath={basePath}
         pages={{
           overview: <CaseRft caseRftData={caseData} enableReferences={enableReferences} />,
           knowledge: (

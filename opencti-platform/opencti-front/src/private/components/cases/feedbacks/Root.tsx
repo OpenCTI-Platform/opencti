@@ -26,6 +26,7 @@ import { getPaddingRight } from '../../../../utils/utils';
 import FeedbackEdition from './FeedbackEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import FeedbackDeletion from './FeedbackDeletion';
+import { PATH_FEEDBACK, PATH_FEEDBACKS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootFeedbackSubscription($id: ID!) {
@@ -105,13 +106,14 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
   if (!feedbackData) {
     return <ErrorNotFound />;
   }
-  const paddingRight = getPaddingRight(location.pathname, feedbackData.id, '/dashboard/cases/feedbacks');
+  const basePath = PATH_FEEDBACK(caseId);
+  const paddingRight = getPaddingRight(location.pathname, basePath);
   const { canEdit } = useGetCurrentUserAccessRight(feedbackData.currentUserAccessRight);
   return (
     <div style={{ paddingRight }}>
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
-        { label: t_i18n('Feedbacks'), link: '/dashboard/cases/feedbacks' },
+        { label: t_i18n('Feedbacks'), link: PATH_FEEDBACKS },
         { label: feedbackData.name, current: true },
       ]}
       />
@@ -133,8 +135,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
         redirectToContent={true}
       />
       <StixDomainObjectMain
-        basePath="/dashboard/cases/feedbacks"
-        entity={feedbackData}
+        basePath={basePath}
         pages={{
           overview: (
             <Feedback

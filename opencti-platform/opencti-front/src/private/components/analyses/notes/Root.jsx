@@ -16,6 +16,7 @@ import Security, { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import NoteEdition from './NoteEdition';
 import NoteDeletion from './NoteDeletion';
+import { PATH_NOTE, PATH_NOTES } from '@components/common/routes/paths';
 
 const subscription = graphql`
     subscription RootNoteSubscription($id: ID!) {
@@ -68,6 +69,7 @@ const RootNote = () => {
   );
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
+  const basePath = PATH_NOTE(noteId);
   return (
     <>
       <QueryRenderer
@@ -81,7 +83,7 @@ const RootNote = () => {
                 <>
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
-                    { label: t_i18n('Notes'), link: '/dashboard/analyses/notes' },
+                    { label: t_i18n('Notes'), link: PATH_NOTES },
                   ]}
                   />
                   <CollaborativeSecurity
@@ -126,8 +128,7 @@ const RootNote = () => {
                     />
                   </CollaborativeSecurity>
                   <StixDomainObjectMain
-                    basePath="/dashboard/analyses/notes"
-                    entity={note}
+                    basePath={basePath}
                     pages={{
                       overview: <Note noteFragment={note} enableReferences={false} />,
                       files: (
