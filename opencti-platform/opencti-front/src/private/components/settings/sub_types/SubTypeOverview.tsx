@@ -13,6 +13,7 @@ import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
+import useAttributes from '../../../../utils/hooks/useAttributes';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import EntitySettingAttributes from './entity_setting/EntitySettingAttributes';
 import EntitySettingSettings from './entity_setting/EntitySettingSettings';
@@ -52,7 +53,9 @@ const SubTypeOverview = () => {
   );
   const { searchTerm } = viewStorage;
 
-  const hasTemplates = subType.settings?.availableSettings.includes('templates');
+  // Remove on FINTEL_FOR_ENTITY feature flag removal
+  const { typesWithFintelTemplates } = useAttributes();
+  const hasTemplates = typesWithFintelTemplates.includes(subType.id) && subType.settings?.availableSettings.includes('templates');
 
   const hasRequestAccessConfig = subType.settings?.requestAccessConfiguration && isEnterpriseEdition && subType.settings?.availableSettings.includes('request_access_workflow');
 
