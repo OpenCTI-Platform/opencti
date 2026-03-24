@@ -7130,6 +7130,12 @@ export type DefaultMarking = {
   values?: Maybe<Array<MarkingDefinition>>;
 };
 
+export type DefaultMarkingDefinition = {
+  __typename?: 'DefaultMarkingDefinition';
+  label: Scalars['String']['output'];
+  value: Scalars['String']['output'];
+};
+
 export type DefaultMarkingInput = {
   entity_type: Scalars['String']['input'];
   values?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -13122,22 +13128,41 @@ export type IngestionRss = BasicObject & InternalObject & {
   report_types?: Maybe<Array<Scalars['String']['output']>>;
   scheduling_period?: Maybe<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
+  toConfigurationExport: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   uri: Scalars['String']['output'];
   user?: Maybe<Creator>;
 };
 
+export type IngestionRssAddAutoUserInput = {
+  confidence_level: Scalars['Int']['input'];
+  user_name: Scalars['String']['input'];
+};
+
 export type IngestionRssAddInput = {
+  automatic_user?: InputMaybe<Scalars['Boolean']['input']>;
+  confidence_level?: InputMaybe<Scalars['Int']['input']>;
   created_by_ref?: InputMaybe<Scalars['String']['input']>;
   current_state_date?: InputMaybe<Scalars['DateTime']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   ingestion_running?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
-  object_marking_refs?: InputMaybe<Array<Scalars['String']['input']>>;
+  object_marking_refs?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   report_types?: InputMaybe<Array<Scalars['String']['input']>>;
   scheduling_period?: InputMaybe<Scalars['String']['input']>;
   uri: Scalars['String']['input'];
-  user_id?: InputMaybe<Scalars['String']['input']>;
+  user_id: Scalars['String']['input'];
+};
+
+export type IngestionRssAddInputFromImport = {
+  __typename?: 'IngestionRssAddInputFromImport';
+  current_state_date?: Maybe<Scalars['DateTime']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+  object_marking_refs?: Maybe<Array<Maybe<DefaultMarkingDefinition>>>;
+  report_types?: Maybe<Array<Scalars['String']['output']>>;
+  scheduling_period?: Maybe<Scalars['String']['output']>;
+  uri?: Maybe<Scalars['String']['output']>;
 };
 
 export type IngestionRssConnection = {
@@ -16334,6 +16359,7 @@ export type Mutation = {
   ingestionJsonResetState?: Maybe<IngestionJson>;
   ingestionJsonTester?: Maybe<JsonMapperTestResult>;
   ingestionRssAdd?: Maybe<IngestionRss>;
+  ingestionRssAddAutoUser?: Maybe<IngestionRss>;
   ingestionRssDelete?: Maybe<Scalars['ID']['output']>;
   ingestionRssFieldPatch?: Maybe<IngestionRss>;
   ingestionTaxiiAdd?: Maybe<IngestionTaxii>;
@@ -17652,6 +17678,12 @@ export type MutationIngestionJsonTesterArgs = {
 
 export type MutationIngestionRssAddArgs = {
   input: IngestionRssAddInput;
+};
+
+
+export type MutationIngestionRssAddAutoUserArgs = {
+  id: Scalars['ID']['input'];
+  input: IngestionRssAddAutoUserInput;
 };
 
 
@@ -23455,6 +23487,7 @@ export type Query = {
   ingestionJson?: Maybe<IngestionJson>;
   ingestionJsons?: Maybe<IngestionJsonConnection>;
   ingestionRss?: Maybe<IngestionRss>;
+  ingestionRssAddInputFromImport: IngestionRssAddInputFromImport;
   ingestionRsss?: Maybe<IngestionRssConnection>;
   ingestionTaxii?: Maybe<IngestionTaxii>;
   ingestionTaxiiCollection?: Maybe<IngestionTaxiiCollection>;
@@ -24750,6 +24783,11 @@ export type QueryIngestionJsonsArgs = {
 
 export type QueryIngestionRssArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type QueryIngestionRssAddInputFromImportArgs = {
+  file: Scalars['Upload']['input'];
 };
 
 
@@ -38244,6 +38282,7 @@ export type ResolversTypes = ResolversObject<{
   DecayRuleEdge: ResolverTypeWrapper<Omit<DecayRuleEdge, 'node'> & { node: ResolversTypes['DecayRule'] }>;
   DecayRuleOrdering: DecayRuleOrdering;
   DefaultMarking: ResolverTypeWrapper<Omit<DefaultMarking, 'values'> & { values?: Maybe<Array<ResolversTypes['MarkingDefinition']>> }>;
+  DefaultMarkingDefinition: ResolverTypeWrapper<DefaultMarkingDefinition>;
   DefaultMarkingInput: DefaultMarkingInput;
   DefaultValue: ResolverTypeWrapper<DefaultValue>;
   DefaultValueAttribute: ResolverTypeWrapper<DefaultValueAttribute>;
@@ -38465,7 +38504,9 @@ export type ResolversTypes = ResolversObject<{
   IngestionJsonOrdering: IngestionJsonOrdering;
   IngestionQueryAttribute: ResolverTypeWrapper<IngestionQueryAttribute>;
   IngestionRss: ResolverTypeWrapper<BasicStoreEntityIngestionRss>;
+  IngestionRssAddAutoUserInput: IngestionRssAddAutoUserInput;
   IngestionRssAddInput: IngestionRssAddInput;
+  IngestionRssAddInputFromImport: ResolverTypeWrapper<IngestionRssAddInputFromImport>;
   IngestionRssConnection: ResolverTypeWrapper<Omit<IngestionRssConnection, 'edges'> & { edges: Array<ResolversTypes['IngestionRssEdge']> }>;
   IngestionRssEdge: ResolverTypeWrapper<Omit<IngestionRssEdge, 'node'> & { node: ResolversTypes['IngestionRss'] }>;
   IngestionRssOrdering: IngestionRssOrdering;
@@ -39305,6 +39346,7 @@ export type ResolversParentTypes = ResolversObject<{
   DecayRuleConnection: Omit<DecayRuleConnection, 'edges'> & { edges: Array<ResolversParentTypes['DecayRuleEdge']> };
   DecayRuleEdge: Omit<DecayRuleEdge, 'node'> & { node: ResolversParentTypes['DecayRule'] };
   DefaultMarking: Omit<DefaultMarking, 'values'> & { values?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>> };
+  DefaultMarkingDefinition: DefaultMarkingDefinition;
   DefaultMarkingInput: DefaultMarkingInput;
   DefaultValue: DefaultValue;
   DefaultValueAttribute: DefaultValueAttribute;
@@ -39490,7 +39532,9 @@ export type ResolversParentTypes = ResolversObject<{
   IngestionJsonEdge: Omit<IngestionJsonEdge, 'node'> & { node: ResolversParentTypes['IngestionJson'] };
   IngestionQueryAttribute: IngestionQueryAttribute;
   IngestionRss: BasicStoreEntityIngestionRss;
+  IngestionRssAddAutoUserInput: IngestionRssAddAutoUserInput;
   IngestionRssAddInput: IngestionRssAddInput;
+  IngestionRssAddInputFromImport: IngestionRssAddInputFromImport;
   IngestionRssConnection: Omit<IngestionRssConnection, 'edges'> & { edges: Array<ResolversParentTypes['IngestionRssEdge']> };
   IngestionRssEdge: Omit<IngestionRssEdge, 'node'> & { node: ResolversParentTypes['IngestionRss'] };
   IngestionTaxii: BasicStoreEntityIngestionTaxii;
@@ -42363,6 +42407,11 @@ export type DefaultMarkingResolvers<ContextType = any, ParentType extends Resolv
   values?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
 }>;
 
+export type DefaultMarkingDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefaultMarkingDefinition'] = ResolversParentTypes['DefaultMarkingDefinition']> = ResolversObject<{
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type DefaultValueResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefaultValue'] = ResolversParentTypes['DefaultValue']> = ResolversObject<{
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -44327,10 +44376,21 @@ export type IngestionRssResolvers<ContextType = any, ParentType extends Resolver
   report_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type IngestionRssAddInputFromImportResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionRssAddInputFromImport'] = ResolversParentTypes['IngestionRssAddInputFromImport']> = ResolversObject<{
+  current_state_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  object_marking_refs?: Resolver<Maybe<Array<Maybe<ResolversTypes['DefaultMarkingDefinition']>>>, ParentType, ContextType>;
+  report_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type IngestionRssConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionRssConnection'] = ResolversParentTypes['IngestionRssConnection']> = ResolversObject<{
@@ -45711,6 +45771,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ingestionJsonResetState?: Resolver<Maybe<ResolversTypes['IngestionJson']>, ParentType, ContextType, RequireFields<MutationIngestionJsonResetStateArgs, 'id'>>;
   ingestionJsonTester?: Resolver<Maybe<ResolversTypes['JsonMapperTestResult']>, ParentType, ContextType, RequireFields<MutationIngestionJsonTesterArgs, 'input'>>;
   ingestionRssAdd?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationIngestionRssAddArgs, 'input'>>;
+  ingestionRssAddAutoUser?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationIngestionRssAddAutoUserArgs, 'id' | 'input'>>;
   ingestionRssDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIngestionRssDeleteArgs, 'id'>>;
   ingestionRssFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<MutationIngestionRssFieldPatchArgs, 'id' | 'input'>>;
   ingestionTaxiiAdd?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<MutationIngestionTaxiiAddArgs, 'input'>>;
@@ -47477,6 +47538,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   ingestionJson?: Resolver<Maybe<ResolversTypes['IngestionJson']>, ParentType, ContextType, RequireFields<QueryIngestionJsonArgs, 'id'>>;
   ingestionJsons?: Resolver<Maybe<ResolversTypes['IngestionJsonConnection']>, ParentType, ContextType, Partial<QueryIngestionJsonsArgs>>;
   ingestionRss?: Resolver<Maybe<ResolversTypes['IngestionRss']>, ParentType, ContextType, RequireFields<QueryIngestionRssArgs, 'id'>>;
+  ingestionRssAddInputFromImport?: Resolver<ResolversTypes['IngestionRssAddInputFromImport'], ParentType, ContextType, RequireFields<QueryIngestionRssAddInputFromImportArgs, 'file'>>;
   ingestionRsss?: Resolver<Maybe<ResolversTypes['IngestionRssConnection']>, ParentType, ContextType, Partial<QueryIngestionRsssArgs>>;
   ingestionTaxii?: Resolver<Maybe<ResolversTypes['IngestionTaxii']>, ParentType, ContextType, RequireFields<QueryIngestionTaxiiArgs, 'id'>>;
   ingestionTaxiiCollection?: Resolver<Maybe<ResolversTypes['IngestionTaxiiCollection']>, ParentType, ContextType, RequireFields<QueryIngestionTaxiiCollectionArgs, 'id'>>;
@@ -51303,6 +51365,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   DecayRuleConnection?: DecayRuleConnectionResolvers<ContextType>;
   DecayRuleEdge?: DecayRuleEdgeResolvers<ContextType>;
   DefaultMarking?: DefaultMarkingResolvers<ContextType>;
+  DefaultMarkingDefinition?: DefaultMarkingDefinitionResolvers<ContextType>;
   DefaultValue?: DefaultValueResolvers<ContextType>;
   DefaultValueAttribute?: DefaultValueAttributeResolvers<ContextType>;
   DefinitionRefRelationship?: DefinitionRefRelationshipResolvers<ContextType>;
@@ -51435,6 +51498,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IngestionJsonEdge?: IngestionJsonEdgeResolvers<ContextType>;
   IngestionQueryAttribute?: IngestionQueryAttributeResolvers<ContextType>;
   IngestionRss?: IngestionRssResolvers<ContextType>;
+  IngestionRssAddInputFromImport?: IngestionRssAddInputFromImportResolvers<ContextType>;
   IngestionRssConnection?: IngestionRssConnectionResolvers<ContextType>;
   IngestionRssEdge?: IngestionRssEdgeResolvers<ContextType>;
   IngestionTaxii?: IngestionTaxiiResolvers<ContextType>;

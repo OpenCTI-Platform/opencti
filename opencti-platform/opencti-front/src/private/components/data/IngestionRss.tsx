@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../relay/environment';
@@ -6,14 +6,19 @@ import ListLines from '../../../components/list_lines/ListLines';
 import IngestionRssLines, { IngestionRssLinesQuery } from './ingestionRss/IngestionRssLines';
 import IngestionRssCreation from './ingestionRss/IngestionRssCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useAuth from '../../../utils/hooks/useAuth';
+import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
 import { INGESTION_MANAGER } from '../../../utils/platformModulesHelper';
 import IngestionMenu from './IngestionMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
+import Button from '../../../components/common/button/Button';
 import Security from '../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { isNotEmptyField } from '../../../utils/utils';
+import IngestionRssImport from '@components/data/IngestionRssImport';
+import { PaginationOptions } from '../../../components/list_lines';
+import { IngestionRssLinesPaginationQuery } from '@components/data/ingestionRss/__generated__/IngestionRssLinesPaginationQuery.graphql';
 
 const LOCAL_STORAGE_KEY = 'ingestionRss';
 
@@ -29,14 +34,18 @@ const useStyles = makeStyles(() => ({
 const IngestionRss = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { settings, isXTMHubAccessible } = useContext(UserContext);
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('RSS Feeds | Ingestion | Data'));
   const { platformModuleHelpers } = useAuth();
+  const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
+    ? `${settings.platform_xtmhub_url}/redirect/opencti_integrations?platform_id=${settings.id}`
+    : '';
   const {
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
+  } = usePaginationLocalStorage<PaginationOptions>(LOCAL_STORAGE_KEY, {
     sortBy: 'name',
     orderAsc: false,
     searchTerm: '',
@@ -94,7 +103,20 @@ const IngestionRss = () => {
         keyword={viewStorage.searchTerm}
         createButton={(
           <Security needs={[INGESTION_SETINGESTIONS]}>
-            <IngestionRssCreation paginationOptions={paginationOptions} />
+            <>
+              <IngestionRssImport paginationOptions={paginationOptions} />
+              { isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
+                <Button
+                  gradient
+                  href={importFromHubUrl}
+                  target="_blank"
+                  title={t_i18n('Import from Hub')}
+                >
+                  {t_i18n('Import from Hub')}
+                </Button>
+              )}
+              <IngestionRssCreation paginationOptions={paginationOptions} />
+            </>
           </Security>
         )}
         iconExtension
@@ -102,7 +124,7 @@ const IngestionRss = () => {
         <QueryRenderer
           query={IngestionRssLinesQuery}
           variables={{ count: 200, ...paginationOptions }}
-          render={({ props }) => (
+          render={({ props }: { props: IngestionRssLinesPaginationQuery['response'] | null }) => (
             <IngestionRssLines
               data={props}
               paginationOptions={paginationOptions}

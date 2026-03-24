@@ -16,6 +16,7 @@ import CreatorField from '../../common/form/CreatorField';
 import { convertCreatedBy, convertMarkingsWithoutEdges, convertUser } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import Drawer from '../../common/drawer/Drawer';
+import IngestionEditionUserHandling from '@components/data/IngestionEditionUserHandling';
 
 export const ingestionRssMutationFieldPatch = graphql`
   mutation IngestionRssEditionFieldPatchMutation(
@@ -24,6 +25,20 @@ export const ingestionRssMutationFieldPatch = graphql`
   ) {
     ingestionRssFieldPatch(id: $id, input: $input) {
       ...IngestionRssEdition_ingestionRss
+    }
+  }
+`;
+
+export const ingestionRssEditionUserHandlingPatch = graphql`
+  mutation IngestionRssEditionUserHandlingMutation($id: ID!, $input: IngestionRssAddAutoUserInput!) {
+    ingestionRssAddAutoUser(id: $id, input: $input) {
+        id
+        name
+        user {
+            id
+            entity_type
+            name
+        }
     }
   }
 `;
@@ -137,11 +152,22 @@ const IngestionRssEditionContainer = ({
             />
             <CreatorField
               name="user_id"
-              label={t('User responsible for data creation (empty = System)')}
+              label={t('User responsible for data creation')}
               onChange={handleSubmitField}
               containerStyle={fieldSpacingContainerStyle}
               showConfidence
             />
+            {ingestionRss.user?.name === 'SYSTEM'
+              && (
+                <IngestionEditionUserHandling
+                  key={initialValues.name}
+                  feedName={initialValues.name}
+                  onAutoUserCreated={() => setFieldValue('user_id', `[F] ${initialValues.name}`)}
+                  dataId={ingestionRss.id}
+                  mutation={ingestionRssEditionUserHandlingPatch}
+                />
+              )
+            }
             <Field
               component={DateTimePickerField}
               name="current_state_date"
