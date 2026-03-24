@@ -91,8 +91,10 @@ _PROXY_CERT_DIR = None
 _PROXY_CERT_LOCK = threading.Lock()
 _PROXY_SIGNAL_HANDLERS_REGISTERED = False
 
+
 def dummy_function(input: float):
     return input * 2
+
 
 def build_request_headers(token: str, custom_headers: str, app_logger, provider: str):
     """Build request headers for OpenCTI API requests.
@@ -801,13 +803,15 @@ class OpenCTIApiClient:
         """
         try:
             self.app_logger.info("Health check (platform version)...")
-            test = self.query("""
+            test = self.query(
+                """
                   query healthCheck {
                     about {
                       version
                     }
                   }
-                """)
+                """
+            )
             if test is not None:
                 return True
         except Exception as err:  # pylint: disable=broad-except
