@@ -32,6 +32,28 @@ const FINTEL_TEMPLATE_SETTINGS_LIST_QUERY = gql`
   }
 `;
 
+const SDO_RESOLVERS_QUERY = gql`
+  query stixDomainObjectResolvers($id: String!) {
+    stixDomainObject(id: $id) {
+      id
+      ... on StixDomainObject {
+        fintelTemplates {
+          id
+          name
+        }
+        filesFromTemplate(first: 5) {
+          edges {
+            node {
+              id
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 const READ_QUERY = gql`
   query fintelTemplate($id: ID!) {
     fintelTemplate(id: $id) {
@@ -167,6 +189,48 @@ describe('Fintel template resolver standard behavior', () => {
     expect(fintelTemplateDescription).toEqual('new description');
     const queryResult2 = await queryAsAdmin({ query: READ_QUERY, variables: { id: fintelTemplateInternalId } });
     expect(queryResult2.data?.fintelTemplate.description).toEqual('new description');
+  });
+  it('should retrieve fintel templates and files from template on a STIX object', async () => {
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+
+    const CREATE_REPORT_QUERY = gql`
+      mutation ReportAdd($input: ReportAddInput!) {
+        reportAdd(input: $input) {
+          id
+        }
+      }
+    `;
+    const reportResponse = await queryAsAdmin({
+      query: CREATE_REPORT_QUERY,
+      variables: {
+        input: {
+          name: 'Test Report for Templates',
+          published: '2025-03-01T00:00:00.000Z',
+        },
+      },
+    });
+    const reportId = reportResponse.data?.reportAdd.id;
+
+    const queryResult = await queryAsAdmin({
+      query: SDO_RESOLVERS_QUERY,
+      variables: { id: reportId },
+    });
+
+    if (queryResult.errors) {
+      throw new Error(`GraphQL Error: ${queryResult.errors[0].message}`);
+    }
+
+    const sdo = queryResult.data?.stixDomainObject;
+    expect(sdo).not.toBeNull();
+
+    expect(Array.isArray(sdo.fintelTemplates)).toBe(true);
+    const hasTemplate = sdo.fintelTemplates.some((t: any) => t.id === fintelTemplateInternalId);
+    expect(hasTemplate).toBe(true);
+
+    expect(sdo.filesFromTemplate).not.toBeNull();
+    expect(sdo.filesFromTemplate.edges).toBeDefined();
+    expect(Array.isArray(sdo.filesFromTemplate.edges)).toBe(true);
   });
   it('should add a fintel template widgets', async () => {
     const fintelTemplateWidgetAddInput: FintelTemplateWidgetAddInput = {

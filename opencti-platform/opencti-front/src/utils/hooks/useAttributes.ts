@@ -1,5 +1,6 @@
 import useVocabularyCategory from './useVocabularyCategory';
 import useAuth from './useAuth';
+import useHelper from './useHelper';
 
 const ignoredAttributes = [
   'id',
@@ -190,12 +191,31 @@ export const containerTypes = [
   'Observed-Data',
 ];
 
-export const typesWithFintelTemplates = [
+// Old containers types to be removed when FINTEL_FOR_ENTITY will be deleted for all
+export const typesWithFintelTemplatesContainer = [
   'Report',
   'Grouping',
   'Case-Incident',
   'Case-Rfi',
   'Case-Rft',
+];
+
+export const typesWithFintelTemplates = [
+  // Containers
+  'Report',
+  'Grouping',
+  'Case-Incident',
+  'Case-Rfi',
+  'Case-Rft',
+  // Stix Domain Objects
+  'Threat-Actor',
+  'Threat-Actor-Individual',
+  'Threat-Actor-Group',
+  'Intrusion-Set',
+  'Campaign',
+  'Malware',
+  'Vulnerability',
+  'Incident',
 ];
 
 export const aliasedTypes = [
@@ -238,6 +258,11 @@ const useAttributes = () => {
 
   const { metrics_definition } = settings;
 
+  const { isFeatureEnable } = useHelper();
+  const typesWithFintelTemplatesEnabled = isFeatureEnable('FINTEL_FOR_ENTITY')
+    ? typesWithFintelTemplates
+    : typesWithFintelTemplatesContainer;
+
   const { sdos, scos } = schema;
   const stixDomainObjectTypes = sdos.map((sdo) => sdo.id);
   const stixCyberObservableTypes = scos.map((sco) => sco.id);
@@ -261,7 +286,7 @@ const useAttributes = () => {
     typesContainers,
     vocabularyAttributes: vocabularies.fields,
     containerTypes,
-    typesWithFintelTemplates,
+    typesWithFintelTemplates: typesWithFintelTemplatesEnabled,
     aliasedTypes,
     metricsDefinition: metrics_definition,
   };

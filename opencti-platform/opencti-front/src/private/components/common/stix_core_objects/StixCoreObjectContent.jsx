@@ -26,6 +26,7 @@ import withRouter from '../../../../utils/compat_router/withRouter';
 import CKEditor from '../../../../components/CKEditor';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import HtmlDisplay from '../../../../components/HtmlDisplay';
+import useAttributes from '../../../../utils/hooks/useAttributes';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
 
@@ -464,7 +465,7 @@ class StixCoreObjectContentComponent extends Component {
   }
 
   render() {
-    const { classes, stixCoreObject, t, currentMode } = this.props;
+    const { classes, stixCoreObject, t, currentMode, typesWithFintelTemplates } = this.props;
     const {
       currentFileId,
       totalPdfPageNumber,
@@ -486,6 +487,7 @@ class StixCoreObjectContentComponent extends Component {
     const { innerHeight } = window;
     const height = innerHeight - 320;
     const isContentCompatible = isContainerWithContent(stixCoreObject.entity_type);
+    const hasFintelTemplates = (typesWithFintelTemplates ?? []).includes(stixCoreObject.entity_type);
     return (
       <div className={classes.container} data-testid="sco-content-page">
         <StixCoreObjectContentFiles
@@ -501,7 +503,7 @@ class StixCoreObjectContentComponent extends Component {
           currentFileId={currentFileId}
           onFileChange={this.handleFileChange.bind(this)}
           filesFromTemplate={filesFromTemplate}
-          hasOutcomesTemplate={isContentCompatible}
+          hasOutcomesTemplate={isContentCompatible || hasFintelTemplates}
         />
         {isLoading ? (
           <Loader variant={LoaderVariant.inElement} />
@@ -744,6 +746,7 @@ StixCoreObjectContentComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   currentMode: PropTypes.string,
+  typesWithFintelTemplates: PropTypes.array,
 };
 
 export const stixCoreObjectContentRefetchQuery = graphql`
@@ -851,7 +854,7 @@ const StixCoreObjectContent = createRefetchContainer(
             }
           }
         }
-        ... on Container {
+        ... on StixDomainObject {
           filesFromTemplate(first: 500) @connection(key: "Pagination_filesFromTemplate") {
             edges {
               node {
@@ -932,9 +935,19 @@ const StixCoreObjectContent = createRefetchContainer(
   stixCoreObjectContentRefetchQuery,
 );
 
+const withAttributes = (Component) => {
+  const WithAttributes = (props) => {
+    const { typesWithFintelTemplates } = useAttributes();
+    return <Component {...props} typesWithFintelTemplates={typesWithFintelTemplates} />;
+  };
+  WithAttributes.displayName = `WithAttributes(${Component.displayName || Component.name || 'Component'})`;
+  return WithAttributes;
+};
+
 export default R.compose(
   inject18n,
   withTheme,
   withRouter,
   withStyles(styles),
+  withAttributes,
 )(StixCoreObjectContent);
