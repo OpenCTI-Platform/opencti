@@ -118,7 +118,7 @@ const ImportFilesOptions = ({
                   component={TextField}
                   variant="standard"
                 />
-                {isFeatureEnable('DRAFT_METADATA') && (
+                {isFeatureEnable('DRAFT_WORKFLOW') && (
                   <>
                     <Field
                       component={MarkdownField}
