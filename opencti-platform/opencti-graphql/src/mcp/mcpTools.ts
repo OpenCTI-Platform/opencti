@@ -326,7 +326,9 @@ const edges = (data: Record<string, any> | null, key: string): any[] => {
 };
 
 const buildStixPattern = (observableType: string, value: string, hashAlgorithm = ''): string | null => {
-  const sanitizedValue = value.replace(/'/g, "\\'");
+  const sanitizedValue = value
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'");
   if (hashAlgorithm) {
     const prop = HASH_ALGORITHMS[hashAlgorithm.toUpperCase()];
     if (prop) return `[file:${prop} = '${sanitizedValue}']`;
