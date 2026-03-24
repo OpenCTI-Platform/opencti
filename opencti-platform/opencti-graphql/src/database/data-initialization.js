@@ -536,7 +536,7 @@ export const setPlatformId = async (context, platformId) => {
         id: platformSettings.id,
       });
       await elRawIndex({
-        index: INDEX_INTERNAL_OBJECTS,
+        index: settingCurrentIndex,
         id: platformId,
         body: {
           ...response._source,
