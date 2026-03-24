@@ -182,8 +182,18 @@ const createApp = async (app, schema) => {
     crossOriginOpenerPolicy: false,
     crossOriginResourcePolicy: false,
     contentSecurityPolicy: {
+      useDefaults: false,
       directives: {
+        defaultSrc: ["'self'"],
         scriptSrc,
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrcAttr: ["'none'"],
+        fontSrc: ["'self'", 'data:'],
+        imgSrc,
+        manifestSrc,
+        connectSrc,
+        objectSrc,
+        frameAncestors: "'none'",
       },
     },
   });
