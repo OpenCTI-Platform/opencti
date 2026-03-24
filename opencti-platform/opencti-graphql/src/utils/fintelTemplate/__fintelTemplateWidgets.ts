@@ -16,6 +16,7 @@ export const containerColumns = [
   { label: 'Confidence level', attribute: 'confidence', variableName: 'confidenceLevel' },
   { label: 'Reliability (of author)', attribute: 'createdBy.x_opencti_reliability', variableName: 'reliabilityOfAuthor' },
   { label: 'External references', attribute: 'externalReferences.edges.node.url', displayStyle: 'list', variableName: 'externalReferencesURL' },
+  { label: 'Content', attribute: 'container_content', variableName: 'container_content' },
 ];
 
 export const widgetReportMultiAttributes: FintelTemplateWidgetAddInput = {
@@ -29,7 +30,6 @@ export const widgetReportMultiAttributes: FintelTemplateWidgetAddInput = {
         { label: 'Publication date', attribute: 'published', variableName: 'reportPublicationDate' },
         { label: 'Reliability (self)', attribute: 'x_opencti_reliability', variableName: 'reliabilitySelf' },
         { label: 'Report types', attribute: 'report_types', variableName: 'reportTypes' },
-        { label: 'Content', attribute: 'report_content', variableName: 'content' },
       ],
       instance_id: SELF_ID,
     }],
