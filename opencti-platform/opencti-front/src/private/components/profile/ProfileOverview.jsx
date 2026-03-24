@@ -22,7 +22,8 @@ import inject18n, { useFormatter } from '../../../components/i18n';
 import Loader from '../../../components/Loader';
 import TextField from '../../../components/TextField';
 import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/login/OtpInputField';
-import { commitMutation, MESSAGING$, QueryRenderer } from '../../../relay/environment';
+import { APP_BASE_PATH, commitMutation, MESSAGING$, QueryRenderer } from '../../../relay/environment';
+import { copyToClipboard } from '../../../utils/utils';
 import { convertOrganizations } from '../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -586,6 +587,69 @@ const ProfileOverviewComponent = (props) => {
           </Stack>
         </div>
       </Card>
+      {hasAccessTokenCapability && (
+        <Card title={t('MCP access')}>
+          <div>
+            <Alert
+              severity="info"
+              variant="outlined"
+              style={{ marginBottom: 16 }}
+            >
+              {t('OpenCTI exposes a Model Context Protocol (MCP) server that allows AI assistants and tools to interact with the platform. Use your API token for authentication.')}
+              {' '}
+              <a
+                href="https://modelcontextprotocol.io"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'inherit' }}
+              >
+                {t('MCP documentation')}
+              </a>
+            </Alert>
+            <Label>{t('MCP endpoint')}</Label>
+            <pre>{`${window.location.origin}${APP_BASE_PATH}/mcp`}</pre>
+            <Label style={{ marginTop: 16 }}>{t('MCP client configuration')}</Label>
+            <Alert
+              severity="info"
+              variant="outlined"
+              style={{ margin: '8px 0' }}
+            >
+              {t('Copy the JSON configuration below to connect your MCP client (Claude Desktop, Cursor, etc.) to this OpenCTI instance.')}
+            </Alert>
+            <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+              {JSON.stringify({
+                mcpServers: {
+                  opencti: {
+                    url: `${window.location.origin}${APP_BASE_PATH}/mcp`,
+                    headers: {
+                      Authorization: 'Bearer <your-api-token>',
+                    },
+                  },
+                },
+              }, null, 2)}
+            </pre>
+            <Stack direction="row" justifyContent="flex-end" style={{ marginTop: 8 }}>
+              <Button
+                onClick={() => copyToClipboard(
+                  t,
+                  JSON.stringify({
+                    mcpServers: {
+                      opencti: {
+                        url: `${window.location.origin}${APP_BASE_PATH}/mcp`,
+                        headers: {
+                          Authorization: 'Bearer <your-api-token>',
+                        },
+                      },
+                    },
+                  }, null, 2),
+                )}
+              >
+                {t('Copy configuration')}
+              </Button>
+            </Stack>
+          </div>
+        </Card>
+      )}
       <ProfileLocalStorage />
     </Stack>
   );
