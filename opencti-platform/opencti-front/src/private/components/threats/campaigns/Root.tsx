@@ -28,7 +28,7 @@ import CampaignEdition from './CampaignEdition';
 import CampaignDeletion from './CampaignDeletion';
 import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
-import { PATH_CAMPAIGN } from '@components/common/routes/paths';
+import { PATH_CAMPAIGN, PATH_CAMPAIGNS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
@@ -143,7 +143,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Threats') },
-              { label: t_i18n('Campaigns'), link: '/dashboard/threats/campaigns' },
+              { label: t_i18n('Campaigns'), link: PATH_CAMPAIGNS },
               { label: campaign.name, current: true },
             ]}
             />
@@ -173,8 +173,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
-              basePath="/dashboard/threats/campaigns"
-              entity={campaign}
+              basePath={basePath}
               pages={{
                 overview:
                   <Campaign campaignData={campaign} />,
