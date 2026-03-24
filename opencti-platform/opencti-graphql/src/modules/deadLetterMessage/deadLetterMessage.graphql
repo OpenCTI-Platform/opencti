@@ -10,7 +10,7 @@ type DeadLetterMessage implements InternalObject & BasicObject {
 
 # Ordering
 enum DeadLetterMessagesOrdering {
-    created_at
+    original_connector_id
     _score
 }
 

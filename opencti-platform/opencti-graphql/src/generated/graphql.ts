@@ -6917,7 +6917,7 @@ export type DeadLetterMessageEdge = {
 
 export enum DeadLetterMessagesOrdering {
   Score = '_score',
-  CreatedAt = 'created_at'
+  OriginalConnectorId = 'original_connector_id'
 }
 
 export type DecayChartData = {
