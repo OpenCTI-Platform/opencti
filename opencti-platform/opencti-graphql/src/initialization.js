@@ -40,24 +40,14 @@ export const checkFeatureFlags = () => {
 export const checkSystemDependencies = async () => {
   logApp.info('[OPENCTI] Checking dependencies statuses');
   const context = executionContext('system_dependencies');
-
-  // Run checks sequentially to stop startup immediately on first failure.
-  const checks = [
-    { dependencyName: 'Search engine', run: () => searchEngineInit() },
-    { dependencyName: 'File storage', run: () => storageInit() },
-    { dependencyName: 'RabbitMQ', run: () => rabbitMQIsAlive() },
-    { dependencyName: 'Redis', run: () => redisInit() },
-    { dependencyName: 'SMTP', run: () => smtpIsAlive() },
-    { dependencyName: 'Python3', run: () => checkPythonAvailability(context, SYSTEM_USER) },
-  ];
-
-  for (const check of checks) {
-    logApp.info(`[CHECK] checking if ${check.dependencyName} is alive`);
-    await check.run();
-    logApp.info(`[CHECK] ${check.dependencyName} is alive`);
-  }
-
-  logApp.info('[CHECK] All dependencies are alive');
+  const checkDependenciesPromises = [];
+  checkDependenciesPromises.push(searchEngineInit());
+  checkDependenciesPromises.push(storageInit());
+  checkDependenciesPromises.push(rabbitMQIsAlive());
+  checkDependenciesPromises.push(redisInit());
+  checkDependenciesPromises.push(smtpIsAlive());
+  checkDependenciesPromises.push(checkPythonAvailability(context, SYSTEM_USER));
+  await Promise.all(checkDependenciesPromises);
   return true;
 };
 

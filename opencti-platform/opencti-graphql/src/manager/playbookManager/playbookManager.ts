@@ -28,7 +28,6 @@ import type { StixBundle, StixObject } from '../../types/stix-2-1-common';
 import { streamEventId, utcDate } from '../../utils/format';
 import { findById, findPlaybooksForEntity } from '../../modules/playbook/playbook-domain';
 import { type CronConfiguration, PLAYBOOK_INTERNAL_DATA_CRON, type StreamConfiguration } from '../../modules/playbook/playbook-components';
-import { SkippableTimer } from '../../utils/skippable-timer';
 import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../../modules/playbook/playbook-types';
@@ -48,6 +47,7 @@ import { listenPirEvents } from './listenPirEventsUtils';
 import { isValidEventType } from './playbookManagerUtils';
 import { playbookExecutor } from './playbookExecutor';
 import type { BasicConnection, BasicStoreBase } from '../../types/store';
+import { InterruptibleTimer } from '../interruptible-timer';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const PLAYBOOK_CRON_KEY = conf.get('playbook_manager:lock_cron_key');
@@ -187,8 +187,8 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
   return false;
 };
 
-const cronTimer = new SkippableTimer();
-const streamTimer = new SkippableTimer();
+const cronTimer = new InterruptibleTimer();
+const streamTimer = new InterruptibleTimer();
 
 const initPlaybookManager = () => {
   const WAIT_TIME_ACTION = 2000;
@@ -404,8 +404,8 @@ const initPlaybookManager = () => {
       const startTime = new Date().getTime();
       logApp.info('[OPENCTI-MODULE] Stopping playbook manager');
       shutdown = true;
-      streamTimer.skip();
-      cronTimer.skip();
+      streamTimer.interrupt();
+      cronTimer.interrupt();
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
       if (cronScheduler) await clearIntervalAsync(cronScheduler);
       logApp.info(`[OPENCTI-MODULE] Playbook manager stopped in ${new Date().getTime() - startTime} ms`);

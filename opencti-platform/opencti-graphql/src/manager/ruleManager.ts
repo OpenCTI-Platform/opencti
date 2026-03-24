@@ -43,7 +43,7 @@ import jsonCanonicalize from 'canonicalize';
 import { v5 as uuidv5 } from 'uuid';
 
 import { pushAll } from '../utils/arrayUtil';
-import { SkippableTimer } from '../utils/skippable-timer';
+import { InterruptibleTimer } from './interruptible-timer';
 
 const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 
@@ -297,7 +297,7 @@ const initRuleManager = () => {
   let streamProcessor: StreamProcessor;
   let running = false;
   let shutdown = false;
-  const waitTimer = new SkippableTimer();
+  const waitTimer = new InterruptibleTimer();
   const ruleHandler = async () => {
     let lock;
     try {
@@ -352,7 +352,7 @@ const initRuleManager = () => {
     shutdown: async () => {
       logApp.info('[OPENCTI-MODULE] Stopping rule engine');
       shutdown = true;
-      waitTimer.skip();
+      waitTimer.interrupt();
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }

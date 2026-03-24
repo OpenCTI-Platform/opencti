@@ -28,7 +28,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organ
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
 import { pushAll } from '../utils/arrayUtil';
-import { SkippableTimer } from '../utils/skippable-timer';
+import { InterruptibleTimer } from './interruptible-timer';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const HISTORY_WITH_INFERENCES = booleanConf('history_manager:include_inferences', false);
@@ -284,7 +284,7 @@ const initHistoryManager = () => {
   let streamProcessor: StreamProcessor;
   let running = false;
   let shutdown = false;
-  const waitTimer = new SkippableTimer();
+  const waitTimer = new InterruptibleTimer();
   const historyHandler = async (lastEventId: string) => {
     let lock;
     try {
@@ -348,7 +348,7 @@ const initHistoryManager = () => {
     shutdown: async () => {
       logApp.info('[OPENCTI-MODULE] Stopping history manager');
       shutdown = true;
-      waitTimer.skip();
+      waitTimer.interrupt();
       if (scheduler) {
         await clearIntervalAsync(scheduler);
       }

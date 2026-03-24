@@ -42,7 +42,7 @@ import { EVENT_TYPE_UPDATE } from '../database/utils';
 import { sanitizeNotificationData } from '../utils/templateContextSanitizer';
 import { safeRender } from '../utils/safeEjs.client';
 import { NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
-import { SkippableTimer } from '../utils/skippable-timer';
+import { InterruptibleTimer } from './interruptible-timer';
 
 const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
@@ -516,7 +516,7 @@ const initPublisherManager = () => {
   let running = false;
   let shutdown = false;
   let isSmtpActive = false;
-  const waitTimer = new SkippableTimer();
+  const waitTimer = new InterruptibleTimer();
   const notificationHandler = async () => {
     let lock;
     try {
@@ -568,7 +568,7 @@ const initPublisherManager = () => {
     shutdown: async () => {
       logApp.info('[OPENCTI-MODULE] Stopping publisher manager');
       shutdown = true;
-      waitTimer.skip();
+      waitTimer.interrupt();
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
       return true;
     },

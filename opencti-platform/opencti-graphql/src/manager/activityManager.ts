@@ -37,7 +37,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { lockResources } from '../lock/master-lock';
 import { ACTIVITY_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
-import { SkippableTimer } from '../utils/skippable-timer';
+import { InterruptibleTimer } from './interruptible-timer';
 
 const ACTIVITY_ENGINE_KEY = conf.get('activity_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -148,7 +148,7 @@ const initActivityManager = () => {
   let streamProcessor: StreamProcessor;
   let running = false;
   let shutdown = false;
-  const waitTimer = new SkippableTimer();
+  const waitTimer = new InterruptibleTimer();
   const activityHandler = async (lastEventId: string) => {
     let lock;
     try {
@@ -215,7 +215,7 @@ const initActivityManager = () => {
       const startTime = new Date().getTime();
       logApp.info('[OPENCTI-MODULE] Stopping activity manager');
       shutdown = true;
-      waitTimer.skip();
+      waitTimer.interrupt();
       if (scheduler) {
         await clearIntervalAsync(scheduler);
       }

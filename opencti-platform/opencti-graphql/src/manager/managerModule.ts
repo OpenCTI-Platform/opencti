@@ -10,7 +10,7 @@ import { TYPE_LOCK_ERROR } from '../config/errors';
 import { utcDate } from '../utils/format';
 import type { DataEvent, SseEvent } from '../types/event';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
-import { SkippableTimer } from '../utils/skippable-timer';
+import { InterruptibleTimer } from './interruptible-timer';
 
 export interface HandlerInput {
   shutdown?: () => Promise<void>;
@@ -56,8 +56,8 @@ const initManager = (manager: ManagerDefinition) => {
   let running = false;
   let shutdown = false;
 
-  const cronTimer = new SkippableTimer();
-  const streamTimer = new SkippableTimer();
+  const cronTimer = new InterruptibleTimer();
+  const streamTimer = new InterruptibleTimer();
 
   const cronHandler = async (cronInputFn?: () => Promise<HandlerInput>) => {
     if (manager.cronSchedulerHandler) {
@@ -160,8 +160,8 @@ const initManager = (manager: ManagerDefinition) => {
       const startTime = new Date().getTime();
       logApp.info(`[OPENCTI-MODULE] Stopping ${manager.label}`);
       shutdown = true;
-      cronTimer.skip();
-      streamTimer.skip();
+      cronTimer.interrupt();
+      streamTimer.interrupt();
       if (scheduler) {
         if (manager.cronSchedulerHandler?.shutdown) {
           manager.cronSchedulerHandler?.shutdown();

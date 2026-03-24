@@ -36,7 +36,7 @@ import type { Representative } from '../types/store';
 import type { BasicStoreSettings } from '../types/settings';
 import { type BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { NOTIFIER_CONNECTOR_WEBHOOK } from '../modules/notifier/notifier-statics';
-import { SkippableTimer } from '../utils/skippable-timer';
+import { InterruptibleTimer } from './interruptible-timer';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
@@ -651,8 +651,8 @@ const initNotificationManager = () => {
   let streamProcessor: StreamProcessor;
   let running = false;
   let shutdown = false;
-  const liveTimer = new SkippableTimer();
-  const cronTimer = new SkippableTimer();
+  const liveTimer = new InterruptibleTimer();
+  const cronTimer = new InterruptibleTimer();
 
   const notificationLiveHandler = async () => {
     let lock;
@@ -724,8 +724,8 @@ const initNotificationManager = () => {
       const startTime = new Date().getTime();
       logApp.info('[OPENCTI-MODULE] Stopping notification manager');
       shutdown = true;
-      liveTimer.skip();
-      cronTimer.skip();
+      liveTimer.interrupt();
+      cronTimer.interrupt();
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
       if (cronScheduler) await clearIntervalAsync(cronScheduler);
       logApp.info(`[OPENCTI-MODULE] Notification manager stopped in ${new Date().getTime() - startTime} ms`);

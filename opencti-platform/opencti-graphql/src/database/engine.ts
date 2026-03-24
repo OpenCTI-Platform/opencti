@@ -403,6 +403,7 @@ export const searchEngineVersion = async () => {
 };
 
 export const searchEngineInit = async (): Promise<boolean> => {
+  logApp.info('[CHECK] Checking if Search engine is available');
   // Build the engine configuration
   const ca = conf.get('elasticsearch:ssl:ca')
     ? loadCert(conf.get('elasticsearch:ssl:ca'))
@@ -481,7 +482,7 @@ export const searchEngineInit = async (): Promise<boolean> => {
   const runtimeStatus = isRuntimeSortingEnable ? 'enabled' : 'disabled';
   // configure attachment processor
   attachmentProcessorEnabled = await elConfigureAttachmentProcessor();
-  logApp.info(`[SEARCH] ${enginePlatform} (${engineVersion}) client selected / runtime sorting ${runtimeStatus} / attachment processor ${attachmentProcessorEnabled ? 'enabled' : 'disabled'}`);
+  logApp.info(`[SEARCH][CHECK] Search Engine is alive. ${enginePlatform} (${engineVersion}) client selected / runtime sorting ${runtimeStatus} / attachment processor ${attachmentProcessorEnabled ? 'enabled' : 'disabled'}`);
   // Everything is fine, return true
   return true;
 };

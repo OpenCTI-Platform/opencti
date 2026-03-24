@@ -46,12 +46,16 @@ export const smtpComputeFrom = async (from) => {
 };
 
 export const smtpIsAlive = async () => {
+  logApp.info('[CHECK] Checking if SMTP is available');
   if (SMTP_ENABLE) {
     try {
       await transporter.verify();
+      logApp.info('[CHECK] SMTP is alive');
     } catch {
       logApp.warn('SMTP seems down, email notification may not work');
     }
+  } else {
+    logApp.info('[CHECK] SMTP disabled by configuration');
   }
   return true;
 };
