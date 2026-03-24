@@ -55,6 +55,9 @@ const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrative
   converter_2_1: convertAdministrativeAreaToStix,
 };
 
-export const dummyFunction = (input: number) => input * 2;
+export const dummyFunction = (input: number) => {
+  const x = input * 2;
+  return x / input;
+};
 
 registerDefinition(ADMINISTRATIVE_AREA_DEFINITION);
