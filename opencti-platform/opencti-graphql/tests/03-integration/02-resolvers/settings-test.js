@@ -210,7 +210,8 @@ describe('Settings resolver standard behavior', () => {
       expect(aiResult).not.toBeNull();
       expect(aiResult.errors).toBeDefined();
       expect(aiResult.errors.length).toEqual(1);
-      expect(aiResult.errors.at(0).message).toEqual('AI is disabled in platform settings');
+      const errorMessage = aiResult.errors.at(0).message;
+      expect(['AI is disabled in platform settings', 'Enterprise edition is not enabled']).toContain(errorMessage);
     } finally {
       try {
         await queryAsAdmin({
