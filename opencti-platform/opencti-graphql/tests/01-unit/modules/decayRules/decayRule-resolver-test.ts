@@ -8,19 +8,19 @@ import {
   ENTITY_EMAIL_MESSAGE,
   ENTITY_IPV6_ADDR,
   ENTITY_SOFTWARE,
-} from 'src/schema/stixCyberObservable';
+} from '../../../../src/schema/stixCyberObservable';
 import {
   BUILT_IN_DECAY_RULE_IP_URL,
   type DecayRuleConfiguration,
   FALLBACK_DECAY_RULE,
   findDecayRuleForIndicator,
-  initDecayRules
-} from 'src/modules/decayRule/decayRule-domain';
-import type { AuthContext } from 'src/types/user';
-import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from 'tests/utils/testQueryHelper';
-import type { BasicStoreEntityDecayRule } from 'src/modules/decayRule/decayRule-types';
-import { logApp } from 'src/config/conf';
-import type { BasicNodeEdge } from 'src/types/store';
+  initDecayRules,
+} from '../../../../src/modules/decayRule/decayRule-domain';
+import type { AuthContext } from '../../../../src/types/user';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../../tests/utils/testQueryHelper';
+import type { BasicStoreEntityDecayRule } from '../../../../src/modules/decayRule/decayRule-types';
+import { logApp } from '../../../../src/config/conf';
+import type { BasicNodeEdge } from '../../../../src/types/store';
 
 export const INDICATOR_WITH_DECAY_RULE_READ_QUERY = gql`
   query indicator($id: String!) {
@@ -218,7 +218,7 @@ describe('DecayRule resolver standard behavior', () => {
 
     const FIELD_PATCH_DECAY_RULE = {
       id: customDecayRuleId,
-      input: { key: 'decay_points', value: [80, 20, 60, -5] }
+      input: { key: 'decay_points', value: [80, 20, 60, -5] },
     };
 
     await queryAsAdminWithSuccess({
@@ -228,7 +228,7 @@ describe('DecayRule resolver standard behavior', () => {
 
     const queryResult = await queryAsAdminWithSuccess({
       query: DECAY_RULE_READ_QUERY,
-      variables: { id: customDecayRuleId }
+      variables: { id: customDecayRuleId },
     });
 
     const customDecayRule = queryResult.data?.decayRule;
@@ -359,7 +359,7 @@ describe('DecayRule resolver standard behavior', () => {
 
     const queryResult = await queryAsAdminWithSuccess({
       query: DECAY_RULE_READ_QUERY,
-      variables: { id: defaultDecayRuleId }
+      variables: { id: defaultDecayRuleId },
     });
     expect(queryResult.data?.decayRule).toBeDefined();
     expect(queryResult.data?.decayRule.decay_lifetime).toBe(TEST_FALLBACK_DECAY_RULE.decay_lifetime);
@@ -380,7 +380,7 @@ describe('DecayRule resolver standard behavior', () => {
       // Verify is no longer found
       const queryResult = await queryAsAdminWithSuccess({
         query: INDICATOR_WITH_DECAY_RULE_READ_QUERY,
-        variables: { id: indicatorId }
+        variables: { id: indicatorId },
       });
       expect(queryResult.data?.indicator).toBeNull();
     };
