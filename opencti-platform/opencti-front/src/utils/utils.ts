@@ -45,10 +45,31 @@ export const getFileUri = (id: string) => {
 
 export const uniqueArray = <T>(items: IterableIterator<T> | Array<T>) => Array.from(new Set(items));
 
-export const getCurrentTab = (locationPath: string, entityId: string, entityTypePath: string) => {
-  if (locationPath.includes(`${entityTypePath}/${entityId}/knowledge`)) return `${entityTypePath}/${entityId}/knowledge`;
-  if (locationPath.includes(`${entityTypePath}/${entityId}/content`)) return `${entityTypePath}/${entityId}/content`;
-  return locationPath;
+/**
+ * Compute the current state value of a <Tabs> component by comparing the
+ * location.pathname (`fullpath`) with the `basePath` of the component
+ * and extracting the next URL segment in the sequence.
+ *
+ * @param fullpath - The current full pathname as returned by useLocation().pathname.
+ * Should contain no query params nor hash param.
+ * @param basePath - The closest path to root where the <Tabs> component is rendered.
+ * @returns The current tab value.
+ *
+ * @example
+ * ```
+ * getCurrentTab(
+ *   '/dashboard/techniques/attack_patterns/965f2989-6acb-4223-a163-89a99411c15c/knowledge/or/something/else',
+ *   '/dashboard/techniques/attack_patterns/965f2989-6acb-4223-a163-89a99411c15c',
+ * ); // returns 'knowledge'
+ * ```
+ */
+export const getCurrentTab = (fullpath: string, basePath: string) => {
+  let subpath = fullpath.substring(basePath.length);
+  if (subpath.startsWith('/')) {
+    subpath = subpath.substring(1);
+  }
+  const nextSlashPos = subpath.indexOf('/');
+  return nextSlashPos >= 0 ? subpath.substring(0, nextSlashPos) : subpath;
 };
 
 export const getPaddingRight = (locationPath: string, entityBasePath: string, applyKnowledgePadding = true) => {
