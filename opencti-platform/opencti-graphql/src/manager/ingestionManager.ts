@@ -494,22 +494,24 @@ const taxiiExecutor = async (context: AuthContext) => {
   const ingestionPromises = [];
   for (let i = 0; i < ingestions.length; i += 1) {
     const ingestion = ingestions[i];
-    // If ingestion have remaining messages in the queue, dont fetch any new data
-    const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
-    if (messages_number === 0) {
-      const taxiiHandler = TAXII_HANDLERS[ingestion.version];
-      if (!taxiiHandler) {
-        throw UnsupportedError(`[OPENCTI-MODULE] Taxii version ${ingestion.version} is not yet supported`);
+    if (isMustExecuteIteration(ingestion.last_execution_date, ingestion.scheduling_period)) {
+      // If ingestion have remaining messages in the queue, dont fetch any new data
+      const { messages_number, messages_size } = await queueDetails(connectorIdFromIngestId(ingestion.id));
+      if (messages_number === 0) {
+        const taxiiHandler = TAXII_HANDLERS[ingestion.version];
+        if (!taxiiHandler) {
+          throw UnsupportedError(`[OPENCTI-MODULE] Taxii version ${ingestion.version} is not yet supported`);
+        }
+        const ingestionPromise = taxiiHandler(context, ingestion)
+          .catch((e) => {
+            logApp.warn('[OPENCTI-MODULE] INGESTION - Taxii ingestion execution', { cause: e, name: ingestion.name });
+          });
+        ingestionPromises.push(ingestionPromise);
+      } else {
+        // Update the state
+        const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
+        ingestionPromises.push(ingestionPromise);
       }
-      const ingestionPromise = taxiiHandler(context, ingestion)
-        .catch((e) => {
-          logApp.warn('[OPENCTI-MODULE] INGESTION - Taxii ingestion execution', { cause: e, name: ingestion.name });
-        });
-      ingestionPromises.push(ingestionPromise);
-    } else {
-      // Update the state
-      const ingestionPromise = updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { buffering: true, messages_size });
-      ingestionPromises.push(ingestionPromise);
     }
   }
   return Promise.all(ingestionPromises);
