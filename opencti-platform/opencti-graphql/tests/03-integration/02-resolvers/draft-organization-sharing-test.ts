@@ -1,7 +1,6 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import * as ee from '../../../src/enterprise-edition/ee';
-import * as conf from '../../../src/config/conf';
 import { adminQuery } from '../../utils/testQuery';
 import { awaitUntilCondition } from '../../utils/testQueryHelper';
 
@@ -10,7 +9,6 @@ describe.skip('Draft organization sharing', () => {
     vi.spyOn(ee, 'isEnterpriseEdition').mockReturnValue(Promise.resolve(true));
     vi.spyOn(ee, 'checkEnterpriseEdition').mockReturnValue(Promise.resolve());
     vi.spyOn(ee, 'isEnterpriseEditionFromSettings').mockReturnValue(true);
-    vi.spyOn(conf, 'isFeatureEnabled').mockReturnValue(true);
   });
 
   afterAll(() => {

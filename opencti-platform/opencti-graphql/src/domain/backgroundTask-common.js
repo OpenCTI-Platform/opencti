@@ -33,7 +33,6 @@ import { TYPE_FILTER, USER_ID_FILTER } from '../utils/filtering/filtering-consta
 import { createWork } from './work';
 import { getBestBackgroundConnectorId } from '../database/rabbitmq';
 import { addUserBackgroundTaskCount } from '../manager/telemetryManager';
-import { isFeatureEnabled } from '../config/conf';
 
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_RULE = 'RULE';
@@ -63,25 +62,6 @@ export const ACTION_TYPE_RULE_APPLY = 'RULE_APPLY';
 export const ACTION_TYPE_RULE_CLEAR = 'RULE_CLEAR';
 export const ACTION_TYPE_RULE_ELEMENT_RESCAN = 'RULE_ELEMENT_RESCAN';
 
-const throwErrorInDraftContext = (context, user, actionType) => {
-  if (getDraftContext(context, user)) {
-    if (actionType === ACTION_TYPE_RULE_APPLY
-      || actionType === ACTION_TYPE_RULE_CLEAR
-      || actionType === ACTION_TYPE_RULE_ELEMENT_RESCAN
-      || actionType === ACTION_TYPE_SEND_EMAIL) {
-      throw FunctionalError('Cannot execute this task type in draft', { actionType });
-    }
-    if (!isFeatureEnabled('DRAFT_WORKSPACE_ORG_SHARING') && (
-      actionType === ACTION_TYPE_SHARE
-      || actionType === ACTION_TYPE_UNSHARE
-      || actionType === ACTION_TYPE_SHARE_MULTIPLE
-      || actionType === ACTION_TYPE_UNSHARE_MULTIPLE
-    )) {
-      throw FunctionalError('Cannot execute this task type in draft', { actionType });
-    }
-  }
-};
-
 const isDeleteRestrictedAction = ({ type }) => {
   return type === ACTION_TYPE_DELETE || type === ACTION_TYPE_RESTORE || type === ACTION_TYPE_COMPLETE_DELETE;
 };
@@ -91,9 +71,6 @@ const areParentTypesKnowledge = (parentTypes) => parentTypes && parentTypes.flat
 export const checkActionValidity = async (context, user, input, scope, taskType) => {
   const { actions, filters: baseFilterString, ids } = input;
   // check actions validity
-  for (const action of actions) {
-    throwErrorInDraftContext(context, user, action.type);
-  }
   const replaceActionsFields = actions
     .filter((a) => !a.type || a.type === ACTION_TYPE_REPLACE)
     .map((a) => a.field).filter(Boolean);
