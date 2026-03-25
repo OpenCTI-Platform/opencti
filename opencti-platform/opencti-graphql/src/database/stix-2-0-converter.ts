@@ -215,8 +215,8 @@ export const convertCourseOfActionToStix = (instance: StoreEntity): SDO.StixCour
     description: instance.description,
     x_opencti_aliases: instance.x_opencti_aliases ?? [],
     x_mitre_id: instance.x_mitre_id,
-    x_opencti_threat_hunting: (instance as any).x_opencti_threat_hunting,
-    x_opencti_log_sources: (instance as any).x_opencti_log_sources,
+    x_opencti_threat_hunting: instance.x_opencti_threat_hunting,
+    x_opencti_log_sources: instance.x_opencti_log_sources,
   };
 };
 
