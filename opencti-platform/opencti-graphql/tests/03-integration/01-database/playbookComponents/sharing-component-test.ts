@@ -9,33 +9,14 @@ import * as middlewareLoader from '../../../../src/database/middleware-loader';
 import * as access from '../../../../src/utils/access';
 import { PLAYBOOK_SHARING_COMPONENT } from '../../../../src/modules/playbook/components/sharing-component';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
-import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
+import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
 
 describe('PLAYBOOK_SHARING_COMPONENT', () => {
   const MAIN_REPORT_ID = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
 
-  const inputBundle: StixBundle = {
-    id: '81b65094-7fe7-40df-a695-43d30b3656b1',
-    spec_version: '2.1',
-    type: 'bundle',
-    objects: [
-      testBundleObject({ id: MAIN_REPORT_ID, type: 'report' }),
-    ],
-  };
-
   const inputBundleObjects = () => [
     testBundleObject({ id: MAIN_REPORT_ID, type: 'report' }),
   ];
-
-  const componentConfig = ({ elementsToApply, organizations }:
-  { elementsToApply: PlaybookBundleElementsToApply;
-    organizations: string[] | { label: string; value: string }[];
-  }) => {
-    return {
-      organizations,
-      applyToElements: elementsToApply,
-    };
-  };
 
   const createMockOrganization = (name: string): Partial<BasicStoreObject> => ({
     id: `org-internal-${name}`,
@@ -66,7 +47,7 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
         testExecutor({
           mainId: MAIN_REPORT_ID,
           bundleObjects: inputBundleObjects(),
-          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.onlyMain.value, organizations: [] }),
+          configuration: { applyToElements: playbookBundleElementsToApply.onlyMain.value, organizations: [] },
         }),
       );
 
@@ -79,7 +60,7 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
         testExecutor({
           mainId: MAIN_REPORT_ID,
           bundleObjects: inputBundleObjects(),
-          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.onlyMain.value, organizations: ['org-not-found'] }),
+          configuration: { applyToElements: playbookBundleElementsToApply.onlyMain.value, organizations: ['org-not-found'] },
         }),
       );
 
@@ -98,7 +79,7 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
         testExecutor({
           mainId: MAIN_REPORT_ID,
           bundleObjects: inputBundleObjects(),
-          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.onlyMain.value, organizations: [mockOrg.id!] }),
+          configuration: { applyToElements: playbookBundleElementsToApply.onlyMain.value, organizations: [mockOrg.id!] },
         }),
       );
 
@@ -120,7 +101,7 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
         testExecutor({
           mainId: MAIN_REPORT_ID,
           bundleObjects: inputBundleObjects(),
-          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.onlyMain.value, organizations: [{ label: 'Test Organization', value: mockOrg.id! }] }),
+          configuration: { applyToElements: playbookBundleElementsToApply.onlyMain.value, organizations: [{ label: 'Test Organization', value: mockOrg.id! }] },
         }),
       );
 
@@ -143,7 +124,7 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
         testExecutor({
           mainId: MAIN_REPORT_ID,
           bundleObjects: inputBundleObjects(),
-          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.onlyMain.value, organizations: [mockOrg1.id!, mockOrg2.id!] }),
+          configuration: { applyToElements: playbookBundleElementsToApply.onlyMain.value, organizations: [mockOrg1.id!, mockOrg2.id!] },
         }),
       );
 
@@ -166,7 +147,7 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
         testExecutor({
           mainId: MAIN_REPORT_ID,
           bundleObjects: inputBundleObjectsWithRefs,
-          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.onlyMain.value, organizations: [newOrg.id!] }),
+          configuration: { applyToElements: playbookBundleElementsToApply.onlyMain.value, organizations: [newOrg.id!] },
         }),
       );
 
@@ -180,17 +161,6 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
   describe('when bundle contains multiple objects', () => {
     const MALWARE_ID = 'malware--09bd862a-f030-55f2-920a-900c4913d9ff';
     const CAMPAIGN_ID = 'campaign--6bcf59ca-70c8-55ae-ac7d-a6f9b107a35b';
-
-    const bundleAddedObjects = () => [
-      testBundleObject({
-        id: MALWARE_ID,
-        type: 'Malware',
-      }),
-      testBundleObject({
-        id: CAMPAIGN_ID,
-        type: 'Campaign',
-      }),
-    ];
 
     const inputBundleMultipleObjects = () => [
       testBundleObject({
@@ -212,14 +182,11 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
 
       internalFindByIdsSpy.mockResolvedValue([mockOrg as BasicStoreObject]);
 
-      const bundle = structuredClone(inputBundle);
-      bundle.objects.push(...bundleAddedObjects());
-
       const result = await PLAYBOOK_SHARING_COMPONENT.executor(
         testExecutor({
           mainId: MAIN_REPORT_ID,
           bundleObjects: inputBundleMultipleObjects(),
-          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.allElements.value, organizations: [mockOrg.id!] }),
+          configuration: { applyToElements: playbookBundleElementsToApply.allElements.value, organizations: [mockOrg.id!] },
         }),
       );
 
@@ -242,7 +209,7 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
         testExecutor({
           mainId: MAIN_REPORT_ID,
           bundleObjects: inputBundleMultipleObjects(),
-          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.onlyMain.value, organizations: [mockOrg.id!] }),
+          configuration: { applyToElements: playbookBundleElementsToApply.onlyMain.value, organizations: [mockOrg.id!] },
         }),
       );
 
@@ -265,7 +232,7 @@ describe('PLAYBOOK_SHARING_COMPONENT', () => {
         testExecutor({
           mainId: MAIN_REPORT_ID,
           bundleObjects: inputBundleMultipleObjects(),
-          configuration: componentConfig({ elementsToApply: playbookBundleElementsToApply.allExceptMain.value, organizations: [mockOrg.id!] }),
+          configuration: { applyToElements: playbookBundleElementsToApply.allExceptMain.value, organizations: [mockOrg.id!] },
         }),
       );
 
