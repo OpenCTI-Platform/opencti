@@ -1,6 +1,6 @@
 import { FunctionalError } from '../../../config/errors';
 import { createEntity, createRelation, loadEntity, updateAttribute } from '../../../database/middleware';
-import { storeLoadById } from '../../../database/middleware-loader';
+import { fullEntitiesList, storeLoadById } from '../../../database/middleware-loader';
 import { FilterMode } from '../../../generated/graphql';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import type { AuthContext, AuthUser } from '../../../types/user';
@@ -9,6 +9,8 @@ import { WorkflowFactory } from '../engine/workflow-factory';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE, type TriggerResult } from '../types/workflow-types';
 import type { BasicStoreEntity } from '../../../types/store';
 import { bypassDraftContext } from '../../../utils/draftContext';
+
+import { validateWorkflowDefinitionData } from '../workflow-validation';
 
 interface WorkflowInstanceStoreEntity extends BasicStoreEntity {
   currentState: string;
@@ -112,7 +114,7 @@ export const setWorkflowDefinition = async (
     throw FunctionalError('Entity setting not found for type', { entityType });
   }
 
-  // Validate definition is valid JSON
+  // Validate definition is valid JSON and respect schema
   let definitionObj;
   try {
     definitionObj = JSON.parse(definition);
@@ -120,10 +122,12 @@ export const setWorkflowDefinition = async (
     throw FunctionalError('Invalid workflow definition JSON');
   }
 
-  const workflowName = definitionObj.name || `Workflow for ${entityType}`;
-
   const executionContext = bypassDraftContext(context);
   const executionUser = executionContext.user!;
+
+  await validateWorkflowDefinitionData(executionContext, executionUser, definition, entityType, entitySetting.workflow_id ?? undefined);
+
+  const workflowName = definitionObj.name || `Workflow for ${entityType}`;
 
   // 1. Check if we have an existing workflow linked
   if (entitySetting.workflow_id) {
@@ -236,11 +240,11 @@ export const getAllowedTransitions = async (
 
   const transitions = definition.getTransitions(effectiveStateId);
 
-  const resolvedTransitions = transitions.map((t) => {
+  const resolvedTransitions = transitions.map((transition) => {
     return {
-      event: t.event,
-      toState: t.to,
-      actions: t.actionTypes || [],
+      event: transition.event,
+      toState: transition.to,
+      actions: transition.actionTypes || [],
     };
   });
 
@@ -256,7 +260,7 @@ export const getAllowedNextStatuses = async (
   entityId: string,
 ): Promise<any[]> => {
   const transitions = await getAllowedTransitions(context, user, entityId);
-  return transitions.map((t) => t.toStatus).filter((s) => s !== null && s !== undefined);
+  return transitions.map((transition) => transition.toStatus).filter((status) => status !== null && status !== undefined);
 };
 
 /**
@@ -345,4 +349,25 @@ export const triggerWorkflowEvent = async (
       reason: `Workflow execution failed: ${reason}`,
     };
   }
+};
+
+export const isStatusTemplateUsedInWorkflows = async (
+  context: AuthContext,
+  user: AuthUser,
+  statusTemplateId: string,
+): Promise<boolean> => {
+  const executionContext = bypassDraftContext(context);
+  const workflows = await fullEntitiesList<any>(executionContext, executionContext.user!, [ENTITY_TYPE_WORKFLOW_DEFINITION]);
+  for (const workflow of workflows) {
+    if (typeof workflow.workflow_content === 'string') {
+      if (workflow.workflow_content.includes(statusTemplateId)) {
+        return true;
+      }
+    } else if (workflow.workflow_content) {
+      if (JSON.stringify(workflow.workflow_content).includes(statusTemplateId)) {
+        return true;
+      }
+    }
+  }
+  return false;
 };

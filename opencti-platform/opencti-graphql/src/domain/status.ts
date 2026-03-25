@@ -182,7 +182,15 @@ export const statusDelete = async (context: AuthContext, user: AuthUser, subType
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, deleted, user);
   return findSubTypeById(subTypeId);
 };
+import { isStatusTemplateUsedInWorkflows } from '../modules/workflow/domain/workflow-domain';
+import { FunctionalError } from '../config/errors';
+
 export const statusTemplateDelete = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
+  const isUsedInWorkflow = await isStatusTemplateUsedInWorkflows(context, user, statusTemplateId);
+  if (isUsedInWorkflow) {
+    throw FunctionalError('Cannot delete a status template that is used in a workflow');
+  }
+
   const filters = {
     mode: FilterMode.And,
     filters: [{ key: ['template_id'], values: [statusTemplateId] }],
