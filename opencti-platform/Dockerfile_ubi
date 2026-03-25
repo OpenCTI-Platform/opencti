@@ -9,11 +9,8 @@ FROM base AS builder
 
 # For layer optimisation, start by installing resources not dependant from source code
 RUN set -eux; \
-    microdnf -y --setopt=install_weak_deps=0 install nodejs24 nodejs24-npm python3 python3-devel gcc-c++ make; \
+    microdnf -y --setopt=install_weak_deps=0 install nodejs nodejs-npm python3 python3-devel gcc-c++ make; \
     microdnf clean all; \
-    alternatives --install /usr/bin/node node /usr/bin/node-24 1; \
-    alternatives --install /usr/bin/npm npm /usr/bin/npm-24 1; \
-    alternatives --install /usr/bin/npx npx /usr/bin/npx-24 1; \
     npm install -g corepack;
 
 COPY .yarnrc.yml /opt/opencti/
@@ -41,9 +38,9 @@ RUN yarn install --immutable
 COPY opencti-graphql/ ./
 RUN yarn build:prod
 
-###############################
-#### Build front
-###############################
+##############################
+### Build front
+##############################
 
 FROM builder AS builder-front
 WORKDIR /opt/opencti/opencti-front
@@ -61,44 +58,6 @@ RUN set -eux; \
     yarn build;
 
 ###############################
-#### Build the testing image
-###############################
-
-#FROM builder AS testing
-#
-#COPY opencti-graphql/src/python/requirements.txt /opt/opencti/src/python/requirements.txt
-#
-#RUN apk add --no-cache tini python3 python3-dev libmagic
-#RUN set -eux; \
-#    apk add --no-cache gcc git; \
-#    rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED; \
-#    python3 -m ensurepip; \
-#    rm -rv /usr/lib/python*/ensurepip; \
-#    pip3 install --no-cache-dir --upgrade pip setuptools wheel; \
-#    ln -sf python3 /usr/bin/python; \
-#    pip3 install --no-cache-dir --requirement /opt/opencti/src/python/requirements.txt ; \
-#    apk del gcc git
-#
-#WORKDIR /opt/opencti
-#
-#COPY --from=builder-back /opt/opencti/opencti-graphql/ ./
-#COPY --from=builder-front /opt/opencti/opencti-graphql/public/ ./public/
-#
-#ENV PYTHONUNBUFFERED="1"
-#ENV NODE_OPTIONS="--max_old_space_size=12288"
-#
-#RUN set -eux; \
-#    install -m 0777 -d '/opt/opencti/logs'; \
-#    install -m 0777 -d '/opt/opencti/telemetry'; \
-#    install -m 0777 -d '/opt/opencti/.support'
-#
-#VOLUME ["/opt/opencti/logs", "/opt/opencti/telemetry", "/opt/opencti/.support"]
-#
-#ENTRYPOINT ["/sbin/tini", "--"]
-#CMD ["node", "build/back.js"]
-
-
-###############################
 #### Build production image
 ###############################
 
@@ -107,9 +66,10 @@ FROM base AS app
 COPY opencti-graphql/src/python/requirements.txt /opt/opencti/src/python/requirements.txt
 
 RUN set -eux; \
-    microdnf -y --setopt=install_weak_deps=0 install nodejs24 python3 python3-devel which; \
+    microdnf -y --setopt=install_weak_deps=0 install nodejs python3 python3-devel which; \
     microdnf clean all; \
-    alternatives --install /usr/bin/node node /usr/bin/node-24 1; \
+    curl -L -o /sbin/tini https://github.com/krallin/tini/releases/latest/download/tini; \
+    chmod +x /sbin/tini; \
     alternatives --install /usr/bin/python python /usr/bin/python3 1; \
     python3 -m ensurepip; \
     pip3 install --no-cache-dir --upgrade pip setuptools wheel; \
@@ -134,5 +94,5 @@ RUN set -eux; \
 
 VOLUME ["/opt/opencti/logs", "/opt/opencti/telemetry", "/opt/opencti/.support"]
 
-# ENTRYPOINT ["/sbin/tini", "--"]
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "build/back.js"]
