@@ -14,7 +14,7 @@
     "clean:relations": "yarn build:prod && node build/script-clean-relations.js",
     "backend:stack:analysis": "node builder/dev/stack.js && node --env-file=.env build/script-stack-analysis back",
     "frontend:stack:analysis": "node builder/dev/stack.js && node --env-file=.env build/script-stack-analysis front",
-    "lint": "DEBUG=eslint:cli-engine TIMING=1 eslint --quiet --cache --config eslint.config.mjs src",
+    "lint": "NODE_OPTIONS='--import tsx' oxlint --config oxlint.config.ts src",
     "build": "yarn install:python && yarn build:prod",
     "start": "NODE_ENV=development yarn build:dev && node --enable-source-maps build/back.js",
     "start:e2e": "NODE_ENV=development yarn build:dev && APP__ENABLED_DEV_FEATURES='[\"*\"]' EXPIRATION_SCHEDULER__ENABLED=false REDIS__NAMESPACE=e2e-start RABBITMQ__QUEUE_PREFIX=e2e MINIO__BUCKET_NAME=e2e-start-bucket ELASTICSEARCH__INDEX_PREFIX=e2e-start node build/back.js",
@@ -180,7 +180,6 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@eslint/js": "10.0.1",
     "@graphql-codegen/cli": "6.2.1",
     "@graphql-codegen/introspection": "5.0.1",
     "@graphql-codegen/typescript-resolvers": "5.1.7",
@@ -207,13 +206,13 @@
     "esbuild": "0.27.4",
     "esbuild-plugin-copy": "2.1.1",
     "esbuild-plugin-import-glob": "0.1.1",
-    "eslint": "10.0.3",
     "eslint-import-resolver-typescript": "4.4.4",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-import-newlines": "2.0.0",
     "globals": "17.4.0",
     "graphql-tag": "2.12.6",
     "oxlint": "1.56.0",
+    "tsx": "4.21.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.57.0",
     "vitest": "3.2.4"
