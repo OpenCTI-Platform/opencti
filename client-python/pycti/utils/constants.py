@@ -847,7 +847,7 @@ class CustomObservableICCID:
     Represents an unique serial number of a SIM card,
     printed on the SIM itself.
 
-    Format: up to 19-20 digits, numeric only.
+    Format: up to 18-20 digits, numeric only.
 
     :param value: The ICCID value (required)
     :type value: str
