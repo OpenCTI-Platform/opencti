@@ -1,7 +1,7 @@
 import { Node } from 'pdfmake/interfaces';
 
 /**
- * Convert ckeditor page breaks into ones for pdfmake.
+ * Convert html editor page breaks into ones for pdfmake.
  *
  * @param content The html content in string.
  * @returns Same content but with page breaks.
