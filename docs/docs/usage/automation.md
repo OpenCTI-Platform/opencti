@@ -305,7 +305,13 @@ Compared to other components, this component **makes direct call to the database
 Compared to other components, this component **makes direct call to the database**: this means that the query will be applied before the "send to ingestion" step. As a result, if, **within the same playbook**, you attempt to create a new entity (via the wrap in container step) and remove default authorized members, the playbook will fail. Indeed, the entity will not yet be created, since it won't be sent to ingestion yet. You need to remove the authorized members in another playbook to achieve this use case.
 
 Will remove authorized members on the bundle within the playbook. It is only compatible with entities supporting authorized members (Containers, Drafts).
-You can decide to only remove restriction on the triggering element or the whole bundle by enabling the toggle.
+
+By default, removal is applied to the entity triggering the playbook. You can change this behavior with the following options:
+
+- all elements in the bundle (elements that might result from enrichment for example)
+- all elements except the entity triggering the playbook
+
+![Enroll entity in playbook](assets/playbook_select_bundle_scope.png)
 
 **Specificities of the component**
 
