@@ -25,7 +25,6 @@ import { FieldOption } from '../../../utils/field';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
-import useHelper from '../../../utils/hooks/useHelper';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
@@ -106,9 +105,6 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Policies | Security | Settings'));
-
-  const { isFeatureEnable } = useHelper();
-  const isUsersVisibilityFeatureEnable = isFeatureEnable('USERS_VISIBILITY');
 
   const handleSubmitField = (name: string, value: string | string[] | FieldOption | null) => {
     policiesValidation()
@@ -235,26 +231,22 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                   </Grid>
 
                   <GroupSetDefaultGroupForIngestionUsers />
-
-                  {isUsersVisibilityFeatureEnable && (
-                    <Grid item xs={6}>
-                      <Card title={t_i18n('Users visibility')}>
-                        <Alert severity="info" variant="outlined">
-                          {t_i18n('This option is automatically disabled when a platform organization is set.')}
-                        </Alert>
-                        <Field
-                          component={SwitchField}
-                          type="checkbox"
-                          name="view_all_users"
-                          label={t_i18n('Allow users to view users of other organizations')}
-                          containerstyle={{ marginTop: 20 }}
-                          disabled={!!values.platform_organization}
-                          onChange={(name: string, value: string) => handleSubmitField(name, value)}
-                        />
-                      </Card>
-                    </Grid>
-                  )}
-
+                  <Grid item xs={6}>
+                    <Card title={t_i18n('Users visibility')}>
+                      <Alert severity="info" variant="outlined">
+                        {t_i18n('This option is automatically disabled when a platform organization is set.')}
+                      </Alert>
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="view_all_users"
+                        label={t_i18n('Allow users to view users of other organizations')}
+                        containerstyle={{ marginTop: 20 }}
+                        disabled={!!values.platform_organization}
+                        onChange={(name: string, value: string) => handleSubmitField(name, value)}
+                      />
+                    </Card>
+                  </Grid>
                   <Grid item xs={6}>
                     <Card title={t_i18n('Platform Banner Configuration')}>
                       <Field
