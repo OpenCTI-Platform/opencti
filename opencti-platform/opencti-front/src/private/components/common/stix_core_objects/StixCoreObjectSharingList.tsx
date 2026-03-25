@@ -39,7 +39,6 @@ interface StixCoreObjectSharingListProps {
 
 const StixCoreObjectSharingList = ({ data, disabled, inContainer, children }: StixCoreObjectSharingListProps) => {
   const { t_i18n } = useFormatter();
-  const fullyDisabled = disabled;
   const notifySuccessMessage = (
     <span>
       {t_i18n(
@@ -83,7 +82,7 @@ const StixCoreObjectSharingList = ({ data, disabled, inContainer, children }: St
         <Tag
           label={organization.name}
           onDelete={() => removeOrganization(organization.id)}
-          disabled={fullyDisabled || disabledOrgs.includes(organization.id)}
+          disabled={disabled || disabledOrgs.includes(organization.id)}
           icon={<AccountBalanceOutlined fontSize="small" />}
           maxWidth={150}
         />
