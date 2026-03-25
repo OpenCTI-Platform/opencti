@@ -80,7 +80,7 @@ const HiddenTypesIndicatorComponent: FunctionComponent<HiddenTypesIndicatorCompo
       {(groupsName.length > 0 || orgsName.length > 0)
         && (
           <span className={classes.indication}>
-              &emsp;
+            &emsp;
             {`(${t_i18n('Hidden in ')}`}
             {groupsName.length > 0 && `${t_i18n('Groups')} : ${groupsName}`}
             {(groupsName.length > 0 && orgsName.length > 0) && `${t_i18n(' & ')}`}

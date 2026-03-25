@@ -9,6 +9,7 @@ export interface WithRouterProps {
 }
 
 /** @deprecated Use `React Router hooks` instead */
+// oxlint-disable-next-line react/display-name
 const withRouter = <Props extends WithRouterProps>(
   Component: React.ComponentType<Props>,
 ) => {

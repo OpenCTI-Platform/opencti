@@ -99,9 +99,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     borderRadius: 4,
     display: 'flex',
   },
-  formControl: {
-    width: '100%',
-  },
   stepCloseButton: {
     position: 'absolute',
     top: -20,

@@ -454,7 +454,7 @@ const TasksList = ({ data, options }) => {
                         size="small"
                       >
                         <Delete fontSize="small" />
-                    &nbsp;&nbsp;{t_i18n('Delete')}
+                        &nbsp;&nbsp;{t_i18n('Delete')}
                       </Button>
                     )
                   : (
@@ -466,7 +466,7 @@ const TasksList = ({ data, options }) => {
                           size="small"
                         >
                           <Delete fontSize="small" />
-                      &nbsp;&nbsp;{t_i18n('Delete')}
+                          &nbsp;&nbsp;{t_i18n('Delete')}
                         </Button>
                       </Security>
                     )

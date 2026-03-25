@@ -90,7 +90,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
               <strong style={{ color: theme.palette.error.main }}>
                 {numberOfDeletions}
               </strong>
-                &nbsp;
+              &nbsp;
               {t_i18n(
                 'element(s) are not linked to any other reports and will be orphan after the deletion.',
               )}
