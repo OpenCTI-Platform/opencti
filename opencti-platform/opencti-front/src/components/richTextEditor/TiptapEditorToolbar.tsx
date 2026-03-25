@@ -10,6 +10,7 @@ import {
   FormatQuote,
   Code,
   DataObject,
+  Html,
   Link as LinkIcon,
   Image as ImageIcon,
   HorizontalRule,
@@ -83,6 +84,8 @@ interface TiptapEditorToolbarProps {
   disabled?: boolean;
   onOpenLinkPopover?: () => void;
   onOpenImagePopover?: () => void;
+  isSourceMode?: boolean;
+  onToggleSourceMode?: () => void;
 }
 
 export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
@@ -90,6 +93,8 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
   disabled = false,
   onOpenLinkPopover,
   onOpenImagePopover,
+  isSourceMode = false,
+  onToggleSourceMode,
 }) => {
   const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
   React.useEffect(() => {
@@ -480,6 +485,19 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
           </ToggleButton>
         </Tooltip>
       </ToggleButtonGroup>
+      {onToggleSourceMode && (
+        <ToggleButtonGroup size="small" disabled={disabled}>
+          <Tooltip title="Source HTML">
+            <ToggleButton
+              value="sourceMode"
+              selected={isSourceMode}
+              onClick={onToggleSourceMode}
+            >
+              <Html fontSize="small" />
+            </ToggleButton>
+          </Tooltip>
+        </ToggleButtonGroup>
+      )}
       {/* undo, redo */}
       <ToggleButtonGroup size="small" disabled={disabled} sx={{ flexWrap: 'wrap' }}>
         <Tooltip title="Undo">

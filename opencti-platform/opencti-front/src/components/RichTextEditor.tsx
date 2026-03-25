@@ -85,6 +85,45 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const editorRef = useRef<Editor | null>(null);
   onChangeRef.current = onChange;
 
+  const [sourceMode, setSourceMode] = useState(false);
+  const [sourceHtml, setSourceHtml] = useState('');
+
+  const formatHtml = (html: string): string => {
+    let indent = 0;
+    const tab = '  ';
+    // Split on tags while keeping the delimiters
+    return html
+      .replace(/>\s*</g, '><')
+      .split(/(<[^>]+>)/)
+      .reduce((acc, token) => {
+        if (!token) return acc;
+        if (/^<\//.test(token)) {
+          indent = Math.max(0, indent - 1);
+          return `${acc}\n${tab.repeat(indent)}${token}`;
+        }
+        if (/^<[^/!][^>]*[^/]>$/.test(token) && !/^<(br|hr|img|input|link|meta|area|base|col|embed|param|source|track|wbr)[\s/>]/i.test(token)) {
+          const line = `\n${tab.repeat(indent)}${token}`;
+          indent += 1;
+          return acc + line;
+        }
+        return `${acc}\n${tab.repeat(indent)}${token}`;
+      }, '')
+      .trimStart();
+  };
+
+  const toggleSourceMode = useCallback(() => {
+    if (!editorRef.current) return;
+    if (!sourceMode) {
+      // switching TO source mode: snapshot current HTML, pretty-printed
+      setSourceHtml(formatHtml(editorRef.current.getHTML()));
+    } else {
+      // switching FROM source mode: apply textarea content back to editor
+      editorRef.current.commands.setContent(sourceHtml);
+      onChangeRef.current?.(undefined, createEditorAdapter(editorRef.current));
+    }
+    setSourceMode((prev) => !prev);
+  }, [sourceMode, sourceHtml]);
+
   const [linkPopover, setLinkPopover] = useState<{
     open: boolean;
     position: { top: number; left: number } | null;
@@ -683,44 +722,68 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         disabled={disabled}
         onOpenLinkPopover={openLinkPopoverFromToolbar}
         onOpenImagePopover={openImagePopoverFromToolbar}
+        isSourceMode={sourceMode}
+        onToggleSourceMode={toggleSourceMode}
       />
       <div
         ref={editorWrapRef}
         style={{ flex: 1, minHeight: 0, overflow: 'auto' }}
       >
-        <div
-          ref={editorContentWrapRef}
-          onContextMenu={handleTableContextMenu}
-          style={{ position: 'relative', minHeight: '100%' }}
-        >
-          <EditorContent editor={editor} />
-          {!disabled && imageEditButton && !imageOptionsPopover.open && (
-            <IconButton
-              size="small"
-              aria-label="Edit image options"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                openImageOptionsFromEditIcon();
-              }}
-              sx={{
-                position: 'absolute',
-                top: imageEditButton.relativeTop,
-                left: imageEditButton.relativeLeft,
-                width: 28,
-                height: 28,
-                backgroundColor: 'background.paper',
-                border: '1px solid',
-                borderColor: 'divider',
-                boxShadow: 1,
-                '&:hover': { backgroundColor: 'action.hover' },
-                zIndex: 10,
-              }}
-            >
-              <EditOutlined sx={{ fontSize: 16 }} />
-            </IconButton>
-          )}
-        </div>
+        {sourceMode ? (
+          <textarea
+            value={sourceHtml}
+            onChange={(e) => setSourceHtml(e.target.value)}
+            style={{
+              width: '100%',
+              height: '100%',
+              minHeight: 200,
+              padding: 12,
+              fontFamily: 'monospace',
+              fontSize: 13,
+              border: 'none',
+              outline: 'none',
+              resize: 'none',
+              background: 'transparent',
+              color: 'inherit',
+              boxSizing: 'border-box',
+            }}
+            spellCheck={false}
+          />
+        ) : (
+          <div
+            ref={editorContentWrapRef}
+            onContextMenu={handleTableContextMenu}
+            style={{ position: 'relative', minHeight: '100%' }}
+          >
+            <EditorContent editor={editor} />
+            {!disabled && imageEditButton && !imageOptionsPopover.open && (
+              <IconButton
+                size="small"
+                aria-label="Edit image options"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  openImageOptionsFromEditIcon();
+                }}
+                sx={{
+                  position: 'absolute',
+                  top: imageEditButton.relativeTop,
+                  left: imageEditButton.relativeLeft,
+                  width: 28,
+                  height: 28,
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  boxShadow: 1,
+                  '&:hover': { backgroundColor: 'action.hover' },
+                  zIndex: 10,
+                }}
+              >
+                <EditOutlined sx={{ fontSize: 16 }} />
+              </IconButton>
+            )}
+          </div>
+        )}
       </div>
       <Popover
         open={linkPopover.open}
