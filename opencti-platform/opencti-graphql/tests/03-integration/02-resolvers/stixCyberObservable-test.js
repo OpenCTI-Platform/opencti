@@ -54,14 +54,20 @@ describe('StixCyberObservable resolver standard behavior', () => {
       $NetworkTraffic: NetworkTrafficAddInput,
       $SSHKey: SSHKeyAddInput,
       $Text: TextAddInput,
-      $x_opencti_score: Int
+      $x_opencti_score: Int,
+      $ICCID: ICCIDAddInput,
+      $IMEI: IMEIAddInput,
+      $IMSI: IMSIAddInput
     ) {
       stixCyberObservableAdd(type: $type,
         IPv4Addr: $IPv4Addr,
         NetworkTraffic: $NetworkTraffic,
         SSHKey: $SSHKey,
-        Text: $Text
-        x_opencti_score: $x_opencti_score
+        Text: $Text,
+        x_opencti_score: $x_opencti_score,
+        ICCID: $ICCID,
+        IMEI: $IMEI,
+        IMSI: $IMSI
       ) {
         id
         observable_value
@@ -79,6 +85,15 @@ describe('StixCyberObservable resolver standard behavior', () => {
           key_type
           public_key
           fingerprint_sha256
+        }
+        ... on ICCID {
+          value
+        }
+        ... on IMEI {
+          value
+        }
+        ... on IMSI {
+          value
         }
       }
     }
@@ -155,7 +170,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
       SSHKey: {
         key_type: 'rsa',
         public_key: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGmZ9d3b0QYpU2c9m7xKJ5V2rQy4s1aZr7Jk8Qw0t6u9',
-        fingerprint_sha256: 'a35f9c12e84b07d46ab13e95c728f06d2a8e41bb9d630cfa7419e2568b30d96f'
+        fingerprint_sha256: 'a35f9c12e84b07d46ab13e95c728f06d2a8e41bb9d630cfa7419e2568b30d96f',
       },
     };
     const stixCyberObservableSSH = await queryAsAdminWithSuccess({
@@ -188,7 +203,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
       query: EDIT_QUERY,
       variables: {
         id: SSHInternalId,
-        input: [{ key: 'key_type', value: 'ecdsa' }, { key: 'public_key', value: '' }, { key: 'fingerprint_sha256', value: 'a35f9c12e84b07d46ab13e95c728f06d2a8e41bb9d630cfa7419e2568b30d97f' }]
+        input: [{ key: 'key_type', value: 'ecdsa' }, { key: 'public_key', value: '' }, { key: 'fingerprint_sha256', value: 'a35f9c12e84b07d46ab13e95c728f06d2a8e41bb9d630cfa7419e2568b30d97f' }],
       },
     });
     expect(stixCyberObservableUpdated.data.stixCyberObservableEdit.fieldPatch.key_type).toEqual('ecdsa');
@@ -481,26 +496,26 @@ describe('StixCyberObservable resolver promote to indicator behavior', () => {
         payload_bin: '',
         url: '',
         x_opencti_additional_names: [
-          '[Content_Types].xml'
+          '[Content_Types].xml',
         ],
         hashes: [
           {
             algorithm: 'MD5',
-            hash: '46c293d9de7b32344e041857515944a6'
+            hash: '46c293d9de7b32344e041857515944a6',
           },
           {
             algorithm: 'SHA-1',
-            hash: 'dfe5e1bcc496efac6012e26f013c7b6a6d7c9803'
+            hash: 'dfe5e1bcc496efac6012e26f013c7b6a6d7c9803',
           },
           {
             algorithm: 'SHA-256',
-            hash: 'bfa02ea1994b73dca866ea3b6596340fe00063d19eab5957c7d8e6a5fa10599a'
+            hash: 'bfa02ea1994b73dca866ea3b6596340fe00063d19eab5957c7d8e6a5fa10599a',
           },
           {
             algorithm: 'SHA-512',
-            hash: '0ecf269f1805d6ccc61b247ba7aadd66771b86554509536bb90988b6b0f09521e84167496fd6b9bb3153ae25af6d461c43faae23c75ca4fa050b41d5133a54ba'
-          }
-        ]
+            hash: '0ecf269f1805d6ccc61b247ba7aadd66771b86554509536bb90988b6b0f09521e84167496fd6b9bb3153ae25af6d461c43faae23c75ca4fa050b41d5133a54ba',
+          },
+        ],
       },
     };
     const stixCyberObservable = await queryAsAdminWithSuccess({

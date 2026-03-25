@@ -322,6 +322,15 @@ SCO_PROPERTIES = """
         url
         publication_date
     }
+    ... on IMEI {
+        value
+    }
+    ... on ICCID {
+        value
+    }
+    ... on IMSI {
+        value
+    }
 """
 SCO_PROPERTIES_WITH_FILES = """
     id
@@ -659,6 +668,15 @@ SCO_PROPERTIES_WITH_FILES = """
         media_category
         url
         publication_date
+    }
+    ... on IMEI {
+        value
+    }
+    ... on ICCID {
+        value
+    }
+    ... on IMSI {
+        value
     }
     importFiles {
         edges {
