@@ -332,7 +332,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     <pre style={{ margin: 0 }}>{user.user_email}</pre>
                   </Grid>
                   <Grid item xs={4}>
-                    <Label action={!user.otp_activated && (
+                    <Label action={user.otp_activated && (
                       <IconButton
                         color="primary"
                         onClick={otpUserDeactivation}
