@@ -37518,7 +37518,7 @@ export type WorkTracking = {
 export type WorkflowActionConfig = {
   __typename?: 'WorkflowActionConfig';
   mode: WorkflowActionMode;
-  params?: Maybe<Scalars['String']['output']>;
+  params?: Maybe<Scalars['JSON']['output']>;
   type: Scalars['String']['output'];
 };
 
@@ -52057,7 +52057,7 @@ export type WorkTrackingResolvers<ContextType = any, ParentType extends Resolver
 
 export type WorkflowActionConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowActionConfig'] = ResolversParentTypes['WorkflowActionConfig']> = ResolversObject<{
   mode?: Resolver<ResolversTypes['WorkflowActionMode'], ParentType, ContextType>;
-  params?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  params?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 

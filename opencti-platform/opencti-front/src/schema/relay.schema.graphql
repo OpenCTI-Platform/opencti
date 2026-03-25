@@ -10777,7 +10777,7 @@ enum WorkflowActionMode {
 
 type WorkflowActionConfig {
   type: String!
-  params: String
+  params: JSON
   mode: WorkflowActionMode!
 }
 

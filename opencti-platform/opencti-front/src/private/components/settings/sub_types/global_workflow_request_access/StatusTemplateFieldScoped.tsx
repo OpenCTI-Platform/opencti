@@ -5,8 +5,8 @@ import { Label } from 'mdi-material-ui';
 import { useFormatter } from '../../../../../components/i18n';
 import { fetchQuery } from '../../../../../relay/environment';
 import AutocompleteField from '../../../../../components/AutocompleteField';
-import { StatusTemplateFieldScopedSearchQuery$data } from './__generated__/StatusTemplateFieldScopedSearchQuery.graphql';
 import { FieldOption } from '../../../../../utils/field';
+import { StatusTemplateFieldScopedSearchQuery$data } from './__generated__/StatusTemplateFieldScopedSearchQuery.graphql';
 
 interface StatusTemplateFieldScopedProps {
   name: string;

@@ -1,4 +1,4 @@
-type Connection<T> = {
+export type Connection<T> = {
   readonly edges: ReadonlyArray<{
     readonly node: T;
   } | null | undefined> | null | undefined;
