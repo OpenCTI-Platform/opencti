@@ -1,4 +1,4 @@
- import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vitest/config';
 import graphql from '@rollup/plugin-graphql';
 import type { PluginOption } from 'vite';
 import { BaseSequencer, type TestSpecification } from 'vitest/node';
@@ -14,7 +14,7 @@ export const buildIntegrationTestConfig = (include: string[]) => defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**'],
-      exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**'],
+      exclude: ['src/generated/**', 'src/http/httpServer.js', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**'],
       reporter: ['text', 'json', 'html'],
       clean: false,
     },
@@ -26,11 +26,10 @@ export const buildIntegrationTestConfig = (include: string[]) => defineConfig({
     sequence: {
       shuffle: false,
       sequencer: class Sequencer extends BaseSequencer {
-         
         async shard(files: TestSpecification[]) {
           return files;
         }
-         
+
         async sort(files: TestSpecification[]) {
           return files.sort((testA, testB) => (testA.moduleId > testB.moduleId ? 1 : -1));
         }
