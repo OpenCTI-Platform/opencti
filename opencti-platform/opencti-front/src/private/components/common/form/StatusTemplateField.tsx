@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Field } from 'formik';
+import { Field, useFormikContext } from 'formik';
 import { Label } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql } from 'react-relay';
@@ -35,6 +35,7 @@ interface StatusTemplateFieldProps {
   required?: boolean;
   onChange?: (field: string, value: FieldOption) => void;
   style?: Record<string, string | number>;
+  label?: string;
 }
 
 export const StatusTemplateFieldQuery = graphql`
@@ -57,7 +58,9 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
   setFieldValue,
   helpertext,
   required = false,
+  label,
 }) => {
+  const { values } = useFormikContext<Record<string, { value: string; label: string; color: string } | { id: string; name: string; color: string }>>();
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
@@ -75,15 +78,9 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
 
   const handleCloseStatusTemplateCreation = () => setStatusTemplateCreation(false);
 
-  const searchStatusTemplates = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setStatusTemplateInput(
-      event && event.target.value ? event.target.value : '',
-    );
-    fetchQuery(StatusTemplateFieldQuery, {
-      search: event && event.target.value ? event.target.value : '',
-    })
+  const handleSearch = (value = '') => {
+    setStatusTemplateInput(value);
+    fetchQuery(StatusTemplateFieldQuery, value ? { search: value } : {})
       .toPromise()
       .then((data) => {
         const NewStatusTemplates = (
@@ -105,28 +102,43 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
       });
   };
 
+  const fieldValue = values[name];
+
+  const normalizedValue = (fieldValue && 'id' in fieldValue)
+    ? { value: fieldValue.id, label: fieldValue.name, color: fieldValue.color }
+    : (fieldValue ?? null);
+
   return (
     <div style={{ width: '100%' }}>
       <Field
         component={AutocompleteField}
         name={name}
         style={style}
+        value={normalizedValue}
+        onChange={(name: string, value: FieldOption) => {
+          if (setFieldValue) {
+            setFieldValue(name, value);
+          }
+        }}
         textfieldprops={{
           variant: 'standard',
-          label: t_i18n('Name'),
+          label: label && t_i18n('Name'),
           helperText: helpertext,
-          onFocus: searchStatusTemplates,
+          // Prevent filtering on previous status
+          onFocus: () => handleSearch(''),
         }}
         required={required}
         noOptionsText={t_i18n('No available options')}
         options={statusTemplates}
-        onInputChange={searchStatusTemplates}
+        onInputChange={(event: React.FocusEvent<HTMLInputElement>) => (
+          handleSearch(event.target?.value)
+        )}
         openCreate={handleOpenStatusTemplateCreation}
         renderOption={(
-          props: React.HTMLAttributes<HTMLLIElement>,
+          { key, ...optionProps }: React.HTMLAttributes<HTMLLIElement> & { key?: string | number },
           option: { color: string; label: string },
         ) => (
-          <li {...props}>
+          <li key={key} {...optionProps}>
             <div className={classes.icon} style={{ color: option.color }}>
               <Label />
             </div>
