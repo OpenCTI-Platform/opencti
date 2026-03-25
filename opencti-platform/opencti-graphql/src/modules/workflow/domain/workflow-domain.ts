@@ -27,9 +27,10 @@ const getDefinitionData = async (context: AuthContext, user: AuthUser, entitySet
     const executionContext = bypassDraftContext(context);
     const workflowDefinitionEntity = await storeLoadById(executionContext, executionContext.user!, entitySetting.workflow_id, ENTITY_TYPE_WORKFLOW_DEFINITION) as any;
     if (workflowDefinitionEntity) {
-      return typeof workflowDefinitionEntity.workflow_content === 'string'
+      const workflowContent = typeof workflowDefinitionEntity.workflow_content === 'string'
         ? JSON.parse(workflowDefinitionEntity.workflow_content)
         : workflowDefinitionEntity.workflow_content;
+      return { ...workflowContent, id: workflowDefinitionEntity.id, name: workflowDefinitionEntity.name };
     }
   }
 

@@ -111,7 +111,7 @@ export interface WorkflowConditionConfig {
 }
 
 export interface WorkflowSerializedState {
-  name: string;
+  statusId: string;
   onEnter?: WorkflowActionConfig[];
   onExit?: WorkflowActionConfig[];
 }

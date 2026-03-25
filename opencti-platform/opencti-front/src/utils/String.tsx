@@ -146,6 +146,29 @@ export const uniqWithByFields = <T extends Record<string, unknown>>(fields: (key
   );
 };
 
+export const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1);
+
+export const capitalizeWords = (str: string): string => str.split(' ').map(capitalizeFirstLetter).join(' ');
+
+export const toCamelCase = (str: string): string => {
+  return str
+    .replace(/[^a-zA-Z0-9 ]/g, '')
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, i) => {
+      return i === 0 ? word.toLowerCase() : word.toUpperCase();
+    })
+    .replace(/\s+/g, '');
+};
+
+export const camelCaseToSentenceCase = (str: string): string => {
+  const res = str.replace(/([A-Z])/g, ' $1').toLowerCase();
+  return capitalizeFirstLetter(res);
+};
+
+export const snakeCaseToSentenceCase = (str: string): string => {
+  const res = str.replace(/_/g, ' ').toLowerCase();
+  return capitalizeFirstLetter(res);
+};
+
 /**
  * Group consecutive elements that share the same values for the given fields.
  */
@@ -160,19 +183,6 @@ export const computeDuplicates = <T extends Record<string, unknown>>(fields: str
     }
   }
   return result;
-};
-
-export const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1);
-
-export const capitalizeWords = (str: string): string => str.split(' ').map(capitalizeFirstLetter).join(' ');
-
-export const toCamelCase = (str: string): string => {
-  return str
-    .replace(/[^a-zA-Z0-9 ]/g, '')
-    .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, i) => {
-      return i === 0 ? word.toLowerCase() : word.toUpperCase();
-    })
-    .replace(/\s+/g, '');
 };
 
 export const emptyFilled = (str: string | undefined | null): string => (isNotEmptyField(str) ? str : EMPTY_VALUE);
