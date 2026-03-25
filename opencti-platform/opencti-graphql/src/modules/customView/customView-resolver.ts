@@ -3,9 +3,9 @@ import { addCustomView, customViewDelete, getCustomViewById, getCustomViewsConte
 
 const customViewResolver: Resolvers = {
   Query: {
-    customView: (_parent, { id }, context) => getCustomViewById(context, context.user, id),
-    customViewsContext: (_parent, _args, context) => getCustomViewsContext(context, context.user),
-    customViewsSettings: (_parent, { id }, context) => getCustomViewsSettings(context, context.user, id),
+    customViewDisplay: (_parent, { id }, context) => getCustomViewById(context, context.user, id),
+    customViewsDisplayContext: (_parent, _args, context) => getCustomViewsContext(context, context.user),
+    customViewsSettings: (_parent, { entityType, options }, context) => getCustomViewsSettings(context, context.user, entityType, options),
   },
   CustomView: {},
   Mutation: {

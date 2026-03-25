@@ -33,7 +33,7 @@ export const subTypeQuery = graphql`
       ...GlobalWorkflowSettings_global
       ...RequestAccessSettings_requestAccess
     }
-    customViewsSettings(id: $id) {
+    customViewsSettings(entityType: $id) {
       ...CustomViewsGrid_customViews
     }
   }
@@ -73,7 +73,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
         {t_i18n(`entity_${subType.label}`)}
       </TitleMainEntity>
 
-      <Outlet context={{ subType }} />
+      <Outlet context={{ subType, customViewsSettings }} />
     </div>
   );
 };

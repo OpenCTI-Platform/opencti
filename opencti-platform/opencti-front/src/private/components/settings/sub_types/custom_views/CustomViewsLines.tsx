@@ -15,8 +15,6 @@ interface CustomViewsLinesProps {
 const CustomViewsLines: FunctionComponent<CustomViewsLinesProps> = ({
   customViews,
   dataTableRef,
-  // onUpdate,
-  // entitySettingId,
   targetType,
 }) => {
   const dataColumns = {
@@ -28,20 +26,10 @@ const CustomViewsLines: FunctionComponent<CustomViewsLinesProps> = ({
     <DataTableWithoutFragment
       dataColumns={dataColumns}
       storageKey={`custom-views-${targetType}`}
-      // getComputeLink={(t: CustomViewType) => {
-      //   return `${resolveLink(t.entity_type)}/${targetType}/customViews/${t.id}`;
-      // }}
       globalCount={customViews?.edges.length ?? 0}
       data={(customViews?.edges ?? []).map((e) => e.node)}
       rootRef={dataTableRef ?? undefined}
       variant={DataTableVariant.inline}
-      // actions={(customView: CustomViewType) => (
-      //   <CustomViewsPopover
-      //     onUpdate={() => onUpdate(customView)}
-      //     entitySettingId={entitySettingId}
-      //     customViewId={customView.id}
-      //   />
-      // )}
     />
   );
 };

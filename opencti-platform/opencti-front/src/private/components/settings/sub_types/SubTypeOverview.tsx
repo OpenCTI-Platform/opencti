@@ -32,7 +32,7 @@ const SubTypeOverview = () => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  const { subType } = useOutletContext<{ subType: SubTypeQuery['response']['subType'] }>();
+  const { subType, customViewsSettings } = useOutletContext<{ subType: SubTypeQuery['response']['subType']; customViewsSettings: SubTypeQuery['response']['customViewsSettings'] }>();
   if (!subType) return <ErrorNotFound />;
 
   const subTypeSettingsId = subType.settings?.id;
@@ -65,7 +65,6 @@ const SubTypeOverview = () => {
   const isDraftWorkspaceType = subType.label === 'DraftWorkspace' && isDraftWorkflowFeatureEnabled;
 
   const isCustomViewsFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
-  const { customViewsSettings } = useOutletContext();
 
   return (
     <Grid container spacing={3}>
