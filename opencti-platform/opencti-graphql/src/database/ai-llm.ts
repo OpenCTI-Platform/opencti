@@ -149,6 +149,18 @@ const ensureClientsInitialized = async () => {
       // On failure, reset the local clients so that a future successful call can
       // re-establish a consistent state.
       resetClients();
+      // Preserve already-classified GraphQL/OpenCTI errors (with extensions.code)
+      // so callers can rely on stable error codes for configuration issues.
+      if (
+        err
+        && typeof err === 'object'
+        && 'extensions' in err
+        && (err as { extensions?: unknown }).extensions
+        && typeof (err as { extensions?: unknown }).extensions === 'object'
+        && 'code' in ((err as { extensions: Record<string, unknown> }).extensions)
+      ) {
+        throw err;
+      }
       throw UnknownError('Failed to initialize AI clients', { cause: err });
     });
 
