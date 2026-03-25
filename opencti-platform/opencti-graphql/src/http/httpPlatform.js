@@ -32,6 +32,7 @@ import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { extractRefererPathFromReq, setCookieError, decodeOidcState } from './httpUtils';
+import { buildCspDirectives, computeFrameAncestors, selectSecurityMiddlewareType, healthCheckTimeout } from './httpPlatform-utils';
 import { getChatbotConfig, getChatbotAgents, postChatbotSession, postChatbotMessage, postAgentMessage, getLegacyChatbotProxy } from './httpChatbotProxy';
 import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
@@ -105,28 +106,11 @@ const createApp = async (app, schema) => {
 
   // Configure server security
   const publicDashboardAuthorizedDomains = nconf.get('app:public_dashboard_authorized_domains');
-  const ancestorsFromConfig = publicDashboardAuthorizedDomains?.trim() ?? '';
   const isHttpResourceAllowed = booleanConf('app:allow_http_resources', true);
 
-  const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
+  const frameAncestorDomains = computeFrameAncestors(publicDashboardAuthorizedDomains);
   const allowedFrameSrc = ["'self'"];
-  const scriptSrc = ["'self'", "'unsafe-inline'"];
-  const imgSrc = ["'self'", 'data:', 'https://*'];
-  const manifestSrc = ["'self'", 'data:', 'https://*'];
-  const connectSrc = ["'self'", 'wss://*', 'data:', 'https://*'];
-  const objectSrc = ["'self'", 'data:', 'https://*'];
-
-  if (DEV_MODE) {
-    scriptSrc.push("'unsafe-eval'");
-  }
-
-  if (isHttpResourceAllowed) {
-    imgSrc.push('http://*');
-    manifestSrc.push('http://*');
-    connectSrc.push('http://*');
-    connectSrc.push('ws://*');
-    objectSrc.push('http://*');
-  }
+  const { scriptSrc, imgSrc, manifestSrc, connectSrc, objectSrc } = buildCspDirectives(DEV_MODE, isHttpResourceAllowed);
 
   const publicSecurityMiddleware = helmet({
     referrerPolicy: { policy: 'unsafe-url' },
@@ -199,10 +183,10 @@ const createApp = async (app, schema) => {
   });
 
   app.use((req, res, next) => {
-    const urlString = req.url;
-    if (urlString && (urlString.startsWith(`${basePath}/public`))) {
+    const middlewareType = selectSecurityMiddlewareType(req.url, basePath);
+    if (middlewareType === 'public') {
       publicSecurityMiddleware(req, res, next);
-    } else if (urlString && (urlString.includes('/dashboard'))) {
+    } else if (middlewareType === 'index') {
       indexSecurityMiddleware(req, res, next);
     } else {
       defaultSecurityMiddleware(req, res, next);
@@ -557,12 +541,6 @@ const createApp = async (app, schema) => {
   });
 
   // -- Healthcheck
-  const healthCheckTimeout = async (promise, message) => {
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error(message)), 15000); // 15 seconds timeout
-    });
-    return Promise.race([promise, timeoutPromise]);
-  };
   app.get(`${basePath}/health`, async (req, res) => {
     try {
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
