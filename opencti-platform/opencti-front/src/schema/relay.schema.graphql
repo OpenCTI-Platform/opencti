@@ -9812,9 +9812,9 @@ type Query {
   Auth log history by provider id: internal_id for DB providers, or static id for singletons (Headers, Cert).
   """
   authLogHistoryById(id: String!): [AuthLogEntry!]!
-  customViewsContext: [CustomViewsContext!]!
-  customView(id: String!): CustomView
-  customViewsSettings(id: String!): CustomViewsSettings!
+  customViewsDisplayContext: [CustomViewsDisplayContext!]!
+  customViewDisplay(id: String!): CustomViewDisplay
+  customViewsSettings(entityType: String!, options: CustomViewsSettingsPaginationOptions): CustomViewsSettings!
   customViewSettings(id: ID!): CustomView
   taxiiCollection(id: String!): TaxiiCollection
   taxiiCollections(first: Int, after: ID, orderBy: TaxiiCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): TaxiiCollectionConnection
@@ -9850,6 +9850,7 @@ type Subscription {
   managerConfiguration(id: ID!): ManagerConfiguration
   aiBus(id: ID!): AIBus
   securityCoverage(id: ID!): SecurityCoverage
+  customView(id: ID!): CustomView!
 }
 
 type WorkEditMutations {
@@ -10758,8 +10759,8 @@ type Mutation {
   ldapProviderAdd(input: LdapInput!): AuthenticationProvider
   ldapProviderEdit(id: ID!, input: LdapInput!): AuthenticationProvider
   ldapProviderDelete(id: ID!): ID
-  customViewAdd(input: CustomViewAddInput!): CustomView
-  customViewDelete(id: ID!): ID
+  customViewAdd(input: CustomViewAddInput!): CustomView!
+  customViewDelete(id: ID!): ID!
   taxiiCollectionAdd(input: TaxiiCollectionAddInput!): TaxiiCollection
   taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations
   feedAdd(input: FeedAddInput!): Feed
@@ -16175,26 +16176,21 @@ type CustomView implements InternalObject & BasicObject {
   authorizedMembers: [MemberAccess!]!
 }
 
-input CustomViewAddInput {
-  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
-  name: String!
-  description: String
+type CustomViewDisplay {
   manifest: String
-  target_entity_type: String!
-  authorizedMembers: [MemberAccessInput!]
 }
 
-type CustomViewsInfo {
+type CustomViewDisplayContext {
   id: ID!
   name: String!
 }
 
-type CustomViewsContext {
+type CustomViewsDisplayContext {
   entity_type: String!
-  custom_views_info: [CustomViewsInfo!]!
+  custom_views_info: [CustomViewDisplayContext!]!
 }
 
-type CustomViewsInfoForSettings {
+type CustomViewInfoForSettings {
   id: ID!
   name: String!
   description: String!
@@ -16202,9 +16198,41 @@ type CustomViewsInfoForSettings {
   updated_at: DateTime!
 }
 
+type PaginatedCustomView {
+  cursor: String!
+  node: CustomViewInfoForSettings!
+}
+
+type PaginatedCustomViews {
+  pageInfo: PageInfo!
+  edges: [PaginatedCustomView!]!
+}
+
 type CustomViewsSettings {
-  can_have_custom_views: Boolean!
-  custom_views_info: [CustomViewsInfoForSettings!]!
+  canEntityTypeHaveCustomViews: Boolean!
+  customViews: PaginatedCustomViews
+}
+
+input CustomViewsSettingsPaginationOptions {
+  first: Int
+  after: ID
+  orderBy: CustomViewOrdering
+  orderMode: OrderingMode
+  search: String
+}
+
+enum CustomViewOrdering {
+  name
+  _score
+}
+
+input CustomViewAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  manifest: String
+  target_entity_type: String!
+  authorizedMembers: [MemberAccessInput!]
 }
 
 type TaxiiCollection {

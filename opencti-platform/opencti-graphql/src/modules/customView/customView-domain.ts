@@ -2,9 +2,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityCustomView, ENTITY_TYPE_CUSTOM_VIEW } from './customView-types';
 import { createEntity, deleteElementById } from '../../database/middleware';
-import type { CustomViewAddInput, QueryCustomViewArgs } from '../../generated/graphql';
-import { type CustomViewsContext, type CustomViewsInfo, FilterMode } from '../../generated/graphql';
-// TODO: I don't like importing the entire world like this.
+import type { CustomViewAddInput, CustomViewDisplayContext, CustomViewsDisplayContext, CustomViewsSettingsPaginationOptions } from '../../generated/graphql';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../malwareAnalysis/malwareAnalysis-types';
 import {
@@ -24,6 +22,8 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCAT
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_NARRATIVE } from '../narrative/narrative-types';
 import { schemaTypesDefinition } from '../../schema/schema-types';
+import { emptyPaginationResult } from '../../database/utils';
+import { addFilter } from '../../utils/filtering/filtering-utils';
 
 /**
  * Stix Domain Object types allowed to have a custom view
@@ -77,7 +77,7 @@ export const getCustomViewsContext = async (context: AuthContext, user: AuthUser
     });
     infoMap.set(targetEntityType, infos);
     return infoMap;
-  }, new Map<string, CustomViewsInfo[]>());
+  }, new Map<string, CustomViewDisplayContext[]>());
   return Array.from(customViewInfoMap.keys()).reduce((acc, targetEntityType) => {
     if (!isCustomViewsAvailableForEntityType(targetEntityType)) {
       return acc;
@@ -88,34 +88,36 @@ export const getCustomViewsContext = async (context: AuthContext, user: AuthUser
       custom_views_info: customViewsInfos,
     });
     return acc;
-  }, [] as CustomViewsContext[]);
+  }, [] as CustomViewsDisplayContext[]);
 };
 
 // Settings Use Cases (admin users)
 
-export const getCustomViewsSettings = async (context: AuthContext, user: AuthUser, entityType: string) => {
+export const getCustomViewsSettings = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  options: CustomViewsSettingsPaginationOptions,
+) => {
   if (!isCustomViewsAvailableForEntityType(entityType)) {
     return {
-      can_have_custom_views: false,
-      custom_views_info: [],
+      canEntityTypeHaveCustomViews: false,
+      customViews: emptyPaginationResult<BasicStoreEntityCustomView>(),
     };
   }
-  const customViewEntities = await fullEntitiesList<BasicStoreEntityCustomView>(context, user, [ENTITY_TYPE_CUSTOM_VIEW], {
-    filters: {
-      mode: FilterMode.And,
-      filters: [{ key: ['target_entity_type'], values: [entityType] }],
-      filterGroups: [],
+  const filters = addFilter(undefined, 'target_entity_type', [entityType]);
+  const customViews = await pageEntitiesConnection(
+    context,
+    user,
+    [ENTITY_TYPE_CUSTOM_VIEW],
+    {
+      ...options,
+      filters,
     },
-  });
+  );
   return {
-    can_have_custom_views: true,
-    custom_views_info: customViewEntities.map((entity) => ({
-      id: entity.id,
-      name: entity.name,
-      description: entity.description,
-      created_at: entity.created_at,
-      updated_at: entity.updated_at,
-    })),
+    canEntityTypeHaveCustomViews: true,
+    customViews,
   };
 };
 

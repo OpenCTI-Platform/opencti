@@ -9,18 +9,21 @@ import CustomViewsLines from '@components/settings/sub_types/custom_views/Custom
 import { graphql, useFragment } from 'react-relay';
 import { CustomViewsGrid_customViews$data, CustomViewsGrid_customViews$key } from '@components/settings/sub_types/custom_views/__generated__/CustomViewsGrid_customViews.graphql';
 
-export type CustomViewType
-  = NonNullable<CustomViewsGrid_customViews$data['custom_views_info']>;
+export type CustomViewType = NonNullable<CustomViewsGrid_customViews$data['customViews']>['edges'][0]['node'];
 
 const customViewsFragment = graphql`
   fragment CustomViewsGrid_customViews on CustomViewsSettings {
-    can_have_custom_views
-    custom_views_info {
-      id
-      name
-      description
-      created_at
-      updated_at
+    canEntityTypeHaveCustomViews
+    customViews {
+      edges {
+        node {
+          id
+          name
+          description
+          created_at
+          updated_at
+        }
+      }
     }
   }
 `;
@@ -34,7 +37,8 @@ const CustomViewsGrid = ({ data }: CustomViewsGridProps) => {
   const [dataTableRef, setDataTableRef] = useState<HTMLDivElement | null>(null);
 
   const dataResolved = useFragment(customViewsFragment, data);
-  const { custom_views_info } = dataResolved;
+  if (!dataResolved) return null;
+  const { customViews } = dataResolved;
 
   return (
     <Grid item xs={12}>
@@ -53,7 +57,7 @@ const CustomViewsGrid = ({ data }: CustomViewsGridProps) => {
           ref={(r) => setDataTableRef(r)}
         >
           <CustomViewsLines
-            customViews={custom_views_info}
+            customViews={customViews}
             dataTableRef={dataTableRef}
           />
         </div>
