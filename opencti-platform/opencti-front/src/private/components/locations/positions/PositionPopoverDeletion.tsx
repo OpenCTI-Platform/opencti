@@ -2,7 +2,7 @@ import { graphql } from 'react-relay';
 import React, { FunctionComponent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../components/DeleteDialog';
 
@@ -26,11 +26,11 @@ const PositionPopoverDeletion: FunctionComponent<PositionPopoverDeletionProps> =
   deletion,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: entityLabel('Position') },
+    values: { entity_type: entityTypeDisplayName('Position') },
   });
   const [commitMutation] = useApiMutation(
     PositionPopoverDeletionMutation,

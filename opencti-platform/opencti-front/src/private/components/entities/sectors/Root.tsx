@@ -28,7 +28,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import SectorEdition from './SectorEdition';
 import SectorDeletion from './SectorDeletion';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -91,7 +91,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   useSubscription<RootSectorSubscription>(subConfig);
 
   const {
@@ -135,7 +135,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: entityLabel('Sector', t_i18n('Sectors')), link: '/dashboard/entities/sectors' },
+              { label: entityTypeDisplayName('Sector', t_i18n('Sectors')), link: '/dashboard/entities/sectors' },
               { label: sector.name, current: true },
             ]}
             />

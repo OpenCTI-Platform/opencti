@@ -26,7 +26,7 @@ import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import SecurityPlatformDeletion from './SecurityPlatformDeletion';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const subscription = graphql`
   subscription RootSecurityPlatformSubscription($id: ID!) {
@@ -95,7 +95,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
   const location = useLocation();
 
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   useSubscription<RootSecurityPlatformSubscription>(subConfig);
 
   const {
@@ -129,7 +129,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: entityLabel('SecurityPlatform', t_i18n('Security platforms')), link: '/dashboard/entities/security_platforms' },
+              { label: entityTypeDisplayName('SecurityPlatform', t_i18n('Security platforms')), link: '/dashboard/entities/security_platforms' },
               { label: securityPlatform.name, current: true },
             ]}
             />

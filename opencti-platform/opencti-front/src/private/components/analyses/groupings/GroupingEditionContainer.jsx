@@ -4,17 +4,17 @@ import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import GroupingEditionOverview from './GroupingEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const GroupingEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
 
   const { handleClose, grouping, open, controlledDial } = props;
   const { editContext } = grouping;
   return (
     <Drawer
-      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Grouping') } })}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('Grouping') } })}
       open={open}
       onClose={handleClose}
       context={editContext}

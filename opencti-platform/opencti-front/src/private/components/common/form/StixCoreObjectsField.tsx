@@ -17,7 +17,7 @@ import { useFormatter } from '../../../../components/i18n';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { fetchQuery } from '../../../../relay/environment';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import type { Theme } from '../../../../components/Theme';
@@ -264,7 +264,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { stixCoreObjectTypes: entityTypes, stixCyberObservableTypes, stixDomainObjectTypes } = useAttributes();
   const { setFieldValue, values } = useFormikContext<Record<string, unknown>>();
 

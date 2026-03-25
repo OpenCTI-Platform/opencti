@@ -24,7 +24,7 @@ import Security from '../../../../utils/Security';
 import DataComponentEdition from './DataComponentEdition';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import DataComponentDeletion from './DataComponentDeletion';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const subscription = graphql`
   subscription RootDataComponentSubscription($id: ID!) {
@@ -86,7 +86,7 @@ const RootDataComponent = () => {
   useSubscription(subConfig);
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   return (
     <>
       <QueryRenderer
@@ -101,7 +101,7 @@ const RootDataComponent = () => {
                 <div style={{ paddingRight }}>
                   <Breadcrumbs elements={[
                     { label: t_i18n('Techniques') },
-                    { label: entityLabel('Data-Component', t_i18n('Data components')), link: '/dashboard/techniques/data_components' },
+                    { label: entityTypeDisplayName('Data-Component', t_i18n('Data components')), link: '/dashboard/techniques/data_components' },
                     { label: dataComponent.name, current: true },
                   ]}
                   />

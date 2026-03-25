@@ -30,7 +30,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const intrusionSetMutation = graphql`
   mutation IntrusionSetCreationMutation($input: IntrusionSetAddInput!) {
@@ -88,7 +88,7 @@ export const IntrusionSetCreationForm: FunctionComponent<
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(
@@ -106,7 +106,7 @@ export const IntrusionSetCreationForm: FunctionComponent<
   const [commit] = useApiMutation<IntrusionSetCreationMutation>(
     intrusionSetMutation,
     undefined,
-    { successMessage: `${entityLabel('Intrusion-Set')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityTypeDisplayName('Intrusion-Set')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -302,7 +302,7 @@ const IntrusionSetCreation = ({
   paginationOptions: IntrusionSetsCardsPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [bulkOpen, setBulkOpen] = useState(false);
 
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
@@ -318,7 +318,7 @@ const IntrusionSetCreation = ({
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Intrusion-Set') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Intrusion-Set') } })}
       controlledDial={CreateIntrusionSetControlledDial}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
     >

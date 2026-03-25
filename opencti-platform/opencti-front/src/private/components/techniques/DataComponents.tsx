@@ -13,7 +13,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
 
 const LOCAL_STORAGE_KEY_DATA_COMPONENTS = 'dataComponents';
 
@@ -102,7 +102,7 @@ const dataComponentsLinesFragment = graphql`
 
 const DataComponents: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Data Components | Techniques'));
 
@@ -150,7 +150,7 @@ const DataComponents: FunctionComponent = () => {
 
   return (
     <div data-testid="data-component-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: entityLabel('Data-Component', t_i18n('Data components')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: entityTypeDisplayName('Data-Component', t_i18n('Data components')), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

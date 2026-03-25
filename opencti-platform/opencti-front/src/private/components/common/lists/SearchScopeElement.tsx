@@ -8,7 +8,7 @@ import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import React, { useState } from 'react';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 interface SearchScopeElementProps {
   name: string;
@@ -25,7 +25,7 @@ const SearchScopeElement = ({
   setSearchScope,
   availableRelationFilterTypes,
 }: SearchScopeElementProps) => {
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [anchorElSearchScope, setAnchorElSearchScope] = useState<PopoverProps['anchorEl']>();
   const { stixCoreObjectTypes: entityTypes } = useAttributes();
   if (name === 'contextEntityId') {

@@ -8,7 +8,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { Add } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 import Drawer from '../../common/drawer/Drawer';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -19,7 +19,7 @@ const AddExternalReferences = ({
   stixCoreObjectOrStixCoreRelationshipReferences,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [open, setOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -63,7 +63,7 @@ const AddExternalReferences = ({
               onClick={() => setDialogOpen(true)}
               key="rightButton"
             >
-              {t_i18n('Create')} {entityLabel('External-Reference')}
+              {t_i18n('Create')} {entityTypeDisplayName('External-Reference')}
             </Button>
           )],
           left: [(

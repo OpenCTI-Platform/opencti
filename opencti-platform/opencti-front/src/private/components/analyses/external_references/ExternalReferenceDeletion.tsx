@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 import { deleteNodeFromId } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -29,11 +29,11 @@ const ExternalReferenceDeletion: FunctionComponent<
   ExternalReferenceDeletionProps
 > = ({ id, objectId, isOpen, handleClose, handleRemove, isExternalReferenceAttachment }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: entityLabel('External-Reference') },
+    values: { entity_type: entityTypeDisplayName('External-Reference') },
   });
   const [commit] = useApiMutation(
     externalReferenceDeletionDeleteMutation,

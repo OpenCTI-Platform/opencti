@@ -27,7 +27,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { ObservedDataCreationMutation, ObservedDataCreationMutation$variables } from './__generated__/ObservedDataCreationMutation.graphql';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const observedDataCreationMutation = graphql`
   mutation ObservedDataCreationMutation($input: ObservedDataAddInput!) {
@@ -84,7 +84,7 @@ export const ObservedDataCreationForm: FunctionComponent<
   defaultMarkingDefinitions,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { mandatoryAttributes } = useIsMandatoryAttribute(OBSERVED_DATA_TYPE);
   const basicShape = yupShapeConditionalRequired({
     objects: Yup.array(),
@@ -102,7 +102,7 @@ export const ObservedDataCreationForm: FunctionComponent<
   const [commit] = useApiMutation<ObservedDataCreationMutation>(
     observedDataCreationMutation,
     undefined,
-    { successMessage: `${entityLabel('Observed-Data')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityTypeDisplayName('Observed-Data')} ${t_i18n('successfully created')}` },
   );
   const onSubmit: FormikConfig<ObservedDataAddInput>['onSubmit'] = (
     values,
@@ -259,7 +259,7 @@ const ObservedDataCreation = ({
   paginationOptions: ObservedDatasLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_observedDatas',
@@ -271,7 +271,7 @@ const ObservedDataCreation = ({
   );
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Observed-Data') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Observed-Data') } })}
       controlledDial={CreateObservedDataControlledDial}
     >
       {({ onClose }) => (

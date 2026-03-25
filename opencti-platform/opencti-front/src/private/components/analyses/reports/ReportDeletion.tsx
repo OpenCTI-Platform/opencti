@@ -6,7 +6,7 @@ import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 import type { Theme } from '../../../../components/Theme';
 import { QueryRenderer } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -40,14 +40,14 @@ const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
   isOpen,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const [purgeElements, setPurgeElements] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: entityLabel('Report') },
+    values: { entity_type: entityTypeDisplayName('Report') },
   });
   const [commitMutation] = useApiMutation(
     reportDeletionMutation,

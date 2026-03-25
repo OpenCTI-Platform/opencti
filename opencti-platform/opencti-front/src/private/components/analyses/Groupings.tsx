@@ -16,7 +16,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
-import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
 
 const LOCAL_STORAGE_KEY = 'groupings';
 
@@ -144,7 +144,7 @@ const groupingsLineFragment = graphql`
 
 const Groupings: FunctionComponent<GroupingsProps> = () => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Groupings | Analyses'));
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
@@ -204,7 +204,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
 
   return (
     <span data-testid="groupings-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: entityLabel('Grouping', t_i18n('Groupings')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: entityTypeDisplayName('Grouping', t_i18n('Groupings')), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

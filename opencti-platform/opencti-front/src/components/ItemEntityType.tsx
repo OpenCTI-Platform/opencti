@@ -3,7 +3,7 @@ import { itemColor } from '../utils/Colors';
 import Tag from './common/tag/Tag';
 import { useFormatter } from './i18n';
 import ItemIcon from './ItemIcon';
-import { useEntityLabelResolver } from '../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../utils/hooks/useEntityTypeDisplayName';
 
 interface ItemEntityTypeProps {
   entityType: string;
@@ -19,7 +19,7 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
   maxWidth,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
 
   const isRelationship = t_i18n(`relationship_${entityType}`) !== `relationship_${entityType}`;
 

@@ -7,7 +7,7 @@ import { IconButton, List, ListItem, ListItemIcon, ListItemText, Skeleton } from
 import { FunctionComponent, useState } from 'react';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from 'src/components/i18n';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 import SearchInput from 'src/components/SearchInput';
 import { QueryRenderer } from 'src/relay/environment';
 import { insertNode } from 'src/utils/store';
@@ -29,7 +29,7 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [open, setOpen] = useState<boolean>(false);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [search, setSearch] = useState<string>('');
@@ -80,7 +80,7 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
               onClick={handleDialogOpen}
               key="rightButton"
             >
-              {t_i18n('Create')} {entityLabel('Note')}
+              {t_i18n('Create')} {entityTypeDisplayName('Note')}
             </Button>
 
           )],
@@ -155,7 +155,7 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
       <Dialog
         open={dialogOpen}
         onClose={handleDialogClose}
-        title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Note') } })}
+        title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Note') } })}
       >
         <NoteCreationForm
           inputValue={search}

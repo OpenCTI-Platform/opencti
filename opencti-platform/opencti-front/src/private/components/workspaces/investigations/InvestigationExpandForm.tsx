@@ -9,7 +9,7 @@ import CheckboxesField from '../../../../components/CheckboxesField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { GraphLink, GraphNode } from '../../../../components/graph/graph.types';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FieldOption } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -111,7 +111,7 @@ const InvestigationExpandFormContent = ({
   distributionToQueryRef,
 }: InvestigationExpandFormContentProps) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { schema } = useAuth();
 
   const distributionRel = usePreloadedQuery(

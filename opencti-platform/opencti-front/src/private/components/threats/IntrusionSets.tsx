@@ -19,7 +19,7 @@ import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 
@@ -27,7 +27,7 @@ const LOCAL_STORAGE_KEY = 'intrusionSets';
 
 const IntrusionSets = () => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const initialValues = {
     searchTerm: '',
     sortBy: 'name',
@@ -199,7 +199,7 @@ const IntrusionSets = () => {
 
   return (
     <div data-testid="instrusion-set-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: entityLabel('Intrusion-Set', t_i18n('Intrusion sets')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: entityTypeDisplayName('Intrusion-Set', t_i18n('Intrusion sets')), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
     </div>
   );

@@ -7,7 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { CityEditionContainerQuery } from './__generated__/CityEditionContainerQuery.graphql';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 interface CityEditionContainerProps {
   queryRef: PreloadedQuery<CityEditionContainerQuery>;
@@ -34,14 +34,14 @@ const CityEditionContainer: FunctionComponent<CityEditionContainerProps> = ({
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { city } = usePreloadedQuery(cityEditionQuery, queryRef);
   if (city === null) {
     return <ErrorNotFound />;
   }
   return (
     <Drawer
-      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('City') } })}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('City') } })}
       context={city?.editContext}
       onClose={handleClose}
       open={open}

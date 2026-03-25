@@ -7,7 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import TasksEditionOverview from './TasksEditionOverview';
 import { TasksEditionContainerQuery } from './__generated__/TasksEditionContainerQuery.graphql';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 interface TasksEditionContainerProps {
   queryRef: PreloadedQuery<TasksEditionContainerQuery>;
@@ -35,14 +35,14 @@ const TasksEditionContainer: FunctionComponent<TasksEditionContainerProps> = ({
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { task } = usePreloadedQuery(tasksEditionQuery, queryRef);
   if (task === null) {
     return <ErrorNotFound />;
   }
   return (
     <Drawer
-      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Task') } })}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('Task') } })}
       context={task?.editContext}
       onClose={handleClose}
       open={open}

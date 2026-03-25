@@ -8,11 +8,11 @@ import IntrusionSetEditionOverview from './IntrusionSetEditionOverview';
 import IntrusionSetEditionDetails from './IntrusionSetEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer from '../../common/drawer/Drawer';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const IntrusionSetEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
 
   const { handleClose, intrusionSet, open, controlledDial } = props;
   const { editContext } = intrusionSet;
@@ -23,7 +23,7 @@ const IntrusionSetEditionContainer = (props) => {
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Intrusion-Set') } })}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('Intrusion-Set') } })}
       open={open}
       onClose={handleClose}
       context={editContext}

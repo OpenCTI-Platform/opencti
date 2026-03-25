@@ -16,7 +16,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
 
 const reportLineFragment = graphql`
   fragment ReportsLine_node on Report {
@@ -142,7 +142,7 @@ const LOCAL_STORAGE_KEY = 'reports';
 
 const Reports: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Reports | Analyses'));
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
@@ -207,7 +207,7 @@ const Reports: FunctionComponent = () => {
   };
   return (
     <span data-testid="report-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: entityLabel('Report', t_i18n('Reports')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: entityTypeDisplayName('Report', t_i18n('Reports')), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

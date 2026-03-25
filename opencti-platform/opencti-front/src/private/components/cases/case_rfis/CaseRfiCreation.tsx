@@ -19,7 +19,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import RichTextField from '../../../../components/fields/RichTextField';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 import TextField from '../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -109,7 +109,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
@@ -129,7 +129,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
   const [commit] = useApiMutation<CaseRfiCreationCaseMutation>(
     caseRfiMutation,
     undefined,
-    { successMessage: `${entityLabel('Case-Rfi')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityTypeDisplayName('Case-Rfi')} ${t_i18n('successfully created')}` },
   );
   const onSubmit: FormikConfig<FormikCaseRfiAddInput>['onSubmit'] = (
     values,
@@ -399,7 +399,7 @@ const CaseRfiCreation = ({
   paginationOptions: CaseRfisLinesCasesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_case_caseRfis',
@@ -412,7 +412,7 @@ const CaseRfiCreation = ({
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Case-Rfi') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Case-Rfi') } })}
       controlledDial={CreateCaseRfiControlledDial}
     >
       <CaseRfiCreationForm updater={updater} />

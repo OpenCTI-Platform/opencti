@@ -8,11 +8,11 @@ import AttackPatternEditionDetails from './AttackPatternEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { useFormatter } from '../../../../components/i18n';
 import Drawer from '../../common/drawer/Drawer';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const AttackPatternEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
 
   const { handleClose, attackPattern, open, controlledDial } = props;
   const { editContext } = attackPattern;
@@ -23,7 +23,7 @@ const AttackPatternEditionContainer = (props) => {
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Attack-Pattern') } })}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('Attack-Pattern') } })}
       open={open}
       onClose={handleClose}
       context={editContext}

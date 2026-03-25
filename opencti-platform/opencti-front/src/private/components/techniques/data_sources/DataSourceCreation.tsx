@@ -33,7 +33,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { DataSourceCreationMutation, DataSourceCreationMutation$variables } from './__generated__/DataSourceCreationMutation.graphql';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const dataSourceMutation = graphql`
   mutation DataSourceCreationMutation($input: DataSourceAddInput!) {
@@ -98,7 +98,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(DATA_SOURCE_TYPE);
@@ -115,7 +115,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
   const [commit] = useApiMutation<DataSourceCreationMutation>(
     dataSourceMutation,
     undefined,
-    { successMessage: `${entityLabel('Data-Source')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityTypeDisplayName('Data-Source')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -328,7 +328,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [bulkOpen, setBulkOpen] = useState(false);
 
   const [open, setOpen] = useState(false);
@@ -349,7 +349,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
   });
   const renderClassic = () => (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Data-Source') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Data-Source') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateDataSourceControlledDial}
     >

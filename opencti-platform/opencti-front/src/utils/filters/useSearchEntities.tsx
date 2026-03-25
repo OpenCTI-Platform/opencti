@@ -41,7 +41,7 @@ import { contextFilters, entityTypesFilters, FilterSearchContext, getFilterDefin
 import { useSearchEntitiesDashboardsQuery$data } from './__generated__/useSearchEntitiesDashboardsQuery.graphql';
 import { convertMarking } from '../edition';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../hooks/useGranted';
-import { useEntityLabelResolver } from '../hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../hooks/useEntityTypeDisplayName';
 import { useSearchEntitiesGroupsQuery$data } from './__generated__/useSearchEntitiesGroupsQuery.graphql';
 
 const filtersStixCoreObjectsSearchQuery = graphql`
@@ -283,7 +283,7 @@ const useSearchEntities = ({
 }) => {
   const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { schema, me } = useAuth();
   const { stixCoreObjectTypes } = useAttributes();
   const theme = useTheme() as Theme;

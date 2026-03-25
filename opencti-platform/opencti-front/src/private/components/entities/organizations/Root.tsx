@@ -29,7 +29,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import OrganizationEdition from './OrganizationEdition';
 import OrganizationDeletion from './OrganizationDeletion';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -126,7 +126,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
   };
 
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   useSubscription<RootOrganizationSubscription>(subConfig);
 
   const {
@@ -174,7 +174,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: entityLabel('Organization', t_i18n('Organizations')), link: '/dashboard/entities/organizations' },
+              { label: entityTypeDisplayName('Organization', t_i18n('Organizations')), link: '/dashboard/entities/organizations' },
               { label: organization.name, current: true },
             ]}
             />

@@ -8,7 +8,7 @@ import ThreatActorGroupEditionOverview from './ThreatActorGroupEditionOverview';
 import ThreatActorGroupEditionDetails from './ThreatActorGroupEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer from '../../common/drawer/Drawer';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const ThreatActorGroupEditionContainer = ({
   handleClose,
@@ -17,13 +17,13 @@ const ThreatActorGroupEditionContainer = ({
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { editContext } = threatActorGroup;
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (event, value) => setCurrentTab(value);
   return (
     <Drawer
-      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Threat-Actor-Group') } })}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('Threat-Actor-Group') } })}
       open={open}
       onClose={handleClose}
       context={editContext}

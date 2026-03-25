@@ -4,7 +4,7 @@ import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Draw
 import { useFormatter } from '../../../../components/i18n';
 import NoteEditionOverview from './NoteEditionOverview';
 import { NoteEditionContainer_note$data } from './__generated__/NoteEditionContainer_note.graphql';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 interface NoteEditionContainerProps {
   note: NoteEditionContainer_note$data;
@@ -20,13 +20,13 @@ const NoteEditionContainer: FunctionComponent<NoteEditionContainerProps> = ({
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
 
   const { editContext } = note;
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Note') } })}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('Note') } })}
       context={editContext}
       onClose={handleClose}
       open={open}

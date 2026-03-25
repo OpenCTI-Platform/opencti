@@ -3,7 +3,7 @@ import React from 'react';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
@@ -68,7 +68,7 @@ interface PublicStixCoreObjectsDistributionListComponentProps {
 const PublicStixCoreObjectsDistributionListComponent = ({
   queryRef,
 }: PublicStixCoreObjectsDistributionListComponentProps) => {
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { publicStixCoreObjectsDistribution } = usePreloadedQuery(
     publicStixCoreObjectsDistributionListQuery,
     queryRef,

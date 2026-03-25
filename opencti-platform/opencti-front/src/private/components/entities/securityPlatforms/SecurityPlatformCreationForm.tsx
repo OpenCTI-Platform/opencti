@@ -26,7 +26,7 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 interface SecurityPlatformCreationFormData {
   name: string;
@@ -59,7 +59,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
   const { mandatoryAttributes } = useIsMandatoryAttribute(SECURITY_PLATFORM_TYPE);
   const securityPlatformValidator = getSecurityPlatformValidator(mandatoryAttributes);
@@ -67,7 +67,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
   const [commit] = useApiMutation<SecurityPlatformCreationMutation>(
     securityPlatformCreationMutation,
     undefined,
-    { successMessage: `${entityLabel('SecurityPlatform')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityTypeDisplayName('SecurityPlatform')} ${t_i18n('successfully created')}` },
   );
 
   const {

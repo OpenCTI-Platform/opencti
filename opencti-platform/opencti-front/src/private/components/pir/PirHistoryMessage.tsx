@@ -18,7 +18,7 @@ import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { displayEntityTypeForTranslation } from '../../../utils/String';
 import { isNotEmptyField } from '../../../utils/utils';
 import { useFormatter } from '../../../components/i18n';
-import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
 
 export interface PirLog {
   readonly context_data: {
@@ -43,7 +43,7 @@ interface PirHistoryMessageProps {
 
 const PirHistoryMessage = ({ log }: PirHistoryMessageProps) => {
   const { t_i18n } = useFormatter();
-  const entityLabelResolver = useEntityLabelResolver();
+  const entityLabelResolver = useEntityTypeDisplayName();
   const { context_data, event_scope, user } = log;
 
   const getHistoryMessage = () => {

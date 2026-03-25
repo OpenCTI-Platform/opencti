@@ -27,7 +27,7 @@ import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { AttackPatternCreationMutation, AttackPatternCreationMutation$variables } from './__generated__/AttackPatternCreationMutation.graphql';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const attackPatternMutation = graphql`
   mutation AttackPatternCreationMutation($input: AttackPatternAddInput!) {
@@ -104,7 +104,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { mandatoryAttributes } = useIsMandatoryAttribute(ATTACK_PATTERN_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
@@ -117,7 +117,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
   const [commit] = useApiMutation<AttackPatternCreationMutation>(
     attackPatternMutation,
     undefined,
-    { successMessage: `${entityLabel('Attack-Pattern')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityTypeDisplayName('Attack-Pattern')} ${t_i18n('successfully created')}` },
   );
 
   const onSubmit: FormikConfig<AttackPatternAddInput>['onSubmit'] = (
@@ -279,7 +279,7 @@ const AttackPatternCreation = ({
   paginationOptions: AttackPatternsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [open, setOpen] = useState<boolean>(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -298,7 +298,7 @@ const AttackPatternCreation = ({
   });
   const renderClassic = () => (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Attack-Pattern') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Attack-Pattern') } })}
       controlledDial={CreateAttackPatternControlledDial}
     >
       {({ onClose }) => (
@@ -320,7 +320,7 @@ const AttackPatternCreation = ({
       <Dialog
         open={open}
         onClose={handleClose}
-        title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Attack-Pattern') } })}
+        title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Attack-Pattern') } })}
       >
         <AttackPatternCreationForm
           inputValue={inputValue}

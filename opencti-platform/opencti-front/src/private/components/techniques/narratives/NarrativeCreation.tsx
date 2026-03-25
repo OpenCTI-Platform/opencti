@@ -32,7 +32,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { NarrativeCreationMutation, NarrativeCreationMutation$variables } from './__generated__/NarrativeCreationMutation.graphql';
 import { NarrativesLinesPaginationQuery$variables } from './__generated__/NarrativesLinesPaginationQuery.graphql';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const narrativeMutation = graphql`
   mutation NarrativeCreationMutation($input: NarrativeAddInput!) {
@@ -111,7 +111,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(NARRATIVE_TYPE);
@@ -127,7 +127,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
   const [commit] = useApiMutation<NarrativeCreationMutation>(
     narrativeMutation,
     undefined,
-    { successMessage: `${entityLabel('Narrative')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityTypeDisplayName('Narrative')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -328,7 +328,7 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
   display,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [open, setOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -350,7 +350,7 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
   const renderClassic = () => {
     return (
       <Drawer
-        title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Narrative') } })}
+        title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Narrative') } })}
         header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
         controlledDial={CreateNarrativeControlledDial}
       >

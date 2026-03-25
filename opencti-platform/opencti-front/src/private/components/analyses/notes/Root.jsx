@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, useSubscription } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -68,7 +68,7 @@ const RootNote = () => {
     [noteId],
   );
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   useSubscription(subConfig);
   return (
     <>
@@ -83,7 +83,7 @@ const RootNote = () => {
                 <>
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
-                    { label: entityLabel('Note', t_i18n('Notes')), link: '/dashboard/analyses/notes' },
+                    { label: entityTypeDisplayName('Note', t_i18n('Notes')), link: '/dashboard/analyses/notes' },
                   ]}
                   />
                   <CollaborativeSecurity

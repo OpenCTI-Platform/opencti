@@ -12,7 +12,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import CaseIncidentCreation from './case_incidents/CaseIncidentCreation';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
@@ -132,7 +132,7 @@ export const LOCAL_STORAGE_KEY_CASE_INCIDENT = 'caseIncidents';
 
 const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Incident Responses | Cases'));
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
@@ -195,7 +195,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
 
   return (
     <div data-testid="incident-response-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: entityLabel('Case-Incident', t_i18n('Incident responses')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: entityTypeDisplayName('Case-Incident', t_i18n('Incident responses')), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

@@ -7,7 +7,7 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { RelayError } from '../../../../relay/relayTypes';
 import DeleteDialog from '../../../../components/DeleteDialog';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const StixCyberObservableDeletionDeleteMutation = graphql`
   mutation StixCyberObservableDeletionDeleteMutation($id: ID!) {
@@ -22,10 +22,10 @@ const StixCyberObservableDeletion = (
 ) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: entityLabel('Stix-Cyber-Observable') },
+    values: { entity_type: entityTypeDisplayName('Stix-Cyber-Observable') },
   });
   const [commit] = useApiMutation(
     StixCyberObservableDeletionDeleteMutation,

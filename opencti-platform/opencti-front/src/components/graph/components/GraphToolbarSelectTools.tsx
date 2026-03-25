@@ -4,13 +4,13 @@ import React, { useState } from 'react';
 import GraphToolbarOptionsList from './GraphToolbarOptionsList';
 import GraphToolbarItem from './GraphToolbarItem';
 import { useFormatter } from '../../i18n';
-import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
 import { useGraphContext } from '../GraphContext';
 import useGraphInteractions from '../utils/useGraphInteractions';
 
 const GraphToolbarSelectTools = () => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [selectByTypeAnchor, setSelectByTypeAnchor] = useState<Element>();
 
   const {

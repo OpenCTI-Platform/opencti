@@ -15,7 +15,7 @@ import TextField from '../../../../components/TextField';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -89,7 +89,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
   dryrun,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
 
   const [open, setOpen] = useState(false);
 
@@ -100,7 +100,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
   const [commit] = useApiMutation<ExternalReferenceCreationMutation>(
     externalReferenceCreationMutation,
     undefined,
-    { successMessage: `${entityLabel('External-Reference')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityTypeDisplayName('External-Reference')} ${t_i18n('successfully created')}` },
   );
   const onSubmit: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (
     values,
@@ -198,7 +198,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
   const renderClassic = () => {
     return (
       <Drawer
-        title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('External-Reference') } })}
+        title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('External-Reference') } })}
         controlledDial={CreateExternalReferenceControlledDial}
       >
         {({ onClose }) => (
@@ -287,7 +287,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
           slotProps={{ paper: { elevation: 1 } }}
           open={handleCloseContextual ? openContextual : open}
           onClose={handleCloseContextual || handleClose}
-          title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('External-Reference') } })}
+          title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('External-Reference') } })}
         >
           <Formik<ExternalReferenceAddInput>
             enableReinitialize={true}

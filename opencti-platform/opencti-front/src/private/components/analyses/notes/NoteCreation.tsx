@@ -17,7 +17,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import SliderField from '../../../../components/fields/SliderField';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -118,7 +118,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
   defaultMarkingDefinitions,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const { mandatoryAttributes } = useIsMandatoryAttribute(NOTE_TYPE);
   const basicShape = yupShapeConditionalRequired({
@@ -147,7 +147,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
       ? noteCreationMutation
       : noteCreationUserMutation,
     undefined,
-    { successMessage: `${entityLabel('Note')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityTypeDisplayName('Note')} ${t_i18n('successfully created')}` },
   );
   const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = (
     values,
@@ -321,7 +321,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy, key: string) => {
@@ -333,7 +333,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
   const renderClassic = () => {
     return (
       <Drawer
-        title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Note') } })}
+        title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Note') } })}
         controlledDial={CreateNoteControlledDial}
       >
         <NoteCreationForm
@@ -357,7 +357,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
         <Dialog
           open={open}
           onClose={() => setOpen(false)}
-          title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Note') } })}
+          title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Note') } })}
         >
           <NoteCreationForm
             inputValue={inputValue}

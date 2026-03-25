@@ -17,7 +17,7 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import RichTextField from '../../../../components/fields/RichTextField';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 import TextField from '../../../../components/TextField';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -99,7 +99,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const { mandatoryAttributes } = useIsMandatoryAttribute(GROUPING_TYPE);
@@ -124,7 +124,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   const [commit] = useApiMutation<GroupingCreationMutation>(
     groupingMutation,
     undefined,
-    { successMessage: `${entityLabel('Grouping')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityTypeDisplayName('Grouping')} ${t_i18n('successfully created')}` },
   );
   const onSubmit: FormikConfig<GroupingAddInput>['onSubmit'] = (
     values,
@@ -339,14 +339,14 @@ const GroupingCreation = ({
   paginationOptions: GroupingsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');
   const CreateGroupingControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Grouping" {...props} />
   );
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Grouping') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Grouping') } })}
       controlledDial={CreateGroupingControlledDial}
     >
       <GroupingCreationForm updater={updater} />

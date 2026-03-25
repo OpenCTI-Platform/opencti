@@ -1,6 +1,6 @@
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../components/i18n';
-import { useEntityLabelResolver } from './useEntityLabel';
+import { useEntityTypeDisplayName } from './useEntityLabel';
 import { getMainRepresentative, isFieldForIdentifier } from '../defaultRepresentatives';
 import { itemColor } from '../Colors';
 import type { Widget } from '../widget/widget';
@@ -30,7 +30,7 @@ type Selection = Widget['dataSelection'][0];
 
 const useDistributionGraphData = () => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const theme = useTheme();
 
   const getColorFromDistributionNode = (n: DistributionNode, selection: Selection) => {

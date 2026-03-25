@@ -6,7 +6,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import DataSourceEditionOverview from './DataSourceEditionOverview';
 import { DataSourceEditionContainerQuery } from './__generated__/DataSourceEditionContainerQuery.graphql';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 export const dataSourceEditionQuery = graphql`
   query DataSourceEditionContainerQuery($id: String!) {
@@ -34,13 +34,13 @@ const DataSourceEditionContainer: FunctionComponent<DataSourceEditionContainerPr
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { dataSource } = usePreloadedQuery(dataSourceEditionQuery, queryRef);
 
   if (dataSource) {
     return (
       <Drawer
-        title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Data-Source') } })}
+        title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('Data-Source') } })}
         context={dataSource.editContext}
         onClose={handleClose}
         open={open}

@@ -15,7 +15,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGrant
 import { isEmptyField } from '../../../../utils/utils';
 import { SecurityCoverageCreationForm } from '../../analyses/security_coverages/SecurityCoverageCreation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -81,7 +81,7 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
   onCoverageCreated,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const classes = useStyles();
   const isGrantedToUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
 
@@ -166,7 +166,7 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
         )}
       </div>
       <Drawer
-        title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Security-Coverage') } })}
+        title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Security-Coverage') } })}
         open={open}
         onClose={handleClose}
       >

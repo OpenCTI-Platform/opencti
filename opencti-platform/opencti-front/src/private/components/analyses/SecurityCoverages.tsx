@@ -16,7 +16,7 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useAuth from '../../../utils/hooks/useAuth';
-import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
 
 const LOCAL_STORAGE_KEY = 'securityCoverages';
 
@@ -134,7 +134,7 @@ const securityCoveragesLinesFragment = graphql`
 
 const SecurityCoverages: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { setTitle } = useConnectedDocumentModifier();
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   setTitle(t_i18n('Security coverages'));
@@ -192,7 +192,7 @@ const SecurityCoverages: FunctionComponent = () => {
 
   return (
     <ExportContextProvider>
-      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: entityLabel('Security-Coverage', t_i18n('Security coverages')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: entityTypeDisplayName('Security-Coverage', t_i18n('Security coverages')), current: true }]} />
       {queryRef && (
         <div data-testid="security-coverages-page">
           <DataTable

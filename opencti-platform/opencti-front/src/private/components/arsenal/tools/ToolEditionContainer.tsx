@@ -6,7 +6,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ToolEditionOverview from './ToolEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { ToolEditionContainerQuery } from './__generated__/ToolEditionContainerQuery.graphql';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 interface ToolEditionContainerProps {
   queryRef: PreloadedQuery<ToolEditionContainerQuery>;
@@ -34,12 +34,12 @@ const ToolEditionContainer: FunctionComponent<ToolEditionContainerProps> = ({
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { tool } = usePreloadedQuery(toolEditionQuery, queryRef);
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Tool') } })}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('Tool') } })}
       open={open}
       onClose={handleClose}
       context={tool?.editContext}

@@ -31,7 +31,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const systemMutation = graphql`
   mutation SystemCreationMutation($input: SystemAddInput!) {
@@ -87,7 +87,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(SYSTEM_TYPE);
@@ -105,7 +105,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
   const [commit] = useApiMutation<SystemCreationMutation>(
     systemMutation,
     undefined,
-    { successMessage: `${entityLabel('System')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityTypeDisplayName('System')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -321,7 +321,7 @@ const SystemCreation = ({
   paginationOptions: SystemsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_systems', paginationOptions, 'systemAdd');
   const CreateSystemControlledDial = (props: DrawerControlledDialProps) => (
@@ -330,7 +330,7 @@ const SystemCreation = ({
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('System') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('System') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateSystemControlledDial}
     >

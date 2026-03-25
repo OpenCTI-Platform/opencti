@@ -18,7 +18,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import RichTextField from '../../../../components/fields/RichTextField';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 import TextField from '../../../../components/TextField';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -107,7 +107,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const { mandatoryAttributes } = useIsMandatoryAttribute(REPORT_TYPE);
@@ -137,7 +137,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   const [commit] = useApiMutation<ReportCreationMutation>(
     reportCreationMutation,
     undefined,
-    { successMessage: `${entityLabel('Report')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityTypeDisplayName('Report')} ${t_i18n('successfully created')}` },
   );
   const onSubmit: FormikConfig<ReportAddInput>['onSubmit'] = (
     values,
@@ -391,7 +391,7 @@ const ReportCreation = ({
   paginationOptions: ReportsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_reports',
@@ -403,7 +403,7 @@ const ReportCreation = ({
   );
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Report') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Report') } })}
       controlledDial={CreateReportControlledDial}
     >
       <ReportCreationForm updater={updater} />

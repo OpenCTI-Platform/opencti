@@ -30,7 +30,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { IncidentCreationMutation, IncidentCreationMutation$data } from './__generated__/IncidentCreationMutation.graphql';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const IncidentMutation = graphql`
   mutation IncidentCreationMutation($input: IncidentAddInput!) {
@@ -87,11 +87,11 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [commit] = useApiMutation(
     IncidentMutation,
     undefined,
-    { successMessage: `${entityLabel('Incident')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityTypeDisplayName('Incident')} ${t_i18n('successfully created')}` },
   );
   const { mandatoryAttributes } = useIsMandatoryAttribute(INCIDENT_TYPE);
   const basicShape = yupShapeConditionalRequired({
@@ -291,14 +291,14 @@ const IncidentCreation = ({
   paginationOptions: IncidentsLinesQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_incidents', paginationOptions, 'incidentAdd');
   const CreateIncidentControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Incident" {...props} />
   );
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Incident') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Incident') } })}
       controlledDial={CreateIncidentControlledDial}
     >
       {({ onClose }) => (

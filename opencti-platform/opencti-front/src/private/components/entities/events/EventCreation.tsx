@@ -33,7 +33,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const eventMutation = graphql`
   mutation EventCreationMutation($input: EventAddInput!) {
@@ -91,7 +91,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(EVENT_TYPE);
@@ -115,7 +115,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   const [commit] = useApiMutation<EventCreationMutation>(
     eventMutation,
     undefined,
-    { successMessage: `${entityLabel('Event')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityTypeDisplayName('Event')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -343,7 +343,7 @@ const EventCreation = ({
   paginationOptions: EventsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_events', paginationOptions, 'eventAdd');
 
@@ -352,7 +352,7 @@ const EventCreation = ({
   );
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Event') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Event') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateEventControlledDial}
     >

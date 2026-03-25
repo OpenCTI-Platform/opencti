@@ -4,17 +4,17 @@ import { useFormatter } from '../../../../components/i18n';
 import ObservedDataEditionOverview from './ObservedDataEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer from '../../common/drawer/Drawer';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const ObservedDataEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { handleClose, observedData, open, controlledDial } = props;
   const { editContext } = observedData;
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Observed-Data') } })}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('Observed-Data') } })}
       open={open}
       onClose={handleClose}
       context={editContext}

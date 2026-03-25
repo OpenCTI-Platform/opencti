@@ -6,7 +6,7 @@ import RegionEditionOverview from './RegionEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { RegionEditionContainerQuery } from './__generated__/RegionEditionContainerQuery.graphql';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 interface RegionEditionContainerProps {
   handleClose: () => void;
@@ -34,12 +34,12 @@ const RegionEditionContainer: FunctionComponent<RegionEditionContainerProps> = (
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { region } = usePreloadedQuery(regionEditionQuery, queryRef);
   if (region) {
     return (
       <Drawer
-        title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Region') } })}
+        title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('Region') } })}
         context={region.editContext}
         onClose={handleClose}
         open={open}

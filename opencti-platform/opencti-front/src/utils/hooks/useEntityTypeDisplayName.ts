@@ -13,7 +13,7 @@ import { useFormatter } from '../../components/i18n';
  *
  * @returns A resolver function
  */
-export const useEntityLabelResolver = (): ((entityType: string, defaultLabel?: string) => string) => {
+export const useEntityTypeDisplayName = (): ((entityType: string, defaultLabel?: string) => string) => {
   const { t_i18n } = useFormatter();
   const allEntitySettings = useEntitySettings();
 

@@ -31,7 +31,7 @@ import RegionEdition from './RegionEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import RegionDeletion from './RegionDeletion';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -92,7 +92,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
   useSubscription(subConfig);
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const data = usePreloadedQuery(regionQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
   const { region, connectorsForImport, connectorsForExport } = data;
@@ -133,7 +133,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
-              { label: entityLabel('Region', t_i18n('Regions')), link: '/dashboard/locations/regions' },
+              { label: entityTypeDisplayName('Region', t_i18n('Regions')), link: '/dashboard/locations/regions' },
               { label: region.name, current: true },
             ]}
             />

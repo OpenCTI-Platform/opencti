@@ -30,7 +30,7 @@ import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { displayEntityTypeForTranslation } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const pirHistoryLogFragment = graphql`
   fragment PirHistoryLogFragment on Log {
@@ -127,7 +127,7 @@ interface PirHistoryProps {
 const PirHistory = ({ data }: PirHistoryProps) => {
   const [ref, setRef] = useState<HTMLDivElement | null>(null);
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { id: pirId, name } = useFragment(historyFragment, data);
 
   const LOCAL_STORAGE_KEY = `PirHistoryLogs-${pirId}`;

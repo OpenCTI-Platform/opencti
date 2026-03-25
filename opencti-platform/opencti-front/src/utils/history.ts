@@ -1,7 +1,7 @@
 import { displayEntityTypeForTranslation } from './String';
 import { isNotEmptyField } from './utils';
 import { useFormatter } from '../components/i18n';
-import { useEntityLabelResolver } from './hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from './hooks/useEntityTypeDisplayName';
 
 export const useGenerateAuditMessage = <T extends {
   entity_type?: string | null;
@@ -11,7 +11,7 @@ export const useGenerateAuditMessage = <T extends {
   context_data?: { entity_name?: string | null; entity_type?: string | null; message: string } | null;
 }>(data: T) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const isHistoryUpdate = data.entity_type === 'History'
     && (data.event_type === 'update' || data.event_scope === 'update')
     && isNotEmptyField(data.context_data?.entity_name);

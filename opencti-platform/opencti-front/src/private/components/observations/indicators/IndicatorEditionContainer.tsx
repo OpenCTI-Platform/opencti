@@ -5,7 +5,7 @@ import IndicatorEditionOverview from './IndicatorEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerControlledDialType } from '../../common/drawer/Drawer';
 import { IndicatorEditionContainer_indicator$data } from '@components/observations/indicators/__generated__/IndicatorEditionContainer_indicator.graphql';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 interface IndicatorEditionContainerProps {
   handleClose: () => void;
@@ -19,12 +19,12 @@ const IndicatorEditionContainer: FunctionComponent<IndicatorEditionContainerProp
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { editContext } = indicator;
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityLabel('Indicator') } })}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('Indicator') } })}
       onClose={handleClose}
       context={editContext}
       controlledDial={controlledDial}

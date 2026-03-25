@@ -23,7 +23,7 @@ import IncidentKnowledge from './IncidentKnowledge';
 import { RootIncidentQuery } from '../../events/incidents/__generated__/RootIncidentQuery.graphql';
 import { RootIncidentSubscription } from '../../events/incidents/__generated__/RootIncidentSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -97,7 +97,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
   const location = useLocation();
   const enableReferences = useIsEnforceReference('Case-Incident') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   useSubscription(subConfig);
   const {
     caseIncident: caseData,
@@ -114,7 +114,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
     <div style={{ paddingRight }} data-testid="incident-details-page">
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
-        { label: entityLabel('Case-Incident', t_i18n('Incident responses')), link: '/dashboard/cases/incidents' },
+        { label: entityTypeDisplayName('Case-Incident', t_i18n('Incident responses')), link: '/dashboard/cases/incidents' },
         { label: caseData.name, current: true },
       ]}
       />

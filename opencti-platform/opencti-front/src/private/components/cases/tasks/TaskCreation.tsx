@@ -11,7 +11,7 @@ import FormButtonContainer from '../../../../components/common/form/FormButtonCo
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 import TextField from '../../../../components/TextField';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -71,7 +71,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(
     TASK_TYPE,
@@ -90,7 +90,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
   const [commit] = useApiMutation<TaskCreationMutation>(
     taskAddMutation,
     undefined,
-    { successMessage: `${entityLabel('Task')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityTypeDisplayName('Task')} ${t_i18n('successfully created')}` },
   );
 
   const initialValues: FormikTaskAddInput = {
@@ -213,11 +213,11 @@ const TaskCreation = ({
   paginationOptions: TasksLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_tasks__caseTasks', paginationOptions, 'taskAdd');
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Task') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Task') } })}
       variant={DrawerVariant.create}
     >
       <TaskCreationForm updater={updater} />

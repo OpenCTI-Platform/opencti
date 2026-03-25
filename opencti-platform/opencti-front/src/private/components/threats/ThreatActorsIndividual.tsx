@@ -25,7 +25,7 @@ import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 
@@ -33,7 +33,7 @@ const LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL = 'threatActorsIndividuals';
 
 const ThreatActorsIndividual = () => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -207,7 +207,7 @@ const ThreatActorsIndividual = () => {
 
   return (
     <div data-testid="threat-actors-individual-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: entityLabel('Threat-Actor-Individual', t_i18n('Threat actors (individual)')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: entityTypeDisplayName('Threat-Actor-Individual', t_i18n('Threat actors (individual)')), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
     </div>
   );

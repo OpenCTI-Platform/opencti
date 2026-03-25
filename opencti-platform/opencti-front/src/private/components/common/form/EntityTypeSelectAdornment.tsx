@@ -8,7 +8,7 @@ import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import React, { useState } from 'react';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 interface EntityTypeSelectAdornmentProps {
   disabled?: boolean;
@@ -23,7 +23,7 @@ const EntityTypeSelectAdornment = ({
   onChange,
   entityTypes,
 }: EntityTypeSelectAdornmentProps) => {
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { stixCoreObjectTypes } = useAttributes();
   const [anchorButton, setAnchorButton] = useState<HTMLButtonElement>();
 

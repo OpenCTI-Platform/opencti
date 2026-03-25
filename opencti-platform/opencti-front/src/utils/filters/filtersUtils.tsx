@@ -11,7 +11,7 @@ import { isEmptyField, uniqueArray } from '../utils';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 import { dateFiltersValueForDisplay } from '../Time';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../widget/widgetUtils';
-import { useEntityLabelResolver } from '../hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../hooks/useEntityTypeDisplayName';
 
 // ----------------------------------------------------------------------------------------------------------------------
 
@@ -404,7 +404,7 @@ export const filterValue = (
   filterOperator?: string,
 ) => {
   const { t_i18n, nsd, smhd } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   if (filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf' || filterKey === 'dynamic' || filterKey === 'dynamicFrom' || filterKey === 'dynamicTo') {
     return JSON.stringify(value);
   }

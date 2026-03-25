@@ -18,7 +18,7 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
 
 const LOCAL_STORAGE_KEY = 'externalReferences';
 
@@ -103,7 +103,7 @@ const externalReferencesLinesFragment = graphql`
 
 const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('External References | Analyses'));
   const {
@@ -153,7 +153,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
   } as UsePreloadedPaginationFragment<ExternalReferencesLinesPaginationQuery>;
   return (
     <div data-testid="external-reference-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: entityLabel('External-Reference', t_i18n('External references')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: entityTypeDisplayName('External-Reference', t_i18n('External references')), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

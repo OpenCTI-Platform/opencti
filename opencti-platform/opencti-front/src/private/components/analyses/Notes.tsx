@@ -15,7 +15,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { useEntityLabelResolver } from '../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
 
 const LOCAL_STORAGE_KEY = 'notes';
 
@@ -142,7 +142,7 @@ const notesLinesFragment = graphql`
 
 const Notes: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Notes | Analyses'));
   const {
@@ -204,7 +204,7 @@ const Notes: FunctionComponent = () => {
 
   return (
     <span data-testid="notes-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: entityLabel('Note', t_i18n('Notes')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: entityTypeDisplayName('Note', t_i18n('Notes')), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

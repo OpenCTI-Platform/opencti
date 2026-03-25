@@ -28,7 +28,7 @@ import CampaignEdition from './CampaignEdition';
 import CampaignDeletion from './CampaignDeletion';
 import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
@@ -98,7 +98,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
   }), [campaignId]);
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   useSubscription<RootCampaignSubscription>(subConfig);
   const {
     campaign,
@@ -143,7 +143,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Threats') },
-              { label: entityLabel('Campaign', t_i18n('Campaigns')), link: '/dashboard/threats/campaigns' },
+              { label: entityTypeDisplayName('Campaign', t_i18n('Campaigns')), link: '/dashboard/threats/campaigns' },
               { label: campaign.name, current: true },
             ]}
             />

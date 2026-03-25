@@ -30,7 +30,7 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
-import { useEntityLabelResolver } from '../../../../utils/hooks/useEntityLabel';
+import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
 
 const campaignMutation = graphql`
   mutation CampaignCreationMutation($input: CampaignAddInput!) {
@@ -86,7 +86,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(CAMPAIGN_TYPE);
@@ -103,7 +103,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
   const [commit] = useApiMutation<CampaignCreationMutation>(
     campaignMutation,
     undefined,
-    { successMessage: `${entityLabel('Campaign')} ${t_i18n('successfully created')}` },
+    { successMessage: `${entityTypeDisplayName('Campaign')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -300,7 +300,7 @@ const CampaignCreation = ({
   paginationOptions: CampaignsCardsPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityLabel = useEntityLabelResolver();
+  const entityTypeDisplayName = useEntityTypeDisplayName();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_campaigns', paginationOptions, 'campaignAdd');
 
@@ -310,7 +310,7 @@ const CampaignCreation = ({
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityLabel('Campaign') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Campaign') } })}
       controlledDial={CreateCampaignControlledDial}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
     >
