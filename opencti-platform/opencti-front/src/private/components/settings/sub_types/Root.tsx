@@ -8,8 +8,10 @@ import SubType from './SubType';
 import EntitySettingAttributesCard from './entity_setting/EntitySettingAttributesCard';
 import EntitySettingCustomOverview from './entity_setting/EntitySettingCustomOverview';
 import FintelTemplatesManager from './fintel_templates/FintelTemplatesManager';
-import GlobalWorkflowSettingsCard from './workflow/GlobalWorkflowSettingsCard';
+import GlobalWorkflowSettingsCard from './global_workflow_request_access/GlobalWorkflowSettingsCard';
 import { SubTypeTabs } from './SubTypeOutletContext';
+import useHelper from '../../../../utils/hooks/useHelper';
+import SubTypeWorkflow from './SubTypeWorkflow';
 
 interface SubTypeTabsContext {
   tabs: SubTypeTabs;
@@ -48,12 +50,16 @@ const RootSubType = () => {
 
   if (!subTypeId) return <ErrorNotFound />;
 
+  const { isFeatureEnable } = useHelper();
+  const isDraftWorkflowFeatureEnabled = isFeatureEnable('DRAFT_WORKFLOW');
+  const isDraftWorkspaceType = subTypeId === 'DraftWorkspace' && isDraftWorkflowFeatureEnabled;
+
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
         <Route path="/" element={<SubType />}>
           <Route index element={<SubTypeIndexRedirect />} />
-          <Route path="workflow" element={<GlobalWorkflowSettingsCard />} />
+          <Route path="workflow" element={isDraftWorkspaceType ? <SubTypeWorkflow /> : <GlobalWorkflowSettingsCard />} />
           <Route path="templates" element={<FintelTemplatesManager />} />
           <Route path="attributes" element={<EntitySettingAttributesCard />} />
           <Route path="overview-layout" element={<EntitySettingCustomOverview />} />
