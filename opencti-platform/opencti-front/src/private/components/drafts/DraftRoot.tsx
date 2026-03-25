@@ -204,7 +204,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           id="tabs-container"
           value={getCurrentTab(location.pathname, draftId, '/dashboard/data/import/draft/entities')}
         >
-          {isFeatureEnable('DRAFT_METADATA') && (
+          {isFeatureEnable('DRAFT_WORKFLOW') && (
             <Tab
               component={Link}
               to={`/dashboard/data/import/draft/${draftId}/overview`}
@@ -269,7 +269,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           path="/"
           element={<Navigate to={`/dashboard/data/import/draft/${draftId}/entities`} replace={true} />}
         />
-        {isFeatureEnable('DRAFT_METADATA') && (
+        {isFeatureEnable('DRAFT_WORKFLOW') && (
           <Route
             path="/overview"
             element={<DraftOverview draft={draft} />}

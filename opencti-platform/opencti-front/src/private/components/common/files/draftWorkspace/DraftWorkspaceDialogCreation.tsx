@@ -148,7 +148,7 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
               label={t_i18n('Name')}
               fullWidth
             />
-            {isFeatureEnable('DRAFT_METADATA') && (
+            {isFeatureEnable('DRAFT_WORKFLOW') && (
               <>
                 <Field
                   component={MarkdownField}

@@ -308,7 +308,7 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
       {queryRef && (
         <>
           <DataTable
-            dataColumns={isFeatureEnable('DRAFT_METADATA') ? dataColumns : dataColumnsWithoutMetadata}
+            dataColumns={isFeatureEnable('DRAFT_WORKFLOW') ? dataColumns : dataColumnsWithoutMetadata}
             resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}

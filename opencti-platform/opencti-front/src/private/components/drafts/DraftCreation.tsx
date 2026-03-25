@@ -164,7 +164,7 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
               fullWidth
               data-testid="draft-creation-form-name-input"
             />
-            {isFeatureEnable('DRAFT_METADATA') && (
+            {isFeatureEnable('DRAFT_WORKFLOW') && (
               <>
                 <Field
                   component={MarkdownField}
