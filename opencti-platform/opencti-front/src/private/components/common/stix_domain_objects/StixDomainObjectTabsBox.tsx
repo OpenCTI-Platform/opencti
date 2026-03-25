@@ -4,6 +4,7 @@ import Tab from '@mui/material/Tab';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
+import { getCurrentTab } from '../../../../utils/utils';
 
 export type StixDomainObjectTabsBoxTab
   = | 'overview'
@@ -21,15 +22,6 @@ interface StixDomainObjectTabsBoxProps {
   basePath: string;
   tabs: StixDomainObjectTabsBoxTab[];
   extraActions?: React.ReactNode;
-}
-
-function getCurrentTab(fullpath: string, basePath: string) {
-  let subpath = fullpath.substring(basePath.length);
-  if (subpath.startsWith('/')) {
-    subpath = subpath.substring(1);
-  }
-  const nextSlashPos = subpath.indexOf('/');
-  return nextSlashPos >= 0 ? subpath.substring(0, nextSlashPos) : subpath;
 }
 
 interface TabInfo {
@@ -99,9 +91,7 @@ const StixDomainObjectTabsBox = ({ basePath, extraActions, tabs }: StixDomainObj
         alignItems: 'center',
       }}
     >
-      <Tabs
-        value={getCurrentTab(location.pathname, basePath)}
-      >
+      <Tabs value={getCurrentTab(location.pathname, basePath)}>
         {
           TABS_INFO.map(({ tab, path, label }) =>
             tabs.includes(tab) && (
