@@ -36,6 +36,7 @@ const IngestionTaxiis = lazy(() => import('./IngestionTaxiis'));
 const IngestionTaxiiCollections = lazy(() => import('./IngestionTaxiiCollections'));
 const IngestionCatalog = lazy(() => import('./IngestionCatalog'));
 const IngestionCatalogConnector = lazy(() => import('./IngestionCatalog/IngestionCatalogConnector'));
+const DeadLetterMessages = lazy(() => import('./DeadLetterMessages'));
 const Playbooks = lazy(() => import('./Playbooks'));
 const RootPlaybook = lazy(() => import('./playbooks/Root'));
 const RootImport = lazy(() => import('./import/Root'));
@@ -120,6 +121,10 @@ const Root = () => {
         <Route
           path="/ingestion/catalog/:connectorSlug"
           element={boundaryWrapper(IngestionCatalogConnector)}
+        />
+        <Route
+          path="/ingestion/deadLetter"
+          element={boundaryWrapper(DeadLetterMessages)}
         />
         <Route
           path="/ingestion/collection"

@@ -9654,6 +9654,9 @@ type Query {
   streamCollection(id: String!): StreamCollection
   streamCollections(first: Int, after: ID, orderBy: StreamCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): StreamCollectionConnection!
   redisStreamInfo: RedisStreamInfo
+  deadLetterMessage(id: String!): DeadLetterMessage
+  deadLetterMessages(first: Int, after: ID, orderBy: DeadLetterMessagesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DeadLetterMessageConnection
+  deadLetterQueueMessageCount: Int
 }
 
 type Subscription {
@@ -10596,6 +10599,9 @@ type Mutation {
   feedEdit(id: ID!, input: FeedAddInput!): Feed!
   streamCollectionAdd(input: StreamCollectionAddInput!): StreamCollection
   streamCollectionEdit(id: ID!): StreamCollectionEditMutations
+  importDeadLetterMessages: Boolean
+  deadLetterMessageDelete(id: String!): String
+  deadLetterMessageRetry(id: String!): String
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -16194,4 +16200,29 @@ type RedisStreamInfo {
   firstEventDate: String!
   lastEventDate: String!
   streamSize: Int!
+}
+
+type DeadLetterMessage implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created_at: DateTime!
+  original_connector_id: String
+}
+
+enum DeadLetterMessagesOrdering {
+  original_connector_id
+  _score
+}
+
+type DeadLetterMessageConnection {
+  pageInfo: PageInfo!
+  edges: [DeadLetterMessageEdge]
+}
+
+type DeadLetterMessageEdge {
+  cursor: String!
+  node: DeadLetterMessage!
 }

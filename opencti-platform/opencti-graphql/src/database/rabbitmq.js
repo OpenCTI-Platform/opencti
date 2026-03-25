@@ -497,7 +497,8 @@ export const getConnectorQueueSize = async (context, user, connectorId) => {
     metricsCache.set('cached_metrics', stats);
   }
   const targetQueues = stats.queues.filter((queue) => queue.name.includes(connectorId));
-  return targetQueues.length > 0 ? targetQueues.reduce((a, b) => (a.messages ?? 0) + (b.messages ?? 0)) : 0;
+  const result = targetQueues.reduce((a, b) => (a.messages ?? 0) + (b.messages ?? 0));
+  return result;
 };
 export const getBestBackgroundConnectorId = async (context, user) => {
   let stats = metricsCache.get('cached_metrics');
@@ -519,7 +520,7 @@ export const pushRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}push_routing_
 // - This constant is used here to build the dead_letter_routing value in connectorConfig.
 // - The full CONNECTOR_QUEUE_BUNDLES_TOO_LARGE queue configuration object is defined later
 //   in this file near the rest of the queue declarations.
-const CONNECTOR_QUEUE_BUNDLES_TOO_LARGE_ID = 'too-large-bundle';
+export const CONNECTOR_QUEUE_BUNDLES_TOO_LARGE_ID = 'too-large-bundle';
 
 /**
  * Build the complete connector configuration that includes:
@@ -695,6 +696,44 @@ export const getRabbitMQVersion = (context) => {
   return metrics(context, SYSTEM_USER)
     .then((data) => data.overview.rabbitmq_version)
     .catch(/* v8 ignore next */ () => 'Disconnected');
+};
+
+/**
+ * Pull messages from a connector listen queue one by one using channel.get.
+ * For each message, the provided callback is called and awaited before pulling the next one.
+ * Each message is acknowledged individually after the callback completes successfully.
+ * The connection is automatically closed when the queue is empty.
+ *
+ * @param connectorId - The connector ID whose listen queue to drain
+ * @param callback - Async function called with each message content string
+ */
+export const consumeMessages = async (connectorId, callback) => {
+  const cfg = connectorConfig(connectorId);
+  const listenQueue = cfg.listen;
+  return amqpExecute(async (channel) => {
+    const getMessage = util.promisify(channel.get).bind(channel);
+    const ack = util.promisify(channel.ack).bind(channel);
+    const nack = util.promisify(channel.nack).bind(channel);
+    const nackedTags = new Set();
+    let msg = await getMessage(listenQueue, { noAck: false });
+    while (msg !== false) {
+      // Stop if we encounter a message that was already nacked and requeued
+      // to prevent an infinite loop on poison messages
+      if (nackedTags.has(msg.fields.deliveryTag) || (msg.fields.redelivered && nackedTags.size > 0)) {
+        await nack(msg, false, true);
+        break;
+      }
+      try {
+        await callback(msg.content.toString());
+        await ack(msg);
+      } catch (e) {
+        logApp.error('[QUEUEING] Message processing failed, nacking and requeuing', { cause: e });
+        nackedTags.add(msg.fields.deliveryTag);
+        await nack(msg, false, true);
+      }
+      msg = await getMessage(listenQueue, { noAck: false });
+    }
+  });
 };
 
 export const consumeQueue = async (context, connectorId, connectionSetterCallback, callback) => {

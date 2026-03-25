@@ -14,6 +14,7 @@ import { ENTITY_TYPE_FORM } from '../modules/form/form-types';
 import { ENTITY_TYPE_FEED } from '../modules/dataSharing/feed-types';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../modules/dataSharing/taxiiCollection-types';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../modules/dataSharing/streamCollection-types';
+import { ENTITY_TYPE_DEAD_LETTER_MESSAGE } from '../modules/deadLetterMessage/deadLetterMessage-types';
 
 // Re-exported for backward compatibility (used by migrations)
 export { ENTITY_TYPE_FEED } from '../modules/dataSharing/feed-types';
@@ -99,6 +100,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_THEME,
   ENTITY_TYPE_EMAIL_TEMPLATE,
   ENTITY_TYPE_FORM,
+  ENTITY_TYPE_DEAD_LETTER_MESSAGE,
 ];
 const HISTORY_OBJECTS = [
   ENTITY_TYPE_WORK,

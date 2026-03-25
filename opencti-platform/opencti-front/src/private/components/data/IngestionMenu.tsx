@@ -47,6 +47,10 @@ const IngestionMenu = () => {
         label: 'Connectors catalog',
         isEE: true,
       },
+      {
+        path: '/dashboard/data/ingestion/deadLetter',
+        label: 'Dead letter',
+      },
     );
   }
   return <NavToolbarMenu entries={entries} />;
