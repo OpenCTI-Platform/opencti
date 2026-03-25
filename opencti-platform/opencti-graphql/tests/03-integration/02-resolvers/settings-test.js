@@ -180,11 +180,23 @@ describe('Settings resolver standard behavior', () => {
     expect(editContext.length).toEqual(0);
   });
 
-  it('should block AI operations when platform AI is disabled', async () => {
+  it('should block AI operations when platform AI is disabled', async function () {
     const settingsInternalId = await settingsId();
     const initialSettingsResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
     const platformAiEnabled = initialSettingsResult.data.settings.platform_ai_enabled;
     const initialAiEnabled = platformAiEnabled;
+
+    // If Enterprise edition is not enabled, AI mutations are not available.
+    // Skip the test cleanly before mutating settings in that case.
+    const enterpriseProbe = await queryAsAdmin({
+      query: AI_FIX_SPELLING_MUTATION,
+      variables: { id: 'ai-test', content: 'Some content to check.' },
+    });
+    const probeErrorMessage = enterpriseProbe?.errors?.at(0)?.message;
+    if (probeErrorMessage === 'Enterprise edition is not enabled') {
+      this.skip();
+    }
+
     if (!initialAiEnabled) {
       await queryAsAdmin({
         query: UPDATE_SETTINGS_QUERY,
@@ -211,11 +223,6 @@ describe('Settings resolver standard behavior', () => {
       expect(aiResult.errors).toBeDefined();
       expect(aiResult.errors.length).toEqual(1);
       const errorMessage = aiResult.errors.at(0).message;
-      if (errorMessage === 'Enterprise edition is not enabled') {
-        // eslint-disable-next-line no-console
-        console.warn('Skipping platform_ai_enabled guard assertion: enterprise edition is not enabled.');
-        return;
-      }
       expect(errorMessage).toBe('AI is disabled in platform settings');
     } finally {
       try {

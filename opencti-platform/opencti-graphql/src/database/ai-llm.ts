@@ -224,6 +224,10 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
     throw FunctionalError('AI is disabled in platform settings');
   }
   await ensureClientsInitialized();
+  // AI may have been disabled while initializing clients; re-check to return a consistent error.
+  if (!AI_ENABLED) {
+    throw FunctionalError('AI is disabled in platform settings');
+  }
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
@@ -268,6 +272,10 @@ export const queryChatGpt = async (busId: string | null, developerMessage: strin
     throw FunctionalError('AI is disabled in platform settings');
   }
   await ensureClientsInitialized();
+  // AI may have been disabled while initializing clients; re-check to return a consistent error.
+  if (!AI_ENABLED) {
+    throw FunctionalError('AI is disabled in platform settings');
+  }
   if (!client) {
     throw UnsupportedError('Incorrect AI configuration', { type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
@@ -330,6 +338,10 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
     throw FunctionalError('AI is disabled in platform settings');
   }
   await ensureClientsInitialized();
+  // AI may have been disabled while initializing clients; re-check to return a consistent error.
+  if (!AI_ENABLED) {
+    throw FunctionalError('AI is disabled in platform settings');
+  }
   if (!nlqChat) {
     throw badAiConfigError;
   }
