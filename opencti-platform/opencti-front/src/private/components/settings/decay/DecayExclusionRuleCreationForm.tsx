@@ -1,6 +1,7 @@
 import React from 'react';
 import { Field, Form, Formik, FormikConfig } from 'formik';
 import { useFormatter } from 'src/components/i18n';
+import { enabledFilters } from './utils/enabledFilters';
 import * as Yup from 'yup';
 import { fieldSpacingContainerStyle } from 'src/utils/field';
 import Button from '@common/button/Button';
@@ -48,8 +49,6 @@ const decayExclusionRuleCreationValidator = (t: (value: string) => string) => {
     active: Yup.boolean(),
   });
 };
-
-export const enabledFilters = ['creator_id', 'createdBy', 'objectMarking', 'objectLabel', 'pattern_type', 'indicator_types', 'x_opencti_main_observable_type'];
 
 const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: DecayExclusionRuleCreationFormProps) => {
   const { t_i18n } = useFormatter();
