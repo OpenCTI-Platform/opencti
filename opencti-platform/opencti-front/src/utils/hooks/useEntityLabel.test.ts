@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import useEntitySettings from './useEntitySettings';
-import useEntityLabel, { useEntityLabelResolver } from './useEntityLabel';
+import { useEntityLabelResolver } from './useEntityLabel';
 
 vi.mock('./useEntitySettings', () => ({ default: vi.fn() }));
 vi.mock('../../components/i18n', () => ({
@@ -19,42 +19,6 @@ const makeSetting = (
   target_type: targetType,
   custom_name: customName,
   custom_name_plural: customNamePlural,
-});
-
-describe('Hook: useEntityLabel', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('should return custom singular name when set', () => {
-    mockEntitySettings([makeSetting('Report', 'Intel Report')]);
-    const label = useEntityLabel('Report');
-    expect(label).toBe('Intel Report');
-  });
-
-  it('should return custom plural name when plural is true', () => {
-    mockEntitySettings([makeSetting('Report', 'Intel Report', 'Intel Reports')]);
-    const label = useEntityLabel('Report', true);
-    expect(label).toBe('Intel Reports');
-  });
-
-  it('should fall back to i18n when no settings exist', () => {
-    mockEntitySettings([]);
-    const label = useEntityLabel('Report');
-    expect(label).toBe('entity_Report');
-  });
-
-  it('should fall back to i18n when custom_name is null', () => {
-    mockEntitySettings([makeSetting('Report', null)]);
-    const label = useEntityLabel('Report');
-    expect(label).toBe('entity_Report');
-  });
-
-  it('should fall back to i18n when custom_name_plural is null and plural requested', () => {
-    mockEntitySettings([makeSetting('Report', null, null)]);
-    const label = useEntityLabel('Report', true);
-    expect(label).toBe('entity_Report');
-  });
 });
 
 describe('Hook: useEntityLabelResolver', () => {
