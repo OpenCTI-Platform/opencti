@@ -22,6 +22,7 @@ import type { Theme } from '../../../../components/Theme';
 import Card from '../../../../components/common/card/Card';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import Label from '../../../../components/common/label/Label';
+import FilterIconButton from 'src/components/FilterIconButton';
 
 const decayRuleQuery = graphql`
   query DecayRuleQuery($id: String!) {
@@ -44,7 +45,7 @@ const decayRuleFragment = graphql`
     decay_pound
     decay_points
     decay_revoke_score
-    decay_observable_types
+    decay_filters
     active
     order
     decaySettingsChartData {
@@ -129,14 +130,10 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
                   </Tooltip>
                 )}
                 >
-                  {t_i18n('Indicator observable types')}
+                  {t_i18n('Indicator decay filters')}
                 </Label>
-                <FieldOrEmpty source={decayRule.decay_observable_types}>
-                  <span>
-                    {decayRule.decay_observable_types
-                      ?.map((option) => t_i18n(`entity_${option}`))
-                      .join(', ')}
-                  </span>
+                <FieldOrEmpty source={decayRule.decay_filters}>
+                   <FilterIconButton filters={JSON.parse(decayRule.decay_filters)} />
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={12}>
