@@ -283,7 +283,12 @@ export const BUILT_IN_DECAY_RULE_FILE_ARTEFACT: DecayRuleConfiguration = {
   decay_filters: JSON.stringify({
     mode: 'and',
     filters: [
-      { key: ['x_opencti_main_observable_type'], operator: 'eq', values: [ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_HASHED_OBSERVABLE_ARTIFACT], mode: 'or' },
+      {
+        key: ['x_opencti_main_observable_type'],
+        operator: 'eq',
+        values: [ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_HASHED_OBSERVABLE_ARTIFACT],
+        mode: 'or',
+      },
     ],
     filterGroups: [],
   }),
@@ -301,7 +306,12 @@ export const BUILT_IN_DECAY_RULE_IP_URL: DecayRuleConfiguration = {
   decay_filters: JSON.stringify({
     mode: 'and',
     filters: [
-      { key: ['x_opencti_main_observable_type'], operator: 'eq', values: [ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, ENTITY_URL], mode: 'or' },
+      {
+        key: ['x_opencti_main_observable_type'],
+        operator: 'eq',
+        values: [ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, ENTITY_URL],
+        mode: 'or',
+      },
     ],
     filterGroups: [],
   }),
@@ -319,7 +329,12 @@ export const BUILT_IN_DECAY_RULE_DOMAIN_NAME: DecayRuleConfiguration = {
   decay_filters: JSON.stringify({
     mode: 'and',
     filters: [
-      { key: ['x_opencti_main_observable_type'], operator: 'eq', values: [ENTITY_DOMAIN_NAME], mode: 'or' },
+      {
+        key: ['x_opencti_main_observable_type'],
+        operator: 'eq',
+        values: [ENTITY_DOMAIN_NAME],
+        mode: 'or',
+      },
     ],
     filterGroups: [],
   }),
