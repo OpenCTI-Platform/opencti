@@ -12,7 +12,7 @@ import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { usePage } from 'use-analytics';
 import { useFormatter } from '../../../components/i18n';
 import ItemBoolean from '../../../components/ItemBoolean';

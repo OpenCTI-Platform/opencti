@@ -6,7 +6,7 @@ import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import { useMemo } from 'react';
 import { graphql, useSubscription } from 'react-relay';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext } from 'react-router';
 import Card from '../../../../components/common/card/Card';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';

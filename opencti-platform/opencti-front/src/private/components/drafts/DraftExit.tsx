@@ -1,5 +1,5 @@
 import { graphql } from 'relay-runtime';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Button from '../../../components/common/button/Button';
 import useSwitchDraft from './useSwitchDraft';
 import { useFormatter } from '../../../components/i18n';

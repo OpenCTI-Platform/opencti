@@ -3,7 +3,7 @@ import { useTheme } from '@mui/styles';
 import { Stack, SxProps, Card as CardMui, CardActionArea, StackProps } from '@mui/material';
 import CardTitle from './CardTitle';
 import { Theme } from '../../Theme';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { hasCustomColor } from '../../../utils/theme';
 
 export interface CardProps extends PropsWithChildren {

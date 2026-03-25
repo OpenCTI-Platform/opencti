@@ -59,7 +59,7 @@ import * as R from 'ramda';
 import { ascend, map, path, pathOr, pipe, sortWith, union } from 'ramda';
 import React, { Component } from 'react';
 import { graphql } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import ItemIcon from '../../../components/ItemIcon';
 import ItemMarkings from '../../../components/ItemMarkings';
 import TasksFilterValueContainer from '../../../components/TasksFilterValueContainer';

@@ -24,7 +24,7 @@ import { useTheme } from '@mui/styles';
 import { FormikConfig, FormikErrors, useFormik } from 'formik';
 import { useCallback, useMemo, useState } from 'react';
 import { graphql, UseMutationConfig, usePreloadedQuery } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Theme } from '../../../../../components/Theme';
 import { THEME_DARK_DIALOG_BACKGROUND } from '../../../../../components/ThemeDark';
 import { THEME_LIGHT_DIALOG_BACKGROUND } from '../../../../../components/ThemeLight';
