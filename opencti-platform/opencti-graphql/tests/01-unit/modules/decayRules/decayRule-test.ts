@@ -6,9 +6,9 @@ import {
   computeLivePoints,
   computeLiveScore,
   type IndicatorPatch,
-  MAX_DECAY_HISTORY_POINTS
-} from '../../../src/modules/indicator/indicator-domain';
-import type { BasicStoreEntityIndicator, IndicatorDecayRule } from '../../../src/modules/indicator/indicator-types';
+  MAX_DECAY_HISTORY_POINTS,
+} from '../../../../src/modules/indicator/indicator-domain';
+import type { BasicStoreEntityIndicator, IndicatorDecayRule } from '../../../../src/modules/indicator/indicator-types';
 import {
   type DecayRuleConfiguration,
   selectDecayRuleForIndicator,
@@ -18,9 +18,10 @@ import {
   computeScoreList,
   computeChartDecayAlgoSerie,
   type ComputeDecayChartInput,
-  type DecayHistory
-} from '../../../src/modules/decayRule/decayRule-domain';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
+  type DecayHistory,
+} from '../../../../src/modules/decayRule/decayRule-domain';
+import { ADMIN_USER, testContext } from '../../../../tests/utils/testQuery';
+import { ENTITY_URL, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR } from '../../../../src/schema/stixCyberObservable';
 
 const indicator_fallback_applied_rule: IndicatorDecayRule = {
   decay_rule_id: 'fake-rule-id',
@@ -38,7 +39,7 @@ const TEST_DEFAULT_DECAY_RULE: DecayRuleConfiguration = {
   decay_pound: 1.0,
   decay_points: [80, 60, 40, 20],
   decay_revoke_score: 0,
-  decay_observable_types: [], // no observable means any
+  decay_filters: '', // no filter means all
   order: 0,
   active: true,
 };
@@ -51,7 +52,18 @@ export const TEST_URL_DECAY_RULE: DecayRuleConfiguration = {
   decay_pound: 1.0,
   decay_points: [80, 60, 40, 20],
   decay_revoke_score: 0,
-  decay_observable_types: ['Url'],
+  decay_filters: JSON.stringify({
+    mode: 'and',
+    filters: [
+      {
+        key: ['x_opencti_main_observable_type'],
+        operator: 'eq',
+        values: [ENTITY_URL],
+        mode: 'or',
+      },
+    ],
+    filterGroups: [],
+  }),
   order: 1,
   active: true,
 };
@@ -64,7 +76,18 @@ export const TEST_IP_DECAY_RULE: DecayRuleConfiguration = {
   decay_pound: 1.0,
   decay_points: [80, 60, 40, 20],
   decay_revoke_score: 0,
-  decay_observable_types: ['IPv4-Addr', 'IPv6-Addr'],
+  decay_filters: JSON.stringify({
+    mode: 'and',
+    filters: [
+      {
+        key: ['x_opencti_main_observable_type'],
+        operator: 'eq',
+        values: [ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR],
+        mode: 'or',
+      },
+    ],
+    filterGroups: [],
+  }),
   order: 1,
   active: true,
 };
@@ -138,7 +161,18 @@ describe('Decay formula testing', () => {
       decay_pound: 0.33,
       decay_points: [60],
       decay_revoke_score: 0,
-      decay_observable_types: ['Url'],
+      decay_filters: JSON.stringify({
+        mode: 'and',
+        filters: [
+          {
+            key: ['x_opencti_main_observable_type'],
+            operator: 'eq',
+            values: [ENTITY_URL],
+            mode: 'or',
+          },
+        ],
+        filterGroups: [],
+      }),
       order: 2,
       active: true,
     });
@@ -150,7 +184,18 @@ describe('Decay formula testing', () => {
       decay_pound: 1.0,
       decay_points: [80, 60, 40, 20],
       decay_revoke_score: 0,
-      decay_observable_types: ['Url'],
+      decay_filters: JSON.stringify({
+        mode: 'and',
+        filters: [
+          {
+            key: ['x_opencti_main_observable_type'],
+            operator: 'eq',
+            values: [ENTITY_URL],
+            mode: 'or',
+          },
+        ],
+        filterGroups: [],
+      }),
       order: 3,
       active: true,
     });
@@ -189,7 +234,7 @@ describe('Decay update testing', () => {
       decay_history: [{
         updated_at: moment().subtract('5', 'days').toDate(),
         score: 50,
-        updated_by: ADMIN_USER.id
+        updated_by: ADMIN_USER.id,
       }],
     };
 
@@ -206,7 +251,7 @@ describe('Decay update testing', () => {
 
   it('should move to next score and update next reaction date', () => {
     // GIVEN an Indicator with decay that is on the first decay point and has next reaction point
-    const indicatorInput : Partial<BasicStoreEntityIndicator> = {
+    const indicatorInput: Partial<BasicStoreEntityIndicator> = {
       x_opencti_score: 100,
       decay_base_score: 100,
       decay_history: [],
@@ -218,7 +263,7 @@ describe('Decay update testing', () => {
         decay_points: [100, 80, 50, 20],
         decay_pound: 0.5,
         decay_revoke_score: 10,
-      }
+      },
     };
 
     // WHEN next reaction point is computed
@@ -234,7 +279,7 @@ describe('Decay update testing', () => {
 
   it('should be revoked when revoke score is reached', () => {
     // GIVEN an Indicator with decay that is on the last decay point and has next a revoke score
-    const indicatorInput : Partial<BasicStoreEntityIndicator> = {
+    const indicatorInput: Partial<BasicStoreEntityIndicator> = {
       x_opencti_score: 20,
       decay_base_score: 100,
       decay_history: [
@@ -248,7 +293,7 @@ describe('Decay update testing', () => {
         decay_points: [100, 80, 50, 20],
         decay_pound: 0.5,
         decay_revoke_score: 10,
-      }
+      },
     };
 
     // WHEN next reaction point is computed
@@ -265,7 +310,7 @@ describe('Decay update testing', () => {
   it('should revoke when current score is already lower than revoke score', () => {
     // GIVEN an Indicator with a stable score that is already lower than revoke score
     // use case that should not happen with a normal usage
-    const indicatorInput : Partial<BasicStoreEntityIndicator> = {
+    const indicatorInput: Partial<BasicStoreEntityIndicator> = {
       x_opencti_score: 30,
       decay_base_score: 100,
       decay_history: [],
@@ -277,7 +322,7 @@ describe('Decay update testing', () => {
         decay_points: [100, 80, 50, 20],
         decay_pound: 0.5,
         decay_revoke_score: 50,
-      }
+      },
     };
 
     // WHEN next reaction point is computed
@@ -293,7 +338,7 @@ describe('Decay update testing', () => {
   it('should revoke when revoke score is higher than all decay points', () => {
     // GIVEN an Indicator with revoke score higher than all decay points
     // use case that should not happen with a normal usage
-    const indicatorInput : Partial<BasicStoreEntityIndicator> = {
+    const indicatorInput: Partial<BasicStoreEntityIndicator> = {
       x_opencti_score: 50,
       decay_base_score: 100,
       decay_history: [],
@@ -305,7 +350,7 @@ describe('Decay update testing', () => {
         decay_points: [80, 50, 20],
         decay_pound: 0.5,
         decay_revoke_score: 100,
-      }
+      },
     };
 
     // WHEN next reaction point is computed
@@ -320,12 +365,12 @@ describe('Decay update testing', () => {
 
   it('should do nothing when decay rule is null', () => {
     // GIVEN an Indicator with no decay rule
-    const indicatorInput : Partial<BasicStoreEntityIndicator> = {
+    const indicatorInput: Partial<BasicStoreEntityIndicator> = {
       x_opencti_score: 50,
       decay_base_score: 100,
       decay_history: [],
       valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate()
+      valid_until: moment().add('5', 'days').toDate(),
     };
 
     // WHEN next reaction point is computed
@@ -363,7 +408,7 @@ describe('Decay live detailed data testing (subset of indicatorDecayDetails quer
       decay_base_score_date: moment().subtract('5', 'days').toDate(),
       decay_applied_rule: indicator_fallback_applied_rule,
       valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate()
+      valid_until: moment().add('5', 'days').toDate(),
     };
 
     const liveScore = computeLiveScore(indicator as BasicStoreEntityIndicator);
@@ -377,7 +422,7 @@ describe('Decay live detailed data testing (subset of indicatorDecayDetails quer
       decay_base_score_date: undefined,
       decay_history: [],
       valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate()
+      valid_until: moment().add('5', 'days').toDate(),
     };
     const liveScore = computeLiveScore(indicator as BasicStoreEntityIndicator);
     expect(liveScore, 'The live score should be = score when data required for computation are missing.').toBe(42);
@@ -391,7 +436,7 @@ describe('Decay live detailed data testing (subset of indicatorDecayDetails quer
       decay_history: [],
       decay_applied_rule: indicator_fallback_applied_rule,
       valid_from: moment().subtract('5', 'days').toDate(),
-      valid_until: moment().add('5', 'days').toDate()
+      valid_until: moment().add('5', 'days').toDate(),
     };
 
     const result = computeLivePoints(indicator as BasicStoreEntityIndicator);
@@ -424,7 +469,7 @@ describe('Decay chart data generation', () => {
       decayBaseScoreDate: startDate,
       decayRule: indicator_fallback_applied_rule,
       scoreList: computedScoreList,
-      decayHistory: []
+      decayHistory: [],
     };
     const result = computeChartDecayAlgoSerie(computeChartInput);
 
