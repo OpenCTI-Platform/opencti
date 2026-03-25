@@ -58,6 +58,45 @@ const UPDATE_QUERY = gql`
   }
 `;
 
+// -- CUSTOM DISPLAY NAME QUERIES --
+
+const READ_QUERY_WITH_CUSTOM_NAME = gql`
+  query entitySettingByTypeWithCustomName($targetType: String!) {
+    entitySettingByType(targetType: $targetType) {
+      id
+      target_type
+      custom_name
+      custom_name_plural
+    }
+  }
+`;
+
+const UPDATE_CUSTOM_NAME_QUERY = gql`
+  mutation entitySettingsEditCustomName($ids: [ID!]!, $input: [EditInput!]!) {
+    entitySettingsFieldPatch(ids: $ids, input: $input) {
+      id
+      target_type
+      custom_name
+      custom_name_plural
+    }
+  }
+`;
+
+const LIST_QUERY_WITH_CUSTOM_NAME = gql`
+  query entitySettingsWithCustomName {
+    entitySettings {
+      edges {
+        node {
+          id
+          target_type
+          custom_name
+          custom_name_plural
+        }
+      }
+    }
+  }
+`;
+
 describe('EntitySetting resolver standard behavior', () => {
   let entitySettingIdNote;
   it('should init entity settings', async () => {
@@ -140,6 +179,121 @@ describe('EntitySetting resolver standard behavior', () => {
     await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { ids: [entitySettingIdNote], input: { key: 'attributes_configuration', value: [] } },
+    });
+  });
+});
+
+// -- CUSTOM DISPLAY NAME --
+
+describe('EntitySetting resolver - custom display name', () => {
+  let entitySettingIdNote;
+
+  it('should init and find Note entity setting id', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY });
+    const entitySettingNote = queryResult.data.entitySettings.edges
+      .filter((entitySetting) => entitySetting.node.target_type === ENTITY_TYPE_CONTAINER_NOTE)[0];
+    entitySettingIdNote = entitySettingNote.node.id;
+    expect(entitySettingIdNote).toBeDefined();
+  });
+
+  it('should have null custom_name and custom_name_plural by default', async () => {
+    const queryResult = await queryAsAdmin({
+      query: READ_QUERY_WITH_CUSTOM_NAME,
+      variables: { targetType: ENTITY_TYPE_CONTAINER_NOTE },
+    });
+    expect(queryResult.data.entitySettingByType.target_type).toEqual(ENTITY_TYPE_CONTAINER_NOTE);
+    expect(queryResult.data.entitySettingByType.custom_name).toSatisfy((s) => s === null || s === undefined || s === '');
+    expect(queryResult.data.entitySettingByType.custom_name_plural).toSatisfy((s) => s === null || s === undefined || s === '');
+  });
+
+  it('should update custom_name via entitySettingsFieldPatch', async () => {
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_CUSTOM_NAME_QUERY,
+      variables: {
+        ids: [entitySettingIdNote],
+        input: { key: 'custom_name', value: ['Intelligence Note'] },
+      },
+    });
+    const updated = queryResult.data.entitySettingsFieldPatch
+      .filter((e) => e.target_type === ENTITY_TYPE_CONTAINER_NOTE)[0];
+    expect(updated.custom_name).toEqual('Intelligence Note');
+  });
+
+  it('should update custom_name_plural via entitySettingsFieldPatch', async () => {
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_CUSTOM_NAME_QUERY,
+      variables: {
+        ids: [entitySettingIdNote],
+        input: { key: 'custom_name_plural', value: ['Intelligence Notes'] },
+      },
+    });
+    const updated = queryResult.data.entitySettingsFieldPatch
+      .filter((e) => e.target_type === ENTITY_TYPE_CONTAINER_NOTE)[0];
+    expect(updated.custom_name_plural).toEqual('Intelligence Notes');
+  });
+
+  it('should persist custom_name when queried by type', async () => {
+    const queryResult = await queryAsAdmin({
+      query: READ_QUERY_WITH_CUSTOM_NAME,
+      variables: { targetType: ENTITY_TYPE_CONTAINER_NOTE },
+    });
+    expect(queryResult.data.entitySettingByType.custom_name).toEqual('Intelligence Note');
+    expect(queryResult.data.entitySettingByType.custom_name_plural).toEqual('Intelligence Notes');
+  });
+
+  it('should include custom_name fields in entitySettings list query', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY_WITH_CUSTOM_NAME });
+    const noteSettings = queryResult.data.entitySettings.edges
+      .filter((e) => e.node.target_type === ENTITY_TYPE_CONTAINER_NOTE)[0];
+    expect(noteSettings.node.custom_name).toEqual('Intelligence Note');
+    expect(noteSettings.node.custom_name_plural).toEqual('Intelligence Notes');
+  });
+
+  it('should reset custom_name to empty string', async () => {
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_CUSTOM_NAME_QUERY,
+      variables: {
+        ids: [entitySettingIdNote],
+        input: [
+          { key: 'custom_name', value: [''] },
+          { key: 'custom_name_plural', value: [''] },
+        ],
+      },
+    });
+    const updated = queryResult.data.entitySettingsFieldPatch
+      .filter((e) => e.target_type === ENTITY_TYPE_CONTAINER_NOTE)[0];
+    expect(updated.custom_name).toSatisfy((s) => s === null || s === undefined || s === '');
+    expect(updated.custom_name_plural).toSatisfy((s) => s === null || s === undefined || s === '');
+  });
+
+  it('should persist reset (fallback to default) when queried by type', async () => {
+    const queryResult = await queryAsAdmin({
+      query: READ_QUERY_WITH_CUSTOM_NAME,
+      variables: { targetType: ENTITY_TYPE_CONTAINER_NOTE },
+    });
+    expect(queryResult.data.entitySettingByType.custom_name).toSatisfy((s) => s === null || s === undefined || s === '');
+    expect(queryResult.data.entitySettingByType.custom_name_plural).toSatisfy((s) => s === null || s === undefined || s === '');
+  });
+
+  it('should handle special characters in custom_name', async () => {
+    const specialName = 'Noté d\'intelligence — «produit»';
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_CUSTOM_NAME_QUERY,
+      variables: {
+        ids: [entitySettingIdNote],
+        input: { key: 'custom_name', value: [specialName] },
+      },
+    });
+    const updated = queryResult.data.entitySettingsFieldPatch
+      .filter((e) => e.target_type === ENTITY_TYPE_CONTAINER_NOTE)[0];
+    expect(updated.custom_name).toEqual(specialName);
+    // Clean up
+    await queryAsAdmin({
+      query: UPDATE_CUSTOM_NAME_QUERY,
+      variables: {
+        ids: [entitySettingIdNote],
+        input: { key: 'custom_name', value: [''] },
+      },
     });
   });
 });
