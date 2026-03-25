@@ -4,15 +4,15 @@ import Drawer from '@components/common/drawer/Drawer';
 import { Form, Formik } from 'formik';
 import Button from '@common/button/Button';
 import { FormikConfig } from 'formik/dist/types';
-import StatusTemplateFieldScoped from '@components/settings/sub_types/workflow/StatusTemplateFieldScoped';
+import StatusTemplateFieldScoped from '@components/settings/sub_types/global_workflow_request_access/StatusTemplateFieldScoped';
 import GroupField, { GroupFieldOption } from '@components/common/form/GroupField';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { EMPTY_VALUE } from '../../../../../utils/String';
 import { RequestAccessConfigurationEdition_requestAccess$key } from './__generated__/RequestAccessConfigurationEdition_requestAccess.graphql';
 import { RequestAccessConfigurationEditionMutation, RequestAccessConfigureInput } from './__generated__/RequestAccessConfigurationEditionMutation.graphql';
-import { EMPTY_VALUE } from '../../../../../utils/String';
 
 const requestAccessConfigurationMutation = graphql`
     mutation RequestAccessConfigurationEditionMutation($input: RequestAccessConfigureInput!) {
