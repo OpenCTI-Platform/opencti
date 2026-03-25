@@ -130,10 +130,10 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
                   </Tooltip>
                 )}
                 >
-                  {t_i18n('Indicator decay filters')}
+                  {t_i18n('Decay indicator filter')}
                 </Label>
                 <FieldOrEmpty source={decayRule.decay_filters}>
-                   <FilterIconButton filters={JSON.parse(decayRule.decay_filters)} />
+                  <FilterIconButton filters={JSON.parse(decayRule.decay_filters)} />
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={12}>
