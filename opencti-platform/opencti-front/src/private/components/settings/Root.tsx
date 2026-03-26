@@ -11,7 +11,7 @@ import useGranted, {
   SETTINGS_SETVOCABULARIES,
   SETTINGS_SETKILLCHAINPHASES,
   SETTINGS_SETCASETEMPLATES,
-  SETTINGS_SETSTATUSTEMPLATES,
+  SETTINGS_SETSTATUSTEMPLATES, SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS, SETTINGS_SETDISSEMINATION, SETTINGS_SETAUTH, VIRTUAL_ORGANIZATION_ADMIN,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
 import useSettingsFallbackUrl from '../../../utils/hooks/useSettingsFallbackUrl';
@@ -75,7 +75,14 @@ const Root = () => {
               </Security>
             )}
           />
-          <Route path="/accesses/*" element={<RootAccesses />} />
+          <Route path="/accesses/*" element={(
+            <Security
+              needs={[SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS, SETTINGS_SETDISSEMINATION, SETTINGS_SETAUTH, VIRTUAL_ORGANIZATION_ADMIN]}
+              placeholder={<Navigate to={fallbackUrl} />}
+            >
+              <RootAccesses />
+            </Security>
+          )} />
           <Route
             path="/activity"
             element={(
