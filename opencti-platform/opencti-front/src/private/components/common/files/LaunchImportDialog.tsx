@@ -139,8 +139,42 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   };
 
   const importValidation = (configurations: boolean) => {
+    const isDraft = (value: string) => value === 'draft';
+    const requiredWhenDraftAndMandatory = (field: string, schema: Yup.StringSchema) => Yup.string().when('validation_mode', {
+      is: isDraft,
+      then: () => mandatoryAttributes.includes(field)
+        ? schema.required(t_i18n('This field is required'))
+        : schema,
+      otherwise: () => Yup.string().nullable(),
+    });
+
+    const draftShape = {
+      name: requiredWhenDraftAndMandatory('name', Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters'))),
+      description: requiredWhenDraftAndMandatory('description', Yup.string()),
+      objectAssignee: Yup.array().when('validation_mode', {
+        is: isDraft,
+        then: (schema) => mandatoryAttributes.includes('objectAssignee')
+          ? schema.min(1, t_i18n('This field is required'))
+          : schema,
+      }),
+      objectParticipant: Yup.array().when('validation_mode', {
+        is: isDraft,
+        then: (schema) => mandatoryAttributes.includes('objectParticipant')
+          ? schema.min(1, t_i18n('This field is required'))
+          : schema,
+      }),
+      createdBy: Yup.object().when('validation_mode', {
+        is: isDraft,
+        then: (schema) => mandatoryAttributes.includes('createdBy')
+          ? schema.required(t_i18n('This field is required'))
+          : schema.nullable(),
+        otherwise: (schema) => schema.nullable(),
+      }),
+    };
+
     const shape = {
       connector_id: Yup.string().required(t_i18n('This field is required')),
+      ...draftShape,
     };
     if (configurations) {
       return Yup.object().shape({
