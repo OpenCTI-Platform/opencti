@@ -292,6 +292,19 @@ body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
 .rich-text-content .text-big   { font-size: 18px; }
 .rich-text-content .text-huge  { font-size: 24px; }
 
+/* CKEditor image figure — kept for backward compatibility with stored content */
+.rich-text-content figure.image {
+  display: table;
+  clear: both;
+  text-align: center;
+  margin: 0.9em auto;
+  min-width: 50px;
+}
+.rich-text-content figure.image img {
+  display: block;
+  max-width: 100%;
+}
+
 .rich-text-content blockquote {
   border-left: 3px solid #b2b2b2;
   padding-left: 1em;
@@ -401,8 +414,11 @@ body[data-theme="light"] .rich-text-content a {
 /* Image figure + caption (display) */
 .rich-text-content figure.image-figure,
 .rich-text-editor-wrapper .ProseMirror figure.image-figure {
-  margin: 0.5em 0;
-  display: inline-block;
+  display: table;
+  clear: both;
+  text-align: center;
+  margin: 0.9em auto;
+  min-width: 50px;
 }
 .rich-text-content figure.image-figure figcaption,
 .rich-text-editor-wrapper .ProseMirror figure.image-figure figcaption {

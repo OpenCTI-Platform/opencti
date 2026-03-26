@@ -78,6 +78,7 @@ export const ImageWithOptions = Image.extend<ImageWithOptionsOptions>({
     };
     return [
       { tag: 'figure.image-figure', getAttrs: (node) => (typeof node === 'object' && node instanceof HTMLElement ? getFigureAttrs(node) : false) },
+      { tag: 'figure.image', getAttrs: (node) => (typeof node === 'object' && node instanceof HTMLElement ? getFigureAttrs(node) : false) },
       {
         tag: 'img[src]',
         getAttrs: (node) => {
