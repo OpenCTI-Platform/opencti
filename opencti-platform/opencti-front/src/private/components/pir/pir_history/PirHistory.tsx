@@ -22,7 +22,6 @@ import { PirHistoryFragment$key } from './__generated__/PirHistoryFragment.graph
 import { PirHistoryLogFragment$data } from './__generated__/PirHistoryLogFragment.graphql';
 import { pirHistoryFilterGroup, pirLogRedirectUri } from '../pir-history-utils';
 import PirHistoryMessage from '../PirHistoryMessage';
-import { useFormatter } from '../../../../components/i18n';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
