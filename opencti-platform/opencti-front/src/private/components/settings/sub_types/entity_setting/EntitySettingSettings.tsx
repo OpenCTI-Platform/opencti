@@ -15,6 +15,7 @@ import Security from '../../../../../utils/Security';
 import GroupEntitySettingHiddenTypesList from '../../groups/GroupEntitySettingHiddenTypesList';
 import SettingsOrganizationEntitySettingHiddenTypesList from '../../organizations/SettingsOrganizationEntitySettingHiddenTypesList';
 import { EntitySettingSettings_entitySetting$key } from './__generated__/EntitySettingSettings_entitySetting.graphql';
+import useEntityTranslation from '../../../../../utils/hooks/useEntityTranslation';
 
 export const entitySettingFragment = graphql`
   fragment EntitySettingSettings_entitySetting on EntitySetting {
@@ -86,6 +87,7 @@ interface EntitySettingSettingsProps {
 
 const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProps) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const entitySetting = useFragment(entitySettingFragment, entitySettingsData);
   if (!entitySetting) {
     return <ErrorNotFound />;
@@ -93,7 +95,6 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
 
   const [commit] = useApiMutation(entitySettingPatch);
 
-  // Local state for custom name fields
   const [customName, setCustomName] = useState(entitySetting.custom_name ?? '');
   const [customNamePlural, setCustomNamePlural] = useState(entitySetting.custom_name_plural ?? '');
 
@@ -117,7 +118,6 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
 
   return (
     <Grid container={true} spacing={2}>
-      {/* Custom display name section */}
       <Grid item xs={12}>
         <Label action={(
           <Tooltip
@@ -139,7 +139,9 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
               fullWidth
               size="small"
               value={customName}
-              placeholder={t_i18n(`entity_${entitySetting.target_type}`)}
+              placeholder={translateEntityType(entitySetting.target_type, {
+                skipCustom: true,
+              })}
               onChange={(e) => setCustomName(e.target.value)}
               onBlur={() => handleSubmitCustomName('custom_name', customName)}
               onKeyDown={(e) => {
@@ -155,7 +157,10 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
               fullWidth
               size="small"
               value={customNamePlural}
-              placeholder={t_i18n(`entity_${entitySetting.target_type}`)}
+              placeholder={translateEntityType(entitySetting.target_type, {
+                skipCustom: true,
+                plural: true,
+              })}
               onChange={(e) => setCustomNamePlural(e.target.value)}
               onBlur={() => handleSubmitCustomName('custom_name_plural', customNamePlural)}
               onKeyDown={(e) => {

@@ -56,10 +56,14 @@ const useEntityTranslation = () => {
   const allEntitySettings = useEntitySettings();
 
   const translateEntityType = (entityType: TranslatableEntityType, options?: {
-    plural: boolean;
+    skipCustom?: boolean;
+    plural?: boolean;
   }) => {
-    const plural = options?.plural ?? false;
-    const setting = allEntitySettings.find((s) => s.target_type === entityType);
+    const plural = Boolean(options?.plural);
+    const skipCustom = Boolean(options?.skipCustom);
+    const setting = !skipCustom
+      ? allEntitySettings.find((s) => s.target_type === entityType)
+      : undefined;
     if (plural) {
       if (setting?.custom_name_plural) {
         return setting.custom_name_plural;

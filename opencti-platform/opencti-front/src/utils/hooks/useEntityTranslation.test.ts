@@ -45,11 +45,12 @@ describe('Hook: useEntityTranslation', () => {
     expect(translateEntityType('Report', { plural: true })).toBe('Intel Reports');
   });
 
-  it('should fall back to default plural translation when no custom plural', () => {
+  it('should fall back to default translation when no custom provided', () => {
     mockEntitySettings([makeSetting('Report', null, null)]);
-    mockI18n({ entity_plural_Report: 'Reports' });
+    mockI18n({ entity_Report: 'Rapport', entity_plural_Report: 'Rapports' });
     const { translateEntityType } = useEntityTranslation();
-    expect(translateEntityType('Report', { plural: true })).toBe('Reports');
+    expect(translateEntityType('Report')).toBe('Rapport');
+    expect(translateEntityType('Report', { plural: true })).toBe('Rapports');
   });
 
   it('should find the correct setting among multiple entity settings', () => {
@@ -67,5 +68,18 @@ describe('Hook: useEntityTranslation', () => {
     mockI18n({ entity_plural_Report: 'Reports' });
     const { translateEntityType } = useEntityTranslation();
     expect(translateEntityType('Unknown')).toBe('Unknown');
+  });
+
+  it('should skip custom name when option is passed', () => {
+    mockEntitySettings([makeSetting('Report', 'Intel Report', 'Intel Reports')]);
+    mockI18n({ entity_Report: 'Rapport', entity_plural_Report: 'Rapports' });
+    const { translateEntityType } = useEntityTranslation();
+    expect(translateEntityType('Report', {
+      skipCustom: true,
+    })).toBe('Rapport');
+    expect(translateEntityType('Report', {
+      plural: true,
+      skipCustom: true,
+    })).toBe('Rapports');
   });
 });
