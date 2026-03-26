@@ -1,0 +1,18 @@
+FROM redhat/ubi9
+
+COPY src /opt/opencti-worker
+
+WORKDIR /opt/opencti-worker
+
+RUN set -eux; \
+    dnf -y install python3.12 python3.12-devel python3-file-magic; \
+    dnf clean all; \
+    alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 2; \
+    alternatives --install /usr/bin/python3-config python3-config /usr/bin/python3.12-config 2; \
+    alternatives --set python3 /usr/bin/python3.12; \
+    alternatives --set python3-config /usr/bin/python3.12-config; \
+    python3 -m ensurepip; \
+    pip3 install --no-cache-dir --requirement requirements.txt;
+
+ENTRYPOINT ["python3"]
+CMD ["worker.py"]
