@@ -86,11 +86,11 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
       objectAssignee: FieldOption[];
       objectParticipant: FieldOption[];
       createdBy: FieldOption | undefined;
-      authorizedMembers?: AuthorizedMembersFieldValue;
+      authorized_members?: AuthorizedMembersFieldValue;
     },
     { setSubmitting, resetForm }: { setSubmitting: (isSubmitting: boolean) => void; resetForm: () => void },
   ) => {
-    const { connector_id, configuration, objectMarking, validation_mode, authorizedMembers } = values;
+    const { connector_id, configuration, objectMarking, validation_mode, authorized_members } = values;
     let config = configuration;
 
     // Dynamically inject the markings chosen by the user into the csv mapper
@@ -115,9 +115,9 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
         objectAssignee: values.objectAssignee.map(({ value }) => value),
         objectParticipant: values.objectParticipant.map(({ value }) => value),
         createdBy: values.createdBy?.value,
-        authorized_members: !authorizedMembers
+        authorized_members: !authorized_members
           ? null
-          : authorizedMembers
+          : authorized_members
               .filter((v) => v.accessRight !== 'none')
               .map((member) => ({
                 id: member.value,
@@ -257,7 +257,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   </>
                 )}
                 <Field
-                  name="authorizedMembers"
+                  name="authorized_members"
                   component={AuthorizedMembersField}
                   owner={owner}
                   showAllMembersLine={showAllMembersLine}
