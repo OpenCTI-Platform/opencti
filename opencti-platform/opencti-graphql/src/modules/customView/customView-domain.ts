@@ -97,7 +97,7 @@ export const getCustomViewsSettings = async (
   context: AuthContext,
   user: AuthUser,
   entityType: string,
-  options: CustomViewsSettingsPaginationOptions,
+  options?: CustomViewsSettingsPaginationOptions | null,
 ) => {
   if (!isCustomViewsAvailableForEntityType(entityType)) {
     return {
