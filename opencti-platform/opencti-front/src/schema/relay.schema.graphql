@@ -1800,6 +1800,7 @@ type User implements BasicObject & InternalObject {
   effective_confidence_level: EffectiveConfidenceLevel
   no_creators: Boolean
   restrict_delete: Boolean
+  mcp_allowed: Boolean
   groups(orderBy: GroupsOrdering, orderMode: OrderingMode): GroupConnection
   objectOrganization(first: Int, orderBy: OrganizationsOrdering, orderMode: OrderingMode): OrganizationConnection
   objectAssignedOrganization(first: Int, orderBy: OrganizationsOrdering, orderMode: OrderingMode): OrganizationConnection
@@ -1846,6 +1847,7 @@ type MeUser implements BasicObject & InternalObject {
   effective_confidence_level: EffectiveConfidenceLevel
   no_creators: Boolean
   restrict_delete: Boolean
+  mcp_allowed: Boolean
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
   max_shareable_marking: [MarkingDefinition!]
@@ -14306,6 +14308,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   default_dashboard: Workspace
   default_hidden_types: [String!]
   restrict_access: Boolean
+  mcp_allowed: Boolean
   creators: [Creator!]
   toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
