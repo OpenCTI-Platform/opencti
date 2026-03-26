@@ -113,7 +113,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
     auto_new_marking: group.auto_new_marking,
     no_creators: group.no_creators,
     restrict_delete: group.restrict_delete,
-    mcp_allowed: group.mcp_allowed,
+    mcp_allowed: group.mcp_allowed ?? true,
     default_dashboard: group.default_dashboard ? {
       value: group.default_dashboard.id,
       label: group.default_dashboard.name,

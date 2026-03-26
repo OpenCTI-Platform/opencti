@@ -272,8 +272,8 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   {t_i18n('MCP access')}
                 </Label>
                 <ItemBoolean
-                  status={group.mcp_allowed ?? false}
-                  label={group.mcp_allowed ? t_i18n('Yes') : t_i18n('No')}
+                  status={group.mcp_allowed ?? true}
+                  label={(group.mcp_allowed ?? true) ? t_i18n('Yes') : t_i18n('No')}
                 />
               </Grid>
             </Grid>
