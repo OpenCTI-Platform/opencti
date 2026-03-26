@@ -294,7 +294,7 @@ export default defineConfig({
             caughtErrorsIgnorePattern: "^_",
           },
         ],
-        "import-newlines/enforce": ["warn", { items: 20, max_len: 100 }],
+        "import-newlines/enforce": ["warn", { items: 10, max_len: 100 }],
       },
     },
     {
