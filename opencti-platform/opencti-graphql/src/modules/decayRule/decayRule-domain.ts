@@ -368,30 +368,12 @@ export const initDecayRules = async (context: AuthContext, user: AuthUser) => {
     const defaultDecayRules = [...BUILT_IN_DECAY_RULES];
     for (let index = 0; index < defaultDecayRules.length; index += 1) {
       const decayRule = defaultDecayRules[index];
-      // await addDecayRule(context, user, decayRule, true);
+      await addDecayRule(context, user, decayRule, true);
     }
   }
 };
-
-// "{"mode":"and","filters":[{"key":["x_opencti_main_observable_type"],"operator":"eq","values":["Domain-Name"],"mode":"or"}],"filterGroups":[]}"
 
 // end region
-export const selectDecayRuleForIndicator = (indicatorObservableType: string, decayRules: DecayRuleConfiguration[]) => {
-  const orderedRules = [...decayRules].filter((d) => d.active)
-    .sort((a, b) => (b.order || 0) - (a.order || 0));
-  const decayRule = orderedRules.find((rule) => {
-    if (rule.decay_filters?.length > 0) {
-      // return first rule matching the indicator main observable type
-      // return indicatorObservableType && rule.decay_observable_types.includes(indicatorObservableType);
-    }
-    return true; // return first rule
-  });
-  if (!decayRule) {
-    // always return a fallback decay rule
-    return { ...FALLBACK_DECAY_RULE, id: 'FALLBACK_DECAY_RULE' };
-  }
-  return decayRule;
-};
 
 export type ResolvedDecayRule = Record<string, any>;
 
@@ -427,10 +409,6 @@ export const checkDecayRules = async (context: AuthContext, user: AuthUser, reso
   }
   const sortedAvailableRules = availableRules.sort((a, b) => b.order - a.order);
   return sortedAvailableRules[0];
-};
-
-export const findDecayRuleForIndicator = async (context: AuthContext, indicatorObservableType: string) => {
-  // return selectDecayRuleForIndicator(indicatorObservableType, enabledRules);
 };
 
 // region decay compute
