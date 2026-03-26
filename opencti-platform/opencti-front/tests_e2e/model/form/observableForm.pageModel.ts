@@ -11,7 +11,7 @@ export default class ObservableFormPage {
   emailMessageSubjectField;
 
   constructor(private page: Page) {
-    const name = 'Create an observable';
+    const name = 'Create Observable';
     const bulkName = 'Create multiple observables';
     this.formLocator = this.page.getByRole('heading', { name }).locator('../../..');
     this.bulkLocator = this.page.getByRole('heading', { name: bulkName }).locator('..');
