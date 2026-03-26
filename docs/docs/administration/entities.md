@@ -36,7 +36,7 @@ Leave the fields empty to revert to the default name.
 
     Renaming "Report" to "Intelligence Report" (singular) and "Intelligence Reports" (plural) will update every place in the platform where "Report" or "Reports" was previously displayed.
 
-Note that it is a local change. When you export data in STIX from the platform, it keeps the STIX 2.1 name.
+Note that while it applies to all users this change remains local to the platform. When you export data in STIX from the platform, it keeps the STIX 2.1 name.
 
 
 ## Automatic references at file upload
