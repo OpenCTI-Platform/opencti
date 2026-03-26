@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "WebFetch(domain:docs.opencti.io)",
-      "WebFetch(domain:raw.githubusercontent.com)"
-    ]
-  }
-}
