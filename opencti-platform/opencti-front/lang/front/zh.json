@@ -1679,6 +1679,7 @@
   "entity_plural_Security-Coverage": "安全保障",
   "entity_plural_SecurityPlatform": "安全平台",
   "entity_plural_Stix-Cyber-Observable": "可观测数据",
+  "entity_plural_stix-sighting-relationship": "目击",
   "entity_plural_System": "系统",
   "entity_plural_Task": "任务",
   "entity_plural_Threat-Actor-Group": "威胁行为者组",

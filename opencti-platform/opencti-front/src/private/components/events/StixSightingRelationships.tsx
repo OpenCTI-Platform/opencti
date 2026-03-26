@@ -15,6 +15,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import { truncate } from '../../../utils/String';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 
 const stixSightingsLineFragment = graphql`
   fragment StixSightingRelationshipsLine_node on StixSightingRelationship {
@@ -276,6 +277,7 @@ const LOCAL_STORAGE_KEY = 'stixSightingRelationships';
 
 const StixSightingRelationships = () => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Sightings | Events'));
 
@@ -362,7 +364,11 @@ const StixSightingRelationships = () => {
 
   return (
     <span data-testid="sightings-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: t_i18n('Sightings'), current: true }]} />
+      <Breadcrumbs elements={[
+        { label: t_i18n('Events') },
+        { label: translateEntityType('stix-sighting-relationship', { plural: true }), current: true },
+      ]}
+      />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

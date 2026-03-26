@@ -1679,6 +1679,7 @@
   "entity_plural_Security-Coverage": "Sicherheitsabdeckungen",
   "entity_plural_SecurityPlatform": "Sicherheitsplattformen",
   "entity_plural_Stix-Cyber-Observable": "Observables",
+  "entity_plural_stix-sighting-relationship": "Sichtungen",
   "entity_plural_System": "Systeme",
   "entity_plural_Task": "Aufgaben",
   "entity_plural_Threat-Actor-Group": "Bedrohungsakteure (Gruppe)",

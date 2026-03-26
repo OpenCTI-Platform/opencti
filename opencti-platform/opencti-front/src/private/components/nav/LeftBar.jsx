@@ -582,7 +582,7 @@ const LeftBarComponent = ({ queryRef }) => {
                 link="/dashboard/events"
                 subItems={[
                   { type: 'Incident', link: '/dashboard/events/incidents', label: translateEntityType('Incident', { plural: true }), icon: <Fire fontSize="small" /> },
-                  { type: 'stix-sighting-relationship', link: '/dashboard/events/sightings', label: t_i18n('Sightings'), icon: <VisibilityOutlined fontSize="small" /> },
+                  { type: 'stix-sighting-relationship', link: '/dashboard/events/sightings', label: translateEntityType('stix-sighting-relationship', { plural: true }), icon: <VisibilityOutlined fontSize="small" /> },
                   { type: 'Observed-Data', link: '/dashboard/events/observed_data', label: translateEntityType('Observed-Data', { plural: true }), icon: <WifiTetheringOutlined fontSize="small" /> },
                 ]}
               />

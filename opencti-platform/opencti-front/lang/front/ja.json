@@ -1679,6 +1679,7 @@
   "entity_plural_Security-Coverage": "セキュリティ対象",
   "entity_plural_SecurityPlatform": "セキュリティ・プラットフォーム",
   "entity_plural_Stix-Cyber-Observable": "観測結果",
+  "entity_plural_stix-sighting-relationship": "目撃情報",
   "entity_plural_System": "システム",
   "entity_plural_Task": "タスク",
   "entity_plural_Threat-Actor-Group": "脅威アクターグループ",

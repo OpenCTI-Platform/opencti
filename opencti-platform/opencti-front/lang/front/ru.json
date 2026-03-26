@@ -1679,6 +1679,7 @@
   "entity_plural_Security-Coverage": "Защитные покрытия",
   "entity_plural_SecurityPlatform": "Платформы безопасности",
   "entity_plural_Stix-Cyber-Observable": "Наблюдаемые объекты",
+  "entity_plural_stix-sighting-relationship": "Наблюдения",
   "entity_plural_System": "Системы",
   "entity_plural_Task": "Задачи",
   "entity_plural_Threat-Actor-Group": "Субъекты угроз (группа)",
