@@ -15,9 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React from 'react';
 import MarkdownDisplay from '../../../components/MarkdownDisplay';
-import { displayEntityTypeForTranslation } from '../../../utils/String';
 import { isNotEmptyField } from '../../../utils/utils';
-import { useFormatter } from '../../../components/i18n';
 import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 
 export interface PirLog {
@@ -42,16 +40,13 @@ interface PirHistoryMessageProps {
 }
 
 const PirHistoryMessage = ({ log }: PirHistoryMessageProps) => {
-  const { t_i18n } = useFormatter();
-  const entityLabelResolver = useEntityTranslation();
+  const { translateEntityType } = useEntityTranslation();
   const { context_data, event_scope, user } = log;
 
   const getHistoryMessage = () => {
     const message = context_data?.message ?? '';
     const rawEntityType = context_data?.entity_type ?? '';
-    const entityType = rawEntityType && rawEntityType[0] === rawEntityType[0].toUpperCase()
-      ? entityLabelResolver(rawEntityType)
-      : t_i18n(displayEntityTypeForTranslation(rawEntityType));
+    const entityType = translateEntityType(rawEntityType);
 
     const isUpdate = event_scope === 'update' && isNotEmptyField(context_data?.entity_name);
 

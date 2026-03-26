@@ -24,7 +24,6 @@ import { pirLogRedirectUri } from '@components/pir/pir-history-utils';
 import PirHistoryMessage from '../PirHistoryMessage';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import { displayEntityTypeForTranslation } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { PirOverviewHistoryPirFragment$key } from './__generated__/PirOverviewHistoryPirFragment.graphql';
@@ -81,7 +80,7 @@ interface PirOverviewHistoryProps {
 const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, nsdt } = useFormatter();
-  const entityLabelResolver = useEntityTranslation();
+  const { translateEntityType } = useEntityTranslation();
 
   const pir = useFragment(pirFragment, dataPir);
   const { pirLogs } = useFragment(pirHistoryFragment, dataHistory);
@@ -104,9 +103,7 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
           const { id, context_data, timestamp } = historyItem;
           const redirectURI = pirLogRedirectUri(context_data);
           const rawType = context_data?.entity_type ?? '';
-          const entityTypeLabel = rawType && rawType[0] === rawType[0].toUpperCase()
-            ? entityLabelResolver(rawType)
-            : t_i18n(displayEntityTypeForTranslation(rawType));
+          const entityTypeLabel = translateEntityType(rawType);
 
           return (
             <Box

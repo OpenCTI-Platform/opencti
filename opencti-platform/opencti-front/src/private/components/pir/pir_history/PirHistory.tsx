@@ -28,7 +28,6 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../../components/dataGrid/DataTable';
-import { displayEntityTypeForTranslation } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
@@ -126,7 +125,6 @@ interface PirHistoryProps {
 
 const PirHistory = ({ data }: PirHistoryProps) => {
   const [ref, setRef] = useState<HTMLDivElement | null>(null);
-  const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
   const { id: pirId, name } = useFragment(historyFragment, data);
 
@@ -169,9 +167,7 @@ const PirHistory = ({ data }: PirHistoryProps) => {
       label: 'Type',
       render: ({ context_data }) => {
         const rawType = context_data?.entity_type ?? '';
-        const entityTypeLabel = rawType && rawType[0] === rawType[0].toUpperCase()
-          ? translateEntityType(rawType)
-          : t_i18n(displayEntityTypeForTranslation(rawType));
+        const entityTypeLabel = translateEntityType(rawType);
         return (
           <Tooltip title={entityTypeLabel}>
             <div style={{ height: 24 }}>

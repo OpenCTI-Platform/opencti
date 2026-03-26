@@ -1,6 +1,4 @@
-import { displayEntityTypeForTranslation } from './String';
 import { isNotEmptyField } from './utils';
-import { useFormatter } from '../components/i18n';
 import useEntityTranslation from './hooks/useEntityTranslation';
 
 export const useGenerateAuditMessage = <T extends {
@@ -10,15 +8,12 @@ export const useGenerateAuditMessage = <T extends {
   user?: { name: string } | null;
   context_data?: { entity_name?: string | null; entity_type?: string | null; message: string } | null;
 }>(data: T) => {
-  const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
   const isHistoryUpdate = data.entity_type === 'History'
     && (data.event_type === 'update' || data.event_scope === 'update')
     && isNotEmptyField(data.context_data?.entity_name);
   const entityType = data.context_data?.entity_type ?? '';
-  const entityTypeLabel = entityType && entityType[0] === entityType[0].toUpperCase()
-    ? translateEntityType(entityType)
-    : t_i18n(displayEntityTypeForTranslation(entityType));
+  const entityTypeLabel = translateEntityType(entityType);
   return `${data.context_data?.message} ${
     isHistoryUpdate
       ? `for \`${data.context_data?.entity_name}\` (${entityTypeLabel})`
