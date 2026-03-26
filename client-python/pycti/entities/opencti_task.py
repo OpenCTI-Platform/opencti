@@ -629,7 +629,7 @@ class Task:
                 },
             )
             query = """
-               mutation taskEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
+               mutation taskEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
                    taskRelationAdd(id: $id, input: $input) {
                         id
                    }
