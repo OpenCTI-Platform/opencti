@@ -4,16 +4,16 @@ import { useFormatter } from '../../../../components/i18n';
 import PositionEditionOverview from './PositionEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer from '../../common/drawer/Drawer';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const PositionEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { handleClose, position, open, controlledDial } = props;
   const { editContext } = position;
   return (
     <Drawer
-      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('Position') } })}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: translateEntityType('Position') } })}
       open={open}
       onClose={handleClose}
       context={editContext}

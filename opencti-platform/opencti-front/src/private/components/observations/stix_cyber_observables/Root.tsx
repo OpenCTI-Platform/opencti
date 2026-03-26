@@ -25,7 +25,7 @@ import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import StixCyberObservableDeletion from './StixCyberObservableDeletion';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const subscription = graphql`
   subscription RootStixCyberObservableSubscription($id: ID!) {
@@ -85,7 +85,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   useSubscription<RootStixCyberObservableSubscription>(subConfig);
 
   const {
@@ -105,7 +105,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Observations') },
-            { label: entityTypeDisplayName('Stix-Cyber-Observable', { plural: true }), link: '/dashboard/observations/observables' },
+            { label: translateEntityType('Stix-Cyber-Observable', { plural: true }), link: '/dashboard/observations/observables' },
             { label: stixCyberObservable.observable_value, current: true },
           ]}
           />

@@ -17,7 +17,7 @@ import { useFormatter } from '../../../../components/i18n';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { fetchQuery } from '../../../../relay/environment';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import type { Theme } from '../../../../components/Theme';
@@ -264,7 +264,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { stixCoreObjectTypes: entityTypes, stixCyberObservableTypes, stixDomainObjectTypes } = useAttributes();
   const { setFieldValue, values } = useFormikContext<Record<string, unknown>>();
 
@@ -401,7 +401,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
           if (shouldShowCreateOption(results.length)) {
             const creationType = getCreationType();
             const createLabel = creationType
-              ? `${t_i18n('Create')} ${entityLabel(creationType)}`
+              ? `${t_i18n('Create')} ${translateEntityType(creationType)}`
               : t_i18n('Create');
 
             finalResults.push({
@@ -464,7 +464,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
           if (shouldShowCreateOption(results.length)) {
             const creationType = getCreationType();
             const createLabel = creationType
-              ? `${t_i18n('Create')} ${entityLabel(creationType)}`
+              ? `${t_i18n('Create')} ${translateEntityType(creationType)}`
               : t_i18n('Create');
 
             finalResults.push({
@@ -507,7 +507,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
         if (shouldShowCreateOption(results.length)) {
           const creationType = getCreationType();
           const createLabel = creationType
-            ? `${t_i18n('Create')} ${entityLabel(creationType)}`
+            ? `${t_i18n('Create')} ${translateEntityType(creationType)}`
             : t_i18n('Create');
 
           finalResults.push({
@@ -524,7 +524,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
 
   const entitiesTypes = R.pipe(
     R.map((n: string) => ({
-      label: entityLabel(n),
+      label: translateEntityType(n),
       value: n,
       type: n,
     })),

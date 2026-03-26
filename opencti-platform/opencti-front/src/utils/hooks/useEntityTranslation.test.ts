@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import useEntitySettings from './useEntitySettings';
-import { useEntityTypeDisplayName } from './useEntityTypeDisplayName';
+import useEntityTranslation from './useEntityTranslation';
 
 vi.mock('./useEntitySettings', () => ({ default: vi.fn() }));
 vi.mock('../../components/i18n', () => ({
@@ -21,45 +21,39 @@ const makeSetting = (
   custom_name_plural: customNamePlural,
 });
 
-describe('Hook: useEntityTypeDisplayName', () => {
+describe('Hook: useEntityTranslation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('should return custom singular name when set', () => {
     mockEntitySettings([makeSetting('Report', 'Intel Report')]);
-    const resolve = useEntityTypeDisplayName();
-    expect(resolve('Report')).toBe('Intel Report');
+    const { translateEntityType } = useEntityTranslation();
+    expect(translateEntityType('Report')).toBe('Intel Report');
   });
 
   it('should return custom plural name when defaultLabel is provided', () => {
     mockEntitySettings([makeSetting('Report', 'Intel Report', 'Intel Reports')]);
-    const resolve = useEntityTypeDisplayName();
-    expect(resolve('Report', 'Reports')).toBe('Intel Reports');
+    const { translateEntityType } = useEntityTranslation();
+    expect(translateEntityType('Report', { plural: true })).toBe('Intel Reports');
   });
 
   it('should fall back to defaultLabel when custom_name_plural is null', () => {
     mockEntitySettings([makeSetting('Report', null, null)]);
-    const resolve = useEntityTypeDisplayName();
-    expect(resolve('Report', 'Reports')).toBe('Reports');
+    const { translateEntityType } = useEntityTranslation();
+    expect(translateEntityType('Report', { plural: true })).toBe('Reports');
   });
 
   it('should fall back to i18n when no custom_name and no defaultLabel', () => {
     mockEntitySettings([makeSetting('Report', null)]);
-    const resolve = useEntityTypeDisplayName();
-    expect(resolve('Report')).toBe('entity_Report');
+    const { translateEntityType } = useEntityTranslation();
+    expect(translateEntityType('Report')).toBe('entity_Report');
   });
 
   it('should fall back to i18n when no matching setting exists and no defaultLabel', () => {
     mockEntitySettings([makeSetting('Report', 'Intel Report')]);
-    const resolve = useEntityTypeDisplayName();
-    expect(resolve('Unknown')).toBe('entity_Unknown');
-  });
-
-  it('should fall back to defaultLabel when no matching setting exists', () => {
-    mockEntitySettings([makeSetting('Report', 'Intel Report')]);
-    const resolve = useEntityTypeDisplayName();
-    expect(resolve('Unknown', 'Unknowns')).toBe('Unknowns');
+    const { translateEntityType } = useEntityTranslation();
+    expect(translateEntityType('Unknown')).toBe('entity_Unknown');
   });
 
   it('should find the correct setting among multiple entity settings', () => {
@@ -67,8 +61,8 @@ describe('Hook: useEntityTypeDisplayName', () => {
       makeSetting('Report', 'Intel Report', 'Intel Reports'),
       makeSetting('Malware', 'Custom Malware', 'Custom Malwares'),
     ]);
-    const resolve = useEntityTypeDisplayName();
-    expect(resolve('Malware')).toBe('Custom Malware');
-    expect(resolve('Report')).toBe('Intel Report');
+    const { translateEntityType } = useEntityTranslation();
+    expect(translateEntityType('Malware')).toBe('Custom Malware');
+    expect(translateEntityType('Report')).toBe('Intel Report');
   });
 });

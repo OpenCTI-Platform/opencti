@@ -6,7 +6,7 @@ import OrganizationEditionOverview from './OrganizationEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer, { DrawerControlledDialType } from '../../common/drawer/Drawer';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 export const organizationEditionQuery = graphql`
   query OrganizationEditionContainerQuery($id: String!) {
@@ -34,7 +34,7 @@ const OrganizationEditionContainer = ({
   open,
 }: OrganizationEditionContainerProps) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { organization } = usePreloadedQuery(organizationEditionQuery, queryRef);
   if (!organization) {
     return <ErrorNotFound />;
@@ -44,7 +44,7 @@ const OrganizationEditionContainer = ({
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('Organization') } })}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: translateEntityType('Organization') } })}
       open={open}
       onClose={handleClose}
       context={editContext}

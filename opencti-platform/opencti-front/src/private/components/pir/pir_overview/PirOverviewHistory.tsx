@@ -26,7 +26,7 @@ import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { displayEntityTypeForTranslation } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { PirOverviewHistoryPirFragment$key } from './__generated__/PirOverviewHistoryPirFragment.graphql';
 import { PirOverviewHistoryFragment$key } from './__generated__/PirOverviewHistoryFragment.graphql';
 import Card from '../../../../components/common/card/Card';
@@ -81,7 +81,7 @@ interface PirOverviewHistoryProps {
 const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, nsdt } = useFormatter();
-  const entityLabelResolver = useEntityTypeDisplayName();
+  const entityLabelResolver = useEntityTranslation();
 
   const pir = useFragment(pirFragment, dataPir);
   const { pirLogs } = useFragment(pirHistoryFragment, dataHistory);

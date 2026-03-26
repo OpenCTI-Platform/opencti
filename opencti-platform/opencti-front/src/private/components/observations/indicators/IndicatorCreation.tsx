@@ -36,7 +36,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import TypesField from '../TypesField';
 import { IndicatorCreationMutation, IndicatorCreationMutation$variables } from './__generated__/IndicatorCreationMutation.graphql';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -114,7 +114,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { mandatoryAttributes } = useIsMandatoryAttribute(INDICATOR_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
@@ -152,7 +152,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
   const [commit] = useApiMutation<IndicatorCreationMutation>(
     indicatorMutation,
     undefined,
-    { successMessage: `${entityTypeDisplayName('Indicator')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Indicator')} ${t_i18n('successfully created')}` },
   );
 
   const onSubmit: FormikConfig<IndicatorAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
@@ -422,7 +422,7 @@ interface IndicatorCreationProps {
 
 const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginationOptions, contextual, display }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -453,7 +453,7 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
         <Dialog
           open={open}
           onClose={handleClose}
-          title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Indicator') } })}
+          title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Indicator') } })}
         >
           <IndicatorCreationForm
             updater={updater}
@@ -467,7 +467,7 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Indicator') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Indicator') } })}
       controlledDial={CreateIndicatorControlledDial}
     >
       {({ onClose }) => (

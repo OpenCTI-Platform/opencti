@@ -9,7 +9,7 @@ import Drawer from '../../common/drawer/Drawer';
 import { StixCyberObservableEditionContainerQuery$data } from './__generated__/StixCyberObservableEditionContainerQuery.graphql';
 import StixCyberObservableEditionContainer from './StixCyberObservableEditionContainer';
 import { stixCyberObservableEditionOverviewFocus } from './StixCyberObservableEditionOverview';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 export const stixCyberObservableEditionQuery = graphql`
   query StixCyberObservableEditionContainerQuery($id: String!) {
@@ -42,11 +42,11 @@ const StixCyberObservableEditionContent: FunctionComponent<StixCyberObservableEd
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('Stix-Cyber-Observable') } })}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: translateEntityType('Stix-Cyber-Observable') } })}
       open={open}
       context={stixCyberObservable?.editContext}
       onClose={handleClose}

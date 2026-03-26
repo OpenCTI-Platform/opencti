@@ -6,7 +6,7 @@ import CountryEditionOverview from './CountryEditionOverview';
 import { CountryEditionContainerQuery } from './__generated__/CountryEditionContainerQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 interface CountryEditionContainerProps {
   handleClose: () => void;
@@ -34,12 +34,12 @@ const CountryEditionContainer: FunctionComponent<CountryEditionContainerProps> =
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { country } = usePreloadedQuery(countryEditionQuery, queryRef);
   if (country) {
     return (
       <Drawer
-        title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('Country') } })}
+        title={t_i18n('', { id: 'Update ...', values: { entity_type: translateEntityType('Country') } })}
         context={country.editContext}
         onClose={handleClose}
         open={open}

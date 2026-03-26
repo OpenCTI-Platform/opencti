@@ -9,7 +9,7 @@ import CheckboxesField from '../../../../components/CheckboxesField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { GraphLink, GraphNode } from '../../../../components/graph/graph.types';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FieldOption } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -111,7 +111,7 @@ const InvestigationExpandFormContent = ({
   distributionToQueryRef,
 }: InvestigationExpandFormContentProps) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { schema } = useAuth();
 
   const distributionRel = usePreloadedQuery(
@@ -342,7 +342,7 @@ const InvestigationExpandFormContent = ({
     setTargets(
       graphDistribution.map(({ label, value }) => {
         const isRelationship = relationshipsNames.includes(label.toLowerCase());
-        let translation = entityLabel(label);
+        let translation = translateEntityType(label);
         if (isRelationship) {
           translation = `${t_i18n(`relationship_${label.toLowerCase()}`)} (${t_i18n('Relationship')})`;
         }

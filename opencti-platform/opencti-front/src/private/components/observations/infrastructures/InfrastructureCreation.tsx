@@ -34,7 +34,7 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const infrastructureMutation = graphql`
   mutation InfrastructureCreationMutation($input: InfrastructureAddInput!) {
@@ -94,7 +94,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(INFRASTRUCTURE_TYPE);
@@ -122,7 +122,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
   const [commit] = useApiMutation<InfrastructureCreationMutation>(
     infrastructureMutation,
     undefined,
-    { successMessage: `${entityTypeDisplayName('Infrastructure')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Infrastructure')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -358,7 +358,7 @@ const InfrastructureCreation = ({ paginationOptions }: {
   paginationOptions: InfrastructuresLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
@@ -373,7 +373,7 @@ const InfrastructureCreation = ({ paginationOptions }: {
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Infrastructure') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Infrastructure') } })}
       controlledDial={CreateInfrastructureControlledDial}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
     >

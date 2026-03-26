@@ -30,7 +30,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import IncidentEdition from './IncidentEdition';
 import IncidentDeletion from './IncidentDeletion';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -99,7 +99,7 @@ const RootIncidentComponent = ({ queryRef }) => {
   );
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   useSubscription(subConfig);
   const data = usePreloadedQuery(incidentQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
@@ -145,7 +145,7 @@ const RootIncidentComponent = ({ queryRef }) => {
           >
             <Breadcrumbs elements={[
               { label: t_i18n('Events') },
-              { label: entityTypeDisplayName('Incident', { plural: true }), link: '/dashboard/events/incidents' },
+              { label: translateEntityType('Incident', { plural: true }), link: '/dashboard/events/incidents' },
               { label: incident.name, current: true },
             ]}
             />

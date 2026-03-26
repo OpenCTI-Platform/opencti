@@ -31,7 +31,7 @@ import { splitMultilines } from '../../../../utils/String';
 import ProgressBar from '../../../../components/ProgressBar';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const channelMutation = graphql`
   mutation ChannelCreationMutation($input: ChannelAddInput!) {
@@ -88,7 +88,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(
@@ -109,7 +109,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
   const [commit] = useApiMutation<ChannelCreationMutation>(
     channelMutation,
     undefined,
-    { successMessage: `${entityTypeDisplayName('Channel')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Channel')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -315,13 +315,13 @@ const ChannelCreation = ({
   paginationOptions: ChannelsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_channels', paginationOptions, 'channelAdd');
   const [bulkOpen, setBulkOpen] = useState(false);
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Channel') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Channel') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateChannelControlledDial}
     >

@@ -16,7 +16,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
 import { caseSetTemplateQuery, generateConnectionId } from '../CaseUtils';
@@ -95,7 +95,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
   enableReferences,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [open, setOpen] = useState(false);
   const [openCaseTemplate, setOpenCaseTemplate] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -172,7 +172,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
       </Dialog>
       <Drawer
         open={open}
-        title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Task') } })}
+        title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Task') } })}
         onClose={handleClose}
       >
         <CaseTaskCreation

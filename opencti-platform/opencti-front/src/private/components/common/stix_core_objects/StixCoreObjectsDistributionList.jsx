@@ -2,7 +2,7 @@ import React from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
@@ -93,7 +93,7 @@ const StixCoreObjectsDistributionList = ({
   popover,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const renderContent = () => {
     const selection = dataSelection[0];
@@ -129,7 +129,7 @@ const StixCoreObjectsDistributionList = ({
               if (isFieldForIdentifier(selection.attribute)) {
                 label = getMainRepresentative(n.entity);
               } else if (selection.attribute === 'entity_type') {
-                label = entityLabel(n.label);
+                label = translateEntityType(n.label);
               }
               return {
                 label,

@@ -17,7 +17,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 
 const LOCAL_STORAGE_KEY = 'indicators-list';
 
@@ -121,7 +121,7 @@ const indicatorsLinesFragment = graphql`
 
 const Indicators = () => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Indicators | Observations'));
 
@@ -198,7 +198,7 @@ const Indicators = () => {
 
   return (
     <div data-testid="indicator-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: entityTypeDisplayName('Indicator', { plural: true }), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: translateEntityType('Indicator', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

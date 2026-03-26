@@ -30,7 +30,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const regionMutation = graphql`
   mutation RegionCreationMutation($input: RegionAddInput!) {
@@ -85,7 +85,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(REGION_TYPE);
@@ -100,7 +100,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
   const [commit] = useApiMutation<RegionCreationMutation>(
     regionMutation,
     undefined,
-    { successMessage: `${entityTypeDisplayName('Region')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Region')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -291,7 +291,7 @@ const RegionCreation = ({
   paginationOptions: RegionsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_regions', paginationOptions, 'regionAdd');
 
@@ -300,7 +300,7 @@ const RegionCreation = ({
   );
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Region') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Region') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateRegionControlledDial}
     >

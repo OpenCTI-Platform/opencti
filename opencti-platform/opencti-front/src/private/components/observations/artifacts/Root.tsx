@@ -23,7 +23,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { RootArtifactSubscription } from './__generated__/RootArtifactSubscription.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { RootArtifactQuery } from './__generated__/RootArtifactQuery.graphql';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const subscription = graphql`
   subscription RootArtifactSubscription($id: ID!) {
@@ -78,7 +78,7 @@ interface RootArtifactProps {
 const RootArtifact = ({ queryRef, observableId }: RootArtifactProps) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
 
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootArtifactSubscription>>(
     () => ({
@@ -104,7 +104,7 @@ const RootArtifact = ({ queryRef, observableId }: RootArtifactProps) => {
     <div style={{ paddingRight }}>
       <Breadcrumbs elements={[
         { label: t_i18n('Observations') },
-        { label: entityTypeDisplayName('Artifact', { plural: true }), link: '/dashboard/observations/artifacts' },
+        { label: translateEntityType('Artifact', { plural: true }), link: '/dashboard/observations/artifacts' },
         { label: stixCyberObservable.observable_value, current: true },
       ]}
       />

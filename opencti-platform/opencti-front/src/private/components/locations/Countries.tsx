@@ -12,13 +12,13 @@ import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 
 const LOCAL_STORAGE_KEY = 'countries';
 
 const Countries: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Countries | Locations'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CountriesLinesPaginationQuery$variables>(
@@ -116,7 +116,7 @@ const Countries: FunctionComponent = () => {
   };
   return (
     <div data-testid="country-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: entityTypeDisplayName('Country', { plural: true }), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: translateEntityType('Country', { plural: true }), current: true }]} />
       {renderLines()}
     </div>
   );

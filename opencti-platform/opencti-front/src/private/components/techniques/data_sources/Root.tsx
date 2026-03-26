@@ -24,7 +24,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import DataSourceEdition from './DataSourceEdition';
 import DataSourceDeletion from './DataSourceDeletion';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const subscription = graphql`
   subscription RootDataSourcesSubscription($id: ID!) {
@@ -84,7 +84,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   useSubscription(subConfig);
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
   const paddingRight = getPaddingRight(location.pathname, dataSource?.id, '/dashboard/techniques/data_sources', false);
@@ -94,7 +94,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Techniques') },
-            { label: entityTypeDisplayName('Data-Source', { plural: true }), link: '/dashboard/techniques/data_sources' },
+            { label: translateEntityType('Data-Source', { plural: true }), link: '/dashboard/techniques/data_sources' },
             { label: dataSource.name, current: true },
           ]}
           />

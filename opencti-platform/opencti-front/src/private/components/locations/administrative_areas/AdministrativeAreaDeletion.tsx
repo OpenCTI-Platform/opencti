@@ -5,7 +5,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../components/DeleteDialog';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const AdministrativeAreaDeletionDeleteMutation = graphql`
   mutation AdministrativeAreaDeletionDeleteMutation($id: ID!) {
@@ -15,11 +15,11 @@ const AdministrativeAreaDeletionDeleteMutation = graphql`
 
 const AdministrativeAreaDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: entityTypeDisplayName('Administrative-Area') },
+    values: { entity_type: translateEntityType('Administrative-Area') },
   });
   const [commit] = useApiMutation(
     AdministrativeAreaDeletionDeleteMutation,

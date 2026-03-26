@@ -26,7 +26,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import ChannelEdition from './ChannelEdition';
 import ChannelDeletion from './ChannelDeletion';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const subscription = graphql`
   subscription RootChannelSubscription($id: ID!) {
@@ -90,7 +90,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   useSubscription<RootChannelSubscription>(subConfig);
 
   const {
@@ -135,7 +135,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Arsenal') },
-              { label: entityTypeDisplayName('Channel', { plural: true }), link: '/dashboard/arsenal/channels' },
+              { label: translateEntityType('Channel', { plural: true }), link: '/dashboard/arsenal/channels' },
               { label: channel.name, current: true },
             ]}
             />

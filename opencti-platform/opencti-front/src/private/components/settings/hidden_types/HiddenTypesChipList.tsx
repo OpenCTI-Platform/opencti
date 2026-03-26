@@ -5,7 +5,7 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Label from '../../../../components/common/label/Label';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -37,7 +37,7 @@ const HiddenTypesChipList = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
 
   const hiddenTypesGlobal = useEntitySettings()
     .filter((entitySetting) => entitySetting.platform_hidden_type === true)
@@ -54,14 +54,14 @@ const HiddenTypesChipList = ({
           <Chip
             key={hiddenTypeGlobal}
             classes={{ root: classes.grey_chip }}
-            label={entityLabel(hiddenTypeGlobal)}
+            label={translateEntityType(hiddenTypeGlobal)}
           />
         ))}
         {hiddenTypes.map((hiddenType) => (
           <Chip
             key={hiddenType}
             classes={{ root: classes.chip }}
-            label={entityLabel(hiddenType)}
+            label={translateEntityType(hiddenType)}
           />
         ))}
       </FieldOrEmpty>

@@ -8,7 +8,7 @@ import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import React, { useState } from 'react';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 interface SearchScopeElementProps {
   name: string;
@@ -25,7 +25,7 @@ const SearchScopeElement = ({
   setSearchScope,
   availableRelationFilterTypes,
 }: SearchScopeElementProps) => {
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [anchorElSearchScope, setAnchorElSearchScope] = useState<PopoverProps['anchorEl']>();
   const { stixCoreObjectTypes: entityTypes } = useAttributes();
   if (name === 'contextEntityId') {
@@ -38,7 +38,7 @@ const SearchScopeElement = ({
       : true))
     .map((n) => {
       return {
-        label: entityLabel(n),
+        label: translateEntityType(n),
         value: n,
         type: n,
       };

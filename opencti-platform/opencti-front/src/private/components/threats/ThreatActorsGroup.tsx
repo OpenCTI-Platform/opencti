@@ -22,7 +22,7 @@ import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 
@@ -30,7 +30,7 @@ const LOCAL_STORAGE_KEY = 'threatActorsGroups';
 
 const ThreatActorsGroup = () => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -204,7 +204,7 @@ const ThreatActorsGroup = () => {
 
   return (
     <div data-testid="threat-actor-group-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: entityTypeDisplayName('Threat-Actor-Group', { plural: true }), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: translateEntityType('Threat-Actor-Group', { plural: true }), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
     </div>
   );

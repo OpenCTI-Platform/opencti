@@ -18,7 +18,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 
 export const LOCAL_STORAGE_KEY_INFRASTRUCTURES = 'infrastructures';
 
@@ -118,7 +118,7 @@ const infrastructuresLinesFragment = graphql`
 
 const Infrastructures = () => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Infrastructures | Observations'));
   const {
@@ -169,7 +169,7 @@ const Infrastructures = () => {
   return (
     <ExportContextProvider>
       <div data-testid="infrastructures-page">
-        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: entityTypeDisplayName('Infrastructure', { plural: true }), current: true }]} />
+        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: translateEntityType('Infrastructure', { plural: true }), current: true }]} />
         {queryRef && (
           <DataTable
             dataColumns={dataColumns}

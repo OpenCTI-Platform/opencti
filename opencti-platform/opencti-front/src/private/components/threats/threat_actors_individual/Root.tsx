@@ -27,7 +27,7 @@ import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
 import ThreatActorIndividualDeletion from './ThreatActorIndividualDeletion';
 import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const subscription = graphql`
   subscription RootThreatActorIndividualSubscription($id: ID!) {
@@ -102,7 +102,7 @@ const RootThreatActorIndividualComponent = ({
   );
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   useSubscription<RootThreatActorIndividualSubscription>(subConfig);
   const {
     threatActorIndividual,
@@ -153,7 +153,7 @@ const RootThreatActorIndividualComponent = ({
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Threats') },
-              { label: entityTypeDisplayName('Threat-Actor-Individual', { plural: true }), link: '/dashboard/threats/threat_actors_individual' },
+              { label: translateEntityType('Threat-Actor-Individual', { plural: true }), link: '/dashboard/threats/threat_actors_individual' },
               { label: threatActorIndividual.name, current: true },
             ]}
             />

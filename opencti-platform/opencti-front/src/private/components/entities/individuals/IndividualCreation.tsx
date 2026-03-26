@@ -31,7 +31,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const individualMutation = graphql`
   mutation IndividualCreationMutation($input: IndividualAddInput!) {
@@ -87,7 +87,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(INDIVIDUAL_TYPE);
@@ -106,7 +106,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
   const [commit] = useApiMutation<IndividualCreationMutation>(
     individualMutation,
     undefined,
-    { successMessage: `${entityTypeDisplayName('Individual')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Individual')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -317,7 +317,7 @@ const IndividualCreation = ({ paginationOptions }: {
   paginationOptions: IndividualsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
@@ -331,7 +331,7 @@ const IndividualCreation = ({ paginationOptions }: {
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Individual') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Individual') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateIndividualControlledDial}
     >

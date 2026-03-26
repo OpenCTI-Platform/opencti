@@ -14,7 +14,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 
 const LOCAL_STORAGE_KEY = 'observedDatas';
 
@@ -125,7 +125,7 @@ const observedDatasLinesFragment = graphql`
 
 const ObservedDatas: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Observed Data | Events'));
   const {
@@ -185,7 +185,7 @@ const ObservedDatas: FunctionComponent = () => {
 
   return (
     <span data-testid="observed-data">
-      <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: entityTypeDisplayName('Observed-Data', { plural: true }), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: translateEntityType('Observed-Data', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

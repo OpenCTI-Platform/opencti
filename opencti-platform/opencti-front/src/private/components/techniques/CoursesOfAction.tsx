@@ -16,7 +16,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 
 const LOCAL_STORAGE_KEY = 'coursesOfAction';
 
@@ -104,7 +104,7 @@ export const coursesOfActionLinesFragment = graphql`
 
 const CoursesOfAction = () => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Courses of Action | Techniques'));
 
@@ -154,7 +154,7 @@ const CoursesOfAction = () => {
 
   return (
     <div data-testid="course-of-action-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: entityTypeDisplayName('Course-Of-Action', { plural: true }), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: translateEntityType('Course-Of-Action', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

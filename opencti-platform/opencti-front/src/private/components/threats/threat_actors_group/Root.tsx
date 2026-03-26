@@ -27,7 +27,7 @@ import ThreatActorGroupEdition from './ThreatActorGroupEdition';
 import ThreatActorGroupDeletion from './ThreatActorGroupDeletion';
 import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const subscription = graphql`
   subscription RootThreatActorsGroupSubscription($id: ID!) {
@@ -94,7 +94,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
   }), [threatActorGroupId]);
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   useSubscription<RootThreatActorsGroupSubscription>(subConfig);
   const {
     threatActorGroup,
@@ -141,7 +141,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
             <Breadcrumbs
               elements={[
                 { label: t_i18n('Threats') },
-                { label: entityTypeDisplayName('Threat-Actor-Group', { plural: true }), link: '/dashboard/threats/threat_actors_group' },
+                { label: translateEntityType('Threat-Actor-Group', { plural: true }), link: '/dashboard/threats/threat_actors_group' },
                 { label: threatActorGroup.name, current: true },
               ]}
             />

@@ -46,7 +46,7 @@ import BulkTextModalButton from '../../../../components/fields/BulkTextField/Bul
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 interface ErrorBadgeProps extends BadgeProps {
   errors?: FormikErrors<ThreatActorIndividualAddInput>;
@@ -141,7 +141,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { heightsConverterSave, weightsConverterSave } = useUserMetric();
@@ -210,7 +210,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
   const [commit] = useApiMutation<ThreatActorIndividualCreationMutation>(
     ThreatActorIndividualMutation,
     undefined,
-    { successMessage: `${entityTypeDisplayName('Threat-Actor-Individual')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Threat-Actor-Individual')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -688,7 +688,7 @@ const ThreatActorIndividualCreation = ({
   paginationOptions: ThreatActorsIndividualCardsPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [bulkOpen, setBulkOpen] = useState(false);
 
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
@@ -704,7 +704,7 @@ const ThreatActorIndividualCreation = ({
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Threat-Actor-Individual') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Threat-Actor-Individual') } })}
       controlledDial={CreateThreatActorIndividualControlledDial}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
     >

@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
@@ -57,12 +57,12 @@ const SubTypesLines: FunctionComponent<SubTypesLinesProps> = ({
     fragmentDef: subTypesLinesFragment,
     queryRef,
   });
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const filterOnSubType = ({ node }: { node: { label: string } }) => {
     if (keyword) {
       return (
         node.label.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-        || entityLabel(node.label)
+        || translateEntityType(node.label)
           .toLowerCase()
           .indexOf(keyword.toLowerCase()) !== -1
       );
@@ -73,8 +73,8 @@ const SubTypesLines: FunctionComponent<SubTypesLinesProps> = ({
     edgeA: { node: { label: string } },
     edgeB: { node: { label: string } },
   ) => {
-    return entityLabel(edgeA.node.label).localeCompare(
-      entityLabel(edgeB.node.label),
+    return translateEntityType(edgeA.node.label).localeCompare(
+      translateEntityType(edgeB.node.label),
     );
   };
   const subTypes = (data?.subTypes?.edges ?? [])

@@ -26,7 +26,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import ToolKnowledge from './ToolKnowledge';
 import ToolDeletion from './ToolDeletion';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const subscription = graphql`
   subscription RootToolSubscription($id: ID!) {
@@ -91,7 +91,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   useSubscription<RootToolSubscription>(subConfig);
 
   const {
@@ -135,7 +135,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Arsenal') },
-              { label: entityTypeDisplayName('Tool', { plural: true }), link: '/dashboard/arsenal/tools' },
+              { label: translateEntityType('Tool', { plural: true }), link: '/dashboard/arsenal/tools' },
               { label: tool.name, current: true },
             ]}
             />

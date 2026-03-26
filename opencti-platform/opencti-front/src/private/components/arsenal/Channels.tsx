@@ -13,7 +13,7 @@ import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 
 const LOCAL_STORAGE_KEY = 'channels';
 
@@ -104,7 +104,7 @@ const channelsLinesFragment = graphql`
 
 const Channels = () => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Channels | Arsenal'));
   const initialValues = {
@@ -158,7 +158,7 @@ const Channels = () => {
 
   return (
     <div data-testid="channel-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: entityTypeDisplayName('Channel', { plural: true }), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: translateEntityType('Channel', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

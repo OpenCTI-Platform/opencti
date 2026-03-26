@@ -7,7 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { CaseIncidentEditionContainerCaseQuery } from './__generated__/CaseIncidentEditionContainerCaseQuery.graphql';
 import CaseIncidentEditionOverview from './CaseIncidentEditionOverview';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 interface CaseIncidentEditionContainerProps {
   queryRef: PreloadedQuery<CaseIncidentEditionContainerCaseQuery>;
@@ -32,14 +32,14 @@ const CaseIncidentEditionContainer: FunctionComponent<
   CaseIncidentEditionContainerProps
 > = ({ queryRef, handleClose, open, controlledDial }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { caseIncident } = usePreloadedQuery(caseIncidentEditionQuery, queryRef);
   if (caseIncident === null) {
     return <ErrorNotFound />;
   }
   return (
     <Drawer
-      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('Case-Incident') } })}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: translateEntityType('Case-Incident') } })}
       context={caseIncident?.editContext}
       onClose={handleClose}
       open={open}

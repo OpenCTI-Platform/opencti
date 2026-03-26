@@ -30,7 +30,7 @@ import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { displayEntityTypeForTranslation } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const pirHistoryLogFragment = graphql`
   fragment PirHistoryLogFragment on Log {
@@ -127,7 +127,7 @@ interface PirHistoryProps {
 const PirHistory = ({ data }: PirHistoryProps) => {
   const [ref, setRef] = useState<HTMLDivElement | null>(null);
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { id: pirId, name } = useFragment(historyFragment, data);
 
   const LOCAL_STORAGE_KEY = `PirHistoryLogs-${pirId}`;
@@ -170,7 +170,7 @@ const PirHistory = ({ data }: PirHistoryProps) => {
       render: ({ context_data }) => {
         const rawType = context_data?.entity_type ?? '';
         const entityTypeLabel = rawType && rawType[0] === rawType[0].toUpperCase()
-          ? entityLabel(rawType)
+          ? translateEntityType(rawType)
           : t_i18n(displayEntityTypeForTranslation(rawType));
         return (
           <Tooltip title={entityTypeLabel}>

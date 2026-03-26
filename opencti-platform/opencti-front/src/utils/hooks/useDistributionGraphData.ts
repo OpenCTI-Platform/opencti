@@ -1,6 +1,6 @@
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../components/i18n';
-import { useEntityTypeDisplayName } from './useEntityLabel';
+import useEntityTranslation from './useEntityTranslation';
 import { getMainRepresentative, isFieldForIdentifier } from '../defaultRepresentatives';
 import { itemColor } from '../Colors';
 import type { Widget } from '../widget/widget';
@@ -30,7 +30,7 @@ type Selection = Widget['dataSelection'][0];
 
 const useDistributionGraphData = () => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const theme = useTheme();
 
   const getColorFromDistributionNode = (n: DistributionNode, selection: Selection) => {
@@ -65,7 +65,7 @@ const useDistributionGraphData = () => {
       if (isFieldForIdentifier(selection.attribute ?? undefined)) {
         label = getMainRepresentative(n.entity) || n.label;
       } else if (selection.attribute === 'entity_type') {
-        label = entityLabel(n.label);
+        label = translateEntityType(n.label);
       }
       return {
         x: label,
@@ -114,7 +114,7 @@ const useDistributionGraphData = () => {
         return getMainRepresentative(n.entity);
       }
       if (groupBy === 'entity_type') {
-        return entityLabel(n.label);
+        return translateEntityType(n.label);
       }
       return n.label;
     });
@@ -132,7 +132,7 @@ const useDistributionGraphData = () => {
         return { text: getMainRepresentative(n.entity), value: n.value ?? 0 };
       }
       if (groupBy === 'entity_type') {
-        return { text: entityLabel(n.label), value: n.value ?? 0 };
+        return { text: translateEntityType(n.label), value: n.value ?? 0 };
       }
       return { text: n.label, value: n.value ?? 0 };
     });

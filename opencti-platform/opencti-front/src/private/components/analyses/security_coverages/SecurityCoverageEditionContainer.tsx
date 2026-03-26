@@ -7,7 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { SecurityCoverageEditionContainerQuery } from './__generated__/SecurityCoverageEditionContainerQuery.graphql';
 import SecurityCoverageEditionOverview from './SecurityCoverageEditionOverview';
 import Drawer, { DrawerControlledDialType } from '../../common/drawer/Drawer';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 export const securityCoverageEditionContainerQuery = graphql`
   query SecurityCoverageEditionContainerQuery($id: String!) {
@@ -36,11 +36,11 @@ const SecurityCoverageEditionContainer: FunctionComponent<SecurityCoverageEditio
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { securityCoverage } = usePreloadedQuery(securityCoverageEditionContainerQuery, queryRef);
   return (
     <Drawer
-      title={t_i18n('', { id: 'Update ...', values: { entity_type: entityTypeDisplayName('Security-Coverage') } })}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: translateEntityType('Security-Coverage') } })}
       context={securityCoverage?.editContext}
       onClose={handleClose}
       open={open}

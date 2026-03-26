@@ -19,7 +19,7 @@ import CaseTask from './Task';
 import { RootTaskQuery } from './__generated__/RootTaskQuery.graphql';
 import { RootTaskSubscription } from './__generated__/RootTaskSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { getPaddingRight } from '../../../../utils/utils';
@@ -76,7 +76,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
   const location = useLocation();
   const enableReferences = useIsEnforceReference('Task') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
 
   useSubscription(subConfig);
 
@@ -94,7 +94,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Cases') },
-            { label: entityTypeDisplayName('Task', { plural: true }), link: '/dashboard/cases/tasks' },
+            { label: translateEntityType('Task', { plural: true }), link: '/dashboard/cases/tasks' },
             { label: data.name, current: true },
           ]}
           />

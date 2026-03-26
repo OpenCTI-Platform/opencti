@@ -12,13 +12,13 @@ import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 
 const LOCAL_STORAGE_KEY_POSITIONS = 'positions';
 
 const Positions: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Positions | Locations'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<PositionsLinesPaginationQuery$variables>(
@@ -116,7 +116,7 @@ const Positions: FunctionComponent = () => {
   };
   return (
     <div data-testid="position-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: entityTypeDisplayName('Position', { plural: true }), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: translateEntityType('Position', { plural: true }), current: true }]} />
       {renderLines()}
     </div>
   );

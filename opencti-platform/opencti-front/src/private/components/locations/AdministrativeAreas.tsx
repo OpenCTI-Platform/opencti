@@ -15,13 +15,13 @@ import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 
 const LOCAL_STORAGE_KEY = 'administrative-areas';
 
 const AdministrativeAreas: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Administrative Areas | Locations'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<AdministrativeAreasLinesPaginationQuery$variables>(
@@ -122,7 +122,7 @@ const AdministrativeAreas: FunctionComponent = () => {
   };
   return (
     <div data-testid="administrative-area-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: entityTypeDisplayName('Administrative-Area', { plural: true }), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: translateEntityType('Administrative-Area', { plural: true }), current: true }]} />
       {renderLines()}
     </div>
   );

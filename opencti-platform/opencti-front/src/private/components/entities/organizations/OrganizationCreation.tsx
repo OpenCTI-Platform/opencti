@@ -32,7 +32,7 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import TextField from '../../../../components/TextField';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const organizationMutation = graphql`
   mutation OrganizationCreationMutation($input: OrganizationAddInput!) {
@@ -90,7 +90,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(ORGANIZATION_TYPE);
@@ -115,7 +115,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
   const [commit] = useApiMutation<OrganizationCreationMutation>(
     organizationMutation,
     undefined,
-    { successMessage: `${entityTypeDisplayName('Organization')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Organization')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -350,7 +350,7 @@ const OrganizationCreation = ({ paginationOptions }: {
   paginationOptions: OrganizationsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
@@ -364,7 +364,7 @@ const OrganizationCreation = ({ paginationOptions }: {
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Organization') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Organization') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateOrganizationControlledDial}
     >

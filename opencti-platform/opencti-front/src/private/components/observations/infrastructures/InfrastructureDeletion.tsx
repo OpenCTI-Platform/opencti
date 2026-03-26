@@ -7,7 +7,7 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { RelayError } from '../../../../relay/relayTypes';
 import DeleteDialog from '../../../../components/DeleteDialog';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const InfrastructureDeletionDeleteMutation = graphql`
   mutation InfrastructureDeletionDeleteMutation($id: ID!) {
@@ -20,10 +20,10 @@ const InfrastructureDeletionDeleteMutation = graphql`
 const InfrastructureDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: entityTypeDisplayName('Infrastructure') },
+    values: { entity_type: translateEntityType('Infrastructure') },
   });
   const [commit] = useApiMutation(
     InfrastructureDeletionDeleteMutation,

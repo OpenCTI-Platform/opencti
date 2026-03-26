@@ -14,7 +14,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 
 const LOCAL_STORAGE_KEY = 'vulnerabilities';
 
@@ -109,7 +109,7 @@ const vulnerabilitiesLinesFragment = graphql`
 
 const Vulnerabilities = () => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Vulnerabilities | Arsenal'));
   const {
@@ -163,7 +163,7 @@ const Vulnerabilities = () => {
 
   return (
     <div data-testid="vulnerability-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: entityTypeDisplayName('Vulnerability', { plural: true }), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: translateEntityType('Vulnerability', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

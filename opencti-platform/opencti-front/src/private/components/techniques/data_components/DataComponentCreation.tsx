@@ -32,7 +32,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { DataComponentCreationMutation, DataComponentCreationMutation$variables } from './__generated__/DataComponentCreationMutation.graphql';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const dataComponentMutation = graphql`
   mutation DataComponentCreationMutation($input: DataComponentAddInput!) {
@@ -88,7 +88,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(DATA_COMPONENT_TYPE);
@@ -107,7 +107,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
   const [commit] = useApiMutation<DataComponentCreationMutation>(
     dataComponentMutation,
     undefined,
-    { successMessage: `${entityTypeDisplayName('Data-Component')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Data-Component')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -317,7 +317,7 @@ const DataComponentCreation: FunctionComponent<{
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [bulkOpen, setBulkOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
@@ -337,7 +337,7 @@ const DataComponentCreation: FunctionComponent<{
   });
   const renderClassic = () => (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Data-Component') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Data-Component') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateDataComponentControlledDial}
     >

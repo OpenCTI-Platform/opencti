@@ -9,7 +9,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import CaseRftCreation from './case_rfts/CaseRftCreation';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
@@ -128,7 +128,7 @@ export const LOCAL_STORAGE_KEY = 'caseRfts';
 
 const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Requests for Takedown | Cases'));
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
@@ -198,7 +198,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
 
   return (
     <div data-testid="rfts-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: entityTypeDisplayName('Case-Rft', { plural: true }), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: translateEntityType('Case-Rft', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

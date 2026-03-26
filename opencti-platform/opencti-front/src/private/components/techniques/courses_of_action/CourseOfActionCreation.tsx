@@ -30,7 +30,7 @@ import {
   CourseOfActionCreationMutation$data,
   CourseOfActionCreationMutation$variables,
 } from './__generated__/CourseOfActionCreationMutation.graphql';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const courseOfActionMutation = graphql`
   mutation CourseOfActionCreationMutation($input: CourseOfActionAddInput!) {
@@ -85,7 +85,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
   defaultMarkingDefinitions,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { mandatoryAttributes } = useIsMandatoryAttribute(COURSE_OF_ACTION_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
@@ -101,7 +101,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
   const [commit] = useApiMutation<CourseOfActionCreationMutation>(
     courseOfActionMutation,
     undefined,
-    { successMessage: `${entityTypeDisplayName('Course-Of-Action')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Course-Of-Action')} ${t_i18n('successfully created')}` },
   );
 
   const onSubmit: FormikConfig<CourseOfActionAddInput>['onSubmit'] = (
@@ -254,7 +254,7 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => setOpen(true);
@@ -275,7 +275,7 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
   const renderClassic = () => {
     return (
       <Drawer
-        title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Course-Of-Action') } })}
+        title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Course-Of-Action') } })}
         controlledDial={CreateCourseOfActionControlledDial}
       >
         {({ onClose }) => (
@@ -296,7 +296,7 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
         <Dialog
           open={open}
           onClose={handleClose}
-          title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Course-Of-Action') } })}
+          title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Course-Of-Action') } })}
         >
           <CourseOfActionCreationForm
             inputValue={inputValue}

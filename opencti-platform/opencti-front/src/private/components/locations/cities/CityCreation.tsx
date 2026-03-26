@@ -31,7 +31,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const cityMutation = graphql`
   mutation CityCreationMutation($input: CityAddInput!) {
@@ -88,7 +88,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(CITY_TYPE);
@@ -108,7 +108,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
   const [commit] = useApiMutation<CityCreationMutation>(
     cityMutation,
     undefined,
-    { successMessage: `${entityTypeDisplayName('City')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('City')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -318,7 +318,7 @@ const CityCreation = ({
   paginationOptions: CitiesLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_cities', paginationOptions, 'cityAdd');
 
@@ -327,7 +327,7 @@ const CityCreation = ({
   );
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('City') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('City') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateCityControlledDial}
     >

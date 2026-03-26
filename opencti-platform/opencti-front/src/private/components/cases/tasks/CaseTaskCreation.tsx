@@ -9,7 +9,7 @@ import FormButtonContainer from '../../../../components/common/form/FormButtonCo
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import TextField from '../../../../components/TextField';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -55,7 +55,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
   defaultMarkings,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(
     TASK_TYPE,
@@ -75,7 +75,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
   const [addTask] = useApiMutation(
     caseTaskAddMutation,
     undefined,
-    { successMessage: `${entityTypeDisplayName('Task')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Task')} ${t_i18n('successfully created')}` },
   );
 
   const onSubmit: FormikConfig<FormikCaseTaskAddInput>['onSubmit'] = (

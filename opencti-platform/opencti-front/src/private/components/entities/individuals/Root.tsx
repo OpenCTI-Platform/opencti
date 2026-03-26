@@ -29,7 +29,7 @@ import IndividualEdition from './IndividualEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import IndividualDeletion from './IndividualDeletion';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {
@@ -118,7 +118,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
   };
 
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   useSubscription<RootIndicatorSubscription>(subConfig);
 
   const {
@@ -166,7 +166,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: entityTypeDisplayName('Individual', { plural: true }), link: '/dashboard/entities/individuals' },
+              { label: translateEntityType('Individual', { plural: true }), link: '/dashboard/entities/individuals' },
               { label: individual.name, current: true },
             ]}
             />

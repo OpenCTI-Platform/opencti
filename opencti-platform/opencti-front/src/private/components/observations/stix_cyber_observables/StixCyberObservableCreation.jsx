@@ -44,7 +44,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { stixCyberObservablesLinesAttributesQuery, stixCyberObservablesLinesSubTypesQuery } from './StixCyberObservablesLines';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -270,7 +270,7 @@ const StixCyberObservableCreation = ({
   const classes = useStyles();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
   const { booleanAttributes, dateAttributes, multipleAttributes, numberAttributes, ignoredAttributes } = useAttributes();
   const [status, setStatus] = useState({ open: false, type: type ?? null });
@@ -290,7 +290,7 @@ const StixCyberObservableCreation = ({
   const [commit] = useApiMutation(
     stixCyberObservableMutation,
     undefined,
-    { successMessage: `${entityTypeDisplayName('Stix-Cyber-Observable')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Stix-Cyber-Observable')} ${t_i18n('successfully created')}` },
   );
 
   const {
@@ -1024,7 +1024,7 @@ const StixCyberObservableCreation = ({
         <Drawer
           open={status.open}
           onClose={localHandleClose}
-          title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Stix-Cyber-Observable') } })}
+          title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Stix-Cyber-Observable') } })}
           header={
             !isFromBulkRelation && status.type
               ? (

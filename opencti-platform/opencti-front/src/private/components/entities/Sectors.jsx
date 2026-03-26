@@ -11,13 +11,13 @@ import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 
 const LOCAL_STORAGE_KEY = 'sectors';
 
 const Sectors = () => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Sectors | Entities'));
   const navigate = useNavigate();
@@ -54,7 +54,7 @@ const Sectors = () => {
 
   return (
     <div data-testid="sector-page">
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: entityTypeDisplayName('Sector', { plural: true }), current: true }]} />
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: translateEntityType('Sector', { plural: true }), current: true }]} />
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <SearchInput
           variant="small"

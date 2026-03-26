@@ -20,7 +20,7 @@ import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import Feedback from './Feedback';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { getPaddingRight } from '../../../../utils/utils';
@@ -96,7 +96,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
   const location = useLocation();
   const enableReferences = useIsEnforceReference('Feedback') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   useSubscription(subConfig);
 
   const {
@@ -113,7 +113,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
     <div style={{ paddingRight }}>
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
-        { label: entityTypeDisplayName('Feedback', { plural: true }), link: '/dashboard/cases/feedbacks' },
+        { label: translateEntityType('Feedback', { plural: true }), link: '/dashboard/cases/feedbacks' },
         { label: feedbackData.name, current: true },
       ]}
       />

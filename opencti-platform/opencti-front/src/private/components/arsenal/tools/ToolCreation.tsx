@@ -33,7 +33,7 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import TextField from '../../../../components/TextField';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const toolMutation = graphql`
   mutation ToolCreationMutation($input: ToolAddInput!) {
@@ -92,7 +92,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(
@@ -110,7 +110,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
   const [commit] = useApiMutation<ToolCreationMutation>(
     toolMutation,
     undefined,
-    { successMessage: `${entityTypeDisplayName('Tool')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Tool')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -338,13 +338,13 @@ const ToolCreation = ({
   paginationOptions: ToolsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_tools', paginationOptions, 'toolAdd');
 
   return (
     <Drawer
-      title={t_i18n('', { id: 'Create ...', values: { entity_type: entityTypeDisplayName('Tool') } })}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Tool') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateToolControlledDial}
     >

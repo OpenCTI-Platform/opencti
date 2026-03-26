@@ -26,13 +26,13 @@ import { narrativeLineFragment } from './narratives/NarrativeLine';
 import { narrativesLinesFragment, narrativesLinesQuery } from './narratives/NarrativesLines';
 import NarrativesWithSubnarrativesLines from './narratives/NarrativesWithSubnarrativesLines';
 import { NarrativesLinesPaginationQuery, NarrativesLinesPaginationQuery$variables } from './narratives/__generated__/NarrativesLinesPaginationQuery.graphql';
-import { useEntityTypeDisplayName } from '../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 
 const LOCAL_STORAGE_KEY = 'narratives';
 
 const Narratives: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const theme = useTheme<Theme>();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Narratives | Techniques'));
@@ -202,7 +202,7 @@ const Narratives: FunctionComponent = () => {
   return (
     <ExportContextProvider>
       <div data-testid="narrative-page">
-        <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: entityTypeDisplayName('Narrative', { plural: true }), current: true }]} />
+        <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: translateEntityType('Narrative', { plural: true }), current: true }]} />
         {view === 'lines' ? renderLines() : ''}
         {view === 'subEntityLines' ? renderSubEntityLines() : ''}
       </div>

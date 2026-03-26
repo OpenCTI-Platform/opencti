@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { graphql, useSubscription } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { QueryRenderer } from '../../../../relay/environment';
 import ExternalReference from './ExternalReference';
 import Loader from '../../../../components/Loader';
@@ -40,7 +40,7 @@ const RootExternalReference = () => {
   );
 
   const { t_i18n } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   useSubscription(subConfig);
 
   return (
@@ -55,7 +55,7 @@ const RootExternalReference = () => {
                 <>
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
-                    { label: entityTypeDisplayName('External-Reference', { plural: true }), link: '/dashboard/analyses/external_references' },
+                    { label: translateEntityType('External-Reference', { plural: true }), link: '/dashboard/analyses/external_references' },
                   ]}
                   />
                   <ExternalReference

@@ -3,7 +3,7 @@ import React from 'react';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import { useFormatter } from '../../../../components/i18n';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
@@ -68,7 +68,7 @@ interface PublicStixCoreObjectsDistributionListComponentProps {
 const PublicStixCoreObjectsDistributionListComponent = ({
   queryRef,
 }: PublicStixCoreObjectsDistributionListComponentProps) => {
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { publicStixCoreObjectsDistribution } = usePreloadedQuery(
     publicStixCoreObjectsDistributionListQuery,
     queryRef,
@@ -77,7 +77,7 @@ const PublicStixCoreObjectsDistributionListComponent = ({
   if (publicStixCoreObjectsDistribution && publicStixCoreObjectsDistribution.length > 0) {
     const data = publicStixCoreObjectsDistribution.flatMap((n) => {
       if (!n) return [];
-      let label = entityLabel(n.label);
+      let label = translateEntityType(n.label);
       if (n.entity) {
         label = getMainRepresentative(n.entity);
       }

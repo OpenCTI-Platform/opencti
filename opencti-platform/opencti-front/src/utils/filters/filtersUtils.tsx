@@ -11,7 +11,7 @@ import { isEmptyField, uniqueArray } from '../utils';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 import { dateFiltersValueForDisplay } from '../Time';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../widget/widgetUtils';
-import { useEntityTypeDisplayName } from '../hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../hooks/useEntityTranslation';
 
 // ----------------------------------------------------------------------------------------------------------------------
 
@@ -404,7 +404,7 @@ export const filterValue = (
   filterOperator?: string,
 ) => {
   const { t_i18n, nsd, smhd } = useFormatter();
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   if (filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf' || filterKey === 'dynamic' || filterKey === 'dynamicFrom' || filterKey === 'dynamicTo') {
     return JSON.stringify(value);
   }
@@ -420,7 +420,7 @@ export const filterValue = (
   if (value && entityTypesFilters.includes(filterKey)) {
     return value === 'all'
       ? t_i18n('entity_All')
-      : entityLabel(value);
+      : translateEntityType(value);
   }
   if (filterType === 'date') {
     if (filterOperator === 'within' && !isValidDate(value)) {

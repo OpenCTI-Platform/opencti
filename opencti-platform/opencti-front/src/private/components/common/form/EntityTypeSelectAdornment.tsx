@@ -8,7 +8,7 @@ import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import React, { useState } from 'react';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import { useEntityTypeDisplayName } from '../../../../utils/hooks/useEntityTypeDisplayName';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 interface EntityTypeSelectAdornmentProps {
   disabled?: boolean;
@@ -23,12 +23,12 @@ const EntityTypeSelectAdornment = ({
   onChange,
   entityTypes,
 }: EntityTypeSelectAdornmentProps) => {
-  const entityTypeDisplayName = useEntityTypeDisplayName();
+  const { translateEntityType } = useEntityTranslation();
   const { stixCoreObjectTypes } = useAttributes();
   const [anchorButton, setAnchorButton] = useState<HTMLButtonElement>();
 
   const options = (entityTypes ?? stixCoreObjectTypes).map((n) => ({
-    label: entityLabel(n),
+    label: translateEntityType(n),
     value: n,
   }));
 
