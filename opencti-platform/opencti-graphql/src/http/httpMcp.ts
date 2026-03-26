@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
 import type Express from 'express';
 import type { GraphQLSchema } from 'graphql';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -11,11 +12,11 @@ import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 
 const isUserMcpAllowed = (settings: BasicStoreSettings, user: AuthUser): boolean => {
-  if (!settings.platform_mcp_enabled) return false;
+  if ((settings.platform_mcp_enabled ?? true) === false) return false;
   return user.mcp_allowed !== false;
 };
 
-let currentContext: AuthContext | null = null;
+const mcpContextStore = new AsyncLocalStorage<AuthContext>();
 
 const initMcpApi = (app: Express.Application, schema: GraphQLSchema): void => {
   const server = new McpServer({
@@ -23,7 +24,7 @@ const initMcpApi = (app: Express.Application, schema: GraphQLSchema): void => {
     version: PLATFORM_VERSION,
   });
 
-  registerAllTools(server, schema, () => currentContext!);
+  registerAllTools(server, schema, () => mcpContextStore.getStore()!);
 
   app.post(`${basePath}/mcp`, async (req: Express.Request, res: Express.Response) => {
     try {
@@ -39,6 +40,14 @@ const initMcpApi = (app: Express.Application, schema: GraphQLSchema): void => {
       }
 
       const settings = await getEntityFromCache<BasicStoreSettings>(context, context.user, ENTITY_TYPE_SETTINGS);
+      if (!settings) {
+        res.status(503).json({
+          jsonrpc: '2.0',
+          error: { code: -32603, message: 'Platform settings not available' },
+          id: req.body?.id ?? null,
+        });
+        return;
+      }
       if (!isUserMcpAllowed(settings, context.user)) {
         res.status(404).json({
           jsonrpc: '2.0',
@@ -48,18 +57,14 @@ const initMcpApi = (app: Express.Application, schema: GraphQLSchema): void => {
         return;
       }
 
-      currentContext = context;
-
-      const transport = new StreamableHTTPServerTransport({
-        sessionIdGenerator: undefined,
+      await mcpContextStore.run(context, async () => {
+        const transport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: undefined,
+        });
+        await server.connect(transport);
+        await transport.handleRequest(req, res, req.body);
       });
-
-      await server.connect(transport);
-      await transport.handleRequest(req, res, req.body);
-
-      currentContext = null;
     } catch (e) {
-      currentContext = null;
       logApp.error('[MCP] Error handling MCP request', { cause: e });
       if (!res.headersSent) {
         res.status(500).json({

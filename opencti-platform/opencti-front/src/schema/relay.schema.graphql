@@ -1526,6 +1526,7 @@ enum GroupsOrdering {
   default_assignation
   no_creators
   restrict_delete
+  mcp_allowed
   auto_new_marking
   created_at
   updated_at

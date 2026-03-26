@@ -366,7 +366,11 @@ const buildStixPattern = (observableType: string, value: string, hashAlgorithm =
   }
   const entry = STIX_PATTERN_MAP[observableType];
   if (!entry) return null;
-  if (entry.isInt) return `[${entry.scoType}:${entry.prop} = ${value}]`;
+  if (entry.isInt) {
+    const num = Number(sanitizedValue);
+    if (!Number.isFinite(num)) return null;
+    return `[${entry.scoType}:${entry.prop} = ${Math.floor(num)}]`;
+  }
   return `[${entry.scoType}:${entry.prop} = '${sanitizedValue}']`;
 };
 

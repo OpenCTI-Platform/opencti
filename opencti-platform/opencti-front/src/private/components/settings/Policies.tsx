@@ -232,8 +232,6 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       )}
                     />
                   </Grid>
-
-                  <GroupSetDefaultGroupForIngestionUsers />
                   <Grid item xs={6}>
                     <Card title={t_i18n('MCP server')}>
                       <Alert severity="info" variant="outlined">
@@ -249,6 +247,8 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       />
                     </Card>
                   </Grid>
+
+                  <GroupSetDefaultGroupForIngestionUsers />
                   <Grid item xs={6}>
                     <Card title={t_i18n('Users visibility')}>
                       <Alert severity="info" variant="outlined">
