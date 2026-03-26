@@ -1,4 +1,4 @@
-import { logApp, logMigration } from '../config/conf';
+import { logMigration } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { createRetentionRule, listRules } from '../domain/retentionRule';
 import { elUpdateByQueryForMigration } from '../database/engine';
@@ -7,7 +7,7 @@ import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 const message = '[MIGRATION] Add default file and workbench retention policies';
 
 export const up = async (next) => {
-  logApp.info(`${message} > started`);
+  logMigration.info(`${message} > started`);
   const context = executionContext('migration');
 
   // Fix existing retention rules missing base_type and parent_types
@@ -47,9 +47,9 @@ export const up = async (next) => {
       retention_unit: 'days',
       scope: 'file',
     });
-    logApp.info(`${message} > Created file retention rule (30 days for global files)`);
+    logMigration.info(`${message} > Created file retention rule (30 days for global files)`);
   } else {
-    logApp.info(`${message} > File retention rule already exists, skipping`);
+    logMigration.info(`${message} > File retention rule already exists, skipping`);
   }
 
   // Create workbench retention rule if none exists
@@ -60,12 +60,12 @@ export const up = async (next) => {
       retention_unit: 'days',
       scope: 'workbench',
     });
-    logApp.info(`${message} > Created workbench retention rule (30 days for all workbenches)`);
+    logMigration.info(`${message} > Created workbench retention rule (30 days for all workbenches)`);
   } else {
-    logApp.info(`${message} > Workbench retention rule already exists, skipping`);
+    logMigration.info(`${message} > Workbench retention rule already exists, skipping`);
   }
 
-  logApp.info(`${message} > done`);
+  logMigration.info(`${message} > done`);
   next();
 };
 

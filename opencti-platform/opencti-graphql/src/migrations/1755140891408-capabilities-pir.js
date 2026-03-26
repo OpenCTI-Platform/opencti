@@ -1,10 +1,11 @@
 import { addCapability } from '../domain/grant';
-import { logApp } from '../config/conf';
+import { logMigration } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 
 const message = '[MIGRATION] add the new PIR capabilities';
 
 export const up = async (next) => {
+  logMigration.info(`${message} > started`);
   const context = executionContext('migration');
 
   await addCapability(context, SYSTEM_USER, {
@@ -19,7 +20,7 @@ export const up = async (next) => {
     attribute_order: 2950,
   });
 
-  logApp.info(`${message} > done`);
+  logMigration.info(`${message} > done`);
   next();
 };
 

@@ -2,14 +2,14 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { createRelation } from '../database/middleware';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE } from '../schema/internalObject';
-import { logApp } from '../config/conf';
+import { logMigration } from '../config/conf';
 import { API_ACCESS_CAPABILITIES, createCapabilities } from '../database/data-initialization';
 import { generateStandardId } from '../schema/identifier';
 
 const message = '[MIGRATION] Add APIACCESS capability and grant to all roles';
 
 export const up = async (next) => {
-  logApp.info(`${message} > started`);
+  logMigration.info(`${message} > started`);
   const context = executionContext('migration');
 
   // 1. Create Capability
@@ -29,7 +29,7 @@ export const up = async (next) => {
     await createRelation(context, SYSTEM_USER, inputBasic);
   }
 
-  logApp.info(`${message} > done`);
+  logMigration.info(`${message} > done`);
   next();
 };
 
