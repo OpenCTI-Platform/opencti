@@ -116,7 +116,7 @@ const Positions: FunctionComponent = () => {
   };
   return (
     <div data-testid="position-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: entityTypeDisplayName('Position', t_i18n('Positions')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: entityTypeDisplayName('Position', { plural: true }), current: true }]} />
       {renderLines()}
     </div>
   );

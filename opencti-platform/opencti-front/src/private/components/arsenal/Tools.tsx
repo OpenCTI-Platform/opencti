@@ -150,7 +150,7 @@ const Tools = () => {
 
   return (
     <div data-testid="tool-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: entityTypeDisplayName('Tool', t_i18n('Tools')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: entityTypeDisplayName('Tool', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

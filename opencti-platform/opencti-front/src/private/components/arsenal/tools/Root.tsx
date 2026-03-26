@@ -135,7 +135,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Arsenal') },
-              { label: entityTypeDisplayName('Tool', t_i18n('Tools')), link: '/dashboard/arsenal/tools' },
+              { label: entityTypeDisplayName('Tool', { plural: true }), link: '/dashboard/arsenal/tools' },
               { label: tool.name, current: true },
             ]}
             />

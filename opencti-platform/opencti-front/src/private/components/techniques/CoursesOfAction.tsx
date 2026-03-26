@@ -154,7 +154,7 @@ const CoursesOfAction = () => {
 
   return (
     <div data-testid="course-of-action-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: entityTypeDisplayName('Course-Of-Action', t_i18n('Courses of action')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: entityTypeDisplayName('Course-Of-Action', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

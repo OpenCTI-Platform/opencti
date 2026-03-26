@@ -114,7 +114,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
     <div style={{ paddingRight }} data-testid="incident-details-page">
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
-        { label: entityTypeDisplayName('Case-Incident', t_i18n('Incident responses')), link: '/dashboard/cases/incidents' },
+        { label: entityTypeDisplayName('Case-Incident', { plural: true }), link: '/dashboard/cases/incidents' },
         { label: caseData.name, current: true },
       ]}
       />

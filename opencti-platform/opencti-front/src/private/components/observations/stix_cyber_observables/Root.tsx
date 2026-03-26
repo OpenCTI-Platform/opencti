@@ -105,7 +105,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Observations') },
-            { label: entityTypeDisplayName('Stix-Cyber-Observable', t_i18n('Observables')), link: '/dashboard/observations/observables' },
+            { label: entityTypeDisplayName('Stix-Cyber-Observable', { plural: true }), link: '/dashboard/observations/observables' },
             { label: stixCyberObservable.observable_value, current: true },
           ]}
           />

@@ -114,7 +114,7 @@ const RootReport = () => {
                 <div style={{ paddingRight }} data-testid="report-details-page">
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
-                    { label: entityTypeDisplayName('Report', t_i18n('Reports')), link: '/dashboard/analyses/reports' },
+                    { label: entityTypeDisplayName('Report', { plural: true }), link: '/dashboard/analyses/reports' },
                     { label: report.name, current: true },
                   ]}
                   />

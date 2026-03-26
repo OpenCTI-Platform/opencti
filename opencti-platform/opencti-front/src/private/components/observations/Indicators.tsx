@@ -198,7 +198,7 @@ const Indicators = () => {
 
   return (
     <div data-testid="indicator-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: entityTypeDisplayName('Indicator', t_i18n('Indicators')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: entityTypeDisplayName('Indicator', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

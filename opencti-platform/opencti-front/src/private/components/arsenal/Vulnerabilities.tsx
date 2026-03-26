@@ -163,7 +163,7 @@ const Vulnerabilities = () => {
 
   return (
     <div data-testid="vulnerability-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: entityTypeDisplayName('Vulnerability', t_i18n('Vulnerabilities')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: entityTypeDisplayName('Vulnerability', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

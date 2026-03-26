@@ -202,7 +202,7 @@ const Narratives: FunctionComponent = () => {
   return (
     <ExportContextProvider>
       <div data-testid="narrative-page">
-        <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: entityTypeDisplayName('Narrative', t_i18n('Narratives')), current: true }]} />
+        <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: entityTypeDisplayName('Narrative', { plural: true }), current: true }]} />
         {view === 'lines' ? renderLines() : ''}
         {view === 'subEntityLines' ? renderSubEntityLines() : ''}
       </div>

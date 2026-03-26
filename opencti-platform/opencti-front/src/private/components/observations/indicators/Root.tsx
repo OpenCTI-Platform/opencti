@@ -108,7 +108,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Observations') },
-            { label: entityTypeDisplayName('Indicator', t_i18n('Indicators')), link: '/dashboard/observations/indicators' },
+            { label: entityTypeDisplayName('Indicator', { plural: true }), link: '/dashboard/observations/indicators' },
             { label: (indicator.name ?? indicator.pattern ?? ''), current: true },
           ]}
           />

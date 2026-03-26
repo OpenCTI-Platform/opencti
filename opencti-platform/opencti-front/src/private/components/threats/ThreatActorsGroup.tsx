@@ -204,7 +204,7 @@ const ThreatActorsGroup = () => {
 
   return (
     <div data-testid="threat-actor-group-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: entityTypeDisplayName('Threat-Actor-Group', t_i18n('Threat actors (group)')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: entityTypeDisplayName('Threat-Actor-Group', { plural: true }), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
     </div>
   );

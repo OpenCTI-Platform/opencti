@@ -134,7 +134,7 @@ const StixCyberObservables: FunctionComponent = () => {
   return (
     <span data-testid="observables-page">
       <ExportContextProvider>
-        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: entityTypeDisplayName('Stix-Cyber-Observable', t_i18n('Observables')), current: true }]} />
+        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: entityTypeDisplayName('Stix-Cyber-Observable', { plural: true }), current: true }]} />
         {queryRef && (
           <DataTable
             storageKey={LOCAL_STORAGE_KEY}

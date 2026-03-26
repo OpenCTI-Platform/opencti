@@ -169,7 +169,7 @@ const Infrastructures = () => {
   return (
     <ExportContextProvider>
       <div data-testid="infrastructures-page">
-        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: entityTypeDisplayName('Infrastructure', t_i18n('Infrastructures')), current: true }]} />
+        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: entityTypeDisplayName('Infrastructure', { plural: true }), current: true }]} />
         {queryRef && (
           <DataTable
             dataColumns={dataColumns}

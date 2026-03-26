@@ -106,7 +106,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
         >
           <Breadcrumbs elements={[
             { label: t_i18n('Observations') },
-            { label: entityTypeDisplayName('Infrastructure', t_i18n('Infrastructures')), link: '/dashboard/observations/infrastructures' },
+            { label: entityTypeDisplayName('Infrastructure', { plural: true }), link: '/dashboard/observations/infrastructures' },
             { label: infrastructure.name, current: true },
           ]}
           />

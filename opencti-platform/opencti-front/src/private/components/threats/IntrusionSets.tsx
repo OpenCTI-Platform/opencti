@@ -199,7 +199,7 @@ const IntrusionSets = () => {
 
   return (
     <div data-testid="instrusion-set-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: entityTypeDisplayName('Intrusion-Set', t_i18n('Intrusion sets')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: entityTypeDisplayName('Intrusion-Set', { plural: true }), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
     </div>
   );

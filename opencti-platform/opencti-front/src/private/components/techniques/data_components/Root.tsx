@@ -101,7 +101,7 @@ const RootDataComponent = () => {
                 <div style={{ paddingRight }}>
                   <Breadcrumbs elements={[
                     { label: t_i18n('Techniques') },
-                    { label: entityTypeDisplayName('Data-Component', t_i18n('Data components')), link: '/dashboard/techniques/data_components' },
+                    { label: entityTypeDisplayName('Data-Component', { plural: true }), link: '/dashboard/techniques/data_components' },
                     { label: dataComponent.name, current: true },
                   ]}
                   />

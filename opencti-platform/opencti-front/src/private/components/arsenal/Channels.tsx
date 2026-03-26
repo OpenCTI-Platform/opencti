@@ -158,7 +158,7 @@ const Channels = () => {
 
   return (
     <div data-testid="channel-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: entityTypeDisplayName('Channel', t_i18n('Channels')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Arsenal') }, { label: entityTypeDisplayName('Channel', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

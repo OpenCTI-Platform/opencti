@@ -104,7 +104,7 @@ const RootArtifact = ({ queryRef, observableId }: RootArtifactProps) => {
     <div style={{ paddingRight }}>
       <Breadcrumbs elements={[
         { label: t_i18n('Observations') },
-        { label: entityTypeDisplayName('Artifact', t_i18n('Artifacts')), link: '/dashboard/observations/artifacts' },
+        { label: entityTypeDisplayName('Artifact', { plural: true }), link: '/dashboard/observations/artifacts' },
         { label: stixCyberObservable.observable_value, current: true },
       ]}
       />

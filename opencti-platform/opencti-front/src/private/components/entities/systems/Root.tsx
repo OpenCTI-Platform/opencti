@@ -159,7 +159,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: entityTypeDisplayName('System', t_i18n('Systems')), link: '/dashboard/entities/systems' },
+              { label: entityTypeDisplayName('System', { plural: true }), link: '/dashboard/entities/systems' },
               { label: system.name, current: true },
             ]}
             />

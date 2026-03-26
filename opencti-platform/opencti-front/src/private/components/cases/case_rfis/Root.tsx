@@ -106,7 +106,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
     <div style={{ paddingRight }}>
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
-        { label: entityTypeDisplayName('Case-Rfi', t_i18n('Requests for information')), link: '/dashboard/cases/rfis' },
+        { label: entityTypeDisplayName('Case-Rfi', { plural: true }), link: '/dashboard/cases/rfis' },
         { label: caseData.name, current: true },
       ]}
       />

@@ -166,7 +166,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: entityTypeDisplayName('Individual', t_i18n('Individuals')), link: '/dashboard/entities/individuals' },
+              { label: entityTypeDisplayName('Individual', { plural: true }), link: '/dashboard/entities/individuals' },
               { label: individual.name, current: true },
             ]}
             />

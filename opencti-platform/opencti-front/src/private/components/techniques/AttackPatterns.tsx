@@ -154,7 +154,7 @@ const AttackPatterns = () => {
 
   return (
     <div data-testid="attack-pattern-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: entityTypeDisplayName('Attack-Pattern', t_i18n('Attack patterns')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: entityTypeDisplayName('Attack-Pattern', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

@@ -123,7 +123,7 @@ const Systems = () => {
 
   return (
     <div data-testid="system-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: entityTypeDisplayName('System', t_i18n('Systems')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: entityTypeDisplayName('System', { plural: true }), current: true }]} />
       {renderLines()}
     </div>
   );

@@ -195,7 +195,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
 
   return (
     <div data-testid="incident-response-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: entityTypeDisplayName('Case-Incident', t_i18n('Incident responses')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: entityTypeDisplayName('Case-Incident', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

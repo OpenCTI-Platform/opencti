@@ -192,7 +192,7 @@ const SecurityCoverages: FunctionComponent = () => {
 
   return (
     <ExportContextProvider>
-      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: entityTypeDisplayName('Security-Coverage', t_i18n('Security coverages')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: entityTypeDisplayName('Security-Coverage', { plural: true }), current: true }]} />
       {queryRef && (
         <div data-testid="security-coverages-page">
           <DataTable

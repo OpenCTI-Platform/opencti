@@ -130,7 +130,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
-              { label: entityTypeDisplayName('Administrative-Area', t_i18n('Administrative areas')), link: '/dashboard/locations/administrative_areas' },
+              { label: entityTypeDisplayName('Administrative-Area', { plural: true }), link: '/dashboard/locations/administrative_areas' },
               { label: administrativeArea.name, current: true },
             ]}
             />

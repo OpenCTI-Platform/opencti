@@ -129,7 +129,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: entityTypeDisplayName('SecurityPlatform', t_i18n('Security platforms')), link: '/dashboard/entities/security_platforms' },
+              { label: entityTypeDisplayName('SecurityPlatform', { plural: true }), link: '/dashboard/entities/security_platforms' },
               { label: securityPlatform.name, current: true },
             ]}
             />

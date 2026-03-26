@@ -191,7 +191,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
 
   return (
     <div data-testid="rfis-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: entityTypeDisplayName('Case-Rfi', t_i18n('Requests for information')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: entityTypeDisplayName('Case-Rfi', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

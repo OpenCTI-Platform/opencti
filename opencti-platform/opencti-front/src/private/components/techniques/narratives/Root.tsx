@@ -129,7 +129,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Techniques') },
-              { label: entityTypeDisplayName('Narrative', t_i18n('Narratives')), link: '/dashboard/techniques/narratives' },
+              { label: entityTypeDisplayName('Narrative', { plural: true }), link: '/dashboard/techniques/narratives' },
               { label: narrative.name, current: true },
             ]}
             />

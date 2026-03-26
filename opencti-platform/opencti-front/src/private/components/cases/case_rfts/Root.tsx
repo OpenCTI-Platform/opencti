@@ -104,7 +104,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
     <div style={{ paddingRight }}>
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
-        { label: entityTypeDisplayName('Case-Rft', t_i18n('Requests for takedown')), link: '/dashboard/cases/rfts' },
+        { label: entityTypeDisplayName('Case-Rft', { plural: true }), link: '/dashboard/cases/rfts' },
         { label: caseData.name, current: true },
       ]}
       />

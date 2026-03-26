@@ -185,7 +185,7 @@ const ObservedDatas: FunctionComponent = () => {
 
   return (
     <span data-testid="observed-data">
-      <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: entityTypeDisplayName('Observed-Data', t_i18n('Observed datas')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: entityTypeDisplayName('Observed-Data', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

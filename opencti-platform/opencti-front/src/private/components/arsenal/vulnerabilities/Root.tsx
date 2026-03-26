@@ -135,7 +135,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Arsenal') },
-              { label: entityTypeDisplayName('Vulnerability', t_i18n('Vulnerabilities')), link: '/dashboard/arsenal/vulnerabilities' },
+              { label: entityTypeDisplayName('Vulnerability', { plural: true }), link: '/dashboard/arsenal/vulnerabilities' },
               { label: vulnerability.name, current: true },
             ]}
             />

@@ -186,7 +186,7 @@ const Artifacts: FunctionComponent = () => {
   return (
     <div data-testid="artifact-page">
       <ExportContextProvider>
-        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: entityTypeDisplayName('Artifact', t_i18n('Artifacts')), current: true }]} />
+        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: entityTypeDisplayName('Artifact', { plural: true }), current: true }]} />
         {queryRef && (
           <DataTable
             dataColumns={dataColumns}

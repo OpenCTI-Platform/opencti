@@ -135,7 +135,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Arsenal') },
-              { label: entityTypeDisplayName('Channel', t_i18n('Channels')), link: '/dashboard/arsenal/channels' },
+              { label: entityTypeDisplayName('Channel', { plural: true }), link: '/dashboard/arsenal/channels' },
               { label: channel.name, current: true },
             ]}
             />

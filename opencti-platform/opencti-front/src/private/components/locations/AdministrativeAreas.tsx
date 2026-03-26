@@ -122,7 +122,7 @@ const AdministrativeAreas: FunctionComponent = () => {
   };
   return (
     <div data-testid="administrative-area-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: entityTypeDisplayName('Administrative-Area', t_i18n('Administrative areas')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: entityTypeDisplayName('Administrative-Area', { plural: true }), current: true }]} />
       {renderLines()}
     </div>
   );

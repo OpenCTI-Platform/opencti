@@ -128,7 +128,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
-              { label: entityTypeDisplayName('City', t_i18n('Cities')), link: '/dashboard/locations/cities' },
+              { label: entityTypeDisplayName('City', { plural: true }), link: '/dashboard/locations/cities' },
               { label: city.name, current: true },
             ]}
             />

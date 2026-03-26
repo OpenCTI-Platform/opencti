@@ -166,7 +166,7 @@ const Tasks = () => {
 
   return (
     <span data-testid="task-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: entityTypeDisplayName('Task', t_i18n('Tasks')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: entityTypeDisplayName('Task', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

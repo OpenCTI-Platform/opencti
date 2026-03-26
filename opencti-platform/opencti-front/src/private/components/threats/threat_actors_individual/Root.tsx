@@ -153,7 +153,7 @@ const RootThreatActorIndividualComponent = ({
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Threats') },
-              { label: entityTypeDisplayName('Threat-Actor-Individual', t_i18n('Threat actors (individual)')), link: '/dashboard/threats/threat_actors_individual' },
+              { label: entityTypeDisplayName('Threat-Actor-Individual', { plural: true }), link: '/dashboard/threats/threat_actors_individual' },
               { label: threatActorIndividual.name, current: true },
             ]}
             />

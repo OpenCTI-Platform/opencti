@@ -99,7 +99,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Analyses') },
-            { label: entityTypeDisplayName('Security-Coverage', t_i18n('Security coverages')), link: '/dashboard/analyses/security_coverages' },
+            { label: entityTypeDisplayName('Security-Coverage', { plural: true }), link: '/dashboard/analyses/security_coverages' },
             { label: securityCoverage.name, current: true },
           ]}
           />

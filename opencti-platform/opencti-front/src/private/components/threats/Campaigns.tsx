@@ -203,7 +203,7 @@ const Campaigns = () => {
 
   return (
     <div data-testid="campaign-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: entityTypeDisplayName('Campaign', t_i18n('Campaigns')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Threats') }, { label: entityTypeDisplayName('Campaign', { plural: true }), current: true }]} />
       {viewStorage.view !== 'lines' ? renderCards() : renderList()}
     </div>
   );

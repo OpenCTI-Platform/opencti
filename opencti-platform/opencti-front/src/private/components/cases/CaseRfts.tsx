@@ -198,7 +198,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
 
   return (
     <div data-testid="rfts-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: entityTypeDisplayName('Case-Rft', t_i18n('Requests for takedown')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: entityTypeDisplayName('Case-Rft', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

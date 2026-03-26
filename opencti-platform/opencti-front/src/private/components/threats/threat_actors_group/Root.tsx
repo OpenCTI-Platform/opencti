@@ -141,7 +141,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
             <Breadcrumbs
               elements={[
                 { label: t_i18n('Threats') },
-                { label: entityTypeDisplayName('Threat-Actor-Group', t_i18n('Threat actors (group)')), link: '/dashboard/threats/threat_actors_group' },
+                { label: entityTypeDisplayName('Threat-Actor-Group', { plural: true }), link: '/dashboard/threats/threat_actors_group' },
                 { label: threatActorGroup.name, current: true },
               ]}
             />

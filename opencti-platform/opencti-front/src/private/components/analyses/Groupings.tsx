@@ -204,7 +204,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
 
   return (
     <span data-testid="groupings-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: entityTypeDisplayName('Grouping', t_i18n('Groupings')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: entityTypeDisplayName('Grouping', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

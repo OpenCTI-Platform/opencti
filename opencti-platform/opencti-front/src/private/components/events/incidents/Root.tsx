@@ -145,7 +145,7 @@ const RootIncidentComponent = ({ queryRef }) => {
           >
             <Breadcrumbs elements={[
               { label: t_i18n('Events') },
-              { label: entityTypeDisplayName('Incident', t_i18n('Incidents')), link: '/dashboard/events/incidents' },
+              { label: entityTypeDisplayName('Incident', { plural: true }), link: '/dashboard/events/incidents' },
               { label: incident.name, current: true },
             ]}
             />

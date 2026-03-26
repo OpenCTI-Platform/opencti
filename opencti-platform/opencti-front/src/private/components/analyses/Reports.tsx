@@ -207,7 +207,7 @@ const Reports: FunctionComponent = () => {
   };
   return (
     <span data-testid="report-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: entityTypeDisplayName('Report', t_i18n('Reports')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: entityTypeDisplayName('Report', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

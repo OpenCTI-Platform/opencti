@@ -133,7 +133,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Techniques') },
-              { label: entityTypeDisplayName('Attack-Pattern', t_i18n('Attack patterns')), link: '/dashboard/techniques/attack_patterns' },
+              { label: entityTypeDisplayName('Attack-Pattern', { plural: true }), link: '/dashboard/techniques/attack_patterns' },
               { label: attackPattern.name, current: true },
             ]}
             />

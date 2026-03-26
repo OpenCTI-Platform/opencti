@@ -95,7 +95,7 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
       <div>
         <Breadcrumbs elements={[
           { label: t_i18n('Events') },
-          { label: entityTypeDisplayName('Observed-Data', t_i18n('Observed datas')), link: '/dashboard/events/observed_data' },
+          { label: entityTypeDisplayName('Observed-Data', { plural: true }), link: '/dashboard/events/observed_data' },
           { label: observedData.name, current: true },
         ]}
         />

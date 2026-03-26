@@ -135,7 +135,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
-              { label: entityTypeDisplayName('Position', t_i18n('Positions')), link: '/dashboard/locations/positions' },
+              { label: entityTypeDisplayName('Position', { plural: true }), link: '/dashboard/locations/positions' },
               { label: position.name, current: true },
             ]}
             />

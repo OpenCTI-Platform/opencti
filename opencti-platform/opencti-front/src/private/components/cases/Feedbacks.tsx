@@ -187,7 +187,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
 
   return (
     <span data-testid="feedback-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: entityTypeDisplayName('Feedback', t_i18n('Feedbacks')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: entityTypeDisplayName('Feedback', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

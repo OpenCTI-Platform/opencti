@@ -54,7 +54,7 @@ const Sectors = () => {
 
   return (
     <div data-testid="sector-page">
-      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: entityTypeDisplayName('Sector', t_i18n('Sectors')), current: true }]} />
+      <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: entityTypeDisplayName('Sector', { plural: true }), current: true }]} />
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <SearchInput
           variant="small"

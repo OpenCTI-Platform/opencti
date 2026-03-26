@@ -78,7 +78,7 @@ const Incidents: FunctionComponent = () => {
 
   return (
     <div data-testid="incident-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: entityTypeDisplayName('Incident', t_i18n('Incidents')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: entityTypeDisplayName('Incident', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           storageKey={LOCAL_STORAGE_KEY}

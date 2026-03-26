@@ -135,7 +135,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: entityTypeDisplayName('Sector', t_i18n('Sectors')), link: '/dashboard/entities/sectors' },
+              { label: entityTypeDisplayName('Sector', { plural: true }), link: '/dashboard/entities/sectors' },
               { label: sector.name, current: true },
             ]}
             />

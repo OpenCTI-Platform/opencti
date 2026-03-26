@@ -55,7 +55,7 @@ const RootExternalReference = () => {
                 <>
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
-                    { label: entityTypeDisplayName('External-Reference', t_i18n('External references')), link: '/dashboard/analyses/external_references' },
+                    { label: entityTypeDisplayName('External-Reference', { plural: true }), link: '/dashboard/analyses/external_references' },
                   ]}
                   />
                   <ExternalReference

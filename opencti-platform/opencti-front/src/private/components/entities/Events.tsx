@@ -126,7 +126,7 @@ const Events = () => {
   };
   return (
     <div data-testid="event-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: entityTypeDisplayName('Event', t_i18n('Events')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: entityTypeDisplayName('Event', { plural: true }), current: true }]} />
       {renderLines()}
     </div>
   );

@@ -130,7 +130,7 @@ const SecurityPlatforms = () => {
 
   return (
     <div data-testid="security-platform-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: entityTypeDisplayName('SecurityPlatform', t_i18n('Security platforms')), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: entityTypeDisplayName('SecurityPlatform', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

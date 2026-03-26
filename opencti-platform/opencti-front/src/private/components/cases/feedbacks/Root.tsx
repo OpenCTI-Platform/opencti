@@ -113,7 +113,7 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
     <div style={{ paddingRight }}>
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
-        { label: entityTypeDisplayName('Feedback', t_i18n('Feedbacks')), link: '/dashboard/cases/feedbacks' },
+        { label: entityTypeDisplayName('Feedback', { plural: true }), link: '/dashboard/cases/feedbacks' },
         { label: feedbackData.name, current: true },
       ]}
       />

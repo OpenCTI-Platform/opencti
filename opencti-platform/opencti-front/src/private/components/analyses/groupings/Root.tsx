@@ -115,7 +115,7 @@ const RootGrouping = () => {
                 <div style={{ paddingRight }}>
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
-                    { label: entityTypeDisplayName('Grouping', t_i18n('Groupings')), link: '/dashboard/analyses/groupings' },
+                    { label: entityTypeDisplayName('Grouping', { plural: true }), link: '/dashboard/analyses/groupings' },
                     { label: grouping.name, current: true },
                   ]}
                   />

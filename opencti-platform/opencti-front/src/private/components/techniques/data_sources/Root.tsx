@@ -94,7 +94,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Techniques') },
-            { label: entityTypeDisplayName('Data-Source', t_i18n('Data sources')), link: '/dashboard/techniques/data_sources' },
+            { label: entityTypeDisplayName('Data-Source', { plural: true }), link: '/dashboard/techniques/data_sources' },
             { label: dataSource.name, current: true },
           ]}
           />

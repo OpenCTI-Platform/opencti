@@ -83,7 +83,7 @@ const RootNote = () => {
                 <>
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
-                    { label: entityTypeDisplayName('Note', t_i18n('Notes')), link: '/dashboard/analyses/notes' },
+                    { label: entityTypeDisplayName('Note', { plural: true }), link: '/dashboard/analyses/notes' },
                   ]}
                   />
                   <CollaborativeSecurity
