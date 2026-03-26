@@ -286,6 +286,12 @@ body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
 .rich-text-content h2 { font-size: 22px; margin: 0.5em 0; }
 .rich-text-content h3 { font-size: 20px; margin: 0.5em 0; }
 
+/* CKEditor font-size classes — kept for backward compatibility with stored content */
+.rich-text-content .text-tiny  { font-size: 12px; }
+.rich-text-content .text-small { font-size: 10px; }
+.rich-text-content .text-big   { font-size: 18px; }
+.rich-text-content .text-huge  { font-size: 24px; }
+
 .rich-text-content blockquote {
   border-left: 3px solid #b2b2b2;
   padding-left: 1em;
