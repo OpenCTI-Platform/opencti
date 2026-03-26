@@ -13,6 +13,7 @@ export interface BasicStoreEntityOrganization extends BasicIdentityEntity {
   authorized_authorities?: string[];
   grantable_groups: string[];
   restrict_access: boolean;
+  mcp_allowed: boolean;
   [RELATION_PARTICIPATE_TO]: string[];
 }
 

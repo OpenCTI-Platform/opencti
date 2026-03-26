@@ -600,7 +600,7 @@ const ProfileOverviewComponent = (props) => {
           </Stack>
         </div>
       </Card>
-      {hasAccessTokenCapability && settings.platform_mcp_enabled && (
+      {hasAccessTokenCapability && me.mcp_allowed && settings.platform_mcp_enabled && (
         <Card title={t('MCP access')}>
           <div>
             <Alert
@@ -675,6 +675,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       submenu_show_icons
       submenu_auto_collapse
       monochrome_labels
+      mcp_allowed
       personal_notifiers {
         id
         name

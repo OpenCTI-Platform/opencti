@@ -93,6 +93,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
       .min(0, t_i18n('The value must be greater than or equal to 0'))
       .max(100, t_i18n('The value must be less than or equal to 100'))
       .required(t_i18n('This field is required')),
+    mcp_allowed: Yup.bool(),
   };
 
   const groupValidator = Yup.object().shape(basicShape);
@@ -112,6 +113,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
     auto_new_marking: group.auto_new_marking,
     no_creators: group.no_creators,
     restrict_delete: group.restrict_delete,
+    mcp_allowed: group.mcp_allowed,
     default_dashboard: group.default_dashboard ? {
       value: group.default_dashboard.id,
       label: group.default_dashboard.name,
@@ -240,6 +242,20 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
                 fieldName="restrict_delete"
               />
             </FormHelperText>
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="mcp_allowed"
+              label={t_i18n('Allow MCP access for users in this group')}
+              containerstyle={{ marginTop: 20 }}
+              onChange={editor.changeField}
+            />
+            <FormHelperText>
+              <SubscriptionFocus
+                context={context}
+                fieldName="mcp_allowed"
+              />
+            </FormHelperText>
           </Form>
         )}
       </Formik>
@@ -258,6 +274,7 @@ const GroupEditionOverview = createFragmentContainer(
         default_assignation
         no_creators
         restrict_delete
+        mcp_allowed
         auto_new_marking
         default_dashboard {
           id

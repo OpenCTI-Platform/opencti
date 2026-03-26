@@ -8,7 +8,12 @@ import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { registerAllTools } from '../mcp/mcpTools';
 import type { BasicStoreSettings } from '../types/settings';
-import type { AuthContext } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
+
+const isUserMcpAllowed = (settings: BasicStoreSettings, user: AuthUser): boolean => {
+  if (!settings.platform_mcp_enabled) return false;
+  return user.mcp_allowed !== false;
+};
 
 let currentContext: AuthContext | null = null;
 
@@ -34,7 +39,7 @@ const initMcpApi = (app: Express.Application, schema: GraphQLSchema): void => {
       }
 
       const settings = await getEntityFromCache<BasicStoreSettings>(context, context.user, ENTITY_TYPE_SETTINGS);
-      if (!settings.platform_mcp_enabled) {
+      if (!isUserMcpAllowed(settings, context.user)) {
         res.status(404).json({
           jsonrpc: '2.0',
           error: { code: -32001, message: 'MCP server is disabled' },

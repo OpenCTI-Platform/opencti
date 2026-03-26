@@ -139,6 +139,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   default_dashboard: Workspace
   default_hidden_types: [String!]
   restrict_access: Boolean
+  mcp_allowed: Boolean
   # Technical
   creators: [Creator!]
   toStix(version: Version): String

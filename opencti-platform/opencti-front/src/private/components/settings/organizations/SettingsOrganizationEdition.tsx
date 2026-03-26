@@ -6,10 +6,12 @@ import * as Yup from 'yup';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import GroupField from '@components/common/form/GroupField';
 import { GenericContext } from '@components/common/model/GenericContextModel';
+import FormHelperText from '@mui/material/FormHelperText';
 import OpenVocabField from '@components/common/form/OpenVocabField';
 import EEField from '@components/common/entreprise_edition/EEField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
+import SwitchField from '../../../../components/fields/SwitchField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -83,6 +85,7 @@ interface SettingsOrganizationFormValues {
   x_opencti_organization_type: string | null;
   contact_information: string | null;
   default_dashboard: FieldOption | null;
+  mcp_allowed: boolean;
   message?: string;
   references?: FieldOption[];
   grantable_groups: { label: string; value: string }[];
@@ -146,6 +149,7 @@ const SettingsOrganizationEdition = ({
           label: organization.default_dashboard.name,
         }
       : null,
+    mcp_allowed: organization.mcp_allowed ?? true,
     grantable_groups: convertGrantableGroups(organization),
   };
   const onSubmit: FormikConfig<SettingsOrganizationFormValues>['onSubmit'] = (
@@ -279,6 +283,17 @@ const SettingsOrganizationEdition = ({
                 context={context}
               />
               <SettingsOrganizationHiddenTypesField organizationData={organization} />
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="mcp_allowed"
+                label={t_i18n('Allow MCP access for users in this organization')}
+                containerstyle={{ marginTop: 20 }}
+                onChange={editor.changeField}
+              />
+              <FormHelperText>
+                <SubscriptionFocus context={context} fieldName="mcp_allowed" />
+              </FormHelperText>
               <EEField featureLabel="Organization sharing">
                 <GroupField
                   name="grantable_groups"

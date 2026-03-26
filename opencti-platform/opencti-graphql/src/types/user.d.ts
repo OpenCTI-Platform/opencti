@@ -58,6 +58,7 @@ interface AuthUser extends BasicStoreIdentifier {
   effective_confidence_level: ConfidenceLevel | null;
   restrict_delete: boolean | null;
   no_creators: boolean | null;
+  mcp_allowed: boolean | null;
   user_confidence_level: ConfidenceLevel | null;
   personal_notifiers?: Array<string>;
   draft_context?: string | undefined;

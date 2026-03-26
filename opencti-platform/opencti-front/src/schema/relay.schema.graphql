@@ -1564,6 +1564,7 @@ type Group implements InternalObject & BasicObject {
   default_assignation: Boolean
   no_creators: Boolean
   restrict_delete: Boolean
+  mcp_allowed: Boolean
   auto_new_marking: Boolean
   description: String
   default_dashboard: Workspace
@@ -1588,6 +1589,7 @@ input GroupAddInput {
   default_assignation: Boolean
   no_creators: Boolean
   restrict_delete: Boolean
+  mcp_allowed: Boolean
   auto_new_marking: Boolean
   clientMutationId: String
   group_confidence_level: ConfidenceLevelInput!

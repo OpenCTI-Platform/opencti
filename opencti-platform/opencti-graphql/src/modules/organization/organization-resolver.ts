@@ -34,6 +34,7 @@ const organizationResolvers: Resolvers = {
     securityOrganizations: (_, args, context) => findAllSecurityOrganizations(context, context.user, args),
   },
   Organization: {
+    mcp_allowed: (organization) => (organization as BasicStoreEntityOrganization).mcp_allowed ?? true,
     sectors: (organization, args, context) => organizationSectorsPaginated<any>(context, context.user, organization.id, args),
     members: (organization, args, context) => organizationMembersPaginated<any>(context, context.user, organization.id, args),
     subOrganizations: (organization, args, context) => childOrganizationsPaginated<BasicStoreEntityOrganization>(context, context.user, organization.id, args),
