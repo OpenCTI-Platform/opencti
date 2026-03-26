@@ -9,13 +9,7 @@ import {
   ENTITY_IPV6_ADDR,
   ENTITY_SOFTWARE,
 } from '../../../../src/schema/stixCyberObservable';
-import {
-  BUILT_IN_DECAY_RULE_IP_URL,
-  type DecayRuleConfiguration,
-  FALLBACK_DECAY_RULE,
-  findDecayRuleForIndicator,
-  initDecayRules,
-} from '../../../../src/modules/decayRule/decayRule-domain';
+import { BUILT_IN_DECAY_RULE_IP_URL, checkDecayRules, type DecayRuleConfiguration, FALLBACK_DECAY_RULE, initDecayRules } from '../../../../src/modules/decayRule/decayRule-domain';
 import type { AuthContext } from '../../../../src/types/user';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../../tests/utils/testQueryHelper';
 import type { BasicStoreEntityDecayRule } from '../../../../src/modules/decayRule/decayRule-types';
@@ -178,6 +172,28 @@ describe('DecayRule resolver standard behavior', () => {
         order: 12,
       },
     };
+
+    const resolvedIndicator = {
+      _index: 'openctii_stix_domain_objects',
+      pattern_type: 'stix',
+      pattern: "[domain-name:value = 'myDomainName.com']",
+      name: 'test D',
+      description: '',
+      indicator_types: [],
+      valid_from: null,
+      valid_until: null,
+      confidence: 100,
+      x_opencti_score: 50,
+      x_opencti_detection: false,
+      x_opencti_main_observable_type: 'Domain-Name',
+      x_mitre_platforms: [],
+      killChainPhases: [],
+      objectMarking: [],
+      objectLabel: [],
+      externalReferences: [],
+      entity_type: 'Indicator',
+    };
+
     const decayRule = await queryAsAdminWithSuccess({
       query: CREATE_QUERY,
       variables: DECAY_RULE_TO_CREATE,
@@ -191,18 +207,18 @@ describe('DecayRule resolver standard behavior', () => {
     logApp.info('[TEST]Custom decay rule is', { customDecayRule });
 
     // Verify that this decay rule is find for observable
-    const indicatorDecayRule = await findDecayRuleForIndicator(adminContext, ENTITY_EMAIL_ADDR);
+    const indicatorDecayRule = await checkDecayRules(adminContext, ADMIN_USER, resolvedIndicator);
     expect(indicatorDecayRule).toBeDefined();
     expect(indicatorDecayRule.name).toBe('decay rule email');
     expect(indicatorDecayRule.decay_points, 'Decay point should be ordered and positive numbers.').toStrictEqual([90, 45, 15]);
 
     // Verify that other observable got the right decay rule
     // No built-in for ENTITY_SOFTWARE, so should be FALLBACK
-    const indicatorDecayRuleOther = await findDecayRuleForIndicator(adminContext, ENTITY_SOFTWARE);
+    const indicatorDecayRuleOther = await checkDecayRules(adminContext, ADMIN_USER, resolvedIndicator);
     expect(indicatorDecayRuleOther).toBeDefined();
     expect(indicatorDecayRuleOther.name).toBe(TEST_FALLBACK_DECAY_RULE.name);
 
-    const indicatorDecayRuleIP = await findDecayRuleForIndicator(adminContext, ENTITY_IPV6_ADDR);
+    const indicatorDecayRuleIP = await checkDecayRules(adminContext, ADMIN_USER, resolvedIndicator);
     expect(indicatorDecayRuleIP).toBeDefined();
     expect(indicatorDecayRuleIP.name).toBe(TEST_IP_DECAY_RULE.name);
   });
