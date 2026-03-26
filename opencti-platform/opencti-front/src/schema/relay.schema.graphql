@@ -13638,6 +13638,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
   refreshed_at: DateTime
   name: String!
   description: String
+  scheduling_period: String
   uri: String!
   collection: String!
   version: TaxiiVersion!
@@ -13687,6 +13688,7 @@ input IngestionTaxiiAddInput {
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
+  scheduling_period: String
   version: TaxiiVersion!
   authentication_type: IngestionAuthType!
   authentication_value: String
