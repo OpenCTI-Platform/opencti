@@ -16,7 +16,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 // Before: boolean "all" to check if all elements of the bundle should be manipualted.
 // Now: an enum "only-main", "all-elements" and "all-except-main"
 
-const message = '[MIGRATION] Upgrade playbook configs for bundle scope with new attribute: applyToElements';
+const message = '[MIGRATION] Upgrade playbook configs with new attribute: applyToElements';
 
 const IDS_TO_MANAGE = [
   PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.id,
@@ -26,6 +26,8 @@ const IDS_TO_MANAGE = [
   PLAYBOOK_SECURITY_COVERAGE_COMPONENT.id,
   PLAYBOOK_SHARING_COMPONENT.id,
   PLAYBOOK_UNSHARING_COMPONENT.id,
+  // TODO Add promote obs
+  // TODO Add extract obs
 ];
 
 const elasticUpdate = (convertor) => {
