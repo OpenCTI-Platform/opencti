@@ -4,6 +4,7 @@ import { useFormatter } from '../../components/i18n';
 const objectTypeTranslationKey = (entityType: string) => `entity_${entityType}`;
 const objectTypePluralTranslationKey = (entityType: string) => `entity_plural_${entityType}`;
 const relationshipTypeTranslationKey = (entityType: string) => `relationship_${entityType}`;
+const relationshipTypePluralTranslationKey = (entityType: string) => `relationship_plural_${entityType}`;
 
 const useEntityTranslation = () => {
   const { t_i18n } = useFormatter();
@@ -22,6 +23,11 @@ const useEntityTranslation = () => {
       const pluralObjectTranslation = t_i18n(objectTypePluralTranslationKey(entityType));
       if (pluralObjectTranslation !== pluralObjectTranslationKey) {
         return pluralObjectTranslation;
+      }
+      const pluralRelationshipTranslationKey = relationshipTypePluralTranslationKey(entityType);
+      const pluralRelationshipTranslation = t_i18n(relationshipTypePluralTranslationKey(entityType));
+      if (pluralRelationshipTranslation !== pluralRelationshipTranslationKey) {
+        return pluralRelationshipTranslation;
       }
     }
     if (setting?.custom_name) {
