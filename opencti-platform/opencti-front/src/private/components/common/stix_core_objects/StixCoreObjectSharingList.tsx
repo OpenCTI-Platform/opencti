@@ -3,8 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
-import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { StixCoreObjectSharingListDeleteMutation } from './__generated__/StixCoreObjectSharingListDeleteMutation.graphql';
 import { StixCoreObjectSharingListFragment$key } from './__generated__/StixCoreObjectSharingListFragment.graphql';
 import Tag from '@common/tag/Tag';
@@ -41,11 +39,6 @@ interface StixCoreObjectSharingListProps {
 
 const StixCoreObjectSharingList = ({ data, disabled, inContainer, children }: StixCoreObjectSharingListProps) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const isDraftSharingEnabled = isFeatureEnable('DRAFT_WORKSPACE_ORG_SHARING');
-  const draftContext = useDraftContext();
-  const disabledInDraft = !!draftContext && !isDraftSharingEnabled;
-  const fullyDisabled = disabled || disabledInDraft;
   const notifySuccessMessage = (
     <span>
       {t_i18n(
@@ -89,7 +82,7 @@ const StixCoreObjectSharingList = ({ data, disabled, inContainer, children }: St
         <Tag
           label={organization.name}
           onDelete={() => removeOrganization(organization.id)}
-          disabled={fullyDisabled || disabledOrgs.includes(organization.id)}
+          disabled={disabled || disabledOrgs.includes(organization.id)}
           icon={<AccountBalanceOutlined fontSize="small" />}
           maxWidth={150}
         />

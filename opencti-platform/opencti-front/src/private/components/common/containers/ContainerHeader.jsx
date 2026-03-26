@@ -39,7 +39,6 @@ import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
 import StixCoreObjectsSuggestions from '../stix_core_objects/StixCoreObjectsSuggestions';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -457,8 +456,6 @@ const ContainerHeader = (props) => {
   const theme = useTheme();
   const { t_i18n, fd } = useFormatter();
   const navigate = useNavigate();
-  const { isFeatureEnable } = useHelper();
-  const isDraftSharingEnabled = isFeatureEnable('DRAFT_WORKSPACE_ORG_SHARING');
   const [openEnrollPlaybook, setOpenEnrollPlaybook] = useState(false);
   const [openSharing, setOpenSharing] = useState(false);
   const [openAccessRestriction, setOpenAccessRestriction] = useState(false);
@@ -745,7 +742,7 @@ const ContainerHeader = (props) => {
                               isDisabled={isSharingDisabled}
                               handleCloseMenu={closeMenu}
                               needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
-                              allowInDraft={isDraftSharingEnabled}
+                              allowInDraft={true}
                             />
                           )}
                           {displayAuthorizedMembers && !displayAuthorizedMembersButton && (
