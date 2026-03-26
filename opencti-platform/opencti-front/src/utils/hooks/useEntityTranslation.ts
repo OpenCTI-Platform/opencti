@@ -5,57 +5,11 @@ const objectTypeTranslationKey = (entityType: string) => `entity_${entityType}`;
 const objectTypePluralTranslationKey = (entityType: string) => `entity_plural_${entityType}`;
 const relationshipTypeTranslationKey = (entityType: string) => `relationship_${entityType}`;
 
-// To remove/change once we have a shared
-// list of entity types
-type TranslatableEntityType
-  = | 'Administrative-Area'
-    | 'Artifact'
-    | 'Attack-Pattern'
-    | 'Campaign'
-    | 'Case-Incident'
-    | 'Case-Rfi'
-    | 'Case-Rft'
-    | 'Channel'
-    | 'City'
-    | 'Country'
-    | 'Course-Of-Action'
-    | 'Data-Component'
-    | 'Data-Source'
-    | 'Event'
-    | 'External-Reference'
-    | 'Feedback'
-    | 'Grouping'
-    | 'Incident'
-    | 'Indicator'
-    | 'Individual'
-    | 'Infrastructure'
-    | 'Intrusion-Set'
-    | 'Malware'
-    | 'Malware-Analysis'
-    | 'Narrative'
-    | 'Note'
-    | 'Observed-Data'
-    | 'Organization'
-    | 'Position'
-    | 'Region'
-    | 'Report'
-    | 'Sector'
-    | 'Security-Coverage'
-    | 'SecurityPlatform'
-    | 'Stix-Cyber-Observable'
-    | 'stix-sighting-relationship'
-    | 'System'
-    | 'Task'
-    | 'Threat-Actor-Group'
-    | 'Threat-Actor-Individual'
-    | 'Tool'
-    | 'Vulnerability';
-
 const useEntityTranslation = () => {
   const { t_i18n } = useFormatter();
   const allEntitySettings = useEntitySettings();
 
-  const translateEntityType = (entityType: TranslatableEntityType, options?: {
+  const translateEntityType = (entityType: string, options?: {
     skipCustom?: boolean;
     plural?: boolean;
   }) => {
