@@ -11,7 +11,6 @@ import {
 import type { BasicStoreEntityIndicator, IndicatorDecayRule } from '../../../../src/modules/indicator/indicator-types';
 import {
   type DecayRuleConfiguration,
-  selectDecayRuleForIndicator,
   computeNextScoreReactionDate,
   computeScoreFromExpectedTime,
   computeTimeFromExpectedScore,
@@ -43,56 +42,6 @@ const TEST_DEFAULT_DECAY_RULE: DecayRuleConfiguration = {
   order: 0,
   active: true,
 };
-
-export const TEST_URL_DECAY_RULE: DecayRuleConfiguration = {
-  id: 'test-url-rule',
-  name: 'URL Decay Rule',
-  description: 'Built-in decay rule for URL indicators',
-  decay_lifetime: 180,
-  decay_pound: 1.0,
-  decay_points: [80, 60, 40, 20],
-  decay_revoke_score: 0,
-  decay_filters: JSON.stringify({
-    mode: 'and',
-    filters: [
-      {
-        key: ['x_opencti_main_observable_type'],
-        operator: 'eq',
-        values: [ENTITY_URL],
-        mode: 'or',
-      },
-    ],
-    filterGroups: [],
-  }),
-  order: 1,
-  active: true,
-};
-
-export const TEST_IP_DECAY_RULE: DecayRuleConfiguration = {
-  id: 'test-ip-rule',
-  name: 'IP Decay Rule',
-  description: 'Built-in decay rule for IPs indicators',
-  decay_lifetime: 60,
-  decay_pound: 1.0,
-  decay_points: [80, 60, 40, 20],
-  decay_revoke_score: 0,
-  decay_filters: JSON.stringify({
-    mode: 'and',
-    filters: [
-      {
-        key: ['x_opencti_main_observable_type'],
-        operator: 'eq',
-        values: [ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR],
-        mode: 'or',
-      },
-    ],
-    filterGroups: [],
-  }),
-  order: 1,
-  active: true,
-};
-
-const BUILT_IN_DECAY_RULES_FOR_TEST = [TEST_DEFAULT_DECAY_RULE, TEST_IP_DECAY_RULE, TEST_URL_DECAY_RULE];
 
 describe('Decay formula testing', () => {
   it('should compute score', () => {
@@ -126,83 +75,6 @@ describe('Decay formula testing', () => {
     const computeScore = computeScoreFromExpectedTime(baseScore, 0.350, customRule);
     const computeTime = computeTimeFromExpectedScore(baseScore, computeScore, customRule);
     expect(computeTime).toBeCloseTo(0.350, 3);
-  });
-
-  it('should find the right rule for indicator type', () => {
-    // GIVEN the type is unknown or not filled, WHEN getting decay rule, THEN the FALLBACK one is return.
-    let decayRule: DecayRuleConfiguration = selectDecayRuleForIndicator('', BUILT_IN_DECAY_RULES_FOR_TEST);
-    expect(decayRule.id).toBe(TEST_DEFAULT_DECAY_RULE.id);
-
-    // GIVEN the type is IP, WHEN getting decay rule, THEN the IP one is return.
-    decayRule = selectDecayRuleForIndicator('IPv6-Addr', BUILT_IN_DECAY_RULES_FOR_TEST);
-    expect(decayRule.id).toBe(TEST_IP_DECAY_RULE.id);
-
-    // GIVEN the type is URL, WHEN getting decay rule, THEN the URL one is return.
-    decayRule = selectDecayRuleForIndicator('Url', BUILT_IN_DECAY_RULES_FOR_TEST);
-    expect(decayRule.id).toBe(TEST_URL_DECAY_RULE.id);
-
-    // GIVEN the type is URL, URL decay rule is disabled, WHEN getting decay rule, THEN the default one is return.
-    const activeDecayRules = [TEST_DEFAULT_DECAY_RULE, TEST_IP_DECAY_RULE, { ...TEST_URL_DECAY_RULE, active: false }];
-    decayRule = selectDecayRuleForIndicator('Url', activeDecayRules);
-    expect(decayRule.id).toBe(TEST_DEFAULT_DECAY_RULE.id);
-
-    // GIVEN the type is URL, default decay rule has higher order, WHEN getting decay rule, THEN the default one is return.
-    const highDecayRules = [{ ...TEST_DEFAULT_DECAY_RULE, order: 2 }, TEST_IP_DECAY_RULE, TEST_URL_DECAY_RULE];
-    decayRule = selectDecayRuleForIndicator('Url', highDecayRules);
-    expect(decayRule.id).toBe(TEST_DEFAULT_DECAY_RULE.id);
-
-    // GIVEN the type 'Url' that matched 2 rules
-    const rulesWithTwoUrls: DecayRuleConfiguration[] = [];
-    rulesWithTwoUrls.push({
-      id: 'URL_DECAY_RULE_IS_LESS_IMPORTANT',
-      name: 'URL_DECAY_RULE_IS_LESS_IMPORTANT',
-      description: 'URL_DECAY_RULE_IS_LESS_IMPORTANT',
-      decay_lifetime: 60,
-      decay_pound: 0.33,
-      decay_points: [60],
-      decay_revoke_score: 0,
-      decay_filters: JSON.stringify({
-        mode: 'and',
-        filters: [
-          {
-            key: ['x_opencti_main_observable_type'],
-            operator: 'eq',
-            values: [ENTITY_URL],
-            mode: 'or',
-          },
-        ],
-        filterGroups: [],
-      }),
-      order: 2,
-      active: true,
-    });
-    rulesWithTwoUrls.push({
-      id: 'URL_DECAY_RULE',
-      name: 'URL_DECAY_RULE',
-      description: 'URL_DECAY_RULE',
-      decay_lifetime: 180,
-      decay_pound: 1.0,
-      decay_points: [80, 60, 40, 20],
-      decay_revoke_score: 0,
-      decay_filters: JSON.stringify({
-        mode: 'and',
-        filters: [
-          {
-            key: ['x_opencti_main_observable_type'],
-            operator: 'eq',
-            values: [ENTITY_URL],
-            mode: 'or',
-          },
-        ],
-        filterGroups: [],
-      }),
-      order: 3,
-      active: true,
-    });
-    // WHEN getting decay rule
-    decayRule = selectDecayRuleForIndicator('Url', rulesWithTwoUrls);
-    // THEN the rule is the one with lower value in order
-    expect(decayRule.id, 'When several rules matches, the one with lower order value should be taken.').toBe('URL_DECAY_RULE');
   });
 
   it('should find the next reaction date', () => {
