@@ -1713,7 +1713,7 @@
   "entity_Stix-Domain-Object": "Entität",
   "entity_Stix-Domain-Objects": "Entitäten",
   "entity_Stix-Meta-Objects": "Meta-Entitäten",
-  "entity_stix-sighting-relationship": "Sichtungen",
+  "entity_stix-sighting-relationship": "Sichtung",
   "entity_StixFile": "Datei",
   "entity_StreamCollection": "Live-Stream",
   "entity_Synchronizer": "OpenCTI-Stream",
