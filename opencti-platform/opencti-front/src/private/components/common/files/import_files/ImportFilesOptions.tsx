@@ -150,7 +150,7 @@ const ImportFilesOptions = ({
                   </>
                 )}
                 <Field
-                  name="authorizedMembers"
+                  name="authorized_members"
                   component={AuthorizedMembersField}
                   owner={owner}
                   showAllMembersLine={showAllMembersLine}

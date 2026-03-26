@@ -122,7 +122,7 @@ export type OptionsFormValues = {
   objectAssignee: FieldOption[];
   objectParticipant: FieldOption[];
   createdBy: FieldOption | undefined;
-  authorizedMembers?: AuthorizedMembersFieldValue;
+  authorized_members?: AuthorizedMembersFieldValue;
 };
 
 const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
@@ -190,17 +190,21 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     type: 'files',
   });
 
-  const createDraft = useCallback(async (name: string, selectedEntityId?: string, authorizedMembers?: AuthorizedMembersFieldValue) => {
+  const createDraft = useCallback(async (values: DraftAddInput, selectedEntityId?: string) => {
     try {
       const { draftWorkspaceAdd } = await new Promise<DraftCreationMutation$data>((resolve, reject) => {
         commitCreationMutation({
           variables: {
             input: {
-              name,
+              name: values.name,
+              description: values.description,
               entity_id: selectedEntityId,
-              authorized_members: !authorizedMembers
+              objectAssignee: values.objectAssignee.map(({ value }) => value),
+              objectParticipant: values.objectParticipant.map(({ value }) => value),
+              createdBy: values.createdBy?.value,
+              authorized_members: !values.authorized_members
                 ? null
-                : authorizedMembers
+                : values.authorized_members
                     .filter((v) => v.accessRight !== 'none')
                     .map((member) => ({
                       id: member.value,
@@ -325,12 +329,12 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     const selectedEntityId = entityId ?? (values.associatedEntity?.value || undefined);
     const fileMarkingIds = values.fileMarkings.map(({ value }) => value);
 
-    const { validationMode, name, authorizedMembers } = values;
+    const { validationMode } = values;
     if (validationMode === 'workbench') {
       setUploadStatus('uploading');
       importFiles({ selectedEntityId, fileMarkingIds, validationMode }, setErrors);
     } else if (validationMode === 'draft') {
-      const newDraftId = !draftId ? await createDraft(name, selectedEntityId, authorizedMembers) : draftId;
+      const newDraftId = !draftId ? await createDraft(values, selectedEntityId) : draftId;
       if (!newDraftId) {
         setActiveStep(1);
         setUploadStatus(undefined);
@@ -350,6 +354,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     objectAssignee: [],
     objectParticipant: [],
     createdBy: undefined,
+    authorized_members: undefined,
   });
 
   const optionsContext = useFormik<OptionsFormValues>({
@@ -404,9 +409,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
         importMode !== 'form' && (
         // Import button for file import mode
           <Button
-            onClick={() => {
-              optionsContext.submitForm();
-            }}
+            onClick={optionsContext.submitForm}
             color="secondary"
             disabled={!isValidImport}
           >
