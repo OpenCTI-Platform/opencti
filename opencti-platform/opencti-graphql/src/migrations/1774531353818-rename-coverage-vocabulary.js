@@ -18,8 +18,8 @@ export const up = async (next) => {
         value: ['Vulnerability'],
       },
     ];
-    await editVocabulary(context, SYSTEM_USER, elementToChange.id, input);
     logMigration.info(`${message} > changing 'vulnerabilities' to 'vulnerability'.`);
+    await editVocabulary(context, SYSTEM_USER, elementToChange.id, input);
   }
   logMigration.info(`${message} > done.`);
   next();
