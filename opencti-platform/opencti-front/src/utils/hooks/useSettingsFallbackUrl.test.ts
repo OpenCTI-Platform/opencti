@@ -236,4 +236,3 @@ describe('Hook: useSettingsFallbackUrl', () => {
     expect(hook.result.current).toBe('/dashboard');
   });
 });
-
