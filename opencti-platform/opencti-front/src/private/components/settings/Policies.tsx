@@ -249,22 +249,22 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       />
                     </Card>
                   </Grid>
-                    <Grid item xs={6}>
-                      <Card title={t_i18n('Users visibility')}>
-                        <Alert severity="info" variant="outlined">
-                          {t_i18n('This option is automatically disabled when a platform organization is set.')}
-                        </Alert>
-                        <Field
-                          component={SwitchField}
-                          type="checkbox"
-                          name="view_all_users"
-                          label={t_i18n('Allow users to view users of other organizations')}
-                          containerstyle={{ marginTop: 20 }}
-                          disabled={!!values.platform_organization}
-                          onChange={(name: string, value: string) => handleSubmitField(name, value)}
-                        />
-                      </Card>
-                    </Grid>
+                  <Grid item xs={6}>
+                    <Card title={t_i18n('Users visibility')}>
+                      <Alert severity="info" variant="outlined">
+                        {t_i18n('This option is automatically disabled when a platform organization is set.')}
+                      </Alert>
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="view_all_users"
+                        label={t_i18n('Allow users to view users of other organizations')}
+                        containerstyle={{ marginTop: 20 }}
+                        disabled={!!values.platform_organization}
+                        onChange={(name: string, value: string) => handleSubmitField(name, value)}
+                      />
+                    </Card>
+                  </Grid>
                   <Grid item xs={6}>
                     <Card title={t_i18n('Platform Banner Configuration')}>
                       <Field
