@@ -14,7 +14,7 @@ import useGranted, {
   SETTINGS_SETSTATUSTEMPLATES,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
-import useSettingsFallbackUrl from './useSettingsFallbackUrl';
+import useSettingsFallbackUrl from '../../../utils/hooks/useSettingsFallbackUrl';
 
 const Security = lazy(() => import('../../../utils/Security'));
 const CaseTemplates = lazy(() => import('./case_templates/CaseTemplates'));

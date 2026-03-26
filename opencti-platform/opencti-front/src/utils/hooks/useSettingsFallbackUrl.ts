@@ -15,7 +15,7 @@ import useGranted, {
   SETTINGS_SETVOCABULARIES,
   SETTINGS_SUPPORT,
   VIRTUAL_ORGANIZATION_ADMIN,
-} from '../../../utils/hooks/useGranted';
+} from './useGranted';
 
 const useSettingsFallbackUrl = (): string => {
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);

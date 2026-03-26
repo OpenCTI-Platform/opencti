@@ -10,7 +10,7 @@ import useGranted, {
 } from '../../../../utils/hooks/useGranted';
 import Loader from '../../../../components/Loader';
 import AccessesMenu from '../AccessesMenu';
-import useSettingsFallbackUrl from '../useSettingsFallbackUrl';
+import useSettingsFallbackUrl from '../../../../utils/hooks/useSettingsFallbackUrl';
 
 const Security = lazy(() => import('../../../../utils/Security'));
 const Groups = lazy(() => import('../Groups'));
