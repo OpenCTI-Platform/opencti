@@ -24,6 +24,8 @@ import { convertThreatActorIndividualToStix_2_0 } from '../../../src/modules/thr
 import { convertNarrativeToStix_2_0 } from '../../../src/modules/narrative/narrative-converter';
 import { convertDataComponentToStix_2_0 } from '../../../src/modules/dataComponent/dataComponent-converter';
 import { convertDataSourceToStix_2_0 } from '../../../src/modules/dataSource/dataSource-converter';
+import { convertOrganizationToStix_2_0 } from '../../../src/modules/organization/organization-converter';
+import { convertSecurityPlatformToStix_2_0 } from '../../../src/modules/securityPlatform/securityPlatform-converter';
 import {
   convertAttackPatternToStix,
   convertCampaignToStix,
@@ -39,7 +41,9 @@ import {
   convertReportToStix,
   convertIncidentToStix,
   convertSightingToStix,
+  convertIdentityToStix,
 } from '../../../src/database/stix-2-0-converter';
+import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../../src/schema/stixDomainObject';
 import { CAMPAIGN_INSTANCE, EXPECTED_CAMPAIGN } from './instances-stix-2-0-converter/SDOs/campaign';
 import { EXPECTED_INCIDENT, INCIDENT_INSTANCE } from './instances-stix-2-0-converter/SDOs/incident';
 import { EXPECTED_INTRUSION_SET, INTRUSION_SET_INSTANCE } from './instances-stix-2-0-converter/SDOs/intrusion-set';
@@ -51,6 +55,13 @@ import { EXPECTED_NARRATIVE, NARRATIVE_INSTANCE } from './instances-stix-2-0-con
 import { COURSE_OF_ACTION_INSTANCE, EXPECTED_COURSE_OF_ACTION } from './instances-stix-2-0-converter/techniques/course-of-action';
 import { DATA_COMPONENT_INSTANCE, EXPECTED_DATA_COMPONENT } from './instances-stix-2-0-converter/techniques/data-component';
 import { DATA_SOURCE_INSTANCE, EXPECTED_DATA_SOURCE } from './instances-stix-2-0-converter/techniques/data-source';
+import { INDIVIDUAL_INSTANCE, EXPECTED_INDIVIDUAL } from './instances-stix-2-0-converter/identities/individual';
+import { SECTOR_INSTANCE, EXPECTED_SECTOR } from './instances-stix-2-0-converter/identities/sector';
+import { SYSTEM_INSTANCE, EXPECTED_SYSTEM } from './instances-stix-2-0-converter/identities/system';
+import { ORGANIZATION_INSTANCE, EXPECTED_ORGANIZATION } from './instances-stix-2-0-converter/identities/organization';
+import { SECURITY_PLATFORM_INSTANCE, EXPECTED_SECURITY_PLATFORM } from './instances-stix-2-0-converter/identities/security-platform';
+import { EVENT_INSTANCE, EXPECTED_EVENT } from './instances-stix-2-0-converter/event';
+import { convertEventToStix_2_0 } from '../../../src/modules/event/event-converter';
 
 describe('Stix 2.0 opencti converter', () => {
   // SDOs
@@ -156,5 +167,31 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert StixSightingRelationship', async () => {
     const result = convertSightingToStix(SIGHTING_INSTANCE);
     expect(result).toEqual(EXPECTED_SIGHTING);
+  });
+  // Identities
+  it('should convert Individual', async () => {
+    const result = convertIdentityToStix(INDIVIDUAL_INSTANCE, ENTITY_TYPE_IDENTITY_INDIVIDUAL);
+    expect(result).toEqual(EXPECTED_INDIVIDUAL);
+  });
+  it('should convert Sector', async () => {
+    const result = convertIdentityToStix(SECTOR_INSTANCE, ENTITY_TYPE_IDENTITY_SECTOR);
+    expect(result).toEqual(EXPECTED_SECTOR);
+  });
+  it('should convert System', async () => {
+    const result = convertIdentityToStix(SYSTEM_INSTANCE, ENTITY_TYPE_IDENTITY_SYSTEM);
+    expect(result).toEqual(EXPECTED_SYSTEM);
+  });
+  it('should convert Organization', async () => {
+    const result = convertOrganizationToStix_2_0(ORGANIZATION_INSTANCE);
+    expect(result).toEqual(EXPECTED_ORGANIZATION);
+  });
+  it('should convert SecurityPlatform', async () => {
+    const result = convertSecurityPlatformToStix_2_0(SECURITY_PLATFORM_INSTANCE);
+    expect(result).toEqual(EXPECTED_SECURITY_PLATFORM);
+  });
+  // Events
+  it('should convert Event', async () => {
+    const result = convertEventToStix_2_0(EVENT_INSTANCE);
+    expect(result).toEqual(EXPECTED_EVENT);
   });
 });

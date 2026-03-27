@@ -39,8 +39,6 @@ import { isBasicRelationship } from '../schema/stixRelationship';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField } from './utils';
 import type * as SRO from '../types/stix-2-0-sro';
-import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
-import { convertThreatActorIndividualToStix_2_0 } from '../modules/threatActorIndividual/threatActorIndividual-converter';
 
 const CUSTOM_ENTITY_TYPES = [
   ENTITY_TYPE_CONTAINER_TASK,
@@ -160,6 +158,28 @@ export const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDo
 const buildStixRelationship = (instance: StoreRelation): S.StixRelationshipObject => {
   // As 14/03/2022, relationship share same common information with domain
   return buildStixDomain(instance);
+};
+
+export const convertIdentityToStix = (instance: StoreEntity, type: string): SDO.StixIdentity => {
+  if (!isStixDomainObjectIdentity(type)) {
+    throw UnsupportedError('Type not compatible with identity', { entity_type: type });
+  }
+  const identity = buildStixDomain(instance);
+  return {
+    ...identity,
+    name: instance.name,
+    description: instance.description,
+    contact_information: instance.contact_information,
+    identity_class: instance.identity_class,
+    roles: instance.roles,
+    sectors: instance.sectors,
+    x_opencti_aliases: instance.x_opencti_aliases ?? [],
+    x_opencti_firstname: instance.x_opencti_firstname,
+    x_opencti_lastname: instance.x_opencti_lastname,
+    x_opencti_organization_type: instance.x_opencti_organization_type,
+    x_opencti_reliability: instance.x_opencti_reliability,
+    x_opencti_score: instance.x_opencti_score,
+  };
 };
 
 export const convertIncidentToStix = (instance: StoreEntity): SDO.StixIncident => {
@@ -443,8 +463,8 @@ const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
     if (ENTITY_TYPE_THREAT_ACTOR_GROUP === type) {
       return convertThreatActorGroupToStix(basic);
     }
-    if (ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL === type) {
-      return convertThreatActorIndividualToStix_2_0(basic as any);
+    if (isStixDomainObjectIdentity(type)) {
+      return convertIdentityToStix(basic, type);
     }
     if (ENTITY_TYPE_TOOL === type) {
       return convertToolToStix(basic);

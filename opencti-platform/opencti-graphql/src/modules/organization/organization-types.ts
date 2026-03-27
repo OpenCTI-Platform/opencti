@@ -1,5 +1,6 @@
 import type { BasicIdentityEntity, StoreEntityIdentity } from '../../types/store';
 import type { StixIdentity } from '../../types/stix-2-1-sdo';
+import type { StixIdentity as StixIdentity2 } from '../../types/stix-2-0-sdo';
 import { RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 
 export const ENTITY_TYPE_IDENTITY_ORGANIZATION = 'Organization';
@@ -21,4 +22,8 @@ export interface StoreEntityOrganization extends StoreEntityIdentity, BasicStore
 
 // region Stix type
 export type StixOrganization = StixIdentity;
+// endregion
+
+// region Stix 2.0 type
+export type Stix2Organization = StixIdentity2;
 // endregion

@@ -143,6 +143,23 @@ export interface StixVulnerability extends StixDomainObject {
   x_opencti_epss_percentile: number;
 }
 
+// Identity Specific Properties
+// name, description, roles, identity_class, sectors, contact_information
+export interface StixIdentity extends StixDomainObject {
+  name: string; // optional
+  description: string; // optional
+  roles: Array<string>; // optional
+  identity_class: string; // 'individual' | 'group' | 'system' | 'organization' | 'class' | 'unknown'; // optional
+  sectors: Array<string>; // optional
+  contact_information: string; // optional
+  x_opencti_aliases: Array<string>;
+  x_opencti_firstname: string;
+  x_opencti_lastname: string;
+  x_opencti_organization_type: string;
+  x_opencti_reliability: string;
+  x_opencti_score: number;
+}
+
 export interface StixIncident extends StixDomainObject {
   name: string;
   description: string; // optional

@@ -1,0 +1,45 @@
+import type { StoreEntityEvent } from '../../../../src/modules/event/event-types';
+
+export const EVENT_INSTANCE = {
+  id: '10000000-0000-4000-8000-000000000006',
+  standard_id: 'event--20000000-0000-4000-8000-000000000006',
+  entity_type: 'Event',
+  created: '2026-03-01T00:00:00.000Z',
+  modified: '2026-03-02T00:00:00.000Z',
+  confidence: 80,
+  revoked: false,
+  name: 'Event Stix 2.0',
+  description: 'event description',
+  event_types: ['financial'],
+  start_time: '2026-04-05T22:00:00.000Z',
+  stop_time: '2026-04-07T22:00:00.000Z',
+  x_opencti_aliases: ['event-alias'],
+  createdBy: { standard_id: 'identity--c801c762-92e8-58b6-9bcb-6fa805f902cb' },
+  objectLabel: [{ value: 'stix 2.0' }],
+  objectMarking: [{ standard_id: 'marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1' }],
+} as unknown as StoreEntityEvent;
+
+export const EXPECTED_EVENT = {
+  id: 'event--20000000-0000-4000-8000-000000000006',
+  type: 'event',
+  spec_version: '2.0',
+  x_opencti_id: '10000000-0000-4000-8000-000000000006',
+  x_opencti_type: 'Event',
+  x_opencti_granted_refs: [],
+  x_opencti_files: [],
+  created: '2026-03-01T00:00:00.000Z',
+  modified: '2026-03-02T00:00:00.000Z',
+  revoked: false,
+  confidence: 80,
+  labels: ['stix 2.0'],
+  object_marking_refs: ['marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1'],
+  created_by_ref: 'identity--c801c762-92e8-58b6-9bcb-6fa805f902cb',
+  external_references: [],
+  name: 'Event Stix 2.0',
+  description: 'event description',
+  event_types: ['financial'],
+  start_time: '2026-04-05T22:00:00.000Z',
+  stop_time: '2026-04-07T22:00:00.000Z',
+  aliases: ['event-alias'],
+};
+
