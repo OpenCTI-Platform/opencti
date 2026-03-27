@@ -24,6 +24,7 @@ import ThreatActorIndividualEditionDemographics from './ThreatActorIndividualEdi
 import ThreatActorIndividualEditionBiographics from './ThreatActorIndividualEditionBiographics';
 import { ThreatActorIndividualEditionContainerQuery } from './__generated__/ThreatActorIndividualEditionContainerQuery.graphql';
 import ThreatActorIndividualEditionDetails from './ThreatActorIndividualEditionDetails';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 interface ThreatActorIndividualEditionContainerProps {
   queryRef: PreloadedQuery<ThreatActorIndividualEditionContainerQuery>;
@@ -53,6 +54,7 @@ const ThreatActorIndividualEditionContainer: FunctionComponent<
   ThreatActorIndividualEditionContainerProps
 > = ({ handleClose, queryRef, open, controlledDial }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { threatActorIndividual } = usePreloadedQuery<ThreatActorIndividualEditionContainerQuery>(
     ThreatActorIndividualEditionQuery,
     queryRef,
@@ -64,7 +66,7 @@ const ThreatActorIndividualEditionContainer: FunctionComponent<
   if (threatActorIndividual !== null) {
     return (
       <Drawer
-        title={t_i18n('Update a threat actor individual')}
+        title={t_i18n('', { id: 'Update ...', values: { entity_type: translateEntityType('Threat-Actor-Individual') } })}
         context={threatActorIndividual?.editContext}
         onClose={handleClose}
         open={open}

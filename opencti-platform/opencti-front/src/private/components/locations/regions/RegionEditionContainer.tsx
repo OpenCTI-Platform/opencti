@@ -6,6 +6,7 @@ import RegionEditionOverview from './RegionEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { RegionEditionContainerQuery } from './__generated__/RegionEditionContainerQuery.graphql';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 interface RegionEditionContainerProps {
   handleClose: () => void;
@@ -33,11 +34,12 @@ const RegionEditionContainer: FunctionComponent<RegionEditionContainerProps> = (
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { region } = usePreloadedQuery(regionEditionQuery, queryRef);
   if (region) {
     return (
       <Drawer
-        title={t_i18n('Update a region')}
+        title={t_i18n('', { id: 'Update ...', values: { entity_type: translateEntityType('Region') } })}
         context={region.editContext}
         onClose={handleClose}
         open={open}

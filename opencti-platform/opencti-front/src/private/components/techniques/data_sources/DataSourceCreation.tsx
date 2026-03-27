@@ -33,6 +33,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { DataSourceCreationMutation, DataSourceCreationMutation$variables } from './__generated__/DataSourceCreationMutation.graphql';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const dataSourceMutation = graphql`
   mutation DataSourceCreationMutation($input: DataSourceAddInput!) {
@@ -97,6 +98,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(DATA_SOURCE_TYPE);
@@ -113,7 +115,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
   const [commit] = useApiMutation<DataSourceCreationMutation>(
     dataSourceMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Data-Source')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Data-Source')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -326,6 +328,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [bulkOpen, setBulkOpen] = useState(false);
 
   const [open, setOpen] = useState(false);
@@ -346,7 +349,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
   });
   const renderClassic = () => (
     <Drawer
-      title={t_i18n('Create a data source')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Data-Source') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateDataSourceControlledDial}
     >

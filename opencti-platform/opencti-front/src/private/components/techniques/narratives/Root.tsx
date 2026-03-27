@@ -26,6 +26,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import NarrativeEdition from './NarrativeEdition';
 import NarrativeDeletion from './NarrativeDeletion';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const subscription = graphql`
   subscription RootNarrativeSubscription($id: ID!) {
@@ -88,6 +89,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   useSubscription<RootNarrativeSubscription>(subConfig);
 
   const {
@@ -127,7 +129,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Techniques') },
-              { label: t_i18n('Narratives'), link: '/dashboard/techniques/narratives' },
+              { label: translateEntityType('Narrative', { plural: true }), link: '/dashboard/techniques/narratives' },
               { label: narrative.name, current: true },
             ]}
             />

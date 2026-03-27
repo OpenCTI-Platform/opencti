@@ -5,6 +5,7 @@ import { useGetCurrentUserAccessRight } from '../utils/authorizedMembers';
 import useDraftContext from '../utils/hooks/useDraftContext';
 import { ButtonSize } from './common/button/Button.types';
 import { useFormatter } from './i18n';
+import useEntityTranslation from '../utils/hooks/useEntityTranslation';
 
 interface CreateEntityControlledDialProps extends DrawerControlledDialProps {
   entityType: string;
@@ -20,7 +21,8 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
   variant = 'primary',
 }) => {
   const { t_i18n } = useFormatter();
-  const valueString = entityType ? t_i18n(`entity_${entityType}`) : t_i18n('Entity');
+  const { translateEntityType } = useEntityTranslation();
+  const valueString = entityType ? translateEntityType(entityType) : t_i18n('Entity');
   const buttonValue = t_i18n('', {
     id: 'Create ...',
     values: { entity_type: valueString },

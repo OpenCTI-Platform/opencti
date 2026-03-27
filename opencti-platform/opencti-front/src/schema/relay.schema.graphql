@@ -12957,6 +12957,8 @@ type EntitySetting implements InternalObject & BasicObject {
   overview_layout_customization: [OverviewWidgetCustomization!]
   fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
   requestAccessConfiguration: RequestAccessConfiguration
+  custom_name: String
+  custom_name_plural: String
 }
 
 enum EntitySettingsOrdering {

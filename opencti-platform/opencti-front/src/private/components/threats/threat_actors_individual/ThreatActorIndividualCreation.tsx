@@ -46,6 +46,7 @@ import BulkTextModalButton from '../../../../components/fields/BulkTextField/Bul
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 interface ErrorBadgeProps extends BadgeProps {
   errors?: FormikErrors<ThreatActorIndividualAddInput>;
@@ -140,6 +141,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { heightsConverterSave, weightsConverterSave } = useUserMetric();
@@ -208,7 +210,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
   const [commit] = useApiMutation<ThreatActorIndividualCreationMutation>(
     ThreatActorIndividualMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Threat-Actor-Individual')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Threat-Actor-Individual')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -686,6 +688,7 @@ const ThreatActorIndividualCreation = ({
   paginationOptions: ThreatActorsIndividualCardsPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [bulkOpen, setBulkOpen] = useState(false);
 
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
@@ -701,7 +704,7 @@ const ThreatActorIndividualCreation = ({
 
   return (
     <Drawer
-      title={t_i18n('Create a threat actor individual')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Threat-Actor-Individual') } })}
       controlledDial={CreateThreatActorIndividualControlledDial}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
     >

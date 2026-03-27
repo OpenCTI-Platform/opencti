@@ -9,6 +9,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { AdministrativeAreaEditionContainerQuery } from './__generated__/AdministrativeAreaEditionContainerQuery.graphql';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 interface AdministrativeAreaEditionContainerProps {
   queryRef: PreloadedQuery<AdministrativeAreaEditionContainerQuery>;
@@ -35,13 +36,14 @@ const AdministrativeAreaEditionContainer: FunctionComponent<AdministrativeAreaEd
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { administrativeArea } = usePreloadedQuery(administrativeAreaEditionQuery, queryRef);
   if (administrativeArea === null) {
     return <ErrorNotFound />;
   }
   return (
     <Drawer
-      title={t_i18n('Update an area')}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: translateEntityType('Administrative-Area') } })}
       context={administrativeArea?.editContext}
       onClose={handleClose}
       open={open}

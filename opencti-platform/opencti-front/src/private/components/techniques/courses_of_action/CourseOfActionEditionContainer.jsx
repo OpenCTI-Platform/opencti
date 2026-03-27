@@ -4,16 +4,18 @@ import { useFormatter } from '../../../../components/i18n';
 import CourseOfActionEditionOverview from './CourseOfActionEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer from '../../common/drawer/Drawer';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const CourseOfActionEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
 
   const { handleClose, courseOfAction, open, controlledDial } = props;
   const { editContext } = courseOfAction;
 
   return (
     <Drawer
-      title={t_i18n('Update a course of action')}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: translateEntityType('Course-Of-Action') } })}
       open={open}
       onClose={handleClose}
       context={editContext}

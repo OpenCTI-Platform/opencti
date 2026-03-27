@@ -24,11 +24,13 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import useCopy from '../../../utils/hooks/useCopy';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 
 const LOCAL_STORAGE_KEY = 'stixCyberObservables';
 
 const StixCyberObservables: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Observables | Observations'));
   const {
@@ -132,7 +134,7 @@ const StixCyberObservables: FunctionComponent = () => {
   return (
     <span data-testid="observables-page">
       <ExportContextProvider>
-        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Observables'), current: true }]} />
+        <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: translateEntityType('Stix-Cyber-Observable', { plural: true }), current: true }]} />
         {queryRef && (
           <DataTable
             storageKey={LOCAL_STORAGE_KEY}

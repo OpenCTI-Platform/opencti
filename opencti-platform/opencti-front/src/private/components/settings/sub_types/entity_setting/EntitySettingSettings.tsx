@@ -1,9 +1,10 @@
-import { Box, Tooltip } from '@mui/material';
+import { Box, TextField, Tooltip } from '@mui/material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import Grid from '@mui/material/Grid';
 import Switch from '@mui/material/Switch';
 import { InformationOutline } from 'mdi-material-ui';
+import { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Label from '../../../../../components/common/label/Label';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
@@ -14,6 +15,7 @@ import Security from '../../../../../utils/Security';
 import GroupEntitySettingHiddenTypesList from '../../groups/GroupEntitySettingHiddenTypesList';
 import SettingsOrganizationEntitySettingHiddenTypesList from '../../organizations/SettingsOrganizationEntitySettingHiddenTypesList';
 import { EntitySettingSettings_entitySetting$key } from './__generated__/EntitySettingSettings_entitySetting.graphql';
+import useEntityTranslation from '../../../../../utils/hooks/useEntityTranslation';
 
 export const entitySettingFragment = graphql`
   fragment EntitySettingSettings_entitySetting on EntitySetting {
@@ -63,6 +65,8 @@ export const entitySettingFragment = graphql`
             }
         }
     }
+    custom_name
+    custom_name_plural
   }
 `;
 
@@ -83,12 +87,16 @@ interface EntitySettingSettingsProps {
 
 const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProps) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const entitySetting = useFragment(entitySettingFragment, entitySettingsData);
   if (!entitySetting) {
     return <ErrorNotFound />;
   }
 
   const [commit] = useApiMutation(entitySettingPatch);
+
+  const [customName, setCustomName] = useState(entitySetting.custom_name ?? '');
+  const [customNamePlural, setCustomNamePlural] = useState(entitySetting.custom_name_plural ?? '');
 
   const handleSubmitField = (name: string, value: boolean) => {
     commit({
@@ -98,8 +106,73 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
       },
     });
   };
+
+  const handleSubmitCustomName = (name: string, value: string) => {
+    commit({
+      variables: {
+        ids: [entitySetting.id],
+        input: { key: name, value: value.trim().length > 0 ? [value.trim()] : [''] },
+      },
+    });
+  };
+
   return (
     <Grid container={true} spacing={2}>
+      <Grid item xs={12}>
+        <Label action={(
+          <Tooltip
+            title={t_i18n('Customize the display name shown in the UI for this entity type. Leave empty to use the default name.')}
+          >
+            <InformationOutline
+              fontSize="small"
+              color="primary"
+            />
+          </Tooltip>
+        )}
+        >
+          {t_i18n('Custom display name')}
+        </Label>
+        <Grid container spacing={2} sx={{ mt: 1 }}>
+          <Grid item xs={6}>
+            <TextField
+              label={t_i18n('Display name (singular)')}
+              fullWidth
+              size="small"
+              value={customName}
+              placeholder={translateEntityType(entitySetting.target_type, {
+                skipCustom: true,
+              })}
+              onChange={(e) => setCustomName(e.target.value)}
+              onBlur={() => handleSubmitCustomName('custom_name', customName)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSubmitCustomName('custom_name', customName);
+                }
+              }}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label={t_i18n('Display name (plural)')}
+              fullWidth
+              size="small"
+              value={customNamePlural}
+              placeholder={translateEntityType(entitySetting.target_type, {
+                skipCustom: true,
+                plural: true,
+              })}
+              onChange={(e) => setCustomNamePlural(e.target.value)}
+              onBlur={() => handleSubmitCustomName('custom_name_plural', customNamePlural)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSubmitCustomName('custom_name_plural', customNamePlural);
+                }
+              }}
+            />
+          </Grid>
+        </Grid>
+      </Grid>
+
       <Grid item xs={6}>
         <div>
           <Label action={(

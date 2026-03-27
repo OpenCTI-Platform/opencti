@@ -4,16 +4,18 @@ import { useFormatter } from '../../../../components/i18n';
 import ReportEditionOverview from './ReportEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import Drawer from '../../common/drawer/Drawer';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const ReportEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
 
   const { handleClose, report, open, controlledDial } = props;
   const { editContext } = report;
 
   return (
     <Drawer
-      title={t_i18n('Update a report')}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: translateEntityType('Report') } })}
       open={open}
       onClose={handleClose}
       context={editContext}

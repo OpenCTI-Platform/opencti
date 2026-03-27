@@ -6,6 +6,7 @@ import InfrastructureEditionOverview from './InfrastructureEditionOverview';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { InfrastructureEditionContainerQuery } from './__generated__/InfrastructureEditionContainerQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 export const infrastructureEditionContainerQuery = graphql`
   query InfrastructureEditionContainerQuery($id: String!) {
@@ -33,12 +34,13 @@ const InfrastructureEditionContainer: FunctionComponent<InfrastructureEditionCon
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { infrastructure } = usePreloadedQuery(infrastructureEditionContainerQuery, queryRef);
 
   if (infrastructure) {
     return (
       <Drawer
-        title={t_i18n('Update an infrastructure')}
+        title={t_i18n('', { id: 'Update ...', values: { entity_type: translateEntityType('Infrastructure') } })}
         context={infrastructure.editContext}
         onClose={handleClose}
         open={open}

@@ -28,7 +28,7 @@ const Root = () => {
     redirect = 'events';
   } else if (!useIsHiddenEntity('Organization')) {
     redirect = 'organizations';
-  } else if (!useIsHiddenEntity('Security-Platform')) {
+  } else if (!useIsHiddenEntity('SecurityPlatform')) {
     redirect = 'security_platforms';
   } else if (!useIsHiddenEntity('System')) {
     redirect = 'systems';

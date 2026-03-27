@@ -12,11 +12,13 @@ import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 
 const LOCAL_STORAGE_KEY = 'events';
 
 const Events = () => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Events | Entities'));
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<EventsLinesPaginationQuery$variables>(
@@ -124,7 +126,7 @@ const Events = () => {
   };
   return (
     <div data-testid="event-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Events'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Entities') }, { label: translateEntityType('Event', { plural: true }), current: true }]} />
       {renderLines()}
     </div>
   );

@@ -11,9 +11,9 @@ import Checkbox from '@mui/material/Checkbox';
 import makeStyles from '@mui/styles/makeStyles';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
-import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { SubTypesLine_node$key } from './__generated__/SubTypesLine_node.graphql';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -90,7 +90,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
   index,
 }) => {
   const classes = useStyles();
-  const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const nodeSubType = useFragment(subTypesLinesFragment, node);
 
   const renderOptionIcon = (option: string) => {
@@ -146,7 +146,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.entity_type.width }}
             >
-              {t_i18n(`entity_${nodeSubType.label}`)}
+              {translateEntityType(nodeSubType.label)}
             </div>
             <div
               className={classes.bodyItem}

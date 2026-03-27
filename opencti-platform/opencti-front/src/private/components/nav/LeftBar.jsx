@@ -79,6 +79,7 @@ import Security from '../../../utils/Security';
 import useAuth from '../../../utils/hooks/useAuth';
 import useDimensions from '../../../utils/hooks/useDimensions';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 import useGranted, {
   AUTOMATION_AUTMANAGE,
   BYPASS,
@@ -224,6 +225,7 @@ const LeftBarComponent = ({ queryRef }) => {
   const theme = useTheme();
   const ref = useRef();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const {
     me: { submenu_auto_collapse, submenu_show_icons, draftContext },
   } = useAuth();
@@ -544,12 +546,12 @@ const LeftBarComponent = ({ queryRef }) => {
                 label={t_i18n('Analyses')}
                 link="/dashboard/analyses"
                 subItems={[
-                  { type: 'Report', link: '/dashboard/analyses/reports', label: t_i18n('Reports'), icon: <DescriptionOutlined fontSize="small" /> },
-                  { type: 'Grouping', link: '/dashboard/analyses/groupings', label: t_i18n('Groupings'), icon: <WorkspacesOutlined fontSize="small" /> },
-                  { type: 'Malware-Analysis', link: '/dashboard/analyses/malware_analyses', label: t_i18n('Malware analyses'), icon: <BiotechOutlined fontSize="small" /> },
-                  { type: 'Security-Coverage', link: '/dashboard/analyses/security_coverages', label: t_i18n('Security coverages'), icon: <SecurityOutlined fontSize="small" /> },
-                  { type: 'Note', link: '/dashboard/analyses/notes', label: t_i18n('Notes'), icon: <SubjectOutlined fontSize="small" /> },
-                  { type: 'External-Reference', link: '/dashboard/analyses/external_references', label: t_i18n('External references'), icon: <LocalOfferOutlined fontSize="small" /> },
+                  { type: 'Report', link: '/dashboard/analyses/reports', label: translateEntityType('Report', { plural: true }), icon: <DescriptionOutlined fontSize="small" /> },
+                  { type: 'Grouping', link: '/dashboard/analyses/groupings', label: translateEntityType('Grouping', { plural: true }), icon: <WorkspacesOutlined fontSize="small" /> },
+                  { type: 'Malware-Analysis', link: '/dashboard/analyses/malware_analyses', label: translateEntityType('Malware-Analysis', { plural: true }), icon: <BiotechOutlined fontSize="small" /> },
+                  { type: 'Security-Coverage', link: '/dashboard/analyses/security_coverages', label: translateEntityType('Security-Coverage', { plural: true }), icon: <SecurityOutlined fontSize="small" /> },
+                  { type: 'Note', link: '/dashboard/analyses/notes', label: translateEntityType('Note', { plural: true }), icon: <SubjectOutlined fontSize="small" /> },
+                  { type: 'External-Reference', link: '/dashboard/analyses/external_references', label: translateEntityType('External-Reference', { plural: true }), icon: <LocalOfferOutlined fontSize="small" /> },
                 ]}
               />
             )}
@@ -562,11 +564,11 @@ const LeftBarComponent = ({ queryRef }) => {
                 label={t_i18n('Cases')}
                 link="/dashboard/cases"
                 subItems={[
-                  { type: 'Case-Incident', link: '/dashboard/cases/incidents', label: t_i18n('Incident responses'), icon: <BriefcaseEyeOutline fontSize="small" /> },
-                  { type: 'Case-Rfi', link: '/dashboard/cases/rfis', label: t_i18n('Requests for information'), icon: <BriefcaseSearchOutline fontSize="small" /> },
-                  { type: 'Case-Rft', link: '/dashboard/cases/rfts', label: t_i18n('Requests for takedown'), icon: <BriefcaseRemoveOutline fontSize="small" /> },
-                  { type: 'Task', link: '/dashboard/cases/tasks', label: t_i18n('Tasks'), icon: <TaskAltOutlined fontSize="small" /> },
-                  { type: 'Feedback', link: '/dashboard/cases/feedbacks', label: t_i18n('Feedbacks'), icon: <BriefcaseEditOutline fontSize="small" /> },
+                  { type: 'Case-Incident', link: '/dashboard/cases/incidents', label: translateEntityType('Case-Incident', { plural: true }), icon: <BriefcaseEyeOutline fontSize="small" /> },
+                  { type: 'Case-Rfi', link: '/dashboard/cases/rfis', label: translateEntityType('Case-Rfi', { plural: true }), icon: <BriefcaseSearchOutline fontSize="small" /> },
+                  { type: 'Case-Rft', link: '/dashboard/cases/rfts', label: translateEntityType('Case-Rft', { plural: true }), icon: <BriefcaseRemoveOutline fontSize="small" /> },
+                  { type: 'Task', link: '/dashboard/cases/tasks', label: translateEntityType('Task', { plural: true }), icon: <TaskAltOutlined fontSize="small" /> },
+                  { type: 'Feedback', link: '/dashboard/cases/feedbacks', label: translateEntityType('Feedback', { plural: true }), icon: <BriefcaseEditOutline fontSize="small" /> },
                 ]}
               />
             )}
@@ -579,9 +581,9 @@ const LeftBarComponent = ({ queryRef }) => {
                 label={t_i18n('Events')}
                 link="/dashboard/events"
                 subItems={[
-                  { type: 'Incident', link: '/dashboard/events/incidents', label: t_i18n('Incidents'), icon: <Fire fontSize="small" /> },
-                  { type: 'stix-sighting-relationship', link: '/dashboard/events/sightings', label: t_i18n('Sightings'), icon: <VisibilityOutlined fontSize="small" /> },
-                  { type: 'Observed-Data', link: '/dashboard/events/observed_data', label: t_i18n('Observed datas'), icon: <WifiTetheringOutlined fontSize="small" /> },
+                  { type: 'Incident', link: '/dashboard/events/incidents', label: translateEntityType('Incident', { plural: true }), icon: <Fire fontSize="small" /> },
+                  { type: 'stix-sighting-relationship', link: '/dashboard/events/sightings', label: translateEntityType('stix-sighting-relationship', { plural: true }), icon: <VisibilityOutlined fontSize="small" /> },
+                  { type: 'Observed-Data', link: '/dashboard/events/observed_data', label: translateEntityType('Observed-Data', { plural: true }), icon: <WifiTetheringOutlined fontSize="small" /> },
                 ]}
               />
             )}
@@ -594,10 +596,10 @@ const LeftBarComponent = ({ queryRef }) => {
                 label={t_i18n('Observations')}
                 link="/dashboard/observations"
                 subItems={[
-                  { type: 'Stix-Cyber-Observable', link: '/dashboard/observations/observables', label: t_i18n('Observables'), icon: <HexagonOutline fontSize="small" /> },
-                  { type: 'Artifact', link: '/dashboard/observations/artifacts', label: t_i18n('Artifacts'), icon: <ArchiveOutline fontSize="small" /> },
-                  { type: 'Indicator', link: '/dashboard/observations/indicators', label: t_i18n('Indicators'), icon: <ShieldSearch fontSize="small" /> },
-                  { type: 'Infrastructure', link: '/dashboard/observations/infrastructures', label: t_i18n('Infrastructures'), icon: <ServerNetwork fontSize="small" /> },
+                  { type: 'Stix-Cyber-Observable', link: '/dashboard/observations/observables', label: translateEntityType('Stix-Cyber-Observable', { plural: true }), icon: <HexagonOutline fontSize="small" /> },
+                  { type: 'Artifact', link: '/dashboard/observations/artifacts', label: translateEntityType('Artifact', { plural: true }), icon: <ArchiveOutline fontSize="small" /> },
+                  { type: 'Indicator', link: '/dashboard/observations/indicators', label: translateEntityType('Indicator', { plural: true }), icon: <ShieldSearch fontSize="small" /> },
+                  { type: 'Infrastructure', link: '/dashboard/observations/infrastructures', label: translateEntityType('Infrastructure', { plural: true }), icon: <ServerNetwork fontSize="small" /> },
                 ]}
               />
             )}
@@ -614,15 +616,15 @@ const LeftBarComponent = ({ queryRef }) => {
                 label={t_i18n('Threats')}
                 link="/dashboard/threats"
                 subItems={[
-                  { type: 'Threat-Actor-Group', link: '/dashboard/threats/threat_actors_group', label: t_i18n('Threat actors (group)'), icon: <AccountMultipleOutline fontSize="small" /> },
+                  { type: 'Threat-Actor-Group', link: '/dashboard/threats/threat_actors_group', label: translateEntityType('Threat-Actor-Group', { plural: true }), icon: <AccountMultipleOutline fontSize="small" /> },
                   {
                     type: 'Threat-Actor-Individual',
                     link: '/dashboard/threats/threat_actors_individual',
-                    label: 'Threat actors (individual)',
+                    label: translateEntityType('Threat-Actor-Individual', { plural: true }),
                     icon: <LaptopAccount fontSize="small" />,
                   },
-                  { type: 'Intrusion-Set', link: '/dashboard/threats/intrusion_sets', label: t_i18n('Intrusion sets'), icon: <DiamondOutlined fontSize="small" /> },
-                  { type: 'Campaign', link: '/dashboard/threats/campaigns', label: t_i18n('Campaigns'), icon: <ChessKnight fontSize="small" /> },
+                  { type: 'Intrusion-Set', link: '/dashboard/threats/intrusion_sets', label: translateEntityType('Intrusion-Set', { plural: true }), icon: <DiamondOutlined fontSize="small" /> },
+                  { type: 'Campaign', link: '/dashboard/threats/campaigns', label: translateEntityType('Campaign', { plural: true }), icon: <ChessKnight fontSize="small" /> },
                 ]}
               />
             )}
@@ -635,10 +637,10 @@ const LeftBarComponent = ({ queryRef }) => {
                 label={t_i18n('Arsenal')}
                 link="/dashboard/arsenal"
                 subItems={[
-                  { type: 'Malware', link: '/dashboard/arsenal/malwares', label: t_i18n('Malwares'), icon: <Biohazard fontSize="small" /> },
-                  { type: 'Channel', link: '/dashboard/arsenal/channels', label: t_i18n('Channels'), icon: <SurroundSoundOutlined fontSize="small" /> },
-                  { type: 'Tool', link: '/dashboard/arsenal/tools', label: t_i18n('Tools'), icon: <WebAssetOutlined fontSize="small" /> },
-                  { type: 'Vulnerability', link: '/dashboard/arsenal/vulnerabilities', label: t_i18n('Vulnerabilities'), icon: <BugReportOutlined fontSize="small" /> },
+                  { type: 'Malware', link: '/dashboard/arsenal/malwares', label: translateEntityType('Malware', { plural: true }), icon: <Biohazard fontSize="small" /> },
+                  { type: 'Channel', link: '/dashboard/arsenal/channels', label: translateEntityType('Channel', { plural: true }), icon: <SurroundSoundOutlined fontSize="small" /> },
+                  { type: 'Tool', link: '/dashboard/arsenal/tools', label: translateEntityType('Tool', { plural: true }), icon: <WebAssetOutlined fontSize="small" /> },
+                  { type: 'Vulnerability', link: '/dashboard/arsenal/vulnerabilities', label: translateEntityType('Vulnerability', { plural: true }), icon: <BugReportOutlined fontSize="small" /> },
                 ]}
               />
             )}
@@ -651,11 +653,11 @@ const LeftBarComponent = ({ queryRef }) => {
                 label={t_i18n('Techniques')}
                 link="/dashboard/techniques"
                 subItems={[
-                  { type: 'Attack-Pattern', link: '/dashboard/techniques/attack_patterns', label: t_i18n('Attack patterns'), icon: <LockPattern fontSize="small" /> },
-                  { type: 'Narrative', link: '/dashboard/techniques/narratives', label: t_i18n('Narratives'), icon: <SpeakerNotesOutlined fontSize="small" /> },
-                  { type: 'Course-Of-Action', link: '/dashboard/techniques/courses_of_action', label: t_i18n('Courses of action'), icon: <ProgressWrench fontSize="small" /> },
-                  { type: 'Data-Component', link: '/dashboard/techniques/data_components', label: t_i18n('Data components'), icon: <SourceOutlined fontSize="small" /> },
-                  { type: 'Data-Source', link: '/dashboard/techniques/data_sources', label: t_i18n('Data sources'), icon: <StreamOutlined fontSize="small" /> },
+                  { type: 'Attack-Pattern', link: '/dashboard/techniques/attack_patterns', label: translateEntityType('Attack-Pattern', { plural: true }), icon: <LockPattern fontSize="small" /> },
+                  { type: 'Narrative', link: '/dashboard/techniques/narratives', label: translateEntityType('Narrative', { plural: true }), icon: <SpeakerNotesOutlined fontSize="small" /> },
+                  { type: 'Course-Of-Action', link: '/dashboard/techniques/courses_of_action', label: translateEntityType('Course-Of-Action', { plural: true }), icon: <ProgressWrench fontSize="small" /> },
+                  { type: 'Data-Component', link: '/dashboard/techniques/data_components', label: translateEntityType('Data-Component', { plural: true }), icon: <SourceOutlined fontSize="small" /> },
+                  { type: 'Data-Source', link: '/dashboard/techniques/data_sources', label: translateEntityType('Data-Source', { plural: true }), icon: <StreamOutlined fontSize="small" /> },
                 ]}
               />
             )}
@@ -669,12 +671,12 @@ const LeftBarComponent = ({ queryRef }) => {
                 link="/dashboard/entities"
                 subItems={
                   [
-                    { type: 'Sector', link: '/dashboard/entities/sectors', label: t_i18n('Sectors'), icon: <DomainOutlined fontSize="small" /> },
-                    { type: 'Event', link: '/dashboard/entities/events', label: t_i18n('Events'), icon: <EventOutlined fontSize="small" /> },
-                    { type: 'Organization', link: '/dashboard/entities/organizations', label: t_i18n('Organizations'), icon: <AccountBalanceOutlined fontSize="small" /> },
-                    { type: 'SecurityPlatform', link: '/dashboard/entities/security_platforms', label: t_i18n('Security platforms'), icon: <SecurityOutlined fontSize="small" /> },
-                    { type: 'System', link: '/dashboard/entities/systems', label: t_i18n('Systems'), icon: <StorageOutlined fontSize="small" /> },
-                    { type: 'Individual', link: '/dashboard/entities/individuals', label: t_i18n('Individuals'), icon: <PersonOutlined fontSize="small" /> },
+                    { type: 'Sector', link: '/dashboard/entities/sectors', label: translateEntityType('Sector', { plural: true }), icon: <DomainOutlined fontSize="small" /> },
+                    { type: 'Event', link: '/dashboard/entities/events', label: translateEntityType('Event', { plural: true }), icon: <EventOutlined fontSize="small" /> },
+                    { type: 'Organization', link: '/dashboard/entities/organizations', label: translateEntityType('Organization', { plural: true }), icon: <AccountBalanceOutlined fontSize="small" /> },
+                    { type: 'SecurityPlatform', link: '/dashboard/entities/security_platforms', label: translateEntityType('SecurityPlatform', { plural: true }), icon: <SecurityOutlined fontSize="small" /> },
+                    { type: 'System', link: '/dashboard/entities/systems', label: translateEntityType('System', { plural: true }), icon: <StorageOutlined fontSize="small" /> },
+                    { type: 'Individual', link: '/dashboard/entities/individuals', label: translateEntityType('Individual', { plural: true }), icon: <PersonOutlined fontSize="small" /> },
                   ]
                 }
               />
@@ -688,11 +690,11 @@ const LeftBarComponent = ({ queryRef }) => {
                 label={t_i18n('Locations')}
                 link="/dashboard/locations"
                 subItems={[
-                  { type: 'Region', link: '/dashboard/locations/regions', label: t_i18n('Regions'), icon: <PublicOutlined fontSize="small" /> },
-                  { type: 'Country', link: '/dashboard/locations/countries', label: t_i18n('Countries'), icon: <FlagOutlined fontSize="small" /> },
-                  { type: 'Administrative-Area', link: '/dashboard/locations/administrative_areas', label: t_i18n('Administrative areas'), icon: <MapOutlined fontSize="small" /> },
-                  { type: 'City', link: '/dashboard/locations/cities', label: t_i18n('Cities'), icon: <CityVariantOutline fontSize="small" /> },
-                  { type: 'Position', link: '/dashboard/locations/positions', label: t_i18n('Positions'), icon: <PlaceOutlined fontSize="small" /> },
+                  { type: 'Region', link: '/dashboard/locations/regions', label: translateEntityType('Region', { plural: true }), icon: <PublicOutlined fontSize="small" /> },
+                  { type: 'Country', link: '/dashboard/locations/countries', label: translateEntityType('Country', { plural: true }), icon: <FlagOutlined fontSize="small" /> },
+                  { type: 'Administrative-Area', link: '/dashboard/locations/administrative_areas', label: translateEntityType('Administrative-Area', { plural: true }), icon: <MapOutlined fontSize="small" /> },
+                  { type: 'City', link: '/dashboard/locations/cities', label: translateEntityType('City', { plural: true }), icon: <CityVariantOutline fontSize="small" /> },
+                  { type: 'Position', link: '/dashboard/locations/positions', label: translateEntityType('Position', { plural: true }), icon: <PlaceOutlined fontSize="small" /> },
                 ]}
               />
             )}

@@ -7,6 +7,7 @@ import { RelayError } from '../../../../relay/relayTypes';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../components/DeleteDialog';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const IntrusionSetDeletionDeleteMutation = graphql`
   mutation IntrusionSetDeletionDeleteMutation($id: ID!) {
@@ -18,10 +19,11 @@ const IntrusionSetDeletionDeleteMutation = graphql`
 
 const CampaignDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_Intrusion-Set') },
+    values: { entity_type: translateEntityType('Intrusion-Set') },
   });
   const [commit] = useApiMutation(
     IntrusionSetDeletionDeleteMutation,

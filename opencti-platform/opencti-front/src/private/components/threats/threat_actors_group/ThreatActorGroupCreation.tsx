@@ -31,6 +31,7 @@ import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextM
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const ThreatActorGroupMutation = graphql`
   mutation ThreatActorGroupCreationMutation($input: ThreatActorGroupAddInput!) {
@@ -89,6 +90,7 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(
@@ -108,7 +110,7 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
   const [commit] = useApiMutation<ThreatActorGroupCreationMutation>(
     ThreatActorGroupMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Threat-Actor-Group')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Threat-Actor-Group')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -316,6 +318,7 @@ const ThreatActorGroupCreation = ({
   paginationOptions: ThreatActorsGroupCardsPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [bulkOpen, setBulkOpen] = useState(false);
 
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
@@ -331,7 +334,7 @@ const ThreatActorGroupCreation = ({
 
   return (
     <Drawer
-      title={t_i18n('Create a threat actor group')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Threat-Actor-Group') } })}
       controlledDial={CreateThreatActorGroupControlledDial}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
     >

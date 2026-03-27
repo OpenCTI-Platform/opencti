@@ -4,12 +4,14 @@ import React, { useState } from 'react';
 import GraphToolbarOptionsList from './GraphToolbarOptionsList';
 import GraphToolbarItem from './GraphToolbarItem';
 import { useFormatter } from '../../i18n';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 import { useGraphContext } from '../GraphContext';
 import useGraphInteractions from '../utils/useGraphInteractions';
 import { minutesBetweenDates } from '../../../utils/Time';
 
 const GraphToolbarFilterTools = () => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [filterByTypeAnchor, setFilterByTypeAnchor] = useState<Element>();
   const [filterByMarkingAnchor, setFilterByMarkingAnchor] = useState<Element>();
   const [filterByCreatorAnchor, setFilterByCreatorAnchor] = useState<Element>();
@@ -78,7 +80,7 @@ const GraphToolbarFilterTools = () => {
         onClose={() => setFilterByTypeAnchor(undefined)}
         options={stixCoreObjectTypes}
         getOptionKey={(type) => type}
-        getOptionText={(type) => t_i18n(`entity_${type}`)}
+        getOptionText={(type) => translateEntityType(type)}
         isOptionSelected={(type) => !disabledEntityTypes.includes(type)}
         onSelect={toggleEntityType}
       />

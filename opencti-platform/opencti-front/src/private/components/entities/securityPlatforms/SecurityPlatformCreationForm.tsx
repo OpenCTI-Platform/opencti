@@ -26,6 +26,7 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 interface SecurityPlatformCreationFormData {
   name: string;
@@ -58,6 +59,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
   const { mandatoryAttributes } = useIsMandatoryAttribute(SECURITY_PLATFORM_TYPE);
   const securityPlatformValidator = getSecurityPlatformValidator(mandatoryAttributes);
@@ -65,7 +67,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
   const [commit] = useApiMutation<SecurityPlatformCreationMutation>(
     securityPlatformCreationMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_SecurityPlatform')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('SecurityPlatform')} ${t_i18n('successfully created')}` },
   );
 
   const {

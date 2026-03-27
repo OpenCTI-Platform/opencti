@@ -31,6 +31,7 @@ import RegionEdition from './RegionEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import RegionDeletion from './RegionDeletion';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -91,6 +92,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
   useSubscription(subConfig);
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const data = usePreloadedQuery(regionQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
   const { region, connectorsForImport, connectorsForExport } = data;
@@ -131,7 +133,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
-              { label: t_i18n('Regions'), link: '/dashboard/locations/regions' },
+              { label: translateEntityType('Region', { plural: true }), link: '/dashboard/locations/regions' },
               { label: region.name, current: true },
             ]}
             />
