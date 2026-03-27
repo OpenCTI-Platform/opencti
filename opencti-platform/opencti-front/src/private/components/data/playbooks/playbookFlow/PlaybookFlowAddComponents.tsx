@@ -20,7 +20,7 @@ import Drawer from '../../../common/drawer/Drawer';
 import { useFormatter } from '../../../../../components/i18n';
 import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
 import PlaybookFlowForm from './PlaybookFlowForm';
-import { PlaybookComponents, PlaybookNode } from '../types/playbook-types';
+import { PlaybookComponent, PlaybookComponents, PlaybookNode } from '../types/playbook-types';
 
 interface PlaybookFlowAddComponentsProps {
   action: string | null;
@@ -44,28 +44,41 @@ const PlaybookFlowAddComponents = ({
   onConfigReplace,
 }: PlaybookFlowAddComponentsProps) => {
   const { t_i18n } = useFormatter();
-  const [componentId, setComponentId] = useState<string | null>(null);
+  const [selectedComponent, setSelectedComponent] = useState<PlaybookComponent | null>(null);
 
   useEffect(() => {
     if (action === 'config' && selectedNode?.data?.component) {
-      setComponentId(selectedNode?.data?.component?.id);
+      setSelectedComponent(selectedNode.data.component);
     }
   }, [selectedNode, action]);
+
+  const componentId = selectedComponent?.id ?? null;
 
   const handleClose = () => {
     setSelectedNode(null);
     setSelectedEdge(null);
-    setComponentId(null);
+    setSelectedComponent(null);
+  };
+
+  const handleSelectComponent = (component: PlaybookComponent) => {
+    setSelectedComponent(component);
   };
 
   const isActionValid = action === 'config' || action === 'add' || action === 'replace';
   const hasSelection = selectedNode !== null || selectedEdge !== null;
   const open = isActionValid && hasSelection;
 
+  const isUpdate = action === 'config' && selectedNode?.type === 'workflow';
+  const componentName = selectedComponent?.name ?? selectedNode?.data?.component?.name;
+
+  const drawerTitle = isUpdate
+    ? t_i18n('Update component: {component_name}', { values: { component_name: componentName ? t_i18n(componentName) : '' } })
+    : t_i18n('Add component: {component_name}', { values: { component_name: componentName ? t_i18n(componentName) : '' } });
+
   return (
     <Drawer
       open={open}
-      title={t_i18n('Add components')}
+      title={componentName ? drawerTitle : t_i18n('Add component')}
       onClose={handleClose}
     >
       {({ onClose }) => (
@@ -75,7 +88,7 @@ const PlaybookFlowAddComponents = ({
               {isEmptyField(componentId) && (
                 <PlaybookFlowSelectComponent
                   components={playbookComponents}
-                  onSelect={setComponentId}
+                  onSelect={handleSelectComponent}
                   selectedNode={selectedNode}
                 />
               )}
