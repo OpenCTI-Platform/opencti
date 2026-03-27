@@ -141,7 +141,44 @@ export const widgetContainerObservables: FintelTemplateWidgetAddInput = {
       },
     ],
     parameters: {
-      title: 'Observables contained in the entity',
+      title: 'Observables contained in the container',
+    },
+  },
+};
+
+export const widgetEntityObservables: FintelTemplateWidgetAddInput = {
+  variable_name: 'observables',
+  widget: {
+    type: 'list',
+    perspective: WidgetPerspective.Entities,
+    dataSelection: [
+      {
+        perspective: WidgetPerspective.Entities,
+        number: 50,
+        filters: JSON.stringify({
+          mode: 'and',
+          filters: [
+            { key: ['entity_type'], values: ['Stix-Cyber-Observable'] },
+            {
+              key: 'regardingOf',
+              operator: 'eq',
+              values: [{
+                key: 'id',
+                values: [SELF_ID],
+              }],
+              mode: 'or',
+            },
+          ],
+          filterGroups: [],
+        }),
+        columns: [
+          { label: 'Observable type', attribute: 'entity_type' },
+          { label: 'Value', attribute: 'representative.main' },
+        ],
+      },
+    ],
+    parameters: {
+      title: 'Observables linked to the entity',
     },
   },
 };
@@ -170,12 +207,12 @@ export const widgetIncidentIOC: FintelTemplateWidgetAddInput = {
       },
     ],
     parameters: {
-      title: 'Indicators contained in the entity',
+      title: 'Indicators contained in the container',
     },
   },
 };
 
-export const widgetIndicators: FintelTemplateWidgetAddInput = {
+export const widgetContainerIndicators: FintelTemplateWidgetAddInput = {
   variable_name: 'indicators',
   widget: {
     type: 'list',
@@ -199,7 +236,44 @@ export const widgetIndicators: FintelTemplateWidgetAddInput = {
       },
     ],
     parameters: {
-      title: 'Indicators contained in the entity',
+      title: 'Indicators contained in the container',
+    },
+  },
+};
+
+export const widgetEntityIndicators: FintelTemplateWidgetAddInput = {
+  variable_name: 'indicators',
+  widget: {
+    type: 'list',
+    perspective: WidgetPerspective.Entities,
+    dataSelection: [
+      {
+        perspective: WidgetPerspective.Entities,
+        number: 50,
+        filters: JSON.stringify({
+          mode: 'and',
+          filters: [
+            { key: ['entity_type'], values: ['Indicator'] },
+            {
+              key: 'regardingOf',
+              operator: 'eq',
+              values: [{
+                key: 'id',
+                values: [SELF_ID],
+              }],
+              mode: 'or',
+            },
+          ],
+          filterGroups: [],
+        }),
+        columns: [
+          { label: 'Indicator types', attribute: 'indicator_types' },
+          { label: 'Indicator pattern', attribute: 'pattern' },
+        ],
+      },
+    ],
+    parameters: {
+      title: 'Indicators linked to the entity',
     },
   },
 };
@@ -229,12 +303,12 @@ export const widgetIncidentTasksActions: FintelTemplateWidgetAddInput = {
       },
     ],
     parameters: {
-      title: 'Tasks contained in the entity',
+      title: 'Tasks contained in the container',
     },
   },
 };
 
-export const widgetAttackPatterns: FintelTemplateWidgetAddInput = {
+export const widgetContainerAttackPatterns: FintelTemplateWidgetAddInput = {
   variable_name: 'attackPatterns',
   widget: {
     type: 'list',
@@ -258,7 +332,44 @@ export const widgetAttackPatterns: FintelTemplateWidgetAddInput = {
       },
     ],
     parameters: {
-      title: 'Attack Patterns contained in the entity',
+      title: 'Attack Patterns contained in the container',
+    },
+  },
+};
+
+export const widgetEntityAttackPatterns: FintelTemplateWidgetAddInput = {
+  variable_name: 'attackPatterns',
+  widget: {
+    type: 'list',
+    perspective: WidgetPerspective.Entities,
+    dataSelection: [
+      {
+        perspective: WidgetPerspective.Entities,
+        number: 50,
+        filters: JSON.stringify({
+          mode: 'and',
+          filters: [
+            { key: ['entity_type'], values: ['Attack-Pattern'] },
+            {
+              key: 'regardingOf',
+              operator: 'eq',
+              values: [{
+                key: 'id',
+                values: [SELF_ID],
+              }],
+              mode: 'or',
+            },
+          ],
+          filterGroups: [],
+        }),
+        columns: [
+          { label: 'Technique ID', attribute: 'x_mitre_id' },
+          { label: 'Technique', attribute: 'representative.main' },
+        ],
+      },
+    ],
+    parameters: {
+      title: 'Attack Patterns linked to the entity',
     },
   },
 };
@@ -288,7 +399,7 @@ export const widgetThreats: FintelTemplateWidgetAddInput = {
       },
     ],
     parameters: {
-      title: 'Threats contained in the entity',
+      title: 'Threats contained in the container',
     },
   },
 };
@@ -318,7 +429,7 @@ export const widgetVictims: FintelTemplateWidgetAddInput = {
       },
     ],
     parameters: {
-      title: 'Victims contained in the entity',
+      title: 'Victims contained in the container',
     },
   },
 };
@@ -347,7 +458,7 @@ export const widgetAllEntitiesAndObservables: FintelTemplateWidgetAddInput = {
       },
     ],
     parameters: {
-      title: 'Entities and Observables contained in the entity',
+      title: 'Entities and Observables contained in the container',
     },
   },
 };
