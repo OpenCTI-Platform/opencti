@@ -7,7 +7,7 @@ import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../../utils/authorizedMembers';
-import { applyOperationFieldPatch } from '../playbook-utils';
+import { applyOperationFieldPatch, isBundleElementInScope } from '../playbook-utils';
 
 export interface RemoveAccessRestrictionsConfiguration {
   applyToElements: PlaybookBundleElementsToApply;
@@ -44,11 +44,7 @@ export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<Re
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       const internalType = generateInternalType(element);
-      const all = applyToElements === playbookBundleElementsToApply.allElements.value;
-      const onlyMain = applyToElements === playbookBundleElementsToApply.onlyMain.value && element.id === dataInstanceId;
-      const exceptMain = applyToElements === playbookBundleElementsToApply.allExceptMain.value && element.id !== dataInstanceId;
-      const shouldTakeObject = all || onlyMain || exceptMain;
-      if (AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType) && shouldTakeObject) {
+      if (AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType) && isBundleElementInScope(element, applyToElements, dataInstanceId)) {
         const patchValue = {
           op: EditOperation.Replace,
           path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/restricted_members`,
