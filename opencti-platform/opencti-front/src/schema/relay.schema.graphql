@@ -16179,6 +16179,7 @@ type TaxiiCollection {
   score_to_confidence: Boolean
   taxii_public: Boolean
   taxii_public_user_id: String
+  taxii_public_user: Creator
   authorized_members: [MemberAccess!]
 }
 
@@ -16243,6 +16244,7 @@ type Feed {
   feed_attributes: [FeedAttribute!]!
   feed_public: Boolean
   feed_public_user_id: String
+  feed_public_user: Creator
   authorized_members: [MemberAccess!]
 }
 
@@ -16323,6 +16325,7 @@ type StreamCollection {
   stream_live: Boolean
   stream_public: Boolean
   stream_public_user_id: String
+  stream_public_user: Creator
   authorized_members: [MemberAccess!]
   consumers: [StreamCollectionConsumer!]!
 }
