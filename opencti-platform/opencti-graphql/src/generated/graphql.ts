@@ -7788,6 +7788,7 @@ export type DraftWorkspace = BasicObject & InternalObject & {
   processingCount: Scalars['Int']['output'];
   standard_id: Scalars['String']['output'];
   validationWork?: Maybe<Work>;
+  workflowInstance?: Maybe<WorkflowInstance>;
   works?: Maybe<Array<Work>>;
 };
 
@@ -8625,6 +8626,8 @@ export type EntitySetting = BasicObject & InternalObject & {
   standard_id: Scalars['String']['output'];
   target_type: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
+  workflow_configuration?: Maybe<Scalars['Boolean']['output']>;
+  workflow_id?: Maybe<Scalars['String']['output']>;
 };
 
 
@@ -17228,6 +17231,7 @@ export type Mutation = {
   triggerKnowledgeDigestAdd?: Maybe<Trigger>;
   triggerKnowledgeFieldPatch?: Maybe<Trigger>;
   triggerKnowledgeLiveAdd?: Maybe<Trigger>;
+  triggerWorkflowEvent: WorkflowTriggerResult;
   updateConnectorCurrentStatus?: Maybe<ManagedConnector>;
   updateConnectorHealth: Scalars['ID']['output'];
   updateConnectorLogs: Scalars['ID']['output'];
@@ -17256,6 +17260,8 @@ export type Mutation = {
   workAdd: Work;
   workDelete?: Maybe<Scalars['Boolean']['output']>;
   workEdit?: Maybe<WorkEditMutations>;
+  workflowDefinitionDelete?: Maybe<EntitySetting>;
+  workflowDefinitionSet?: Maybe<EntitySetting>;
   workspaceAdd?: Maybe<Workspace>;
   workspaceConfigurationImport: Scalars['String']['output'];
   workspaceContextClean?: Maybe<Workspace>;
@@ -19694,6 +19700,12 @@ export type MutationTriggerKnowledgeLiveAddArgs = {
 };
 
 
+export type MutationTriggerWorkflowEventArgs = {
+  entityId: Scalars['String']['input'];
+  eventName: Scalars['String']['input'];
+};
+
+
 export type MutationUpdateConnectorCurrentStatusArgs = {
   input: CurrentConnectorStatusInput;
 };
@@ -19847,6 +19859,17 @@ export type MutationWorkDeleteArgs = {
 
 export type MutationWorkEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationWorkflowDefinitionDeleteArgs = {
+  entityType: Scalars['String']['input'];
+};
+
+
+export type MutationWorkflowDefinitionSetArgs = {
+  definition: Scalars['String']['input'];
+  entityType: Scalars['String']['input'];
 };
 
 
@@ -23967,6 +23990,8 @@ export type Query = {
   about?: Maybe<AppInfo>;
   administrativeArea?: Maybe<AdministrativeArea>;
   administrativeAreas?: Maybe<AdministrativeAreaConnection>;
+  allowedNextStatuses: Array<Status>;
+  allowedTransitions: Array<WorkflowTransition>;
   askAiActivity?: Maybe<AiActivity>;
   assignees?: Maybe<AssigneeConnection>;
   attackPattern?: Maybe<AttackPattern>;
@@ -24354,6 +24379,8 @@ export type Query = {
   vulnerabilities?: Maybe<VulnerabilityConnection>;
   vulnerability?: Maybe<Vulnerability>;
   work?: Maybe<Work>;
+  workflowDefinition?: Maybe<WorkflowSchema>;
+  workflowInstance?: Maybe<WorkflowInstance>;
   works?: Maybe<WorkConnection>;
   workspace?: Maybe<Workspace>;
   workspaces?: Maybe<WorkspaceConnection>;
@@ -24373,6 +24400,16 @@ export type QueryAdministrativeAreasArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryAllowedNextStatusesArgs = {
+  entityId: Scalars['String']['input'];
+};
+
+
+export type QueryAllowedTransitionsArgs = {
+  entityId: Scalars['String']['input'];
 };
 
 
@@ -27366,6 +27403,16 @@ export type QueryVulnerabilityArgs = {
 
 export type QueryWorkArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryWorkflowDefinitionArgs = {
+  entityType: Scalars['String']['input'];
+};
+
+
+export type QueryWorkflowInstanceArgs = {
+  entityId: Scalars['String']['input'];
 };
 
 
@@ -37468,6 +37515,77 @@ export type WorkTracking = {
   import_processed_number?: Maybe<Scalars['Int']['output']>;
 };
 
+export type WorkflowActionConfig = {
+  __typename?: 'WorkflowActionConfig';
+  mode: WorkflowActionMode;
+  params?: Maybe<Scalars['JSON']['output']>;
+  type: Scalars['String']['output'];
+};
+
+export enum WorkflowActionMode {
+  Async = 'async',
+  Sync = 'sync'
+}
+
+export type WorkflowConditionConfig = {
+  __typename?: 'WorkflowConditionConfig';
+  field?: Maybe<Scalars['String']['output']>;
+  operator?: Maybe<Scalars['String']['output']>;
+  type?: Maybe<Scalars['String']['output']>;
+  value?: Maybe<Scalars['String']['output']>;
+};
+
+export type WorkflowInstance = {
+  __typename?: 'WorkflowInstance';
+  allowedTransitions: Array<WorkflowTransition>;
+  currentState: Scalars['String']['output'];
+  currentStatus?: Maybe<Status>;
+  id: Scalars['ID']['output'];
+};
+
+export type WorkflowSchema = {
+  __typename?: 'WorkflowSchema';
+  id: Scalars['ID']['output'];
+  initialState: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  states: Array<WorkflowSerializedState>;
+  transitions: Array<WorkflowSerializedTransition>;
+};
+
+export type WorkflowSerializedState = {
+  __typename?: 'WorkflowSerializedState';
+  onEnter?: Maybe<Array<WorkflowActionConfig>>;
+  onExit?: Maybe<Array<WorkflowActionConfig>>;
+  statusId: Scalars['String']['output'];
+};
+
+export type WorkflowSerializedTransition = {
+  __typename?: 'WorkflowSerializedTransition';
+  actions?: Maybe<Array<WorkflowActionConfig>>;
+  conditions?: Maybe<Array<WorkflowConditionConfig>>;
+  event: Scalars['String']['output'];
+  from: Scalars['String']['output'];
+  to: Scalars['String']['output'];
+};
+
+export type WorkflowTransition = {
+  __typename?: 'WorkflowTransition';
+  actions?: Maybe<Array<Scalars['String']['output']>>;
+  event: Scalars['String']['output'];
+  toState: Scalars['String']['output'];
+  toStatus?: Maybe<Status>;
+};
+
+export type WorkflowTriggerResult = {
+  __typename?: 'WorkflowTriggerResult';
+  entity?: Maybe<BasicObject>;
+  instance?: Maybe<WorkflowInstance>;
+  newState?: Maybe<Scalars['String']['output']>;
+  reason?: Maybe<Scalars['String']['output']>;
+  status?: Maybe<Status>;
+  success: Scalars['Boolean']['output'];
+};
+
 export enum WorksOrdering {
   Score = '_score',
   CreatedAt = 'created_at',
@@ -39785,6 +39903,15 @@ export type ResolversTypes = ResolversObject<{
   WorkErrorInput: WorkErrorInput;
   WorkMessage: ResolverTypeWrapper<WorkMessage>;
   WorkTracking: ResolverTypeWrapper<WorkTracking>;
+  WorkflowActionConfig: ResolverTypeWrapper<WorkflowActionConfig>;
+  WorkflowActionMode: WorkflowActionMode;
+  WorkflowConditionConfig: ResolverTypeWrapper<WorkflowConditionConfig>;
+  WorkflowInstance: ResolverTypeWrapper<Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversTypes['Status']> }>;
+  WorkflowSchema: ResolverTypeWrapper<WorkflowSchema>;
+  WorkflowSerializedState: ResolverTypeWrapper<WorkflowSerializedState>;
+  WorkflowSerializedTransition: ResolverTypeWrapper<WorkflowSerializedTransition>;
+  WorkflowTransition: ResolverTypeWrapper<Omit<WorkflowTransition, 'toStatus'> & { toStatus?: Maybe<ResolversTypes['Status']> }>;
+  WorkflowTriggerResult: ResolverTypeWrapper<Omit<WorkflowTriggerResult, 'entity' | 'instance' | 'status'> & { entity?: Maybe<ResolversTypes['BasicObject']>, instance?: Maybe<ResolversTypes['WorkflowInstance']>, status?: Maybe<ResolversTypes['Status']> }>;
   WorksOrdering: WorksOrdering;
   Workspace: ResolverTypeWrapper<BasicStoreEntityWorkspace>;
   WorkspaceAddInput: WorkspaceAddInput;
@@ -40733,6 +40860,14 @@ export type ResolversParentTypes = ResolversObject<{
   WorkErrorInput: WorkErrorInput;
   WorkMessage: WorkMessage;
   WorkTracking: WorkTracking;
+  WorkflowActionConfig: WorkflowActionConfig;
+  WorkflowConditionConfig: WorkflowConditionConfig;
+  WorkflowInstance: Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversParentTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversParentTypes['Status']> };
+  WorkflowSchema: WorkflowSchema;
+  WorkflowSerializedState: WorkflowSerializedState;
+  WorkflowSerializedTransition: WorkflowSerializedTransition;
+  WorkflowTransition: Omit<WorkflowTransition, 'toStatus'> & { toStatus?: Maybe<ResolversParentTypes['Status']> };
+  WorkflowTriggerResult: Omit<WorkflowTriggerResult, 'entity' | 'instance' | 'status'> & { entity?: Maybe<ResolversParentTypes['BasicObject']>, instance?: Maybe<ResolversParentTypes['WorkflowInstance']>, status?: Maybe<ResolversParentTypes['Status']> };
   Workspace: BasicStoreEntityWorkspace;
   WorkspaceAddInput: WorkspaceAddInput;
   WorkspaceConnection: Omit<WorkspaceConnection, 'edges'> & { edges: Array<ResolversParentTypes['WorkspaceEdge']> };
@@ -43328,6 +43463,7 @@ export type DraftWorkspaceResolvers<ContextType = any, ParentType extends Resolv
   processingCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   validationWork?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType>;
+  workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   works?: Resolver<Maybe<Array<ResolversTypes['Work']>>, ParentType, ContextType, Partial<DraftWorkspaceWorksArgs>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -43588,6 +43724,8 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   target_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  workflow_configuration?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  workflow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -46829,6 +46967,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   triggerKnowledgeDigestAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeDigestAddArgs, 'input'>>;
   triggerKnowledgeFieldPatch?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeFieldPatchArgs, 'id' | 'input'>>;
   triggerKnowledgeLiveAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeLiveAddArgs, 'input'>>;
+  triggerWorkflowEvent?: Resolver<ResolversTypes['WorkflowTriggerResult'], ParentType, ContextType, RequireFields<MutationTriggerWorkflowEventArgs, 'entityId' | 'eventName'>>;
   updateConnectorCurrentStatus?: Resolver<Maybe<ResolversTypes['ManagedConnector']>, ParentType, ContextType, RequireFields<MutationUpdateConnectorCurrentStatusArgs, 'input'>>;
   updateConnectorHealth?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationUpdateConnectorHealthArgs, 'input'>>;
   updateConnectorLogs?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationUpdateConnectorLogsArgs, 'input'>>;
@@ -46857,6 +46996,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   workAdd?: Resolver<ResolversTypes['Work'], ParentType, ContextType, RequireFields<MutationWorkAddArgs, 'connectorId'>>;
   workDelete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationWorkDeleteArgs, 'connectorId'>>;
   workEdit?: Resolver<Maybe<ResolversTypes['WorkEditMutations']>, ParentType, ContextType, RequireFields<MutationWorkEditArgs, 'id'>>;
+  workflowDefinitionDelete?: Resolver<Maybe<ResolversTypes['EntitySetting']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionDeleteArgs, 'entityType'>>;
+  workflowDefinitionSet?: Resolver<Maybe<ResolversTypes['EntitySetting']>, ParentType, ContextType, RequireFields<MutationWorkflowDefinitionSetArgs, 'definition' | 'entityType'>>;
   workspaceAdd?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceAddArgs, 'input'>>;
   workspaceConfigurationImport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<MutationWorkspaceConfigurationImportArgs, 'file'>>;
   workspaceContextClean?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceContextCleanArgs, 'id'>>;
@@ -48206,6 +48347,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   about?: Resolver<Maybe<ResolversTypes['AppInfo']>, ParentType, ContextType>;
   administrativeArea?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<QueryAdministrativeAreaArgs, 'id'>>;
   administrativeAreas?: Resolver<Maybe<ResolversTypes['AdministrativeAreaConnection']>, ParentType, ContextType, Partial<QueryAdministrativeAreasArgs>>;
+  allowedNextStatuses?: Resolver<Array<ResolversTypes['Status']>, ParentType, ContextType, RequireFields<QueryAllowedNextStatusesArgs, 'entityId'>>;
+  allowedTransitions?: Resolver<Array<ResolversTypes['WorkflowTransition']>, ParentType, ContextType, RequireFields<QueryAllowedTransitionsArgs, 'entityId'>>;
   askAiActivity?: Resolver<Maybe<ResolversTypes['AiActivity']>, ParentType, ContextType, Partial<QueryAskAiActivityArgs>>;
   assignees?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType, Partial<QueryAssigneesArgs>>;
   attackPattern?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, Partial<QueryAttackPatternArgs>>;
@@ -48591,6 +48734,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   vulnerabilities?: Resolver<Maybe<ResolversTypes['VulnerabilityConnection']>, ParentType, ContextType, Partial<QueryVulnerabilitiesArgs>>;
   vulnerability?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, Partial<QueryVulnerabilityArgs>>;
   work?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<QueryWorkArgs, 'id'>>;
+  workflowDefinition?: Resolver<Maybe<ResolversTypes['WorkflowSchema']>, ParentType, ContextType, RequireFields<QueryWorkflowDefinitionArgs, 'entityType'>>;
+  workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType, RequireFields<QueryWorkflowInstanceArgs, 'entityId'>>;
   works?: Resolver<Maybe<ResolversTypes['WorkConnection']>, ParentType, ContextType, Partial<QueryWorksArgs>>;
   workspace?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<QueryWorkspaceArgs, 'id'>>;
   workspaces?: Resolver<Maybe<ResolversTypes['WorkspaceConnection']>, ParentType, ContextType, Partial<QueryWorkspacesArgs>>;
@@ -51910,6 +52055,64 @@ export type WorkTrackingResolvers<ContextType = any, ParentType extends Resolver
   import_processed_number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
 }>;
 
+export type WorkflowActionConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowActionConfig'] = ResolversParentTypes['WorkflowActionConfig']> = ResolversObject<{
+  mode?: Resolver<ResolversTypes['WorkflowActionMode'], ParentType, ContextType>;
+  params?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type WorkflowConditionConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowConditionConfig'] = ResolversParentTypes['WorkflowConditionConfig']> = ResolversObject<{
+  field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  operator?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type WorkflowInstanceResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowInstance'] = ResolversParentTypes['WorkflowInstance']> = ResolversObject<{
+  allowedTransitions?: Resolver<Array<ResolversTypes['WorkflowTransition']>, ParentType, ContextType>;
+  currentState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  currentStatus?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+}>;
+
+export type WorkflowSchemaResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSchema'] = ResolversParentTypes['WorkflowSchema']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  initialState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  states?: Resolver<Array<ResolversTypes['WorkflowSerializedState']>, ParentType, ContextType>;
+  transitions?: Resolver<Array<ResolversTypes['WorkflowSerializedTransition']>, ParentType, ContextType>;
+}>;
+
+export type WorkflowSerializedStateResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSerializedState'] = ResolversParentTypes['WorkflowSerializedState']> = ResolversObject<{
+  onEnter?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
+  onExit?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
+  statusId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type WorkflowSerializedTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSerializedTransition'] = ResolversParentTypes['WorkflowSerializedTransition']> = ResolversObject<{
+  actions?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
+  conditions?: Resolver<Maybe<Array<ResolversTypes['WorkflowConditionConfig']>>, ParentType, ContextType>;
+  event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  from?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  to?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type WorkflowTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowTransition'] = ResolversParentTypes['WorkflowTransition']> = ResolversObject<{
+  actions?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  toStatus?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+}>;
+
+export type WorkflowTriggerResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowTriggerResult'] = ResolversParentTypes['WorkflowTriggerResult']> = ResolversObject<{
+  entity?: Resolver<Maybe<ResolversTypes['BasicObject']>, ParentType, ContextType>;
+  instance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  newState?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
 export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Workspace'] = ResolversParentTypes['Workspace']> = ResolversObject<{
   authorizedMembers?: Resolver<Array<ResolversTypes['MemberAccess']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -52714,6 +52917,14 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   WorkEditMutations?: WorkEditMutationsResolvers<ContextType>;
   WorkMessage?: WorkMessageResolvers<ContextType>;
   WorkTracking?: WorkTrackingResolvers<ContextType>;
+  WorkflowActionConfig?: WorkflowActionConfigResolvers<ContextType>;
+  WorkflowConditionConfig?: WorkflowConditionConfigResolvers<ContextType>;
+  WorkflowInstance?: WorkflowInstanceResolvers<ContextType>;
+  WorkflowSchema?: WorkflowSchemaResolvers<ContextType>;
+  WorkflowSerializedState?: WorkflowSerializedStateResolvers<ContextType>;
+  WorkflowSerializedTransition?: WorkflowSerializedTransitionResolvers<ContextType>;
+  WorkflowTransition?: WorkflowTransitionResolvers<ContextType>;
+  WorkflowTriggerResult?: WorkflowTriggerResultResolvers<ContextType>;
   Workspace?: WorkspaceResolvers<ContextType>;
   WorkspaceConnection?: WorkspaceConnectionResolvers<ContextType>;
   WorkspaceEdge?: WorkspaceEdgeResolvers<ContextType>;
