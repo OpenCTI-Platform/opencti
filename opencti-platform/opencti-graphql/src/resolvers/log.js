@@ -4,7 +4,6 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { logFrontend } from '../config/conf';
 import { loadCreator } from '../database/members';
 
-
 const logResolvers = {
   Query: {
     logs: (_, args, context) => findHistory(context, context.user, args),
