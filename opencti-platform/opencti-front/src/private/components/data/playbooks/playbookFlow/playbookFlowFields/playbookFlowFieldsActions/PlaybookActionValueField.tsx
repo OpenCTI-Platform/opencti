@@ -160,6 +160,7 @@ const PlaybookActionValueField = ({
           type="checkbox"
           name={formValueName}
           label={t_i18n('Value')}
+          initialValue={action.value?.[0]?.value === 'true'}
           onChange={(_: string, detection: string) => {
             setFieldValue(
               valueName,
