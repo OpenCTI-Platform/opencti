@@ -1678,19 +1678,21 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 label={t_i18n('Editable by end user')}
                 style={{ display: 'block' }}
               />
-              <FormControlLabel
-                control={(
-                  <Switch
-                    checked={formData.draftDefaults?.author?.isRequired || false}
-                    onChange={(e) => handleFieldChange('draftDefaults.author.isRequired', e.target.checked)}
-                  />
-                )}
-                label={t_i18n('Required')}
-                style={{ display: 'block', marginBottom: 20 }}
-              />
+              {formData.draftDefaults?.author?.isEditable && (
+                <FormControlLabel
+                  control={(
+                    <Switch
+                      checked={formData.draftDefaults?.author?.isRequired || false}
+                      onChange={(e) => handleFieldChange('draftDefaults.author.isRequired', e.target.checked)}
+                    />
+                  )}
+                  label={t_i18n('Required')}
+                  style={{ display: 'block', marginBottom: 20 }}
+                />
+              )}
 
               {/* Authorized Members Section */}
-              <Typography variant="h6" gutterBottom>{t_i18n('Authorized Members')}</Typography>
+              <Typography variant="h6" gutterBottom style={{ marginTop: 20 }}>{t_i18n('Authorized Members')}</Typography>
               <FormControlLabel
                 control={(
                   <Switch
