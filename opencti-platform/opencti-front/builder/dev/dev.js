@@ -49,9 +49,9 @@ const middleware = (target, ws = false) => createProxyMiddleware({
       },
       assetNames: "[dir]/[name]-[hash]",
       target: ["chrome58"],
-      minify: true,
+      minify: false,
       keepNames: true,
-      sourcemap: true,
+      sourcemap: "linked",
       outdir: "builder/dev/build",
     })
   await builder.rebuild();
@@ -119,6 +119,12 @@ const middleware = (target, ws = false) => createProxyMiddleware({
   app.use(basePath + `/static`, express.static(path.join(__dirname, "./build/static")));
   app.use(`/css`, express.static(path.join(__dirname, "./build")));
   app.use(`/js`, express.static(path.join(__dirname, "./build")));
+  // Source maps are expected to be served from the root
+  // given `publicPath` is prefixed to the sourceMappingURL by esbuild.
+  app.use(`/:any.map`, async (req, res) => {
+    const data = await readFile(path.join(__dirname, `./build/${req.params.any}.map`), "utf8");
+    return res.send(data);
+  });
   app.get("*any", async (req, res) => {
     const data = await readFile(`${__dirname}/index.html`, "utf8");
     const withOptionValued = data
