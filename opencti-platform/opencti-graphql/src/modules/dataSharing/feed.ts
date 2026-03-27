@@ -4,6 +4,7 @@ import { ENTITY_TYPE_FEED, type StoreEntityFeed, type StixFeed } from './feed-ty
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { authorizedMembers } from '../../schema/attribute-definition';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 const FEED_DEFINITION: ModuleDefinition<StoreEntityFeed, StixFeed> = {
   type: {
@@ -25,6 +26,7 @@ const FEED_DEFINITION: ModuleDefinition<StoreEntityFeed, StixFeed> = {
     { name: 'rolling_time', label: 'Rolling time', type: 'numeric', precision: 'long', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'include_header', label: 'Include header', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'feed_public', label: 'Public feed', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'feed_public_user_id', label: 'Public feed user id', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: false },
     { name: 'feed_types', label: 'Feed types', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: true, upsert: false, isFilterable: true },
     { name: 'feed_date_attribute', label: 'Selected attribute date', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     {

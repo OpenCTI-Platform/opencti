@@ -9208,6 +9208,7 @@ export type Feed = {
   feed_attributes: Array<FeedAttribute>;
   feed_date_attribute?: Maybe<Scalars['String']['output']>;
   feed_public?: Maybe<Scalars['Boolean']['output']>;
+  feed_public_user_id?: Maybe<Scalars['String']['output']>;
   feed_types: Array<Scalars['String']['output']>;
   filters?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
@@ -9224,6 +9225,7 @@ export type FeedAddInput = {
   feed_attributes: Array<FeedAttributeMappingInput>;
   feed_date_attribute: Scalars['String']['input'];
   feed_public?: InputMaybe<Scalars['Boolean']['input']>;
+  feed_public_user_id?: InputMaybe<Scalars['String']['input']>;
   feed_types: Array<Scalars['String']['input']>;
   filters?: InputMaybe<Scalars['String']['input']>;
   include_header: Scalars['Boolean']['input'];
@@ -32418,6 +32420,7 @@ export type StreamCollection = {
   name?: Maybe<Scalars['String']['output']>;
   stream_live?: Maybe<Scalars['Boolean']['output']>;
   stream_public?: Maybe<Scalars['Boolean']['output']>;
+  stream_public_user_id?: Maybe<Scalars['String']['output']>;
 };
 
 export type StreamCollectionAddInput = {
@@ -32427,6 +32430,7 @@ export type StreamCollectionAddInput = {
   name: Scalars['String']['input'];
   stream_live?: InputMaybe<Scalars['Boolean']['input']>;
   stream_public?: InputMaybe<Scalars['Boolean']['input']>;
+  stream_public_user_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type StreamCollectionConnection = {
@@ -33496,6 +33500,7 @@ export type TaxiiCollection = {
   name?: Maybe<Scalars['String']['output']>;
   score_to_confidence?: Maybe<Scalars['Boolean']['output']>;
   taxii_public?: Maybe<Scalars['Boolean']['output']>;
+  taxii_public_user_id?: Maybe<Scalars['String']['output']>;
 };
 
 export type TaxiiCollectionAddInput = {
@@ -33506,6 +33511,7 @@ export type TaxiiCollectionAddInput = {
   name: Scalars['String']['input'];
   score_to_confidence?: InputMaybe<Scalars['Boolean']['input']>;
   taxii_public?: InputMaybe<Scalars['Boolean']['input']>;
+  taxii_public_user_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type TaxiiCollectionConnection = {
@@ -43784,6 +43790,7 @@ export type FeedResolvers<ContextType = any, ParentType extends ResolversParentT
   feed_attributes?: Resolver<Array<ResolversTypes['FeedAttribute']>, ParentType, ContextType>;
   feed_date_attribute?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   feed_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  feed_public_user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   feed_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -50291,6 +50298,7 @@ export type StreamCollectionResolvers<ContextType = any, ParentType extends Reso
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   stream_live?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   stream_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  stream_public_user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type StreamCollectionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StreamCollectionConnection'] = ResolversParentTypes['StreamCollectionConnection']> = ResolversObject<{
@@ -50657,6 +50665,7 @@ export type TaxiiCollectionResolvers<ContextType = any, ParentType extends Resol
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   score_to_confidence?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   taxii_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  taxii_public_user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type TaxiiCollectionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaxiiCollectionConnection'] = ResolversParentTypes['TaxiiCollectionConnection']> = ResolversObject<{
