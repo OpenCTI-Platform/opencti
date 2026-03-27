@@ -32,12 +32,12 @@ import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { extractRefererPathFromReq, setCookieError, decodeOidcState } from './httpUtils';
-import { buildCspDirectives, computeFrameAncestors, selectSecurityMiddlewareType, healthCheckTimeout } from './httpPlatform-utils';
 import { getChatbotConfig, getChatbotAgents, postChatbotSession, postChatbotMessage, postAgentMessage, getLegacyChatbotProxy } from './httpChatbotProxy';
 import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 import { AuthenticationProviderError } from '../modules/authenticationProvider/providers-logger';
+import { buildDefaultHelmetParameters, buildIndexHelmetParameters, buildPublicHelmetParameters } from './httpPlatform-utils';
 
 export const sanitizeReferer = (refererToSanitize) => {
   // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
@@ -105,89 +105,13 @@ const createApp = async (app, schema) => {
   }
 
   // Configure server security
-  const publicDashboardAuthorizedDomains = nconf.get('app:public_dashboard_authorized_domains');
-  const isHttpResourceAllowed = booleanConf('app:allow_http_resources', true);
-
-  const frameAncestorDomains = computeFrameAncestors(publicDashboardAuthorizedDomains);
-  const allowedFrameSrc = ["'self'"];
-  const { scriptSrc, imgSrc, manifestSrc, connectSrc, objectSrc } = buildCspDirectives(DEV_MODE, isHttpResourceAllowed);
-
-  const publicSecurityMiddleware = helmet({
-    referrerPolicy: { policy: 'unsafe-url' },
-    crossOriginEmbedderPolicy: false,
-    crossOriginOpenerPolicy: false,
-    crossOriginResourcePolicy: false,
-    contentSecurityPolicy: {
-      useDefaults: false,
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc,
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrcAttr: ["'none'"],
-        fontSrc: ["'self'", 'data:'],
-        imgSrc,
-        manifestSrc,
-        connectSrc,
-        objectSrc,
-        frameSrc: allowedFrameSrc,
-        frameAncestors: frameAncestorDomains,
-      },
-    },
-    xFrameOptions: frameAncestorDomains === "'none'",
-  });
-
-  const indexSecurityMiddleware = helmet({
-    referrerPolicy: { policy: 'unsafe-url' },
-    crossOriginEmbedderPolicy: false,
-    crossOriginOpenerPolicy: false,
-    crossOriginResourcePolicy: false,
-    contentSecurityPolicy: {
-      useDefaults: false,
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc,
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrcAttr: ["'none'"],
-        fontSrc: ["'self'", 'data:'],
-        imgSrc,
-        manifestSrc,
-        connectSrc,
-        objectSrc,
-        frameAncestors: "'none'",
-      },
-    },
-    xFrameOptions: true,
-  });
-
-  // CSP with scriptSrc is required for the window.BASE_PATH propagation on frontend.
-  const defaultSecurityMiddleware = helmet({
-    referrerPolicy: { policy: 'unsafe-url' },
-    crossOriginEmbedderPolicy: false,
-    crossOriginOpenerPolicy: false,
-    crossOriginResourcePolicy: false,
-    contentSecurityPolicy: {
-      useDefaults: false,
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc,
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrcAttr: ["'none'"],
-        fontSrc: ["'self'", 'data:'],
-        imgSrc,
-        manifestSrc,
-        connectSrc,
-        objectSrc,
-        frameAncestors: "'none'",
-      },
-    },
-  });
+  const publicSecurityMiddleware = helmet(buildPublicHelmetParameters());
+  const defaultSecurityMiddleware = helmet(buildDefaultHelmetParameters());
 
   app.use((req, res, next) => {
-    const middlewareType = selectSecurityMiddlewareType(req.url, basePath);
-    if (middlewareType === 'public') {
+    const urlString = req.url;
+    if (urlString && (urlString.startsWith(`${basePath}/public`))) {
       publicSecurityMiddleware(req, res, next);
-    } else if (middlewareType === 'index') {
-      indexSecurityMiddleware(req, res, next);
     } else {
       defaultSecurityMiddleware(req, res, next);
     }
@@ -541,6 +465,12 @@ const createApp = async (app, schema) => {
   });
 
   // -- Healthcheck
+  const healthCheckTimeout = async (promise, message) => {
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(message)), 15000); // 15 seconds timeout
+    });
+    return Promise.race([promise, timeoutPromise]);
+  };
   app.get(`${basePath}/health`, async (req, res) => {
     try {
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');

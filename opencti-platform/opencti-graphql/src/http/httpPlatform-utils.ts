@@ -1,86 +1,90 @@
 /**
- * Pure utility functions extracted from httpPlatform for testability.
+ * Pure utility functions for httpPlatform
  */
+import nconf from 'nconf';
+import { booleanConf, DEV_MODE } from '../config/conf';
 
-/**
- * Computes the frame-ancestors CSP directive value from the configured
- * public-dashboard authorized domains string.
- *
- * @param publicDashboardAuthorizedDomains - raw config value
- * @returns A CSP frame-ancestors value ("'none'" when empty)
- */
-export const computeFrameAncestors = (publicDashboardAuthorizedDomains: string | undefined | null): string => {
-  const ancestorsFromConfig = publicDashboardAuthorizedDomains?.trim() ?? '';
-  return ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
+const PUBLIC_AUTH_DOMAINS: string = nconf.get('app:public_dashboard_authorized_domains') ?? '';
+export const getPublicAuthorizedDomainsFromConfiguration = () => {
+  return PUBLIC_AUTH_DOMAINS.trim();
 };
 
-export interface CspDirectives {
-  scriptSrc: string[];
-  imgSrc: string[];
-  manifestSrc: string[];
-  connectSrc: string[];
-  objectSrc: string[];
-}
+const IS_HTTP_ALLOWED: boolean = booleanConf('app:allow_http_resources', true);
+export const isHttpResourceAllowed = () => {
+  return IS_HTTP_ALLOWED;
+};
 
-/**
- * Builds the Content-Security-Policy directive arrays based on runtime flags.
- *
- * @param devMode - true when running in development mode
- * @param isHttpResourceAllowed - true when HTTP (non-HTTPS) resources are permitted
- */
-export const buildCspDirectives = (devMode: boolean, isHttpResourceAllowed: boolean): CspDirectives => {
-  const scriptSrc: string[] = ["'self'", "'unsafe-inline'"];
-  const imgSrc: string[] = ["'self'", 'data:', 'https://*'];
-  const manifestSrc: string[] = ["'self'", 'data:', 'https://*'];
-  const connectSrc: string[] = ["'self'", 'wss://*', 'data:', 'https://*'];
-  const objectSrc: string[] = ["'self'", 'data:', 'https://*'];
+export const isDevMode = () => {
+  return DEV_MODE;
+};
 
-  if (devMode) {
+const buildScriptSrc = () => {
+  const scriptSrc = ["'self'", "'unsafe-inline'"];
+  if (isDevMode()) {
     scriptSrc.push("'unsafe-eval'");
   }
-
-  if (isHttpResourceAllowed) {
-    imgSrc.push('http://*');
-    manifestSrc.push('http://*');
-    connectSrc.push('http://*');
-    connectSrc.push('ws://*');
-    objectSrc.push('http://*');
-  }
-
-  return { scriptSrc, imgSrc, manifestSrc, connectSrc, objectSrc };
+  return scriptSrc;
 };
 
-export type SecurityMiddlewareType = 'public' | 'index' | 'default';
+export const buildPublicHelmetParameters = () => {
+  const ancestorsFromConfig = getPublicAuthorizedDomainsFromConfiguration();
+  const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
+  const allowedFrameSrc = ["'self'"];
+  const imgSrc = ["'self'", 'data:', 'https://*'];
+  const manifestSrc = ["'self'", 'data:', 'https://*'];
+  const connectSrc = ["'self'", 'wss://*', 'data:', 'https://*'];
+  const objectSrc = ["'self'", 'data:', 'https://*'];
 
-/**
- * Determines which security middleware profile should be applied based on the
- * request URL.
- *
- * @param url - the request URL (req.url)
- * @param appBasePath - the configured base path of the application
- */
-export const selectSecurityMiddlewareType = (url: string, appBasePath: string): SecurityMiddlewareType => {
-  if (url && url.startsWith(`${appBasePath}/public`)) {
-    return 'public';
-  }
-  if (url && url.includes('/dashboard')) {
-    return 'index';
-  }
-  return 'default';
+  return {
+    referrerPolicy: { policy: 'unsafe-url' },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: buildScriptSrc(),
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrcAttr: ["'none'"],
+        fontSrc: ["'self'", 'data:'],
+        imgSrc,
+        manifestSrc,
+        connectSrc,
+        objectSrc,
+        frameSrc: allowedFrameSrc,
+        frameAncestors: frameAncestorDomains,
+      },
+    },
+    xFrameOptions: frameAncestorDomains === "'none'",
+  };
 };
 
-/**
- * Wraps a promise with a timeout – rejects if the promise does not settle
- * within the given duration.
- *
- * @param promise - the promise to race against a timeout
- * @param message - error message used when the timeout fires
- * @param timeoutMs - timeout duration in milliseconds (default 15 000)
- */
-export const healthCheckTimeout = async <T>(promise: Promise<T>, message: string, timeoutMs: number = 15000): Promise<T> => {
-  const timeoutPromise = new Promise<T>((_, reject) => {
-    setTimeout(() => reject(new Error(message)), timeoutMs);
-  });
-  return Promise.race([promise, timeoutPromise]);
-};
+export const buildDefaultHelmetParameters = () => {
+  const imgSrc = ["'self'", 'data:', 'https://*'];
+  const manifestSrc = ["'self'", 'data:', 'https://*'];
+  const connectSrc = ["'self'", 'wss://*', 'data:', 'https://*'];
+  const objectSrc = ["'self'", 'data:', 'https://*'];
 
+  return {
+    referrerPolicy: { policy: 'unsafe-url' },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: buildScriptSrc(),
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrcAttr: ["'none'"],
+        fontSrc: ["'self'", 'data:'],
+        imgSrc,
+        manifestSrc,
+        connectSrc,
+        objectSrc,
+        frameAncestors: "'none'",
+      },
+    },
+  };
+};
