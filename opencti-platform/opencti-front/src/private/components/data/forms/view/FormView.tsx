@@ -405,7 +405,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const validationSchema = React.useMemo(() => {
     let baseSchema = convertFormSchemaToYupSchema(schema, t_i18n);
     const extraShapes: Record<string, Yup.AnySchema> = {};
-    if (isDraft && schema.draftDefaults?.author?.isEditable && schema.draftDefaults?.author?.isRequired) {
+    // main_entity_author: empty is always valid (backend inherits from main entity)
+    const authorRequiresExplicitValue = schema.draftDefaults?.author?.type !== 'main_entity_author';
+    if (isDraft && schema.draftDefaults?.author?.isEditable && schema.draftDefaults?.author?.isRequired && authorRequiresExplicitValue) {
       extraShapes.draftAuthor = Yup.object()
         .nullable()
         .required(t_i18n('This field is required'));
@@ -942,7 +944,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                       name="draftAuthor"
                       label={t_i18n('Draft author')}
                       containerStyle={{ width: '100%', marginBottom: 20 }}
-                      required={schema.draftDefaults?.author?.isRequired}
+                      required={schema.draftDefaults?.author?.isRequired && schema.draftDefaults.author.type !== 'main_entity_author'}
+                      clearable={schema.draftDefaults.author.type === 'main_entity_author'}
+                      helpertext={schema.draftDefaults.author.type === 'main_entity_author' ? t_i18n('Default: Reuse main entity author (leave empty to inherit)') : undefined}
                     />
                   </div>
                 )}
