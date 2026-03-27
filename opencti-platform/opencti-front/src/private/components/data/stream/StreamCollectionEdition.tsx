@@ -17,7 +17,8 @@ import Filters from '../../common/lists/Filters';
 import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend, stixFilters } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { convertAuthorizedMembers } from '../../../../utils/edition';
+import CreatorField from '../../common/form/CreatorField';
+import { convertAuthorizedMembers, convertUser } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { useTheme } from '@mui/material/styles';
 
@@ -26,6 +27,7 @@ interface StreamCollectionCreationForm {
   stream_public: boolean | null;
   name: string | null;
   description: string | null;
+  stream_public_user_id?: FieldOption | string | null;
 }
 
 export const streamCollectionMutationFieldPatch = graphql`
@@ -53,6 +55,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
     stream_public: streamCollection.stream_public ?? null,
     name: streamCollection.name ?? '',
     description: streamCollection.description ?? '',
+    stream_public_user_id: convertUser(streamCollection, 'stream_public_user'),
   };
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(streamCollection.filters) ?? undefined);
   const handleSubmitField = (name: string, value: FieldOption[] | string) => {
@@ -172,6 +175,14 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
                 name="restricted_members"
               />
             )}
+            {initialValues.stream_public && (
+              <CreatorField
+                name="stream_public_user_id"
+                label={t_i18n('User used to retrieve data')}
+                containerStyle={fieldSpacingContainerStyle}
+                onChange={(_, value) => handleSubmitField('stream_public_user_id', (value as FieldOption)?.value ?? '')}
+              />
+            )}
           </Alert>
           <Box sx={{
             marginTop: '20px',
@@ -211,6 +222,11 @@ const StreamCollectionEditionFragment = createFragmentContainer(
                 filters
                 stream_live
                 stream_public
+                stream_public_user {
+                    id
+                    entity_type
+                    name
+                }
                 authorized_members {
                     id
                     member_id

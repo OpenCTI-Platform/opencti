@@ -9208,6 +9208,7 @@ export type Feed = {
   feed_attributes: Array<FeedAttribute>;
   feed_date_attribute?: Maybe<Scalars['String']['output']>;
   feed_public?: Maybe<Scalars['Boolean']['output']>;
+  feed_public_user?: Maybe<Creator>;
   feed_public_user_id?: Maybe<Scalars['String']['output']>;
   feed_types: Array<Scalars['String']['output']>;
   filters?: Maybe<Scalars['String']['output']>;
@@ -32420,6 +32421,7 @@ export type StreamCollection = {
   name?: Maybe<Scalars['String']['output']>;
   stream_live?: Maybe<Scalars['Boolean']['output']>;
   stream_public?: Maybe<Scalars['Boolean']['output']>;
+  stream_public_user?: Maybe<Creator>;
   stream_public_user_id?: Maybe<Scalars['String']['output']>;
 };
 
@@ -33500,6 +33502,7 @@ export type TaxiiCollection = {
   name?: Maybe<Scalars['String']['output']>;
   score_to_confidence?: Maybe<Scalars['Boolean']['output']>;
   taxii_public?: Maybe<Scalars['Boolean']['output']>;
+  taxii_public_user?: Maybe<Creator>;
   taxii_public_user_id?: Maybe<Scalars['String']['output']>;
 };
 
@@ -43790,6 +43793,7 @@ export type FeedResolvers<ContextType = any, ParentType extends ResolversParentT
   feed_attributes?: Resolver<Array<ResolversTypes['FeedAttribute']>, ParentType, ContextType>;
   feed_date_attribute?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   feed_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  feed_public_user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   feed_public_user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   feed_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -50298,6 +50302,7 @@ export type StreamCollectionResolvers<ContextType = any, ParentType extends Reso
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   stream_live?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   stream_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  stream_public_user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   stream_public_user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
@@ -50665,6 +50670,7 @@ export type TaxiiCollectionResolvers<ContextType = any, ParentType extends Resol
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   score_to_confidence?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   taxii_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  taxii_public_user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   taxii_public_user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
