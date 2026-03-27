@@ -5,7 +5,6 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 
 const FEED_DEFINITION: ModuleDefinition<StoreEntityFeed, StixFeed> = {
   type: {
@@ -28,7 +27,6 @@ const FEED_DEFINITION: ModuleDefinition<StoreEntityFeed, StixFeed> = {
     { name: 'include_header', label: 'Include header', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'feed_public', label: 'Public feed', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     { name: 'feed_public_user_id', label: 'Public feed user id', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: false },
-    { name: 'feed_public_authorized_markings', label: 'Public feed authorized markings', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_MARKING_DEFINITION], mandatoryType: 'no', editDefault: true, multiple: true, upsert: false, isFilterable: false },
     { name: 'feed_types', label: 'Feed types', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: true, upsert: false, isFilterable: true },
     { name: 'feed_date_attribute', label: 'Selected attribute date', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
     {

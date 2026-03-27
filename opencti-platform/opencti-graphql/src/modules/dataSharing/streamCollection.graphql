@@ -25,8 +25,7 @@ type StreamCollection {
   filters: String
   stream_live: Boolean
   stream_public: Boolean
-  stream_public_user_id: String @auth(for: [SETTINGS_SETACCESSES])
-  stream_public_authorized_markings: [String!] @auth(for: [SETTINGS_SETACCESSES])
+  stream_public_user_id: String @auth(for: [TAXIIAPI])
   authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI])
   consumers: [StreamCollectionConsumer!]!
 }
@@ -45,7 +44,6 @@ input StreamCollectionAddInput {
   stream_live: Boolean
   stream_public: Boolean
   stream_public_user_id: String
-  stream_public_authorized_markings: [String!]
   authorized_members: [MemberAccessInput!]
 }
 enum StreamCollectionOrdering {

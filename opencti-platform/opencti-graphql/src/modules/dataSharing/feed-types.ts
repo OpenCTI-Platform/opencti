@@ -29,7 +29,6 @@ export interface StoreEntityFeed extends StoreEntity {
   include_header: boolean;
   feed_public: boolean;
   feed_public_user_id?: string | null;
-  feed_public_authorized_markings?: string[] | null;
   feed_types: string[];
   feed_date_attribute: string;
   feed_attributes: FeedAttributeDefinition[];
@@ -47,7 +46,6 @@ export interface StixFeed extends StixObject {
   feed_attributes: FeedAttributeDefinition[];
   feed_public: boolean;
   feed_public_user_id?: string | null;
-  feed_public_authorized_markings?: string[] | null;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
