@@ -160,6 +160,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
     return (<Loader />);
   }
 
+  const basePath = `/dashboard/data/import/draft/${draftId}`;
   return (
     <>
       {isDraftReadOnly && (
@@ -202,13 +203,13 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
       >
         <Tabs
           id="tabs-container"
-          value={getCurrentTab(location.pathname, draftId, '/dashboard/data/import/draft/entities')}
+          value={getCurrentTab(location.pathname, basePath)}
         >
           {isFeatureEnable('DRAFT_WORKFLOW') && (
             <Tab
               component={Link}
-              to={`/dashboard/data/import/draft/${draftId}/overview`}
-              value={`/dashboard/data/import/draft/${draftId}/overview`}
+              to="overview"
+              value="overview"
               label={
                 <span>{t_i18n('Overview')}</span>
               }
@@ -216,40 +217,40 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           )}
           <Tab
             component={Link}
-            to={`/dashboard/data/import/draft/${draftId}/entities`}
-            value={`/dashboard/data/import/draft/${draftId}/entities`}
+            to="entities"
+            value="entities"
             label={
               <span>{t_i18n('Entities')} ({objectsCount.entitiesCount})</span>
             }
           />
           <Tab
             component={Link}
-            to={`/dashboard/data/import/draft/${draftId}/observables`}
-            value={`/dashboard/data/import/draft/${draftId}/observables`}
+            to="observables"
+            value="observables"
             label={
               <span>{t_i18n('Observables')} ({objectsCount.observablesCount})</span>
             }
           />
           <Tab
             component={Link}
-            to={`/dashboard/data/import/draft/${draftId}/relationships`}
-            value={`/dashboard/data/import/draft/${draftId}/relationships`}
+            to="relationships"
+            value="relationships"
             label={
               <span>{t_i18n('Relationships')} ({objectsCount.relationshipsCount})</span>
             }
           />
           <Tab
             component={Link}
-            to={`/dashboard/data/import/draft/${draftId}/sightings`}
-            value={`/dashboard/data/import/draft/${draftId}/sightings`}
+            to="sightings"
+            value="sightings"
             label={
               <span>{t_i18n('Sightings')} ({objectsCount.sightingsCount})</span>
             }
           />
           <Tab
             component={Link}
-            to={`/dashboard/data/import/draft/${draftId}/containers`}
-            value={`/dashboard/data/import/draft/${draftId}/containers`}
+            to="containers"
+            value="containers"
             label={
               <span>{t_i18n('Containers')} ({objectsCount.containersCount})</span>
             }
@@ -257,8 +258,8 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           {!isDraftReadOnly && canAskImportKnowledge && (
             <Tab
               component={Link}
-              to={`/dashboard/data/import/draft/${draftId}/files`}
-              value={`/dashboard/data/import/draft/${draftId}/files`}
+              to="files"
+              value="files"
               label={t_i18n('Files')}
             />
           )}

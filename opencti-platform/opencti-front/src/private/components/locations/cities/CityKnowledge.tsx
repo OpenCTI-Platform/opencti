@@ -2,7 +2,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
@@ -283,6 +283,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
             />
           )}
         />
+        <Route index element={<Navigate replace={true} to="overview" />} />
       </Routes>
     </div>
   );

@@ -2,16 +2,16 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, useParams, Routes, useLocation, Navigate } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import InfrastructureKnowledge from './InfrastructureKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -27,6 +27,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import InfrastructureEdition from './InfrastructureEdition';
 import InfrastructureDeletion from './InfrastructureDeletion';
+import { PATH_INFRASTRUCTURE, PATH_INFRASTRUCTURES } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {
@@ -89,10 +90,11 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
   const data = usePreloadedQuery(infrastructureQuery, queryRef);
   const { infrastructure, connectorsForImport, connectorsForExport } = data;
   const { forceUpdate } = useForceUpdate();
+  const basePath = PATH_INFRASTRUCTURE(infrastructureId);
   const paddingRightValue = () => {
-    if (location.pathname.includes(`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`)) return 200;
-    if (location.pathname.includes(`/dashboard/observations/infrastructures/${infrastructure.id}/content`)) return 350;
-    if (location.pathname.includes(`/dashboard/observations/infrastructures/${infrastructure.id}/content/mapping`)) return 0;
+    if (location.pathname.includes(`${basePath}/knowledge`)) return 200;
+    if (location.pathname.includes(`${basePath}/content`)) return 350;
+    if (location.pathname.includes(`${basePath}/content/mapping`)) return 0;
     return 0;
   };
   return (
@@ -104,7 +106,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
         >
           <Breadcrumbs elements={[
             { label: t_i18n('Observations') },
-            { label: t_i18n('Infrastructures'), link: '/dashboard/observations/infrastructures' },
+            { label: t_i18n('Infrastructures'), link: PATH_INFRASTRUCTURES },
             { label: infrastructure.name, current: true },
           ]}
           />
@@ -132,76 +134,40 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             redirectToContent={true}
             enableEnrollPlaybook={true}
           />
-          <StixDomainObjectTabsBox
-            basePath="/dashboard/observations/infrastructures"
-            entity={infrastructure}
-            tabs={[
-              'overview',
-              'knowledge-overview',
-              'content',
-              'analyses',
-              'files',
-              'history',
-            ]}
-          />
-          <Routes>
-            <Route
-              path="/"
-              element={<Infrastructure data={infrastructure} />}
-            />
-            <Route
-              path="/knowledge"
-              element={(
-                <Navigate
-                  replace={true}
-                  to={`/dashboard/observations/infrastructures/${infrastructureId}/knowledge/overview`}
-                />
-              )}
-            />
-            <Route
-              path="/knowledge/*"
-              element={(
+          <StixDomainObjectMain
+            basePath={basePath}
+            pages={{
+              overview: <Infrastructure data={infrastructure} />,
+              knowledge: (
                 <div key={forceUpdate}>
                   <InfrastructureKnowledge infrastructure={infrastructure} />
                 </div>
-              )}
-            />
-            <Route
-              path="/content/*"
-              element={(
+              ),
+              content: (
                 <StixCoreObjectContentRoot
                   stixCoreObject={infrastructure}
                 />
-              )}
-            />
-            <Route
-              path="/analyses/*"
-              element={(
+              ),
+              analyses: (
                 <StixCoreObjectOrStixCoreRelationshipContainers
                   stixDomainObjectOrStixCoreRelationship={infrastructure}
                 />
-              )}
-            />
-            <Route
-              path="/files"
-              element={(
+              ),
+              files: (
                 <FileManager
                   id={infrastructureId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
                   entity={infrastructure}
                 />
-              )}
-            />
-            <Route
-              path="/history"
-              element={(
+              ),
+              history: (
                 <StixCoreObjectHistory
                   stixCoreObjectId={infrastructureId}
                 />
-              )}
-            />
-          </Routes>
+              ),
+            }}
+          />
         </div>
       ) : (
         <ErrorNotFound />

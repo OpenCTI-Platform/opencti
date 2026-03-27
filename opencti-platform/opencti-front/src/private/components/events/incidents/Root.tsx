@@ -2,10 +2,9 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Routes, useParams, useLocation, Navigate } from 'react-router-dom';
+import { Route, Routes, useParams, useLocation } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
@@ -17,6 +16,7 @@ import CreateRelationshipContextProvider from '@components/common/stix_core_rela
 import Incident from './Incident';
 import IncidentKnowledge from './IncidentKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -30,6 +30,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import IncidentEdition from './IncidentEdition';
 import IncidentDeletion from './IncidentDeletion';
+import { PATH_INCIDENT, PATH_INCIDENTS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -102,12 +103,13 @@ const RootIncidentComponent = ({ queryRef }) => {
   const data = usePreloadedQuery(incidentQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
   const { incident, connectorsForImport, connectorsForExport } = data;
-  const link = `/dashboard/events/incidents/${incidentId}/knowledge`;
-  const isOverview = location.pathname === `/dashboard/events/incidents/${incident?.id}`;
+  const basePath = PATH_INCIDENT(incidentId);
+  const link = `${basePath}/knowledge`;
+  const isOverview = location.pathname === basePath;
   const paddingRightValue = () => {
-    if (location.pathname.includes(`/dashboard/events/incidents/${incident.id}/knowledge`)) return 200;
-    if (location.pathname.includes(`/dashboard/events/incidents/${incident.id}/content`)) return 350;
-    if (location.pathname.includes(`/dashboard/events/incidents/${incident.id}/content/mapping`)) return 0;
+    if (location.pathname.includes(`${basePath}/knowledge`)) return 200;
+    if (location.pathname.includes(`${basePath}/content`)) return 350;
+    if (location.pathname.includes(`${basePath}/content/mapping`)) return 0;
     return 0;
   };
   return (
@@ -143,7 +145,7 @@ const RootIncidentComponent = ({ queryRef }) => {
           >
             <Breadcrumbs elements={[
               { label: t_i18n('Events') },
-              { label: t_i18n('Incidents'), link: '/dashboard/events/incidents' },
+              { label: t_i18n('Incidents'), link: PATH_INCIDENTS },
               { label: incident.name, current: true },
             ]}
             />
@@ -172,17 +174,39 @@ const RootIncidentComponent = ({ queryRef }) => {
               enableEnricher={true}
               enableEnrollPlaybook={true}
             />
-            <StixDomainObjectTabsBox
-              basePath="/dashboard/events/incidents"
-              entity={incident}
-              tabs={[
-                'overview',
-                'knowledge-overview',
-                'content',
-                'analyses',
-                'files',
-                'history',
-              ]}
+            <StixDomainObjectMain
+              basePath={basePath}
+              pages={{
+                overview: <Incident incidentData={incident} />,
+                knowledge: (
+                  <div key={forceUpdate}>
+                    <IncidentKnowledge incidentData={incident} />
+                  </div>
+                ),
+                content: (
+                  <StixCoreObjectContentRoot
+                    stixCoreObject={incident}
+                  />
+                ),
+                analyses: (
+                  <StixCoreObjectOrStixCoreRelationshipContainers
+                    stixDomainObjectOrStixCoreRelationship={incident}
+                  />
+                ),
+                files: (
+                  <FileManager
+                    id={incidentId}
+                    connectorsImport={connectorsForImport}
+                    connectorsExport={connectorsForExport}
+                    entity={incident}
+                  />
+                ),
+                history: (
+                  <StixCoreObjectHistory
+                    stixCoreObjectId={incidentId}
+                  />
+                ),
+              }}
               extraActions={isOverview && (
                 <>
                   <AIInsights id={incident.id} />
@@ -190,64 +214,6 @@ const RootIncidentComponent = ({ queryRef }) => {
                 </>
               )}
             />
-            <Routes>
-              <Route
-                path="/"
-                element={<Incident incidentData={incident} />}
-              />
-              <Route
-                path="/knowledge"
-                element={(
-                  <Navigate
-                    replace={true}
-                    to={`/dashboard/events/incidents/${incidentId}/knowledge/overview`}
-                  />
-                )}
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
-                  <div key={forceUpdate}>
-                    <IncidentKnowledge incidentData={incident} />
-                  </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
-                  <StixCoreObjectContentRoot
-                    stixCoreObject={incident}
-                  />
-                )}
-              />
-              <Route
-                path="/analyses"
-                element={(
-                  <StixCoreObjectOrStixCoreRelationshipContainers
-                    stixDomainObjectOrStixCoreRelationship={incident}
-                  />
-                )}
-              />
-              <Route
-                path="/files"
-                element={(
-                  <FileManager
-                    id={incidentId}
-                    connectorsImport={connectorsForImport}
-                    connectorsExport={connectorsForExport}
-                    entity={incident}
-                  />
-                )}
-              />
-              <Route
-                path="/history"
-                element={(
-                  <StixCoreObjectHistory
-                    stixCoreObjectId={incidentId}
-                  />
-                )}
-              />
-            </Routes>
           </div>
         </>
       ) : (

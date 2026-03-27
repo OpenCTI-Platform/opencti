@@ -2,11 +2,11 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, useLocation, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import Security from 'src/utils/Security';
 import AIInsights from '@components/common/ai/AIInsights';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -29,6 +29,7 @@ import { getPaddingRight } from '../../../../utils/utils';
 import CaseRfiEdition from './CaseRfiEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import CaseRfiDeletion from './CaseRfiDeletion';
+import { PATH_RFI, PATH_RFIS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootCaseRfiCaseSubscription($id: ID!) {
@@ -97,14 +98,15 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
   if (!caseData) {
     return <ErrorNotFound />;
   }
-  const paddingRight = getPaddingRight(location.pathname, caseData.id, '/dashboard/cases/rfis', false);
+  const basePath = PATH_RFI(caseId);
+  const paddingRight = getPaddingRight(location.pathname, basePath, false);
   const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
   return (
     <div style={{ paddingRight }}>
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
-        { label: t_i18n('Requests for information'), link: '/dashboard/cases/rfis' },
+        { label: t_i18n('Requests for information'), link: PATH_RFIS },
         { label: caseData.name, current: true },
       ]}
       />
@@ -125,69 +127,35 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
         redirectToContent={true}
         enableEnricher={true}
       />
-      <StixDomainObjectTabsBox
-        basePath="/dashboard/cases/rfis"
-        entity={caseData}
-        tabs={[
-          'overview',
-          'knowledge-graph',
-          'content',
-          'entities',
-          'observables',
-          'files',
-        ]}
-        extraActions={!isKnowledgeOrContent && <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />}
-      />
-      <Routes>
-        <Route
-          path="/"
-          element={<CaseRfi caseRfiData={caseData} enableReferences={enableReferences} />}
-        />
-        <Route
-          path="/entities"
-          element={(
-            <ContainerStixDomainObjects
-              container={caseData}
-              enableReferences={enableReferences}
-            />
-          )}
-        />
-        <Route
-          path="/observables"
-          element={(
-            <ContainerStixCyberObservables
-              container={caseData}
-              enableReferences={enableReferences}
-            />
-          )}
-        />
-        <Route
-          path="/knowledge"
-          element={
-            <Navigate to={`/dashboard/cases/rfis/${caseId}/knowledge/graph`} replace={true} />
-          }
-        />
-        <Route
-          path="/content/*"
-          element={(
-            <StixCoreObjectContentRoot
-              stixCoreObject={caseData}
-              isContainer={true}
-            />
-          )}
-        />
-        <Route
-          path="/knowledge/*"
-          element={(
+      <StixDomainObjectMain
+        basePath={basePath}
+        pages={{
+          overview: <CaseRfi caseRfiData={caseData} enableReferences={enableReferences} />,
+          knowledge: (
             <CaseRfiKnowledge
               caseData={caseData}
               enableReferences={enableReferences}
             />
-          )}
-        />
-        <Route
-          path="/files"
-          element={(
+          ),
+          content: (
+            <StixCoreObjectContentRoot
+              stixCoreObject={caseData}
+              isContainer={true}
+            />
+          ),
+          entities: (
+            <ContainerStixDomainObjects
+              container={caseData}
+              enableReferences={enableReferences}
+            />
+          ),
+          observables: (
+            <ContainerStixCyberObservables
+              container={caseData}
+              enableReferences={enableReferences}
+            />
+          ),
+          files: (
             <StixCoreObjectFilesAndHistory
               id={caseId}
               connectorsExport={connectorsForExport}
@@ -196,17 +164,10 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
               withoutRelations={true}
               bypassEntityId={true}
             />
-          )}
-        />
-        <Route
-          path="/history"
-          element={(
-            <StixCoreObjectHistory
-              stixCoreObjectId={caseId}
-            />
-          )}
-        />
-      </Routes>
+          ),
+        }}
+        extraActions={!isKnowledgeOrContent && <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />}
+      />
     </div>
   );
 };
