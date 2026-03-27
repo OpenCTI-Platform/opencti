@@ -1,66 +1,20 @@
 import { describe, expect, it, vi, beforeEach, afterEach, type MockInstance } from 'vitest';
-import type { StixBundle, StixObject, StixOpenctiExtension } from '../../../../src/types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
-import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
-import * as access from '../../../../src/utils/access';
 import * as authorizedMembers from '../../../../src/utils/authorizedMembers';
 import { PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT } from '../../../../src/modules/playbook/components/access-restrictions-component';
+import { testBundleObject, testExecutor } from './playbook-components-test-utils';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../../src/modules/grouping/grouping-types';
+import { USER_EDITOR } from '../../../utils/testQuery';
+import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
 
 describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
-  const reportId = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
-  const secondReportId = 'report--second-report';
-  const userId = 'user-uuid-1';
-  const organizationId = 'org-uuid-1';
-  const groupId = 'group-uuid-1';
-
-  const baseBundle: StixBundle = {
-    type: 'bundle',
-    spec_version: '2.1',
-    id: 'bundle--test-id',
-    objects: [],
-  } as StixBundle;
-
-  const createBaseBundleObject = (options?: {
-    id?: string;
-    createdById?: string;
-    createdByType?: string;
-    creatorIds?: string[];
-    assigneeIds?: string[];
-    participantIds?: string[];
-  }): StixObject => ({
-    id: options?.id ?? reportId,
-    spec_version: '2.1',
-    type: 'report',
-    name: 'Test Report',
-    extensions: {
-      [STIX_EXT_OCTI]: {
-        id: 'internal-uuid',
-        type: ENTITY_TYPE_CONTAINER_REPORT,
-        extension_type: 'property-extension',
-        ...(options?.createdById && { created_by_ref_id: options.createdById }),
-        ...(options?.createdByType && { created_by_ref_type: options.createdByType }),
-        ...(options?.creatorIds && { creator_ids: options.creatorIds }),
-        ...(options?.assigneeIds && { assignee_ids: options.assigneeIds }),
-        ...(options?.participantIds && { participant_ids: options.participantIds }),
-      } as StixOpenctiExtension,
-    },
-  } as StixObject);
-
-  const basePlaybookNode = {
-    id: 'playbook-node-1',
-    name: 'Access Restrictions Node',
-    component_id: 'PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT',
-  };
-
-  const baseExecutorParams = {
-    dataInstanceId: reportId,
-    eventId: '',
-    executionId: '',
-    playbookId: '',
-    previousPlaybookNodeId: undefined,
-    previousStepBundle: null as StixBundle | null,
-  };
+  const REPORT_ID = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
+  const GROUPING_ID = 'grouping--5f78a68b-2c4d-5e6f-beaa-7b987b0e7133';
+  const USER_ID = USER_EDITOR.id;
+  const ORGA_ID = 'org-uuid-1';
+  const GROUP_ID = 'group-uuid-1';
 
   const createAccessRestriction = (
     value: string,
@@ -78,22 +32,10 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
     groupsRestriction: options?.groupsRestriction ?? [],
   });
 
-  const createPlaybookNode = (
-    accessRestrictions: ReturnType<typeof createAccessRestriction>[],
-    all = false,
-  ) => ({
-    ...basePlaybookNode,
-    configuration: {
-      access_restrictions: accessRestrictions,
-      all,
-    },
-  });
-
   type BuildRestrictedMembersSpy = MockInstance<typeof authorizedMembers.buildRestrictedMembers>;
   let buildRestrictedMembersSpy: BuildRestrictedMembersSpy;
 
   beforeEach(() => {
-    vi.spyOn(access, 'executionContext').mockReturnValue({} as any);
     buildRestrictedMembersSpy = vi.spyOn(authorizedMembers, 'buildRestrictedMembers');
   });
 
@@ -104,26 +46,24 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
   describe('when applying static access restrictions', () => {
     it('should add authorized_members to dataInstanceId object', async () => {
       const mockAuthorizedMembers = [
-        { id: userId, access_right: 'admin', groups_restriction_ids: [] },
+        { id: USER_ID, access_right: 'admin', groups_restriction_ids: [] },
       ];
       buildRestrictedMembersSpy.mockResolvedValue(mockAuthorizedMembers);
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject()],
-      };
-
-      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([
-          createAccessRestriction(userId, 'admin'),
-        ], false),
-      });
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: [testBundleObject({
+          id: REPORT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+        })],
+        configuration: {
+          access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        },
+      }));
 
       expect(buildRestrictedMembersSpy).toHaveBeenCalled();
       expect(result.output_port).toBe('out');
-
       const ext = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
       expect(ext.authorized_members).toBeDefined();
       expect(ext.authorized_members).toEqual(mockAuthorizedMembers);
@@ -131,89 +71,86 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
 
     it('should add authorized_members with groups restriction', async () => {
       const mockAuthorizedMembers = [
-        { id: userId, access_right: 'edit', groups_restriction_ids: [groupId] },
+        { id: USER_ID, access_right: 'edit', groups_restriction_ids: [GROUP_ID] },
       ];
       buildRestrictedMembersSpy.mockResolvedValue(mockAuthorizedMembers);
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject()],
-      };
-
-      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([
-          createAccessRestriction(userId, 'edit', {
-            groupsRestriction: [{ label: 'Test Group', value: groupId, type: 'Group' }],
-          }),
-        ], false),
-      });
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: [testBundleObject({
+          id: REPORT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+        })],
+        configuration: {
+          access_restrictions: [createAccessRestriction(USER_ID, 'edit', {
+            groupsRestriction: [{ label: 'Test Group', value: GROUP_ID, type: 'Group' }],
+          })],
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        },
+      }));
 
       expect(result.output_port).toBe('out');
-
       const ext = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
       expect(ext.authorized_members).toEqual(mockAuthorizedMembers);
     });
 
     it('should add multiple authorized_members', async () => {
       const mockAuthorizedMembers = [
-        { id: userId, access_right: 'admin', groups_restriction_ids: [] },
-        { id: organizationId, access_right: 'view', groups_restriction_ids: [] },
+        { id: USER_ID, access_right: 'admin', groups_restriction_ids: [] },
+        { id: ORGA_ID, access_right: 'view', groups_restriction_ids: [] },
       ];
       buildRestrictedMembersSpy.mockResolvedValue(mockAuthorizedMembers);
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject()],
-      };
-
-      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([
-          createAccessRestriction(userId, 'admin'),
-          createAccessRestriction(organizationId, 'view', { type: 'Organization' }),
-        ], false),
-      });
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: [testBundleObject({
+          id: REPORT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+        })],
+        configuration: {
+          access_restrictions: [
+            createAccessRestriction(USER_ID, 'admin'),
+            createAccessRestriction(ORGA_ID, 'view', { type: 'Organization' }),
+          ],
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        },
+      }));
 
       expect(result.output_port).toBe('out');
-
       const ext = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
       expect(ext.authorized_members).toEqual(mockAuthorizedMembers);
     });
 
     it('should call buildRestrictedMembers with correct input', async () => {
       const mockAuthorizedMembers = [
-        { id: userId, access_right: 'admin', groups_restriction_ids: [groupId] },
+        { id: USER_ID, access_right: 'admin', groups_restriction_ids: [GROUP_ID] },
       ];
       buildRestrictedMembersSpy.mockResolvedValue(mockAuthorizedMembers);
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject()],
-      };
-
-      await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([
-          createAccessRestriction(userId, 'admin', {
-            groupsRestriction: [{ label: 'Test Group', value: groupId, type: 'Group' }],
-          }),
-        ], false),
-      });
+      await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: [testBundleObject({
+          id: REPORT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+        })],
+        configuration: {
+          access_restrictions: [createAccessRestriction(USER_ID, 'admin', {
+            groupsRestriction: [{ label: 'Test Group', value: GROUP_ID, type: 'Group' }],
+          })],
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        },
+      }));
 
       expect(buildRestrictedMembersSpy).toHaveBeenCalledWith(
         expect.anything(),
         expect.anything(),
         expect.objectContaining({
-          entityId: reportId,
+          entityId: REPORT_ID,
           input: [
             {
-              id: userId,
+              id: USER_ID,
               access_right: 'admin',
-              groups_restriction_ids: [groupId],
+              groups_restriction_ids: [GROUP_ID],
             },
           ],
         }),
@@ -229,21 +166,21 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
       ];
       buildRestrictedMembersSpy.mockResolvedValue(mockAuthorizedMembers);
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject({
-          createdById: authorOrgId,
-          createdByType: ENTITY_TYPE_IDENTITY_ORGANIZATION,
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: [testBundleObject({
+          id: REPORT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+          octiExtension: {
+            created_by_ref_id: authorOrgId,
+            created_by_ref_type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
+          },
         })],
-      };
-
-      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([
-          createAccessRestriction('AUTHOR', 'admin'),
-        ], false),
-      });
+        configuration: {
+          access_restrictions: [createAccessRestriction('AUTHOR', 'admin')],
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        },
+      }));
 
       expect(buildRestrictedMembersSpy).toHaveBeenCalledWith(
         expect.anything(),
@@ -260,45 +197,48 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
     it('should not resolve AUTHOR when author is not an organization', async () => {
       buildRestrictedMembersSpy.mockResolvedValue([]);
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject({
-          createdById: 'individual-id',
-          createdByType: 'Individual',
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: [testBundleObject({
+          id: REPORT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+          octiExtension: {
+            created_by_ref_id: 'individual-id',
+            created_by_ref_type: ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+          },
         })],
-      };
-
-      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([
-          createAccessRestriction('AUTHOR', 'admin'),
-        ], false),
-      });
+        configuration: {
+          access_restrictions: [createAccessRestriction('AUTHOR', 'admin')],
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        },
+      }));
 
       // buildRestrictedMembers should not be called since no restrictions resolved
       expect(buildRestrictedMembersSpy).not.toHaveBeenCalled();
       expect(result.output_port).toBe('out');
+      const ext = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
+      expect(ext.authorized_members).toBeUndefined();
     });
 
     it('should not resolve AUTHOR when no author is defined', async () => {
       buildRestrictedMembersSpy.mockResolvedValue([]);
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject()],
-      };
-
-      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([
-          createAccessRestriction('AUTHOR', 'admin'),
-        ], false),
-      });
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: [testBundleObject({
+          id: REPORT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+        })],
+        configuration: {
+          access_restrictions: [createAccessRestriction('AUTHOR', 'admin')],
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        },
+      }));
 
       expect(buildRestrictedMembersSpy).not.toHaveBeenCalled();
       expect(result.output_port).toBe('out');
+      const ext = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
+      expect(ext.authorized_members).toBeUndefined();
     });
 
     it('should resolve CREATORS to creator_ids', async () => {
@@ -310,20 +250,20 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
       ];
       buildRestrictedMembersSpy.mockResolvedValue(mockAuthorizedMembers);
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject({
-          creatorIds: [creatorId1, creatorId2],
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: [testBundleObject({
+          id: REPORT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+          octiExtension: {
+            creator_ids: [creatorId1, creatorId2],
+          },
         })],
-      };
-
-      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([
-          createAccessRestriction('CREATORS', 'edit'),
-        ], false),
-      });
+        configuration: {
+          access_restrictions: [createAccessRestriction('CREATORS', 'edit')],
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        },
+      }));
 
       expect(buildRestrictedMembersSpy).toHaveBeenCalledWith(
         expect.anything(),
@@ -345,20 +285,20 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
       ];
       buildRestrictedMembersSpy.mockResolvedValue(mockAuthorizedMembers);
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject({
-          assigneeIds: [assigneeId],
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: [testBundleObject({
+          id: REPORT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+          octiExtension: {
+            assignee_ids: [assigneeId],
+          },
         })],
-      };
-
-      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([
-          createAccessRestriction('ASSIGNEES', 'view'),
-        ], false),
-      });
+        configuration: {
+          access_restrictions: [createAccessRestriction('ASSIGNEES', 'view')],
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        },
+      }));
 
       expect(buildRestrictedMembersSpy).toHaveBeenCalledWith(
         expect.anything(),
@@ -379,20 +319,20 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
       ];
       buildRestrictedMembersSpy.mockResolvedValue(mockAuthorizedMembers);
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject({
-          participantIds: [participantId],
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: [testBundleObject({
+          id: REPORT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+          octiExtension: {
+            participant_ids: [participantId],
+          },
         })],
-      };
-
-      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([
-          createAccessRestriction('PARTICIPANTS', 'view'),
-        ], false),
-      });
+        configuration: {
+          access_restrictions: [createAccessRestriction('PARTICIPANTS', 'view')],
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        },
+      }));
 
       expect(buildRestrictedMembersSpy).toHaveBeenCalledWith(
         expect.anything(),
@@ -409,33 +349,35 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
     it('should combine static and dynamic access restrictions', async () => {
       const creatorId = 'creator-uuid';
       const mockAuthorizedMembers = [
-        { id: userId, access_right: 'admin', groups_restriction_ids: [] },
+        { id: USER_ID, access_right: 'admin', groups_restriction_ids: [] },
         { id: creatorId, access_right: 'edit', groups_restriction_ids: [] },
       ];
       buildRestrictedMembersSpy.mockResolvedValue(mockAuthorizedMembers);
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject({
-          creatorIds: [creatorId],
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: [testBundleObject({
+          id: REPORT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+          octiExtension: {
+            creator_ids: [creatorId],
+          },
         })],
-      };
-
-      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([
-          createAccessRestriction(userId, 'admin'),
-          createAccessRestriction('CREATORS', 'edit'),
-        ], false),
-      });
+        configuration: {
+          access_restrictions: [
+            createAccessRestriction(USER_ID, 'admin'),
+            createAccessRestriction('CREATORS', 'edit'),
+          ],
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        },
+      }));
 
       expect(buildRestrictedMembersSpy).toHaveBeenCalledWith(
         expect.anything(),
         expect.anything(),
         expect.objectContaining({
           input: expect.arrayContaining([
-            expect.objectContaining({ id: userId, access_right: 'admin' }),
+            expect.objectContaining({ id: USER_ID, access_right: 'admin' }),
             expect.objectContaining({ id: creatorId, access_right: 'edit' }),
           ]),
         }),
@@ -445,131 +387,141 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
   });
 
   describe('when bundle contains multiple objects', () => {
-    it('should add authorized_members to all objects when all=true', async () => {
-      const mockAuthorizedMembers = [
-        { id: userId, access_right: 'admin', groups_restriction_ids: [] },
-      ];
-      buildRestrictedMembersSpy.mockResolvedValue(mockAuthorizedMembers);
+    const expectedAccessRestriction = [{
+      id: USER_ID,
+      access_right: 'admin',
+      groups_restriction_ids: [],
+    }];
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [
-          createBaseBundleObject(),
-          createBaseBundleObject({ id: secondReportId }),
-        ],
-      };
+    const BUNDLE_OBJECTS = () => [
+      testBundleObject({
+        id: REPORT_ID,
+        type: ENTITY_TYPE_CONTAINER_REPORT,
+      }),
+      testBundleObject({
+        id: GROUPING_ID,
+        type: ENTITY_TYPE_CONTAINER_GROUPING,
+      }),
+    ];
 
-      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([
-          createAccessRestriction(userId, 'admin'),
-        ], true),
-      });
+    it('should add authorized_members to all objects in the bundle', async () => {
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: {
+          access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
+          applyToElements: playbookBundleElementsToApply.allElements.value,
+        },
+      }));
 
       expect(result.output_port).toBe('out');
-
       // Check first object
       const reportExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
-      expect(reportExt.authorized_members).toEqual(mockAuthorizedMembers);
-
+      expect(reportExt.authorized_members).toEqual(expectedAccessRestriction);
       // Check second object
       const secondReportExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
-      expect(secondReportExt.authorized_members).toEqual(mockAuthorizedMembers);
+      expect(secondReportExt.authorized_members).toEqual(expectedAccessRestriction);
     });
 
-    it('should only add authorized_members to dataInstanceId when all=false', async () => {
-      const mockAuthorizedMembers = [
-        { id: userId, access_right: 'admin', groups_restriction_ids: [] },
-      ];
-      buildRestrictedMembersSpy.mockResolvedValue(mockAuthorizedMembers);
-
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [
-          createBaseBundleObject(),
-          createBaseBundleObject({ id: secondReportId }),
-        ],
-      };
-
-      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([
-          createAccessRestriction(userId, 'admin'),
-        ], false),
-      });
+    it('should only add authorized_members to only main element of the bundle', async () => {
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: {
+          access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        },
+      }));
 
       expect(result.output_port).toBe('out');
-
       // Check first object - should have authorized_members
       const reportExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
-      expect(reportExt.authorized_members).toEqual(mockAuthorizedMembers);
-
+      expect(reportExt.authorized_members).toEqual(expectedAccessRestriction);
       // Check second object - should NOT have authorized_members
       const secondReportExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
       expect(secondReportExt.authorized_members).toBeUndefined();
+    });
+
+    it('should add authorized_members to all except main element of the bundle', async () => {
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: {
+          access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
+          applyToElements: playbookBundleElementsToApply.allExceptMain.value,
+        },
+      }));
+
+      expect(result.output_port).toBe('out');
+      // Check first object - should not have authorized_members
+      const reportExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
+      console.log();
+      expect(reportExt.authorized_members).toBeUndefined();
+      // Check second object - should have authorized_members
+      const secondReportExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
+      expect(secondReportExt.authorized_members).toEqual(expectedAccessRestriction);
     });
   });
 
   describe('when no changes are made', () => {
     it('should return bundle unchanged when no access restrictions resolve', async () => {
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject()],
-      };
-
-      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([
-          createAccessRestriction('AUTHOR', 'admin'),
-        ], false),
-      });
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: [testBundleObject({
+          id: REPORT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+        })],
+        configuration: {
+          access_restrictions: [createAccessRestriction('AUTHOR', 'admin')],
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        },
+      }));
 
       expect(buildRestrictedMembersSpy).not.toHaveBeenCalled();
       expect(result.output_port).toBe('out');
-
       const ext = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
       expect(ext.authorized_members).toBeUndefined();
     });
 
     it('should return bundle unchanged when CREATORS is empty', async () => {
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject({
-          creatorIds: [],
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: [testBundleObject({
+          id: REPORT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+          octiExtension: {
+            creator_ids: [],
+          },
         })],
-      };
-
-      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([
-          createAccessRestriction('CREATORS', 'edit'),
-        ], false),
-      });
+        configuration: {
+          access_restrictions: [createAccessRestriction('CREATORS', 'edit')],
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        },
+      }));
 
       expect(buildRestrictedMembersSpy).not.toHaveBeenCalled();
       expect(result.output_port).toBe('out');
+      const ext = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
+      expect(ext.authorized_members).toBeUndefined();
     });
 
     it('should return bundle unchanged when BUNDLE_ORGANIZATIONS has no organizations', async () => {
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject()],
-      };
-
-      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([
-          createAccessRestriction('BUNDLE_ORGANIZATIONS', 'view'),
-        ], false),
-      });
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: [testBundleObject({
+          id: REPORT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+        })],
+        configuration: {
+          access_restrictions: [createAccessRestriction('BUNDLE_ORGANIZATIONS', 'view')],
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        },
+      }));
 
       expect(buildRestrictedMembersSpy).not.toHaveBeenCalled();
       expect(result.output_port).toBe('out');
+      const ext = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
+      expect(ext.authorized_members).toBeUndefined();
     });
   });
 });

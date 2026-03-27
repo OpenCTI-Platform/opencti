@@ -1,5 +1,5 @@
 import type { JSONSchemaType } from 'ajv';
-import { type PlaybookComponent } from '../playbook-types';
+import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { ENTITY_TYPE_CONTAINER_REPORT, STIX_DOMAIN_OBJECT_CONTAINER_CASES } from '../../../schema/stixDomainObject';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../grouping/grouping-types';
@@ -9,20 +9,23 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../../case/case-rft/case-rft-typ
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT, type StixCaseIncident } from '../../case/case-incident/case-incident-types';
 import { FunctionalError } from '../../../config/errors';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../../task/task-types';
-import { extractBundleBaseElement } from '../playbook-utils';
+import { extractBundleBaseElement, isBundleElementInScope } from '../playbook-utils';
 import { now } from '../../../utils/format';
 import { extractStixRepresentative } from '../../../database/stix-representative';
-import { generateStandardId } from '../../../schema/identifier';
+import { generateStandardId, generateInternalId } from '../../../schema/identifier';
 import * as R from 'ramda';
 import { getParentTypes } from '../../../schema/schemaUtils';
 import type { StoreCommon } from '../../../types/store';
 import { convertStoreToStix_2_1 } from '../../../database/stix-2-1-converter';
 import type { StixContainer, StixIncident, StixReport } from '../../../types/stix-2-1-sdo';
-import type { StixDomainObject, StixObject } from '../../../types/stix-2-1-common';
-import { createTaskFromCaseTemplates } from '../playbook-components';
+import type { StixDomainObject } from '../../../types/stix-2-1-common';
 import { pushAll } from '../../../utils/arrayUtil';
 import { getFileContent } from '../../../database/raw-file-storage';
 import { logApp } from '../../../config/conf';
+import { findAllByCaseTemplateId } from '../../task/task-domain';
+import { type StixTask, type StoreEntityTask } from '../../task/task-types';
+import type { BasicStoreEntityTaskTemplate } from '../../task/task-template/task-template-types';
+import { AUTOMATION_MANAGER_USER, executionContext } from '../../../utils/access';
 
 // For now, only a fixed list of containers are compatible
 // these are the containers that can be created with a name and no specific mandatory fields
@@ -36,11 +39,45 @@ const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS = [
   ENTITY_TYPE_CONTAINER_TASK,
 ];
 
-interface ContainerWrapperConfiguration {
+export const buildStixTaskFromTaskTemplate = (taskTemplate: BasicStoreEntityTaskTemplate, container: StixContainer) => {
+  const taskData = {
+    name: taskTemplate.name,
+    description: taskTemplate.description,
+  };
+  const taskStandardId = generateStandardId(ENTITY_TYPE_CONTAINER_TASK, taskData);
+  const storeTask = {
+    internal_id: generateInternalId(),
+    standard_id: taskStandardId,
+    entity_type: ENTITY_TYPE_CONTAINER_TASK,
+    parent_types: getParentTypes(ENTITY_TYPE_CONTAINER_TASK),
+    ...taskData,
+  } as StoreEntityTask;
+  const task = convertStoreToStix_2_1(storeTask) as StixTask;
+  task.object_refs = [container.id];
+  task.object_marking_refs = container.object_marking_refs;
+  return task;
+};
+
+const createTaskFromCaseTemplates = async (
+  caseTemplates: { label: string; value: string }[],
+  container: StixContainer,
+) => {
+  const context = executionContext('playbook_components');
+  const tasks = [];
+  for (let i = 0; i < caseTemplates.length; i += 1) {
+    const taskTemplates = await findAllByCaseTemplateId(context, AUTOMATION_MANAGER_USER, caseTemplates[i].value);
+    for (let j = 0; j < taskTemplates.length; j += 1) {
+      const task = buildStixTaskFromTaskTemplate(taskTemplates[j], container);
+      tasks.push(task);
+    }
+  }
+  return tasks;
+};
+
+export interface ContainerWrapperConfiguration {
   container_type: string;
   caseTemplates: { label: string; value: string }[];
-  all: boolean;
-  excludeMainElement: boolean;
+  applyToElements: PlaybookBundleElementsToApply;
   copyFiles: boolean;
   newContainer: boolean;
 }
@@ -56,12 +93,20 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<Contain
       $ref: 'Case templates',
       items: { type: 'string', oneOf: [] },
     },
-    all: { type: 'boolean', $ref: 'Wrap all elements included in the bundle', default: false },
-    excludeMainElement: { type: 'boolean', $ref: 'Exclude main element from container', default: false },
+    applyToElements: {
+      type: 'string',
+      default: playbookBundleElementsToApply.onlyMain.value,
+      $ref: 'Apply to',
+      oneOf: [
+        { const: playbookBundleElementsToApply.onlyMain.value, title: playbookBundleElementsToApply.onlyMain.title },
+        { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
+        { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
+      ],
+    },
     copyFiles: { type: 'boolean', $ref: 'Copy files from main element to the container', default: false },
     newContainer: { type: 'boolean', $ref: 'Create a new container at each run', default: false },
   },
-  required: ['container_type'],
+  required: ['container_type', 'applyToElements'],
 };
 
 export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperConfiguration> = {
@@ -79,7 +124,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
     return R.mergeDeepRight<JSONSchemaType<ContainerWrapperConfiguration>, any>(PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA, schemaElement);
   },
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
-    const { container_type, all, excludeMainElement, copyFiles, newContainer, caseTemplates } = playbookNode.configuration;
+    const { container_type, applyToElements, copyFiles, newContainer, caseTemplates } = playbookNode.configuration;
     if (!PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS.includes(container_type)) {
       throw FunctionalError('this container type is incompatible with the Container Wrapper playbook component', { container_type });
     }
@@ -111,17 +156,11 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         ...containerData,
       } as StoreCommon;
       const container = convertStoreToStix_2_1(storeContainer) as StixReport | StixCaseIncident;
-      // add all objects in the container if requested in the playbook config
-      if (all) {
-        // If excludeMainElement is true and all is true, exclude the main element from the container
-        if (excludeMainElement) {
-          container.object_refs = bundle.objects.filter((o: StixObject) => o.id !== baseData.id).map((o: StixObject) => o.id);
-        } else {
-          container.object_refs = bundle.objects.map((o: StixObject) => o.id);
-        }
-      } else {
-        container.object_refs = [baseData.id];
-      }
+
+      container.object_refs = bundle.objects
+        .filter((object) => isBundleElementInScope(object, applyToElements, dataInstanceId))
+        .map((object) => object.id);
+
       // Specific remapping of some attributes, waiting for a complete binding solution in the UI
       // Following attributes are the same as the base instance: description, content, markings, labels, created_by, assignees, participants
       if ((baseData as StixReport).description) {
