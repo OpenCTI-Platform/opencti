@@ -7,6 +7,7 @@ import { PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT } from '../../../../src/modules/
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../../src/modules/grouping/grouping-types';
 import { USER_EDITOR } from '../../../utils/testQuery';
+import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
 
 describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
   const REPORT_ID = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
@@ -57,7 +58,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
-          applyToElements: 'only-main',
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
         },
       }));
 
@@ -84,7 +85,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
           access_restrictions: [createAccessRestriction(USER_ID, 'edit', {
             groupsRestriction: [{ label: 'Test Group', value: GROUP_ID, type: 'Group' }],
           })],
-          applyToElements: 'only-main',
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
         },
       }));
 
@@ -111,7 +112,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
             createAccessRestriction(USER_ID, 'admin'),
             createAccessRestriction(ORGA_ID, 'view', { type: 'Organization' }),
           ],
-          applyToElements: 'only-main',
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
         },
       }));
 
@@ -136,7 +137,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
           access_restrictions: [createAccessRestriction(USER_ID, 'admin', {
             groupsRestriction: [{ label: 'Test Group', value: GROUP_ID, type: 'Group' }],
           })],
-          applyToElements: 'only-main',
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
         },
       }));
 
@@ -177,7 +178,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('AUTHOR', 'admin')],
-          applyToElements: 'only-main',
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
         },
       }));
 
@@ -208,7 +209,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('AUTHOR', 'admin')],
-          applyToElements: 'only-main',
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
         },
       }));
 
@@ -230,7 +231,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('AUTHOR', 'admin')],
-          applyToElements: 'only-main',
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
         },
       }));
 
@@ -260,7 +261,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('CREATORS', 'edit')],
-          applyToElements: 'only-main',
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
         },
       }));
 
@@ -295,7 +296,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('ASSIGNEES', 'view')],
-          applyToElements: 'only-main',
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
         },
       }));
 
@@ -329,7 +330,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('PARTICIPANTS', 'view')],
-          applyToElements: 'only-main',
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
         },
       }));
 
@@ -367,7 +368,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
             createAccessRestriction(USER_ID, 'admin'),
             createAccessRestriction('CREATORS', 'edit'),
           ],
-          applyToElements: 'only-main',
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
         },
       }));
 
@@ -409,7 +410,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         bundleObjects: BUNDLE_OBJECTS(),
         configuration: {
           access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
-          applyToElements: 'all-elements',
+          applyToElements: playbookBundleElementsToApply.allElements.value,
         },
       }));
 
@@ -428,7 +429,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         bundleObjects: BUNDLE_OBJECTS(),
         configuration: {
           access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
-          applyToElements: 'only-main',
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
         },
       }));
 
@@ -447,15 +448,16 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         bundleObjects: BUNDLE_OBJECTS(),
         configuration: {
           access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
-          applyToElements: 'all-except-main',
+          applyToElements: playbookBundleElementsToApply.allExceptMain.value,
         },
       }));
 
       expect(result.output_port).toBe('out');
-      // Check first object - should have authorized_members
+      // Check first object - should not have authorized_members
       const reportExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
+      console.log();
       expect(reportExt.authorized_members).toBeUndefined();
-      // Check second object - should NOT have authorized_members
+      // Check second object - should have authorized_members
       const secondReportExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
       expect(secondReportExt.authorized_members).toEqual(expectedAccessRestriction);
     });
@@ -471,7 +473,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('AUTHOR', 'admin')],
-          applyToElements: 'only-main',
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
         },
       }));
 
@@ -493,7 +495,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('CREATORS', 'edit')],
-          applyToElements: 'only-main',
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
         },
       }));
 
@@ -512,7 +514,7 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         })],
         configuration: {
           access_restrictions: [createAccessRestriction('BUNDLE_ORGANIZATIONS', 'view')],
-          applyToElements: 'only-main',
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
         },
       }));
 
