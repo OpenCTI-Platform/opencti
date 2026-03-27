@@ -17,15 +17,17 @@ import Filters from '../../common/lists/Filters';
 import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend, useAvailableFilterKeysForEntityTypes } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { convertAuthorizedMembers } from '../../../../utils/edition';
+import { convertAuthorizedMembers, convertUser } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { useTheme } from '@mui/material/styles';
+import CreatorField from '../../common/form/CreatorField';
 
 interface TaxiiCollectionCreationForm {
   restricted_members: FieldOption[] | null;
   taxii_public?: boolean | null;
   name: string | null;
   description: string | null;
+  taxii_public_user_id?: FieldOption | string | null;
 }
 
 const taxiiCollectionMutationFieldPatch = graphql`
@@ -60,6 +62,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
     restricted_members: convertAuthorizedMembers(taxiiCollection),
     include_inferences: taxiiCollection.include_inferences,
     score_to_confidence: taxiiCollection.score_to_confidence,
+    taxii_public_user_id: convertUser(taxiiCollection, 'taxii_public_user'),
   };
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(taxiiCollection.filters) ?? undefined);
   const handleSubmitField = (name: string, value: FieldOption[] | string) => {
@@ -181,6 +184,14 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
                 name="restricted_members"
               />
             )}
+            {initialValues.taxii_public && (
+              <CreatorField
+                name="taxii_public_user_id"
+                label={t_i18n('User used to retrieve data')}
+                containerStyle={fieldSpacingContainerStyle}
+                onChange={(_, value) => handleSubmitField('taxii_public_user_id', (value as FieldOption)?.value ?? '')}
+              />
+            )}
           </Alert>
           <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
             <FormControlLabel
@@ -234,6 +245,11 @@ const TaxiiCollectionEditionFragment = createFragmentContainer(
         description
         filters
         taxii_public
+        taxii_public_user {
+          id
+          entity_type
+          name
+        }
         include_inferences
         score_to_confidence
         authorized_members {

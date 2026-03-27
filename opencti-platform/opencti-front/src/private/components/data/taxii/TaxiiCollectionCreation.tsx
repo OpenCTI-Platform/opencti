@@ -24,6 +24,7 @@ import { PaginationOptions } from '../../../../components/list_lines';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import { useTheme } from '@mui/material/styles';
+import CreatorField from '../../common/form/CreatorField';
 
 interface TaxiiCollectionCreationProps {
   paginationOptions: PaginationOptions;
@@ -36,6 +37,7 @@ interface TaxiiCollectionCreationForm {
   name: string;
   taxii_public?: boolean;
   score_to_confidence?: boolean;
+  taxii_public_user_id?: FieldOption | null;
 }
 
 const TaxiiCollectionCreationMutation = graphql`
@@ -53,6 +55,8 @@ const taxiiCollectionCreationValidation = (requiredSentence: string) => Yup.obje
   taxii_public: Yup.bool().nullable(),
   include_inferences: Yup.bool().nullable(),
   score_to_confidence: Yup.bool().nullable(),
+  taxii_public_user_id: Yup.object().nullable()
+    .when('taxii_public', { is: true, then: (s) => s.required(requiredSentence) }),
 });
 
 const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginationOptions: PaginationOptions, newEdge: RecordProxy) => {
@@ -85,10 +89,11 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
       id: value,
       access_right: 'view',
     }));
+    const taxii_public_user_id = (values.taxii_public_user_id as FieldOption)?.value ?? null;
     commitMutation({
       mutation: TaxiiCollectionCreationMutation,
       variables: {
-        input: { ...values, filters: jsonFilters, authorized_members },
+        input: { ...values, filters: jsonFilters, authorized_members, taxii_public_user_id },
       },
       updater: (store: RecordSourceSelectorProxy) => {
         const payload = store.getRootField('taxiiCollectionAdd');
@@ -126,8 +131,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
             authorized_members: [],
             taxii_public: false,
             include_inferences: true,
-            score_to_confidence: false,
-          }}
+            score_to_confidence: false, taxii_public_user_id: null }}
           validationSchema={taxiiCollectionCreationValidation(t_i18n('This field is required'))}
           onSubmit={onSubmit}
           onReset={onClose}
@@ -180,6 +184,14 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                     helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
                     multiple={true}
                     name="authorized_members"
+                  />
+                )}
+                {values.taxii_public && (
+                  <CreatorField
+                    name="taxii_public_user_id"
+                    label={t_i18n('User used to retrieve data')}
+                    containerStyle={fieldSpacingContainerStyle}
+                    onChange={(name, value) => setFieldValue(name, value)}
                   />
                 )}
               </Alert>

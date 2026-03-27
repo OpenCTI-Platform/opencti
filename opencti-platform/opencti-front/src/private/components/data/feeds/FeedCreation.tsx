@@ -30,6 +30,7 @@ import { FeedCreationAllTypesQuery$data } from '@components/data/feeds/__generat
 import { FeedAttributeMappingInput } from '@components/data/feeds/__generated__/FeedEditionMutation.graphql';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
+import CreatorField from '../../common/form/CreatorField';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -99,9 +100,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     borderRadius: 4,
     display: 'flex',
   },
-  formControl: {
-    width: '100%',
-  },
   stepCloseButton: {
     position: 'absolute',
     top: -20,
@@ -139,6 +137,7 @@ interface FeedAddInput {
   include_header: boolean;
   feed_types: string[];
   feed_public: boolean;
+  feed_public_user_id?: FieldOption | null;
   feed_attributes: FeedAttributeMappingInput[];
   authorized_members: FieldOption[];
 }
@@ -157,6 +156,8 @@ const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().s
   rolling_time: Yup.number().required(t_i18n('This field is required')),
   feed_types: Yup.array().min(1, t_i18n('Minimum one entity type')).required(t_i18n('This field is required')),
   feed_public: Yup.bool().nullable(),
+  feed_public_user_id: Yup.object().nullable()
+    .when('feed_public', { is: true, then: (s) => s.required(t_i18n('This field is required')) }),
   authorized_members: Yup.array().nullable(),
 });
 
@@ -239,6 +240,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
       R.assoc('rolling_time', parseInt(String(values.rolling_time), 10)),
       R.assoc('feed_attributes', finalFeedAttributes),
       R.assoc('filters', serializeFilterGroupForBackend(filters)),
+      R.assoc('feed_public_user_id', (values.feed_public_user_id as FieldOption)?.value ?? null),
       R.assoc(
         'authorized_members',
         values.authorized_members.map(({ value }) => ({
@@ -417,6 +419,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     feed_attributes: feed.feed_attributes,
     feed_date_attribute: feed.feed_date_attribute,
     feed_public: feed.feed_public,
+    feed_public_user_id: null,
   } : {
     name: '',
     description: '',
@@ -429,6 +432,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     feed_attributes: [],
     feed_date_attribute: 'created_at',
     feed_public: false,
+    feed_public_user_id: null,
   };
   return (
     <Drawer
@@ -507,6 +511,14 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                             multiple={true}
                             helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
                             name="authorized_members"
+                          />
+                        )}
+                        {values.feed_public && (
+                          <CreatorField
+                            name="feed_public_user_id"
+                            label={t_i18n('User used to retrieve data')}
+                            containerStyle={fieldSpacingContainerStyle}
+                            onChange={(name, value) => setFieldValue(name, value)}
                           />
                         )}
                       </Alert>
@@ -858,6 +870,7 @@ const FeedCreationFragment = createFragmentContainer(FeedCreation, {
         }
       }
       feed_public
+      feed_public_user_id
       authorized_members {
         id
         member_id
