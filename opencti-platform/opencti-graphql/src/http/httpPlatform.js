@@ -37,6 +37,7 @@ import { PROVIDERS } from '../modules/authenticationProvider/providers-configura
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 import { AuthenticationProviderError } from '../modules/authenticationProvider/providers-logger';
+import { buildDefaultHelmetParameters, buildPublicHelmetParameters } from './httpPlatform-utils';
 
 export const sanitizeReferer = (refererToSanitize) => {
   // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
@@ -104,57 +105,15 @@ const createApp = async (app, schema) => {
   }
 
   // Configure server security
-  const buildSecurity = (opts) => helmet({
-    expectCt: { enforce: true, maxAge: 30 },
-    referrerPolicy: { policy: 'unsafe-url' },
-    crossOriginEmbedderPolicy: false,
-    crossOriginOpenerPolicy: false,
-    crossOriginResourcePolicy: false,
-    contentSecurityPolicy: {
-      useDefaults: false,
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: opts.scriptSrc,
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrcAttr: ["'none'"],
-        fontSrc: ["'self'", 'data:'],
-        imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
-        manifestSrc: ["'self'", 'data:', 'https://*', 'http://*'],
-        connectSrc: ["'self'", 'wss://*', 'ws://*', 'data:', 'http://*', 'https://*'],
-        objectSrc: ["'self'", 'data:', 'http://*', 'https://*'],
-        frameSrc: opts.allowedFrameSrc,
-        frameAncestors: opts.frameAncestorDomains,
-      },
-    },
-    xFrameOptions: !opts.isIframeAllowed,
-  });
-
-  const ancestorsFromConfig = nconf.get('app:public_dashboard_authorized_domains')?.trim() ?? '';
-  const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
-  const allowedFrameSrc = ["'self'"];
-  const scriptSrc = ["'self'", "'unsafe-inline'"];
-  if (DEV_MODE) {
-    scriptSrc.push("'unsafe-eval'");
-  }
-  const securityOpts = {
-    frameAncestorDomains: "'none'",
-    allowedFrameSrc,
-    scriptSrc,
-    isIframeAllowed: false,
-  };
+  const publicSecurityMiddleware = helmet(buildPublicHelmetParameters());
+  const defaultSecurityMiddleware = helmet(buildDefaultHelmetParameters());
 
   app.use((req, res, next) => {
     const urlString = req.url;
     if (urlString && (urlString.startsWith(`${basePath}/public`))) {
-      const securityMiddleware = buildSecurity({
-        ...securityOpts,
-        frameAncestorDomains,
-        isIframeAllowed: frameAncestorDomains !== "'none'",
-      });
-      securityMiddleware(req, res, next);
+      publicSecurityMiddleware(req, res, next);
     } else {
-      const securityMiddleware = buildSecurity(securityOpts);
-      securityMiddleware(req, res, next);
+      defaultSecurityMiddleware(req, res, next);
     }
   });
 
