@@ -10,7 +10,7 @@ import { findById as findWorkById } from '../domain/work';
 import { basePath, getBaseUrl, logApp } from '../config/conf';
 import { AuthRequired, error, ForbiddenAccess, UNSUPPORTED_ERROR, UnsupportedError } from '../config/errors';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { findById, restAllCollections, restBuildCollection, restCollectionManifest, restCollectionStix } from '../domain/taxii';
+import { findById, restAllCollections, restBuildCollection, restCollectionManifest, restCollectionStix } from '../modules/dataSharing/taxiiCollection-domain';
 import { executionContext, isUserHasCapability, SYSTEM_USER } from '../utils/access';
 import { findById as findTaxiiCollection } from '../modules/ingestion/ingestion-taxii-collection-domain';
 import { handleConfidenceToScoreTransformation, pushBundleToConnectorQueue } from '../manager/ingestionManager';

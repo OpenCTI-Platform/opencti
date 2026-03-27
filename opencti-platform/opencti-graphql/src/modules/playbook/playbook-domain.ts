@@ -18,7 +18,7 @@ import type { FileHandle } from 'fs/promises';
 import { BUS_TOPICS } from '../../config/conf';
 import { createEntity, deleteElementById, patchAttribute, stixLoadById, updateAttribute } from '../../database/middleware';
 import { type EntityOptions, internalFindByIds, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { notify } from '../../database/redis';
+import { deleteAllPlaybookExecutions, notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -401,6 +401,7 @@ export const playbookDelete = async (context: AuthContext, user: AuthUser, playb
   await checkEnterpriseEdition(context);
   const element = await deleteElementById(context, user, playbookId, ENTITY_TYPE_PLAYBOOK);
   await unregisterConnector(playbookId);
+  await deleteAllPlaybookExecutions(playbookId);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user).then(() => playbookId);
 };
 

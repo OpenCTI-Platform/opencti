@@ -8,6 +8,7 @@
 # VSCode
 .vscode/
 .history/
+*.code-workspace
 
 # NodeJS
 node_modules/
@@ -22,7 +23,8 @@ opencti-platform/opencti-graphql/.yarnrc.yml
 venv
 /licenses/
 
-
-
 .nx/cache
 .nx/workspace-data
+
+# Copilot
+thoughts/

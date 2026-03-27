@@ -276,7 +276,7 @@ const OrganizationKnowledgeComponent = ({
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={organization.id}
-              relationshipTypes={['related-to']}
+              relationshipTypes={['related-to', 'has']}
               stixCoreObjectTypes={['Vulnerability']}
               entityLink={link}
               allDirections={true}

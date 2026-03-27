@@ -62,13 +62,24 @@ jobs:
       - run:
           name: check version
           command: |
+            set -x
             cd client-python
             package_version="$(
                 python3 -c 'import pycti; print(pycti.__version__)'
             )"
-            [ "${CIRCLE_TAG}" = "${package_version}" ] \
-              || printf "Version mismatch: %s is not equal to %s\n" \
-                 "${CIRCLE_TAG}" "${package_version}"
+            # Transform tag version to expected PEP 440 package version:
+            #   7.260309.0          -> 7.260309.0    (standard release)
+            #   7.260309.0-lts.1    -> 7.260309.0.1  (lts bug fix 1)
+            #   7.260309.0-lts.N    -> 7.260309.0.N  (lts bug fix N)
+            expected_version="$(
+                echo "${CIRCLE_TAG}" \
+                  | sed 's/-lts\.\([0-9]\+\)$/.\1/'
+            )"
+            if [ "${expected_version}" != "${package_version}" ]; then
+              printf "Version mismatch: tag %s (expected package %s) is not equal to package version %s\n" \
+                "${CIRCLE_TAG}" "${expected_version}" "${package_version}"
+              exit 1
+            fi
       - run:
           name: build
           command: >
@@ -936,7 +947,7 @@ workflows:
       - build_pycti:
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)?\.?(\w)*/
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-lts\.[0-9]+)?$/
             branches:
               ignore: /.*/
           requires:
@@ -947,7 +958,7 @@ workflows:
             - build_pycti
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)?\.?(\w)*/
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-lts\.[0-9]+)?$/
             branches:
               ignore: /.*/
 # Build opencti
@@ -958,13 +969,13 @@ workflows:
       - wait_for_connector_release:
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-lts\.[0-9]+)?$/
             branches:
               ignore: /.*/
       - build_platform:
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-lts\.[0-9]+)?$/
             branches:
               ignore: /.*/
           requires:
@@ -988,7 +999,7 @@ workflows:
       - build_platform_musl:
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-lts\.[0-9]+)?$/
             branches:
               ignore: /.*/
           requires:
@@ -1027,7 +1038,7 @@ workflows:
             - build_platform
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-lts\.[0-9]+)?$/
             branches:
               ignore: /.*/
       - tag_package_musl:
@@ -1035,7 +1046,7 @@ workflows:
             - build_platform_musl
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-lts\.[0-9]+)?$/
             branches:
               ignore: /.*/              
       - docker_build_platform_rolling:
@@ -1086,7 +1097,7 @@ workflows:
             - wait_for_connector_release
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-lts\.[0-9]+)?$/
             branches:
               ignore: /.*/
       - docker_build_worker:
@@ -1095,7 +1106,7 @@ workflows:
             - wait_for_connector_release
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-lts\.[0-9]+)?$/
             branches:
               ignore: /.*/
       - docker_build_platform_fips:
@@ -1104,7 +1115,7 @@ workflows:
             - wait_for_connector_release
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-lts\.[0-9]+)?$/
             branches:
               ignore: /.*/
       - docker_build_worker_fips:
@@ -1113,7 +1124,7 @@ workflows:
             - wait_for_connector_release
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-lts\.[0-9]+)?$/
             branches:
               ignore: /.*/
       - deploy_testing:
@@ -1145,6 +1156,6 @@ workflows:
             - docker_build_worker_fips
           filters:
             tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+              only: /^[0-9]+\.[0-9]+\.[0-9]+(-lts\.[0-9]+)?$/
             branches:
               ignore: /.*/

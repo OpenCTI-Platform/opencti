@@ -31,8 +31,8 @@ import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
-import { extractRefererPathFromReq, setCookieError } from './httpUtils';
-import { getChatbotProxy } from './httpChatbotProxy';
+import { extractRefererPathFromReq, setCookieError, decodeOidcState } from './httpUtils';
+import { getChatbotConfig, getChatbotAgents, postChatbotSession, postChatbotMessage, postAgentMessage, getLegacyChatbotProxy } from './httpChatbotProxy';
 import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
@@ -115,19 +115,9 @@ const createApp = async (app, schema) => {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: opts.scriptSrc,
-        styleSrc: [
-          "'self'",
-          "'unsafe-inline'",
-          'http://cdn.jsdelivr.net/npm/@apollographql/',
-          'https://fonts.googleapis.com/',
-        ],
-        scriptSrcAttr: [
-          "'self'",
-          "'unsafe-inline'",
-          'http://cdn.jsdelivr.net/npm/@apollographql/',
-          'https://fonts.googleapis.com/',
-        ],
-        fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrcAttr: ["'none'"],
+        fontSrc: ["'self'", 'data:'],
         imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
         manifestSrc: ["'self'", 'data:', 'https://*', 'http://*'],
         connectSrc: ["'self'", 'wss://*', 'ws://*', 'data:', 'http://*', 'https://*'],
@@ -142,7 +132,7 @@ const createApp = async (app, schema) => {
   const ancestorsFromConfig = nconf.get('app:public_dashboard_authorized_domains')?.trim() ?? '';
   const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
   const allowedFrameSrc = ["'self'"];
-  const scriptSrc = ["'self'", "'unsafe-inline'", 'http://cdn.jsdelivr.net/npm/@apollographql/', 'https://www.googletagmanager.com/'];
+  const scriptSrc = ["'self'", "'unsafe-inline'"];
   if (DEV_MODE) {
     scriptSrc.push("'unsafe-eval'");
   }
@@ -368,7 +358,7 @@ const createApp = async (app, schema) => {
   // Logout
   app.get(`${basePath}/logout`, async (req, res) => {
     try {
-      const referer = extractRefererPathFromReq(req) ?? '/';
+      const referer = extractRefererPathFromReq(req) ?? (basePath || '/');
       const provider = req.session.session_provider;
       const { user } = req.session;
       if (user) {
@@ -505,8 +495,12 @@ const createApp = async (app, schema) => {
         setCookieError(res, 'Invalid authentication, please ask your administrator');
       }
     } finally {
-      const referer = req.body?.RelayState ?? req.session.referer;
-      const sanitizedReferer = sanitizeReferer(referer);
+      // Retrieve the application state (referer) relayed through the auth flow:
+      // 1. SAML: RelayState is sent as a body parameter
+      // 2. OIDC (v6): referer is encoded in the OAuth state query parameter
+      // 3. Fallback: session-based referer (backward compatibility)
+      const referer = req.body?.RelayState ?? decodeOidcState(req.query?.state)?.referer ?? req.session.referer;
+      const sanitizedReferer = sanitizeReferer(referer) ?? (basePath || '/');
       res.redirect(sanitizedReferer);
     }
   });
@@ -544,7 +538,15 @@ const createApp = async (app, schema) => {
   });
 
   // -- Chatbot Proxy
-  app.post(`${basePath}/chatbot`, getChatbotProxy);
+  // Config endpoint is always available (frontend uses it to detect mode)
+  app.get(`${basePath}/chatbot/config`, getChatbotConfig);
+  // XTM One Platform Chat API routes (used when xtm_one_token is set)
+  app.get(`${basePath}/chatbot/agents`, getChatbotAgents);
+  app.post(`${basePath}/chatbot/sessions`, postChatbotSession);
+  app.post(`${basePath}/chatbot/messages`, postChatbotMessage);
+  app.post(`${basePath}/chatbot/agent`, postAgentMessage);
+  // Legacy Flowise proxy (used when xtm_one_token is NOT set)
+  app.post(`${basePath}/chatbot`, getLegacyChatbotProxy);
 
   // Other routes - Render index.html
   app.get('*any', async (_, res) => {

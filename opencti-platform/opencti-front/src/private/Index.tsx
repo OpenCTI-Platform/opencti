@@ -21,6 +21,7 @@ import Loader from '../components/Loader';
 import useDraftContext from '../utils/hooks/useDraftContext';
 import { Stack, SxProps } from '@mui/material';
 import DraftToolbar from './components/drafts/DraftToolbar';
+import { ChatbotProvider } from './components/chatbox/ChatbotContext';
 
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const StixObjectOrStixRelationship = lazy(() => import('./components/StixObjectOrStixRelationship'));
@@ -73,14 +74,12 @@ const Index = ({ settings }: IndexProps) => {
   }, [theme]);
 
   const mainSx: SxProps = {
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.easeInOut,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
+    transition: 'margin-right 225ms cubic-bezier(0.4, 0, 0.2, 1)',
     flexGrow: 1,
     overflowY: 'hidden',
     height: '100vh',
     paddingTop: `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`,
+    marginRight: 'var(--chatbot-sidebar-width, 0px)',
   };
 
   const boxSx: SxProps = {
@@ -91,7 +90,7 @@ const Index = ({ settings }: IndexProps) => {
   };
 
   return (
-    <>
+    <ChatbotProvider>
       <SystemBanners settings={settings} />
       <LicenseBanner />
       <StartTrialBanner />
@@ -152,7 +151,7 @@ const Index = ({ settings }: IndexProps) => {
           <DraftToolbar />
         </Stack>
       </Box>
-    </>
+    </ChatbotProvider>
   );
 };
 

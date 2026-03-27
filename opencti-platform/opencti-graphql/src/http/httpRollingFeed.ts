@@ -6,7 +6,7 @@ import { TAXIIAPI } from '../domain/user';
 import { basePath } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 import { isUserHasCapability, SYSTEM_USER } from '../utils/access';
-import { findById as findFeed } from '../domain/feed';
+import { findById as findFeed } from '../modules/dataSharing/feed-domain';
 import { fullEntitiesOrRelationsList } from '../database/middleware';
 import { minutesAgo } from '../utils/format';
 import { isNotEmptyField } from '../database/utils';

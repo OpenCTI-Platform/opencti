@@ -155,6 +155,17 @@ const stixCoreObjectsAttributesQuery = graphql`
                 first_seen
                 last_seen
                 description
+                malware_types
+                is_family
+                architecture_execution_envs
+                implementation_languages
+                killChainPhases {
+                    id
+                    entity_type
+                    kill_chain_name
+                    phase_name
+                    x_opencti_order
+                }
             }
             ... on MalwareAnalysis {
                 result_name
@@ -164,6 +175,36 @@ const stixCoreObjectsAttributesQuery = graphql`
                 first_seen
                 last_seen
                 description
+                threat_actor_types
+            }
+            ... on ThreatActorIndividual {
+                secondary_motivations
+                personal_motivations
+                primary_motivation
+                roles
+                sophistication
+                resource_level
+                goals
+                bornIn {
+                    name
+                }
+                ethnicity {
+                    name
+                }
+                date_of_birth
+                gender
+                marital_status
+                job_title
+                eye_color
+                hair_color
+                height {
+                    date_seen
+                    measure
+                }
+                weight {
+                    date_seen
+                    measure
+                }
             }
             ... on Tool {
                 name
@@ -172,12 +213,24 @@ const stixCoreObjectsAttributesQuery = graphql`
             ... on Vulnerability {
                 name
                 description
+                x_opencti_cvss_v2_vector_string
+                x_opencti_cvss_v2_base_score
+                x_opencti_cvss_vector_string
+                x_opencti_cvss_base_score
+                x_opencti_cvss_v4_vector_string
+                x_opencti_cvss_v4_base_score
+                x_opencti_cisa_kev
+                x_opencti_epss_score
+                x_opencti_epss_percentile
             }
             ... on Incident {
                 name
                 first_seen
                 last_seen
                 description
+                incident_type
+                severity
+                source
             }
             ... on CaseRfi {
                 severity

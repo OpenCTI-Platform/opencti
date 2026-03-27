@@ -1000,7 +1000,7 @@ export const filterMembersUsersWithUsersOrgs = async (
   const platformSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
   // case 1. no orga restriction on user visibility
-  if (userCanViewAllUsers || !platformSettings.platform_organization || platformSettings.view_all_users) {
+  if (userCanViewAllUsers || (!platformSettings.platform_organization && platformSettings.view_all_users)) {
     return members;
   }
 
@@ -1209,6 +1209,7 @@ export const CAPABILITIES_IN_DRAFT_NAMES = [
   KNOWLEDGE_KNUPDATE_KNMERGE,
   KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
   KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
   KNOWLEDGE_KNUPLOAD,
   KNOWLEDGE_KNASKIMPORT,
   KNOWLEDGE_KNENRICHMENT,

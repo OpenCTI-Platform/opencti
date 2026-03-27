@@ -3,16 +3,20 @@ import { v4 as uuid } from 'uuid';
 import { head } from 'ramda';
 import {
   delEditContext,
+  deleteAllPlaybookExecutions,
   delUserContext,
   fetchEditContext,
+  getLastPlaybookExecutions,
   getRedisVersion,
   lockResource,
+  PLAYBOOK_EXECUTIONS_MAX_LENGTH,
   redisClearTelemetry,
   redisGetForgotPasswordOtp,
   redisGetTelemetry,
+  redisPlaybookUpdate,
   redisSetForgotPasswordOtp,
   redisSetTelemetryAdd,
-  setEditContext
+  setEditContext,
 } from '../../../src/database/redis';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 
@@ -107,5 +111,48 @@ describe('Redis context management', () => {
     expect(getContext).toEqual([]);
     getContext = await fetchEditContext(secondContextId);
     expect(getContext).toEqual([]);
+  });
+});
+
+describe('Redis playbook executions tests', () => {
+  const PLAYBOOK_ID = 'c8fbdb3a-ec02-404d-8517-af553323ec4e';
+  const dummyBundle = { id: 'd61892ff-4d78-4e60-ab7d-4238def85767', spec_version: '2.1', type: 'bundle', objects: [] };
+  it('should save playbook executions and get saved keys', async () => {
+    const PLAYBOOK_EXECUTION_ID = '5b977923-9005-49f7-8765-6bfed282dd1d';
+    const envelop = {
+      playbook_execution_id: PLAYBOOK_EXECUTION_ID,
+      playbook_id: PLAYBOOK_ID,
+      last_execution_step: 'a12f34fa-fc80-4c09-be47-3502bdd071d3',
+      ['step_59df0ada-9339-4875-98a1-34a8c090f2ff']: { message: 'Create observables successfully executed in a few seconds',
+        status: 'success', in_timestamp: '2026-03-04T17:10:39.099Z', out_timestamp: '2026-03-04T17:10:39.099Z', duration: 0,
+        bundle: dummyBundle },
+    };
+    await redisPlaybookUpdate(envelop);
+    const executions = await getLastPlaybookExecutions(PLAYBOOK_ID);
+    expect(executions.length).toEqual(1);
+    expect(executions[0].id).toEqual(PLAYBOOK_EXECUTION_ID);
+    expect(executions[0].playbook_id).toEqual(PLAYBOOK_ID);
+  });
+  it('should save no more than PLAYBOOK_EXECUTIONS_MAX_LENGTH playbook executions and get saved keys', async () => {
+    // try to save more than PLAYBOOK_EXECUTIONS_MAX_LENGTH
+    for (let i = 0; i < (PLAYBOOK_EXECUTIONS_MAX_LENGTH + 1); i++) {
+      const last_execution_step = uuid();
+      const PLAYBOOK_EXECUTION_ID = uuid();
+      const envelop = {
+        playbook_execution_id: PLAYBOOK_EXECUTION_ID,
+        playbook_id: PLAYBOOK_ID,
+        last_execution_step: last_execution_step,
+        [`step_${last_execution_step}`]: { message: 'dummy step', status: 'success', bundle: dummyBundle,
+          in_timestamp: '2026-03-04T17:10:39.099Z', out_timestamp: '2026-03-04T17:10:39.099Z', duration: 0 },
+      };
+      await redisPlaybookUpdate(envelop);
+    }
+    const executions = await getLastPlaybookExecutions(PLAYBOOK_ID);
+    expect(executions.length).toEqual(PLAYBOOK_EXECUTIONS_MAX_LENGTH);
+  });
+  it('should delete playbook executions', async () => {
+    await deleteAllPlaybookExecutions(PLAYBOOK_ID);
+    const executions = await getLastPlaybookExecutions(PLAYBOOK_ID);
+    expect(executions.length).toEqual(0);
   });
 });

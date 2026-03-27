@@ -6,6 +6,7 @@ type: feature
 labels:
   - needs triage
   - client-python
+  - feature
 assignees: []
 body:
   - type: textarea

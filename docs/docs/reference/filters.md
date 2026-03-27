@@ -585,6 +585,7 @@ For filters used in this context, only some keys are supported for the moment:
 - ``toId`` (the instance in the "to" of a relationship)
 - ``toTypes`` (the entity type in the "to" of a relationship)
 - ``representative``
+- ``description``
 - ``x_opencti_cisa_kev``
 - ``x_opencti_epss_score``
 - ``x_opencti_epss_percentile``

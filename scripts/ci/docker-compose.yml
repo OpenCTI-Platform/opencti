@@ -2,7 +2,7 @@ services:
   redis:
     container_name: redis
     profiles: ["backend"]
-    image: redis:8.6.0
+    image: redis:8.6.1
     restart: unless-stopped
     networks:
       - runner-docker-network
@@ -11,7 +11,7 @@ services:
   elasticsearch:
     container_name: elasticsearch
     profiles: ["backend"]
-    image: elasticsearch:8.19.11
+    image: elasticsearch:8.19.12
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false

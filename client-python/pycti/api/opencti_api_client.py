@@ -251,7 +251,9 @@ class OpenCTIApiClient:
         self.api_token = token
         self.api_url = url + "/graphql"
         if provider is not None:
-            provider_pattern_checker = re.compile(r"^[A-Za-z]+\/\d+(?:\.\d+){0,2}$")
+            provider_pattern_checker = re.compile(
+                r"^[A-Za-z]+\/\d+(?:\.[a-z]*\d+){0,}$"
+            )
             if not provider_pattern_checker.match(provider):
                 raise ValueError(
                     "Provider format is incorrect: format has to be {provider}/{provider_version}, e.g. client/4.5, company_name/1.4.6..."

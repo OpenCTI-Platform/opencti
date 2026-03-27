@@ -345,7 +345,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                             )
                         )
                         merge_object = content["data"]
-                        merge_object["opencti_operation"] = event_type
+                        merge_object["opencti_operation"] = content["type"]
                         merge_object["merge_target_id"] = target_id
                         merge_object["merge_source_ids"] = source_ids
                         bundle = {
@@ -370,7 +370,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                         | "revert_draft"  # Cancel draft modification (massive operation in UI)
                     ):
                         data_object = content["data"]
-                        data_object["opencti_operation"] = event_type
+                        data_object["opencti_operation"] = content["type"]
                         bundle = {
                             "type": "bundle",
                             "objects": [data_object],

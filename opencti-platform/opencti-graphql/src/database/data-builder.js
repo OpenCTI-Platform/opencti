@@ -29,7 +29,7 @@ import { RELATION_IN_PIR } from '../schema/internalRelationship';
 import { pushAll } from '../utils/arrayUtil';
 
 export const buildEntityData = async (context, user, input, type, opts = {}) => {
-  const { fromRule } = opts;
+  const { fromRule, restore } = opts;
   const internalId = input.internal_id || generateInternalId();
   const standardId = input.standard_id || generateStandardId(type, input);
   // Complete with identifiers
@@ -60,7 +60,7 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
   // Some internal objects have dates
   if (isDatedInternalObject(type)) {
     data = R.pipe(
-      R.assoc('created_at', today),
+      R.assoc('created_at', restore ? input.created : today),
       R.assoc('updated_at', today),
     )(data);
   }

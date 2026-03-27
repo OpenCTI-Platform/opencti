@@ -74,6 +74,7 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
                   title={t_i18n('Share with an organization')}
                   handleCloseMenu={closeMenu}
                   needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+                  allowInDraft={true}
                 />
                 {displayEnrollPlaybook && (
                   <StixCoreObjectMenuItemUnderEE

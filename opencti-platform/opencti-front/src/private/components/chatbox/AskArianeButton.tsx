@@ -13,7 +13,9 @@ import useAuth from '../../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
 import useHelper from '../../../utils/hooks/useHelper';
+import AskArianePanel from './AskArianePanel';
 import ChatbotManager from './ChatbotManager';
+import { useChatbot } from './ChatbotContext';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 
 const AskArianeButton = () => {
@@ -24,48 +26,54 @@ const AskArianeButton = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const hasRightToValidateCGU = useGranted([SETTINGS_SETPARAMETERS]);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
+  const {
+    isOpen, mode, openChat, closeChat, setMode,
+    setSidebarWidth, setIsResizing, xtmOneConfigured,
+  } = useChatbot();
 
   const isCGUStatusPending = filigran_chatbot_ai_cgu_status === CGUStatus.pending;
-  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
 
-  const chatbotManager = useRef(ChatbotManager.getInstance());
   const isChatbotEnabled = isEnterpriseEdition && isChatbotAiEnabled();
+  const useLegacy = xtmOneConfigured === false;
+
+  // Legacy v1 web-component management (only active when XTM One is NOT configured)
+  const chatbotManager = useRef(ChatbotManager.getInstance());
 
   useEffect(() => {
-    if (isChatbotEnabled) {
+    if (useLegacy && isChatbotEnabled) {
       chatbotManager.current.configure(theme, t_i18n, settingsMessagesBannerHeight);
     }
-  }, [isChatbotEnabled, theme, t_i18n, settingsMessagesBannerHeight]);
+  }, [useLegacy, isChatbotEnabled, theme, t_i18n, settingsMessagesBannerHeight]);
 
   useEffect(() => {
-    if (!isChatbotEnabled && chatbotManager.current.isReady()) {
+    if (useLegacy && !isChatbotEnabled && chatbotManager.current.isReady()) {
       chatbotManager.current.destroy();
     }
-  }, [isChatbotEnabled]);
-
-  const openChatbot = () => {
-    setIsChatbotOpen(true);
-    chatbotManager.current.open();
-  };
-
-  const closeChatbot = () => {
-    setIsChatbotOpen(false);
-    chatbotManager.current.close();
-  };
+  }, [useLegacy, isChatbotEnabled]);
 
   useEffect(() => {
-    if (chatbotManager.current.isReady()) {
-      chatbotManager.current.setOnClose(closeChatbot);
+    if (useLegacy && chatbotManager.current.isReady()) {
+      chatbotManager.current.setOnClose(closeChat);
     }
-  }, [chatbotManager.current.isReady()]);
+  }, [useLegacy, chatbotManager.current.isReady(), closeChat]);
+
+  // Sync open/close with legacy ChatbotManager
+  useEffect(() => {
+    if (!useLegacy) return;
+    if (isOpen) {
+      chatbotManager.current.open();
+    } else if (chatbotManager.current.isReady()) {
+      chatbotManager.current.close();
+    }
+  }, [useLegacy, isOpen]);
 
   const toggleChatbot = () => {
     if (filigran_chatbot_ai_cgu_status === CGUStatus.enabled) {
-      if (isChatbotOpen) {
-        closeChatbot();
+      if (isOpen) {
+        closeChat();
       } else {
-        openChatbot();
+        openChat();
       }
     } else if (hasRightToValidateCGU) {
       setOpenValidateTermsOfUse(true);
@@ -88,6 +96,18 @@ const AskArianeButton = () => {
           <EEChip />
         </Button>
       </EETooltip>
+
+      {/* V3 XTM One panel (xtm_one_token configured) */}
+      {isChatbotEnabled && isOpen && !useLegacy && xtmOneConfigured === true && (
+        <AskArianePanel
+          mode={mode}
+          onClose={closeChat}
+          onModeChange={setMode}
+          onWidthChange={setSidebarWidth}
+          onResizeStart={() => setIsResizing(true)}
+          onResizeEnd={() => setIsResizing(false)}
+        />
+      )}
 
       {openValidateTermsOfUse && (
         <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={() => setOpenValidateTermsOfUse(false)} />

@@ -1,4 +1,4 @@
-import convertChannelToStix from './channel-converter';
+import { convertChannelToStix_2_1 } from './channel-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import {
   RELATION_AMPLIFIES,
@@ -157,7 +157,7 @@ export const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChanne
   representative: (stix: StixChannel) => {
     return stix.name;
   },
-  converter_2_1: convertChannelToStix,
+  converter_2_1: convertChannelToStix_2_1,
 };
 
 registerDefinition(CHANNEL_DEFINITION);

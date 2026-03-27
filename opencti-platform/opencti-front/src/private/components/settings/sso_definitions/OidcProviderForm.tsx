@@ -152,7 +152,7 @@ const defaultValues: OidcFormValues = {
   lastname_expr: 'user_info.family_name',
   groups_mapping: {
     default_groups: [],
-    groups_expr: ['tokens.access_token.groups'],
+    groups_expr: [],
     group_splitter: '',
     groups_mapping: [],
     auto_create_groups: false,
@@ -160,7 +160,7 @@ const defaultValues: OidcFormValues = {
   },
   organizations_mapping: {
     default_organizations: [],
-    organizations_expr: ['tokens.access_token.organizations'],
+    organizations_expr: [],
     organizations_splitter: '',
     organizations_mapping: [],
     auto_create_organizations: false,

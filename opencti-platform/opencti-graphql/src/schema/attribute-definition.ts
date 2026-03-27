@@ -190,6 +190,9 @@ export const creators: IdAttribute = {
   multiple: true,
   upsert: true,
   isFilterable: true,
+  representative: (raw_creator_id: string, userIdToUserNameMap: Record<string, string>, _): string => {
+    return userIdToUserNameMap[raw_creator_id] ?? 'Restricted';
+  },
 };
 
 export const standardId: TextAttribute = {

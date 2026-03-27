@@ -1,11 +1,11 @@
-import { logApp } from '../config/conf';
+import { logMigration } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { addCapability } from '../domain/grant';
 
 const message = '[MIGRATION] add the new dissemination capabilities';
 
 export const up = async (next) => {
-  logApp.info(`${message} > started`);
+  logMigration.info(`${message} > started`);
   const context = executionContext('migration');
 
   // ------ Create 'Manage disseminationlists'
@@ -22,7 +22,7 @@ export const up = async (next) => {
     attribute_order: 900,
   });
 
-  logApp.info(`${message} > done`);
+  logMigration.info(`${message} > done`);
   next();
 };
 

@@ -20,6 +20,7 @@ import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/St
 import DecayDialogContent from './DecayDialogContent';
 import DecayExclusionDialogContent from './DecayExclusionDialogContent';
 import IndicatorObservables from './IndicatorObservables';
+import ExpandablePre from '../../../../components/ExpandablePre';
 
 interface IndicatorDetailsComponentProps {
   indicator: IndicatorDetails_indicator$data;
@@ -44,7 +45,9 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
         <Label>
           {t_i18n('Indicator pattern')}
         </Label>
-        <span>{indicator.pattern ?? ''}</span>
+        <FieldOrEmpty source={indicator.pattern}>
+          <ExpandablePre source={indicator.pattern} limit={300} />
+        </FieldOrEmpty>
         <Grid container={true} spacing={2} sx={{ mt: 0 }}>
           <Grid item xs={6}>
             <Label>

@@ -1,4 +1,4 @@
-import { logApp } from '../config/conf';
+import { logMigration } from '../config/conf';
 import { fullEntitiesOrRelationsList } from '../database/middleware';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -8,16 +8,16 @@ import { elUpdate } from '../database/engine';
 const message = '[MIGRATION] Legacy Token Migration';
 
 export const up = async (next) => {
-  logApp.info(`${message} > started`);
+  logMigration.info(`${message} > started`);
   // Fetch all users
   const context = executionContext('migration');
   const users = await fullEntitiesOrRelationsList(context, SYSTEM_USER, [ENTITY_TYPE_USER]);
-  logApp.info(`${message} > found ${users.length} users`);
+  logMigration.info(`${message} > found ${users.length} users`);
   for (let i = 0; i < users.length; i += 1) {
     const user = users[i];
     // Check if user has legacy token
     if (user.api_token) {
-      logApp.info(`${message} > Migrating user ${i}/${users.length}`);
+      logMigration.info(`${message} > Migrating user ${i}/${users.length}`);
       const legacyTokenHash = await generateTokenHmac(user.api_token);
       const currentTokens = user.api_tokens || [];
       // Check idempotency: if hash already exists in api_tokens
@@ -45,7 +45,7 @@ export const up = async (next) => {
       }
     }
   }
-  logApp.info(`${message} > done`);
+  logMigration.info(`${message} > done`);
   next();
 };
 
@@ -53,6 +53,6 @@ export const down = async (next) => {
   // We generally don't rollback data enrichment like this in down migrations easily
   // without tracking which specific token ID was created.
   // For now, no-op or simple log.
-  logApp.info(`${message} > down (skipped)`);
+  logMigration.info(`${message} > down (skipped)`);
   next();
 };

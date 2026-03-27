@@ -2,13 +2,11 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, useParams, Routes, Link, useLocation, Navigate } from 'react-router-dom';
+import { Route, useParams, Routes, useLocation, Navigate } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
@@ -25,7 +23,6 @@ import Infrastructure from './Infrastructure';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import InfrastructureEdition from './InfrastructureEdition';
@@ -135,50 +132,18 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
             redirectToContent={true}
             enableEnrollPlaybook={true}
           />
-          <Box
-            sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3 }}
-          >
-            <Tabs
-              value={getCurrentTab(location.pathname, infrastructure.id, '/dashboard/observations/infrastructures')}
-            >
-              <Tab
-                component={Link}
-                to={`/dashboard/observations/infrastructures/${infrastructure.id}`}
-                value={`/dashboard/observations/infrastructures/${infrastructure.id}`}
-                label={t_i18n('Overview')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge/overview`}
-                value={`/dashboard/observations/infrastructures/${infrastructure.id}/knowledge`}
-                label={t_i18n('Knowledge')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/observations/infrastructures/${infrastructure.id}/content`}
-                value={`/dashboard/observations/infrastructures/${infrastructure.id}/content`}
-                label={t_i18n('Content')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/observations/infrastructures/${infrastructure.id}/analyses`}
-                value={`/dashboard/observations/infrastructures/${infrastructure.id}/analyses`}
-                label={t_i18n('Analyses')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/observations/infrastructures/${infrastructure.id}/files`}
-                value={`/dashboard/observations/infrastructures/${infrastructure.id}/files`}
-                label={t_i18n('Data')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/observations/infrastructures/${infrastructure.id}/history`}
-                value={`/dashboard/observations/infrastructures/${infrastructure.id}/history`}
-                label={t_i18n('History')}
-              />
-            </Tabs>
-          </Box>
+          <StixDomainObjectTabsBox
+            basePath="/dashboard/observations/infrastructures"
+            entity={infrastructure}
+            tabs={[
+              'overview',
+              'knowledge-overview',
+              'content',
+              'analyses',
+              'files',
+              'history',
+            ]}
+          />
           <Routes>
             <Route
               path="/"

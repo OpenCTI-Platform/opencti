@@ -1,4 +1,4 @@
-import { logApp } from '../config/conf';
+import { logMigration } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { elLoadById, elReplace } from '../database/engine';
 import { addCapability } from '../domain/grant';
@@ -11,7 +11,7 @@ import { generateStandardId } from '../schema/identifier';
 const message = '[MIGRATION] Split "Delete / Merge knowledge" capability in two separated capabilities';
 
 export const up = async (next) => {
-  logApp.info(`${message} > started`);
+  logMigration.info(`${message} > started`);
   const context = executionContext('migration');
   // Rename Delete knowledge capability
   const deleteCapaStandardId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'KNOWLEDGE_KNUPDATE_KNDELETE' });
@@ -37,7 +37,7 @@ export const up = async (next) => {
     }
   }
 
-  logApp.info(`${message} > done`);
+  logMigration.info(`${message} > done`);
   next();
 };
 

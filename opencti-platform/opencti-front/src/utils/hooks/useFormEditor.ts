@@ -11,7 +11,7 @@ export interface GenericData {
   id: string;
   entity_type?: string;
   confidence?: number;
-  readonly objectMarking: {
+  readonly objectMarking?: {
     readonly edges: ReadonlyArray<{
       readonly node: {
         readonly definition: string | null;
@@ -143,7 +143,7 @@ const useFormEditor = (
   const changeCreated = (name: string, value: FieldOption | '') => {
     if (!enableReferences) {
       validate(name, value !== '' ? value : null, () => {
-        const finalValue = value !== '' ? (value as FieldOption).value : null;
+        const finalValue = (value !== '' && value !== null) ? (value as FieldOption).value : null;
         commitFieldPatch({
           variables: {
             id: data.id,

@@ -1,0 +1,51 @@
+type TaxiiCollection {
+  id: ID!
+  name: String
+  description: String
+  filters: String
+  include_inferences: Boolean
+  score_to_confidence: Boolean
+  taxii_public: Boolean
+  authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+}
+type TaxiiCollectionConnection {
+  pageInfo: PageInfo!
+  edges: [TaxiiCollectionEdge]!
+}
+type TaxiiCollectionEdge {
+  cursor: String!
+  node: TaxiiCollection!
+}
+input TaxiiCollectionAddInput {
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  description: String
+  filters: String
+  taxii_public: Boolean
+  authorized_members: [MemberAccessInput!]
+  include_inferences: Boolean
+  score_to_confidence: Boolean
+}
+enum TaxiiCollectionOrdering {
+  name
+  id
+  _score
+}
+type TaxiiCollectionEditMutations {
+  delete: ID
+  fieldPatch(input: [EditInput]!): TaxiiCollection
+}
+extend type Query {
+  taxiiCollection(id: String!): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  taxiiCollections(
+    first: Int
+    after: ID
+    orderBy: TaxiiCollectionOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): TaxiiCollectionConnection @public # Code protected
+}
+extend type Mutation {
+  taxiiCollectionAdd(input: TaxiiCollectionAddInput!): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+}

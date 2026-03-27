@@ -1,15 +1,13 @@
-import React, { Suspense, useMemo } from 'react';
-import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Suspense, useMemo } from 'react';
+import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootObservedDataSubscription } from './__generated__/RootObservedDataSubscription.graphql';
 import { RootObservedDataQuery } from './__generated__/RootObservedDataQuery.graphql';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ObservedData from './ObservedData';
 import FileManager from '../../common/files/FileManager';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -77,7 +75,6 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
   }), [observedDataId]);
 
   const { t_i18n } = useFormatter();
-  const location = useLocation();
 
   useSubscription<RootObservedDataSubscription>(subConfig);
 
@@ -116,48 +113,17 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
           disableAuthorizedMembers={true}
           enableEnricher={false}
         />
-        <Box
-          sx={{
-            borderBottom: 1,
-            borderColor: 'divider',
-            marginBottom: 3,
-          }}
-        >
-          <Tabs
-            value={location.pathname}
-          >
-            <Tab
-              component={Link}
-              to={`/dashboard/events/observed_data/${observedData.id}`}
-              value={`/dashboard/events/observed_data/${observedData.id}`}
-              label={t_i18n('Overview')}
-            />
-            <Tab
-              component={Link}
-              to={`/dashboard/events/observed_data/${observedData.id}/entities`}
-              value={`/dashboard/events/observed_data/${observedData.id}/entities`}
-              label={t_i18n('Entities')}
-            />
-            <Tab
-              component={Link}
-              to={`/dashboard/events/observed_data/${observedData.id}/observables`}
-              value={`/dashboard/events/observed_data/${observedData.id}/observables`}
-              label={t_i18n('Observables')}
-            />
-            <Tab
-              component={Link}
-              to={`/dashboard/events/observed_data/${observedData.id}/files`}
-              value={`/dashboard/events/observed_data/${observedData.id}/files`}
-              label={t_i18n('Data')}
-            />
-            <Tab
-              component={Link}
-              to={`/dashboard/events/observed_data/${observedData.id}/history`}
-              value={`/dashboard/events/observed_data/${observedData.id}/history`}
-              label={t_i18n('History')}
-            />
-          </Tabs>
-        </Box>
+        <StixDomainObjectTabsBox
+          basePath="/dashboard/events/observed_data"
+          entity={observedData}
+          tabs={[
+            'overview',
+            'entities',
+            'observables',
+            'files',
+            'history',
+          ]}
+        />
         <Routes>
           <Route
             path="/"

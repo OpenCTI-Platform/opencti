@@ -147,6 +147,7 @@ export const stixFilters = [
   'takedown_types',
   'note_types',
   'incident_type',
+  'description',
 ];
 
 // ----------------------------------------------------------------------------------------------------------------------
@@ -739,6 +740,7 @@ export const getAvailableOperatorForFilterSubKey = (filterKey: string, subKey: s
  */
 export const getAvailableOperatorForFilterKey = (
   filterDefinition: FilterDefinition | undefined,
+  opts?: { isStixFiltering?: boolean },
 ): string[] => {
   if (!filterDefinition) {
     return ['eq'];
@@ -757,7 +759,7 @@ export const getAvailableOperatorForFilterKey = (
     return ['eq', 'not_eq'];
   }
   if (isBasicTextFilter(filterDefinition)) {
-    if (filterDefinition.type === 'string') {
+    if (filterDefinition.type === 'string' || opts?.isStixFiltering) { // all the string operators are available for short string or in stix filtering
       return ['eq', 'not_eq', 'nil', 'not_nil', 'contains', 'not_contains',
         'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with', 'search'];
     }
@@ -780,9 +782,11 @@ export const getAvailableOperatorForFilterKey = (
 export const getAvailableOperatorForFilter = (
   filterDefinition: FilterDefinition | undefined,
   subKey?: string,
+  opts?: { isStixFiltering?: boolean },
 ): string[] => {
+  const isStixFiltering = opts?.isStixFiltering ?? false;
   if (filterDefinition && subKey) return getAvailableOperatorForFilterSubKey(filterDefinition.filterKey, subKey);
-  return getAvailableOperatorForFilterKey(filterDefinition);
+  return getAvailableOperatorForFilterKey(filterDefinition, { isStixFiltering });
 };
 
 export const useFetchFilterKeysSchema = () => {

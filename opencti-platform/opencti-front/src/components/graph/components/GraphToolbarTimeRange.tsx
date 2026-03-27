@@ -1,4 +1,4 @@
-import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis, Tooltip, TooltipProps } from 'recharts';
+import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis, Tooltip, TooltipContentProps } from 'recharts';
 import React, { CSSProperties } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { computeTimeRangeValuesDomain, GraphTimeRange } from '../utils/graphTimeRange';
@@ -9,10 +9,10 @@ import TimeRange from '../../range_slider/RangeSlider';
 import { useFormatter } from '../../i18n';
 import useGraphInteractions from '../utils/useGraphInteractions';
 
-const TimeRangeTooltip: TooltipProps<number, string>['content'] = ({
+const TimeRangeTooltip = ({
   active,
   payload,
-}) => {
+}: TooltipContentProps) => {
   const { fldt } = useFormatter();
   const theme = useTheme<Theme>();
 

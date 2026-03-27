@@ -1,0 +1,82 @@
+type FeedMapping {
+  type: String!
+  attribute: String!
+  relationship_type: String
+  target_entity_type: String
+}
+type FeedAttribute {
+  attribute: String!
+  mappings: [FeedMapping!]!
+  multi_match_strategy: String
+  multi_match_separator: String
+}
+type Feed {
+  id: ID!
+  standard_id: ID!
+  name: String!
+  description: String
+  filters: String
+  separator: String!
+  rolling_time: Int!
+  feed_date_attribute: String
+  include_header: Boolean!
+  feed_types: [String!]!
+  feed_attributes: [FeedAttribute!]!
+  feed_public: Boolean
+  authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI])
+}
+input FeedMappingInput {
+  type: String!
+  attribute: String!
+  relationship_type: String
+  target_entity_type: String
+}
+input FeedAttributeMappingInput {
+  attribute: String!
+  mappings: [FeedMappingInput!]!
+  multi_match_strategy: String
+  multi_match_separator: String
+}
+input FeedAddInput {
+  name: String! @constraint(minLength: 2, format: "not-blank")
+  description: String
+  filters: String
+  separator: String!
+  feed_date_attribute: String!
+  rolling_time: Int!
+  include_header: Boolean!
+  feed_types: [String!]!
+  feed_public: Boolean
+  feed_attributes: [FeedAttributeMappingInput!]!
+  authorized_members: [MemberAccessInput!]
+}
+enum FeedOrdering {
+  name
+  rolling_time
+  feed_types
+  _score
+}
+type FeedEdge {
+  cursor: String!
+  node: Feed!
+}
+type FeedConnection {
+  pageInfo: PageInfo!
+  edges: [FeedEdge]!
+}
+extend type Query {
+  feed(id: String!): Feed @auth(for: [TAXIIAPI])
+  feeds(
+    first: Int
+    after: ID
+    orderBy: FeedOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FeedConnection @public # Code protected
+}
+extend type Mutation {
+  feedAdd(input: FeedAddInput!): Feed @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  feedDelete(id: ID!): ID! @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  feedEdit(id: ID!, input: FeedAddInput!): Feed! @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+}

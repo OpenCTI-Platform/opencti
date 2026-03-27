@@ -24,6 +24,8 @@ import { TEN_SECONDS } from '../../../utils/Time';
 import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 import useSwitchDraft from './useSwitchDraft';
 import { DraftRootFragment$key } from './__generated__/DraftRootFragment.graphql';
+import DraftOverview from '@components/drafts/DraftOverview';
+import useHelper from '../../../utils/hooks/useHelper';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -35,11 +37,28 @@ const draftRootQuery = graphql`
   }
 `;
 
-const draftRootFragment = graphql`
+export const draftRootFragment = graphql`
   fragment DraftRootFragment on DraftWorkspace {
     id
     name
+    entity_type
+    description
     created_at
+    objectAssignee {
+      id
+      name
+      entity_type
+    }
+    objectParticipant {
+      id
+      name
+      entity_type
+    }
+    createdBy {
+      id
+      name
+      entity_type
+    }
     objectsCount {
       containersCount
       entitiesCount
@@ -89,22 +108,24 @@ interface RootDraftComponentProps {
 }
 
 const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentProps) => {
+  const { isFeatureEnable } = useHelper();
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   const canAskImportKnowledge = useGranted([KNOWLEDGE_KNASKIMPORT]);
 
-  const { draftWorkspace } = usePreloadedQuery<DraftRootQuery>(draftRootQuery, queryRef);
-  if (!draftWorkspace) {
+  const { draftWorkspace: draftWorkspaceFragment } = usePreloadedQuery<DraftRootQuery>(draftRootQuery, queryRef);
+  if (!draftWorkspaceFragment) {
     return (<ErrorNotFound />);
   }
 
+  const draft = useFragment<DraftRootFragment$key>(draftRootFragment, draftWorkspaceFragment);
   const {
     name,
     objectsCount,
     draft_status,
     validationWork,
-  } = useFragment<DraftRootFragment$key>(draftRootFragment, draftWorkspace);
+  } = draft;
   const isDraftReadOnly = draft_status !== 'open';
 
   // switch to draft
@@ -183,6 +204,16 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           id="tabs-container"
           value={getCurrentTab(location.pathname, draftId, '/dashboard/data/import/draft/entities')}
         >
+          {isFeatureEnable('DRAFT_WORKFLOW') && (
+            <Tab
+              component={Link}
+              to={`/dashboard/data/import/draft/${draftId}/overview`}
+              value={`/dashboard/data/import/draft/${draftId}/overview`}
+              label={
+                <span>{t_i18n('Overview')}</span>
+              }
+            />
+          )}
           <Tab
             component={Link}
             to={`/dashboard/data/import/draft/${draftId}/entities`}
@@ -238,6 +269,12 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
           path="/"
           element={<Navigate to={`/dashboard/data/import/draft/${draftId}/entities`} replace={true} />}
         />
+        {isFeatureEnable('DRAFT_WORKFLOW') && (
+          <Route
+            path="/overview"
+            element={<DraftOverview draft={draft} />}
+          />
+        )}
         <Route
           path="/entities"
           element={<DraftEntities entitiesType="Stix-Domain-Object" excludedEntityTypes="Container" isReadOnly={isDraftReadOnly} />}

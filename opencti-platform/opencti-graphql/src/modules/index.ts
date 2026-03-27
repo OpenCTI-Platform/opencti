@@ -53,6 +53,9 @@ import './ingestion/ingestion-taxii';
 import './ingestion/ingestion-csv';
 import './ingestion/ingestion-json';
 import './ingestion/ingestion-taxii-collection';
+import './dataSharing/feed';
+import './dataSharing/taxiiCollection';
+import './dataSharing/streamCollection';
 import './indicator/indicator';
 import './decayRule/decayRule';
 import './decayRule/exclusions/decayExclusionRule';
@@ -76,6 +79,7 @@ import './emailTemplate/emailTemplate';
 import './form/form';
 import './securityCoverage/securityCoverage';
 import './authenticationProvider/authenticationProvider';
+import './customView/customView';
 
 // incomplete modules
 import './report/report';
@@ -152,4 +156,8 @@ import './form/form-graphql';
 import './xtm/hub/xtm-hub-graphql';
 import './metrics/metrics-graphql';
 import './authenticationProvider/authenticationProvider-graphql';
+import './customView/customView-graphql';
+import './dataSharing/taxiiCollection-graphql';
+import './dataSharing/feed-graphql';
+import './dataSharing/streamCollection-graphql';
 // endregion

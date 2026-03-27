@@ -59,6 +59,7 @@ const AutocompleteField = <
     getOptionLabel,
     endAdornment,
     disabled,
+    renderTags,
   } = muiProps;
 
   const [, meta] = useField(name);
@@ -92,6 +93,20 @@ const AutocompleteField = <
       ? truncate(option.label, optionLength)
       : truncate(option, optionLength);
   };
+
+  const defaultRenderTags: MuiProps['renderTags'] = (values, getTagProps) => (
+    values.map((option, index) => {
+      const { label, value } = getOptionData(option);
+      return (
+        <Tag
+          {...getTagProps({ index })}
+          labelTextTransform={preserveCase ? 'none' : 'capitalize'}
+          key={value}
+          label={label}
+        />
+      );
+    })
+  );
 
   const getOptionData = (option: Value) => {
     return typeof option === 'object' && option !== null
@@ -134,19 +149,7 @@ const AutocompleteField = <
         noOptionsText={noOptionsText}
         {...fieldProps}
         renderOption={renderOption}
-        renderTags={(values, getTagProps) => (
-          values.map((option, index) => {
-            const { label, value } = getOptionData(option);
-            return (
-              <Tag
-                {...getTagProps({ index })}
-                labelTextTransform={preserveCase ? 'none' : 'capitalize'}
-                key={value}
-                label={label}
-              />
-            );
-          })
-        )}
+        renderTags={renderTags ?? defaultRenderTags}
         onChange={internalOnChange}
         onFocus={internalOnFocus}
         onBlur={internalOnBlur}

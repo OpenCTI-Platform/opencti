@@ -17,6 +17,11 @@ import nconf from 'nconf';
 import { getSettings, updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../../domain/settings';
 import type { BasicStoreSettings } from '../../types/settings';
 
+export const isLocalAuthEnabledInEnv = (envProviders: Record<string, any>): boolean => {
+  const local = envProviders['local'];
+  return local?.config?.disabled !== true;
+};
+
 // ---------------------------------------------------------------------------
 // Provider type mapping
 // ---------------------------------------------------------------------------
@@ -64,11 +69,10 @@ const parseMappingStrings = (mapping: any) => {
  */
 const migrateLocalAuthIfNeeded = async (context: AuthContext, user: AuthUser) => {
   const settings = await getSettings(context) as unknown as BasicStoreSettings;
+  const envConfigurations = nconf.get('providers') ?? {};
   if (!settings.local_auth) {
-    const envConfigurations = nconf.get('providers') ?? {};
-    const local = envConfigurations['local'];
     logApp.info('[SINGLETON-MIGRATION] local_auth is absent, creating with defaults');
-    await updateLocalAuth(context, user, settings.id, { enabled: local?.enabled ?? true });
+    await updateLocalAuth(context, user, settings.id, { enabled: isLocalAuthEnabledInEnv(envConfigurations) });
     logApp.info('[SINGLETON-MIGRATION] local_auth successfully ensured');
   }
 };

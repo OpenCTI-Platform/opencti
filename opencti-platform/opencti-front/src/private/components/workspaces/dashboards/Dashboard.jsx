@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import * as R from 'ramda';
 import { graphql, useFragment } from 'react-relay';
-import RGL, { WidthProvider } from 'react-grid-layout';
+import ReactGridLayout, { useContainerWidth } from 'react-grid-layout';
 import { v4 as uuid } from 'uuid';
 import DashboardRawViz from './DashboardRawViz';
 import DashboardRelationshipsViz from './DashboardRelationshipsViz';
@@ -63,7 +63,7 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
   const [commitWidgetImportMutation] = useApiMutation(dashboardImportWidgetMutation);
 
   const workspace = useFragment(dashboardFragment, data);
-  const ReactGridLayout = useMemo(() => WidthProvider(RGL), []);
+  const { width, containerRef } = useContainerWidth();
 
   const [deleting, setDeleting] = useState(false);
   const [idToResize, setIdToResize] = useState();
@@ -267,6 +267,7 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
   return (
     <Box
       id="container"
+      ref={containerRef}
       sx={{
         margin: '0 -20px 0 -20px',
         marginTop: noToolbar ? '-20px' : '10px',
@@ -293,12 +294,11 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
       )}
       <ReactGridLayout
         className="layout"
-        margin={[20, 20]}
-        rowHeight={50}
-        cols={12}
-        draggableCancel=".noDrag"
-        isDraggable={userCanEdit ? !noToolbar : false}
-        isResizable={userCanEdit ? !noToolbar : false}
+        width={width}
+        layout={Object.values(widgetsLayouts)}
+        gridConfig={{ margin: [20, 20], rowHeight: 50, cols: 12 }}
+        dragConfig={{ enabled: userCanEdit ? !noToolbar : false, cancel: '.noDrag' }}
+        resizeConfig={{ enabled: userCanEdit ? !noToolbar : false }}
         onLayoutChange={userCanEdit && !noToolbar ? onLayoutChange : () => true}
         onResizeStart={userCanEdit ? (_, { i }) => handleResize(i) : undefined}
         onResizeStop={userCanEdit ? handleResize : undefined}
@@ -318,7 +318,6 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
           return (
             <div
               key={widget.id}
-              data-grid={widgetsLayouts[widget.id]}
               style={{
                 display: 'relative',
               }}

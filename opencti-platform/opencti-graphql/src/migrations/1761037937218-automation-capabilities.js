@@ -1,4 +1,4 @@
-import { logApp } from '../config/conf';
+import { logMigration } from '../config/conf';
 import { AUTOMATION, AUTOMATION_AUTMANAGE, executionContext, SYSTEM_USER } from '../utils/access';
 import { addCapability } from '../domain/grant';
 import { createRelation } from '../database/middleware';
@@ -9,7 +9,7 @@ import { fullEntitiesList } from '../database/middleware-loader';
 const message = '[MIGRATION] create playbook capability';
 
 export const up = async (next) => {
-  logApp.info(`${message} > started`);
+  logMigration.info(`${message} > started`);
   const context = executionContext('migration');
 
   // ------ Create Automation capabilities
@@ -41,7 +41,7 @@ export const up = async (next) => {
     }
   }
 
-  logApp.info(`${message} > done`);
+  logMigration.info(`${message} > done`);
   next();
 };
 

@@ -24,6 +24,8 @@ const StyledDrawer = styled(Drawer)(() => ({
     overflow: 'auto',
     padding: 0,
     zIndex: 998,
+    right: 'var(--chatbot-sidebar-width, 0px)',
+    transition: 'right 225ms cubic-bezier(0.4, 0, 0.2, 1)',
   },
 }));
 

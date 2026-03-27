@@ -21,15 +21,30 @@
   updateNotScheduled: false,
   rebaseWhen: 'conflicted',
   packageRules: [
-    // override for CKEditor monorepos to add ckeditor5-react
+    // openid-clientv5 is an aliased+patched dependency pinned to openid-client@5.7.1.
+    // Its jose resolution is also pinned. Disable all Renovate updates for both.
     {
-      extends: [
-        'monorepo:ckeditor',
+      matchDepNames: [
+        'openid-clientv5',
       ],
-      matchSourceUrls: [
-        'https://github.com/ckeditor/ckeditor5',
-        'https://github.com/ckeditor/ckeditor5-react',
-      ]
+      matchUpdateTypes: [
+        'major'
+      ],
+      enabled: false,
+      description: 'Do not update openid-clientv5 (aliased and patched, pinned to v5)'
+    },
+    {
+      matchPackageNames: [
+        'jose',
+      ],
+      matchDepTypes: [
+        'resolutions'
+      ],
+      matchUpdateTypes: [
+        'major'
+      ],
+      enabled: false,
+      description: 'Do not update openid-clientv5/jose resolution to major versions'
     },
     {
       description: 'Disable updates of images intentionally pinned to older versions for compatibility testing',
@@ -68,13 +83,13 @@
         'pin',
         'digest',
       ],
-      rebaseWhen: 'always',
+      rebaseWhen: 'auto',
     }
   ],
   // do lock file maintenance once a week on Sunday
   lockFileMaintenance: {
     schedule: ['* * * * 0'],
-    rebaseWhen: 'always',
+    rebaseWhen: 'auto',
     enabled: true,
   }
 }

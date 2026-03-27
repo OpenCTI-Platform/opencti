@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDotPath, resolvePath, resolveDotPath } from '../../../../src/modules/authenticationProvider/mappings-utils';
+import { parseDotPath, resolvePath, resolveDotPath, createGroupsMapper, createOrganizationsMapper } from '../../../../src/modules/authenticationProvider/mappings-utils';
 
 describe('mappings-utils', () => {
   describe('parseDotPath', () => {
@@ -216,6 +216,116 @@ describe('mappings-utils', () => {
         const result = await resolvePath(['meta', 'id'])(rootArray);
         expect(result).toEqual(['id1', 'id2']);
       });
+    });
+
+    describe('case-insensitive fallback', () => {
+      it('should resolve exact case-sensitive property first', async () => {
+        const obj = { Email: 'upper@example.com', email: 'lower@example.com' };
+        const result = await resolvePath(['email'])(obj);
+        expect(result).toBe('lower@example.com');
+      });
+
+      it('should fall back to case-insensitive match when exact key is missing', async () => {
+        const obj = { Email: 'upper@example.com' };
+        const result = await resolvePath(['email'])(obj);
+        expect(result).toBe('upper@example.com');
+      });
+
+      it('should fall back to case-insensitive match for nested paths', async () => {
+        const obj = { UserInfo: { Email: 'user@example.com' } };
+        const result = await resolvePath(['userinfo', 'email'])(obj);
+        expect(result).toBe('user@example.com');
+      });
+
+      it('should return undefined when no case-insensitive match exists', async () => {
+        const obj = { name: 'test' };
+        const result = await resolvePath(['email'])(obj);
+        expect(result).toBeUndefined();
+      });
+
+      it('should work with resolveDotPath for case-insensitive fallback', async () => {
+        const obj = { User_Info: { EMAIL: 'user@example.com' } };
+        const result = await resolveDotPath('user_info.email')(obj);
+        expect(result).toBe('user@example.com');
+      });
+    });
+  });
+
+  describe('case-insensitive mapping in groups', () => {
+    const resolveExpr = (expr: string) => (obj: unknown) => {
+      const record = obj as Record<string, unknown>;
+      return record[expr] as string | string[] | undefined;
+    };
+
+    it('should match group mapping case-sensitively first', async () => {
+      const conf = {
+        default_groups: [],
+        groups_expr: ['groups'],
+        group_splitter: undefined,
+        groups_mapping: [
+          { provider: 'Admin', platform: 'Administrators' },
+          { provider: 'admin', platform: 'LowercaseAdmins' },
+        ],
+        auto_create_groups: false,
+        prevent_default_groups: false,
+      };
+      const mapper = createGroupsMapper(conf, resolveExpr);
+      const result = await mapper({ groups: 'admin' });
+      expect(result).toEqual(['LowercaseAdmins']);
+    });
+
+    it('should fall back to case-insensitive match when no exact match', async () => {
+      const conf = {
+        default_groups: [],
+        groups_expr: ['groups'],
+        group_splitter: undefined,
+        groups_mapping: [
+          { provider: 'Admin', platform: 'Administrators' },
+        ],
+        auto_create_groups: false,
+        prevent_default_groups: false,
+      };
+      const mapper = createGroupsMapper(conf, resolveExpr);
+      const result = await mapper({ groups: 'admin' });
+      expect(result).toEqual(['Administrators']);
+    });
+
+    it('should return default groups when no mapping matches at all', async () => {
+      const conf = {
+        default_groups: ['DefaultGroup'],
+        groups_expr: ['groups'],
+        group_splitter: undefined,
+        groups_mapping: [
+          { provider: 'Admin', platform: 'Administrators' },
+        ],
+        auto_create_groups: false,
+        prevent_default_groups: false,
+      };
+      const mapper = createGroupsMapper(conf, resolveExpr);
+      const result = await mapper({ groups: 'viewer' });
+      expect(result).toEqual(['DefaultGroup']);
+    });
+  });
+
+  describe('case-insensitive mapping in organizations', () => {
+    const resolveExpr = (expr: string) => (obj: unknown) => {
+      const record = obj as Record<string, unknown>;
+      return record[expr] as string | string[] | undefined;
+    };
+
+    it('should fall back to case-insensitive match for organizations', async () => {
+      const conf = {
+        default_organizations: [],
+        organizations_expr: ['orgs'],
+        organizations_splitter: undefined,
+        organizations_mapping: [
+          { provider: 'MyOrg', platform: 'My Organization' },
+        ],
+        auto_create_organizations: false,
+      };
+      const mapper = createOrganizationsMapper(conf, resolveExpr);
+      const result = await mapper({ orgs: 'myorg' });
+      expect(result).toEqual(['My Organization']);
     });
   });
 });

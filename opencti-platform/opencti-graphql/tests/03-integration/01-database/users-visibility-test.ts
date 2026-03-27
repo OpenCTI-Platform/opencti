@@ -23,8 +23,7 @@ import { ID_SUBFILTER, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } fr
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import { findAllMembers, findMembersPaginated, resolveUserById } from '../../../src/domain/user';
 import { getSettings, settingsEditField } from '../../../src/domain/settings';
-import { getEntityFromCache, resetCacheForEntity } from '../../../src/database/cache';
-import type { BasicStoreSettings } from '../../../src/types/settings';
+import { resetCacheForEntity } from '../../../src/database/cache';
 import { MEMBERS_ENTITY_TYPES, SYSTEM_USER } from '../../../src/utils/access';
 import type { AuthUser } from '../../../src/types/user';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
@@ -708,11 +707,24 @@ describe('Users visibility according to their direct organizations', () => {
     });
   });
 
-  describe('should fetch all the users if organization sharing is not activated', async () => {
+  describe('should fetch all the users if organization sharing is not activated and view_all_users is set to true', async () => {
     beforeAll(async () => {
-      // check there is no platform organization
-      const settings = await getEntityFromCache<BasicStoreSettings>(testContext, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-      expect(settings.platform_organization).toEqual(undefined);
+      // set option view_all_users to true
+      const platformSettings = await getSettings(testContext);
+      expect(platformSettings.platform_organization).toEqual(undefined);
+      const inputTrue = [{ key: 'view_all_users', value: ['true'] }];
+      const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, inputTrue);
+      expect(settingsResult.view_all_users).toBe(true);
+      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    });
+
+    afterAll(async () => {
+      // set option view_all_users to false
+      const inputFalse = [{ key: 'view_all_users', value: ['false'] }];
+      const platformSettings = await getSettings(testContext);
+      const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, inputFalse);
+      expect(settingsResult.view_all_users).toBe(false);
+      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
     });
 
     await shouldFetchAllTheUsers(
@@ -722,7 +734,7 @@ describe('Users visibility according to their direct organizations', () => {
       () => USER_A_CLIENT,
       () => USER_A2_CLIENT,
       () => reportInternalId,
-      'no organization sharing',
+      'no organization sharing and view_all_users=true',
     );
   });
 
@@ -819,36 +831,6 @@ describe('Users visibility according to their direct organizations', () => {
 
       reportQueryResult = await userQuery(USER_AB_CLIENT, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
       expect(reportQueryResult.data?.report).toEqual(null); // the report is not visible for userAB
-    });
-
-    describe('should fetch all the users if organization sharing is activated and settings option view_all_users = true', async () => {
-      beforeAll(async () => {
-        // set option view_all_users to true
-        const platformSettings = await getSettings(testContext);
-        const inputTrue = [{ key: 'view_all_users', value: ['true'] }];
-        const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, inputTrue);
-        expect(settingsResult.view_all_users).toBe(true);
-        resetCacheForEntity(ENTITY_TYPE_SETTINGS);
-      });
-
-      afterAll(async () => {
-        // set option view_all_users to false
-        const inputFalse = [{ key: 'view_all_users', value: ['false'] }];
-        const platformSettings = await getSettings(testContext);
-        const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, inputFalse);
-        expect(settingsResult.view_all_users).toBe(false);
-        resetCacheForEntity(ENTITY_TYPE_SETTINGS);
-      });
-
-      await shouldFetchAllTheUsers(
-        () => USER_A,
-        () => USER_AB,
-        () => USER_O,
-        () => USER_A_CLIENT,
-        () => USER_A2_CLIENT,
-        () => reportInternalId,
-        'settings option view_all_users = true',
-      );
     });
   });
 });

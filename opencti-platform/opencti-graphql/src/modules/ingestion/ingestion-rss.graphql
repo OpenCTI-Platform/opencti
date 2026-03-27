@@ -18,6 +18,7 @@ type IngestionRss implements InternalObject & BasicObject {
     current_state_date: DateTime
     last_execution_date: DateTime
     ingestion_running: Boolean
+    toConfigurationExport: String!
 }
 enum IngestionRssOrdering {
     name
@@ -35,6 +36,21 @@ type IngestionRssEdge {
     node: IngestionRss!
 }
 
+type DefaultMarkingDefinition {
+    label: String!
+    value: String!
+}
+
+type IngestionRssAddInputFromImport {
+    name: String!
+    description: String
+    scheduling_period: String
+    uri: String
+    current_state_date: DateTime
+    report_types: [String!]
+    object_marking_refs: [DefaultMarkingDefinition]
+}
+
 # Queries
 type Query {
     ingestionRss(id: String!): IngestionRss @auth(for: [INGESTION])
@@ -47,6 +63,9 @@ type Query {
         includeAuthorities: Boolean
         search: String
     ): IngestionRssConnection @auth(for: [INGESTION])
+    ingestionRssAddInputFromImport(
+        file: Upload!
+    ): IngestionRssAddInputFromImport! @auth(for: [INGESTION])
 }
 
 # Mutations
@@ -58,14 +77,23 @@ input IngestionRssAddInput {
     current_state_date: DateTime
     ingestion_running: Boolean
     # Data configuration
-    user_id: String
+    user_id: String!
+    automatic_user: Boolean
+    confidence_level: Int
     created_by_ref: String
-    object_marking_refs: [String!]
+    object_marking_refs: [String]
     report_types: [String!]
+}
+
+input IngestionRssAddAutoUserInput {
+    user_name: String!
+    confidence_level: Int!
 }
 
 type Mutation {
     ingestionRssAdd(input: IngestionRssAddInput!): IngestionRss @auth(for: [INGESTION_SETINGESTIONS])
     ingestionRssDelete(id: ID!): ID @auth(for: [INGESTION_SETINGESTIONS])
     ingestionRssFieldPatch(id: ID!, input: [EditInput!]!): IngestionRss @auth(for: [INGESTION_SETINGESTIONS])
+    ingestionRssAddAutoUser(id: ID!, input: IngestionRssAddAutoUserInput!): IngestionRss @auth(for:[INGESTION_SETINGESTIONS])
+
 }

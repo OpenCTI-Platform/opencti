@@ -28,13 +28,13 @@ jobs:
 
     - name: Download image platform
       continue-on-error: true
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: docker-image-opencti-platform
         path: /tmp
 
     - name: Download image worker
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: docker-image-opencti-worker
         path: /tmp
@@ -51,6 +51,7 @@ jobs:
          set -ex
          cd scripts/ci
          export TAG=${{ github.sha }}
+         printf "\nAPP__ENTERPRISE_EDITION_LICENSE=\"$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt | tr -d '\n')\"" >> ci-common.env
          docker network create runner-docker-network
          docker compose  --profile "backend" --profile "ci-test-api-sync" up -d
 
@@ -98,7 +99,7 @@ jobs:
         override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
 
     - name: Upload backend test result
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: always()
       continue-on-error: true
       with:
@@ -161,13 +162,13 @@ jobs:
 
     - name: Download image platform
       continue-on-error: true
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: docker-image-opencti-platform
         path: /tmp
 
     - name: Download image worker
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: docker-image-opencti-worker
         path: /tmp
@@ -184,6 +185,7 @@ jobs:
          set -ex
          cd scripts/ci
          export TAG=${{ github.sha }}
+         printf "\nAPP__ENTERPRISE_EDITION_LICENSE=\"$(wget -qO- https://filigran.jfrog.io/artifactory/ci-utils/opencti-license/opencti_ee_ci_licence.crt | tr -d '\n')\"" >> ci-common.env
          docker network create runner-docker-network
          docker compose --profile "backend" --profile "ci-test-rules" up -d
          ./wait-for-url-200.sh http://localhost:9200/_cluster/health?wait_for_status=yellow  120 2
@@ -252,7 +254,7 @@ jobs:
 
     - name: Download image platform
       continue-on-error: true
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
       with:
         name: docker-image-opencti-platform
         path: /tmp

@@ -37,7 +37,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { fullRelationsList } from '../database/middleware-loader';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { getEntitiesListFromCache } from '../database/cache';
-import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
+import { ENTITY_TYPE_STREAM_COLLECTION } from '../modules/dataSharing/streamCollection-types';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { generateCreateMessage } from '../database/data-changes';
@@ -48,7 +48,7 @@ import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { doYield } from '../utils/eventloop-utils';
 import { registerConsumer, trackEventDelivered, trackEventsProcessed, trackMissingResolution, unregisterConsumer } from './streamConsumerRegistry';
-import { getStreamConsumerInformation } from '../domain/stream';
+import { getStreamConsumerInformation } from '../modules/dataSharing/streamCollection-domain';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
@@ -304,7 +304,11 @@ const createSseMiddleware = () => {
         const message = buildMessage(eventId, topic, event);
         if (!res.write(message)) {
           logApp.debug('[STREAM] Buffer draining', { buffer: res.writableLength, limit: res.writableHighWaterMark });
-          await Promise.race([once(res, 'drain'), once(res, 'close')]);
+          const ac = new AbortController();
+          await Promise.race([
+            once(res, 'drain', { signal: ac.signal }),
+            once(res, 'close', { signal: ac.signal }),
+          ]).finally(() => ac.abort());
         }
         res.flush();
         // Track event delivery in consumer registry (skip heartbeat and connected events)
@@ -498,6 +502,13 @@ const createSseMiddleware = () => {
     const { user } = req;
     const { id: eventId, data: eventData } = element;
     const { type, data: stix, message } = eventData;
+    // First verify the user has access to this relation's markings/organizations.
+    // This relation comes from the raw stream event and was not filtered by isStixMatchFilterGroup
+    // (isCurrentlyVisible was false), so we must explicitly check access rights here.
+    const isRelationAccessible = await isUserCanAccessStixElement(context, user, stix);
+    if (!isRelationAccessible) {
+      return;
+    }
     const isRel = stix.type === 'relationship';
     const fromId = isRel ? stix.source_ref : stix.sighting_of_ref;
     const toId = isRel ? stix.target_ref : stix.where_sighted_refs[0];
@@ -647,17 +658,23 @@ const createSseMiddleware = () => {
                     } else if (!isStixDomainObjectContainer(elementType)) { // Update but not visible - entity type
                       // If entity is not a container, it can be part of a container that is authorized by the filters
                       // If it's the case, the element must be published
-                      // So we need to list the containers with stream filters restricted through type and the connected element rel
-                      const queryOptions = await convertFiltersToQueryOptions(streamFilters, {
-                        defaultTypes: [ENTITY_TYPE_CONTAINER], // Looking only for containers
-                        extraFilters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }], // Connected rel
-                      });
-                      const countRelatedContainers = await elCount(context, user, streamQueryIndices, queryOptions);
-                      // At least one container is matching the filter, so publishing the event
-                      if (countRelatedContainers > 0) {
-                        await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stix);
-                        await client.sendEvent(eventId, event, eventData);
-                        cache.set(stix.id, 'hit');
+                      // But first, verify the user has access to this element (markings, organizations, etc.)
+                      // isCurrentlyVisible=false could be due to filter mismatch OR marking restriction;
+                      // we must not send data the user is not allowed to see.
+                      const isAccessible = await isUserCanAccessStixElement(context, user, stix);
+                      if (isAccessible) {
+                        // So we need to list the containers with stream filters restricted through type and the connected element rel
+                        const queryOptions = await convertFiltersToQueryOptions(streamFilters, {
+                          defaultTypes: [ENTITY_TYPE_CONTAINER], // Looking only for containers
+                          extraFilters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }], // Connected rel
+                        });
+                        const countRelatedContainers = await elCount(context, user, streamQueryIndices, queryOptions);
+                        // At least one container is matching the filter, so publishing the event
+                        if (countRelatedContainers > 0) {
+                          await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stix);
+                          await client.sendEvent(eventId, event, eventData);
+                          cache.set(stix.id, 'hit');
+                        }
                       }
                     }
                   } else if (isCurrentlyVisible) {

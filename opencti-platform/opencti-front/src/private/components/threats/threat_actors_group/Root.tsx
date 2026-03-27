@@ -1,9 +1,6 @@
-import React, { Suspense, useMemo } from 'react';
-import { Route, Routes, Link, Navigate, useLocation, useParams } from 'react-router-dom';
+import { Suspense, useMemo } from 'react';
+import { Route, Routes, Navigate, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { RootThreatActorGroupQuery } from '@components/threats/threat_actors_group/__generated__/RootThreatActorGroupQuery.graphql';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
@@ -15,6 +12,7 @@ import ThreatActorGroup from './ThreatActorGroup';
 import ThreatActorGroupKnowledge from './ThreatActorGroupKnowledge';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import FileManager from '../../common/files/FileManager';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
@@ -22,7 +20,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import ThreatActorGroupEdition from './ThreatActorGroupEdition';
@@ -170,62 +168,19 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               redirectToContent={true}
               enableEnrollPlaybook={true}
             />
-            <Box
-              sx={{
-                borderBottom: 1,
-                borderColor: 'divider',
-                marginBottom: 3,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItem: 'center',
-              }}
-            >
-              <Tabs
-                value={getCurrentTab(location.pathname, threatActorGroup.id, '/dashboard/threats/threat_actors_group')}
-              >
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}`}
-                  value={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}`}
-                  label={t_i18n('Overview')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge/overview`}
-                  value={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`}
-                  label={t_i18n('Knowledge')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/content`}
-                  value={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/content`}
-                  label={t_i18n('Content')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/analyses`}
-                  value={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/analyses`}
-                  label={t_i18n('Analyses')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/files`}
-                  value={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/files`}
-                  label={t_i18n('Data')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/history`}
-                  value={`/dashboard/threats/threat_actors_group/${threatActorGroup.id}/history`}
-                  label={t_i18n('History')}
-                />
-              </Tabs>
-              {isOverview && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                  <AIInsights id={threatActorGroup.id} />
-                </div>
-              )}
-            </Box>
+            <StixDomainObjectTabsBox
+              basePath="/dashboard/threats/threat_actors_group"
+              entity={threatActorGroup}
+              tabs={[
+                'overview',
+                'knowledge-overview',
+                'content',
+                'analyses',
+                'files',
+                'history',
+              ]}
+              extraActions={isOverview && <AIInsights id={threatActorGroup.id} />}
+            />
             <Routes>
               <Route
                 path="/"

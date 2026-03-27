@@ -24,7 +24,7 @@ export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_u
 export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remote_uri');
 export const SYNC_RESTORE_START_REMOTE_URI = conf.get('app:sync_restore_start_remote_uri');
 export const SYNC_TEST_REMOTE_URI = `http://api-tests:${PORT}`;
-export const SYNC_LIVE_EVENTS_SIZE = 632;
+export const SYNC_LIVE_EVENTS_SIZE = 633;
 
 export const PYTHON_PATH = './src/python/testing';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
@@ -90,6 +90,7 @@ interface QueryOption {
   previousStandard?: string;
   synchronizedUpsert?: string;
   applicantId?: string;
+  draftId?: string;
 }
 export const executeInternalQuery = async (client: AxiosInstance, query: unknown, variables = {}, options: QueryOption = {}) => {
   const headers: any = {};
@@ -98,6 +99,7 @@ export const executeInternalQuery = async (client: AxiosInstance, query: unknown
   if (options.previousStandard) headers['previous-standard'] = options.previousStandard;
   if (options.synchronizedUpsert) headers['synchronized-upsert'] = options.synchronizedUpsert;
   if (options.applicantId) headers['opencti-applicant-id'] = options.applicantId;
+  if (options.draftId) headers['opencti-draft-id'] = options.draftId;
   const response = await client.post(`${API_URI}/graphql`, { query, variables }, { withCredentials: true, headers });
   return response.data;
 };

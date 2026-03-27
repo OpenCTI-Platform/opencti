@@ -52,26 +52,26 @@ jobs:
       run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i ./opencti-platform/opencti-graphql/src/python/requirements.txt
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v4
       with:
         name: gha-builder-platform
 
     - name: Login to DockerHub
       if: inputs.publish_to_registry == 'true'
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Docker meta
       id: meta
-      uses: docker/metadata-action@v5
+      uses: docker/metadata-action@v6
       with:
         images: filigran/platform
         tags: type=raw,value=${{ inputs.image_tag }}
 
     - name: Build and push
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@v7
       with:
         context: opencti-platform
         file: opencti-platform/Dockerfile_featurebranch
@@ -83,7 +83,7 @@ jobs:
 
     - name: Upload opencti docker image artifact
       if: ${{ inputs.publish_to_registry == 'false' }}
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: docker-image-opencti-platform
         path: /tmp/opencti-platform.tar
@@ -106,26 +106,26 @@ jobs:
       run: sed -i 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti@${{ inputs.checkout_ref }}#subdirectory=client-python|' -i ./opencti-worker/src/requirements.txt
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@v4
       with:
         name: gha-builder-worker
 
     - name: Login to DockerHub
       if: inputs.publish_to_registry == 'true'
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Docker meta
       id: meta
-      uses: docker/metadata-action@v5
+      uses: docker/metadata-action@v6
       with:
         images: filigran/worker
         tags: type=raw,value=${{ inputs.image_tag }}
 
     - name: Build and push
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@v7
       with:
         context: opencti-worker
         file: opencti-worker/Dockerfile
@@ -135,7 +135,7 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: docker-image-opencti-worker
         path: /tmp/opencti-worker.tar

@@ -18,7 +18,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rf
 import { loadEntity, updateAttribute } from './middleware';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import conf, { logApp } from '../config/conf';
-import { INDEX_INTERNAL_OBJECTS, isNotEmptyField } from './utils';
+import { isNotEmptyField } from './utils';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elRawDelete, elRawGet, elRawIndex } from './engine';
 import { ConfigurationError } from '../config/errors';
@@ -529,12 +529,14 @@ export const setPlatformId = async (context, platformId) => {
     if (platformSettings.id !== platformId) {
       logApp.warn(`[INIT] Switching platform identifier from [${platformSettings.id}] to [${platformId}]`);
       // to change the id in elastic, we have no choice but to create a patched copy and delete the old document
+      // Use the concrete index name from the loaded entity (_index) instead of the alias (INDEX_INTERNAL_OBJECTS).
+      const settingCurrentIndex = platformSettings._index;
       const response = await elRawGet({
-        index: INDEX_INTERNAL_OBJECTS,
+        index: settingCurrentIndex,
         id: platformSettings.id,
       });
       await elRawIndex({
-        index: INDEX_INTERNAL_OBJECTS,
+        index: settingCurrentIndex,
         id: platformId,
         body: {
           ...response._source,
@@ -544,7 +546,7 @@ export const setPlatformId = async (context, platformId) => {
         refresh: true,
       });
       await elRawDelete({
-        index: INDEX_INTERNAL_OBJECTS,
+        index: settingCurrentIndex,
         id: platformSettings.id,
         refresh: true,
       });

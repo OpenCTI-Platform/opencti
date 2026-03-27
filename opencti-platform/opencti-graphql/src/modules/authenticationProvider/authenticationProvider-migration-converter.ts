@@ -393,7 +393,8 @@ const quotePathSegment = (segment: string): string => {
 const buildOidcGroupsExpr = (gm: EnvGroupsManagement | undefined): string[] => {
   // Always populate with defaults — in the new model we never hide default paths.
   // Old default: groups_path=['groups'], token_reference='access_token', read_userinfo=false
-  const paths = gm?.groups_path ?? ['groups'];
+  if (!gm?.groups_mapping || gm.groups_mapping.length === 0) return [];
+  const paths = gm?.groups_path || ['groups'];
   const readUserinfo = gm?.read_userinfo ?? false;
   const tokenRef = gm?.token_reference ?? 'access_token';
   const prefix = readUserinfo ? 'user_info' : `tokens.${tokenRef}`;
@@ -403,7 +404,8 @@ const buildOidcGroupsExpr = (gm: EnvGroupsManagement | undefined): string[] => {
 const buildOidcOrgsExpr = (om: EnvOrganizationsManagement | undefined): string[] => {
   // Always populate with defaults — in the new model we never hide default paths.
   // Old default: organizations_path=['organizations'], token_reference='access_token', read_userinfo=false
-  const paths = om?.organizations_path ?? ['organizations'];
+  if (!om || Object.keys(om).length === 0) return [];
+  const paths = om?.organizations_path || ['organizations'];
   const readUserinfo = om?.read_userinfo ?? false;
   const tokenRef = om?.token_reference ?? 'access_token';
   const prefix = readUserinfo ? 'user_info' : `tokens.${tokenRef}`;
@@ -563,7 +565,9 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
   const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
   const gm = resolveGroupsManagement(ext, 'saml', warnings);
-  const groupsExpr = (gm?.group_attributes ?? ['groups']).map(quotePathSegment);
+  const groupsExpr = (gm?.groups_mapping && gm.groups_mapping.length > 0)
+    ? (gm.group_attributes || ['groups']).map(quotePathSegment)
+    : [];
   const groupsMapping: GroupsMappingInput = {
     auto_create_groups: autoCreateGroup,
     prevent_default_groups: preventDefaultGroups,
@@ -573,18 +577,19 @@ export const convertSamlEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   };
 
   // Organizations mapping
-  // Always populate with defaults — old default: organizations_path=['organizations']
+  // Mirror legacy isOrgaMapping: organizations_expr only populated when organizations_management is non-empty.
   // In the old SAML code, organizations_path was used as R.path(orgaPath, profile) — the array
   // was the path segments (e.g. ['org', 'list'] → profile.org.list). In the new model, each
   // array element is a dot-separated expression resolved independently. So we join the old
   // array into a single dot-separated string.
   const om = ext.get<EnvOrganizationsManagement | undefined>('organizations_management', undefined);
   const organizationsDefault = ext.get<string[]>('organizations_default', []);
-  const rawOrgPath = om?.organizations_path ?? ['organizations'];
   const organizationsMapping: OrganizationsMappingInput = {
     auto_create_organizations: false,
     default_organizations: organizationsDefault,
-    organizations_expr: [rawOrgPath.map(quotePathSegment).join('.')],
+    organizations_expr: (om && Object.keys(om).length > 0)
+      ? [(om.organizations_path || ['organizations']).map(quotePathSegment).join('.')]
+      : [],
     organizations_mapping: convertMappingEntries(om?.organizations_mapping),
   };
 
@@ -667,7 +672,9 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   const autoCreateGroup = ext.get<boolean>('auto_create_group', false);
   const preventDefaultGroups = ext.get<boolean>('prevent_default_groups', false);
   const gm = resolveGroupsManagement(ext, 'ldap', warnings);
-  const groupsExpr = [quotePathSegment(gm?.group_attribute ?? 'cn')];
+  const groupsExpr = (gm?.groups_mapping && gm.groups_mapping.length > 0)
+    ? [quotePathSegment(gm.group_attribute ?? 'cn')]
+    : [];
   const groupsMapping: GroupsMappingInput = {
     auto_create_groups: autoCreateGroup,
     prevent_default_groups: preventDefaultGroups,
@@ -677,13 +684,15 @@ export const convertLdapEnvConfig = (envKey: string, entry: EnvProviderEntry): C
   };
 
   // Organizations mapping
-  // Always populate with defaults — old default: organizations_path=['organizations']
+  // Mirror legacy isOrgaMapping: organizations_expr only populated when organizations_management is non-empty.
   const om = ext.get<EnvOrganizationsManagement | undefined>('organizations_management', undefined);
   const organizationsDefault = ext.get<string[]>('organizations_default', []);
   const organizationsMapping: OrganizationsMappingInput = {
     auto_create_organizations: false,
     default_organizations: organizationsDefault,
-    organizations_expr: (om?.organizations_path ?? ['organizations']).map(quotePathSegment),
+    organizations_expr: (om && Object.keys(om).length > 0)
+      ? (om.organizations_path || ['organizations']).map(quotePathSegment)
+      : [],
     organizations_mapping: convertMappingEntries(om?.organizations_mapping),
   };
 

@@ -67,27 +67,30 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
           </Card>
         )}
 
-        {consentOk && providers.filter((p) => p.type === 'FORM').length > 0 && (
-          <Card
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            {!!loginMessage && (
-              <LoginMarkdown sx={{ mb: 2 }}>
-                {loginMessage}
-              </LoginMarkdown>
-            )}
+        {!!loginMessage && (
+          <Typography textAlign="center" variant="body2">
+            <LoginMarkdown sx={{ mb: 2 }}>
+              {loginMessage}
+            </LoginMarkdown>
+          </Typography>
+        )}
 
-            {(showLoginForm || !!resetPwdStep) && (
+        {consentOk
+          && providers.filter((p) => p.type === 'FORM').length > 0
+          && (showLoginForm || !!resetPwdStep)
+          && (
+            <Card
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
               <div style={{ minHeight: 170 }}>
                 {!!resetPwdStep && <ResetPassword />}
                 {showLoginForm && <LoginForm />}
               </div>
-            )}
-          </Card>
-        )}
+            </Card>
+          )}
 
         <ExternalAuths
           data={settings}

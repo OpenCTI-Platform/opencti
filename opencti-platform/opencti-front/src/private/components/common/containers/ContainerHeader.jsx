@@ -742,6 +742,7 @@ const ContainerHeader = (props) => {
                               isDisabled={isSharingDisabled}
                               handleCloseMenu={closeMenu}
                               needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
+                              allowInDraft={true}
                             />
                           )}
                           {displayAuthorizedMembers && !displayAuthorizedMembersButton && (

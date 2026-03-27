@@ -38,7 +38,7 @@ describe('Playbook utils: checkPlaybookFiltersAndBuildConfigWithCorrectFilters',
     const filters = {
       mode: 'or',
       filters: [
-        { key: ['description'], values: ['test'] }, // key not compatible with stix filtering
+        { key: ['name'], values: ['test'] }, // key not compatible with stix filtering
       ],
       filterGroups: [],
     };

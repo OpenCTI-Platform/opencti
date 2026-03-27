@@ -75,7 +75,7 @@ export const decodeLicensePem = (settings: BasicStoreSettings, overridePem?: str
       const clientCrt = forge.pki.certificateFromPem(pem);
       const license_valid_cert = OPENCTI_CA.verify(clientCrt);
       const license_type = getExtensionValue(clientCrt, LICENSE_OID_TYPE, LICENSE_LEGACY_TYPE);
-      const valid_type = LICENSE_TYPES.includes(license_type) && (!IS_LTS_PLATFORM || license_type === LICENSE_TYPE_LTS);
+      const valid_type = LICENSE_TYPES.includes(license_type) && (!IS_LTS_PLATFORM || license_type === LICENSE_TYPE_LTS || license_type === LICENSE_TYPE_CI);
       const license_creator = getExtensionValue(clientCrt, LICENSE_OID_CREATOR, LICENSE_LEGACY_CREATOR);
       const valid_product = getExtensionValue(clientCrt, LICENSE_OID_PRODUCT, LICENSE_LEGACY_PRODUCT) === 'opencti';
       const license_customer = clientCrt.subject.getField('O').value;

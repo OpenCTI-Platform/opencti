@@ -6,13 +6,14 @@ interface ExternalAuthButtonProps {
   auth: {
     provider?: string | null;
     name: string;
+    button_label_override?: string | null;
   };
 }
 
 const ExternalAuthButton = ({
   auth,
 }: ExternalAuthButtonProps) => {
-  const { provider, name } = auth;
+  const { provider, name, button_label_override } = auth;
 
   return (
     <Button
@@ -22,7 +23,7 @@ const ExternalAuthButton = ({
       startIcon={<KeyOutline fontSize="small" />}
       href={`${APP_BASE_PATH}/auth/${provider}`}
     >
-      {name}
+      {button_label_override ?? name}
     </Button>
   );
 };

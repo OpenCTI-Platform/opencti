@@ -225,7 +225,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
             )}
             {values.validation_mode === 'draft' && (
               <>
-                {isFeatureEnable('DRAFT_METADATA') && (
+                {isFeatureEnable('DRAFT_WORKFLOW') && (
                   <>
                     <Field
                       component={MarkdownField}

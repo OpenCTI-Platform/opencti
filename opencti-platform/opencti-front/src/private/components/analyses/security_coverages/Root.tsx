@@ -1,9 +1,6 @@
-import React, { Suspense, useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
-import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import Security from 'src/utils/Security';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import FileManager from '@components/common/files/FileManager';
@@ -12,13 +9,14 @@ import SecurityCoverageKnowledge from '@components/analyses/security_coverages/S
 import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 import SecurityCoverage from './SecurityCoverage';
 import { RootSecurityCoverageQuery } from './__generated__/RootSecurityCoverageQuery.graphql';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import { getCurrentTab, getPaddingRight, isNotEmptyField } from '../../../../utils/utils';
+import { getPaddingRight, isNotEmptyField } from '../../../../utils/utils';
 import SecurityCoverageEdition from './SecurityCoverageEdition';
 import SecurityCoverageDeletion from './SecurityCoverageDeletion';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -122,43 +120,16 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
             noAliases={true}
             enableEnrollPlaybook={true}
           />
-          <Box
-            sx={{
-              borderBottom: 1,
-              borderColor: 'divider',
-              marginBottom: 3,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItem: 'center',
-            }}
-          >
-            <Tabs value={getCurrentTab(location.pathname, securityCoverage.id, '/dashboard/analyses/security_coverages')}>
-              <Tab
-                component={Link}
-                to={`/dashboard/analyses/security_coverages/${securityCoverage.id}`}
-                value={`/dashboard/analyses/security_coverages/${securityCoverage.id}`}
-                label={t_i18n('Overview')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/analyses/security_coverages/${securityCoverage.id}/content`}
-                value={`/dashboard/analyses/security_coverages/${securityCoverage.id}/content`}
-                label={t_i18n('Content')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/analyses/security_coverages/${securityCoverage.id}/files`}
-                value={`/dashboard/analyses/security_coverages/${securityCoverage.id}/files`}
-                label={t_i18n('Data')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/analyses/security_coverages/${securityCoverage.id}/history`}
-                value={`/dashboard/analyses/security_coverages/${securityCoverage.id}/history`}
-                label={t_i18n('History')}
-              />
-            </Tabs>
-            {!isContent && (
+          <StixDomainObjectTabsBox
+            basePath="/dashboard/analyses/security_coverages"
+            entity={securityCoverage}
+            tabs={[
+              'overview',
+              'content',
+              'files',
+              'history',
+            ]}
+            extraActions={!isContent && (
               <>
                 <Button
                   disabled={!hasExternalUri}
@@ -178,7 +149,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                 />
               </>
             )}
-          </Box>
+          />
           <Routes>
             <Route
               path="/"

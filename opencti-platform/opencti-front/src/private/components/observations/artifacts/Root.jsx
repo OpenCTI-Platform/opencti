@@ -1,11 +1,8 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Routes, Link } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
@@ -15,13 +12,14 @@ import StixCyberObservableKnowledge from '../stix_cyber_observables/StixCyberObs
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCyberObservableHeader from '../stix_cyber_observables/StixCyberObservableHeader';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import FileManager from '../../common/files/FileManager';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import inject18n from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import StixCyberObservableDeletion from '../stix_cyber_observables/StixCyberObservableDeletion';
@@ -121,60 +119,19 @@ class RootArtifact extends Component {
                         </Security>
                       )}
                     />
-                    <Box
-                      sx={{
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        marginBottom: 3,
-                      }}
-                    >
-                      <Tabs
-                        value={getCurrentTab(location.pathname, stixCyberObservable.id, '/dashboard/observations/artifacts')}
-                      >
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/artifacts/${stixCyberObservable.id}`}
-                          value={`/dashboard/observations/artifacts/${stixCyberObservable.id}`}
-                          label={t('Overview')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/artifacts/${stixCyberObservable.id}/knowledge`}
-                          value={`/dashboard/observations/artifacts/${stixCyberObservable.id}/knowledge`}
-                          label={t('Knowledge')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/artifacts/${stixCyberObservable.id}/content`}
-                          value={`/dashboard/observations/artifacts/${stixCyberObservable.id}/content`}
-                          label={t('Content')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/artifacts/${stixCyberObservable.id}/analyses`}
-                          value={`/dashboard/observations/artifacts/${stixCyberObservable.id}/analyses`}
-                          label={t('Analyses')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/artifacts/${stixCyberObservable.id}/sightings`}
-                          value={`/dashboard/observations/artifacts/${stixCyberObservable.id}/sightings`}
-                          label={t('Sightings')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/artifacts/${stixCyberObservable.id}/files`}
-                          value={`/dashboard/observations/artifacts/${stixCyberObservable.id}/files`}
-                          label={t('Data')}
-                        />
-                        <Tab
-                          component={Link}
-                          to={`/dashboard/observations/artifacts/${stixCyberObservable.id}/history`}
-                          value={`/dashboard/observations/artifacts/${stixCyberObservable.id}/history`}
-                          label={t('History')}
-                        />
-                      </Tabs>
-                    </Box>
+                    <StixDomainObjectTabsBox
+                      basePath="/dashboard/observations/artifacts"
+                      entity={stixCyberObservable}
+                      tabs={[
+                        'overview',
+                        'knowledge',
+                        'content',
+                        'analyses',
+                        'sightings',
+                        'files',
+                        'history',
+                      ]}
+                    />
                     <Routes>
                       <Route
                         path="/"

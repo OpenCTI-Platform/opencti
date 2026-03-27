@@ -2,12 +2,10 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Link, Route, Routes, useParams, useLocation } from 'react-router-dom';
+import { Route, Routes, useParams, useLocation } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
+import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
@@ -21,7 +19,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
+import { getPaddingRight } from '../../../../utils/utils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import DataSourceEdition from './DataSourceEdition';
@@ -115,38 +113,16 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             redirectToContent={true}
             enableEnrollPlaybook={true}
           />
-          <Box
-            sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 4 }}
-          >
-            <Tabs
-              value={getCurrentTab(location.pathname, dataSource.id, '/dashboard/techniques/data_sources')}
-            >
-              <Tab
-                component={Link}
-                to={`/dashboard/techniques/data_sources/${dataSource.id}`}
-                value={`/dashboard/techniques/data_sources/${dataSource.id}`}
-                label={t_i18n('Overview')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/techniques/data_sources/${dataSource.id}/content`}
-                value={`/dashboard/techniques/data_sources/${dataSource.id}/content`}
-                label={t_i18n('Content')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/techniques/data_sources/${dataSource.id}/files`}
-                value={`/dashboard/techniques/data_sources/${dataSource.id}/files`}
-                label={t_i18n('Data')}
-              />
-              <Tab
-                component={Link}
-                to={`/dashboard/techniques/data_sources/${dataSource.id}/history`}
-                value={`/dashboard/techniques/data_sources/${dataSource.id}/history`}
-                label={t_i18n('History')}
-              />
-            </Tabs>
-          </Box>
+          <StixDomainObjectTabsBox
+            basePath="/dashboard/techniques/data_sources"
+            entity={dataSource}
+            tabs={[
+              'overview',
+              'content',
+              'files',
+              'history',
+            ]}
+          />
           <Routes>
             <Route
               path="/"

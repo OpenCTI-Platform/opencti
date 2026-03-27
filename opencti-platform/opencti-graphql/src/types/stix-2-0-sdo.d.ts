@@ -1,5 +1,41 @@
-import type { StixDomainObject } from './stix-2-0-common';
-import type { StixId, StixDate, StixKillChainPhase } from './stix-2-1-common';
+import type { StixDate, StixDomainObject } from './stix-2-0-common';
+
+export interface StixCampaign extends StixDomainObject {
+  name: string;
+  description: string;
+  aliases: Array<string>;
+  first_seen: StixDate;
+  last_seen: StixDate;
+  objective: string;
+}
+
+export interface StixIntrusionSet extends StixDomainObject {
+  name: string;
+  description: string;
+  aliases: Array<string>;
+  first_seen: StixDate;
+  last_seen: StixDate;
+  goals: Array<string>;
+  resource_level: string;
+  primary_motivation: string;
+  secondary_motivations: Array<string>;
+}
+
+export interface StixThreatActor extends StixDomainObject {
+  name: string;
+  description: string;
+  threat_actor_types: Array<string>;
+  aliases: Array<string>;
+  first_seen: StixDate;
+  last_seen: StixDate;
+  roles: Array<string>;
+  goals: Array<string>;
+  sophistication: string;
+  resource_level: string;
+  primary_motivation: string;
+  secondary_motivations: Array<string>;
+  personal_motivations: Array<string>;
+}
 
 export interface StixMalware extends StixDomainObject {
   name: string; // optional
@@ -15,6 +51,83 @@ export interface StixMalware extends StixDomainObject {
   capabilities: Array<string>; // optional
   operating_system_refs: Array<StixId>; // optional
   sample_refs: Array<StixId>; // optional
+}
+
+export interface StixTool extends StixDomainObject {
+  name: string;
+  description: string; // optional
+  tool_types: Array<string>; // tool-type-ov - optional
+  aliases: Array<string>; // optional
+  kill_chain_phases: Array<StixKillChainPhase>; // optional
+  tool_version: string;
+}
+
+export interface StixVulnerability extends StixDomainObject {
+  name: string;
+  description: string; // optional
+  x_opencti_cisa_kev: boolean;
+  x_opencti_first_seen_active: Date;
+  // CVSS3
+  x_opencti_cvss_vector_string: string;
+  x_opencti_cvss_base_score: number;
+  x_opencti_cvss_base_severity: string;
+  x_opencti_cvss_attack_vector: string;
+  x_opencti_cvss_attack_complexity: string;
+  x_opencti_cvss_privileges_required: string;
+  x_opencti_cvss_user_interaction: string;
+  x_opencti_cvss_scope: string;
+  x_opencti_cvss_confidentiality_impact: string;
+  x_opencti_cvss_integrity_impact: string;
+  x_opencti_cvss_availability_impact: string;
+  x_opencti_cvss_exploit_code_maturity: string;
+  x_opencti_cvss_remediation_level: string;
+  x_opencti_cvss_report_confidence: string;
+  x_opencti_cvss_temporal_score: number;
+  // CVSS2
+  x_opencti_cvss_v2_vector_string: string;
+  x_opencti_cvss_v2_base_score: number;
+  x_opencti_cvss_v2_access_vector: string;
+  x_opencti_cvss_v2_access_complexity: string;
+  x_opencti_cvss_v2_authentication: string;
+  x_opencti_cvss_v2_confidentiality_impact: string;
+  x_opencti_cvss_v2_integrity_impact: string;
+  x_opencti_cvss_v2_availability_impact: string;
+  x_opencti_cvss_v2_exploitability: string;
+  x_opencti_cvss_v2_remediation_level: string;
+  x_opencti_cvss_v2_report_confidence: string;
+  x_opencti_cvss_v2_temporal_score: number;
+  // CVSS4
+  x_opencti_cvss_v4_vector_string: string;
+  x_opencti_cvss_v4_base_score: number;
+  x_opencti_cvss_v4_base_severity: string;
+  x_opencti_cvss_v4_attack_vector: string;
+  x_opencti_cvss_v4_attack_complexity: string;
+  x_opencti_cvss_v4_attack_requirements: string;
+  x_opencti_cvss_v4_privileges_required: string;
+  x_opencti_cvss_v4_user_interaction: string;
+  x_opencti_cvss_v4_confidentiality_impact_v: string;
+  x_opencti_cvss_v4_confidentiality_impact_s: string;
+  x_opencti_cvss_v4_integrity_impact_v: string;
+  x_opencti_cvss_v4_integrity_impact_s: string;
+  x_opencti_cvss_v4_availability_impact_v: string;
+  x_opencti_cvss_v4_availability_impact_s: string;
+  x_opencti_cvss_v4_exploit_maturity: string;
+  // Others
+  x_opencti_score: number;
+  x_opencti_epss_score: number;
+  x_opencti_epss_percentile: number;
+}
+
+export interface StixIncident extends StixDomainObject {
+  name: string;
+  description: string; // optional
+  incident_type: string; // optional
+  first_seen: StixDate;
+  last_seen: StixDate;
+  objective: string;
+  aliases: Array<string>;
+  source: string;
+  severity: string;
 }
 
 // Container specific Properties
