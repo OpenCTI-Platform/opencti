@@ -1654,7 +1654,12 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 <Select
                   value={formData.draftDefaults?.author?.type || 'none'}
                   onChange={(e) => {
-                    handleFieldChange('draftDefaults.author.type', e.target.value);
+                    const currentAuthorDefaults = formData.draftDefaults?.author;
+                    handleFieldChange('draftDefaults.author', {
+                      type: e.target.value,
+                      isEditable: currentAuthorDefaults?.isEditable ?? false,
+                      isRequired: currentAuthorDefaults?.isRequired ?? false,
+                    });
                   }}
                   label={t_i18n('Author Source')}
                 >

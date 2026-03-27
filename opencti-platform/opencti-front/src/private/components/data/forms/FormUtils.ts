@@ -428,13 +428,26 @@ export const buildEntityTypes = (
 export const convertFormBuilderDataToSchema = (
   values: FormBuilderData,
 ): FormSchemaDefinition => {
+  const normalizedDraftDefaults = values.draftDefaults
+    ? {
+      ...values.draftDefaults,
+      author: values.draftDefaults.author
+        ? {
+          type: values.draftDefaults.author.type,
+          isEditable: values.draftDefaults.author.isEditable ?? false,
+          isRequired: values.draftDefaults.author.isRequired ?? false,
+        }
+        : undefined,
+    }
+    : undefined;
+
   return {
     version: '2.0',
     mainEntityType: values.mainEntityType,
     includeInContainer: values.includeInContainer,
     isDraftByDefault: values.isDraftByDefault,
     allowDraftOverride: values.allowDraftOverride,
-    draftDefaults: values.draftDefaults,
+    draftDefaults: normalizedDraftDefaults,
     mainEntityMultiple: values.mainEntityMultiple,
     mainEntityLookup: values.mainEntityLookup,
     mainEntityDisableCreation: values.mainEntityDisableCreation,
