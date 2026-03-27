@@ -2844,10 +2844,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/ed25519@npm:3.0.0":
-  version: 3.0.0
-  resolution: "@noble/ed25519@npm:3.0.0"
-  checksum: 10c0/6355aed04523d063d3e9a9952926af4a0eaa722e08133f558d44963a3048bf6dae02cae9032d42238d1fcb2a93ef27658f2baf4cf07939457717a4337a89dc26
+"@noble/ed25519@npm:3.0.1":
+  version: 3.0.1
+  resolution: "@noble/ed25519@npm:3.0.1"
+  checksum: 10c0/0801b3cbc1d52ad423e2867eb2d8ca98a166dad4b6eea751a185d25182c7233d181e533318dd206d0235bf48ac3408a2a6e572d060966f59cae1e7e271a5dd8d
   languageName: node
   linkType: hard
 
@@ -10600,7 +10600,7 @@ __metadata:
     "@lezer/javascript": "npm:1.5.4"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:1.7.2"
-    "@noble/ed25519": "npm:3.0.0"
+    "@noble/ed25519": "npm:3.0.1"
     "@node-saml/passport-saml": "npm:5.1.0"
     "@opensearch-project/opensearch": "npm:3.5.1"
     "@opentelemetry/api": "npm:1.9.0"
