@@ -53,7 +53,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   adversary: {
     position: 'absolute',
     top: -85,
-    left: 81,
+    left: 88,
   },
   infrastructure: {
     position: 'absolute',
@@ -63,7 +63,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   victimology: {
     position: 'absolute',
     top: 110,
-    left: 81,
+    left: 88,
   },
   capabilities: {
     position: 'absolute',
@@ -78,19 +78,15 @@ const NodeDiamond = ({ data }: NodeProps) => {
     <div className={classes.node}>
       {truncate(data.name, 25, false)}
       <div className={classes.adversary}>
-        {/* <ItemIcon type="threats" color="inherit" /> */}
         <ItemIcon type="threats" />
       </div>
       <div className={classes.infrastructure}>
-        {/* <ItemIcon type="Infrastructure" color="inherit" /> */}
         <ItemIcon type="Infrastructure" />
       </div>
       <div className={classes.victimology}>
-        {/* <ItemIcon type="victimology" color="inherit" /> */}
         <ItemIcon type="victimology" />
       </div>
       <div className={classes.capabilities}>
-        {/* <ItemIcon type="Attack-Pattern" color="inherit" /> */}
         <ItemIcon type="Attack-Pattern" />
       </div>
       <Handle
