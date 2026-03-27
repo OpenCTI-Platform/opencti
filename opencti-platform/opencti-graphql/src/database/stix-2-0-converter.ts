@@ -1,4 +1,4 @@
-import type { BasicStoreCommon, StoreCommon, StoreEntity, StoreFileWithRefs, StoreObject, StoreRelation } from '../types/store';
+import type { BasicStoreCommon, StoreCommon, StoreEntity, StoreEntityIdentity, StoreFileWithRefs, StoreObject, StoreRelation } from '../types/store';
 import type * as S from '../types/stix-2-0-common';
 import type * as SDO from '../types/stix-2-0-sdo';
 import type * as SMO from '../types/stix-2-0-smo';
@@ -41,6 +41,10 @@ import { isEmptyField } from './utils';
 import type * as SRO from '../types/stix-2-0-sro';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { convertThreatActorIndividualToStix_2_0 } from '../modules/threatActorIndividual/threatActorIndividual-converter';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { convertOrganizationToStix_2_0 } from '../modules/organization/organization-converter';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../modules/securityPlatform/securityPlatform-types';
+import { convertSecurityPlatformToStix_2_0 } from '../modules/securityPlatform/securityPlatform-converter';
 
 const CUSTOM_ENTITY_TYPES = [
   ENTITY_TYPE_CONTAINER_TASK,
@@ -160,6 +164,27 @@ export const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDo
 const buildStixRelationship = (instance: StoreRelation): S.StixRelationshipObject => {
   // As 14/03/2022, relationship share same common information with domain
   return buildStixDomain(instance);
+};
+
+export const convertIdentityToStix = (instance: StoreEntityIdentity, type: string): SDO.StixIdentity => {
+  if (!isStixDomainObjectIdentity(type)) {
+    throw UnsupportedError('Type not compatible with identity', { entity_type: type });
+  }
+  const identity = buildStixDomain(instance);
+  return {
+    ...identity,
+    name: instance.name,
+    description: instance.description,
+    contact_information: instance.contact_information,
+    identity_class: instance.identity_class,
+    roles: instance.roles,
+    sectors: (instance as any).sectors,
+    x_opencti_aliases: instance.x_opencti_aliases,
+    x_opencti_firstname: (instance as any).x_opencti_firstname,
+    x_opencti_lastname: (instance as any).x_opencti_lastname,
+    x_opencti_organization_type: (instance as any).x_opencti_organization_type,
+    x_opencti_reliability: (instance as any).x_opencti_reliability,
+  };
 };
 
 export const convertIncidentToStix = (instance: StoreEntity): SDO.StixIncident => {
@@ -445,6 +470,15 @@ const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
     }
     if (ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL === type) {
       return convertThreatActorIndividualToStix_2_0(basic as any);
+    }
+    if (ENTITY_TYPE_IDENTITY_ORGANIZATION === type) {
+      return convertOrganizationToStix_2_0(basic as any);
+    }
+    if (ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM === type) {
+      return convertSecurityPlatformToStix_2_0(basic as any);
+    }
+    if (isStixDomainObjectIdentity(type)) {
+      return convertIdentityToStix(basic as StoreEntityIdentity, type);
     }
     if (ENTITY_TYPE_TOOL === type) {
       return convertToolToStix(basic);
