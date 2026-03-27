@@ -3,7 +3,7 @@ import { Field, Form, Formik } from 'formik';
 import React, { useEffect } from 'react';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '@components/common/files/FileManager';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import EntitySelectField from '@components/common/form/EntitySelectField';
 import { EntityOption } from '@components/common/form/EntitySelect';
 import FintelDesignField, { FintelDesignFieldOption } from '@components/common/form/FintelDesignField';

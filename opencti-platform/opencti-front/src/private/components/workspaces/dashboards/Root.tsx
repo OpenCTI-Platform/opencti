@@ -1,5 +1,5 @@
 import { Suspense, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Dashboard from './Dashboard';
 import Loader from '../../../../components/Loader';

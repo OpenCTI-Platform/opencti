@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { graphql } from 'react-relay';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';

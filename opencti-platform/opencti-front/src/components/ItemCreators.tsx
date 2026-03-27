@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Security from '../utils/Security';
 import { SETTINGS_SETACCESSES } from '../utils/hooks/useGranted';
 import { Stack } from '@mui/material';

@@ -32,7 +32,7 @@ import { useFormatter } from '../i18n';
 import Tag from '../common/tag/Tag';
 import { resolveLink } from '../../utils/Entity';
 import { typesWithNoAnalysesTab } from '../../utils/hooks/useAttributes';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import TagsOverflow from '../common/tag/TagsOverflow';
 import { VocabularyDefinition } from '../../utils/hooks/useVocabularyCategory';
 import { EMPTY_VALUE } from '../../utils/String';

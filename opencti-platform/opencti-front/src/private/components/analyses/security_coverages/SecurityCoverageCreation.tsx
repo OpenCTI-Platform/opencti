@@ -38,7 +38,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SecurityCoverageEntityLine from './SecurityCoverageEntityLine';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { SecurityCoverageCreationMutation } from '@components/analyses/security_coverages/__generated__/SecurityCoverageCreationMutation.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/

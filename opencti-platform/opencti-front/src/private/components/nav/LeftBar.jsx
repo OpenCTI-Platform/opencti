@@ -70,7 +70,7 @@ import {
 } from 'mdi-material-ui';
 import React, { useRef, useState } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { THEME_LIGHT_DEFAULT_BACKGROUND, THEME_LIGHT_DEFAULT_PAPER } from '../../../components/ThemeLight';
 import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';

@@ -1,7 +1,7 @@
 import React, { FunctionComponent, ReactNode, SyntheticEvent, useState } from 'react';
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import { fetchQuery } from '../../../../relay/environment';
