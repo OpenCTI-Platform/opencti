@@ -35,6 +35,7 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import { adaptFieldValue } from '../../../../utils/String';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import IngestionEditionUserHandling from '@components/data/IngestionEditionUserHandling';
+import IngestionSchedulingField from '@components/data/IngestionSchedulingField';
 export const ingestionTaxiiEditionUserHandlingPatch = graphql`
   mutation IngestionTaxiiEditionUserHandlingMutation($id: ID!, $input: IngestionTaxiiAddAutoUserInput!) {
     ingestionTaxiiAddAutoUser(id: $id, input: $input) {
@@ -53,6 +54,7 @@ export const initIngestionValue = (ingestionTaxiiData: IngestionTaxiiEditionFrag
     ...{
       name: ingestionTaxiiData.name,
       description: ingestionTaxiiData.description,
+      scheduling_period: ingestionTaxiiData.scheduling_period ?? 'auto',
       uri: ingestionTaxiiData.uri,
       version: ingestionTaxiiData.version,
       collection: ingestionTaxiiData.collection,
@@ -109,6 +111,7 @@ export const ingestionTaxiiEditionFragment = graphql`
     id
     name
     description
+    scheduling_period
     uri
     version
     collection
@@ -136,6 +139,7 @@ export interface IngestionTaxiiEditionForm {
   references?: ExternalReferencesValues;
   name: string;
   description?: string | null | undefined;
+  scheduling_period?: string | null;
   uri: string;
   version: string;
   collection: string;
@@ -298,6 +302,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
             style={fieldSpacingContainerStyle}
             onSubmit={handleSubmitField}
           />
+          <IngestionSchedulingField handleSubmitField={handleSubmitField} />
           <Field
             component={TextField}
             variant="standard"
