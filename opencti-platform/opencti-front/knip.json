@@ -1,0 +1,16 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "tags": [
+    "-lintignore"
+  ],
+  "workspaces": {
+    ".": {
+      "entry": [
+        "src/static/ext/pdf.worker.mjs"
+      ],
+      "ignoreDependencies": [
+        "i18n-auto-translation"
+      ]
+    }
+  }
+}

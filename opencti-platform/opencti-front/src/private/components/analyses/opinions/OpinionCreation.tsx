@@ -35,6 +35,50 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+graphql`
+  fragment OpinionCreation_node on Opinion {
+    id
+    entity_type
+    opinion
+    explanation
+    created
+    confidence
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
+      }
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    objectLabel {
+      id
+      value
+      color
+    }
+    creators {
+      id
+      name
+    }
+    status {
+      id
+      order
+      template {
+        name
+        color
+      }
+    }
+    workflowEnabled
+  }
+`;
+
 export const opinionCreationUserMutation = graphql`
   mutation OpinionCreationUserMutation($input: OpinionUserAddInput!) {
     userOpinionAdd(input: $input) {
@@ -47,7 +91,7 @@ export const opinionCreationUserMutation = graphql`
       parent_types
       opinion
       explanation
-      ...OpinionLine_node
+      ...OpinionCreation_node
     }
   }
 `;
@@ -64,7 +108,7 @@ export const opinionCreationMutation = graphql`
       parent_types
       opinion
       explanation
-      ...OpinionLine_node
+      ...OpinionCreation_node
     }
   }
 `;

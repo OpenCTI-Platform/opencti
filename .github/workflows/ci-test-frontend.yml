@@ -168,9 +168,10 @@ jobs:
               apt-get -y install netcat-traditional
               cd /home/workspace/opencti-platform/opencti-front
               npm install -g corepack
+              corepack enable
               cp /home/workspace/opencti-platform/.yarnrc.yml .
               yarn install
-              npx playwright install --with-deps chromium
+              yarn playwright install --with-deps chromium
               yarn build
               yarn test:e2e
             '
