@@ -46,6 +46,7 @@ const PoliciesFragment = graphql`
       name
     }
     view_all_users
+    platform_mcp_enabled
   }
 `;
 
@@ -75,6 +76,7 @@ const policiesValidation = () => Yup.object().shape({
   platform_consent_confirm_text: Yup.string().nullable(),
   platform_banner_level: Yup.string().nullable(),
   platform_banner_text: Yup.string().nullable(),
+  platform_mcp_enabled: Yup.boolean(),
 });
 
 interface PoliciesComponentProps {
@@ -130,6 +132,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
     platform_banner_level: settings.platform_banner_level,
     platform_banner_text: settings.platform_banner_text,
     view_all_users: settings.view_all_users ?? false,
+    platform_mcp_enabled: settings.platform_mcp_enabled ?? false,
   };
   return (
     <div
@@ -231,6 +234,22 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                   </Grid>
 
                   <GroupSetDefaultGroupForIngestionUsers />
+
+                  <Grid item xs={6}>
+                    <Card title={t_i18n('MCP server')}>
+                      <Alert severity="info" variant="outlined">
+                        {t_i18n('When enabled, the platform exposes a Model Context Protocol (MCP) server that allows AI assistants and tools to interact with OpenCTI.')}
+                      </Alert>
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="platform_mcp_enabled"
+                        label={t_i18n('Enable MCP server (Model Context Protocol)')}
+                        containerstyle={{ marginTop: 20 }}
+                        onChange={(name: string, value: string) => handleSubmitField(name, value)}
+                      />
+                    </Card>
+                  </Grid>
                   <Grid item xs={6}>
                     <Card title={t_i18n('Users visibility')}>
                       <Alert severity="info" variant="outlined">

@@ -30,6 +30,7 @@ import { isEngineAlive } from '../database/engine';
 import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
+import initMcpApi from './httpMcp';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { extractRefererPathFromReq, setCookieError, decodeOidcState } from './httpUtils';
 import { getChatbotConfig, getChatbotAgents, postChatbotSession, postChatbotMessage, postAgentMessage, getLegacyChatbotProxy } from './httpChatbotProxy';
@@ -181,6 +182,9 @@ const createApp = async (app, schema) => {
 
   // -- Init rolling feeds rest api
   initHttpRollingFeeds(app);
+
+  // -- Init MCP server api
+  initMcpApi(app, schema);
 
   // -- Register the encryption module
   archiver.registerFormat('zip-encrypted', archiverZipEncrypted);

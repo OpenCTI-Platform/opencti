@@ -29770,6 +29770,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_login_message?: Maybe<Scalars['String']['output']>;
   platform_map_tile_server_dark?: Maybe<Scalars['String']['output']>;
   platform_map_tile_server_light?: Maybe<Scalars['String']['output']>;
+  platform_mcp_enabled: Scalars['Boolean']['output'];
   platform_messages?: Maybe<Array<SettingsMessage>>;
   platform_modules?: Maybe<Array<Module>>;
   platform_openaev_url?: Maybe<Scalars['String']['output']>;
@@ -49445,6 +49446,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_login_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_tile_server_dark?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_tile_server_light?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_mcp_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_messages?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
   platform_modules?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
   platform_openaev_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

@@ -22,7 +22,8 @@ import inject18n, { useFormatter } from '../../../components/i18n';
 import Loader from '../../../components/Loader';
 import TextField from '../../../components/TextField';
 import OtpInputField, { OTP_CODE_SIZE } from '../../../public/components/login/OtpInputField';
-import { commitMutation, MESSAGING$, QueryRenderer } from '../../../relay/environment';
+import { APP_BASE_PATH, commitMutation, MESSAGING$, QueryRenderer } from '../../../relay/environment';
+import { copyToClipboard } from '../../../utils/utils';
 import { convertOrganizations } from '../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -199,6 +200,19 @@ const OtpComponent = ({ closeFunction }) => (
     }}
   />
 );
+
+const getMcpEndpointUrl = () => `${window.location.origin}${APP_BASE_PATH}/mcp`;
+
+const buildMcpClientConfig = () => JSON.stringify({
+  mcpServers: {
+    opencti: {
+      url: getMcpEndpointUrl(),
+      headers: {
+        Authorization: 'Bearer <your-api-token>',
+      },
+    },
+  },
+}, null, 2);
 
 const ProfileOverviewComponent = (props) => {
   const { t, me, classes, about, settings, themes } = props;
@@ -586,6 +600,48 @@ const ProfileOverviewComponent = (props) => {
           </Stack>
         </div>
       </Card>
+      {hasAccessTokenCapability && me.mcp_allowed && settings.platform_mcp_enabled && (
+        <Card title={t('MCP access')}>
+          <div>
+            <Alert
+              severity="info"
+              variant="outlined"
+              style={{ marginBottom: 16 }}
+            >
+              {t('OpenCTI exposes a Model Context Protocol (MCP) server that allows AI assistants and tools to interact with the platform. Use your API token for authentication.')}
+              {' '}
+              <a
+                href="https://modelcontextprotocol.io"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'inherit' }}
+              >
+                {t('MCP documentation')}
+              </a>
+            </Alert>
+            <Label>{t('MCP endpoint')}</Label>
+            <pre>{getMcpEndpointUrl()}</pre>
+            <Label style={{ marginTop: 16 }}>{t('MCP client configuration')}</Label>
+            <Alert
+              severity="info"
+              variant="outlined"
+              style={{ margin: '8px 0' }}
+            >
+              {t('Copy the JSON configuration below to connect your MCP client (Claude Desktop, Cursor, etc.) to this OpenCTI instance.')}
+            </Alert>
+            <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+              {buildMcpClientConfig()}
+            </pre>
+            <Stack direction="row" justifyContent="flex-end" style={{ marginTop: 8 }}>
+              <Button
+                onClick={() => copyToClipboard(t, buildMcpClientConfig())}
+              >
+                {t('Copy configuration')}
+              </Button>
+            </Stack>
+          </div>
+        </Card>
+      )}
       <ProfileLocalStorage />
     </Stack>
   );
@@ -619,6 +675,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       submenu_show_icons
       submenu_auto_collapse
       monochrome_labels
+      mcp_allowed
       personal_notifiers {
         id
         name
@@ -641,6 +698,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
   settings: graphql`
     fragment ProfileOverview_settings on Settings {
       otp_mandatory
+      platform_mcp_enabled
     }
   `,
 });

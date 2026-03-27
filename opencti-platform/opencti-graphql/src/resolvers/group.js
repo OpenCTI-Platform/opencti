@@ -28,6 +28,7 @@ const groupResolvers = {
     groups: (_, args, context) => findGroupPaginated(context, context.user, args),
   },
   Group: {
+    mcp_allowed: (group) => group.mcp_allowed ?? true,
     default_marking: (group, _, context) => defaultMarkingDefinitions(context, group),
     allowed_marking: (group, _, context) => groupAllowedMarkings(context, context.user, group.id),
     not_shareable_marking_types: (group) => groupNotShareableMarkingTypes(group),

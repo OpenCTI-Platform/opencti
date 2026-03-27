@@ -101,6 +101,7 @@ const settingsOrganizationFragment = graphql`
         }
       }
     }
+    mcp_allowed
     editContext {
       name
       focusOn

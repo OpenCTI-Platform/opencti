@@ -57,6 +57,7 @@ const groupFragment = graphql`
     auto_new_marking
     restrict_delete
     no_creators
+    mcp_allowed
     group_confidence_level {
       max_confidence
       overrides {
@@ -264,6 +265,15 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 <ItemBoolean
                   status={group.restrict_delete ?? false}
                   label={group.restrict_delete ? t_i18n('Yes') : t_i18n('No')}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <Label>
+                  {t_i18n('MCP access')}
+                </Label>
+                <ItemBoolean
+                  status={group.mcp_allowed ?? true}
+                  label={(group.mcp_allowed ?? true) ? t_i18n('Yes') : t_i18n('No')}
                 />
               </Grid>
             </Grid>

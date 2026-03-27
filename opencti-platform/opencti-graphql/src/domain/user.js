@@ -1705,6 +1705,9 @@ export const buildCompleteUsers = async (context, clients) => {
     const effective_confidence_level = computeUserEffectiveConfidenceLevel({ ...client, groups, capabilities });
     const no_creators = groups.filter((g) => g.no_creators).length === groups.length;
     const restrict_delete = !isByPass && groups.filter((g) => g.restrict_delete).length === groups.length;
+    const groupMcpAllowed = groups.length === 0 || groups.some((g) => g.mcp_allowed !== false);
+    const orgMcpAllowed = organizations.length === 0 || organizations.some((o) => o.mcp_allowed !== false);
+    const mcp_allowed = groupMcpAllowed && orgMcpAllowed;
     const marking = await getUserAndGlobalMarkings(context, client.id, groups, markings, capabilities);
     if (administrated_organizations.length > 0) {
       capabilities.push(virtualOrganizationAdminCapability);
@@ -1724,6 +1727,7 @@ export const buildCompleteUsers = async (context, clients) => {
       effective_confidence_level,
       no_creators,
       restrict_delete,
+      mcp_allowed,
       allowed_marking: marking.user,
       default_marking: marking.default,
       max_shareable_marking: marking.max_shareable,

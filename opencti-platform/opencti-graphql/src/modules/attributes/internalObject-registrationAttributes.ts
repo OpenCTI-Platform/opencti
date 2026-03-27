@@ -255,6 +255,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'xtm_hub_registration_status', label: 'XTM Hub registration status', type: 'string', format: 'enum', values: ['registered', 'unregistered', 'lost_connectivity'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     { name: 'filigran_chatbot_ai_cgu_status', label: 'XTM1 CGU acceptance status', type: 'string', format: 'enum', values: ['pending', 'disabled', 'enabled'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_ai_enabled', label: 'AI insight activation', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'platform_mcp_enabled', label: 'MCP server activation', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_session_max_concurrent', label: 'Max concurrent sessions (0 equals no maximum)', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'local_auth', label: 'Local authentication', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'cert_auth', label: 'Client certificate authentication', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -274,6 +275,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'default_assignation', label: 'Default assignation', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'no_creators', label: 'No creators accumulation', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'restrict_delete', label: 'Restrict delete to its own entities', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'mcp_allowed', label: 'MCP access allowed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'auto_new_marking', label: 'Authorize to new markings', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     {
       name: 'default_marking',
