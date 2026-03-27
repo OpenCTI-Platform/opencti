@@ -103,10 +103,21 @@ const AuditDrawerContent: FunctionComponent<{ logId: string }> = ({ logId }) => 
         />
       )}
 
-      {log.entity_type === 'Activity' && (
+      {log.raw_data && (
         <div>
           <Label>{t_i18n('Raw data')}</Label>
-          <pre>{log.raw_data}</pre>
+          <pre style={{
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            overflowX: 'auto',
+            fontSize: '0.8125rem',
+            padding: '12px',
+            borderRadius: '4px',
+            backgroundColor: 'rgba(0, 0, 0, 0.05)',
+          }}
+          >
+            {log.raw_data}
+          </pre>
         </div>
       )}
     </Stack>

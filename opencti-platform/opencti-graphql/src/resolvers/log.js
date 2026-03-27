@@ -1,8 +1,28 @@
 import { auditsDistribution, auditsMultiTimeSeries, auditsNumber, auditsTimeSeries, findAudits, findHistory, logsWorkerConfig, findById, findAuditById } from '../domain/log';
 import { storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
-import { logFrontend } from '../config/conf';
+import { logFrontend, PLATFORM_VERSION } from '../config/conf';
 import { loadCreator } from '../database/members';
+
+const buildRawData = (log) => {
+  const level = log.event_status === 'error' ? 'error' : 'info';
+  const rawData = {
+    auth: log.user_metadata ?? log.user_id,
+    category: 'AUDIT',
+    level,
+    message: log.context_data?.message ?? '',
+    resource: {
+      type: log.event_type,
+      event_scope: log.event_scope ?? log.event_type,
+      event_access: log.event_access ?? 'administration',
+      data: log.context_data ?? {},
+      version: log.context_data?.version ?? '1',
+    },
+    timestamp: log.timestamp,
+    version: PLATFORM_VERSION,
+  };
+  return JSON.stringify(rawData, null, 2);
+};
 
 const logResolvers = {
   Query: {
@@ -19,7 +39,7 @@ const logResolvers = {
   Log: {
     user: async (log, _, context) => loadCreator(context, context.user, log.applicant_id || log.user_id),
     context_data: async (log, args, context) => context.batch.logContextDataBatchLoader.load({ log, args }),
-    raw_data: (log, _, __) => JSON.stringify(log, null, 2),
+    raw_data: (log, _, __) => buildRawData(log),
     context_uri: (log, _, __) => (log.context_data.id && log.entity_type === 'History' ? `/dashboard/id/${log.context_data.id}` : undefined),
     event_status: (log, _, __) => log.event_status ?? 'success',
     event_scope: (log, _, __) => log.event_scope ?? log.event_type, // Retro compatibility
