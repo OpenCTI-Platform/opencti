@@ -148,7 +148,6 @@ enum FilterOperator {
   not_ends_with
   starts_with
   not_starts_with
-  script
   nil
   not_nil
   search

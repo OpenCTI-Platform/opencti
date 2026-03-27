@@ -9720,7 +9720,6 @@ export enum FilterOperator {
   NotOnlyEqTo = 'not_only_eq_to',
   NotStartsWith = 'not_starts_with',
   OnlyEqTo = 'only_eq_to',
-  Script = 'script',
   Search = 'search',
   StartsWith = 'starts_with',
   Wildcard = 'wildcard',
