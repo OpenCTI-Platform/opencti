@@ -18,7 +18,6 @@ const convertFeedToStix = (instance: StoreEntityFeed): StixFeed => {
     feed_attributes: instance.feed_attributes,
     feed_public: instance.feed_public,
     feed_public_user_id: instance.feed_public_user_id ?? '',
-    feed_public_authorized_markings: instance.feed_public_authorized_markings ?? [],
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

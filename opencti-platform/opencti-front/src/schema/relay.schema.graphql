@@ -16175,7 +16175,6 @@ type TaxiiCollection {
   score_to_confidence: Boolean
   taxii_public: Boolean
   taxii_public_user_id: String
-  taxii_public_authorized_markings: [String!]
   authorized_members: [MemberAccess!]
 }
 
@@ -16196,7 +16195,6 @@ input TaxiiCollectionAddInput {
   filters: String
   taxii_public: Boolean
   taxii_public_user_id: String
-  taxii_public_authorized_markings: [String!]
   authorized_members: [MemberAccessInput!]
   include_inferences: Boolean
   score_to_confidence: Boolean
@@ -16241,7 +16239,6 @@ type Feed {
   feed_attributes: [FeedAttribute!]!
   feed_public: Boolean
   feed_public_user_id: String
-  feed_public_authorized_markings: [String!]
   authorized_members: [MemberAccess!]
 }
 
@@ -16271,7 +16268,6 @@ input FeedAddInput {
   feed_types: [String!]!
   feed_public: Boolean
   feed_public_user_id: String
-  feed_public_authorized_markings: [String!]
   feed_attributes: [FeedAttributeMappingInput!]!
   authorized_members: [MemberAccessInput!]
 }
@@ -16323,7 +16319,6 @@ type StreamCollection {
   stream_live: Boolean
   stream_public: Boolean
   stream_public_user_id: String
-  stream_public_authorized_markings: [String!]
   authorized_members: [MemberAccess!]
   consumers: [StreamCollectionConsumer!]!
 }
@@ -16346,7 +16341,6 @@ input StreamCollectionAddInput {
   stream_live: Boolean
   stream_public: Boolean
   stream_public_user_id: String
-  stream_public_authorized_markings: [String!]
   authorized_members: [MemberAccessInput!]
 }
 

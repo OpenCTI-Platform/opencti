@@ -6,8 +6,7 @@ type TaxiiCollection {
   include_inferences: Boolean
   score_to_confidence: Boolean
   taxii_public: Boolean
-  taxii_public_user_id: String @auth(for: [SETTINGS_SETACCESSES])
-  taxii_public_authorized_markings: [String!] @auth(for: [SETTINGS_SETACCESSES])
+  taxii_public_user_id: String @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 }
 type TaxiiCollectionConnection {
@@ -24,7 +23,6 @@ input TaxiiCollectionAddInput {
   filters: String
   taxii_public: Boolean
   taxii_public_user_id: String
-  taxii_public_authorized_markings: [String!]
   authorized_members: [MemberAccessInput!]
   include_inferences: Boolean
   score_to_confidence: Boolean
