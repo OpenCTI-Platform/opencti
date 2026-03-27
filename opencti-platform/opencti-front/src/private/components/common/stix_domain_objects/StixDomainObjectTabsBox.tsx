@@ -8,6 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 
 type StixDomainObjectTabsBoxTab
   = | 'overview'
+    | 'result'
     | 'knowledge'
     | 'knowledge-graph'
     | 'knowledge-overview'
@@ -49,6 +50,14 @@ const StixDomainObjectTabsBox = ({ basePath, entity, extraActions, tabs }: StixD
             to={`${basePath}/${entity.id}`}
             value={`${basePath}/${entity.id}`}
             label={t_i18n('Overview')}
+          />
+        )}
+        {tabs.includes('result') && (
+          <Tab
+            component={Link}
+            to={`${basePath}/${entity.id}/result`}
+            value={`${basePath}/${entity.id}/result`}
+            label={t_i18n('Result')}
           />
         )}
         {tabs.includes('knowledge') && (

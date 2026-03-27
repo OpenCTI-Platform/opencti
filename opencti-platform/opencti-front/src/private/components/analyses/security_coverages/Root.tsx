@@ -24,6 +24,7 @@ import Button from '@common/button/Button';
 import { OaevLogo } from '../../../../static/images/logo_oaev';
 import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 import { RootSecurityCoverageSubscription } from '@components/analyses/security_coverages/__generated__/RootSecurityCoverageSubscription.graphql';
+import SecurityCoverageResult from '@components/analyses/security_coverages/SecurityCoverageResult';
 
 const subscription = graphql`
     subscription RootSecurityCoverageSubscription($id: ID!) {
@@ -125,6 +126,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
             entity={securityCoverage}
             tabs={[
               'overview',
+              'result',
               'content',
               'files',
               'history',
@@ -156,6 +158,12 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
               element={
                 <SecurityCoverage data={securityCoverage} />
               }
+            />
+            <Route
+              path="/result"
+              element={(
+                <SecurityCoverageResult id={securityCoverage.id} />
+              )}
             />
             <Route
               path="/knowledge/*"
