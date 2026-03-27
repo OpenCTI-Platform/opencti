@@ -10,7 +10,7 @@ import type { StixDomainObject } from '../../../types/stix-2-1-common';
 import { extractStixRepresentative } from '../../../database/stix-representative';
 import { convertStoreToStix_2_1 } from '../../../database/stix-2-1-converter';
 import { ENTITY_TYPE_SECURITY_COVERAGE, INPUT_COVERED, type StixSecurityCoverage, type StoreEntitySecurityCoverage } from '../../securityCoverage/securityCoverage-types';
-import { extractBundleBaseElement } from '../playbook-utils';
+import { isBundleElementInScope } from '../playbook-utils';
 
 export interface SecurityCoverageConfiguration {
   applyToElements: PlaybookBundleElementsToApply;
@@ -76,15 +76,7 @@ export const PLAYBOOK_SECURITY_COVERAGE_COMPONENT: PlaybookComponent<SecurityCov
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const { applyToElements, auto_enrichment_disable, periodicity, duration, type_affinity, platforms_affinity } = playbookNode.configuration;
 
-    let elementsToApply: StixDomainObject[] = [];
-
-    if (applyToElements === playbookBundleElementsToApply.onlyMain.value) {
-      elementsToApply = [extractBundleBaseElement(dataInstanceId, bundle) as StixDomainObject];
-    } else if (applyToElements === playbookBundleElementsToApply.allExceptMain.value) {
-      elementsToApply = bundle.objects.filter((object) => object.id !== dataInstanceId) as StixDomainObject[];
-    } else if (applyToElements === playbookBundleElementsToApply.allElements.value) {
-      elementsToApply = [...bundle.objects] as StixDomainObject[];
-    }
+    const elementsToApply = bundle.objects.filter((object) => isBundleElementInScope(object, applyToElements, dataInstanceId));
 
     for (let index = 0; index < elementsToApply.length; index += 1) {
       const element = elementsToApply[index] as StixDomainObject;

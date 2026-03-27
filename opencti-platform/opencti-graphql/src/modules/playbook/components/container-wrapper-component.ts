@@ -9,7 +9,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../../case/case-rft/case-rft-typ
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT, type StixCaseIncident } from '../../case/case-incident/case-incident-types';
 import { FunctionalError } from '../../../config/errors';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../../task/task-types';
-import { extractBundleBaseElement } from '../playbook-utils';
+import { extractBundleBaseElement, isBundleElementInScope } from '../playbook-utils';
 import { now } from '../../../utils/format';
 import { extractStixRepresentative } from '../../../database/stix-representative';
 import { generateStandardId, generateInternalId } from '../../../schema/identifier';
@@ -18,7 +18,7 @@ import { getParentTypes } from '../../../schema/schemaUtils';
 import type { StoreCommon } from '../../../types/store';
 import { convertStoreToStix_2_1 } from '../../../database/stix-2-1-converter';
 import type { StixContainer, StixIncident, StixReport } from '../../../types/stix-2-1-sdo';
-import type { StixDomainObject, StixObject } from '../../../types/stix-2-1-common';
+import type { StixDomainObject } from '../../../types/stix-2-1-common';
 import { pushAll } from '../../../utils/arrayUtil';
 import { getFileContent } from '../../../database/raw-file-storage';
 import { logApp } from '../../../config/conf';
@@ -156,16 +156,10 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         ...containerData,
       } as StoreCommon;
       const container = convertStoreToStix_2_1(storeContainer) as StixReport | StixCaseIncident;
-      if (applyToElements === playbookBundleElementsToApply.allExceptMain.value) {
-        // If we want to apply to all elements except main, exclude the main element from the container
-        container.object_refs = bundle.objects.filter((o: StixObject) => o.id !== baseData.id).map((o: StixObject) => o.id);
-      } else if (applyToElements === playbookBundleElementsToApply.allElements.value) {
-        // add all objects in the container if requested in the playbook config
-        container.object_refs = bundle.objects.map((o: StixObject) => o.id);
-      } else if (applyToElements === playbookBundleElementsToApply.onlyMain.value) {
-        // Only add main element in the container
-        container.object_refs = [baseData.id];
-      }
+
+      container.object_refs = bundle.objects
+        .filter((object) => isBundleElementInScope(object, applyToElements, dataInstanceId))
+        .map((object) => object.id);
 
       // Specific remapping of some attributes, waiting for a complete binding solution in the UI
       // Following attributes are the same as the base instance: description, content, markings, labels, created_by, assignees, participants
