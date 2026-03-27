@@ -130,9 +130,9 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
         required={required}
         noOptionsText={t_i18n('No available options')}
         options={statusTemplates}
-        onInputChange={(event: React.FocusEvent<HTMLInputElement>) => (
-          handleSearch(event.target?.value)
-        )}
+        onInputChange={(_event: React.FocusEvent<HTMLInputElement>, value: string) => {
+          handleSearch(value);
+        }}
         openCreate={handleOpenStatusTemplateCreation}
         renderOption={(
           { key, ...optionProps }: React.HTMLAttributes<HTMLLIElement> & { key?: string | number },
