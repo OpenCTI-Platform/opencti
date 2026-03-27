@@ -28,6 +28,9 @@ const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
 
 // Taxii graphQL handlers
 export const createTaxiiCollection = async (context: AuthContext, user: AuthUser, input: TaxiiCollectionAddInput) => {
+  if (input.taxii_public && !input.taxii_public_user_id) {
+    throw FunctionalError('A user must be configured when the Taxii collection is public');
+  }
   const data = {
     authorized_authorities: [TAXIIAPI_SETCOLLECTIONS],
     ...input,

@@ -64,6 +64,9 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
 
 export const createFeed = async (context: AuthContext, user: AuthUser, input: FeedAddInput): Promise<BasicStoreEntityFeed> => {
   checkFeedIntegrity(input);
+  if (input.feed_public && !input.feed_public_user_id) {
+    throw FunctionalError('A user must be configured when the feed is public');
+  }
   const feedToCreate = { ...input, authorized_authorities: [TAXIIAPI_SETCOLLECTIONS] };
   const { element, isCreation } = await createEntity(context, user, feedToCreate, ENTITY_TYPE_FEED, { complete: true });
   if (isCreation) {

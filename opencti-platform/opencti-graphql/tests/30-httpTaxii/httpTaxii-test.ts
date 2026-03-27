@@ -118,6 +118,7 @@ describe('Should taxii collection coverage', () => {
       description: '',
       authorized_members: [],
       taxii_public: true,
+      taxii_public_user_id: ADMIN_USER.id,
       include_inferences: true,
       score_to_confidence: false,
       filters: JSON.stringify({

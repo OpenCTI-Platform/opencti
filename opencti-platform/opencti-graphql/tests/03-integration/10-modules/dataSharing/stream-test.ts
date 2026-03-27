@@ -4,7 +4,7 @@ import { queryAsAdminWithSuccess, queryAsUser, queryAsUserWithSuccess } from '..
 import { type StreamCollectionAddInput } from '../../../../src/generated/graphql';
 import { logApp } from '../../../../src/config/conf';
 import { getGroupEntity } from '../../../utils/domainQueryHelper';
-import { AMBER_GROUP, USER_CONNECTOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { ADMIN_USER, AMBER_GROUP, USER_CONNECTOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { MEMBER_ACCESS_RIGHT_VIEW } from '../../../../src/utils/access';
 
 describe('Stream resolver coverage', () => {
@@ -18,6 +18,7 @@ describe('Stream resolver coverage', () => {
       filters: JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], operator: 'eq', values: ['Domain-Name'], mode: 'or' }], filterGroups: [] }),
       name: 'Public stream for resolver tests',
       stream_public: true,
+      stream_public_user_id: ADMIN_USER.id,
     };
 
     const publicStreamResponse = await queryAsAdminWithSuccess({
