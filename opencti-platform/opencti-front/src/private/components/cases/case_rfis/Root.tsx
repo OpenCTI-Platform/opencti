@@ -167,17 +167,6 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
           ),
         }}
         extraActions={!isKnowledgeOrContent && <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />}
-        // Missing tab or superfluous route ?
-        extraRoutes={(
-          <Route
-            path="/history"
-            element={(
-              <StixCoreObjectHistory
-                stixCoreObjectId={caseId}
-              />
-            )}
-          />
-        )}
       />
     </div>
   );

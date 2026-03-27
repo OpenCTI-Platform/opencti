@@ -165,16 +165,6 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
           ),
         }}
         extraActions={!isKnowledgeOrContent && <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />}
-        extraRoutes={(
-          <Route
-            path="/history"
-            element={(
-              <StixCoreObjectHistory
-                stixCoreObjectId={caseId}
-              />
-            )}
-          />
-        )}
       />
     </div>
   );
