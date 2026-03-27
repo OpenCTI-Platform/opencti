@@ -4,7 +4,7 @@ import { executionContext, SYSTEM_USER } from '../../../utils/access';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { internalFindByIds } from '../../../database/middleware-loader';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organization-types';
-import type { StixObject } from '../../../types/stix-2-1-common';
+import { isBundleElementInScope } from '../playbook-utils';
 
 export interface SharingConfiguration {
   organizations: string[] | { label: string; value: string }[];
@@ -57,15 +57,7 @@ export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration>
       return { output_port: 'out', bundle }; // nothing to do since organizations are empty
     }
 
-    let bundleElementsToApply: StixObject[] = [];
-
-    if (applyToElements === playbookBundleElementsToApply.onlyMain.value) {
-      bundleElementsToApply = bundle.objects.filter((object) => object.id === dataInstanceId);
-    } else if (applyToElements === playbookBundleElementsToApply.allExceptMain.value) {
-      bundleElementsToApply = bundle.objects.filter((object) => object.id !== dataInstanceId);
-    } else if (applyToElements === playbookBundleElementsToApply.allElements.value) {
-      bundleElementsToApply = [...bundle.objects];
-    }
+    const bundleElementsToApply = bundle.objects.filter((object) => isBundleElementInScope(object, applyToElements, dataInstanceId));
 
     const organizationIds = organizationsByIds.map((o) => o.standard_id);
     for (let index = 0; index < bundleElementsToApply.length; index += 1) {

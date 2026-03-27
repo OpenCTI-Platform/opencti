@@ -13,7 +13,7 @@ import { PLAYBOOK_INTERNAL_DATA_CRON } from './playbook-components';
 import { elFindByIds } from '../../database/engine';
 import { checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
-import type { ComponentDefinition, LinkDefinition, NodeDefinition } from './playbook-types';
+import { playbookBundleElementsToApply, type ComponentDefinition, type LinkDefinition, type NodeDefinition, type PlaybookBundleElementsToApply } from './playbook-types';
 import { logApp } from '../../config/conf';
 import { pushAll } from '../../utils/arrayUtil';
 
@@ -21,6 +21,17 @@ export const extractBundleBaseElement = (instanceId: string, bundle: StixBundle)
   const baseData = bundle.objects.find((o) => o.id === instanceId);
   if (!baseData) throw FunctionalError('Playbook base element no longer accessible');
   return baseData;
+};
+
+export const isBundleElementInScope = (
+  bundleElement: StixObject,
+  applyToElements: PlaybookBundleElementsToApply,
+  mainElementId: string,
+): boolean => {
+  const all = applyToElements === playbookBundleElementsToApply.allElements.value;
+  const onlyMain = applyToElements === playbookBundleElementsToApply.onlyMain.value && bundleElement.id === mainElementId;
+  const exceptMain = applyToElements === playbookBundleElementsToApply.allExceptMain.value && bundleElement.id !== mainElementId;
+  return all || onlyMain || exceptMain;
 };
 
 /**

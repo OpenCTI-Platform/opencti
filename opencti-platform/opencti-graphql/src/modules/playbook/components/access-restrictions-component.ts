@@ -10,7 +10,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organizati
 import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, buildRestrictedMembers } from '../../../utils/authorizedMembers';
-import { applyOperationFieldPatch, extractBundleBaseElement } from '../playbook-utils';
+import { applyOperationFieldPatch, extractBundleBaseElement, isBundleElementInScope } from '../playbook-utils';
 
 export interface AccessRestrictionsConfiguration {
   applyToElements: PlaybookBundleElementsToApply;
@@ -117,11 +117,7 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       const internalType = generateInternalType(element);
-      const all = applyToElements === playbookBundleElementsToApply.allElements.value;
-      const onlyMain = applyToElements === playbookBundleElementsToApply.onlyMain.value && element.id === dataInstanceId;
-      const exceptMain = applyToElements === playbookBundleElementsToApply.allExceptMain.value && element.id !== dataInstanceId;
-      const shouldTakeObject = all || onlyMain || exceptMain;
-      if (AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType) && shouldTakeObject) {
+      if (AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType) && isBundleElementInScope(element, applyToElements, dataInstanceId)) {
         const args = {
           entityId: element.id,
           input,
