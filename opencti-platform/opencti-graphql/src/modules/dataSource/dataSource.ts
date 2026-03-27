@@ -1,13 +1,13 @@
 import type { StixDataSource, StoreEntityDataSource } from './dataSource-types';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import convertDataSourceToStix from './dataSource-converter';
-import { ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
+import { convertDataSourceToStix_2_1 } from './dataSource-converter';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
 import { RELATION_DERIVED_FROM } from '../../schema/stixCoreRelationship';
 import { REL_BUILT_IN } from '../../database/stix';
+import { ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
 
 const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSource> = {
   type: {
@@ -55,7 +55,7 @@ const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSo
   representative: (stix: StixDataSource) => {
     return stix.name;
   },
-  converter_2_1: convertDataSourceToStix,
+  converter_2_1: convertDataSourceToStix_2_1,
 };
 
 registerDefinition(DATA_SOURCE_DEFINITION);

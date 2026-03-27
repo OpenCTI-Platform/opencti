@@ -1,4 +1,4 @@
-import convertNarrativeToStix from './narrative-converter';
+import { convertNarrativeToStix_2_1 } from './narrative-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import { ENTITY_TYPE_NARRATIVE, type StixNarrative, type StoreEntityNarrative } from './narrative-types';
 import { REL_BUILT_IN, REL_NEW } from '../../database/stix';
@@ -58,7 +58,7 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative
   representative: (stix: StixNarrative) => {
     return stix.name;
   },
-  converter_2_1: convertNarrativeToStix,
+  converter_2_1: convertNarrativeToStix_2_1,
 };
 
 registerDefinition(NARRATIVE_DEFINITION);

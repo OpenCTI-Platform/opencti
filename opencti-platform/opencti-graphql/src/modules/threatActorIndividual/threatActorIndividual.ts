@@ -4,7 +4,7 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { bornIn, ethnicity, objectOrganization } from '../../schema/stixRefRelationship';
 import type { StixThreatActorIndividual, StoreEntityThreatActorIndividual } from './threatActorIndividual-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from './threatActorIndividual-types';
-import convertThreatActorIndividualToStix from './threatActorIndividual-converter';
+import { convertThreatActorIndividualToStix_2_1 } from './threatActorIndividual-converter';
 import {
   RELATION_ATTRIBUTED_TO,
   RELATION_CITIZEN_OF,
@@ -304,6 +304,6 @@ const THREAT_ACTOR_INDIVIDUAL_DEFINITION: ModuleDefinition<StoreEntityThreatActo
   representative: (stix: StixThreatActorIndividual) => {
     return stix.name;
   },
-  converter_2_1: convertThreatActorIndividualToStix,
+  converter_2_1: convertThreatActorIndividualToStix_2_1,
 };
 registerDefinition(THREAT_ACTOR_INDIVIDUAL_DEFINITION);

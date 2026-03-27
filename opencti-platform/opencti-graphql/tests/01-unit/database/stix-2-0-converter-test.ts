@@ -21,8 +21,13 @@ import { convertCaseRftToStix_2_0 } from '../../../src/modules/case/case-rft/cas
 import { convertCaseRfiToStix_2_0 } from '../../../src/modules/case/case-rfi/case-rfi-converter';
 import { convertChannelToStix_2_0 } from '../../../src/modules/channel/channel-converter';
 import { convertThreatActorIndividualToStix_2_0 } from '../../../src/modules/threatActorIndividual/threatActorIndividual-converter';
+import { convertNarrativeToStix_2_0 } from '../../../src/modules/narrative/narrative-converter';
+import { convertDataComponentToStix_2_0 } from '../../../src/modules/dataComponent/dataComponent-converter';
+import { convertDataSourceToStix_2_0 } from '../../../src/modules/dataSource/dataSource-converter';
 import {
+  convertAttackPatternToStix,
   convertCampaignToStix,
+  convertCourseOfActionToStix,
   convertIntrusionSetToStix,
   convertToolToStix,
   convertThreatActorGroupToStix,
@@ -41,6 +46,11 @@ import { EXPECTED_INTRUSION_SET, INTRUSION_SET_INSTANCE } from './instances-stix
 import { EXPECTED_THREAT_ACTOR_GROUP, THREAT_ACTOR_GROUP_INSTANCE } from './instances-stix-2-0-converter/SDOs/threat-actor-group';
 import { EXPECTED_THREAT_ACTOR_INDIVIDUAL, THREAT_ACTOR_INDIVIDUAL_INSTANCE } from './instances-stix-2-0-converter/SDOs/threat-actor-individual';
 import { EXPECTED_SIGHTING, SIGHTING_INSTANCE } from './instances-stix-2-0-converter/sightings';
+import { ATTACK_PATTERN_INSTANCE, EXPECTED_ATTACK_PATTERN } from './instances-stix-2-0-converter/techniques/attack-pattern';
+import { EXPECTED_NARRATIVE, NARRATIVE_INSTANCE } from './instances-stix-2-0-converter/techniques/narrative';
+import { COURSE_OF_ACTION_INSTANCE, EXPECTED_COURSE_OF_ACTION } from './instances-stix-2-0-converter/techniques/course-of-action';
+import { DATA_COMPONENT_INSTANCE, EXPECTED_DATA_COMPONENT } from './instances-stix-2-0-converter/techniques/data-component';
+import { DATA_SOURCE_INSTANCE, EXPECTED_DATA_SOURCE } from './instances-stix-2-0-converter/techniques/data-source';
 
 describe('Stix 2.0 opencti converter', () => {
   // SDOs
@@ -79,6 +89,27 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Threat Actor Individual', async () => {
     const result = convertThreatActorIndividualToStix_2_0(THREAT_ACTOR_INDIVIDUAL_INSTANCE);
     expect(result).toEqual(EXPECTED_THREAT_ACTOR_INDIVIDUAL);
+  });
+  // Techniques
+  it('should convert Attack Pattern', async () => {
+    const result = convertAttackPatternToStix(ATTACK_PATTERN_INSTANCE);
+    expect(result).toEqual(EXPECTED_ATTACK_PATTERN);
+  });
+  it('should convert Narrative', async () => {
+    const result = convertNarrativeToStix_2_0(NARRATIVE_INSTANCE);
+    expect(result).toEqual(EXPECTED_NARRATIVE);
+  });
+  it('should convert Course of Action', async () => {
+    const result = convertCourseOfActionToStix(COURSE_OF_ACTION_INSTANCE);
+    expect(result).toEqual(EXPECTED_COURSE_OF_ACTION);
+  });
+  it('should convert Data Component', async () => {
+    const result = convertDataComponentToStix_2_0(DATA_COMPONENT_INSTANCE);
+    expect(result).toEqual(EXPECTED_DATA_COMPONENT);
+  });
+  it('should convert Data Source', async () => {
+    const result = convertDataSourceToStix_2_0(DATA_SOURCE_INSTANCE);
+    expect(result).toEqual(EXPECTED_DATA_SOURCE);
   });
   // Containers
   it('should convert Report', async () => {

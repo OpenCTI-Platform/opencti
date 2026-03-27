@@ -1,4 +1,29 @@
 import type { StixDate, StixDomainObject } from './stix-2-0-common';
+import type { StixInternalKillChainPhase } from './stix-2-0-smo';
+
+// Attack Pattern Specific Properties
+// name, description, aliases, kill_chain_phases
+export interface StixAttackPattern extends StixDomainObject {
+  name: string;
+  description: string;
+  aliases: Array<string>;
+  kill_chain_phases: Array<StixInternalKillChainPhase>;
+  x_mitre_id: string;
+  x_mitre_platforms: Array<string>;
+  x_mitre_permissions_required: Array<string>;
+  x_mitre_detection: string;
+}
+
+// Course of Action Specific Properties
+// name, description
+export interface StixCourseOfAction extends StixDomainObject {
+  name: string;
+  description: string;
+  x_opencti_aliases: Array<string>;
+  x_mitre_id: string;
+  x_opencti_threat_hunting: string;
+  x_opencti_log_sources: Array<string>;
+}
 
 export interface StixCampaign extends StixDomainObject {
   name: string;

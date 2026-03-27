@@ -5,11 +5,13 @@ import type * as SMO from '../types/stix-2-0-smo';
 import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
 import { INPUT_OPERATING_SYSTEM, INPUT_SAMPLE } from '../schema/stixRefRelationship';
 import {
+  ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_COURSE_OF_ACTION,
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
   ENTITY_TYPE_INCIDENT,
@@ -49,8 +51,13 @@ const CUSTOM_ENTITY_TYPES = [
 ];
 
 export const buildStixId = (instanceType: string, standard_id: S.StixId): S.StixId => {
-  const isCustomContainer = CUSTOM_ENTITY_TYPES.includes(instanceType);
-  return isCustomContainer ? `x-opencti-${standard_id}` : standard_id as S.StixId;
+  if (CUSTOM_ENTITY_TYPES.includes(instanceType)) {
+    return `x-opencti-${standard_id}` as S.StixId;
+  }
+  if (instanceType === ENTITY_TYPE_DATA_COMPONENT || instanceType === ENTITY_TYPE_DATA_SOURCE) {
+    return `x-mitre-${standard_id}` as S.StixId;
+  }
+  return standard_id as S.StixId;
 };
 
 export const convertTypeToStix2Type = (type: string): string => {
@@ -182,6 +189,34 @@ export const convertCampaignToStix = (instance: StoreEntity): SDO.StixCampaign =
     first_seen: convertToStixDate(instance.first_seen),
     last_seen: convertToStixDate(instance.last_seen),
     objective: instance.objective,
+  };
+};
+
+export const convertAttackPatternToStix = (instance: StoreEntity): SDO.StixAttackPattern => {
+  assertType(ENTITY_TYPE_ATTACK_PATTERN, instance.entity_type);
+  return {
+    ...buildStixDomain(instance),
+    name: instance.name,
+    description: instance.description,
+    aliases: instance.aliases ?? [],
+    kill_chain_phases: buildKillChainPhases(instance),
+    x_mitre_id: instance.x_mitre_id,
+    x_mitre_platforms: instance.x_mitre_platforms,
+    x_mitre_permissions_required: instance.x_mitre_permissions_required,
+    x_mitre_detection: instance.x_mitre_detection,
+  };
+};
+
+export const convertCourseOfActionToStix = (instance: StoreEntity): SDO.StixCourseOfAction => {
+  assertType(ENTITY_TYPE_COURSE_OF_ACTION, instance.entity_type);
+  return {
+    ...buildStixDomain(instance),
+    name: instance.name,
+    description: instance.description,
+    x_opencti_aliases: instance.x_opencti_aliases ?? [],
+    x_mitre_id: instance.x_mitre_id,
+    x_opencti_threat_hunting: instance.x_opencti_threat_hunting,
+    x_opencti_log_sources: instance.x_opencti_log_sources,
   };
 };
 
@@ -392,6 +427,12 @@ const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
     }
     if (ENTITY_TYPE_MALWARE === type) {
       return convertMalwareToStix(basic);
+    }
+    if (ENTITY_TYPE_ATTACK_PATTERN === type) {
+      return convertAttackPatternToStix(basic);
+    }
+    if (ENTITY_TYPE_COURSE_OF_ACTION === type) {
+      return convertCourseOfActionToStix(basic);
     }
     if (ENTITY_TYPE_CAMPAIGN === type) {
       return convertCampaignToStix(basic);
