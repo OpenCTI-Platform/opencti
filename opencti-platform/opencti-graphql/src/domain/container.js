@@ -33,6 +33,7 @@ import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { getContainerKnowledge, resolveFiles } from '../utils/ai/dataResolutionHelpers';
 import { queryAi } from '../database/ai-llm';
+import { checkPlatformAiEnabled } from '../utils/ai/platformAiEnabled';
 import { notify } from '../database/redis';
 import { AI_BUS } from '../modules/ai/ai-types';
 import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
@@ -358,6 +359,7 @@ export const aiSummary = async (context, user, args) => {
   ${JSON.stringify(content)}
   `;
 
+  await checkPlatformAiEnabled(context);
   const result = await queryAi(busId, systemPrompt, userPromptReport, user);
   const topics = await queryAi(null, systemPrompt, userPromptTopics, user);
 

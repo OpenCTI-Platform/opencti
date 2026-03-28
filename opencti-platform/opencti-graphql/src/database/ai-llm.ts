@@ -5,7 +5,7 @@ import { Mistral } from '@mistralai/mistralai';
 import type { ChatCompletionStreamRequest } from '@mistralai/mistralai/models/components';
 import { AuthenticationError, AzureOpenAI, OpenAI } from 'openai';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
-import { UnknownError, UnsupportedError } from '../config/errors';
+import { FunctionalError, UnknownError, UnsupportedError } from '../config/errors';
 import { OutputSchema } from '../modules/ai/ai-nlq-schema';
 import type { Output } from '../modules/ai/ai-nlq-schema';
 import { AI_BUS } from '../modules/ai/ai-types';
@@ -15,7 +15,6 @@ import { notify } from './redis';
 import { isEmptyField } from './utils';
 import { addNlqQueryCount } from '../manager/telemetryManager';
 
-const AI_ENABLED = conf.get('ai:enabled');
 const AI_TYPE = conf.get('ai:type');
 const AI_ENDPOINT = conf.get('ai:endpoint');
 const AI_TOKEN = conf.get('ai:token');
@@ -25,9 +24,41 @@ const AI_VERSION = conf.get('ai:version');
 const AI_AZURE_INSTANCE = conf.get('ai:ai_azure_instance');
 const AI_AZURE_DEPLOYMENT = conf.get('ai:ai_azure_deployment');
 
+let AI_ENABLED = true;
 let client: Mistral | OpenAI | AzureOpenAI | null = null;
 let nlqChat: ChatOpenAI | ChatMistralAI | AzureChatOpenAI | null = null;
-if (AI_ENABLED && AI_TOKEN) {
+// Promise chain used to serialize all client initialization and state-change operations.
+// NOTE: `clientsUpdate` is the canonical promise chain used throughout this module.
+let clientsUpdate: Promise<void> = Promise.resolve();
+
+const resetClients = () => {
+  client = null;
+  nlqChat = null;
+};
+
+const initClients = () => {
+  if (client && nlqChat) {
+    return;
+  }
+  // Defensive check: a partially initialized state (only one of `client` or `nlqChat` is set)
+  // is unexpected and can lead to inconsistent behavior. We log a concise warning and reset both
+  // so that the initialization below always starts from a clean state.
+  // Possible causes include concurrent initialization, a failure during a previous initialization
+  // attempt, or partial AI configuration changes.
+  if ((client && !nlqChat) || (!client && nlqChat)) {
+    logApp.warn(
+      '[AI] Partially initialized AI clients detected; resetting client and nlqChat before re-initialization.',
+      {
+        hasClient: !!client,
+        hasNlqChat: !!nlqChat,
+        aiType: AI_TYPE,
+      },
+    );
+    resetClients();
+  }
+  if (!AI_ENABLED || !AI_TOKEN) {
+    return;
+  }
   switch (AI_TYPE) {
     case 'mistralai':
       client = new Mistral({
@@ -99,12 +130,118 @@ if (AI_ENABLED && AI_TOKEN) {
     default:
       throw UnsupportedError('Not supported AI type (currently support: mistralai, openai, azureopenai)', { type: AI_TYPE });
   }
-}
+};
+
+const ensureClientsInitialized = async () => {
+  // Chain the initialization operation onto the current clientsUpdate promise,
+  // but keep a separate operation promise for the caller so that we can both:
+  // - propagate errors to the caller, and
+  // - prevent `clientsUpdate` from remaining in a permanently rejected state.
+  const operation = clientsUpdate
+    .then(() => {
+      if (!AI_ENABLED) {
+        return;
+      }
+      initClients();
+    })
+    .catch((err) => {
+      logApp.error('[AI] Failed to initialize AI clients', { cause: err });
+      // On failure, reset the local clients so that a future successful call can
+      // re-establish a consistent state.
+      resetClients();
+      // Preserve already-classified GraphQL/OpenCTI errors (with extensions.code)
+      // so callers can rely on stable error codes for configuration issues.
+      if (
+        err
+        && typeof err === 'object'
+        && 'extensions' in err
+        && (err as { extensions?: unknown }).extensions
+        && typeof (err as { extensions?: unknown }).extensions === 'object'
+        && 'code' in ((err as { extensions: Record<string, unknown> }).extensions)
+      ) {
+        throw err;
+      }
+      throw UnknownError('Failed to initialize AI clients', { cause: err });
+    });
+
+  // Ensure that the shared `clientsUpdate` chain never remains rejected: any error
+  // is handled above for the caller and swallowed here so the chain can be reused.
+  clientsUpdate = operation.catch(() => {
+    // Intentionally ignore to keep the chain resolved.
+  });
+
+  await operation;
+};
+
+export const setAiEnabled = (enabled: boolean) => {
+  // Similar pattern to `ensureClientsInitialized`: the `operation` promise reflects
+  // the real outcome for the caller, while `clientsUpdate` is kept reusable.
+  const initializeClients = true;
+  return setAiEnabledWithOptions(enabled, { initializeClients });
+};
+
+export const setAiEnabledWithOptions = (
+  enabled: boolean,
+  { initializeClients = true }: { initializeClients?: boolean } = {},
+) => {
+  // Similar pattern to `ensureClientsInitialized`: the `operation` promise reflects
+  // the real outcome for the caller, while `clientsUpdate` is kept reusable.
+  let previousEnabled: boolean | undefined;
+  const operation = clientsUpdate
+    .then(() => {
+      previousEnabled = AI_ENABLED;
+
+      // If there is no actual state change requested, do nothing.
+      if (previousEnabled === enabled) {
+        return;
+      }
+
+      logApp.info('[AI] AI enabled state changed', { enabled });
+
+      if (!enabled) {
+        // Disabling AI: reset clients and then update the flag.
+        resetClients();
+        AI_ENABLED = false;
+        return;
+      }
+
+      // Enabling AI: update the flag and then initialize clients.
+      AI_ENABLED = true;
+      if (initializeClients) {
+        initClients();
+      }
+    })
+    .catch((err) => {
+      logApp.error('[AI] Failed to apply AI enabled state change', { enabled, cause: err });
+      if (previousEnabled !== undefined) {
+        AI_ENABLED = previousEnabled;
+      }
+      resetClients();
+      throw UnknownError('Failed to apply AI enabled state change', { cause: err });
+    });
+
+  clientsUpdate = operation.catch(() => {
+    // Intentionally ignore to keep the chain resolved and allow future operations.
+  });
+
+  return operation;
+};
+
+// Client initialization is now fully lazy and driven by `ensureClientsInitialized`
+// and `setAiEnabled`, which already respect `AI_ENABLED` and handle failures.
 
 // Query MistralAI (Streaming)
 export const queryMistralAi = async (busId: string | null, systemMessage: string, userMessage: string, user: AuthUser) => {
+  if (!AI_ENABLED) {
+    throw FunctionalError('AI is disabled in platform settings');
+  }
+  await ensureClientsInitialized();
+  // AI may have been disabled while initializing clients; re-check to return a consistent error.
+  if (!AI_ENABLED) {
+    throw FunctionalError('AI is disabled in platform settings');
+  }
   if (!client) {
-    throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
+    throw UnsupportedError('Incorrect AI configuration', { type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
   try {
     logApp.debug('[AI] Querying MistralAI with prompt', { questionStart: userMessage.substring(0, 100) });
@@ -143,8 +280,16 @@ export const queryMistralAi = async (busId: string | null, systemMessage: string
 
 // Query OpenAI (Streaming)
 export const queryChatGpt = async (busId: string | null, developerMessage: string, userMessage: string, user: AuthUser) => {
+  if (!AI_ENABLED) {
+    throw FunctionalError('AI is disabled in platform settings');
+  }
+  await ensureClientsInitialized();
+  // AI may have been disabled while initializing clients; re-check to return a consistent error.
+  if (!AI_ENABLED) {
+    throw FunctionalError('AI is disabled in platform settings');
+  }
   if (!client) {
-    throw UnsupportedError('Incorrect AI configuration', { enabled: AI_ENABLED, type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
+    throw UnsupportedError('Incorrect AI configuration', { type: AI_TYPE, endpoint: AI_ENDPOINT, model: AI_MODEL });
   }
   try {
     logApp.info('[AI] Querying OpenAI with prompt', { type: AI_TYPE });
@@ -197,11 +342,18 @@ export const queryAi = async (busId: string | null, developerMessage: string | n
 // NLQ AI Query with LangChain's Chat Models
 export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
   const badAiConfigError = UnsupportedError('Incorrect AI configuration for NLQ', {
-    enabled: AI_ENABLED,
     type: AI_TYPE,
     endpoint: AI_ENDPOINT,
     model: AI_MODEL,
   });
+  if (!AI_ENABLED) {
+    throw FunctionalError('AI is disabled in platform settings');
+  }
+  await ensureClientsInitialized();
+  // AI may have been disabled while initializing clients; re-check to return a consistent error.
+  if (!AI_ENABLED) {
+    throw FunctionalError('AI is disabled in platform settings');
+  }
   if (!nlqChat) {
     throw badAiConfigError;
   }

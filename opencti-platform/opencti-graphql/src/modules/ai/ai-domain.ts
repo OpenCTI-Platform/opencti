@@ -18,7 +18,7 @@ import { TimeoutError } from '@opentelemetry/sdk-metrics';
 import nconf from 'nconf';
 import { logApp } from '../../config/conf';
 import { FunctionalError, UnknownError } from '../../config/errors';
-import { queryAi, queryNLQAi } from '../../database/ai-llm';
+import { queryAi, queryNLQAi, setAiEnabled } from '../../database/ai-llm';
 import { elSearchFiles } from '../../database/file-search';
 import { storeLoadById } from '../../database/middleware-loader';
 import { isEmptyField } from '../../database/utils';
@@ -45,6 +45,7 @@ import { RELATION_EXTERNAL_REFERENCE } from '../../schema/stixRefRelationship';
 import type { BasicStoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { getContainerKnowledge } from '../../utils/ai/dataResolutionHelpers';
+import { syncPlatformAiEnabled } from '../../utils/ai/platformAiEnabled';
 import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
 import { addFilter, checkFiltersValidity, emptyFilterGroup, extractFilterGroupValues, filtersEntityIdsMappingResult } from '../../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
@@ -54,8 +55,29 @@ import { NLQPromptTemplate } from './ai-nlq-utils';
 
 const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence analysts to generate text about cyber threat intelligence information or from a cyber threat intelligence knowledge graph based on the STIX 2.1 model.';
 
+let lastPlatformAiEnabled: boolean | null = null;
+let platformAiEnabledUpdate: Promise<boolean | null> = Promise.resolve(null);
+const checkPlatformAiEnabled = async (context: AuthContext) => {
+  platformAiEnabledUpdate = platformAiEnabledUpdate.then(async () => {
+    const aiEnabled = await syncPlatformAiEnabled(context, { initializeClients: false });
+    if (lastPlatformAiEnabled === null) {
+      // First check: sync the lower-level state without eagerly initializing clients.
+    } else if (lastPlatformAiEnabled !== aiEnabled) {
+      // Subsequent checks: propagate actual state changes.
+      await setAiEnabled(aiEnabled);
+    }
+    lastPlatformAiEnabled = aiEnabled;
+    return aiEnabled;
+  });
+  const aiEnabled = await platformAiEnabledUpdate;
+  if (!aiEnabled) {
+    throw FunctionalError('AI is disabled in platform settings');
+  }
+};
+
 export const fixSpelling = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
   await checkEnterpriseEdition(context);
+  await checkPlatformAiEnabled(context);
   if (content.length < 5) {
     return `Content is too short (${content.length})`;
   }
@@ -76,6 +98,7 @@ export const fixSpelling = async (context: AuthContext, user: AuthUser, id: stri
 
 export const makeShorter = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
   await checkEnterpriseEdition(context);
+  await checkPlatformAiEnabled(context);
   if (content.length < 5) {
     return `Content is too short (${content.length})`;
   }
@@ -96,6 +119,7 @@ export const makeShorter = async (context: AuthContext, user: AuthUser, id: stri
 
 export const makeLonger = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
   await checkEnterpriseEdition(context);
+  await checkPlatformAiEnabled(context);
   if (content.length < 5) {
     return `Content is too short (${content.length})`;
   }
@@ -118,6 +142,7 @@ export const makeLonger = async (context: AuthContext, user: AuthUser, id: strin
 // eslint-disable-next-line max-len
 export const changeTone = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text, tone: InputMaybe<Tone> = Tone.Tactical) => {
   await checkEnterpriseEdition(context);
+  await checkPlatformAiEnabled(context);
   if (content.length < 5) {
     return `Content is too short (${content.length})`;
   }
@@ -138,6 +163,7 @@ export const changeTone = async (context: AuthContext, user: AuthUser, id: strin
 
 export const summarize = async (context: AuthContext, user: AuthUser, id: string, content: string, format: InputMaybe<Format> = Format.Text) => {
   await checkEnterpriseEdition(context);
+  await checkPlatformAiEnabled(context);
   if (content.length < 5) {
     return `Content is too short (${content.length})`;
   }
@@ -157,6 +183,7 @@ export const summarize = async (context: AuthContext, user: AuthUser, id: string
 
 export const explain = async (context: AuthContext, user: AuthUser, id: string, content: string) => {
   await checkEnterpriseEdition(context);
+  await checkPlatformAiEnabled(context);
   if (content.length < 5) {
     return `Content is too short (${content.length})`;
   }
@@ -176,6 +203,7 @@ export const explain = async (context: AuthContext, user: AuthUser, id: string, 
 
 export const generateContainerReport = async (context: AuthContext, user: AuthUser, args: MutationAiContainerGenerateReportArgs) => {
   await checkEnterpriseEdition(context);
+  await checkPlatformAiEnabled(context);
   const { id, containerId, paragraphs = 10, tone = 'technical', format = 'HTML', language = 'en-us' } = args;
   const paragraphsNumber = !paragraphs || paragraphs > 20 ? 20 : paragraphs;
   const container = await storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER) as BasicStoreEntity;
@@ -217,6 +245,7 @@ export const generateContainerReport = async (context: AuthContext, user: AuthUs
 // TODO This function is deprecated (AI Insights)
 export const summarizeFiles = async (context: AuthContext, user: AuthUser, args: MutationAiSummarizeFilesArgs) => {
   await checkEnterpriseEdition(context);
+  await checkPlatformAiEnabled(context);
   const { id, elementId, paragraphs = 10, fileIds, tone = 'technical', format = 'HTML', language = 'en-us' } = args;
   const paragraphsNumber = !paragraphs || paragraphs > 20 ? 20 : paragraphs;
   const stixCoreObject = await storeLoadById(context, user, elementId, ABSTRACT_STIX_CORE_OBJECT) as BasicStoreEntity;
@@ -276,6 +305,7 @@ export const summarizeFiles = async (context: AuthContext, user: AuthUser, args:
 // TODO This function is deprecated (NLP)
 export const convertFilesToStix = async (context: AuthContext, user: AuthUser, args: MutationAiSummarizeFilesArgs) => {
   await checkEnterpriseEdition(context);
+  await checkPlatformAiEnabled(context);
   const { id, elementId, fileIds } = args;
   const stixCoreObject = await storeLoadById(context, user, elementId, ABSTRACT_STIX_CORE_OBJECT) as BasicStoreEntity;
   let finalFilesIds = fileIds;
@@ -412,6 +442,7 @@ export const filtersEntityIdsMapping = async (context: AuthContext, user: AuthUs
 
 export const generateNLQresponse = async (context: AuthContext, user: AuthUser, args: MutationAiNlqArgs) => {
   await checkEnterpriseEdition(context);
+  await checkPlatformAiEnabled(context);
   const { search } = args;
   const promptValue = await NLQPromptTemplate.formatPromptValue({ text: search });
 

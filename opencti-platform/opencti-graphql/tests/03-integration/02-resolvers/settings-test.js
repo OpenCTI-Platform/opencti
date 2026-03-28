@@ -2,8 +2,53 @@ import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { head } from 'ramda';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { awaitUntilCondition } from '../../utils/testQueryHelper';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
+
+const PLATFORM_AI_ENABLED_QUERY = gql`
+  query settingsPlatformAiEnabled {
+    settings {
+      platform_ai_enabled
+    }
+  }
+`;
+
+const waitForPlatformAiEnabled = async (expectedEnabled) => {
+  const WAIT_FOR_SETTINGS_TIMEOUT_MS = Number(process.env.WAIT_FOR_SETTINGS_TIMEOUT_MS) || 10000;
+  const WAIT_FOR_SETTINGS_INTERVAL_MS = Number(process.env.WAIT_FOR_SETTINGS_INTERVAL_MS) || 250;
+  const loopCount = Math.ceil(WAIT_FOR_SETTINGS_TIMEOUT_MS / WAIT_FOR_SETTINGS_INTERVAL_MS);
+  let lastValue = undefined;
+
+  await awaitUntilCondition(
+    async () => {
+      const settingsResult = await queryAsAdmin({ query: PLATFORM_AI_ENABLED_QUERY, variables: {} });
+      lastValue = settingsResult?.data?.settings?.platform_ai_enabled;
+      return lastValue === expectedEnabled;
+    },
+    WAIT_FOR_SETTINGS_INTERVAL_MS,
+    loopCount,
+    true,
+    `Timed out waiting for settings.platform_ai_enabled to become ${expectedEnabled} (last observed: ${lastValue})`,
+  );
+};
+
+const UPDATE_SETTINGS_QUERY = gql`
+  mutation SettingsEdit($id: ID!, $input: [EditInput]!) {
+    settingsEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+        platform_ai_enabled
+      }
+    }
+  }
+`;
+
+const AI_FIX_SPELLING_MUTATION = gql`
+  mutation AiFixSpelling($id: ID!, $content: String!) {
+    aiFixSpelling(id: $id, content: $content)
+  }
+`;
 
 const ABOUT_QUERY = gql`
   query about {
@@ -21,6 +66,7 @@ const READ_QUERY = gql`
   query settings {
     settings {
       id
+      platform_ai_enabled
       platform_title
       platform_email
       platform_language
@@ -132,6 +178,68 @@ describe('Settings resolver standard behavior', () => {
     const readResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
     const { editContext } = readResult.data.settings;
     expect(editContext.length).toEqual(0);
+  });
+
+  it('should block AI operations when platform AI is disabled', async function () {
+    const settingsInternalId = await settingsId();
+    const initialSettingsResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
+    const platformAiEnabled = initialSettingsResult.data.settings.platform_ai_enabled;
+    const initialAiEnabled = platformAiEnabled;
+
+    // If Enterprise edition is not enabled, AI mutations are not available.
+    // Skip the test cleanly before mutating settings in that case.
+    const enterpriseProbe = await queryAsAdmin({
+      query: AI_FIX_SPELLING_MUTATION,
+      variables: { id: 'ai-test', content: 'Some content to check.' },
+    });
+    const probeErrorMessage = enterpriseProbe?.errors?.at(0)?.message;
+    if (probeErrorMessage === 'Enterprise edition is not enabled') {
+      this.skip();
+    }
+
+    if (!initialAiEnabled) {
+      await queryAsAdmin({
+        query: UPDATE_SETTINGS_QUERY,
+        variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [true] }] },
+      });
+      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+      await waitForPlatformAiEnabled(true);
+    }
+
+    try {
+      await queryAsAdmin({
+        query: UPDATE_SETTINGS_QUERY,
+        variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [false] }] },
+      });
+      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+
+      await waitForPlatformAiEnabled(false);
+
+      const aiResult = await queryAsAdmin({
+        query: AI_FIX_SPELLING_MUTATION,
+        variables: { id: 'ai-test', content: 'Some content to check.' },
+      });
+      expect(aiResult).not.toBeNull();
+      expect(aiResult.errors).toBeDefined();
+      expect(aiResult.errors.length).toEqual(1);
+      const errorMessage = aiResult.errors.at(0).message;
+      expect(errorMessage).toBe('AI is disabled in platform settings');
+    } finally {
+      try {
+        await queryAsAdmin({
+          query: UPDATE_SETTINGS_QUERY,
+          variables: { id: settingsInternalId, input: [{ key: 'platform_ai_enabled', value: [initialAiEnabled] }] },
+        });
+        resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+
+        await waitForPlatformAiEnabled(initialAiEnabled);
+      } catch (cleanupError) {
+        // Best-effort cleanup: do not mask the original test failure
+        // but log the cleanup error to aid debugging.
+        // eslint-disable-next-line no-console
+        console.error('Failed to restore initial platform_ai_enabled setting after test:', cleanupError);
+      }
+    }
   });
 });
 
