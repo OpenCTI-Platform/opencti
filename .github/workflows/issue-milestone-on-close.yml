@@ -1,0 +1,90 @@
+name: Auto-assign milestone on issue close
+
+# Triggers whenever an issue is closed
+on:
+  issues:
+    types: [closed]
+
+jobs:
+  assign-milestone:
+    # Only run when the issue was closed as "completed" (not "not planned")
+    if: github.event.issue.state_reason == 'completed'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Determine target milestone and assign it
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue = context.payload.issue;
+            const owner = context.repo.owner;
+            const repo  = context.repo.repo;
+
+            // ── 1. Classify the issue ────────────────────────────────────────────
+            // Priority: native issue type > label fallback
+            const issueTypeName = (issue.type?.name ?? '').toLowerCase();
+            const labelNames    = (issue.labels ?? []).map(l => l.name.toLowerCase());
+
+            const isBug =
+              issueTypeName === 'bug' ||
+              labelNames.includes('bug');
+
+            const isTaskOrFeature =
+              issueTypeName === 'task'    ||
+              issueTypeName === 'feature' ||
+              labelNames.includes('task') ||
+              labelNames.includes('feature');
+
+            if (!isBug && !isTaskOrFeature) {
+              console.log(`Issue #${issue.number} does not match bug / task / feature — skipping.`);
+              return;
+            }
+
+            const targetMilestoneTitle = isBug ? 'Bugs backlog' : '1. Now';
+            console.log(`Issue #${issue.number} → targeting milestone "${targetMilestoneTitle}"`);
+
+            // ── 2. Find the milestone by title (searches open + closed) ──────────
+            let milestoneNumber = null;
+            let milestoneState = null;
+
+            for (const state of ['open', 'closed']) {
+              const { data: milestones } = await github.rest.issues.listMilestones({
+                owner,
+                repo,
+                state,
+                per_page: 100,
+              });
+
+              const match = milestones.find(
+                m => m.title.toLowerCase() === targetMilestoneTitle.toLowerCase()
+              );
+
+              if (match) {
+                milestoneNumber = match.number;
+                milestoneState = state;
+                console.log(`Found milestone "${match.title}" (number ${milestoneNumber}, state: ${state})`);
+                break;
+              }
+            }
+
+            if (milestoneNumber === null) {
+              core.setFailed(
+                `Milestone "${targetMilestoneTitle}" not found in ${owner}/${repo}.`
+              );
+              return;
+            }
+
+            // ── 3. Assign the milestone ──────────────────────────────────────────
+            await github.rest.issues.update({
+              owner,
+              repo,
+              issue_number: issue.number,
+              milestone: milestoneNumber,
+            });
+
+            console.log(
+              `✅ Issue #${issue.number} ("${issue.title}") assigned to milestone "${targetMilestoneTitle}".`
+            );
