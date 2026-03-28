@@ -156,6 +156,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
               )}
             />
             <StixDomainObjectMain
+              entityType="Narrative"
               basePath={basePath}
               pages={{
                 overview:
