@@ -128,6 +128,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
             enableEnrollPlaybook={true}
           />
           <StixDomainObjectMain
+            entityType="Security-Coverage"
             basePath={basePath}
             pages={{
               overview:

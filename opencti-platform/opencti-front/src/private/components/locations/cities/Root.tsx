@@ -159,6 +159,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
               redirectToContent={true}
             />
             <StixDomainObjectMain
+              entityType="City"
               basePath={basePath}
               pages={{
                 overview: <City cityData={city} />,
