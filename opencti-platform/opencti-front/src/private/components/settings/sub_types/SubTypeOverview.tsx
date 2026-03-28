@@ -18,6 +18,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import EntitySettingAttributes from './entity_setting/EntitySettingAttributes';
 import EntitySettingSettings from './entity_setting/EntitySettingSettings';
 import FintelTemplatesGrid from './fintel_templates/FintelTemplatesGrid';
+import CustomViewsGrid from '@components/settings/sub_types/custom_views/CustomViewsGrid';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeOverviewEntitySettingSubscription($id: ID!) {
@@ -31,7 +32,7 @@ const SubTypeOverview = () => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  const { subType } = useOutletContext<{ subType: SubTypeQuery['response']['subType'] }>();
+  const { subType, customViewsSettings } = useOutletContext<{ subType: SubTypeQuery['response']['subType']; customViewsSettings: SubTypeQuery['response']['customViewsSettings'] }>();
   if (!subType) return <ErrorNotFound />;
 
   const subTypeSettingsId = subType.settings?.id;
@@ -62,6 +63,8 @@ const SubTypeOverview = () => {
   const { isFeatureEnable } = useHelper();
   const isDraftWorkflowFeatureEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const isDraftWorkspaceType = subType.label === 'DraftWorkspace' && isDraftWorkflowFeatureEnabled;
+
+  const isCustomViewsFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
 
   return (
     <Grid container spacing={3}>
@@ -134,6 +137,8 @@ const SubTypeOverview = () => {
       <EntitySettingCustomOverview
         entitySettingsData={subType.settings}
       />
+
+      {isCustomViewsFeatureEnabled && <CustomViewsGrid data={customViewsSettings} />}
     </Grid>
   );
 };

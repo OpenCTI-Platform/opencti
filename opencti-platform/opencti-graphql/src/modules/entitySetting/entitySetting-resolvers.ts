@@ -1,8 +1,8 @@
 import {
   entitySettingsEditField,
-  findEntitySettingPaginated,
   findById,
   findByType,
+  findEntitySettingPaginated,
   getOverviewLayoutCustomization,
   getTemplatesForSetting,
   queryDefaultValuesAttributesForSetting,
