@@ -2,12 +2,61 @@ name: OpenCTI CI
 on:
   workflow_dispatch:
   push:
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '.github/*.md'
   pull_request:
     types: [opened, synchronize, reopened]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '.github/*.md'
 
 jobs:
+  detect-changes:
+    name: Detect changed paths
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.backend == 'true' }}
+      frontend: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.frontend == 'true' }}
+      client_python: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.client_python == 'true' }}
+      worker: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.worker == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+        if: github.event_name != 'workflow_dispatch'
+        with:
+          fetch-depth: 0
+      - uses: dorny/paths-filter@v3
+        if: github.event_name != 'workflow_dispatch'
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'opencti-platform/opencti-graphql/**'
+              - 'opencti-platform/*'
+              - '.github/workflows/**'
+              - 'scripts/ci/**'
+              - 'package.json'
+              - 'yarn.lock'
+              - '.yarnrc.yml'
+            frontend:
+              - 'opencti-platform/opencti-front/**'
+              - '.github/workflows/**'
+              - 'scripts/ci/**'
+            client_python:
+              - 'client-python/**'
+              - '.github/workflows/**'
+              - 'scripts/ci/**'
+            worker:
+              - 'opencti-worker/**'
+              - '.github/workflows/**'
+              - 'scripts/ci/**'
+
   wf-build-image:
       name: Build image
+      needs: detect-changes
+      if: needs.detect-changes.outputs.backend == 'true' || needs.detect-changes.outputs.client_python == 'true' || needs.detect-changes.outputs.worker == 'true'
       uses: ./.github/workflows/ci-docker-build.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
@@ -17,8 +66,8 @@ jobs:
 
   wf-backend-test:
       name: Backend
-      uses: ./.github/workflows/ci-test-backend.yml
       needs: wf-build-image
+      uses: ./.github/workflows/ci-test-backend.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
         run-id: ${{ github.run_id }}
@@ -26,6 +75,8 @@ jobs:
 
   wf-frontend-test:
       name: Frontend
+      needs: detect-changes
+      if: needs.detect-changes.outputs.frontend == 'true' || needs.detect-changes.outputs.backend == 'true' || needs.detect-changes.outputs.client_python == 'true' || needs.detect-changes.outputs.worker == 'true'
       uses: ./.github/workflows/ci-test-frontend.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
@@ -33,8 +84,8 @@ jobs:
 
   wf-client-python-test:
       name: Client Python
-      uses: ./.github/workflows/ci-test-client-python.yml
       needs: wf-build-image
+      uses: ./.github/workflows/ci-test-client-python.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets: inherit
@@ -45,3 +96,26 @@ jobs:
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets: inherit
+
+  ci-status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - detect-changes
+      - wf-build-image
+      - wf-backend-test
+      - wf-frontend-test
+      - wf-client-python-test
+      - wf-license-check
+    steps:
+      - name: Check all jobs status
+        run: |
+          results="${{ join(needs.*.result, ' ') }}"
+          for result in $results; do
+            if [ "$result" == "failure" ] || [ "$result" == "cancelled" ]; then
+              echo "::error::One or more jobs failed or were cancelled: $results"
+              exit 1
+            fi
+          done
+          echo "All jobs passed or were skipped."
