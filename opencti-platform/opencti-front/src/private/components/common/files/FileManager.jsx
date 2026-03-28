@@ -76,6 +76,10 @@ export const fileManagerCreateDraftAskJobImportMutation = graphql`
     $forceValidation: Boolean
     $validationMode: ValidationMode
     $authorized_members: [MemberAccessInput!]
+    $description: String
+    $objectAssignee: [String!]
+    $objectParticipant: [String!]
+    $createdBy: String
   ) {
     createDraftAndAskJobImport(
       fileName: $fileName
@@ -85,6 +89,10 @@ export const fileManagerCreateDraftAskJobImportMutation = graphql`
       forceValidation: $forceValidation
       validationMode: $validationMode
       authorized_members: $authorized_members
+      description: $description
+      objectAssignee: $objectAssignee
+      objectParticipant: $objectParticipant
+      createdBy: $createdBy
     ) {
       ...FileLine_file
     }
