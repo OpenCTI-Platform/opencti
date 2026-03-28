@@ -28,6 +28,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organ
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
 import { pushAll } from '../utils/arrayUtil';
+import { InterruptibleTimer } from './interruptible-timer';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const HISTORY_WITH_INFERENCES = booleanConf('history_manager:include_inferences', false);
@@ -283,11 +284,7 @@ const initHistoryManager = () => {
   let streamProcessor: StreamProcessor;
   let running = false;
   let shutdown = false;
-  const wait = (ms: number) => {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
-  };
+  const waitTimer = new InterruptibleTimer();
   const historyHandler = async (lastEventId: string) => {
     let lock;
     try {
@@ -299,7 +296,7 @@ const initHistoryManager = () => {
       await streamProcessor.start(lastEventId);
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
-        await wait(WAIT_TIME_ACTION);
+        await waitTimer.start(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of history manager processing');
     } catch (e: any) {
@@ -351,6 +348,7 @@ const initHistoryManager = () => {
     shutdown: async () => {
       logApp.info('[OPENCTI-MODULE] Stopping history manager');
       shutdown = true;
+      waitTimer.interrupt();
       if (scheduler) {
         await clearIntervalAsync(scheduler);
       }

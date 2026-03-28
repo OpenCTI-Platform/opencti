@@ -8,9 +8,9 @@ import type { BasicStoreSettings } from '../types/settings';
 import { logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { utcDate } from '../utils/format';
-import { wait } from '../database/utils';
 import type { DataEvent, SseEvent } from '../types/event';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
+import { InterruptibleTimer } from './interruptible-timer';
 
 export interface HandlerInput {
   shutdown?: () => Promise<void>;
@@ -56,6 +56,9 @@ const initManager = (manager: ManagerDefinition) => {
   let running = false;
   let shutdown = false;
 
+  const cronTimer = new InterruptibleTimer();
+  const streamTimer = new InterruptibleTimer();
+
   const cronHandler = async (cronInputFn?: () => Promise<HandlerInput>) => {
     if (manager.cronSchedulerHandler) {
       let lock;
@@ -71,7 +74,7 @@ const initManager = (manager: ManagerDefinition) => {
           logApp.info(`[OPENCTI-MODULE] Running ${manager.label} infinite cron handler`);
           while (!shutdown) {
             await manager.cronSchedulerHandler.handler(cronInput);
-            await wait(manager.cronSchedulerHandler.infiniteInterval);
+            await cronTimer.start(manager.cronSchedulerHandler.infiniteInterval);
           }
         } else if (manager.cronSchedulerHandler.lockInHandlerParams) {
           await manager.cronSchedulerHandler.handler(lock);
@@ -109,7 +112,7 @@ const initManager = (manager: ManagerDefinition) => {
         await streamProcessor.start(startFrom);
         while (!shutdown && streamProcessor.running()) {
           lock.signal.throwIfAborted();
-          await wait(WAIT_TIME_ACTION);
+          await streamTimer.start(WAIT_TIME_ACTION);
         }
         logApp.info(`[OPENCTI-MODULE] End of ${manager.label} stream handler`);
       } catch (e: any) {
@@ -154,8 +157,11 @@ const initManager = (manager: ManagerDefinition) => {
       };
     },
     shutdown: async () => {
+      const startTime = new Date().getTime();
       logApp.info(`[OPENCTI-MODULE] Stopping ${manager.label}`);
       shutdown = true;
+      cronTimer.interrupt();
+      streamTimer.interrupt();
       if (scheduler) {
         if (manager.cronSchedulerHandler?.shutdown) {
           manager.cronSchedulerHandler?.shutdown();
@@ -167,6 +173,7 @@ const initManager = (manager: ManagerDefinition) => {
       if (streamScheduler) {
         await clearIntervalAsync(streamScheduler);
       }
+      logApp.info(`[OPENCTI-MODULE] ${manager.label} stopped in ${new Date().getTime() - startTime} ms`);
       return true;
     },
   };
@@ -192,24 +199,34 @@ export const registerManager = (manager: ManagerDefinition) => {
   managersModule.add(managerModule);
 };
 
+export const getAllEnabledManagers = () => {
+  return managersModule.managers
+    .filter((managerModule) => managerModule.manager.enabledToStart());
+};
+
+export const getAllDisabledManagers = () => {
+  return managersModule.managers
+    .filter((managerModule) => !managerModule.manager.enabledToStart());
+};
+
 export const startAllManagers = async () => {
-  for (let i = 0; i < managersModule.managers.length; i += 1) {
-    const managerModule = managersModule.managers[i];
-    if (managerModule.manager.enabledToStart()) {
-      await managerModule.start();
-    } else {
-      logApp.info(`[OPENCTI-MODULE] ${managerModule.manager.label} not started (disabled by configuration)`);
-    }
+  const managersToStart = getAllEnabledManagers();
+  const disabledManagers = getAllDisabledManagers();
+
+  for (let i = 0; i < disabledManagers.length; i += 1) {
+    logApp.info(`[OPENCTI-MODULE] ${disabledManagers[i].manager.label} not started (disabled by configuration)`);
   }
+  await Promise.all(
+    managersToStart.map((managerModule) => managerModule.start()),
+  );
 };
 
 export const shutdownAllManagers = async () => {
-  for (let i = 0; i < managersModule.managers.length; i += 1) {
-    const managerModule = managersModule.managers[i];
-    if (managerModule.manager.enabledToStart()) {
-      await managerModule.shutdown();
-    }
-  }
+  const managersToShutdown = getAllEnabledManagers();
+
+  await Promise.all(
+    managersToShutdown.map((managerModule) => managerModule.shutdown()),
+  );
 };
 
 export const getAllManagersStatuses = (settings: BasicStoreSettings) => {
