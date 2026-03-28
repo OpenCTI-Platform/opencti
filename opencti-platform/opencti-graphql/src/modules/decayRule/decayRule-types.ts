@@ -11,7 +11,7 @@ export interface BasicStoreEntityDecayRule extends BasicStoreEntity {
   decay_pound: number; // can be changed in other model when feature is ready.
   decay_points: number[]; // reactions points
   decay_revoke_score: number; // revoked when score is <= 20
-  decay_observable_types: string[]; // indicator x_opencti_main_observable_type
+  decay_filters: string;
   order: number; // low priority = 0
   active: boolean;
 }
@@ -23,7 +23,7 @@ export interface StoreEntityDecayRule extends StoreEntity {
   decay_pound: number;
   decay_points: number[];
   decay_revoke_score: number;
-  decay_observable_types: string[];
+  decay_filters: string;
   order: number;
   active: boolean;
 }
@@ -35,7 +35,7 @@ export interface StixDecayRule extends StixObject {
   decay_pound: number;
   decay_points: number[];
   decay_revoke_score: number;
-  decay_observable_types: string[];
+  decay_filters: string;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
