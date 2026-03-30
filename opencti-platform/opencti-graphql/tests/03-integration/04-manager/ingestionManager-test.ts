@@ -1,12 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { prepareTaxiiGetParam, processCsvLines, processTaxiiResponse, taxiiExecutor, type TaxiiResponseData } from '../../../src/manager/ingestionManager';
+import {
+  prepareTaxiiGetParam,
+  processCsvLines,
+  processTaxiiResponse,
+  pushBundleToConnectorQueue,
+  taxiiExecutor,
+  type TaxiiResponseData,
+} from '../../../src/manager/ingestionManager';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { addIngestion as addTaxiiIngestion, findById as findTaxiiIngestionById, ingestionDelete, patchTaxiiIngestion } from '../../../src/modules/ingestion/ingestion-taxii-domain';
 import { type CsvMapperAddInput, IngestionAuthType, type IngestionCsvAddInput, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../src/generated/graphql';
 import type { StixReport } from '../../../src/types/stix-2-1-sdo';
 import { now } from '../../../src/utils/format';
 import type { CsvMapperParsed } from '../../../src/modules/internal/csvMapper/csvMapper-types';
-import type { BasicStoreEntityIngestionCsv } from '../../../src/modules/ingestion/ingestion-types';
+import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionTaxii } from '../../../src/modules/ingestion/ingestion-types';
+import type { StixBundle } from '../../../src/types/stix-2-1-common';
 import { csvMapperMockCities } from './ingestionManager/csv-mapper-cities';
 import { addIngestionCsv, findById as findIngestionCsvById } from '../../../src/modules/ingestion/ingestion-csv-domain';
 import { createCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-domain';
@@ -373,10 +381,22 @@ describe('Verify taxiiExecutor', () => {
       }
     }, 10000, 6);
 
-    // First, run the executor to trigger processing (will fail on invalid URL, but adds messages to catch)
-    await taxiiExecutor(testContext);
+    // Push a fake bundle to the queue so messages_number > 0
+    const fakeBundle: StixBundle = {
+      type: 'bundle',
+      spec_version: '2.1',
+      id: 'bundle--fake-for-buffering-test',
+      objects: [{ type: 'report', spec_version: '2.1', id: 'report--fake', name: 'fake', published: '2024-01-01T00:00:00.000Z' } as unknown as StixReport],
+    };
+    await pushBundleToConnectorQueue(testContext, ingestion as unknown as BasicStoreEntityIngestionTaxii, fakeBundle);
 
-    // Now run again - regardless of queue state, the executor should complete without errors
+    // Verify the queue has messages
+    await awaitUntilCondition(async () => {
+      const queryResult = await queueDetails(connectorIdFromIngestId(ingestion.id));
+      return queryResult?.messages_number > 0;
+    }, 10000, 6);
+
+    // Now run taxiiExecutor - should enter the buffering branch (messages_number > 0)
     await expect(taxiiExecutor(testContext)).resolves.not.toThrow();
 
     await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
