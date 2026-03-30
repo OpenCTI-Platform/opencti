@@ -74,20 +74,20 @@ beforeEach(() => {
 
 describe('createFeed domain validation', () => {
   it('should throw when feed_public is true without feed_public_user_id', async () => {
-    const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: true, rolling_time: 60, include_header: false } as FeedAddInput;
+    const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: true, feed_date_attribute: 'created_at', rolling_time: 60, include_header: false } as FeedAddInput;
     await expect(createFeed(mockContext, mockUser, input)).rejects.toThrow('A user must be configured when the feed is public');
   });
 
   it('should throw when feed_public_user_id refers to a non-existent user', async () => {
     vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map() as any);
-    const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: true, feed_public_user_id: NONEXISTENT_USER_ID, rolling_time: 60, include_header: false } as FeedAddInput;
+    const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: true, feed_public_user_id: NONEXISTENT_USER_ID, feed_date_attribute: 'created_at', rolling_time: 60, include_header: false } as FeedAddInput;
     await expect(createFeed(mockContext, mockUser, input)).rejects.toThrow('The user configured for this public sharing no longer exists');
   });
 
   it('should call createEntity when feed_public_user_id is valid', async () => {
     vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map([[VALID_USER_ID, mockRealUser]]) as any);
     vi.mocked(Middleware.createEntity).mockResolvedValue({ element: { id: 'new-id', name: 'F' }, isCreation: true } as any);
-    const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: true, feed_public_user_id: VALID_USER_ID, rolling_time: 60, include_header: false } as FeedAddInput;
+    const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: true, feed_public_user_id: VALID_USER_ID, feed_date_attribute: 'created_at', rolling_time: 60, include_header: false } as FeedAddInput;
     await createFeed(mockContext, mockUser, input);
     expect(Middleware.createEntity).toHaveBeenCalled();
   });
@@ -96,14 +96,14 @@ describe('createFeed domain validation', () => {
 describe('editFeed domain validation', () => {
   it('should throw when feed_public is true without feed_public_user_id', async () => {
     vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ _index: 'idx', internal_id: 'feed-id', name: 'F' } as any);
-    const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: true, rolling_time: 60, include_header: false } as FeedAddInput;
+    const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: true, feed_date_attribute: 'created_at', rolling_time: 60, include_header: false } as FeedAddInput;
     await expect(editFeed(mockContext, mockUser, 'feed-id', input)).rejects.toThrow('A user must be configured when the feed is public');
   });
 
   it('should throw when feed_public_user_id refers to a non-existent user', async () => {
     vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ _index: 'idx', internal_id: 'feed-id', name: 'F' } as any);
     vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map() as any);
-    const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: true, feed_public_user_id: NONEXISTENT_USER_ID, rolling_time: 60, include_header: false } as FeedAddInput;
+    const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: true, feed_public_user_id: NONEXISTENT_USER_ID, feed_date_attribute: 'created_at', rolling_time: 60, include_header: false } as FeedAddInput;
     await expect(editFeed(mockContext, mockUser, 'feed-id', input)).rejects.toThrow('The user configured for this public sharing no longer exists');
   });
 });
