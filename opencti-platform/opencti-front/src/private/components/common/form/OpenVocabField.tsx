@@ -130,7 +130,7 @@ const OpenVocabFieldComponent = ({
       )}
       groupBy={Array.isArray(type) ? (o: VocabFieldOption) => o.category : undefined}
       getOptionDisabled={(o: VocabFieldOption) => disabledOptions.includes(o.value)}
-      isOptionEqualToValue={(o: VocabFieldOption, value: string) => o.value === value}
+      isOptionEqualToValue={(o: VocabFieldOption, v: VocabFieldOption | string) => o.value === (typeof v === 'string' ? v : v?.value)}
       textfieldprops={{
         label,
         helperText,

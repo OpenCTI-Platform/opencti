@@ -67,7 +67,7 @@ export const OPENVOCAB_FIELD_MAPPINGS: VocabularyMapping[] = [
   { attribute: 'collection_layers', vocabularyType: 'collection_layers_ov', label: 'Layers', multiple: true },
 
   // Channel attributes
-  { attribute: 'channel_types', vocabularyType: 'channel_type_ov', label: 'Channel types', multiple: true },
+  { attribute: 'channel_types', vocabularyType: 'channel_types_ov', label: 'Channel types', multiple: true },
 
   // Tool attributes
   { attribute: 'tool_types', vocabularyType: 'tool_type_ov', label: 'Tool types', multiple: true },
