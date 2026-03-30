@@ -13,24 +13,32 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 
 const securityCoverageRelationshipDistributionFragment = graphql`
     fragment SecurityCoverageTestedEntitiesChart_securityCoverage on SecurityCoverage{
-        totalCountPerEntityType : stixCoreRelationshipsDistribution(field:"entity_type", relationship_type: "has-covered", operation:count filters: {
-            mode: and
-            filters: [
-                { key: "toTypes", operator: not_eq, values: ["Securityplatform"] }
-            ]
-            filterGroups: []
-        }){
+        totalCountPerEntityType : stixCoreRelationshipsDistribution(
+            field:"entity_type", 
+            relationship_type: "has-covered", 
+            operation:count,
+            filters: {
+              mode: and
+              filters: [
+                  { key: "toTypes", operator: not_eq, values: ["Securityplatform"] }
+              ]
+              filterGroups: []
+            }){
             label,
             value
         }
-        testedCountPerEntityType: stixCoreRelationshipsDistribution(field:"entity_type", relationship_type: "has-covered", operation:count, filters: {
+        testedCountPerEntityType: stixCoreRelationshipsDistribution(
+            field:"entity_type", 
+            relationship_type: "has-covered", 
+            operation:count, 
+            filters: {
             mode: and
             filters: [
-                { key: "coverage_information", operator: not_nil, values: [] }
+                { key: "coverage_information", operator: not_nil, values: [] },
                 { key: "toTypes", operator: not_eq, values: ["Securityplatform"] }
-            ]
-            filterGroups: []
-        } ){
+              ]
+              filterGroups: []
+            }){
             label,
             value
         }
