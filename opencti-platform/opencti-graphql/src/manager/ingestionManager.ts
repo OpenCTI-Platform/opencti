@@ -483,7 +483,7 @@ const taxiiV21DataHandler: TaxiiHandlerFn = async (context: AuthContext, ingesti
 const TAXII_HANDLERS: { [k: string]: TaxiiHandlerFn } = {
   [TaxiiVersion.V21]: taxiiV21DataHandler,
 };
-const taxiiExecutor = async (context: AuthContext) => {
+export const taxiiExecutor = async (context: AuthContext) => {
   const filters = {
     mode: 'and',
     filters: [{ key: 'ingestion_running', values: [true] }],
