@@ -44,7 +44,7 @@ describe('generateUpdatePatchMessage tests', () => {
     ];
     const resolvedMap = { 'bff2afb7-03d3-40ad-bdd0-d6977f045ddg': 'TLP:GREEN' };
     const message = generateMessageFromChanges(resolvedMap, changes);
-    expect(message).toEqual('add `secret-doc.pdf (TLP:GREEN)` in `Files`');
+    expect(message).toEqual('adds `secret-doc.pdf (TLP:GREEN)` in `Files`');
   });
   it('should generate message fail for unexisting attribute', () => {
     const changes: Change[] = [
@@ -66,7 +66,7 @@ describe('generateUpdatePatchMessage tests', () => {
       },
     ];
     const message = generateMessageFromChanges({}, changes);
-    expect(message).toEqual('add `alias1` in `X_Aliases` | removes `alias2` in `X_Aliases`');
+    expect(message).toEqual('adds `alias1` in `X_Aliases` | removes `alias2` in `X_Aliases`');
   });
   it('should generate message for simple field update if no previous value', () => {
     const changes: Change[] = [
