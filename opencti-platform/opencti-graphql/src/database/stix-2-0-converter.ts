@@ -40,10 +40,13 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isEmptyField } from './utils';
 import type * as SRO from '../types/stix-2-0-sro';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
+import type { StoreEntityThreatActorIndividual } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { convertThreatActorIndividualToStix_2_0 } from '../modules/threatActorIndividual/threatActorIndividual-converter';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import type { StoreEntityOrganization } from '../modules/organization/organization-types';
 import { convertOrganizationToStix_2_0 } from '../modules/organization/organization-converter';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../modules/securityPlatform/securityPlatform-types';
+import type { StoreEntitySecurityPlatform } from '../modules/securityPlatform/securityPlatform-types';
 import { convertSecurityPlatformToStix_2_0 } from '../modules/securityPlatform/securityPlatform-converter';
 
 const CUSTOM_ENTITY_TYPES = [
@@ -178,12 +181,12 @@ export const convertIdentityToStix = (instance: StoreEntityIdentity, type: strin
     contact_information: instance.contact_information,
     identity_class: instance.identity_class,
     roles: instance.roles,
-    sectors: (instance as any).sectors,
-    x_opencti_aliases: instance.x_opencti_aliases,
-    x_opencti_firstname: (instance as any).x_opencti_firstname,
-    x_opencti_lastname: (instance as any).x_opencti_lastname,
-    x_opencti_organization_type: (instance as any).x_opencti_organization_type,
-    x_opencti_reliability: (instance as any).x_opencti_reliability,
+    sectors: instance.sectors,
+    x_opencti_aliases: instance.x_opencti_aliases ?? [],
+    x_opencti_firstname: instance.x_opencti_firstname,
+    x_opencti_lastname: instance.x_opencti_lastname,
+    x_opencti_organization_type: instance.x_opencti_organization_type,
+    x_opencti_reliability: instance.x_opencti_reliability,
   };
 };
 
@@ -469,13 +472,13 @@ const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
       return convertThreatActorGroupToStix(basic);
     }
     if (ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL === type) {
-      return convertThreatActorIndividualToStix_2_0(basic as any);
+      return convertThreatActorIndividualToStix_2_0(basic as StoreEntityThreatActorIndividual);
     }
     if (ENTITY_TYPE_IDENTITY_ORGANIZATION === type) {
-      return convertOrganizationToStix_2_0(basic as any);
+      return convertOrganizationToStix_2_0(basic as StoreEntityOrganization);
     }
     if (ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM === type) {
-      return convertSecurityPlatformToStix_2_0(basic as any);
+      return convertSecurityPlatformToStix_2_0(basic as StoreEntitySecurityPlatform);
     }
     if (isStixDomainObjectIdentity(type)) {
       return convertIdentityToStix(basic as StoreEntityIdentity, type);
