@@ -2,13 +2,32 @@ import { describe, expect, it } from 'vitest';
 import '../../../src/modules/index';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import type { Change } from '../../../src/types/event';
-import { generateMessageFromChanges, humanizeRawValue } from '../../../src/database/data-changes';
-import { type AttributeDefinition, authorizedMembers, authorizedMembersActivationDate, creators, files, revoked, xOpenctiAliases } from '../../../src/schema/attribute-definition';
+import {
+  generateCreateMessage,
+  generateDeleteMessage,
+  generateMergeMessage,
+  generateMessageFromChanges,
+  generateRestoreMessage,
+  humanizeRawValue,
+} from '../../../src/database/data-changes';
+import {
+  type AttributeDefinition,
+  authorizedMembers,
+  authorizedMembersActivationDate,
+  confidence,
+  creators,
+  files,
+  lang,
+  revoked,
+  xOpenctiAliases,
+} from '../../../src/schema/attribute-definition';
 import { DefaultFormating } from '../../../src/utils/humanize';
 import { height, type Measurement, weight } from '../../../src/modules/threatActorIndividual/threatActorIndividual';
 import { workflowId } from '../../../src/modules/attributes/stixDomainObject-registrationAttributes';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import type { EntityFileReference } from '../../../src/modules/internal/document/document-types';
+import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
+import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 
 describe('generateUpdatePatchMessage tests', () => {
   // generate
@@ -213,5 +232,105 @@ describe('generateUpdatePatchMessage tests', () => {
     expect(human).toEqual('');
     human = humanizeRawValue({}, authorizedMembersActivationDate, { raw: '2026-01-28T12:27:18Z' }, { ...DefaultFormating, date_format: 'MMM' });
     expect(human).toEqual('Jan');
+  });
+  it('should humanize numeric attribute correctly', () => {
+    const human = humanizeRawValue({}, confidence as AttributeDefinition, { raw: '75' }, DefaultFormating);
+    expect(human).toEqual('75');
+  });
+  it('should humanize string vocab/enum attribute correctly', () => {
+    const human = humanizeRawValue({}, lang as AttributeDefinition, { raw: 'en' }, DefaultFormating);
+    expect(human).toEqual('en');
+  });
+});
+
+describe('generateCreateMessage tests', () => {
+  it('should generate create message for a STIX entity', () => {
+    const instance = { entity_type: ENTITY_TYPE_MALWARE, name: 'Test Malware' };
+    expect(generateCreateMessage(instance)).toEqual('creates a Malware `Test Malware`');
+  });
+  it('should generate create message for a basic relationship', () => {
+    const instance = {
+      entity_type: RELATION_USES,
+      from: { entity_type: ENTITY_TYPE_MALWARE, name: 'Source Malware' },
+      to: { entity_type: ENTITY_TYPE_CONTAINER_REPORT, name: 'Target Report' },
+    };
+    expect(generateCreateMessage(instance)).toEqual(
+      'creates the relation uses from `Source Malware` (Malware) to `Target Report` (Report)',
+    );
+  });
+  it('should generate create message for a PIR relation', () => {
+    const instance = {
+      entity_type: RELATION_IN_PIR,
+      from: { entity_type: ENTITY_TYPE_MALWARE, name: 'Source Malware' },
+      to: { entity_type: ENTITY_TYPE_CONTAINER_REPORT, name: 'Target Report' },
+    };
+    expect(generateCreateMessage(instance)).toEqual(
+      'Malware `Source Malware` added to Report `Target Report`',
+    );
+  });
+  it('should return dash for an unknown entity type', () => {
+    const instance = { entity_type: 'UnregisteredCustomEntityType', name: 'Unknown' };
+    expect(generateCreateMessage(instance)).toEqual('-');
+  });
+});
+
+describe('generateDeleteMessage tests', () => {
+  it('should generate delete message for a STIX entity', () => {
+    const instance = { entity_type: ENTITY_TYPE_MALWARE, name: 'Test Malware' };
+    expect(generateDeleteMessage(instance)).toEqual('deletes a Malware `Test Malware`');
+  });
+  it('should generate delete message for a PIR relation', () => {
+    const instance = {
+      entity_type: RELATION_IN_PIR,
+      from: { entity_type: ENTITY_TYPE_MALWARE, name: 'Source Malware' },
+      to: { entity_type: ENTITY_TYPE_CONTAINER_REPORT, name: 'Target Report' },
+    };
+    expect(generateDeleteMessage(instance)).toEqual(
+      'Malware `Source Malware` removed from Report `Target Report`',
+    );
+  });
+});
+
+describe('generateRestoreMessage tests', () => {
+  it('should generate restore message for a STIX entity', () => {
+    const instance = { entity_type: ENTITY_TYPE_MALWARE, name: 'Test Malware' };
+    expect(generateRestoreMessage(instance)).toEqual('restores a Malware `Test Malware`');
+  });
+});
+
+describe('generateMergeMessage tests', () => {
+  it('should generate merge message with multiple sources', () => {
+    const instance = { entity_type: ENTITY_TYPE_MALWARE, name: 'Merged Malware' };
+    const sources = [
+      { entity_type: ENTITY_TYPE_MALWARE, name: 'Source1' },
+      { entity_type: ENTITY_TYPE_MALWARE, name: 'Source2' },
+    ];
+    expect(generateMergeMessage(instance, sources)).toEqual(
+      'merges Malware `Source1, Source2` in `Merged Malware`',
+    );
+  });
+});
+
+describe('generateMessageFromChanges edge cases', () => {
+  it('should generate message with only removes for a multiple field', () => {
+    const changes: Change[] = [
+      {
+        field: ENTITY_TYPE_IDENTITY_ORGANIZATION + '--' + xOpenctiAliases.name,
+        changes_added: [],
+        changes_removed: [{ raw: 'alias1' }],
+      },
+    ];
+    const message = generateMessageFromChanges({}, changes);
+    expect(message).toEqual('removes `alias1` in `X_Aliases`');
+  });
+  it('should append "and N more operations" when changes exceed max', () => {
+    const changes: Change[] = [
+      { field: ENTITY_TYPE_MALWARE + '--description', changes_added: [{ raw: 'desc' }], changes_removed: [{ raw: 'old' }] },
+      { field: ENTITY_TYPE_MALWARE + '--name', changes_added: [{ raw: 'new name' }], changes_removed: [{ raw: 'old name' }] },
+      { field: ENTITY_TYPE_CONTAINER_REPORT + '--name', changes_added: [{ raw: 'report' }], changes_removed: [] },
+      { field: ENTITY_TYPE_MALWARE + '--name', changes_added: [{ raw: 'extra' }], changes_removed: [] }, // 4th, only counted
+    ];
+    const message = generateMessageFromChanges({}, changes);
+    expect(message).toContain('and 1 more operations');
   });
 });
