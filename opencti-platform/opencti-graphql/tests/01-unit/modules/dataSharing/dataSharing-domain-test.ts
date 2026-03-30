@@ -106,6 +106,21 @@ describe('editFeed domain validation', () => {
     const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: true, feed_public_user_id: NONEXISTENT_USER_ID, feed_date_attribute: 'created_at', rolling_time: 60, include_header: false } as FeedAddInput;
     await expect(editFeed(mockContext, mockUser, 'feed-id', input)).rejects.toThrow('The user configured for this public sharing no longer exists');
   });
+
+  it('should throw when feed does not exist', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue(undefined as any);
+    const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: false, feed_date_attribute: 'created_at', rolling_time: 60, include_header: false } as FeedAddInput;
+    await expect(editFeed(mockContext, mockUser, 'missing-id', input)).rejects.toThrow('Feed missing-id cant be found');
+  });
+
+  it('should succeed when feed_public_user_id is valid', async () => {
+    const mockFeed = { _index: 'idx', internal_id: 'feed-id', name: 'F' } as any;
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue(mockFeed);
+    vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map([[VALID_USER_ID, mockRealUser]]) as any);
+    const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: true, feed_public_user_id: VALID_USER_ID, feed_date_attribute: 'created_at', rolling_time: 60, include_header: false } as FeedAddInput;
+    await editFeed(mockContext, mockUser, 'feed-id', input);
+    expect(MiddlewareLoader.storeLoadById).toHaveBeenCalled();
+  });
 });
 
 // ---------- StreamCollection ----------
@@ -120,6 +135,21 @@ describe('createStreamCollection domain validation', () => {
     vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map() as any);
     const input = { name: 'S', stream_public: true, stream_public_user_id: NONEXISTENT_USER_ID } as StreamCollectionAddInput;
     await expect(createStreamCollection(mockContext, mockUser, input)).rejects.toThrow('The user configured for this public sharing no longer exists');
+  });
+
+  it('should call createEntity when stream_public_user_id is valid', async () => {
+    vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map([[VALID_USER_ID, mockRealUser]]) as any);
+    vi.mocked(Middleware.createEntity).mockResolvedValue({ element: { id: 'new-stream-id', name: 'S' }, isCreation: true } as any);
+    const input = { name: 'S', stream_public: true, stream_public_user_id: VALID_USER_ID } as StreamCollectionAddInput;
+    await createStreamCollection(mockContext, mockUser, input);
+    expect(Middleware.createEntity).toHaveBeenCalled();
+  });
+
+  it('should call createEntity when stream is not public (no user validation needed)', async () => {
+    vi.mocked(Middleware.createEntity).mockResolvedValue({ element: { id: 'new-stream-id', name: 'S' }, isCreation: false } as any);
+    const input = { name: 'S', stream_public: false } as StreamCollectionAddInput;
+    await createStreamCollection(mockContext, mockUser, input);
+    expect(Middleware.createEntity).toHaveBeenCalled();
   });
 });
 
@@ -137,6 +167,14 @@ describe('streamCollectionEditField validation', () => {
     await streamCollectionEditField(mockContext, mockUser, 'col-id', input);
     expect(Middleware.updateAttribute).toHaveBeenCalled();
   });
+
+  it('should proceed without user validation when stream_public_user_id is not in the edit input', async () => {
+    vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: { name: 'S', id: 'col-id' } } as any);
+    const input = [{ key: 'name', value: ['Updated stream'] }];
+    await streamCollectionEditField(mockContext, mockUser, 'col-id', input);
+    expect(Middleware.updateAttribute).toHaveBeenCalled();
+    expect(Cache.getEntitiesMapFromCache).not.toHaveBeenCalled();
+  });
 });
 
 // ---------- TaxiiCollection ----------
@@ -151,6 +189,21 @@ describe('createTaxiiCollection domain validation', () => {
     vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map() as any);
     const input = { name: 'T', taxii_public: true, taxii_public_user_id: NONEXISTENT_USER_ID } as TaxiiCollectionAddInput;
     await expect(createTaxiiCollection(mockContext, mockUser, input)).rejects.toThrow('The user configured for this public sharing no longer exists');
+  });
+
+  it('should call createEntity when taxii_public_user_id is valid', async () => {
+    vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map([[VALID_USER_ID, mockRealUser]]) as any);
+    vi.mocked(Middleware.createEntity).mockResolvedValue({ element: { id: 'new-taxii-id', name: 'T' }, isCreation: true } as any);
+    const input = { name: 'T', taxii_public: true, taxii_public_user_id: VALID_USER_ID } as TaxiiCollectionAddInput;
+    await createTaxiiCollection(mockContext, mockUser, input);
+    expect(Middleware.createEntity).toHaveBeenCalled();
+  });
+
+  it('should call createEntity when taxii collection is not public (no user validation needed)', async () => {
+    vi.mocked(Middleware.createEntity).mockResolvedValue({ element: { id: 'new-taxii-id', name: 'T' }, isCreation: false } as any);
+    const input = { name: 'T', taxii_public: false } as TaxiiCollectionAddInput;
+    await createTaxiiCollection(mockContext, mockUser, input);
+    expect(Middleware.createEntity).toHaveBeenCalled();
   });
 });
 
@@ -167,5 +220,13 @@ describe('taxiiCollectionEditField validation', () => {
     const input = [{ key: 'taxii_public_user_id', value: [VALID_USER_ID] }];
     await taxiiCollectionEditField(mockContext, mockUser, 'col-id', input);
     expect(Middleware.updateAttribute).toHaveBeenCalled();
+  });
+
+  it('should proceed without user validation when taxii_public_user_id is not in the edit input', async () => {
+    vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: { name: 'T', id: 'col-id' } } as any);
+    const input = [{ key: 'name', value: ['Updated taxii'] }];
+    await taxiiCollectionEditField(mockContext, mockUser, 'col-id', input);
+    expect(Middleware.updateAttribute).toHaveBeenCalled();
+    expect(Cache.getEntitiesMapFromCache).not.toHaveBeenCalled();
   });
 });
