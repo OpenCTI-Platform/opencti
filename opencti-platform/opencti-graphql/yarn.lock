@@ -1182,27 +1182,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@datadog/pprof@npm:5.14.0":
-  version: 5.14.0
-  resolution: "@datadog/pprof@npm:5.14.0"
+"@datadog/pprof@npm:5.14.1":
+  version: 5.14.1
+  resolution: "@datadog/pprof@npm:5.14.1"
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:<4.0"
     pprof-format: "npm:^2.2.1"
     source-map: "npm:^0.7.4"
-  checksum: 10c0/cdf267fa7a80bddf2edf17dfe3dc64b090dd8e9c668c3561473610ba34eb99c59047461eeee8823815ade91dff65bbca6e3f612d27ee4666cc953b10b2c88ed4
+  checksum: 10c0/6a56b6a5a50902ab47e77e7581fcfb982d63ae79e86d0daeb606f6284c695b2670d3406a53822bebbf0fbae16d1d5cdf79bd6b3ff6c140751485ca94031d6376
   languageName: node
   linkType: hard
 
-"@datadog/pprof@patch:@datadog/pprof@5.14.0#./patch/@datadog-pprof.patch::locator=opencti-graphql%40workspace%3A.":
-  version: 5.14.0
-  resolution: "@datadog/pprof@patch:@datadog/pprof@npm%3A5.14.0#./patch/@datadog-pprof.patch::version=5.14.0&hash=fbd351&locator=opencti-graphql%40workspace%3A."
+"@datadog/pprof@patch:@datadog/pprof@5.14.1#./patch/@datadog-pprof.patch::locator=opencti-graphql%40workspace%3A.":
+  version: 5.14.1
+  resolution: "@datadog/pprof@patch:@datadog/pprof@npm%3A5.14.1#./patch/@datadog-pprof.patch::version=5.14.1&hash=fbd351&locator=opencti-graphql%40workspace%3A."
   dependencies:
     node-gyp: "npm:latest"
     node-gyp-build: "npm:<4.0"
     pprof-format: "npm:^2.2.1"
     source-map: "npm:^0.7.4"
-  checksum: 10c0/f3d794feb95ddf120ceb4603f6f57b83354f98cc9f63154b88a9f9eff2d230f365e0f2889959de90041423b1828db48794559eddffcdfcb91355acd49857feb9
+  checksum: 10c0/7dd0c5d662956888d56ddcf19262e7e1898a7dca6bb3edf2a88073c822254bba9d52cf4be064cd0847f3ee76043b83afc7dcb014ab5eee6f5204e6c5b563a78e
   languageName: node
   linkType: hard
 
@@ -10616,7 +10616,7 @@ __metadata:
     "@aws-sdk/client-sts": "npm:3.1018.0"
     "@aws-sdk/credential-provider-node": "npm:3.972.26"
     "@aws-sdk/lib-storage": "npm:3.1018.0"
-    "@datadog/pprof": "npm:5.14.0"
+    "@datadog/pprof": "npm:5.14.1"
     "@elastic/elasticsearch": "npm:8.19.1"
     "@escape.tech/graphql-armor": "npm:3.2.0"
     "@eslint/js": "npm:10.0.1"
