@@ -19,7 +19,7 @@ import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ABSTRACT_STIX_OBJECT } from '../../schema/general';
 import { TAXIIAPI } from '../../domain/user';
-import { resolvePublicUser, validatePublicUserId } from './dataSharing-utils';
+import { validatePublicUserId } from './dataSharing-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditContext, EditInput, QueryTaxiiCollectionsArgs, TaxiiCollectionAddInput } from '../../generated/graphql';
 import type { BasicConnection, BasicStoreBase, BasicStoreEntity } from '../../types/store.d';
