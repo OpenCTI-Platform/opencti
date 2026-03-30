@@ -10,6 +10,7 @@ import { addFilter } from '../../utils/filtering/filtering-utils';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { TAXIIAPI } from '../../domain/user';
+import { resolvePublicUser, validatePublicUserId } from './dataSharing-utils';
 import { getConsumersForCollection, getLocalConsumerMetrics } from '../../graphql/streamConsumerRegistry';
 import { fetchStreamInfo } from '../../database/stream/stream-handler';
 import { computeProcessingLagMetrics } from '../../utils/consumer-metrics';
@@ -25,6 +26,9 @@ export const createStreamCollection = async (context: AuthContext, user: AuthUse
   }
   if (input.stream_public && !input.stream_public_user_id) {
     throw FunctionalError('A user must be configured when the stream collection is public');
+  }
+  if (input.stream_public_user_id) {
+    await validatePublicUserId(context, input.stream_public_user_id);
   }
 
   // Insert the collection
@@ -65,6 +69,10 @@ export const streamCollectionEditField = async (context: AuthContext, user: Auth
   if (filtersItem?.value) {
     // our stix matching is currently limited, we need to validate the input filters
     validateFilterGroupForStixMatch(JSON.parse(filtersItem.value[0]));
+  }
+  const publicUserIdItem = input.find((item) => item.key === 'stream_public_user_id');
+  if (publicUserIdItem?.value?.[0]) {
+    await validatePublicUserId(context, publicUserIdItem.value[0]);
   }
   const finalInput = input.map(({ key, value }) => {
     const item = { key, value };

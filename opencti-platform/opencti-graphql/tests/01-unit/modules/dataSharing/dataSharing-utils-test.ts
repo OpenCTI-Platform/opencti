@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as Cache from '../../../../src/database/cache';
 import { SYSTEM_USER } from '../../../../src/utils/access';
-import { resolvePublicUser } from '../../../../src/modules/dataSharing/dataSharing-utils';
+import { resolvePublicUser, validatePublicUserId } from '../../../../src/modules/dataSharing/dataSharing-utils';
 
 vi.mock('../../../../src/database/cache');
 vi.mock('../../../../src/database/redis');
@@ -51,5 +51,30 @@ describe('resolvePublicUser', () => {
 
     const result = await resolvePublicUser(mockContext, realUserId);
     expect(result).toBe(mockUser);
+  });
+});
+
+describe('validatePublicUserId', () => {
+  const mockContext = { source: 'testing' } as any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should throw when userId is an internal system user', async () => {
+    await expect(validatePublicUserId(mockContext, SYSTEM_USER.id))
+      .rejects.toThrow('Cannot use an internal system user for public sharing');
+  });
+
+  it('should throw when userId does not exist in the platform cache', async () => {
+    vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map() as any);
+    await expect(validatePublicUserId(mockContext, 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa'))
+      .rejects.toThrow('The user configured for this public sharing no longer exists');
+  });
+
+  it('should resolve without throwing when userId is valid', async () => {
+    const realUserId = 'bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb';
+    vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map([[realUserId, { id: realUserId }]]) as any);
+    await expect(validatePublicUserId(mockContext, realUserId)).resolves.toBeUndefined();
   });
 });
