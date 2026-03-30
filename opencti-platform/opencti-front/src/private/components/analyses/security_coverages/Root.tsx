@@ -25,6 +25,7 @@ import { OaevLogo } from '../../../../static/images/logo_oaev';
 import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 import { RootSecurityCoverageSubscription } from '@components/analyses/security_coverages/__generated__/RootSecurityCoverageSubscription.graphql';
 import SecurityCoverageResult from '@components/analyses/security_coverages/SecurityCoverageResult';
+import useHelper from "../../../../utils/hooks/useHelper";
 
 const subscription = graphql`
     subscription RootSecurityCoverageSubscription($id: ID!) {
@@ -73,6 +74,9 @@ type RootSecurityCoverageProps = {
 };
 
 const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCoverageProps) => {
+  const { isFeatureEnable } = useHelper();
+  const isOAEVResultFeatureEnabled = isFeatureEnable('OEAV_SECURITY_COVERAGE_RESULT_PAGE');
+
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const {
@@ -126,7 +130,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
             entity={securityCoverage}
             tabs={[
               'overview',
-              'result',
+              ...(isOAEVResultFeatureEnabled ? ['result' as const] : []),
               'content',
               'files',
               'history',
@@ -159,12 +163,15 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                 <SecurityCoverage data={securityCoverage} />
               }
             />
-            <Route
-              path="/result"
-              element={(
-                <SecurityCoverageResult id={securityCoverage.id} />
-              )}
-            />
+
+            {isOAEVResultFeatureEnabled && (
+              <Route
+                path="/result"
+                element={(
+                  <SecurityCoverageResult id={securityCoverage.id} />
+                )}
+              />
+            )}
             <Route
               path="/knowledge/*"
               element={(

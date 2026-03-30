@@ -293,7 +293,6 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
   const dataColumns: DataTableProps['dataColumns'] = {
     to_entity_type: {
       label: 'Type',
-      percentWidth: 10,
     },
     to_name: {
       label: 'Name',
@@ -322,12 +321,8 @@ const SecurityCoverageResultComponent = ({ id }: SecurityCoverageResultProps) =>
               </Tooltip>
             ),
     },
-    to_object_label: {
-      label: 'Labels',
-    },
-    to_object_marking: {
-      label: 'Markings',
-    },
+    to_object_label: {},
+    to_object_marking: {},
   };
 
   return (
