@@ -71,6 +71,9 @@ export const operatorDescription = {
     description:
       "Inverse of 'starts_with'; filters for values not starting with the substring.",
   },
+  [FilterOperator.Script]: {
+    description: 'Filters using a custom script or expression.',
+  },
   [FilterOperator.Search]: {
     description: 'Full-text or specialized search operator.',
   },
