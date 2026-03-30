@@ -1,5 +1,4 @@
 import { assert, describe, expect, it, vi, beforeEach, afterEach, type MockInstance } from 'vitest';
-import type { StixBundle, StixObject, StixOpenctiExtension } from '../../../../src/types/stix-2-1-common';
 import type { BasicStoreObject } from '../../../../src/types/store';
 import type { StixId } from '../../../../src/types/stix-2-0-common';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
@@ -9,78 +8,19 @@ import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../src/schema/stixDomainO
 import * as middlewareLoader from '../../../../src/database/middleware-loader';
 import * as access from '../../../../src/utils/access';
 import { PLAYBOOK_UNSHARING_COMPONENT } from '../../../../src/modules/playbook/components/unsharing-component';
+import { testBundleObject, testExecutor } from './playbook-components-test-utils';
 
 describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
-  const reportId = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
-  const secondObjectId = 'indicator--second-object';
+  const MAIN_REPORT_ID = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
+  const SECOND_OBJECT_ID = 'indicator--second-object';
 
-  const baseBundle: StixBundle = {
-    type: 'bundle',
-    spec_version: '2.1',
-    id: 'bundle--test-id',
-    objects: [],
-  } as StixBundle;
-
-  const createBaseBundleObject = (grantedRefs?: string[]): StixObject => ({
-    id: reportId,
-    spec_version: '2.1',
-    type: 'report',
-    name: 'Test Report',
-    extensions: {
-      [STIX_EXT_OCTI]: {
-        id: 'internal-uuid',
-        type: ENTITY_TYPE_CONTAINER_REPORT,
-        extension_type: 'property-extension',
-        ...(grantedRefs && { granted_refs: grantedRefs }),
-      } as StixOpenctiExtension,
-    },
-  } as StixObject);
-
-  const createSecondObject = (grantedRefs?: string[]): StixObject => ({
-    id: secondObjectId,
-    spec_version: '2.1',
-    type: 'indicator',
-    name: 'Test Indicator',
-    extensions: {
-      [STIX_EXT_OCTI]: {
-        id: 'second-internal-uuid',
-        type: 'Indicator',
-        extension_type: 'property-extension',
-        ...(grantedRefs && { granted_refs: grantedRefs }),
-      } as StixOpenctiExtension,
-    },
-  } as StixObject);
-
-  const basePlaybookNode = {
-    id: 'playbook-node-1',
-    name: 'Unshare Node',
-    component_id: 'PLAYBOOK_UNSHARING_COMPONENT',
-  };
-
-  const baseExecutorParams = {
-    dataInstanceId: reportId,
-    eventId: '',
-    executionId: '',
-    playbookId: '',
-    previousPlaybookNodeId: undefined,
-    previousStepBundle: null as StixBundle | null,
-  };
-
-  const createPlaybookNode = (organizations: string[], all = false) => ({
-    ...basePlaybookNode,
-    configuration: {
-      organizations,
-      all,
-    },
-  });
-
-  const createPlaybookNodeWithObjectOrgs = (organizations: { label: string; value: string }[], all = false) => ({
-    ...basePlaybookNode,
-    configuration: {
-      organizations,
-      all,
-    },
-  });
+  const inputBundleBaseObject = (grantedRefs?: StixId[]) => [
+    testBundleObject({
+      id: MAIN_REPORT_ID,
+      type: ENTITY_TYPE_CONTAINER_REPORT,
+      octiExtension: { granted_refs: grantedRefs },
+    }),
+  ];
 
   const createMockOrganization = (name: string): Partial<BasicStoreObject> => ({
     id: `org-internal-${name}`,
@@ -105,16 +45,18 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
       internalFindByIdsSpy.mockResolvedValue([]);
 
       const orgToKeep = createMockOrganization('OrgToKeep');
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject([orgToKeep.standard_id!])],
-      };
 
-      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([]),
-      });
+      const bundleInputObject = inputBundleBaseObject([orgToKeep.standard_id!]);
+
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: bundleInputObject,
+          configuration: {
+            organizations: [],
+            all: false,
+          },
+        }));
 
       expect(result.output_port).toBe('out');
 
@@ -127,16 +69,18 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
       internalFindByIdsSpy.mockResolvedValue([]);
 
       const orgToKeep = createMockOrganization('OrgToKeep');
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject([orgToKeep.standard_id!])],
-      };
 
-      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode(['org-not-found']),
-      });
+      const bundleInputObject = inputBundleBaseObject([orgToKeep.standard_id!]);
+
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: bundleInputObject,
+          configuration: {
+            organizations: ['org-not-found'],
+            all: false,
+          },
+        }));
 
       expect(result.output_port).toBe('out');
 
@@ -152,16 +96,17 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
 
       internalFindByIdsSpy.mockResolvedValue([orgToRemove as BasicStoreObject]);
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject([orgToRemove.standard_id!])],
-      };
+      const bundleInputObject = inputBundleBaseObject([orgToRemove.standard_id!]);
 
-      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([orgToRemove.id!], false),
-      });
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: bundleInputObject,
+          configuration: {
+            organizations: [orgToRemove.id!],
+            all: false,
+          },
+        }));
 
       expect(internalFindByIdsSpy).toHaveBeenCalled();
       expect(result.output_port).toBe('out');
@@ -186,16 +131,17 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
 
       internalFindByIdsSpy.mockResolvedValue([orgToRemove as BasicStoreObject]);
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject([orgToRemove.standard_id!])],
-      };
+      const bundleInputObject = inputBundleBaseObject([orgToRemove.standard_id!]);
 
-      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNodeWithObjectOrgs([{ label: 'Org To Remove', value: orgToRemove.id! }], false),
-      });
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: bundleInputObject,
+          configuration: {
+            organizations: [{ label: 'Org To Remove', value: orgToRemove.id! }],
+            all: false,
+          },
+        }));
 
       expect(result.output_port).toBe('out');
 
@@ -219,16 +165,17 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
         orgToRemove2 as BasicStoreObject,
       ]);
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject([orgToRemove1.standard_id!, orgToRemove2.standard_id!])],
-      };
+      const bundleInputObject = inputBundleBaseObject([orgToRemove1.standard_id!, orgToRemove2.standard_id!]);
 
-      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([orgToRemove1.id!, orgToRemove2.id!], false),
-      });
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: bundleInputObject,
+          configuration: {
+            organizations: [orgToRemove1.id!, orgToRemove2.id!],
+            all: false,
+          },
+        }));
 
       const ext = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
 
@@ -250,16 +197,17 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
 
       internalFindByIdsSpy.mockResolvedValue([orgToRemove as BasicStoreObject]);
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject([orgToRemove.standard_id!, orgToKeep.standard_id!])],
-      };
+      const bundleInputObject = inputBundleBaseObject([orgToRemove.standard_id!, orgToKeep.standard_id!]);
 
-      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([orgToRemove.id!], false),
-      });
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: bundleInputObject,
+          configuration: {
+            organizations: [orgToRemove.id!],
+            all: false,
+          },
+        }));
 
       const ext = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
 
@@ -277,24 +225,32 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
 
   describe('when bundle contains multiple objects', () => {
     // TODO: add test for all=false when cascading of sharing/unshare will be resolved
-    it('should only add remove operation to dataInstanceId when all=false', async () => {
+    it('should only add remove operation to dataInstanceId when all=false', async () => { // changer le titre
       const orgToRemove = createMockOrganization('OrgToRemove');
 
       internalFindByIdsSpy.mockResolvedValue([orgToRemove as BasicStoreObject]);
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [
-          createBaseBundleObject([orgToRemove.standard_id!]),
-          createSecondObject([orgToRemove.standard_id!]),
-        ],
-      };
+      const bundleInputObjects = [
+        testBundleObject({
+          id: MAIN_REPORT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+          octiExtension: { granted_refs: [orgToRemove.standard_id!] },
+        }),
+        testBundleObject({
+          id: SECOND_OBJECT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+          octiExtension: { granted_refs: [orgToRemove.standard_id!] },
+        })];
 
-      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([orgToRemove.id!], false),
-      });
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: bundleInputObjects,
+          configuration: {
+            organizations: [orgToRemove.id!],
+            all: false,
+          },
+        }));
 
       // Check first object (report) - should have operation
       const reportExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
@@ -308,6 +264,91 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
       expect(indicatorExt.granted_refs).toContain(orgToRemove.standard_id);
       expect(indicatorExt.opencti_upsert_operations).toBeUndefined();
     });
+
+    it('should add remove operation on all objects when all=true', async () => { // changer le titre
+      const orgToRemove = createMockOrganization('OrgToRemove');
+
+      internalFindByIdsSpy.mockResolvedValue([orgToRemove as BasicStoreObject]);
+
+      const bundleInputObjects = [
+        testBundleObject({
+          id: MAIN_REPORT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+          octiExtension: { granted_refs: [orgToRemove.standard_id!] },
+        }),
+        testBundleObject({
+          id: SECOND_OBJECT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+          octiExtension: { granted_refs: [orgToRemove.standard_id!] },
+        })];
+
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: bundleInputObjects,
+          configuration: {
+            organizations: [orgToRemove.id!],
+            all: true,
+          },
+        }));
+
+      const reportExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
+      const indicatorExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
+      if (
+        !reportExt.opencti_upsert_operations
+        || !reportExt.opencti_upsert_operations[0]
+        || !indicatorExt.opencti_upsert_operations
+        || !indicatorExt.opencti_upsert_operations[0]
+      ) {
+        assert.fail('Upsert operation missing on report');
+      }
+      // Check first object (report) - should have operation
+      expect(reportExt.opencti_upsert_operations[0].operation).toBe('remove');
+
+      // Check second object (indicator) - should also have operation
+      expect(indicatorExt.opencti_upsert_operations[0].operation).toBe('remove');
+    });
+
+    it('should add remove operation to all objects except main when applyToElements equals only-except-main', async () => {
+      const orgToRemove = createMockOrganization('OrgToRemove');
+
+      internalFindByIdsSpy.mockResolvedValue([orgToRemove as BasicStoreObject]);
+
+      const bundleInputObjects = [
+        testBundleObject({
+          id: MAIN_REPORT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+          octiExtension: { granted_refs: [orgToRemove.standard_id!] },
+        }),
+        testBundleObject({
+          id: SECOND_OBJECT_ID,
+          type: ENTITY_TYPE_CONTAINER_REPORT,
+          octiExtension: { granted_refs: [orgToRemove.standard_id!] },
+        })];
+
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: bundleInputObjects,
+          configuration: {
+            organizations: [orgToRemove.id!],
+            all: true,
+          },
+        }));
+
+      // Check first object (report) - should NOT have operation
+      const reportExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
+      expect(reportExt.granted_refs).toContain(orgToRemove.standard_id);
+      expect(reportExt.opencti_upsert_operations).toBeUndefined();
+
+      // Check second object (indicator) - should have operation
+      const indicatorExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
+      if (!indicatorExt.opencti_upsert_operations || !indicatorExt.opencti_upsert_operations[0]
+      ) {
+        assert.fail('Upsert operation missing on report');
+      }
+      expect(indicatorExt.opencti_upsert_operations[0].operation).toBe('remove');
+    });
   });
 
   describe('when bundle has no granted_refs', () => {
@@ -316,16 +357,17 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
 
       internalFindByIdsSpy.mockResolvedValue([orgToRemove as BasicStoreObject]);
 
-      const bundle: StixBundle = {
-        ...baseBundle,
-        objects: [createBaseBundleObject()],
-      };
+      const bundleInputObject = inputBundleBaseObject();
 
-      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor({
-        ...baseExecutorParams,
-        bundle,
-        playbookNode: createPlaybookNode([orgToRemove.id!], false),
-      });
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(
+        testExecutor({
+          mainId: MAIN_REPORT_ID,
+          bundleObjects: bundleInputObject,
+          configuration: {
+            organizations: [orgToRemove.id!],
+            all: false,
+          },
+        }));
 
       expect(result.output_port).toBe('out');
 
