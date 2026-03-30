@@ -408,7 +408,7 @@ const StixRelationshipsMultiHorizontalBars = ({
     filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
     if (dataSelection.length > 1) {
       subSelection = dataSelection[1];
-      subDistributionFiltersAndOptions = buildFiltersAndOptionsForWidgets(subSelection.filters, { isKnowledgeRelationshipWidget: true });
+      subDistributionFiltersAndOptions = buildFiltersAndOptionsForWidgets(subSelection.filters);
       if (subSelection.perspective === 'entities') {
         subDistributionTypes = ['Stix-Core-Object'];
       }
