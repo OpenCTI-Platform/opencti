@@ -77,6 +77,7 @@ describe('TAXII ingestion resolver standard behavior', () => {
         collection: 'TaxiCollection',
         uri: 'http://taxiserver.invalid',
         user_id: ADMIN_USER.id,
+        scheduling_period: 'PT1H',
       },
     };
     const ingesterQueryResult = await queryAsAdminWithSuccess({
@@ -129,6 +130,7 @@ describe('TAXII ingestion resolver standard behavior', () => {
         uri: 'http://taxiserver.invalid',
         automatic_user: true,
         user_id: '[F] Taxii ingester for integration test',
+        scheduling_period: 'PT1H',
       },
     };
     const ingesterQueryResult = await queryAsAdminWithSuccess({
