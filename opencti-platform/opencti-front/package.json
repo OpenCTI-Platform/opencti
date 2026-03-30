@@ -175,7 +175,7 @@
     "typescript-eslint": "8.57.2",
     "vite": "8.0.3",
     "vite-plugin-relay": "2.1.0",
-    "vite-plugin-static-copy": "3.4.0",
+    "vite-plugin-static-copy": "4.0.0",
     "vitest": "4.1.2"
   },
   "packageManager": "yarn@4.13.0+sha512.5c20ba010c99815433e5c8453112165e673f1c7948d8d2b267f4b5e52097538658388ebc9f9580656d9b75c5cc996f990f611f99304a2197d4c56d21eea370e7",
