@@ -1,18 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { prepareTaxiiGetParam, processCsvLines, processTaxiiResponse, type TaxiiResponseData } from '../../../src/manager/ingestionManager';
+import { handleConfidenceToScoreTransformation, prepareTaxiiGetParam, processCsvLines, processTaxiiResponse, type TaxiiResponseData } from '../../../src/manager/ingestionManager';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { addIngestion as addTaxiiIngestion, findById as findTaxiiIngestionById, ingestionDelete, patchTaxiiIngestion } from '../../../src/modules/ingestion/ingestion-taxii-domain';
 import { type CsvMapperAddInput, IngestionAuthType, type IngestionCsvAddInput, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../src/generated/graphql';
 import type { StixReport } from '../../../src/types/stix-2-1-sdo';
 import { now } from '../../../src/utils/format';
 import type { CsvMapperParsed } from '../../../src/modules/internal/csvMapper/csvMapper-types';
-import type { BasicStoreEntityIngestionCsv } from '../../../src/modules/ingestion/ingestion-types';
+import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionTaxii } from '../../../src/modules/ingestion/ingestion-types';
 import { csvMapperMockCities } from './ingestionManager/csv-mapper-cities';
 import { addIngestionCsv, findById as findIngestionCsvById } from '../../../src/modules/ingestion/ingestion-csv-domain';
 import { createCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-domain';
 import { parseCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-utils';
 import { awaitUntilCondition, readCsvFromFileStream } from '../../utils/testQueryHelper';
 import { connectorIdFromIngestId, queueDetails } from '../../../src/domain/connector';
+import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
+import type { StixObject } from '../../../src/types/stix-2-1-common';
+import type { StixIndicator } from '../../../src/modules/indicator/indicator-types';
 
 describe('Verify taxii ingestion', () => {
   it('should Taxii server response with no pagination (no next, no more, no x-taxii-date-added-last)', async () => {
@@ -25,6 +28,7 @@ describe('Verify taxii ingestion', () => {
       uri: 'http://test.invalid',
       version: TaxiiVersion.V21,
       user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
     };
     const ingestionNotPagination = await addTaxiiIngestion(testContext, ADMIN_USER, input);
     expect(ingestionNotPagination.id).toBeDefined();
@@ -71,6 +75,7 @@ describe('Verify taxii ingestion', () => {
       version: TaxiiVersion.V21,
       added_after_start: '2024-01-01T20:35:44.000Z',
       user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
     };
     const ingestionPaginatedWithStartDate = await addTaxiiIngestion(testContext, ADMIN_USER, input2);
     expect(ingestionPaginatedWithStartDate.id).toBeDefined();
@@ -144,6 +149,7 @@ describe('Verify taxii ingestion', () => {
       uri: 'http://test.invalid',
       version: TaxiiVersion.V21,
       user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
     };
     const ingestionPaginatedWithNoStartDate = await addTaxiiIngestion(testContext, ADMIN_USER, input3);
     expect(ingestionPaginatedWithNoStartDate.id).toBeDefined();
@@ -218,6 +224,7 @@ describe('Verify taxii ingestion', () => {
       version: TaxiiVersion.V21,
       added_after_start: '2023-01-01T20:35:44.000Z',
       user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
     };
     const ingestionPaginatedWithStartDate = await addTaxiiIngestion(testContext, ADMIN_USER, input2);
     expect(ingestionPaginatedWithStartDate.id).toBeDefined();
@@ -253,6 +260,7 @@ describe('Verify taxii ingestion - patch part', () => {
       uri: 'http://test.invalid',
       version: TaxiiVersion.V21,
       user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
     };
     const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
     expect(ingestion.id).toBeDefined();
