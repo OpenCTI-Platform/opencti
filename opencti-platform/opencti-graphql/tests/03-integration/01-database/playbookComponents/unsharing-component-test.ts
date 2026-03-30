@@ -9,6 +9,7 @@ import * as middlewareLoader from '../../../../src/database/middleware-loader';
 import * as access from '../../../../src/utils/access';
 import { PLAYBOOK_UNSHARING_COMPONENT } from '../../../../src/modules/playbook/components/unsharing-component';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
+import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
 
 describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
   const MAIN_REPORT_ID = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
@@ -54,7 +55,7 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
           bundleObjects: bundleInputObject,
           configuration: {
             organizations: [],
-            all: false,
+            applyToElements: playbookBundleElementsToApply.onlyMain.value,
           },
         }));
 
@@ -78,7 +79,7 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
           bundleObjects: bundleInputObject,
           configuration: {
             organizations: ['org-not-found'],
-            all: false,
+            applyToElements: playbookBundleElementsToApply.onlyMain.value,
           },
         }));
 
@@ -104,7 +105,7 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
           bundleObjects: bundleInputObject,
           configuration: {
             organizations: [orgToRemove.id!],
-            all: false,
+            applyToElements: playbookBundleElementsToApply.onlyMain.value,
           },
         }));
 
@@ -139,7 +140,7 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
           bundleObjects: bundleInputObject,
           configuration: {
             organizations: [{ label: 'Org To Remove', value: orgToRemove.id! }],
-            all: false,
+            applyToElements: playbookBundleElementsToApply.onlyMain.value,
           },
         }));
 
@@ -173,7 +174,7 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
           bundleObjects: bundleInputObject,
           configuration: {
             organizations: [orgToRemove1.id!, orgToRemove2.id!],
-            all: false,
+            applyToElements: playbookBundleElementsToApply.onlyMain.value,
           },
         }));
 
@@ -205,7 +206,7 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
           bundleObjects: bundleInputObject,
           configuration: {
             organizations: [orgToRemove.id!],
-            all: false,
+            applyToElements: playbookBundleElementsToApply.onlyMain.value,
           },
         }));
 
@@ -224,8 +225,8 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
   });
 
   describe('when bundle contains multiple objects', () => {
-    // TODO: add test for all=false when cascading of sharing/unshare will be resolved
-    it('should only add remove operation to dataInstanceId when all=false', async () => { // changer le titre
+    // TODO: add test for applyToElements equals only-main when cascading of sharing/unshare will be resolved
+    it('should only add remove operation to dataInstanceId when applyToElements equals only-main', async () => {
       const orgToRemove = createMockOrganization('OrgToRemove');
 
       internalFindByIdsSpy.mockResolvedValue([orgToRemove as BasicStoreObject]);
@@ -248,7 +249,7 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
           bundleObjects: bundleInputObjects,
           configuration: {
             organizations: [orgToRemove.id!],
-            all: false,
+            applyToElements: playbookBundleElementsToApply.onlyMain.value,
           },
         }));
 
@@ -265,7 +266,7 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
       expect(indicatorExt.opencti_upsert_operations).toBeUndefined();
     });
 
-    it('should add remove operation on all objects when all=true', async () => { // changer le titre
+    it('should add remove operation on all objects when applyToElements equals all-elements', async () => {
       const orgToRemove = createMockOrganization('OrgToRemove');
 
       internalFindByIdsSpy.mockResolvedValue([orgToRemove as BasicStoreObject]);
@@ -288,7 +289,7 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
           bundleObjects: bundleInputObjects,
           configuration: {
             organizations: [orgToRemove.id!],
-            all: true,
+            applyToElements: playbookBundleElementsToApply.allElements.value,
           },
         }));
 
@@ -332,12 +333,12 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
           bundleObjects: bundleInputObjects,
           configuration: {
             organizations: [orgToRemove.id!],
-            all: true,
+            applyToElements: playbookBundleElementsToApply.allExceptMain.value,
           },
         }));
 
       // Check first object (report) - should NOT have operation
-      const reportExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
+      const reportExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
       expect(reportExt.granted_refs).toContain(orgToRemove.standard_id);
       expect(reportExt.opencti_upsert_operations).toBeUndefined();
 
@@ -365,7 +366,7 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
           bundleObjects: bundleInputObject,
           configuration: {
             organizations: [orgToRemove.id!],
-            all: false,
+            applyToElements: playbookBundleElementsToApply.onlyMain.value,
           },
         }));
 
