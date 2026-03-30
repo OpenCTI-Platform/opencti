@@ -14,28 +14,19 @@
 }
 
 .rich-text-editor-wrapper .ProseMirror p {
-  margin: 0 0 0.5em 0;
+  margin: 1em 0;
 }
 
-.rich-text-editor-wrapper .ProseMirror h1 {
-  font-size: 25px;
-  margin: 0.5em 0;
-}
 
-.rich-text-editor-wrapper .ProseMirror h2 {
-  font-size: 22px;
-  margin: 0.5em 0;
-}
-
-.rich-text-editor-wrapper .ProseMirror h3 {
-  font-size: 20px;
-  margin: 0.5em 0;
-}
 
 .rich-text-editor-wrapper .ProseMirror blockquote {
-  border-left: 3px solid #b2b2b2;
-  padding-left: 1em;
+  overflow: hidden;
+  padding-right: 1.5em;
+  padding-left: 1.5em;
   margin-left: 0;
+  margin-right: 0;
+  font-style: italic;
+  border-left: solid 5px hsl(0, 0%, 80%);
   color: inherit;
 }
 
@@ -256,11 +247,20 @@ body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
 }
 
 .rich-text-editor-wrapper .ProseMirror .page-break {
-  border: none;
-  border-top: 2px dashed #b2b2b2;
-  margin: 1em 0;
-  height: 0;
+  position: relative;
+  clear: both;
+  padding: 5px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   page-break-after: always;
+}
+
+.rich-text-editor-wrapper .ProseMirror .page-break::after {
+  content: '';
+  position: absolute;
+  border-bottom: 2px dashed #c4c4c4;
+  width: 100%;
 }
 
 .rich-text-editor-wrapper .ProseMirror .mention {
@@ -287,19 +287,25 @@ body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
 }
 
 .rich-text-content p {
-  margin: 0 0 0.5em 0;
+  margin: 1em 0;
 }
 
-.rich-text-content h1 { font-size: 25px; margin: 0.5em 0; }
-.rich-text-content h2 { font-size: 22px; margin: 0.5em 0; }
-.rich-text-content h3 { font-size: 20px; margin: 0.5em 0; }
 
 .rich-text-content .page-break {
-  border: none;
-  border-top: 2px dashed #b2b2b2;
-  margin: 1em 0;
-  height: 0;
+  position: relative;
+  clear: both;
+  padding: 5px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   page-break-after: always;
+}
+
+.rich-text-content .page-break::after {
+  content: '';
+  position: absolute;
+  border-bottom: 2px dashed #c4c4c4;
+  width: 100%;
 }
 
 /* Legacy Editor font-size classes — kept for backward compatibility with stored content */
@@ -322,9 +328,13 @@ body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
 }
 
 .rich-text-content blockquote {
-  border-left: 3px solid #b2b2b2;
-  padding-left: 1em;
+  overflow: hidden;
+  padding-right: 1.5em;
+  padding-left: 1.5em;
   margin-left: 0;
+  margin-right: 0;
+  font-style: italic;
+  border-left: solid 5px hsl(0, 0%, 80%);
 }
 
 .rich-text-content table {
