@@ -25,7 +25,7 @@ import { OaevLogo } from '../../../../static/images/logo_oaev';
 import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 import { RootSecurityCoverageSubscription } from '@components/analyses/security_coverages/__generated__/RootSecurityCoverageSubscription.graphql';
 import SecurityCoverageResult from '@components/analyses/security_coverages/SecurityCoverageResult';
-import useHelper from "../../../../utils/hooks/useHelper";
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const subscription = graphql`
     subscription RootSecurityCoverageSubscription($id: ID!) {
