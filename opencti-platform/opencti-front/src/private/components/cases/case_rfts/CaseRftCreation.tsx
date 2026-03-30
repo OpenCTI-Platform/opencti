@@ -19,6 +19,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import RichTextField from '../../../../components/fields/RichTextField';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import TextField from '../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -108,6 +109,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
@@ -128,7 +130,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
   const [commit] = useApiMutation<CaseRftCreationCaseMutation>(
     caseRftMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Case-Rft')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Case-Rft')} ${t_i18n('successfully created')}` },
   );
 
   const onSubmit: FormikConfig<FormikCaseRftAddInput>['onSubmit'] = (
@@ -396,6 +398,7 @@ const CaseRftCreation = ({
   paginationOptions: CaseRftsLinesCasesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_case_caseRfts',
@@ -408,7 +411,7 @@ const CaseRftCreation = ({
 
   return (
     <Drawer
-      title={t_i18n('Create a request for takedown')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Case-Rft') } })}
       controlledDial={CreateCaseRftControlledDial}
     >
       <CaseRftCreationForm updater={updater} />

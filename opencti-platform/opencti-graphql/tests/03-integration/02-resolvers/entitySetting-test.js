@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { initCreateEntitySettings } from '../../../src/modules/entitySetting/entitySetting-domain';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
-import { ENTITY_TYPE_CONTAINER_NOTE } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 import { entitiesCounter } from '../../02-dataInjection/01-dataCount/entityCountHelper';
@@ -176,5 +176,58 @@ describe('EntitySetting resolver - attributes definitions', () => {
     const refs = schemaRelationsRefDefinition.getRelationsRef(ENTITY_TYPE_CONTAINER_NOTE)
       .filter((ref) => ref.mandatoryType === 'customizable' || ref.mandatoryType === 'external');
     expect(attributesDefinitions.length).toEqual(attributes.length + refs.length);
+  });
+});
+
+// -- CUSTOM NAME --
+
+const READ_CUSTOM_NAME_QUERY = gql`
+  query EntitySettingsByTargetTypeCustomName($targetType: String!) {
+    entitySettingByType(targetType: $targetType) {
+      id
+      custom_name
+      custom_name_plural
+    }
+  }
+`;
+
+const UPDATE_CUSTOM_NAME_QUERY = gql`
+  mutation EntitySettingsEditCustomName($ids: [ID!]!, $input: [EditInput!]!) {
+    entitySettingsFieldPatch(ids: $ids, input: $input) {
+      id
+      custom_name
+      custom_name_plural
+    }
+  }
+`;
+
+describe('EntitySetting resolver - custom name', () => {
+  let entitySettingReportId;
+  beforeAll(async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY });
+    const entitySettingReport = queryResult.data.entitySettings.edges.filter((entitySetting) => entitySetting.node.target_type === ENTITY_TYPE_CONTAINER_REPORT)[0];
+    entitySettingReportId = entitySettingReport.node.id;
+  });
+
+  it('should retrieve null custom name by default', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_CUSTOM_NAME_QUERY, variables: { targetType: ENTITY_TYPE_CONTAINER_REPORT } });
+    const { custom_name, custom_name_plural } = queryResult.data.entitySettingByType;
+    expect(custom_name).toEqual(null);
+    expect(custom_name_plural).toEqual(null);
+  });
+
+  it('should update custom name (singular and plural)', async () => {
+    const customReportName = 'Dossier';
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_CUSTOM_NAME_QUERY,
+      variables: { ids: [entitySettingReportId], input: { key: 'custom_name', value: customReportName } },
+    });
+    const updatedEntitySetting = queryResult.data.entitySettingsFieldPatch.filter((entityType) => entityType.id === entitySettingReportId)[0];
+    expect(updatedEntitySetting.custom_name).toBe(customReportName);
+    // Clean
+    await queryAsAdmin({
+      query: UPDATE_CUSTOM_NAME_QUERY,
+      variables: { ids: [entitySettingReportId], input: { key: 'custom_name', value: null } },
+    });
   });
 });

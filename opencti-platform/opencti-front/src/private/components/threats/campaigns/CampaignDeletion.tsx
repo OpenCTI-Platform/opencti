@@ -7,6 +7,7 @@ import { RelayError } from '../../../../relay/relayTypes';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../components/DeleteDialog';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const CampaignDeletionDeleteMutation = graphql`
   mutation CampaignDeletionDeleteMutation($id: ID!) {
@@ -18,10 +19,11 @@ const CampaignDeletionDeleteMutation = graphql`
 
 const CampaignDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_Campaign') },
+    values: { entity_type: translateEntityType('Campaign') },
   });
   const [commit] = useApiMutation(
     CampaignDeletionDeleteMutation,

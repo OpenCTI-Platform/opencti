@@ -22,14 +22,13 @@ import { PirHistoryFragment$key } from './__generated__/PirHistoryFragment.graph
 import { PirHistoryLogFragment$data } from './__generated__/PirHistoryLogFragment.graphql';
 import { pirHistoryFilterGroup, pirLogRedirectUri } from '../pir-history-utils';
 import PirHistoryMessage from '../PirHistoryMessage';
-import { useFormatter } from '../../../../components/i18n';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../../components/dataGrid/DataTable';
-import { displayEntityTypeForTranslation } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const pirHistoryLogFragment = graphql`
   fragment PirHistoryLogFragment on Log {
@@ -125,7 +124,7 @@ interface PirHistoryProps {
 
 const PirHistory = ({ data }: PirHistoryProps) => {
   const [ref, setRef] = useState<HTMLDivElement | null>(null);
-  const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { id: pirId, name } = useFragment(historyFragment, data);
 
   const LOCAL_STORAGE_KEY = `PirHistoryLogs-${pirId}`;
@@ -166,7 +165,8 @@ const PirHistory = ({ data }: PirHistoryProps) => {
       id: 'entity_type',
       label: 'Type',
       render: ({ context_data }) => {
-        const entityTypeLabel = t_i18n(displayEntityTypeForTranslation(context_data?.entity_type ?? ''));
+        const rawType = context_data?.entity_type ?? '';
+        const entityTypeLabel = translateEntityType(rawType);
         return (
           <Tooltip title={entityTypeLabel}>
             <div style={{ height: 24 }}>

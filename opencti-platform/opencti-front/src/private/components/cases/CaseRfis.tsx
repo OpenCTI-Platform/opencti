@@ -9,6 +9,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import CaseRfiCreation from './case_rfis/CaseRfiCreation';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
@@ -126,6 +127,7 @@ export const LOCAL_STORAGE_KEY = 'caseRfis';
 
 const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Requests for Information | Cases'));
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
@@ -189,7 +191,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
 
   return (
     <div data-testid="rfis-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Requests for information'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: translateEntityType('Case-Rfi', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

@@ -7,9 +7,16 @@ import * as env from '../../../relay/environment';
 import * as useBuildAttributesOutcome from './stix_core_objects/useBuildAttributesOutcome';
 import * as useBuildListOutcome from './stix_core_objects/useBuildListOutcome';
 import * as filterUtils from '../../filters/filtersUtils';
+import * as useDistributionGraphDataModule from '../../hooks/useDistributionGraphData';
 
 describe('Hook: useFileFromTemplate', () => {
   beforeAll(() => {
+    vi.spyOn(useDistributionGraphDataModule, 'default').mockImplementation(() => ({
+      buildWidgetProps: () => ({ series: [], redirectionUtils: [] }),
+      buildWidgetLabelsOption: () => [],
+      buildWidgetColorsOptions: () => [],
+      buildWidgetWordCloudOption: () => [],
+    }));
     vi.spyOn(useBuildAttributesOutcome, 'default').mockImplementation(() => ({
       buildAttributesOutcome: async () => {
         return [

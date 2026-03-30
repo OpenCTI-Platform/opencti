@@ -4,11 +4,13 @@ import React, { useState } from 'react';
 import GraphToolbarOptionsList from './GraphToolbarOptionsList';
 import GraphToolbarItem from './GraphToolbarItem';
 import { useFormatter } from '../../i18n';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 import { useGraphContext } from '../GraphContext';
 import useGraphInteractions from '../utils/useGraphInteractions';
 
 const GraphToolbarSelectTools = () => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [selectByTypeAnchor, setSelectByTypeAnchor] = useState<Element>();
 
   const {
@@ -73,7 +75,7 @@ const GraphToolbarSelectTools = () => {
         onClose={() => setSelectByTypeAnchor(undefined)}
         options={stixCoreObjectTypes}
         getOptionKey={(type) => type}
-        getOptionText={(type) => t_i18n(`entity_${type}`)}
+        getOptionText={(type) => translateEntityType(type)}
         onSelect={(type) => {
           selectByEntityType(type);
           setSelectByTypeAnchor(undefined);

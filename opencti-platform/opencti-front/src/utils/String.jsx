@@ -239,19 +239,6 @@ export const translateDateInterval = (filterValues, t_i18n) => {
 };
 
 /**
- * Convert an entity type value in a translatable string
- *
- * @param {string|undefined} value The entity type to translate
- * @returns {string} Translation in a translatable string
- */
-export const displayEntityTypeForTranslation = (value) => {
-  if (!value) return undefined;
-  return value.toString()[0] === value.toString()[0].toUpperCase()
-    ? `entity_${value.toString()}`
-    : `relationship_${value.toString()}`;
-};
-
-/**
  * Extract urls from a string
  *
  * @returns {*[]}

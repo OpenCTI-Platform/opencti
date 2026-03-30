@@ -8,9 +8,11 @@ import AttackPatternEditionDetails from './AttackPatternEditionDetails';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { useFormatter } from '../../../../components/i18n';
 import Drawer from '../../common/drawer/Drawer';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const AttackPatternEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
 
   const { handleClose, attackPattern, open, controlledDial } = props;
   const { editContext } = attackPattern;
@@ -21,7 +23,7 @@ const AttackPatternEditionContainer = (props) => {
 
   return (
     <Drawer
-      title={t_i18n('Update an attack pattern')}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: translateEntityType('Attack-Pattern') } })}
       open={open}
       onClose={handleClose}
       context={editContext}

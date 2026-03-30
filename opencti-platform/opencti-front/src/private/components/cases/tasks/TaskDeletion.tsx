@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
 import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
@@ -28,10 +29,11 @@ const TaskDeletion = ({
   paginationOptions?: CaseTasksLinesQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_Task') },
+    values: { entity_type: translateEntityType('Task') },
   });
   const [commit] = useApiMutation(
     taskDeletionDeleteMutation,

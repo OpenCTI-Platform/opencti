@@ -31,6 +31,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const positionMutation = graphql`
   mutation PositionCreationMutation($input: PositionAddInput!) {
@@ -89,6 +90,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(POSITION_TYPE);
@@ -141,7 +143,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
   const [commit] = useApiMutation<PositionCreationMutation>(
     positionMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Position')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Position')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -376,6 +378,7 @@ const PositionCreation = ({
   paginationOptions: PositionsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_positions', paginationOptions, 'positionAdd');
 
@@ -384,7 +387,7 @@ const PositionCreation = ({
   );
   return (
     <Drawer
-      title={t_i18n('Create a position')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Position') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreatePositionControlledDial}
     >

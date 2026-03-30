@@ -7,6 +7,7 @@ import { IconButton, List, ListItem, ListItemIcon, ListItemText, Skeleton } from
 import { FunctionComponent, useState } from 'react';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from 'src/components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import SearchInput from 'src/components/SearchInput';
 import { QueryRenderer } from 'src/relay/environment';
 import { insertNode } from 'src/utils/store';
@@ -28,6 +29,7 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [open, setOpen] = useState<boolean>(false);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [search, setSearch] = useState<string>('');
@@ -78,7 +80,7 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
               onClick={handleDialogOpen}
               key="rightButton"
             >
-              {t_i18n('Create')} {t_i18n('entity_Note')}
+              {t_i18n('Create')} {translateEntityType('Note')}
             </Button>
 
           )],
@@ -153,7 +155,7 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
       <Dialog
         open={dialogOpen}
         onClose={handleDialogClose}
-        title={t_i18n('Create a note')}
+        title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Note') } })}
       >
         <NoteCreationForm
           inputValue={search}

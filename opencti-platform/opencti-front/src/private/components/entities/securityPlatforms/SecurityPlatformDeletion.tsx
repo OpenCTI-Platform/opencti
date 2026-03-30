@@ -7,6 +7,7 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import { RelayError } from '../../../../relay/relayTypes';
 import { MESSAGING$ } from '../../../../relay/environment';
 import DeleteDialog from '../../../../components/DeleteDialog';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const securityPlatformDeletionMutation = graphql`
 mutation SecurityPlatformDeletionMutation($id: ID!) {
@@ -17,12 +18,13 @@ mutation SecurityPlatformDeletionMutation($id: ID!) {
 const SecurityPlatformDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const deletion = useDeletion({ handleClose });
   const { setDeleting } = deletion;
 
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: ('entity_SecurityPlatform') },
+    values: { entity_type: translateEntityType('SecurityPlatform') },
   });
 
   const [commit] = useApiMutation(

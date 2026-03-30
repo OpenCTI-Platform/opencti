@@ -26,6 +26,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import AttackPatternEdition from './AttackPatternEdition';
 import AttackPatternDeletion from './AttackPatternDeletion';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -88,6 +89,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   useSubscription<RootAttackPatternSubscription>(subConfig);
 
   const {
@@ -131,7 +133,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Techniques') },
-              { label: t_i18n('Attack patterns'), link: '/dashboard/techniques/attack_patterns' },
+              { label: translateEntityType('Attack-Pattern', { plural: true }), link: '/dashboard/techniques/attack_patterns' },
               { label: attackPattern.name, current: true },
             ]}
             />

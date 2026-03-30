@@ -22,6 +22,7 @@ import PeriodicityField from '../../../../components/fields/PeriodicityField';
 import SelectField from '../../../../components/fields/SelectField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -305,6 +306,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const navigate = useNavigate();
 
   // Stepper state - if we have a preselected entity, start at step 0 (choose type)
@@ -413,7 +415,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   const [commit] = useApiMutation<SecurityCoverageCreationMutation>(
     securityCoverageMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Security-Coverage')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Security-Coverage')} ${t_i18n('successfully created')}` },
   );
   const onSubmit: FormikConfig<SecurityCoverageFormValues>['onSubmit'] = (
     values,
@@ -887,6 +889,7 @@ const SecurityCoverageCreation: FunctionComponent<SecurityCoverageCreationProps>
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination__securityCoverages',
@@ -904,7 +907,7 @@ const SecurityCoverageCreation: FunctionComponent<SecurityCoverageCreationProps>
 
   return (
     <Drawer
-      title={t_i18n('Create a security coverage')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Security-Coverage') } })}
       controlledDial={CreateSecurityCoverageControlledDial}
     >
       {({ onClose }) => <SecurityCoverageCreationWrapper updater={updater} onClose={onClose} />}

@@ -16,6 +16,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 
 const reportLineFragment = graphql`
   fragment ReportsLine_node on Report {
@@ -141,6 +142,7 @@ const LOCAL_STORAGE_KEY = 'reports';
 
 const Reports: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Reports | Analyses'));
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
@@ -205,7 +207,7 @@ const Reports: FunctionComponent = () => {
   };
   return (
     <span data-testid="report-page">
-      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Reports'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: translateEntityType('Report', { plural: true }), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}

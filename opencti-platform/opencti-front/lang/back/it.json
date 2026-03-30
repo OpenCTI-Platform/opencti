@@ -184,6 +184,8 @@
   "Current state date": "Data dello stato corrente",
   "Current stated date": "Data dichiarata corrente",
   "Current_state_hash": "Hash dello stato corrente",
+  "Custom display name": "Nome visualizzato personalizzato",
+  "Custom display name (plural)": "Nome visualizzato personalizzato (plurale)",
   "CVSS2 Access Complexity (AC)": "Complessità di accesso CVSS2 (AC)",
   "CVSS2 Access Vector (AV)": "CVSS2 Vettore di accesso (AV)",
   "CVSS2 Authentication (Au)": "Autenticazione CVSS2 (Au)",

@@ -3,6 +3,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { SubTypeQuery } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
 import { Outlet, useParams } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import CustomizationMenu from '../CustomizationMenu';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -42,6 +43,7 @@ interface SubTypeProps {
 
 const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
 
   const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
   if (!subType) return <ErrorNotFound />;
@@ -58,7 +60,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
         { label: t_i18n('Settings') },
         { label: t_i18n('Customization') },
         { label: t_i18n('Entity types'), link: '/dashboard/settings/customization/entity_types' },
-        { label: t_i18n(`entity_${subType.label}`), current: true },
+        { label: translateEntityType(subType.label), current: true },
       ]}
       />
 
@@ -67,7 +69,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
       {isDraftWorkspaceType && (<SubTypeMenu entityType={subType.label} />)}
 
       <TitleMainEntity sx={{ mb: 3 }}>
-        {t_i18n(`entity_${subType.label}`)}
+        {translateEntityType(subType.label)}
       </TitleMainEntity>
 
       <Outlet context={{ subType }} />

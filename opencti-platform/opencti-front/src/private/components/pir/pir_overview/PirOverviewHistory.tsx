@@ -24,8 +24,8 @@ import { pirLogRedirectUri } from '@components/pir/pir-history-utils';
 import PirHistoryMessage from '../PirHistoryMessage';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import { displayEntityTypeForTranslation } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { PirOverviewHistoryPirFragment$key } from './__generated__/PirOverviewHistoryPirFragment.graphql';
 import { PirOverviewHistoryFragment$key } from './__generated__/PirOverviewHistoryFragment.graphql';
 import Card from '../../../../components/common/card/Card';
@@ -80,6 +80,7 @@ interface PirOverviewHistoryProps {
 const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, nsdt } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
 
   const pir = useFragment(pirFragment, dataPir);
   const { pirLogs } = useFragment(pirHistoryFragment, dataHistory);
@@ -101,6 +102,8 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
         {history.map((historyItem) => {
           const { id, context_data, timestamp } = historyItem;
           const redirectURI = pirLogRedirectUri(context_data);
+          const rawType = context_data?.entity_type ?? '';
+          const entityTypeLabel = translateEntityType(rawType);
 
           return (
             <Box
@@ -120,7 +123,7 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
                   alignItems: 'center',
                 }}
               >
-                <Tooltip title={t_i18n(displayEntityTypeForTranslation(context_data?.entity_type ?? ''))}>
+                <Tooltip title={entityTypeLabel}>
                   <div>
                     <ItemIcon type={context_data?.entity_type} />
                   </div>

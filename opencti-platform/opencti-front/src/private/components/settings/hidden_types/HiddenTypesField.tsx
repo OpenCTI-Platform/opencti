@@ -13,6 +13,7 @@ import Security from '../../../../utils/Security';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import HiddenTypesIndicator from './HiddenTypesIndicator';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 export const groups = new Map<string, string[]>([
   ['Analysis', ['Report', 'Grouping', 'Malware-Analysis', 'Security-Coverage', 'Note', 'External-Reference']],
@@ -80,6 +81,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
   handleChange,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
 
   const entitySettings = useEntitySettings().filter(({ platform_hidden_type }) => platform_hidden_type !== null)
     .map((node) => ({
@@ -183,7 +185,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
                 entitySettingsEntityType.indexOf(platformHiddenType.target_type) > -1}
               style={{ marginLeft: 10 }}
             />
-            {t_i18n(`entity_${platformHiddenType.target_type}`)}
+            {translateEntityType(platformHiddenType.target_type)}
             <Security needs={[SETTINGS_SETACCESSES]}>
               <HiddenTypesIndicator platformHiddenTargetType={platformHiddenType.target_type} />
             </Security>
@@ -207,7 +209,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
       renderValue={(selected: string[]) => (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
           {selected.map((value) => (
-            <Chip key={value} label={t_i18n(`entity_${value}`)} />
+            <Chip key={value} label={translateEntityType(value)} />
           ))}
         </Box>
       )}

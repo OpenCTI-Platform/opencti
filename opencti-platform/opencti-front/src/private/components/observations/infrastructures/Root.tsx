@@ -27,6 +27,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import InfrastructureEdition from './InfrastructureEdition';
 import InfrastructureDeletion from './InfrastructureDeletion';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {
@@ -85,6 +86,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
   );
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   useSubscription(subConfig);
   const data = usePreloadedQuery(infrastructureQuery, queryRef);
   const { infrastructure, connectorsForImport, connectorsForExport } = data;
@@ -104,7 +106,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
         >
           <Breadcrumbs elements={[
             { label: t_i18n('Observations') },
-            { label: t_i18n('Infrastructures'), link: '/dashboard/observations/infrastructures' },
+            { label: translateEntityType('Infrastructure', { plural: true }), link: '/dashboard/observations/infrastructures' },
             { label: infrastructure.name, current: true },
           ]}
           />

@@ -184,6 +184,8 @@
   "Current state date": "摂取実行",
   "Current stated date": "現在の記載日",
   "Current_state_hash": "現在の状態_ハッシュ",
+  "Custom display name": "カスタム表示名",
+  "Custom display name (plural)": "カスタム表示名（複数形）",
   "CVSS2 Access Complexity (AC)": "CVSS2 アクセス複雑度 (AC)",
   "CVSS2 Access Vector (AV)": "CVSS2 アクセスベクトル (AV)",
   "CVSS2 Authentication (Au)": "CVSS2 認証 (Au)",

@@ -27,6 +27,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { ObservedDataCreationMutation, ObservedDataCreationMutation$variables } from './__generated__/ObservedDataCreationMutation.graphql';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const observedDataCreationMutation = graphql`
   mutation ObservedDataCreationMutation($input: ObservedDataAddInput!) {
@@ -83,6 +84,7 @@ export const ObservedDataCreationForm: FunctionComponent<
   defaultMarkingDefinitions,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { mandatoryAttributes } = useIsMandatoryAttribute(OBSERVED_DATA_TYPE);
   const basicShape = yupShapeConditionalRequired({
     objects: Yup.array(),
@@ -100,7 +102,7 @@ export const ObservedDataCreationForm: FunctionComponent<
   const [commit] = useApiMutation<ObservedDataCreationMutation>(
     observedDataCreationMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Observed-Data')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Observed-Data')} ${t_i18n('successfully created')}` },
   );
   const onSubmit: FormikConfig<ObservedDataAddInput>['onSubmit'] = (
     values,
@@ -257,6 +259,7 @@ const ObservedDataCreation = ({
   paginationOptions: ObservedDatasLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_observedDatas',
@@ -268,7 +271,7 @@ const ObservedDataCreation = ({
   );
   return (
     <Drawer
-      title={t_i18n('Create an observed data')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Observed-Data') } })}
       controlledDial={CreateObservedDataControlledDial}
     >
       {({ onClose }) => (

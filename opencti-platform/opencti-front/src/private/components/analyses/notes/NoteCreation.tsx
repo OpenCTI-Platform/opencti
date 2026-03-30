@@ -17,6 +17,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import SliderField from '../../../../components/fields/SliderField';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -117,6 +118,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
   defaultMarkingDefinitions,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const { mandatoryAttributes } = useIsMandatoryAttribute(NOTE_TYPE);
   const basicShape = yupShapeConditionalRequired({
@@ -145,7 +147,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
       ? noteCreationMutation
       : noteCreationUserMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Note')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Note')} ${t_i18n('successfully created')}` },
   );
   const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = (
     values,
@@ -319,6 +321,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy, key: string) => {
@@ -330,7 +333,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
   const renderClassic = () => {
     return (
       <Drawer
-        title={t_i18n('Create a note')}
+        title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Note') } })}
         controlledDial={CreateNoteControlledDial}
       >
         <NoteCreationForm
@@ -354,7 +357,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
         <Dialog
           open={open}
           onClose={() => setOpen(false)}
-          title={t_i18n('Create a note')}
+          title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Note') } })}
         >
           <NoteCreationForm
             inputValue={inputValue}

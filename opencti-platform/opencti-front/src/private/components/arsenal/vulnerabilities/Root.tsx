@@ -26,6 +26,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import VulnerabilityEdition from './VulnerabilityEdition';
 import VulnerabilityDeletion from './VulnerabilityDeletion';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const subscription = graphql`
   subscription RootVulnerabilitySubscription($id: ID!) {
@@ -89,6 +90,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
 
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   useSubscription<RootVulnerabilitySubscription>(subConfig);
 
   const {
@@ -133,7 +135,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Arsenal') },
-              { label: t_i18n('Vulnerabilities'), link: '/dashboard/arsenal/vulnerabilities' },
+              { label: translateEntityType('Vulnerability', { plural: true }), link: '/dashboard/arsenal/vulnerabilities' },
               { label: vulnerability.name, current: true },
             ]}
             />

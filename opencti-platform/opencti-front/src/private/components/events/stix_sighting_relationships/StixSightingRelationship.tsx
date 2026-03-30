@@ -13,6 +13,7 @@ import Loader from '../../../../components/Loader';
 import StixSightingRelationshipOverview from './StixSightingRelationshipOverview';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const stixSightingRelationshipQuery = graphql`
   query StixSightingRelationshipQuery($id: String!) {
@@ -38,6 +39,7 @@ const StixSightingRelationship: FunctionComponent<
   StixSightingRelationshipProps
 > = ({ entityId, paddingRight }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const navigate = useNavigate();
 
   const [editOpen, setEditOpen] = useState<boolean>(false);
@@ -78,8 +80,8 @@ const StixSightingRelationship: FunctionComponent<
               <>
                 <Breadcrumbs elements={[
                   { label: t_i18n('Events') },
-                  { label: t_i18n('Sightings'), link: '/dashboard/events/sightings' },
-                  { label: t_i18n('Sighting'), current: true },
+                  { label: translateEntityType('stix-sighting-relationship', { plural: true }), link: '/dashboard/events/sightings' },
+                  { label: translateEntityType('stix-sighting-relationship'), current: true },
                 ]}
                 />
                 <StixSightingRelationshipHeader

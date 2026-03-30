@@ -7,6 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { CaseRftEditionContainerCaseQuery } from './__generated__/CaseRftEditionContainerCaseQuery.graphql';
 import CaseRftEditionOverview from './CaseRftEditionOverview';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 interface CaseRftEditionContainerProps {
   queryRef: PreloadedQuery<CaseRftEditionContainerCaseQuery>;
@@ -34,13 +35,14 @@ const CaseRftEditionContainer: FunctionComponent<CaseRftEditionContainerProps> =
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { caseRft } = usePreloadedQuery(caseRftEditionQuery, queryRef);
   if (caseRft === null) {
     return <ErrorNotFound />;
   }
   return (
     <Drawer
-      title={t_i18n('Update a request for takedown')}
+      title={t_i18n('', { id: 'Update ...', values: { entity_type: translateEntityType('Case-Rft') } })}
       context={caseRft?.editContext}
       onClose={handleClose}
       open={open}

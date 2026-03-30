@@ -30,6 +30,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const sectorMutation = graphql`
   mutation SectorCreationMutation($input: SectorAddInput!) {
@@ -105,6 +106,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
   onBulkModalClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(SECTOR_TYPE);
@@ -120,7 +122,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
   const [commit] = useApiMutation<SectorCreationMutation>(
     sectorMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Sector')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Sector')} ${t_i18n('successfully created')}` },
   );
   const {
     bulkCommit,
@@ -325,6 +327,7 @@ const SectorCreation = ({
   paginationOptions: SectorsLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_sectors', paginationOptions, 'sectorAdd');
 
@@ -336,7 +339,7 @@ const SectorCreation = ({
   );
   return (
     <Drawer
-      title={t_i18n('Create a sector')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Sector') } })}
       header={<BulkTextModalButton onClick={() => setBulkOpen(true)} />}
       controlledDial={CreateSectorControlledDial}
     >

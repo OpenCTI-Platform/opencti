@@ -30,6 +30,7 @@ import CityEdition from './CityEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import CityDeletion from './CityDeletion';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {
@@ -88,6 +89,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
   useSubscription(subConfig);
   const location = useLocation();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const data = usePreloadedQuery(cityQuery, queryRef);
   const { forceUpdate } = useForceUpdate();
   const { city, connectorsForImport, connectorsForExport } = data;
@@ -126,7 +128,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Locations') },
-              { label: t_i18n('Cities'), link: '/dashboard/locations/cities' },
+              { label: translateEntityType('City', { plural: true }), link: '/dashboard/locations/cities' },
               { label: city.name, current: true },
             ]}
             />

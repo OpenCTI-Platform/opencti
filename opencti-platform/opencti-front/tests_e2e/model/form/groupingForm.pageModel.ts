@@ -3,7 +3,7 @@ import TextFieldPageModel from '../field/TextField.pageModel';
 import SelectFieldPageModel from '../field/SelectField.pageModel';
 
 export default class GroupingFormPage {
-  private readonly formLocator = this.page.getByRole('heading', { name: 'Create a grouping' }).locator('../..');
+  private readonly formLocator = this.page.getByRole('heading', { name: 'Create Grouping' }).locator('../..');
 
   nameField = new TextFieldPageModel(this.page, 'Name', 'text', this.formLocator);
   contextSelect = new SelectFieldPageModel(this.page, 'Context', false, this.formLocator);

@@ -11,6 +11,7 @@ import FormButtonContainer from '../../../../components/common/form/FormButtonCo
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import TextField from '../../../../components/TextField';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -70,6 +71,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(
     TASK_TYPE,
@@ -88,7 +90,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
   const [commit] = useApiMutation<TaskCreationMutation>(
     taskAddMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Task')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Task')} ${t_i18n('successfully created')}` },
   );
 
   const initialValues: FormikTaskAddInput = {
@@ -211,10 +213,11 @@ const TaskCreation = ({
   paginationOptions: TasksLinesPaginationQuery$variables;
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_tasks__caseTasks', paginationOptions, 'taskAdd');
   return (
     <Drawer
-      title={t_i18n('Create a task')}
+      title={t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Task') } })}
       variant={DrawerVariant.create}
     >
       <TaskCreationForm updater={updater} />

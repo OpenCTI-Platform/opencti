@@ -5,7 +5,7 @@ export default class ContainerAddObservablesPage {
   }
 
   getAddNewObservableButton() {
-    return this.page.getByRole('button', { name: 'Create an observable', exact: true });
+    return this.page.getByRole('button', { name: 'Create Observable', exact: true });
   }
 
   getIPV4ButtonInNewObservable() {

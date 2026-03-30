@@ -47,11 +47,11 @@ export default class IncidentResponseFormPage {
   }
 
   getCreateTitle() {
-    return this.page.getByRole('heading', { name: 'Create an incident response' });
+    return this.page.getByRole('heading', { name: 'Create Incident response' });
   }
 
   getUpdateTitle() {
-    return this.page.getByRole('heading', { name: 'Update an incident response' });
+    return this.page.getByRole('heading', { name: 'Update Incident response' });
   }
 
   getCreateButton() {
