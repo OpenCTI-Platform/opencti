@@ -1,7 +1,7 @@
 import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView } from './customView-types';
-import { FilterMode, type CustomViewsDisplayContext, type CustomViewDisplayContext } from '../../generated/graphql';
+import { type CustomViewsDisplayContext, type CustomViewDisplayContext } from '../../generated/graphql';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -106,37 +106,37 @@ export const getCustomViewsDisplayContext = async (context: AuthContext, user: A
 
 // Settings Use Cases (admin users)
 
-export const getCustomViewsSettings = async (
-  context: AuthContext,
-  user: AuthUser,
-  entityType: string,
-) => {
-  if (!isCustomViewsAvailableForEntityType(entityType)) {
-    return {
-      can_have_custom_views: false,
-      custom_views_info: [],
-    };
-  }
-  const customViewEntities = await fullEntitiesList<BasicStoreEntityCustomView>(
-    context,
-    user,
-    [ENTITY_TYPE_CUSTOM_VIEW],
-    {
-      filters: {
-        mode: FilterMode.And,
-        filters: [{ key: ['target_entity_type'], values: [entityType] }],
-        filterGroups: [],
-      },
-    });
-  return {
-    can_have_custom_views: true,
-    custom_views_info: customViewEntities.map((entity) => ({
-      id: entity.id,
-      name: entity.name,
-      path: entity.path,
-      description: entity.description,
-      created_at: entity.created_at,
-      updated_at: entity.updated_at,
-    })),
-  };
-};
+// export const getCustomViewsSettings = async (
+//   context: AuthContext,
+//   user: AuthUser,
+//   entityType: string,
+// ) => {
+//   if (!isCustomViewsAvailableForEntityType(entityType)) {
+//     return {
+//       can_have_custom_views: false,
+//       custom_views_info: [],
+//     };
+//   }
+//   const customViewEntities = await fullEntitiesList<BasicStoreEntityCustomView>(
+//     context,
+//     user,
+//     [ENTITY_TYPE_CUSTOM_VIEW],
+//     {
+//       filters: {
+//         mode: FilterMode.And,
+//         filters: [{ key: ['target_entity_type'], values: [entityType] }],
+//         filterGroups: [],
+//       },
+//     });
+//   return {
+//     can_have_custom_views: true,
+//     custom_views_info: customViewEntities.map((entity) => ({
+//       id: entity.id,
+//       name: entity.name,
+//       path: entity.path,
+//       description: entity.description,
+//       created_at: entity.created_at,
+//       updated_at: entity.updated_at,
+//     })),
+//   };
+// };
