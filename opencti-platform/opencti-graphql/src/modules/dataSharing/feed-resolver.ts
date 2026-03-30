@@ -10,7 +10,7 @@ const feedResolvers: Resolvers = {
   },
   Feed: {
     authorized_members: (feed, _, context) => getAuthorizedMembers(context, context.user, feed),
-    feed_public_user: (feed, _, context) => loadCreator(context, context.user, feed.feed_public_user_id),
+    feed_public_user: (feed, _, context) => loadCreator(context, context.user, feed.feed_public_user_id ?? undefined),
   },
   Mutation: {
     feedAdd: (_, { input }, context) => createFeed(context, context.user, input),
