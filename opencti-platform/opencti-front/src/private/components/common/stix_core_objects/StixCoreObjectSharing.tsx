@@ -16,6 +16,7 @@ import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import type { Theme } from '../../../../components/Theme';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -108,6 +109,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [displaySharing, setDisplaySharing] = useState(false);
   const userIsOrganizationEditor = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -174,7 +176,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
       return (
         <>
           {!handleClose && (
-            <EETooltip title={t_i18n('Share with an organization')}>
+            <EETooltip title={t_i18n('Share with') + ' ' + translateEntityType('Organization')}>
               <ToggleButton
                 value="shared"
                 onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
@@ -197,13 +199,13 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
               <Dialog
                 open={open || displaySharing}
                 onClose={() => handleReset()}
-                title={t_i18n('Share with an organization')}
+                title={t_i18n('Share with') + ' ' + translateEntityType('Organization')}
               >
                 <Form>
                   <ObjectOrganizationField
                     name="objectOrganization"
                     style={{ width: '100%' }}
-                    label={t_i18n('Organization')}
+                    label={translateEntityType('Organization')}
                     multiple={false}
                   />
                 </Form>
@@ -227,11 +229,11 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
     return (
       <>
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-          {t_i18n('Organizations sharing')}
+          {translateEntityType('Organization', { plural: true }) + ' ' + t_i18n('sharing')}
         </Typography>
         {!handleClose && (
           <>
-            <EETooltip title={t_i18n('Share with an organization')}>
+            <EETooltip title={t_i18n('Share with') + ' ' + translateEntityType('Organization')}>
               <IconButton
                 color="primary"
                 aria-label="Label"
@@ -269,13 +271,13 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
             <Dialog
               open={open || displaySharing}
               onClose={() => handleReset()}
-              title={t_i18n('Share with an organization')}
+              title={t_i18n('Share with') + ' ' + translateEntityType('Organization')}
             >
               <Form>
                 <ObjectOrganizationField
                   name="objectOrganization"
                   style={{ width: '100%' }}
-                  label={t_i18n('Organization')}
+                  label={translateEntityType('Organization')}
                   multiple={false}
                 />
               </Form>

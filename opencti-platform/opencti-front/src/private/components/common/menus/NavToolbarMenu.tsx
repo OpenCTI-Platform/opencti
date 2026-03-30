@@ -36,6 +36,7 @@ const ToolbarSpacer = styled('div')(({ theme }) => ({
 export interface MenuEntry {
   path: string;
   label: string;
+  translatedLabel?: string;
   icon?: ReactElement;
   isEE?: boolean;
 }
@@ -80,7 +81,7 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }
   const bannerHeight = bannerSettings.bannerHeightNumber;
 
   const renderLabel = (entry: MenuEntry) => {
-    const translatedLabel = t_i18n(entry.label);
+    const translatedLabel = entry.translatedLabel ?? t_i18n(entry.label);
 
     if (entry.isEE) {
       return (

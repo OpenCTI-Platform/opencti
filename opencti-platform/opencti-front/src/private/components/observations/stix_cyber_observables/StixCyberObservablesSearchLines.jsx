@@ -17,6 +17,7 @@ import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
+import withEntityTranslation from '../../../../utils/hooks/withEntityTranslation';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
@@ -75,7 +76,7 @@ class StixCyberObservablesContainer extends Component {
   }
 
   render() {
-    const { t, classes, data } = this.props;
+    const { t, translateEntityType, classes, data } = this.props;
     const stixCyberObservablesNodes = map(
       (n) => n.node,
       data.stixCyberObservables.edges,
@@ -103,7 +104,7 @@ class StixCyberObservablesContainer extends Component {
               className={classes.summary}
             >
               <Typography className={classes.heading}>
-                {t(`entity_${type}`)}
+                {translateEntityType(type)}
               </Typography>
               <Typography classes={{ root: classes.secondaryHeading }}>
                 {stixCyberObservables[type].length} {t('observable(s)')}
@@ -245,5 +246,6 @@ const StixCyberObservablesSearchLines = createPaginationContainer(
 
 export default compose(
   inject18n,
+  withEntityTranslation,
   withStyles(styles),
 )(StixCyberObservablesSearchLines);

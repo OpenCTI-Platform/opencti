@@ -15,6 +15,7 @@ import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
+import withEntityTranslation from '../../../../utils/hooks/withEntityTranslation';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
@@ -76,7 +77,7 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
   }
 
   render() {
-    const { t, classes, data, handleSelect } = this.props;
+    const { t, translateEntityType, classes, data, handleSelect } = this.props;
     const stixDomainObjectsNodes = map(
       (n) => n.node,
       data.stixDomainObjects.edges,
@@ -115,7 +116,7 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
               >
                 <AccordionSummary expandIcon={<ExpandMore />}>
                   <Typography className={classes.heading}>
-                    {t(`entity_${type}`)}
+                    {translateEntityType(type)}
                   </Typography>
                   <Typography className={classes.secondaryHeading}>
                     {stixDomainObjects[type].length} {t('entitie(s)')}
@@ -385,5 +386,6 @@ const StixCoreRelationshipCreationFromRelationStixDomainObjectsLines = createPag
 
 export default compose(
   inject18n,
+  withEntityTranslation,
   withStyles(styles),
 )(StixCoreRelationshipCreationFromRelationStixDomainObjectsLines);

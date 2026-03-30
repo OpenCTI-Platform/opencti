@@ -15,6 +15,7 @@ import { ListItemButton } from '@mui/material';
 import { commitMutation } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import StixCoreRelationshipCreationForm, { stixCoreRelationshipBasicShape } from '../../common/stix_core_relationships/StixCoreRelationshipCreationForm';
 import { deleteNodeFromEdge } from '../../../../utils/store';
 import { useIsEnforceReference, useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -78,6 +79,7 @@ const IndicatorAddObservablesLinesContainer = (props) => {
   const { indicator, indicatorObservables, data } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
 
   const [commitRelationAdd] = useApiMutation(indicatorMutationRelationAdd);
   const [commitRelationDelete] = useApiMutation(indicatorMutationRelationDelete);
@@ -206,7 +208,7 @@ const IndicatorAddObservablesLinesContainer = (props) => {
                     >
                       <AccordionSummary expandIcon={<ExpandMore />}>
                         <Typography className={classes.heading}>
-                          {t_i18n(`entity_${type}`)}
+                          {translateEntityType(type)}
                         </Typography>
                         <Typography className={classes.secondaryHeading}>
                           {stixCyberObservables[type].length} {t_i18n('entitie(s)')}

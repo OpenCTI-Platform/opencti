@@ -59,6 +59,7 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import { useTheme } from '@mui/material/styles';
 import { getRelationshipTypesForEntityType, getTargetTypesForRelationship } from '../../../../utils/Relation';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 export const feedCreationAllTypesQuery = graphql`
     query FeedCreationAllTypesQuery {
@@ -171,6 +172,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const { onDrawerClose, open, paginationOptions, isDuplicated, feed } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const theme = useTheme();
   const { schema } = useAuth();
 
@@ -443,12 +445,12 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
           render={({ props: data }: { props: FeedCreationAllTypesQuery$data }) => {
             if (data && data.scoTypes && data.sdoTypes) {
               const resultSco = ((data as FeedCreationAllTypesQuery$data).scoTypes.edges ?? []).map((n) => ({
-                label: t_i18n(`entity_${n.node.label}`),
+                label: translateEntityType(n.node.label),
                 value: n.node.label,
                 type: n.node.label,
               }));
               const resultSdo = ((data as FeedCreationAllTypesQuery$data).sdoTypes.edges ?? []).map((n) => ({
-                label: t_i18n(`entity_${n.node.label}`),
+                label: translateEntityType(n.node.label),
                 value: n.node.label,
                 type: n.node.label,
               }));
@@ -666,7 +668,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                         {typeIndex > 0 && <Divider sx={{ my: 1.5 }} />}
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                           <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                            {t_i18n(`entity_${selectedType}`)}
+                                            {translateEntityType(selectedType)}
                                           </Typography>
                                           <Chip
                                             label={isNeighborMode ? t_i18n('Relationship') : t_i18n('Direct')}
@@ -706,7 +708,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                                       selectedType, currentMapping.relationship_type, schema.schemaRelationsTypesMapping,
                                                     ).map((tt) => (
                                                       <MenuItem key={tt} value={tt}>
-                                                        {t_i18n(`entity_${tt}`)}
+                                                        {translateEntityType(tt)}
                                                       </MenuItem>
                                                     ))}
                                                 </Select>

@@ -55,7 +55,7 @@ const InfrastructureDeletion = ({ id, isOpen, handleClose }: { id: string; isOpe
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this infrastructure?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Infrastructure') + '?'}
     />
   );
 };

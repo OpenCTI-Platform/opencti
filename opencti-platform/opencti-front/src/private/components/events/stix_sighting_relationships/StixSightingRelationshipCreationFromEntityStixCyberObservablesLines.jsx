@@ -15,6 +15,7 @@ import { ExpandMore } from '@mui/icons-material';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
+import withEntityTranslation from '../../../../utils/hooks/withEntityTranslation';
 
 const styles = (theme) => ({
   container: {
@@ -66,7 +67,7 @@ class StixSightingRelationshipCreationFromEntityStixCyberObservablesLinesContain
   }
 
   render() {
-    const { t, classes, data, handleSelect } = this.props;
+    const { t, translateEntityType, classes, data, handleSelect } = this.props;
     const stixCyberObservablesNodes = map(
       (n) => n.node,
       data.stixCyberObservables.edges,
@@ -92,7 +93,7 @@ class StixSightingRelationshipCreationFromEntityStixCyberObservablesLinesContain
           >
             <AccordionSummary expandIcon={<ExpandMore />}>
               <Typography className={classes.heading}>
-                {t(`entity_${type}`)}
+                {translateEntityType(type)}
               </Typography>
               <Typography className={classes.secondaryHeading}>
                 {stixCyberObservables[type].length} {t('observable(s)')}
@@ -219,5 +220,6 @@ const StixSightingRelationshipCreationFromEntityStixCyberObservablesLines = crea
 
 export default compose(
   inject18n,
+  withEntityTranslation,
   withStyles(styles),
 )(StixSightingRelationshipCreationFromEntityStixCyberObservablesLines);

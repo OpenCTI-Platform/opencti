@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { graphql } from 'react-relay';
 import React, { ReactNode, UIEvent } from 'react';
 import { useFormatter } from '../../../components/i18n';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { PirDeletionMutation } from './__generated__/PirDeletionMutation.graphql';
 import useDeletion from '../../../utils/hooks/useDeletion';
@@ -41,11 +42,12 @@ interface PirDeletionProps {
 
 const PirDeletion = ({ pirId, onDeleteComplete, children }: PirDeletionProps) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
 
   const [deleteMutation, deleting] = useApiMutation<PirDeletionMutation>(
     pirDeleteMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Pir')} ${t_i18n('successfully deleted')}` },
+    { successMessage: `${translateEntityType('Pir')} ${t_i18n('successfully deleted')}` },
   );
 
   const deletion = useDeletion({});

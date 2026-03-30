@@ -10,6 +10,7 @@ import { stixCoreRelationshipCreationFromEntityFromMutation, TargetEntity } from
 import { commitMutation, fetchQuery, MESSAGING$ } from 'src/relay/environment';
 import Typography from '@mui/material/Typography';
 import { useFormatter } from 'src/components/i18n';
+import useEntityTranslation from '../../../../../utils/hooks/useEntityTranslation';
 import useAuth from 'src/utils/hooks/useAuth';
 import { ArrowRightAlt } from '@mui/icons-material';
 import MenuItem from '@mui/material/MenuItem';
@@ -176,6 +177,7 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
   onBulkCreate,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [textAreaValue, setTextAreaValue] = useState<string[]>([...selectedEntities.map((item) => item.name ?? '')]);
   const [entityToSearch, setEntityToSearch] = useState<string[]>([]);
   const [bulkEntityList, setBulkEntityList] = useState<BulkEntityTypeInfo[]>([]);
@@ -483,7 +485,7 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
       <Dialog open={isOpen} slotProps={{ paper: { elevation: 1 } }} scroll="paper" sx={{ overflowY: 'hidden', ...classes.dialog, ...classes.dialogContent }} onClose={onClose} maxWidth="xl">
         {isSubmitting && renderLoader()}
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '70px' }}>
-          <div>{t_i18n('Create relations in bulk for')}: {t_i18n(`entity_${stixDomainObjectType}`)}</div>
+          <div>{t_i18n('Create relations in bulk for')}: {translateEntityType(stixDomainObjectType)}</div>
           {missingEntity ? <BulkTextModalButton title={t_i18n('Create missing entities')} onClick={handleOpenObjectCreateEntityForm} /> : null}
         </DialogTitle>
         <DialogContent id="container" sx={{ display: 'flex', overflow: 'hidden', height: '40vh', paddingTop: '20px' }}>

@@ -7,6 +7,7 @@ import { makeStyles } from '@mui/styles';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import ItemIcon from '../../../../components/ItemIcon';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -65,6 +66,7 @@ const ObjectOrganizationField = (props) => {
   const [organizations, setOrganizations] = useState(defaultStateOrganizations);
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
 
   const searchOrganizations = (event) => {
     fetchQuery(searchObjectOrganizationFieldQuery, {
@@ -148,7 +150,7 @@ const ObjectOrganizationField = (props) => {
       style={style}
       classes={{ message: classes.message }}
     >
-      <AlertTitle>{t_i18n('Organizations restriction')}</AlertTitle>
+      <AlertTitle>{translateEntityType('Organization', { plural: true }) + ' ' + t_i18n('restriction')}</AlertTitle>
       <div style={{ marginTop: 10 }}>{FieldElement}</div>
     </Alert>
   );

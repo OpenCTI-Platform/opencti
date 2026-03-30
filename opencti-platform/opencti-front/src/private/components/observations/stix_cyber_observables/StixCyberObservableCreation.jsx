@@ -464,7 +464,7 @@ const StixCyberObservableCreation = ({
                 || stixCyberObservableTypes.includes(node.id))
               .map((node) => ({
                 ...node,
-                tlabel: t_i18n(`entity_${node.label}`),
+                tlabel: translateEntityType(node.label),
               }))
               .sort((a, b) => a.tlabel.toLowerCase().localeCompare(b.tlabel.toLowerCase()));
 

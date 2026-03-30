@@ -17,6 +17,7 @@ import { Theme } from '@mui/material/styles/createTheme';
 import { DraftChip } from '@components/common/draft/DraftChip';
 import { ListItemButton } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -102,6 +103,7 @@ export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
 > = ({ dataColumns, contentMappingCount, node, handleRemoveSuggestedMappingLine }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const mappedEntityData = useFragment(ContainerStixCoreObjectsSuggestedMappingFragment, node);
   const { matchedString, matchedEntity } = mappedEntityData;
   return (
@@ -139,7 +141,7 @@ export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
                     color: itemColor(matchedEntity.entity_type),
                     border: `1px solid ${itemColor(matchedEntity.entity_type)}`,
                   }}
-                  label={t_i18n(`entity_${matchedEntity.entity_type}`)}
+                  label={translateEntityType(matchedEntity.entity_type)}
                 />
               </div>
               <div

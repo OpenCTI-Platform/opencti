@@ -49,6 +49,7 @@ import useAttributes from '../../../../utils/hooks/useAttributes';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useTheme } from '@mui/material/styles';
 import { getRelationshipTypesForEntityType, getTargetTypesForRelationship } from '../../../../utils/Relation';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const styles = (theme) => ({
   header: {
@@ -158,6 +159,7 @@ const FeedEditionContainer = (props) => {
   const { classes, feed, handleClose, open } = props;
   const theme = useTheme();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { ignoredAttributesInFeeds } = useAttributes();
   const { schema } = useAuth();
 
@@ -384,7 +386,7 @@ const FeedEditionContainer = (props) => {
               ...R.pipe(
                 R.pathOr([], ['scoTypes', 'edges']),
                 R.map((n) => ({
-                  label: t_i18n(`entity_${n.node.label}`),
+                  label: translateEntityType(n.node.label),
                   value: n.node.label,
                   type: n.node.label,
                 })),
@@ -395,7 +397,7 @@ const FeedEditionContainer = (props) => {
               ...R.pipe(
                 R.pathOr([], ['sdoTypes', 'edges']),
                 R.map((n) => ({
-                  label: t_i18n(`entity_${n.node.label}`),
+                  label: translateEntityType(n.node.label),
                   value: n.node.label,
                   type: n.node.label,
                 })),
@@ -610,7 +612,7 @@ const FeedEditionContainer = (props) => {
                                       {typeIndex > 0 && <Divider sx={{ my: 1.5 }} />}
                                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                         <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                          {t_i18n(`entity_${selectedType}`)}
+                                          {translateEntityType(selectedType)}
                                         </Typography>
                                         <Chip
                                           label={isNeighborMode ? t_i18n('Relationship') : t_i18n('Direct')}
@@ -650,7 +652,7 @@ const FeedEditionContainer = (props) => {
                                                     selectedType, currentMapping.relationship_type, schema.schemaRelationsTypesMapping,
                                                   ).map((tt) => (
                                                     <MenuItem key={tt} value={tt}>
-                                                      {t_i18n(`entity_${tt}`)}
+                                                      {translateEntityType(tt)}
                                                     </MenuItem>
                                                   ))}
                                               </Select>

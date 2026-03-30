@@ -13,6 +13,7 @@ import { AutoFix } from 'mdi-material-ui';
 import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import inject18n from '../../../../components/i18n';
+import withEntityTranslation from '../../../../utils/hooks/withEntityTranslation';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
@@ -43,7 +44,7 @@ const styles = (theme) => ({
 
 class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component {
   render() {
-    const { t, classes, entityId, data, paginationOptions } = this.props;
+    const { t, translateEntityType, classes, entityId, data, paginationOptions } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Card
@@ -118,7 +119,7 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
                             ? remoteNode.observable_value
                             : remoteNode.name
                         }
-                        secondary={t(`entity_${remoteNode.entity_type}`)}
+                        secondary={translateEntityType(remoteNode.entity_type)}
                       />
                     </ListItemButton>
                   </ListItem>
@@ -409,5 +410,6 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
 
 export default compose(
   inject18n,
+  withEntityTranslation,
   withStyles(styles),
 )(StixCoreRelationshipStixCoreRelationshipsLines);

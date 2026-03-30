@@ -75,7 +75,7 @@ const NoteDeletion: FunctionComponent<NoteDeletionProps> = ({
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this note?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Note') + '?'}
     />
   );
 };

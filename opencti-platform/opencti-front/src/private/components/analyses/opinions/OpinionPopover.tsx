@@ -13,6 +13,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { QueryRenderer } from '../../../../relay/environment';
 import { CollaborativeSecurity } from '../../../../utils/Security';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -53,6 +54,7 @@ interface OpinionPopoverProps {
 const OpinionPopover: FunctionComponent<OpinionPopoverProps> = ({ opinion, variant = 'overview', onDelete }) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayDelete, setDisplayDelete] = useState(false);
   const [displayEdit, setDisplayEdit] = useState(false);
@@ -128,7 +130,7 @@ const OpinionPopover: FunctionComponent<OpinionPopoverProps> = ({ opinion, varia
             open={displayDelete}
             onClose={handleCloseDelete}
             size="small"
-            title={t_i18n('Do you want to delete this opinion?')}
+            title={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Opinion') + '?'}
           >
             <DialogActions>
               <Button variant="secondary" onClick={handleReset} disabled={deleting}>

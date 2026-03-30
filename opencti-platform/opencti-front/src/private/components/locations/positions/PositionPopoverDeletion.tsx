@@ -52,7 +52,7 @@ const PositionPopoverDeletion: FunctionComponent<PositionPopoverDeletionProps> =
     <DeleteDialog
       deletion={deletion}
       submitDelete={submitDelete}
-      message={t_i18n('Do you want to delete this position?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Position') + '?'}
     />
   );
 };

@@ -14,6 +14,7 @@ import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import DeleteDialog from '../../../components/DeleteDialog';
 import { useFormatter } from '../../../components/i18n';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 import { MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
 import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
@@ -49,6 +50,7 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
   currentUserAccessRight,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [openSwitch, setOpenSwitch] = useState(false);
   const [switchToDraft, setSwitchToDraft] = useState(false);
@@ -56,7 +58,7 @@ const DraftPopover: React.FC<DraftPopoverProps> = ({
   const currentAccessRight = useGetCurrentUserAccessRight(currentUserAccessRight);
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_DraftWorkspace') },
+    values: { entity_type: translateEntityType('DraftWorkspace') },
   });
   const [commitDeletion] = useApiMutation<DraftPopoverDeleteMutation>(
     draftPopoverDeleteMutation,

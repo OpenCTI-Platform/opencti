@@ -53,7 +53,7 @@ const NarrativeDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: bo
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this this narrative?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Narrative') + '?'}
     />
   );
 };

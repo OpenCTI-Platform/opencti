@@ -13,6 +13,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
 import FeedPopover from './FeedPopover';
 import inject18n from '../../../../components/i18n';
+import withEntityTranslation from '../../../../utils/hooks/withEntityTranslation';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
@@ -62,7 +63,7 @@ const styles = (theme) => ({
 
 class FeedLineLineComponent extends Component {
   render() {
-    const { classes, node, dataColumns, paginationOptions, t } = this.props;
+    const { classes, node, dataColumns, paginationOptions, t, translateEntityType } = this.props;
     const filters = deserializeFilterGroupForFrontend(node.filters);
     return (
       <ListItem
@@ -97,7 +98,7 @@ class FeedLineLineComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.feed_types.width }}
                 >
-                  {node.feed_types.map((type) => t(`entity_${type}`)).join(', ')}
+                  {node.feed_types.map((type) => translateEntityType(type)).join(', ')}
                 </div>
                 <div
                   className={classes.bodyItem}
@@ -171,6 +172,7 @@ const FeedLineFragment = createFragmentContainer(FeedLineLineComponent, {
 
 export const FeedLine = compose(
   inject18n,
+  withEntityTranslation,
   withStyles(styles),
 )(FeedLineFragment);
 

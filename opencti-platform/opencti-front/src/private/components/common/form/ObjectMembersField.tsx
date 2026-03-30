@@ -5,6 +5,7 @@ import { Field } from 'formik';
 import type { Theme } from '../../../../components/Theme';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { ObjectMembersFieldSearchQuery$data } from './__generated__/ObjectMembersFieldSearchQuery.graphql';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -74,11 +75,12 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [members, setMembers] = useState<OptionMember[]>(dynamicKeysForPlaybooks ? [
     {
       type: t_i18n('Dynamic from the main entity triggering the playbook'),
       value: 'AUTHOR',
-      label: t_i18n('Author (organization)'),
+      label: t_i18n('Author') + ' (' + translateEntityType('Organization') + ')',
     },
     {
       type: t_i18n('Dynamic from the main entity triggering the playbook'),
@@ -98,7 +100,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
     {
       type: t_i18n('Dynamic from the objects in the bundle of the playbook'),
       value: 'BUNDLE_ORGANIZATIONS',
-      label: t_i18n('Organizations'),
+      label: translateEntityType('Organization', { plural: true }),
     },
   ] : []);
   const searchMembers = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -135,7 +137,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
         multiple={multiple ?? false}
         textfieldprops={{
           variant: 'standard',
-          label: t_i18n(label ?? 'Users, groups or organizations'),
+          label: label ? t_i18n(label) : (t_i18n('Users, groups or') + ' ' + translateEntityType('Organization', { plural: true })),
           helperText: helpertext,
           onFocus: searchMembers,
         }}

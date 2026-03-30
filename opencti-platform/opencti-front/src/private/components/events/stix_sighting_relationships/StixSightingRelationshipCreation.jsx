@@ -17,6 +17,7 @@ import { formatDate } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import withEntityTranslation from '../../../../utils/hooks/withEntityTranslation';
 import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
 
 const styles = (theme) => ({
@@ -254,7 +255,7 @@ class StixSightingRelationshipCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const { t } = this.props;
+    const { t, translateEntityType } = this.props;
     R.forEach((fromObject) => {
       R.forEach((toObject) => {
         const finalValues = R.pipe(
@@ -281,7 +282,7 @@ class StixSightingRelationshipCreation extends Component {
           onCompleted: (response) => {
             this.props.handleResult(response.stixSightingRelationshipAdd);
             // TODO: Remove success toast when functional component
-            MESSAGING$.notifySuccess(`${t('entity_Sighting')} ${t('successfully created')}`);
+            MESSAGING$.notifySuccess(`${translateEntityType('Sighting')} ${t('successfully created')}`);
           },
         });
       }, this.props.toObjects);
@@ -387,7 +388,7 @@ class StixSightingRelationshipCreation extends Component {
   }
 
   renderSelectSighting() {
-    const { fsd, t, classes, fromObjects, toObjects, theme } = this.props;
+    const { fsd, t, translateEntityType, classes, fromObjects, toObjects, theme } = this.props;
     const { existingSightings } = this.state;
     return (
       <div>
@@ -434,7 +435,7 @@ class StixSightingRelationshipCreation extends Component {
                   <div className={classes.type}>
                     {fromObjects[0].relationship_type
                       ? t('Relationship')
-                      : t(`entity_${fromObjects[0].entity_type}`)}
+                      : translateEntityType(fromObjects[0].entity_type)}
                   </div>
                 </div>
                 <div className={classes.content}>
@@ -498,7 +499,7 @@ class StixSightingRelationshipCreation extends Component {
                   <div className={classes.type}>
                     {toObjects[0].relationship_type
                       ? t('Relationship')
-                      : t(`entity_${toObjects[0].entity_type}`)}
+                      : translateEntityType(toObjects[0].entity_type)}
                   </div>
                 </div>
                 <div className={classes.content}>
@@ -536,7 +537,7 @@ class StixSightingRelationshipCreation extends Component {
                   />
                 </div>
                 <div className={classes.type}>
-                  {t(`entity_${fromObjects[0].entity_type}`)}
+                  {translateEntityType(fromObjects[0].entity_type)}
                 </div>
               </div>
               <div className={classes.content}>
@@ -586,7 +587,7 @@ class StixSightingRelationshipCreation extends Component {
                   />
                 </div>
                 <div className={classes.type}>
-                  {t(`entity_${toObjects[0].entity_type}`)}
+                  {translateEntityType(toObjects[0].entity_type)}
                 </div>
               </div>
               <div className={classes.content}>
@@ -667,6 +668,7 @@ StixSightingRelationshipCreation.propTypes = {
 
 export default R.compose(
   inject18n,
+  withEntityTranslation,
   withTheme,
   withStyles(styles),
 )(StixSightingRelationshipCreation);

@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import { truncate } from 'src/utils/String';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { RelationsToEntity } from '../../../../utils/Relation';
 
 interface BulkSelectRawLineDataProps {
@@ -38,6 +39,7 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
   isSubmitting,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const isSearchTermEmpty = entity.searchTerm === '';
   const isMatchingRelationship = entity.selectedEntityType.legitRelations.includes(selectedRelationType);
 
@@ -65,10 +67,10 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
   const getAutocompleteOptions = () => {
     const possibleEntityTypes = entity.entityTypeList?.map((item) => item.entity_type) ?? [];
     return entityList.reduce((acc: autocompleteOptionsType[], cur) => {
-      if (!acc.find((item) => item.label === t_i18n(`entity_${cur.toEntitytype}`))) {
+      if (!acc.find((item) => item.label === translateEntityType(cur.toEntitytype))) {
         const isSuggestion = possibleEntityTypes.includes(cur.toEntitytype) && cur.legitRelations.includes(selectedRelationType);
         return [...acc, {
-          label: t_i18n(`entity_${cur.toEntitytype}`),
+          label: translateEntityType(cur.toEntitytype),
           value: cur,
           groupLabel: isSuggestion ? t_i18n('Suggestions') : t_i18n('Entity list'),
           groupOrder: isSuggestion ? 0 : 1,

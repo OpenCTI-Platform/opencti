@@ -4,6 +4,7 @@ import type { KeyType } from 'react-relay/relay-hooks/helpers';
 import { DataTableColumn, DataTableVariant, UseDataTable } from './dataTableTypes';
 import usePreloadedPaginationFragment, { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
 import { useFormatter } from '../i18n';
+import useEntityTranslation from '../../utils/hooks/useEntityTranslation';
 import useEntityToggle from '../../utils/hooks/useEntityToggle';
 import useLocalStorage, { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useComputeLink } from '../../utils/hooks/useAppData';
@@ -14,8 +15,10 @@ export const useDataTable = (args: UsePreloadedPaginationFragment<OperationType>
 
 export const useDataCellHelpers = (storageHelpers: UseLocalStorageHelpers | Record<string, unknown>, variant: DataTableVariant) => (column: DataTableColumn) => {
   const formatterHelper = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   return {
     ...formatterHelper,
+    translateEntityType,
     storageHelpers,
     column,
     variant,

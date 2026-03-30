@@ -18,6 +18,7 @@ import {
   EntityStixSightingRelationshipsLinesPaginationQuery$variables,
 } from '@components/events/stix_sighting_relationships/__generated__/EntityStixSightingRelationshipsLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixSightingRelationshipPopover from './StixSightingRelationshipPopover';
@@ -254,6 +255,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
 ) => {
   const classes = useStyles();
   const { t_i18n, nsdt } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const data = useFragment<EntityStixSightingRelationshipLine_node$key>(
     EntityStixSightingRelationshipLineFragment,
     node,
@@ -330,7 +332,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
                 style={{ width: dataColumns.entity_type.width }}
               >
                 {!restricted
-                  ? t_i18n(`entity_${entity?.entity_type}`)
+                  ? translateEntityType(entity?.entity_type)
                   : t_i18n('Restricted')}
               </div>
               <div

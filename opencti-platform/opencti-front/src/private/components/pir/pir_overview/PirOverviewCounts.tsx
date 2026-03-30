@@ -21,6 +21,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { PirOverviewCountsQuery } from './__generated__/PirOverviewCountsQuery.graphql';
 import { PirOverviewCountsFragment$key } from './__generated__/PirOverviewCountsFragment.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { dayAgo } from '../../../../utils/Time';
 import type { Theme } from '../../../../components/Theme';
 import CardTitle from '../../../../components/common/card/CardTitle';
@@ -71,11 +72,12 @@ interface PirOverviewCountProps {
 
 const PirOverviewCount = ({ label, value, value24h }: PirOverviewCountProps) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
 
   return (
     <Grid key={label} size={{ xs: 3 }}>
       <CardNumber
-        label={t_i18n(`entity_${label}`)}
+        label={translateEntityType(label)}
         entityType={label}
         value={value}
         diffLabel={t_i18n('24 hours')}

@@ -20,6 +20,7 @@ import ItemIcon from '../../../../../components/ItemIcon';
 import type { Theme } from '../../../../../components/Theme';
 import { isEmptyField } from '../../../../../utils/utils';
 import useSchema, { AvailableEntityOption } from '../../../../../utils/hooks/useSchema';
+import useEntityTranslation from '../../../../../utils/hooks/useEntityTranslation';
 
 interface UserConfidenceOverridesFieldComponentProps
   extends FieldProps<OverrideFormData> {
@@ -42,6 +43,7 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
   currentOverrides,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const theme = useTheme<Theme>();
   const { availableEntityTypes } = useSchema();
   const entityTypesToOverride = availableEntityTypes.filter((entity_type) => filterOverridableEntityTypes(entity_type.type));
@@ -91,7 +93,7 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
     const val = selectChangeEvent?.target.value ?? '';
     return entityTypesToOverride.filter(
       (type) => type.value.includes(val)
-        || t_i18n(`entity_${type.label}`).includes(val),
+        || translateEntityType(type.label).includes(val),
     );
   };
 
@@ -103,7 +105,7 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
     if (isEmptyField(override.entity_type)) {
       return `${number} ${t_i18n('New override of an entity')}`;
     }
-    const label = `${t_i18n(`entity_${override.entity_type}`)}: ${override.max_confidence}`;
+    const label = `${translateEntityType(override.entity_type)}: ${override.max_confidence}`;
     return `${number} ${label[0].toUpperCase()}${label.slice(1)}`;
   };
 
@@ -132,7 +134,7 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
               selectOnFocus
               openOnFocus
               autoHighlight
-              getOptionLabel={(option) => t_i18n(`entity_${option.label}`)}
+              getOptionLabel={(option) => translateEntityType(option.label)}
               noOptionsText={t_i18n('No available options')}
               options={entityTypesToOverride}
               disableClearable
@@ -170,7 +172,7 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
                     marginLeft: 10,
                   }}
                   >
-                    {t_i18n(`entity_${option.label}`)}
+                    {translateEntityType(option.label)}
                   </div>
                 </li>
               )}

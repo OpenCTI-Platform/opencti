@@ -372,6 +372,7 @@ export const buildEntityTypes = (
   schema: { scos?: Array<{ id: string; label?: string }>; sdos?: Array<{ id: string; label?: string }>; smos?: Array<{ id: string; label?: string }> },
   entitySettings: { edges: ReadonlyArray<{ node: EntitySettingNode }> },
   t_i18n: (key: string) => string,
+  translateEntityType?: (entityType: string) => string,
 ): EntityTypeOption[] => {
   const { sdos, scos, smos } = schema;
 
@@ -404,7 +405,7 @@ export const buildEntityTypes = (
 
     return {
       value: s.id,
-      label: t_i18n(`entity_${s.id}`),
+      label: translateEntityType ? translateEntityType(s.id) : t_i18n(`entity_${s.id}`),
       isContainer: CONTAINER_TYPES.includes(s.id),
       attributes,
       mandatoryAttributes: mandatoryAttrs,

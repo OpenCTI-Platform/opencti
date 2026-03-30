@@ -13,6 +13,7 @@ import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { QueryRenderer } from '../../../../relay/environment';
 
 import type { Theme } from '../../../../components/Theme';
@@ -48,6 +49,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
   handleCloseDelete,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const [purgeElements, setPurgeElements] = useState(false);
@@ -71,7 +73,7 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
       title={t_i18n('Are you sure?')}
     >
       <DialogContentText>
-        {t_i18n('Do you want to delete this report?')}
+        {t_i18n('Do you want to delete this') + ' ' + translateEntityType('Report') + '?'}
       </DialogContentText>
       <QueryRenderer
         query={reportPopoverDeletionQuery}

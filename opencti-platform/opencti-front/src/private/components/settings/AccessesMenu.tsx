@@ -13,8 +13,10 @@ import {
 import { AccountGroupOutline } from 'mdi-material-ui';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
 import useGranted, { SETTINGS_SETACCESSES, SETTINGS_SETAUTH, SETTINGS_SETDISSEMINATION, SETTINGS_SETMARKINGS, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 
 const AccessesMenu: FunctionComponent = () => {
+  const { translateEntityType } = useEntityTranslation();
   const entries: MenuEntry[] = [
     {
       path: '/dashboard/settings/accesses/roles',
@@ -34,6 +36,7 @@ const AccessesMenu: FunctionComponent = () => {
     {
       path: '/dashboard/settings/accesses/organizations',
       label: 'Organizations',
+      translatedLabel: translateEntityType('Organization', { plural: true }),
       icon: <AccountBalanceOutlined fontSize="medium" />,
     },
     {
@@ -104,6 +107,7 @@ const AccessesMenu: FunctionComponent = () => {
         {
           path: '/dashboard/settings/accesses/organizations',
           label: 'Organizations',
+          translatedLabel: translateEntityType('Organization', { plural: true }),
           icon: <AccountBalanceOutlined fontSize="medium" />,
         },
         {

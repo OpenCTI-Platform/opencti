@@ -361,7 +361,7 @@ const DataComponentCreation: FunctionComponent<{
         onClose={handleClose}
         title={(
           <Stack direction="row" justifyContent="space-between" alignContent="center">
-            {t_i18n('Create a data component')}
+            {t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Data-Component') } })}
             <BulkTextModalButton onClick={() => setBulkOpen(true)} />
           </Stack>
         )}

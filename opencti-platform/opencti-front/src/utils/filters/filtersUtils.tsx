@@ -419,7 +419,7 @@ export const filterValue = (
   }
   if (value && entityTypesFilters.includes(filterKey)) {
     return value === 'all'
-      ? t_i18n('entity_All')
+      ? translateEntityType('All')
       : translateEntityType(value);
   }
   if (filterType === 'date') {

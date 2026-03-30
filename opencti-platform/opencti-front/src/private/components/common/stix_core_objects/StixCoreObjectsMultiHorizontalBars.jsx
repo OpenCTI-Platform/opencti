@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
@@ -385,6 +386,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
 }) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [chart, setChart] = useState();
   const navigate = useNavigate();
 
@@ -459,7 +461,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
                   selection.attribute.endsWith('_id')
                     ? getMainRepresentative(n.entity, t_i18n('Restricted'))
                     : selection.attribute === 'entity_type'
-                      ? t_i18n(`entity_${n.label}`)
+                      ? translateEntityType(n.label)
                       : n.label,
                 y: n.value,
                 fillColor: color,

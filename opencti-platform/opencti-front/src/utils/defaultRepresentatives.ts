@@ -40,11 +40,11 @@ export const defaultDate = (n: any) => {
   return null;
 };
 
-export const defaultType = (n: any, t: (key: string) => string) => {
+export const defaultType = (n: any, t: (key: string) => string, translateEntityType?: (type: string) => string) => {
   if (n.parent_types.includes('basic-relationship')) {
     return t(`relationship_${n.entity_type}`);
   }
-  return t(`entity_${n.entity_type}`);
+  return translateEntityType ? translateEntityType(n.entity_type) : t(`entity_${n.entity_type}`);
 };
 
 export const defaultValueMarking = (n: any) => {

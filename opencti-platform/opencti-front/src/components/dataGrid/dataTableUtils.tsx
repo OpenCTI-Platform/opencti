@@ -335,13 +335,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Used in',
     percentWidth: 20,
     isSortable: false,
-    render: (data: { category: VocabularyDefinition }, { t_i18n }) => (
+    render: (data: { category: VocabularyDefinition }, { translateEntityType }) => (
       <TagsOverflow
         items={data.category.entity_types || []}
         getKey={(entityType) => entityType}
-        getLabel={(entityType) => t_i18n(`entity_${entityType}`)}
+        getLabel={(entityType) => translateEntityType(entityType)}
         renderTag={(entityType) => (
-          <Tag label={t_i18n(`entity_${entityType}`)} />
+          <Tag label={translateEntityType(entityType)} />
         )}
       />
     ),

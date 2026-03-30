@@ -17,6 +17,7 @@ import FormPopover from './FormPopover';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import ItemIcon from '../../../../components/ItemIcon';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 // Styles
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -66,6 +67,7 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n, fd } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const data = useFragment(formLineFragment, node);
 
   let mainEntityType = 'Unknown';
@@ -106,7 +108,7 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
                 {data.description || EMPTY_VALUE}
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.mainEntityType.width }}>
-                {mainEntityType}
+                {translateEntityType(mainEntityType)}
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.active.width }}>
                 <ItemBoolean

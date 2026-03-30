@@ -17,6 +17,7 @@ import React from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { getMainRepresentative, isFieldForIdentifier } from '../../../../utils/defaultRepresentatives';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -94,6 +95,7 @@ const AuditsDistributionList = ({
   popover,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -148,8 +150,8 @@ const AuditsDistributionList = ({
                 label = getMainRepresentative(n.entity) || n.label;
                 id = n.entity?.id;
                 type = n.entity?.entity_type;
-              } else if (selection.attribute === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
-                label = t_i18n(`entity_${n.label}`);
+              } else if (selection.attribute === 'entity_type' && translateEntityType(n.label) !== `entity_${n.label}`) {
+                label = translateEntityType(n.label);
               }
               return {
                 label,

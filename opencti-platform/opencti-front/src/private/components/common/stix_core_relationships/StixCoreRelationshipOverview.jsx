@@ -18,6 +18,7 @@ import Card from '../../../../components/common/card/Card';
 import CardTitle from '../../../../components/common/card/CardTitle';
 import Label from '../../../../components/common/label/Label';
 import inject18n from '../../../../components/i18n';
+import withEntityTranslation from '../../../../utils/hooks/withEntityTranslation';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import ItemCreators from '../../../../components/ItemCreators';
@@ -305,7 +306,7 @@ class StixCoreRelationshipContainer extends Component {
                       {!fromRestricted
                         ? from.relationship_type
                           ? t('Relationship')
-                          : t(`entity_${from.entity_type}`)
+                          : this.props.translateEntityType(from.entity_type)
                         : t('Restricted')}
                     </div>
                   </div>
@@ -360,7 +361,7 @@ class StixCoreRelationshipContainer extends Component {
                         !toRestricted
                           ? to.relationship_type
                             ? t('Relationship')
-                            : t(`entity_${to.entity_type}`)
+                            : this.props.translateEntityType(to.entity_type)
                           : t('Restricted')
                       }
                     </div>
@@ -4856,6 +4857,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
 
 export default R.compose(
   inject18n,
+  withEntityTranslation,
   withRouter,
   withTheme,
   withStyles(styles),

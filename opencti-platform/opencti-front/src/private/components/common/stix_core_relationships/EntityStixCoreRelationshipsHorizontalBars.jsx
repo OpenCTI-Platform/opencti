@@ -11,6 +11,7 @@ import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const entityStixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
   query EntityStixCoreRelationshipsHorizontalBarsDistributionQuery(
@@ -74,6 +75,7 @@ const EntityStixCoreRelationshipsHorizontalBars = (
   },
 ) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const theme = useTheme();
   const navigate = useNavigate();
 
@@ -108,7 +110,7 @@ const EntityStixCoreRelationshipsHorizontalBars = (
                 field === 'internal_id'
                   ? getMainRepresentative(n.entity, t_i18n('Restricted'))
                   : field === 'entity_type'
-                    ? t_i18n(`entity_${n.label}`)
+                    ? translateEntityType(n.label)
                     : n.label,
               y: n.value,
               fillColor:

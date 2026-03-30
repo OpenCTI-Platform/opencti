@@ -9,6 +9,7 @@ import {
 } from '@components/common/containers/related_containers/__generated__/RelatedContainersDetailsQuery.graphql';
 import RelatedContainersDetailsTable from '@components/common/containers/related_containers/RelatedContainersDetailsTable';
 import { useFormatter } from '../../../../../components/i18n';
+import useEntityTranslation from '../../../../../utils/hooks/useEntityTranslation';
 import ExpandableMarkdown from '../../../../../components/ExpandableMarkdown';
 import ItemMarkings from '../../../../../components/ItemMarkings';
 import WidgetHorizontalBars from '../../../../../components/dashboard/WidgetHorizontalBars';
@@ -40,13 +41,14 @@ const RelatedContainersDetailsDistribution: React.FC<{
   queryRef: PreloadedQuery<RelatedContainersDetailsQuery>;
 }> = ({ queryRef }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const data = usePreloadedQuery<RelatedContainersDetailsQuery>(
     relatedContainersDetailsQuery,
     queryRef,
   );
 
   const series = data?.stixCoreObjectsDistribution?.map((objectDistribution) => ({
-    name: t_i18n(`entity_${objectDistribution?.label}`),
+    name: translateEntityType(objectDistribution?.label),
     data: [objectDistribution?.value],
   })) as ApexAxisChartSeries;
 

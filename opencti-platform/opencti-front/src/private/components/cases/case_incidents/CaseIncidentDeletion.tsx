@@ -52,7 +52,7 @@ const CaseIncidentDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen:
       isOpen={isOpen}
       onClose={handleClose}
       submitDelete={submitDelete}
-      message={t_i18n('Do you want to delete this incident response?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Case-Incident') + '?'}
     />
   );
 };

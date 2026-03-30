@@ -16,6 +16,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { ArrowRightAlt, Close } from '@mui/icons-material';
 import { commitMutation, fetchQuery, QueryRenderer } from '../../../../relay/environment';
 import inject18n, { isNone } from '../../../../components/i18n';
+import withEntityTranslation from '../../../../utils/hooks/withEntityTranslation';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -373,6 +374,7 @@ class StixNestedRefRelationshipCreation extends Component {
   renderForm(resolveEntityRef, canReverseRelation) {
     const {
       t,
+      translateEntityType,
       classes,
       fromObjects,
       toObjects,
@@ -452,7 +454,7 @@ class StixNestedRefRelationshipCreation extends Component {
                     <div className={classes.type}>
                       {fromObjects[0].relationship_type
                         ? t('Relationship')
-                        : t(`entity_${fromObjects[0].entity_type}`)}
+                        : translateEntityType(fromObjects[0].entity_type)}
                     </div>
                   </div>
                   <div className={classes.content}>
@@ -507,7 +509,7 @@ class StixNestedRefRelationshipCreation extends Component {
                     <div className={classes.type}>
                       {toObjects[0].relationship_type
                         ? t('Relationship')
-                        : t(`entity_${toObjects[0].entity_type}`)}
+                        : translateEntityType(toObjects[0].entity_type)}
                     </div>
                   </div>
                   <div className={classes.content}>
@@ -594,7 +596,7 @@ class StixNestedRefRelationshipCreation extends Component {
   }
 
   renderSelectRelation() {
-    const { fsd, t, classes, fromObjects, toObjects, theme } = this.props;
+    const { fsd, t, translateEntityType, classes, fromObjects, toObjects, theme } = this.props;
     const { existingRelations } = this.state;
     return (
       <div>
@@ -641,7 +643,7 @@ class StixNestedRefRelationshipCreation extends Component {
                   <div className={classes.type}>
                     {fromObjects[0].relationship_type
                       ? t('Relationship')
-                      : t(`entity_${fromObjects[0].entity_type}`)}
+                      : translateEntityType(fromObjects[0].entity_type)}
                   </div>
                 </div>
                 <div className={classes.content}>
@@ -705,7 +707,7 @@ class StixNestedRefRelationshipCreation extends Component {
                   <div className={classes.type}>
                     {toObjects[0].relationship_type
                       ? t('Relationship')
-                      : t(`entity_${toObjects[0].entity_type}`)}
+                      : translateEntityType(toObjects[0].entity_type)}
                   </div>
                 </div>
                 <div className={classes.content}>
@@ -743,7 +745,7 @@ class StixNestedRefRelationshipCreation extends Component {
                   />
                 </div>
                 <div className={classes.type}>
-                  {t(`entity_${fromObjects[0].entity_type}`)}
+                  {translateEntityType(fromObjects[0].entity_type)}
                 </div>
               </div>
               <div className={classes.content}>
@@ -793,7 +795,7 @@ class StixNestedRefRelationshipCreation extends Component {
                   />
                 </div>
                 <div className={classes.type}>
-                  {t(`entity_${toObjects[0].entity_type}`)}
+                  {translateEntityType(toObjects[0].entity_type)}
                 </div>
               </div>
               <div className={classes.content}>
@@ -896,6 +898,7 @@ StixNestedRefRelationshipCreation.propTypes = {
 
 export default R.compose(
   inject18n,
+  withEntityTranslation,
   withTheme,
   withStyles(styles),
 )(StixNestedRefRelationshipCreation);

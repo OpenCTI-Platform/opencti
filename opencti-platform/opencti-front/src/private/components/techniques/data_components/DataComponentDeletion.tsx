@@ -53,7 +53,7 @@ const DataComponentDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this data component?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Data-Component') + '?'}
     />
   );
 };

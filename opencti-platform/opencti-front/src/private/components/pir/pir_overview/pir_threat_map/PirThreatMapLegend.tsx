@@ -18,6 +18,7 @@ import React, { useState } from 'react';
 import type { Theme } from '../../../../../components/Theme';
 import { itemColor } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
+import useEntityTranslation from '../../../../../utils/hooks/useEntityTranslation';
 
 interface PirThreatMapLegendProps {
   entityTypes: string[];
@@ -27,6 +28,7 @@ interface PirThreatMapLegendProps {
 const PirThreatMapLegend = ({ entityTypes, onFilter }: PirThreatMapLegendProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [disabledTypes, setDisabledTypes] = useState<string[]>([]);
 
   const toggleType = (type: string) => {
@@ -65,7 +67,7 @@ const PirThreatMapLegend = ({ entityTypes, onFilter }: PirThreatMapLegendProps) 
               background: itemColor(type),
             }}
           />
-          <span>{t_i18n(`entity_${type}`)}</span>
+          <span>{translateEntityType(type)}</span>
         </div>
       ))}
     </div>

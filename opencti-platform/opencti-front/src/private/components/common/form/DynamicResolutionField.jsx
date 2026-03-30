@@ -17,6 +17,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { convertFromStixType, convertToStixType } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { isEmptyField } from '../../../../utils/utils';
 
@@ -60,6 +61,7 @@ const DynamicResolutionField = ({
   helperText,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [textFieldValue, setTextFieldValue] = useState(
     field.value.map((n) => n.name).join('\n'),
   );
@@ -195,7 +197,7 @@ const DynamicResolutionField = ({
                       <div>
                         <div style={inlineStyles.type}>
                           {item.in_platform ? (
-                            t_i18n(`entity_${item.type}`)
+                            translateEntityType(item.type)
                           ) : (
                             <Select
                               variant="standard"
@@ -211,7 +213,7 @@ const DynamicResolutionField = ({
                             >
                               {types.map((n) => (
                                 <MenuItem key={n} value={n}>
-                                  {t_i18n(`entity_${n}`)}
+                                  {translateEntityType(n)}
                                 </MenuItem>
                               ))}
                             </Select>

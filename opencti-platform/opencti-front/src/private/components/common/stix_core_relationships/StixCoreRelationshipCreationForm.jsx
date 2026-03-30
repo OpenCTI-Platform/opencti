@@ -25,6 +25,7 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import { minutesBefore, now } from '../../../../utils/Time';
 import { CoverageInformationFieldAdd } from '../form/CoverageInformationField';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -135,6 +136,7 @@ const StixCoreRelationshipCreationForm = ({
   isCoverage = false,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const classes = useStyles();
   const stixCoreRelationshipValidator = useSchemaCreationValidation(STIX_CORE_RELATIONSHIP_TYPE, stixCoreRelationshipBasicShape(t_i18n, isCoverage));
 
@@ -202,7 +204,7 @@ const StixCoreRelationshipCreationForm = ({
                   <div className={classes.type}>
                     {fromEntity.relationship_type
                       ? t_i18n(`relationship_${fromEntity.entity_type}`)
-                      : t_i18n(`entity_${fromEntity.entity_type}`)}
+                      : translateEntityType(fromEntity.entity_type)}
                   </div>
                 </div>
                 <div className={classes.content}>
@@ -250,7 +252,7 @@ const StixCoreRelationshipCreationForm = ({
                   <div className={classes.type}>
                     {toEntity.relationship_type
                       ? t_i18n(`relationship_${toEntity.entity_type}`)
-                      : t_i18n(`entity_${toEntity.entity_type}`)}
+                      : translateEntityType(toEntity.entity_type)}
                   </div>
                 </div>
                 <div className={classes.content}>

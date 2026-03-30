@@ -18,6 +18,7 @@ import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { itemColor } from '../../../../utils/Colors';
 import { minutesBefore, now, parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -301,6 +302,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
 
   const [open, setOpen] = useState(false);
   const [openSpeedDial, setOpenSpeedDial] = useState(false);
@@ -711,7 +713,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                       />
                     </div>
                     <div className={classes.type}>
-                      {t_i18n(`entity_${fromEntityType}`)}
+                      {translateEntityType(fromEntityType)}
                     </div>
                   </div>
                   <div className={classes.content}>
@@ -747,7 +749,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                       />
                     </div>
                     <div className={classes.type}>
-                      {t_i18n(`entity_${toEntityType}`)}
+                      {translateEntityType(toEntityType)}
                     </div>
                   </div>
                   <div className={classes.content}>

@@ -12,6 +12,7 @@ import { createFragmentContainer, graphql, useLazyLoadQuery } from 'react-relay'
 import { Link, useNavigate } from 'react-router-dom';
 import ExportButtons from '../../../../components/ExportButtons';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -455,6 +456,7 @@ const ContainerHeader = (props) => {
   } = props;
   const theme = useTheme();
   const { t_i18n, fd } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const navigate = useNavigate();
   const [openEnrollPlaybook, setOpenEnrollPlaybook] = useState(false);
   const [openSharing, setOpenSharing] = useState(false);
@@ -738,7 +740,7 @@ const ContainerHeader = (props) => {
                           {displaySharing && !displaySharingButton && (
                             <StixCoreObjectMenuItemUnderEE
                               setOpen={setOpenSharing}
-                              title={t_i18n('Share with an organization')}
+                              title={t_i18n('Share with') + ' ' + translateEntityType('Organization')}
                               isDisabled={isSharingDisabled}
                               handleCloseMenu={closeMenu}
                               needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}

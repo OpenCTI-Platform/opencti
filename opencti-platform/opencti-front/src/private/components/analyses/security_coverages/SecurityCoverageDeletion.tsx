@@ -51,7 +51,7 @@ const SecurityCoverageDeletion: FunctionComponent<SecurityCoverageDeletionProps>
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this security coverage?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Security-Coverage') + '?'}
     />
   );
 };

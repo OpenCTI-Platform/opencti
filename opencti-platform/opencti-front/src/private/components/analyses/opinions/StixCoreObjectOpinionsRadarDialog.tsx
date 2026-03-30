@@ -13,6 +13,7 @@ import * as Yup from 'yup';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { adaptFieldValue } from '../../../../utils/String';
@@ -74,6 +75,7 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
   opinionOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { myOpinion } = usePreloadedQuery<StixCoreObjectOpinionsRadarDialogMyOpinionQuery>(
     stixCoreObjectOpinionsRadarDialogMyOpinionQuery,
     queryRef,
@@ -179,7 +181,9 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
           <Dialog
             open={open}
             onClose={handleClose}
-            title={myOpinion ? t_i18n('Update opinion') : t_i18n('Create an opinion')}
+            title={myOpinion
+              ? t_i18n('', { id: 'Update ...', values: { entity_type: translateEntityType('Opinion') } })
+              : t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Opinion') } })}
           >
             <Formik<OpinionAddInput>
               enableReinitialize={true}

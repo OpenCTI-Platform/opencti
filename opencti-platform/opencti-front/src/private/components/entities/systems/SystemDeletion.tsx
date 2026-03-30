@@ -55,7 +55,7 @@ const SystemDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boole
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this system?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('System') + '?'}
     />
   );
 };

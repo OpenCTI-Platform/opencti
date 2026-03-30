@@ -49,7 +49,7 @@ const CountryDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: bool
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this country?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Country') + '?'}
     />
   );
 };

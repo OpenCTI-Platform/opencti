@@ -4,6 +4,7 @@ import { itemColor } from 'src/utils/Colors';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 interface EntityRelationshipCardProps {
   entityName: string;
@@ -13,6 +14,7 @@ interface EntityRelationshipCardProps {
 const EntityRelationshipCard: FunctionComponent<EntityRelationshipCardProps> = ({ entityName, entityType }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   return (
     <>
       <div style={{
@@ -51,7 +53,7 @@ const EntityRelationshipCard: FunctionComponent<EntityRelationshipCardProps> = (
               />
             </div>
             <div style={{ width: '100%', textAlign: 'center', color: theme.palette.text?.primary, fontSize: 11 }}>
-              {t_i18n(`entity_${entityType}`)}
+              {translateEntityType(entityType)}
             </div>
           </div>
         </div>

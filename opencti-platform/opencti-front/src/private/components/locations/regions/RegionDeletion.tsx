@@ -50,7 +50,7 @@ const RegionDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boole
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this region?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Region') + '?'}
     />
   );
 };

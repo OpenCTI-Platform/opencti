@@ -58,7 +58,7 @@ const StixCyberObservableDeletion = (
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this observable?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Stix-Cyber-Observable') + '?'}
     />
   );
 };

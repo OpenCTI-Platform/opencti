@@ -16,6 +16,7 @@ import { useState } from 'react';
 import { graphql } from 'react-relay';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -137,6 +138,7 @@ const StixSightingRelationshipCreationFromEntity = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [targetEntity, setTargetEntity] = useState(null);
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
@@ -144,7 +146,7 @@ const StixSightingRelationshipCreationFromEntity = ({
   const [commit] = useApiMutation(
     stixSightingRelationshipCreationFromEntityMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Sighting')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Sighting')} ${t_i18n('successfully created')}` },
   );
   const stixDomainObjectsPaginationOptions = {
     search,

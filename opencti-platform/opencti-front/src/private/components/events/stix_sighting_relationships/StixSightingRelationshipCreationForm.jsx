@@ -21,6 +21,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -104,6 +105,7 @@ const StixSightingRelationshipCreationForm = ({
   defaultMarkingDefinitions,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const classes = useStyles();
   const { mandatoryAttributes } = useIsMandatoryAttribute(STIX_SIGHTING_TYPE);
   const basicShape = yupShapeConditionalRequired({
@@ -180,7 +182,7 @@ const StixSightingRelationshipCreationForm = ({
                   <div className={classes.type}>
                     {fromEntity?.relationship_type
                       ? t_i18n(`relationship_${fromEntity?.entity_type}`)
-                      : t_i18n(`entity_${fromEntity?.entity_type}`)}
+                      : translateEntityType(fromEntity?.entity_type)}
                   </div>
                 </div>
                 <div className={classes.content}>
@@ -234,7 +236,7 @@ const StixSightingRelationshipCreationForm = ({
                   <div className={classes.type}>
                     {toEntity?.relationship_type
                       ? t_i18n(`relationship_${toEntity?.entity_type}`)
-                      : t_i18n(`entity_${toEntity?.entity_type}`)}
+                      : translateEntityType(toEntity?.entity_type)}
                   </div>
                 </div>
                 <div className={classes.content}>

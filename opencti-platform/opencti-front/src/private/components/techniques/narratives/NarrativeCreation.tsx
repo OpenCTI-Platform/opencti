@@ -377,7 +377,7 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
           onClose={handleClose}
           title={(
             <Stack direction="row" justifyContent="space-between" alignContent="center">
-              {t_i18n('Create a narrative')}
+              {t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Narrative') } })}
               <BulkTextModalButton onClick={() => setBulkOpen(true)} />
             </Stack>
           )}

@@ -71,7 +71,7 @@ const TaskDeletion = ({
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this task?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Task') + '?'}
     />
   );
 };

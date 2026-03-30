@@ -7,6 +7,7 @@ import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import IncidentEditionContainer, { IncidentEditionQuery } from './IncidentEditionContainer';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
@@ -26,6 +27,7 @@ const IncidentPopoverDeletionMutation = graphql`
 
 const IncidentPopover = ({ id }: { id: string }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
@@ -81,7 +83,7 @@ const IncidentPopover = ({ id }: { id: string }) => {
       <DeleteDialog
         deletion={deletion}
         submitDelete={submitDelete}
-        message={t_i18n('Do you want to delete this incident?')}
+        message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Incident') + '?'}
       />
       {queryRef && (
         <React.Suspense fallback={<div />}>

@@ -80,7 +80,7 @@ const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
       onClose={handleCloseDelete}
       title={t_i18n('Are you sure?')}
     >
-      <Typography>{t_i18n('Do you want to delete this report?')}</Typography>
+      <Typography>{t_i18n('Do you want to delete this') + ' ' + translateEntityType('Report') + '?'}</Typography>
       <QueryRenderer
         query={reportDeletionQuery}
         variables={{ id: reportId }}

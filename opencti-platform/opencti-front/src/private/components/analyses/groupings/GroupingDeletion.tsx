@@ -61,7 +61,7 @@ const GroupingDeletion: FunctionComponent<GroupingDeletionProps> = ({
         isOpen={isOpen}
         onClose={handleClose}
         submitDelete={submitDelete}
-        message={t_i18n('Do you want to delete this grouping?')}
+        message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Grouping') + '?'}
       />
     </>
   );

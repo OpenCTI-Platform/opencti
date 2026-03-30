@@ -50,7 +50,7 @@ const FeedbackDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boo
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this feedback?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Feedback') + '?'}
     />
   );
 };

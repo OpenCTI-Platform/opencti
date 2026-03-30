@@ -11,6 +11,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { truncate } from '../../../utils/String';
 import { useFormatter } from '../../../components/i18n';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 import { useComputeLink } from '../../../utils/hooks/useAppData';
 
 const draftSightingsLineFragment = graphql`
@@ -288,6 +289,7 @@ interface DraftSightingsProps {
 const DraftSightings: FunctionComponent<DraftSightingsProps> = ({ isReadOnly }) => {
   const { draftId } = useParams() as { draftId: string };
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const computeLink = useComputeLink();
 
   const initialValues = {
@@ -346,7 +348,7 @@ const DraftSightings: FunctionComponent<DraftSightingsProps> = ({ isReadOnly }) 
       percentWidth: 10,
       isSortable: false,
       render: ({ from }) => (from !== null
-        ? t_i18n(`entity_${from.entity_type}`)
+        ? translateEntityType(from.entity_type)
         : t_i18n('Restricted')),
     },
     entity: {

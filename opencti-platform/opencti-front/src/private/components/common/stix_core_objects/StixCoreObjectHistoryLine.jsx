@@ -23,6 +23,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { truncate } from '../../../../utils/String';
+import { useTranslateHistoryMessage } from '../../../../utils/history';
 
 export const StixCoreObjectHistoryFragment = graphql`
   fragment StixCoreObjectHistoryLine_node on Log @argumentDefinitions(
@@ -48,6 +49,7 @@ export const StixCoreObjectHistoryFragment = graphql`
     }
     context_data(tz: $tz, locale: $locale, unit_system: $unit_system) {
       message
+      entity_type
       commit
       to_id
       from_id
@@ -65,11 +67,13 @@ export const StixCoreObjectHistoryFragment = graphql`
 const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
   const theme = useTheme();
   const { t_i18n, nsdt } = useFormatter();
+  const translateHistoryMessage = useTranslateHistoryMessage();
   const [open, setOpen] = useState(false);
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
   const [externalLink, setExternalLink] = useState(null);
   const data = useFragment(StixCoreObjectHistoryFragment, node);
   const hasExternalRefs = data.context_data.external_references && data.context_data.external_references.length > 0;
+  const displayMessage = translateHistoryMessage(data.context_data.message, data.context_data.entity_type);
 
   const handleOpen = () => {
     setOpen(true);
@@ -153,10 +157,10 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
           <div style={{ float: 'right', textAlign: 'right', width: 180, paddingTop: 4, fontSize: 11 }}>
             {nsdt(data.timestamp)}
           </div>
-          <Tooltip sx={{ maxWidth: '80%', lineHeight: 2, padding: 10 }} title={<><b>{data.user?.name}</b> {data.context_data.message}</>}>
+          <Tooltip sx={{ maxWidth: '80%', lineHeight: 2, padding: 10 }} title={<><b>{data.user?.name}</b> {displayMessage}</>}>
             <div style={{ height: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               <MarkdownDisplay
-                content={`\`${data.user?.name}\` ${data.context_data.message}`}
+                content={`\`${data.user?.name}\` ${displayMessage}`}
                 remarkGfmPlugin={true}
                 commonmark={true}
               />

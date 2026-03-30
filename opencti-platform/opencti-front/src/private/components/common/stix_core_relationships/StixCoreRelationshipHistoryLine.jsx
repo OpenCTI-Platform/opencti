@@ -25,6 +25,7 @@ import { truncate } from 'src/utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import Transition from '../../../../components/Transition';
+import { useTranslateHistoryMessage } from '../../../../utils/history';
 
 export const StixCoreRelationshipHistoryFragment = graphql`
   fragment StixCoreRelationshipHistoryLine_node on Log @argumentDefinitions(
@@ -50,6 +51,7 @@ export const StixCoreRelationshipHistoryFragment = graphql`
     }
     context_data(tz: $tz, locale: $locale, unit_system: $unit_system) {
       message
+      entity_type
       commit
       external_references {
         id
@@ -65,6 +67,7 @@ export const StixCoreRelationshipHistoryFragment = graphql`
 const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation }) => {
   const theme = useTheme();
   const { t_i18n, nsdt } = useFormatter();
+  const translateHistoryMessage = useTranslateHistoryMessage();
   const [open, setOpen] = useState(false);
   const node = useFragment(StixCoreRelationshipHistoryFragment, nodeRef);
 
@@ -154,9 +157,9 @@ const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation }) => {
           <div style={{ float: 'right', textAlign: 'right', width: 180, paddingTop: 4, fontSize: 11 }}>
             {nsdt(node.timestamp)}
           </div>
-          <Tooltip sx={{ maxWidth: '80%', lineHeight: 2, padding: 10 }} title={(<><b>{node.user.name}</b> {node.context_data.message}</>)}>
+          <Tooltip sx={{ maxWidth: '80%', lineHeight: 2, padding: 10 }} title={(<><b>{node.user.name}</b> {translateHistoryMessage(node.context_data.message, node.context_data.entity_type)}</>)}>
             <div style={{ height: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              <b>{node.user.name}</b> {node.context_data.message}
+              <b>{node.user.name}</b> {translateHistoryMessage(node.context_data.message, node.context_data.entity_type)}
             </div>
           </Tooltip>
           {hasExternalRefs && (

@@ -6,6 +6,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { observedDataEditionQuery } from './ObservedDataEdition';
 import ObservedDataEditionContainer from './ObservedDataEditionContainer';
@@ -25,6 +26,7 @@ const ObservedDataPopoverDeletionMutation = graphql`
 const ObservedDataPopover = ({ id }) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayEdit, setDisplayEdit] = useState(false);
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
@@ -66,7 +68,7 @@ const ObservedDataPopover = ({ id }) => {
       <DeleteDialog
         deletion={deletion}
         submitDelete={submitDelete}
-        message={t_i18n('Do you want to delete this observed data?')}
+        message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Observed-Data') + '?'}
       />
       <QueryRenderer
         query={observedDataEditionQuery}

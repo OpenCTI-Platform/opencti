@@ -55,7 +55,7 @@ const SectorDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boole
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this sector?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Sector') + '?'}
     />
   );
 };

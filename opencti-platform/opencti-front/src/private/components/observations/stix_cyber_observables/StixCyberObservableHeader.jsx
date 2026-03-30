@@ -4,6 +4,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
@@ -29,6 +30,7 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
   const [openDelete, setOpenDelete] = useState(false);
   const [openEnrollPlaybook, setOpenEnrollPlaybook] = useState(false);
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const draftContext = useDraftContext();
   const currentDraftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
   const canEdit = !draftContext || currentDraftAccessRight.canEdit;
@@ -71,7 +73,7 @@ const StixCyberObservableHeaderComponent = ({ stixCyberObservable, DeleteCompone
               <Box>
                 <StixCoreObjectMenuItemUnderEE
                   setOpen={setOpenSharing}
-                  title={t_i18n('Share with an organization')}
+                  title={t_i18n('Share with') + ' ' + translateEntityType('Organization')}
                   handleCloseMenu={closeMenu}
                   needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
                   allowInDraft={true}

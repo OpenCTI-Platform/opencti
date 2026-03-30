@@ -53,7 +53,7 @@ const ChannelDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: bool
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this channel?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Channel') + '?'}
     />
   );
 };

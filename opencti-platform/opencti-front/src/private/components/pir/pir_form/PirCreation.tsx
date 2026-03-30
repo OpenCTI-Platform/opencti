@@ -19,6 +19,7 @@ import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { insertNode } from '../../../../utils/store';
 import { PirsListQuery$variables } from '../__generated__/PirsListQuery.graphql';
@@ -40,11 +41,12 @@ interface PirCreationProps {
 
 const PirCreation = ({ paginationOptions }: PirCreationProps) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createMutation] = useApiMutation<PirCreationMutation>(
     pirCreateMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Pir')} ${t_i18n('successfully created')}` },
+    { successMessage: `${translateEntityType('Pir')} ${t_i18n('successfully created')}` },
   );
 
   const handleOpenDialog = () => setDialogOpen(true);

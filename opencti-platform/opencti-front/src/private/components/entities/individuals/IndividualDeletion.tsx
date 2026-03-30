@@ -55,7 +55,7 @@ const IndividualDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: b
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this individual?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Individual') + '?'}
     />
   );
 };

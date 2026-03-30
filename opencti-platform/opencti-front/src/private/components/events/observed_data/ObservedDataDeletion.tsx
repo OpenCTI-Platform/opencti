@@ -55,7 +55,7 @@ const ObservedDataDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen:
       isOpen={isOpen}
       onClose={handleClose}
       submitDelete={submitDelete}
-      message={t_i18n('Do you want to delete this observed data?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Observed-Data') + '?'}
     />
   );
 };

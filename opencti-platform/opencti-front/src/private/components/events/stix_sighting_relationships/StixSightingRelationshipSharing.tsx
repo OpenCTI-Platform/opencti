@@ -15,6 +15,7 @@ import { graphql } from 'react-relay';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
@@ -84,6 +85,7 @@ const StixSightingRelationshipSharing: FunctionComponent<
   ContainerHeaderSharedProps
 > = ({ elementId }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const draftContext = useDraftContext();
   const disabledInDraft = !!draftContext;
   const [displaySharing, setDisplaySharing] = useState(false);
@@ -138,7 +140,7 @@ const StixSightingRelationshipSharing: FunctionComponent<
     return (
       <React.Fragment>
         <Label action={(
-          <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
+          <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with') + ' ' + translateEntityType('Organization')}>
             <IconButton
               color="primary"
               aria-label="Label"
@@ -150,7 +152,7 @@ const StixSightingRelationshipSharing: FunctionComponent<
           </EETooltip>
         )}
         >
-          {t_i18n('Organizations sharing')}
+          {translateEntityType('Organization', { plural: true }) + ' ' + t_i18n('sharing')}
         </Label>
 
         {!isEnterpriseEdition && <EEChip />}
@@ -174,13 +176,13 @@ const StixSightingRelationshipSharing: FunctionComponent<
             <Dialog
               open={displaySharing}
               onClose={() => handleReset()}
-              title={t_i18n('Share with an organization')}
+              title={t_i18n('Share with') + ' ' + translateEntityType('Organization')}
             >
               <Form>
                 <ObjectOrganizationField
                   name="objectOrganization"
                   style={{ width: '100%' }}
-                  label={t_i18n('Organization')}
+                  label={translateEntityType('Organization')}
                   multiple={false}
                 />
               </Form>

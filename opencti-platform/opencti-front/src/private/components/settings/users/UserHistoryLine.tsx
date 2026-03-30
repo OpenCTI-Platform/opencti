@@ -16,6 +16,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import type { Theme } from '../../../../components/Theme';
+import { useTranslateHistoryMessage } from '../../../../utils/history';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -80,6 +81,7 @@ export const userHistoryLineFragment = graphql`
     }
     context_data {
       message
+      entity_type
       commit
       external_references {
         id
@@ -100,6 +102,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
   const theme = useTheme<Theme>();
   const classes = useStyles();
   const { t_i18n, nsdt } = useFormatter();
+  const translateHistoryMessage = useTranslateHistoryMessage();
   const [open, setOpen] = useState(false);
   const log = useFragment<UserHistoryLine_node$key>(userHistoryLineFragment, node);
   const handleOpen = () => {
@@ -342,7 +345,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
             classes={{ tooltip: classes.tooltip }}
             title={(
               <MarkdownDisplay
-                content={`\`${log.user?.name}\` ${log.context_data?.message}`}
+                content={`\`${log.user?.name}\` ${translateHistoryMessage(log.context_data?.message ?? '', log.context_data?.entity_type)}`}
                 remarkGfmPlugin={true}
                 commonmark={true}
               />
@@ -350,7 +353,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
           >
             <div className={classes.description}>
               <MarkdownDisplay
-                content={`\`${log.user?.name}\` ${log.context_data?.message}`}
+                content={`\`${log.user?.name}\` ${translateHistoryMessage(log.context_data?.message ?? '', log.context_data?.entity_type)}`}
                 remarkGfmPlugin={true}
                 commonmark={true}
               />
@@ -365,7 +368,7 @@ const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {
         title={t_i18n('Commit message')}
       >
         <MarkdownDisplay
-          content={log.context_data?.message}
+          content={translateHistoryMessage(log.context_data?.message ?? '', log.context_data?.entity_type)}
           remarkGfmPlugin={true}
           commonmark={true}
         />

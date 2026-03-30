@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import ToggleButton from '@mui/material/ToggleButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { QueryRenderer } from '../../../../relay/environment';
 import ExternalReferenceEditionContainer from './ExternalReferenceEditionContainer';
 import { ExternalReferencePopoverEditionQuery$data } from './__generated__/ExternalReferencePopoverEditionQuery.graphql';
@@ -44,6 +45,7 @@ const ExternalReferencePopover: FunctionComponent<
   ExternalReferencePopoverProps
 > = ({ id, objectId, handleRemove, isExternalReferenceAttachment, variant }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [displayEdit, setDisplayEdit] = useState(false);
@@ -149,7 +151,7 @@ const ExternalReferencePopover: FunctionComponent<
       <DeleteDialog
         deletion={deletion}
         submitDelete={submitDelete}
-        message={t_i18n('Do you want to delete this external reference?')}
+        message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('External-Reference') + '?'}
         warning={isExternalReferenceAttachment
           ? { message: t_i18n('This external reference is linked to a file. If you delete it, the file will be deleted as well.') }
           : undefined}

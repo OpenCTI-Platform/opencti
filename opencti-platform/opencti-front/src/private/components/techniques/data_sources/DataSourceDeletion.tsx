@@ -53,7 +53,7 @@ const DataSourceDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: b
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this data source?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Data-Source') + '?'}
     />
   );
 };

@@ -55,7 +55,7 @@ const CourseOfActionDeletion = ({ id, isOpen, handleClose }: { id: string; isOpe
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this course of action?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Course-Of-Action') + '?'}
     />
   );
 };

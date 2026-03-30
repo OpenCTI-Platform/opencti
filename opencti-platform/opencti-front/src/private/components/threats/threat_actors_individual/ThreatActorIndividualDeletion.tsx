@@ -53,7 +53,7 @@ const ThreatActorIndividualDeletion = ({ id, isOpen, handleClose }: { id: string
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this threat actor individual?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Threat-Actor-Individual') + '?'}
     />
   );
 };

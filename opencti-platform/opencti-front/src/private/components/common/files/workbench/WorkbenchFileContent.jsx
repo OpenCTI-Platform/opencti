@@ -35,6 +35,7 @@ import RichTextField from '../../../../../components/fields/RichTextField';
 import SelectField from '../../../../../components/fields/SelectField';
 import SwitchField from '../../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../../components/i18n';
+import useEntityTranslation from '../../../../../utils/hooks/useEntityTranslation';
 import ItemBoolean from '../../../../../components/ItemBoolean';
 import ItemEntityType from '../../../../../components/ItemEntityType';
 import ItemIcon from '../../../../../components/ItemIcon';
@@ -318,6 +319,7 @@ const WorkbenchFileContentComponent = ({
   } = useAttributes();
   const { fieldToCategory, getFieldDefinition } = useVocabularyCategory();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const navigate = useNavigate();
   const classes = useStyles();
 
@@ -1740,7 +1742,7 @@ const WorkbenchFileContentComponent = ({
     const translatedOrderedList = R.pipe(
       R.map((n) => n.node),
       R.filter((n) => !typesContainers.includes(convertToStixType(n.label))),
-      R.map((n) => R.assoc('tlabel', t_i18n(`entity_${n.label}`), n)),
+      R.map((n) => R.assoc('tlabel', translateEntityType(n.label), n)),
       sortByLabel,
     )(subTypesEdges);
     return (
@@ -2426,7 +2428,7 @@ const WorkbenchFileContentComponent = ({
     const translatedOrderedList = R.pipe(
       R.map((n) => n.node),
       R.filter((n) => !typesContainers.includes(convertToStixType(n.label))),
-      R.map((n) => R.assoc('tlabel', t_i18n(`entity_${n.label}`), n)),
+      R.map((n) => R.assoc('tlabel', translateEntityType(n.label), n)),
       sortByLabel,
     )(subTypesEdges);
     return (
@@ -2919,7 +2921,7 @@ const WorkbenchFileContentComponent = ({
       ttype:
         n.type === 'relationship'
           ? t_i18n(`relationship_${n.relationship_type}`)
-          : t_i18n(`entity_${convertFromStixType(n.type)}`),
+          : translateEntityType(convertFromStixType(n.type)),
       default_value: getMainRepresentative({
         ...n,
         source_ref_name: getMainRepresentative(
@@ -3081,7 +3083,7 @@ const WorkbenchFileContentComponent = ({
   const renderEntities = () => {
     const resolvedStixDomainObjects = stixDomainObjects.map((n) => ({
       ...n,
-      ttype: t_i18n(`entity_${convertFromStixType(n.type)}`),
+      ttype: translateEntityType(convertFromStixType(n.type)),
       default_value: getEntityMainRepresentativeForWorkbenchChecks(n, null),
       // use an adapted version of getMainRepresentative because not possible to filter by representative.main (to check if the entity is in the platform)
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
@@ -3347,12 +3349,12 @@ const WorkbenchFileContentComponent = ({
     const translatedOrderedList = R.pipe(
       R.map((n) => n.node),
       R.filter((n) => !typesContainers.includes(convertToStixType(n.label))),
-      R.map((n) => R.assoc('tlabel', t_i18n(`entity_${n.label}`), n)),
+      R.map((n) => R.assoc('tlabel', translateEntityType(n.label), n)),
       sortByLabel,
     )(subTypesEdges);
     const resolvedStixCyberObservables = stixCyberObservables.map((n) => ({
       ...n,
-      ttype: t_i18n(`entity_${convertFromStixType(n.type)}`),
+      ttype: translateEntityType(convertFromStixType(n.type)),
       default_value: getEntityMainRepresentativeForWorkbenchChecks(n, null),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));
@@ -3907,7 +3909,7 @@ const WorkbenchFileContentComponent = ({
         'x-opencti-task',
         'task',
       ].includes(convertToStixType(n.label))),
-      R.map((n) => R.assoc('tlabel', t_i18n(`entity_${n.label}`), n)),
+      R.map((n) => R.assoc('tlabel', translateEntityType(n.label), n)),
       sortByLabel,
     )(subTypesEdges);
     return (
@@ -3929,7 +3931,7 @@ const WorkbenchFileContentComponent = ({
   const renderContainers = () => {
     const resolvedContainers = containers.map((n) => ({
       ...n,
-      ttype: t_i18n(`entity_${convertFromStixType(n.type)}`),
+      ttype: translateEntityType(convertFromStixType(n.type)),
       default_value: getMainRepresentative(n, null),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),
     }));

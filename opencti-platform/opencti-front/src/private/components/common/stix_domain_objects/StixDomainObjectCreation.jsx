@@ -10,6 +10,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { GroupingCreationForm } from '../../analyses/groupings/GroupingCreation';
@@ -135,10 +136,10 @@ const sharedUpdater = (
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-const buildEntityTypes = (t, queryData, stixDomainObjectTypes) => {
+const buildEntityTypes = (translateEntityType, queryData, stixDomainObjectTypes) => {
   const choices = (queryData.sdoTypes?.edges ?? [])
     .map((edge) => ({
-      label: t(`entity_${edge.node.label}`),
+      label: translateEntityType(edge.node.label),
       value: edge.node.label,
       type: edge.node.label,
     }));
@@ -193,12 +194,13 @@ const StixDomainPanel = ({
 }) => {
   const [bulkOpen, setBulkOpen] = useState(false);
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const queryData = usePreloadedQuery(
     stixDomainObjectCreationAllTypesQuery,
     queryRef,
   );
   const availableEntityTypes = buildEntityTypes(
-    t_i18n,
+    translateEntityType,
     queryData,
     stixDomainObjectTypes,
   );

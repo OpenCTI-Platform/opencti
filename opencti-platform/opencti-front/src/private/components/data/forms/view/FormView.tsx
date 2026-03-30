@@ -23,6 +23,7 @@ import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import type { Theme } from '../../../../../components/Theme';
 import useEntitySettings from '../../../../../utils/hooks/useEntitySettings';
+import useEntityTranslation from '../../../../../utils/hooks/useEntityTranslation';
 import { convertFormSchemaToYupSchema, formatFormDataForSubmission } from './FormViewUtils';
 import { environment } from '../../../../../relay/environment';
 import StixCoreObjectsField from '../../../common/form/StixCoreObjectsField';
@@ -134,6 +135,7 @@ interface FormInitialValues {
 const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedded = false, onSuccess }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -494,7 +496,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                 {/* Main Entity Fields */}
                 <div className={classes.section}>
                   <Typography variant="h6" className={classes.sectionTitle}>
-                    {t_i18n(schema.mainEntityType || 'Main Entity')}
+                    {translateEntityType(schema.mainEntityType || 'Main Entity')}
                   </Typography>
                   {(() => {
                     if (schema.mainEntityLookup) {
@@ -502,6 +504,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                         <StixCoreObjectsField
                           name="mainEntityLookup"
                           types={[schema.mainEntityType]}
+                          label={translateEntityType(schema.mainEntityType)}
                           style={{ width: '100%', marginTop: 20 }}
                           helpertext={schema.mainEntityMultiple ? t_i18n('Select one or more existing entities') : t_i18n('Select an existing entity')}
                           multiple={schema.mainEntityMultiple}
@@ -586,7 +589,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                     </IconButton>
                                   )}
                                   <Typography variant="subtitle2" gutterBottom>
-                                    {`${t_i18n(schema.mainEntityType)} ${index + 1}`}
+                                    {`${translateEntityType(schema.mainEntityType)} ${index + 1}`}
                                   </Typography>
                                   <FormFields
                                     fields={mainEntityFields}
@@ -624,7 +627,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                 variant="secondary"
                                 size="small"
                               >
-                                {t_i18n('Add')} {t_i18n(schema.mainEntityType)}
+                                {t_i18n('Add')} {translateEntityType(schema.mainEntityType)}
                               </Button>
                             </>
                           )}
@@ -655,7 +658,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                       return (
                         <div key={additionalEntity.id} className={classes.section}>
                           <Typography variant="h6" className={classes.sectionTitle}>
-                            {additionalEntity.label || `${t_i18n('Additional Entity')} - ${t_i18n(additionalEntity.entityType)}`}
+                            {additionalEntity.label || `${t_i18n('Additional Entity')} - ${translateEntityType(additionalEntity.entityType)}`}
                           </Typography>
                           {(() => {
                             if (additionalEntity.lookup) {
@@ -663,6 +666,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                 <StixCoreObjectsField
                                   name={`additional_${additionalEntity.id}_lookup`}
                                   types={[additionalEntity.entityType]}
+                                  label={translateEntityType(additionalEntity.entityType)}
                                   style={{ width: '100%', marginTop: 20 }}
                                   helpertext={additionalEntity.multiple ? t_i18n('Select one or more existing entities') : t_i18n('Select an existing entity')}
                                   multiple={additionalEntity.multiple}
@@ -751,7 +755,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                             </IconButton>
                                           )}
                                           <Typography variant="subtitle2" gutterBottom>
-                                            {additionalEntity.label || additionalEntity.entityType} {index + 1}
+                                            {additionalEntity.label || translateEntityType(additionalEntity.entityType)} {index + 1}
                                           </Typography>
                                           <FormFields
                                             fields={entityFields}
@@ -789,7 +793,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                         variant="secondary"
                                         size="small"
                                       >
-                                        {t_i18n('Add')} {additionalEntity.label || additionalEntity.entityType}
+                                        {t_i18n('Add')} {additionalEntity.label || translateEntityType(additionalEntity.entityType)}
                                       </Button>
                                     </>
                                   )}
@@ -832,10 +836,10 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                       {relationshipsWithFields.map((relationship) => {
                         // Find the entities involved
                         const fromEntityLabel = relationship.fromEntity === 'main_entity'
-                          ? schema.mainEntityType
+                          ? translateEntityType(schema.mainEntityType)
                           : schema.additionalEntities?.find((e) => e.id === relationship.fromEntity)?.label || relationship.fromEntity;
                         const toEntityLabel = relationship.toEntity === 'main_entity'
-                          ? schema.mainEntityType
+                          ? translateEntityType(schema.mainEntityType)
                           : schema.additionalEntities?.find((e) => e.id === relationship.toEntity)?.label || relationship.toEntity;
                         return (
                           <div key={relationship.id} className={classes.section}>

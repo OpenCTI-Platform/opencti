@@ -2,6 +2,7 @@ import { graphql } from 'react-relay';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../components/DeleteDialog';
@@ -20,10 +21,11 @@ const FintelDesignDeletion = ({
   handleClose,
 }: { id: string; isOpen: boolean; handleClose: () => void }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_FintelDesign') },
+    values: { entity_type: translateEntityType('FintelDesign') },
   });
 
   const [commitDelete] = useApiMutation(

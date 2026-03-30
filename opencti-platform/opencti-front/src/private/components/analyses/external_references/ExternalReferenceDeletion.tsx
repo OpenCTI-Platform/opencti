@@ -75,7 +75,7 @@ const ExternalReferenceDeletion: FunctionComponent<
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this external reference?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('External-Reference') + '?'}
       warning={isExternalReferenceAttachment
         ? { message: t_i18n('This external reference is linked to a file. If you delete it, the file will be deleted as well.') }
         : undefined}

@@ -374,7 +374,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
         onClose={handleClose}
         title={(
           <Stack direction="row" justifyContent="space-between" alignContent="center">
-            {t_i18n('Create a data source')}
+            {t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Data-Source') } })}
             <BulkTextModalButton onClick={() => setBulkOpen(true)} />
           </Stack>
         )}

@@ -55,7 +55,7 @@ const ToolDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this tool?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Tool') + '?'}
     />
   );
 };

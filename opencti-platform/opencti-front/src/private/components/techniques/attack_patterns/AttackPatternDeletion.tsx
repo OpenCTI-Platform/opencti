@@ -55,7 +55,7 @@ const AttackPatternDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this attack pattern?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Attack-Pattern') + '?'}
     />
   );
 };

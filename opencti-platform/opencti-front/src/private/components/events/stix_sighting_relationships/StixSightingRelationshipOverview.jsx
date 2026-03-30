@@ -18,6 +18,7 @@ import { Link } from 'react-router-dom';
 import CardTitle from '../../../../components/common/card/CardTitle';
 import Label from '../../../../components/common/label/Label';
 import inject18n from '../../../../components/i18n';
+import withEntityTranslation from '../../../../utils/hooks/withEntityTranslation';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import ItemCreators from '../../../../components/ItemCreators';
@@ -202,6 +203,7 @@ class StixSightingRelationshipContainer extends Component {
   render() {
     const {
       t,
+      translateEntityType,
       n,
       fldt,
       nsdt,
@@ -270,7 +272,7 @@ class StixSightingRelationshipContainer extends Component {
                       {!fromRestricted
                         ? from.relationship_type
                           ? t('Relationship')
-                          : t(`entity_${from.entity_type}`)
+                          : translateEntityType(from.entity_type)
                         : t('Restricted')}
                     </div>
                   </div>
@@ -333,7 +335,7 @@ class StixSightingRelationshipContainer extends Component {
                       {!toRestricted
                         ? to.relationship_type
                           ? t('Relationship')
-                          : t(`entity_${to.entity_type}`)
+                          : translateEntityType(to.entity_type)
                         : 'Restricted'}
                     </div>
                   </div>
@@ -3251,6 +3253,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
 
 export default R.compose(
   inject18n,
+  withEntityTranslation,
   withRouter,
   withTheme,
   withStyles(styles),

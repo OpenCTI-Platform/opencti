@@ -27,6 +27,7 @@ import PlaybookPopoverToggleDialog from './PlaybookPopoverToggleDialog';
 import { fetchQuery } from '../../../../relay/environment';
 import { deleteNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import stopEvent from '../../../../utils/domEvent';
@@ -69,6 +70,7 @@ const PlaybookPopover = ({
   paginationOptions,
 }: PlaybookPopoverProps) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [displayToggle, setDisplayToggle] = useState(false);
@@ -96,7 +98,7 @@ const PlaybookPopover = ({
 
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_Playbook') },
+    values: { entity_type: translateEntityType('Playbook') },
   });
   const [commitDelete] = useApiMutation<PlaybookPopoverDeletionMutation>(
     playbookPopoverDeletionMutation,
@@ -106,7 +108,7 @@ const PlaybookPopover = ({
 
   const duplicatedSuccessMessage = t_i18n('', {
     id: '... successfully duplicated',
-    values: { entity_type: t_i18n('entity_Playbook') },
+    values: { entity_type: translateEntityType('Playbook') },
   });
   const [commitDuplicate] = useApiMutation<PlaybookPopoverDuplicateMutation>(
     playbookPopoverDuplicateMutation,

@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import WorkspacePopoverDeletionMutation from '@components/workspaces/WorkspacePopoverDeletionMutation';
 import { useFormatter } from '../../../components/i18n';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../components/DeleteDialog';
@@ -18,10 +19,11 @@ const WorkspaceDeletion = ({
   workspaceType: string | null | undefined;
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const navigate = useNavigate();
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_Workspace') },
+    values: { entity_type: translateEntityType('Workspace') },
   });
 
   const [commit] = useApiMutation(

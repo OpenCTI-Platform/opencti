@@ -24,6 +24,7 @@ import PopoverMenu from '../../../../components/PopoverMenu';
 import TextField from '../../../../components/TextField';
 import TagsOverflow from '../../../../components/common/tag/TagsOverflow';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import Security from '../../../../utils/Security';
@@ -278,6 +279,7 @@ const stixDomainObjectHeaderEditAuthorizedMembersMutation = graphql`
 const StixDomainObjectHeader = (props) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const {
     stixDomainObject,
     isOpenctiAlias,
@@ -566,7 +568,7 @@ const StixDomainObjectHeader = (props) => {
                     {disableSharing !== true && !displaySharingButton && (
                       <StixCoreObjectMenuItemUnderEE
                         setOpen={setIsSharingOpen}
-                        title={t_i18n('Share with an organization')}
+                        title={t_i18n('Share with') + ' ' + translateEntityType('Organization')}
                         handleCloseMenu={closeMenu}
                         needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}
                         allowInDraft={true}

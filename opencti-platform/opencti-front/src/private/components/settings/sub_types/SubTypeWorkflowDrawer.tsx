@@ -15,6 +15,7 @@ import SubTypeWorkflowStatusPopover from './SubTypeWorkflowStatusPopover';
 import { SubTypeWorkflowDrawer_subType$data } from './__generated__/SubTypeWorkflowDrawer_subType.graphql';
 import ItemCopy from '../../../../components/ItemCopy';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { StatusScopeEnum } from '../../../../utils/statusConstants';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -80,6 +81,7 @@ const SubTypeWorkflowDrawer: FunctionComponent<SubTypeWorkflowDrawer> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const queryData = usePreloadedQuery(subTypeWorkflowDrawerEditionQuery, queryRef);
   if (queryData.subType) {
     const subType = useFragment(
@@ -95,7 +97,7 @@ const SubTypeWorkflowDrawer: FunctionComponent<SubTypeWorkflowDrawer> = ({
     return (
       <Drawer
         open={open}
-        title={`${t_i18n('Workflow of')} ${t_i18n(`entity_${subType.label}`)}`}
+        title={`${t_i18n('Workflow of')} ${translateEntityType(subType.label)}`}
         onClose={handleClose}
       >
         <>

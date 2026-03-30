@@ -4,6 +4,7 @@ import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -39,6 +40,7 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
 
   const { schema } = useAuth();
   const { scos } = schema;
@@ -57,7 +59,7 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
       }}
       required={required}
       options={allObservableTypes}
-      getOptionLabel={(option: string) => t_i18n(`entity_${option}`)}
+      getOptionLabel={(option: string) => translateEntityType(option)}
       onChange={typeof onChange === 'function' ? onChange : null}
       isOptionEqualToValue={(option: string, value: string) => option === value}
       style={style}
@@ -69,7 +71,7 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
           <div className={classes.icon}>
             <ItemIcon type={option} />
           </div>
-          <ListItemText primary={t_i18n(`entity_${option}`)} />
+          <ListItemText primary={translateEntityType(option)} />
         </li>
       )}
     />

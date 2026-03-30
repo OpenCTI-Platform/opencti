@@ -17,6 +17,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import ItemIcon from '../../../../components/ItemIcon';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import type { Theme } from '../../../../components/Theme';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
@@ -89,6 +90,7 @@ interface SectionConfig {
     iconType: string;
     path: string;
     count?: number;
+    entityType?: string;
   }[];
 }
 
@@ -97,11 +99,14 @@ interface KnowledgeBarProps {
   iconType: string;
   label: string;
   count: number;
+  entityType?: string;
 }
 
-const KnowledgeBarItem = ({ to, iconType, label, count }: KnowledgeBarProps) => {
+const KnowledgeBarItem = ({ to, iconType, label, count, entityType }: KnowledgeBarProps) => {
   const location = useLocation();
   const { t_i18n, n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
+  const displayLabel = entityType ? translateEntityType(entityType, { plural: true }) : t_i18n(label);
 
   return (
     <MenuItem
@@ -114,7 +119,7 @@ const KnowledgeBarItem = ({ to, iconType, label, count }: KnowledgeBarProps) => 
       <ListItemIcon style={{ minWidth: 28 }}>
         <ItemIcon size="small" type={iconType} />
       </ListItemIcon>
-      <ListItemText primary={`${t_i18n(label)}${count > 0 ? ` (${n(count)})` : ''}`} />
+      <ListItemText primary={`${displayLabel}${count > 0 ? ` (${n(count)})` : ''}`} />
     </MenuItem>
   );
 };
@@ -172,42 +177,49 @@ const StixCoreObjectKnowledgeBar = ({
         {
           label: 'Sectors',
           iconType: 'Sector',
+          entityType: 'Sector',
           path: 'sectors',
           count: distributions.withoutRelated.Sector || 0,
         },
         {
           label: 'Regions',
           iconType: 'Region',
+          entityType: 'Region',
           path: 'regions',
           count: distributions.withoutRelated.Region || 0,
         },
         {
           label: 'Countries',
           iconType: 'Country',
+          entityType: 'Country',
           path: 'countries',
           count: distributions.withoutRelated.Country || 0,
         },
         {
           label: 'Areas',
           iconType: 'Administrative-Area',
+          entityType: 'Administrative-Area',
           path: 'areas',
           count: distributions.withoutRelated['Administrative-Area'] || 0,
         },
         {
           label: 'Cities',
           iconType: 'City',
+          entityType: 'City',
           path: 'cities',
           count: distributions.withoutRelated.City || 0,
         },
         {
           label: 'Organizations',
           iconType: 'Organization',
+          entityType: 'Organization',
           path: 'organizations',
           count: distributions.withoutRelated.Organization || 0,
         },
         {
           label: 'Individuals',
           iconType: 'Individual',
+          entityType: 'Individual',
           path: 'individuals',
           count: distributions.withoutRelated.Individual || 0,
         },
@@ -258,6 +270,7 @@ const StixCoreObjectKnowledgeBar = ({
         {
           label: 'Threat actors',
           iconType: 'Threat-Actor-Individual',
+          entityType: 'Threat-Actor-Group',
           path: 'threat_actors',
           count: sumEntitiesByKeys(
             distributions.withoutRelated,
@@ -267,12 +280,14 @@ const StixCoreObjectKnowledgeBar = ({
         {
           label: 'Intrusion sets',
           iconType: 'Intrusion-Set',
+          entityType: 'Intrusion-Set',
           path: 'intrusion_sets',
           count: distributions.withoutRelated['Intrusion-Set'] || 0,
         },
         {
           label: 'Campaigns',
           iconType: 'Campaign',
+          entityType: 'Campaign',
           path: 'campaigns',
           count: distributions.withoutRelated.Campaign || 0,
         },
@@ -290,24 +305,28 @@ const StixCoreObjectKnowledgeBar = ({
         {
           label: 'Malwares',
           iconType: 'Malware',
+          entityType: 'Malware',
           path: 'malwares',
           count: distributions.withoutRelated.Malware || 0,
         },
         {
           label: 'Channels',
           iconType: 'Channel',
+          entityType: 'Channel',
           path: 'channels',
           count: distributions.withoutRelated.Channel || 0,
         },
         {
           label: 'Tools',
           iconType: 'tool',
+          entityType: 'Tool',
           path: 'tools',
           count: distributions.withoutRelated.Tool || 0,
         },
         {
           label: 'Vulnerabilities',
           iconType: 'Vulnerability',
+          entityType: 'Vulnerability',
           path: 'vulnerabilities',
           count: distributions.withoutRelated.Vulnerability || 0,
         },
@@ -319,12 +338,14 @@ const StixCoreObjectKnowledgeBar = ({
         {
           label: 'Attack patterns',
           iconType: 'Attack-Pattern',
+          entityType: 'Attack-Pattern',
           path: 'attack_patterns',
           count: distributions.withoutRelated['Attack-Pattern'] || 0,
         },
         {
           label: 'Narratives',
           iconType: 'Narrative',
+          entityType: 'Narrative',
           path: 'narratives',
           count: distributions.withoutRelated.Narrative || 0,
         },
@@ -336,6 +357,7 @@ const StixCoreObjectKnowledgeBar = ({
         {
           label: 'Indicators',
           iconType: 'Indicator',
+          entityType: 'Indicator',
           path: 'indicators',
           count: distributions.coreObjects.Indicator || 0,
         },
@@ -348,6 +370,7 @@ const StixCoreObjectKnowledgeBar = ({
         {
           label: 'Infrastructures',
           iconType: 'Infrastructure',
+          entityType: 'Infrastructure',
           path: 'infrastructures',
           count: distributions.withoutRelated.Infrastructure || 0,
         },
@@ -359,12 +382,14 @@ const StixCoreObjectKnowledgeBar = ({
         {
           label: 'Incidents',
           iconType: 'Incident',
+          entityType: 'Incident',
           path: 'incidents',
           count: distributions.withoutRelated.Incident || 0,
         },
         {
           label: 'Observed data',
           iconType: 'Observed-Data',
+          entityType: 'Observed-Data',
           path: 'observed_data',
           count: distributions.withoutRelated['Observed-Data'] || 0,
         },
@@ -429,13 +454,14 @@ const StixCoreObjectKnowledgeBar = ({
                   {section.title}
                 </ListSubheader>
               )}
-              {section.items.map(({ path, label, iconType, count }) => (
+              {section.items.map(({ path, label, iconType, count, entityType }) => (
                 <KnowledgeBarItem
                   key={label}
                   to={`${stixCoreObjectLink}/${path}`}
                   iconType={iconType}
                   label={label}
                   count={count ?? 0}
+                  entityType={entityType}
                 />
               ))}
             </MenuList>

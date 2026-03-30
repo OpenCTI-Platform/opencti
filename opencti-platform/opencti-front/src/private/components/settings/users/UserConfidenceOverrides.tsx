@@ -2,6 +2,7 @@ import React from 'react';
 import { EffectiveConfidenceLevelSourceType } from '@components/settings/users/__generated__/User_user.graphql';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 type UserConfidenceOverridesProps = {
   overrides: readonly {
@@ -24,6 +25,7 @@ type OverrideConfidenceSourceProps = {
 
 const OverrideConfidenceWithSource: React.FC<OverrideConfidenceSourceProps> = ({ override, ...rest }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { max_confidence, source, entity_type } = override;
 
   let from;
@@ -44,7 +46,7 @@ const OverrideConfidenceWithSource: React.FC<OverrideConfidenceSourceProps> = ({
 
   return (
     <div {...rest}>
-      {`- ${t_i18n(`entity_${entity_type}`)}: ${max_confidence}`}&nbsp;
+      {`- ${translateEntityType(entity_type)}: ${max_confidence}`}&nbsp;
       {source
         ? <span>({from})</span>
         : null

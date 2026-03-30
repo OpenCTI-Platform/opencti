@@ -7,6 +7,7 @@ import FeedbackCreation from '@components/cases/feedbacks/FeedbackCreation';
 import classNames from 'classnames';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 import type { Theme } from '../../../../components/Theme';
@@ -31,6 +32,7 @@ const EnterpriseEditionButton = ({
   title?: string;
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const classes = useStyles();
   const theme = useTheme<Theme>();
   const [openEnterpriseEditionConsent, setOpenEnterpriseEditionConsent] = useState(false);
@@ -70,7 +72,7 @@ const EnterpriseEditionButton = ({
           onClick={() => setFeedbackCreation(true)}
           classes={{ root: classes.button }}
         >
-          {t_i18n('Create a feedback')}
+          {t_i18n('', { id: 'Create ...', values: { entity_type: translateEntityType('Feedback') } })}
         </Button>
       )}
       <FeedbackCreation

@@ -21,6 +21,7 @@ import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
 import type { FormFieldAttribute, AdditionalEntity, EntityRelationship, FormBuilderData, RelationshipTypeOption } from './Form.d';
 import useAuth from '../../../../utils/hooks/useAuth';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -103,6 +104,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { schema } = useAuth();
   const [currentTab, setCurrentTab] = useState(0);
 
@@ -110,8 +112,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     if (!schema || !entitySettings) {
       return [];
     }
-    return buildEntityTypes(schema, entitySettings, t_i18n);
-  }, [schema, entitySettings, t_i18n]);
+    return buildEntityTypes(schema, entitySettings, t_i18n, translateEntityType);
+  }, [schema, entitySettings, t_i18n, translateEntityType]);
 
   const [formData, setFormData] = useState<FormBuilderData>(() => {
     if (initialValues) {

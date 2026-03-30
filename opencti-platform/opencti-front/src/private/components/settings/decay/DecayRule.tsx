@@ -12,6 +12,7 @@ import DecayRulePopover from './DecayRulePopover';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import CustomizationMenu from '../CustomizationMenu';
 import { DecayRule_decayRule$key } from './__generated__/DecayRule_decayRule.graphql';
@@ -62,6 +63,7 @@ interface DecayRuleComponentProps {
 
 const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const theme = useTheme<Theme>();
   const queryResult = usePreloadedQuery(decayRuleQuery, queryRef);
   const decayRule = useFragment<DecayRule_decayRule$key>(decayRuleFragment, queryResult.decayRule);
@@ -134,7 +136,7 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
                 <FieldOrEmpty source={decayRule.decay_observable_types}>
                   <span>
                     {decayRule.decay_observable_types
-                      ?.map((option) => t_i18n(`entity_${option}`))
+                      ?.map((option) => translateEntityType(option))
                       .join(', ')}
                   </span>
                 </FieldOrEmpty>

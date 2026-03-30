@@ -9,6 +9,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import { PopoverProps } from '@mui/material/Popover';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -48,6 +49,7 @@ const TaskPopover = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
@@ -127,7 +129,7 @@ const TaskPopover = ({
       <DeleteDialog
         deletion={deletion}
         submitDelete={submitDelete}
-        message={t_i18n('Do you want to delete this task?')}
+        message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Task') + '?'}
       />
       {queryRef && (
         <React.Suspense

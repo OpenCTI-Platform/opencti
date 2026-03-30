@@ -11,6 +11,7 @@ import useFintelTemplateEdit from './useFintelTemplateEdit';
 import { useFintelTemplateContext } from './FintelTemplateContext';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../../components/i18n';
+import useEntityTranslation from '../../../../../utils/hooks/useEntityTranslation';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import type { Theme } from '../../../../../components/Theme';
 import ItemBoolean from '../../../../../components/ItemBoolean';
@@ -34,6 +35,7 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { subTypeId } = useParams<{ subTypeId?: string }>();
   const [commitEditMutation, editOnGoing] = useFintelTemplateEdit();
   const { editorValue } = useFintelTemplateContext();
@@ -50,7 +52,7 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
     { label: t_i18n('Settings') },
     { label: t_i18n('Customization') },
     { label: t_i18n('Entity types'), link: customizationLink },
-    { label: t_i18n(`entity_${subTypeId}`), link: subTypeLink },
+    { label: translateEntityType(subTypeId), link: subTypeLink },
     { label: t_i18n('FINTEL Templates') },
     { label: template.name },
   ];

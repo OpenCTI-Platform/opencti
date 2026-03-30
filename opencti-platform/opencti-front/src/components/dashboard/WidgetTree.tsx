@@ -3,6 +3,7 @@ import React, { useMemo } from 'react';
 import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { useFormatter } from '../i18n';
+import useEntityTranslation from '../../utils/hooks/useEntityTranslation';
 import { treeMapOptions } from '../../utils/Charts';
 import { getMainRepresentative, isFieldForIdentifier } from '../../utils/defaultRepresentatives';
 import { simpleNumberFormat } from '../../utils/Number';
@@ -23,14 +24,15 @@ const WidgetTree = ({
 }: WidgetTreeProps) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
 
   const series = useMemo(() => {
     const chartData = data.map((n) => {
       const item = { x: n.label, y: n.value };
       if (isFieldForIdentifier(groupBy)) {
         item.x = getMainRepresentative(n.entity);
-      } else if (groupBy === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
-        item.x = t_i18n(`entity_${n.label}`);
+      } else if (groupBy === 'entity_type' && translateEntityType(n.label) !== `entity_${n.label}`) {
+        item.x = translateEntityType(n.label);
       }
       return item;
     });

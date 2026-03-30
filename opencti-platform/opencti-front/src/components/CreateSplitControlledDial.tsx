@@ -4,6 +4,7 @@ import { ClickAwayListener, Grow, Paper, Popper, MenuItem, MenuList } from '@mui
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { DrawerControlledDialProps } from '../private/components/common/drawer/Drawer';
 import { useFormatter } from './i18n';
+import useEntityTranslation from '../utils/hooks/useEntityTranslation';
 import { ButtonColorKey, type ButtonSize } from '@common/button/Button.types';
 
 interface CreateSplitControlledDialProps extends DrawerControlledDialProps {
@@ -27,9 +28,10 @@ const CreateSplitControlledDial: FunctionComponent<CreateSplitControlledDialProp
   onOptionClick,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
 
   const valueString = entityType
-    ? t_i18n(`entity_${entityType}`)
+    ? translateEntityType(entityType)
     : t_i18n('Entity');
   const defaultButtonValue = t_i18n('', {
     id: 'Create ...',

@@ -16,6 +16,7 @@ import * as R from 'ramda';
 import { FunctionComponent, useEffect, useState } from 'react';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
@@ -61,6 +62,7 @@ const ToolBar: FunctionComponent<{
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const entitySettings = useEntitySettings();
   const { bannerSettings: { bannerHeightNumber } } = useAuth();
   let entitySettingsSelected;
@@ -77,7 +79,7 @@ const ToolBar: FunctionComponent<{
         return (
           node.target_type.toLowerCase().indexOf(keyword.toLowerCase())
           !== -1
-          || t_i18n(`entity_${node.target_type}`)
+          || translateEntityType(node.target_type)
             .toLowerCase()
             .indexOf(keyword.toLowerCase()) !== -1
         );
@@ -265,7 +267,7 @@ const ToolBar: FunctionComponent<{
                 )}
                 <span>
                   {notAvailableSetting
-                    .map((node) => t_i18n(`entity_${node.target_type}`))
+                    .map((node) => translateEntityType(node.target_type))
                     .join(', ')}
                 </span>
               </strong>

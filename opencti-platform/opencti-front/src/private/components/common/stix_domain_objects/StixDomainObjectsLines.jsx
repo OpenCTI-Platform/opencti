@@ -18,6 +18,7 @@ import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
+import withEntityTranslation from '../../../../utils/hooks/withEntityTranslation';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
@@ -80,7 +81,7 @@ class StixDomainObjectsContainer extends Component {
   }
 
   render() {
-    const { t, classes, data, fd } = this.props;
+    const { t, translateEntityType, classes, data, fd } = this.props;
     const stixDomainObjectsNodes = map(
       (n) => n.node,
       data.stixDomainObjects.edges,
@@ -107,7 +108,7 @@ class StixDomainObjectsContainer extends Component {
                 className={classes.summary}
               >
                 <Typography className={classes.heading}>
-                  {t(`entity_${type}`)}
+                  {translateEntityType(type)}
                 </Typography>
                 <Typography classes={{ root: classes.secondaryHeading }}>
                   {stixDomainObjects[type].length}{' '}
@@ -600,4 +601,4 @@ const StixDomainObjectsLines = createPaginationContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(StixDomainObjectsLines);
+export default compose(inject18n, withEntityTranslation, withStyles(styles))(StixDomainObjectsLines);

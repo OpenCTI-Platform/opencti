@@ -621,7 +621,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
             </Popover>
           </InputAdornment>
         )}
-        groupBy={(option: StixCoreObjectOption) => option.isCreateOption ? '' : option.type}
+        groupBy={(option: StixCoreObjectOption) => option.isCreateOption ? '' : translateEntityType(option.type)}
         noOptionsText={t_i18n('No available options')}
         options={stixCoreObjects}
         onInputChange={searchStixCoreObjects}

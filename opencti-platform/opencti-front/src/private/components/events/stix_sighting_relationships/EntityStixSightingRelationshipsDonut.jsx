@@ -9,6 +9,7 @@ import * as R from 'ramda';
 import Chart from '../../common/charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
+import withEntityTranslation from '../../../../utils/hooks/withEntityTranslation';
 import { donutChartOptions } from '../../../../utils/Charts';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
@@ -192,7 +193,7 @@ class EntityStixSightingRelationshipsDonut extends Component {
   }
 
   renderContent() {
-    const { t, entityId, variant, field, startDate, endDate, theme, toTypes } = this.props;
+    const { t, translateEntityType, entityId, variant, field, startDate, endDate, theme, toTypes } = this.props;
     const stixSightingRelationshipsDistributionVariables = {
       fromId: entityId,
       startDate: startDate || null,
@@ -220,7 +221,7 @@ class EntityStixSightingRelationshipsDonut extends Component {
                   'label',
                   `${
                     toTypes.length > 1 && n.entity
-                      ? `[${t(`entity_${n.entity.entity_type}`)}] ${n.entity.name}`
+                      ? `[${translateEntityType(n.entity.entity_type)}] ${n.entity.name}`
                       : `${getMainRepresentative(n.entity) || n.label}`
                   }`,
                   n,
@@ -229,7 +230,7 @@ class EntityStixSightingRelationshipsDonut extends Component {
               );
             }
             const chartData = data.map((n) => n.value);
-            const labels = data.map((n) => (field === 'entity_type' ? t(`entity_${n.label}`) : n.label));
+            const labels = data.map((n) => (field === 'entity_type' ? translateEntityType(n.label) : n.label));
             return (
               <Chart
                 options={donutChartOptions(
@@ -303,6 +304,7 @@ EntityStixSightingRelationshipsDonut.propTypes = {
 
 export default compose(
   inject18n,
+  withEntityTranslation,
   withTheme,
   withStyles(styles),
 )(EntityStixSightingRelationshipsDonut);

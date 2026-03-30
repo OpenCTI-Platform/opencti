@@ -5,6 +5,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import ItemIcon from '../../../../components/ItemIcon';
 import { fetchQuery } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
@@ -88,6 +89,7 @@ export const ExternalReferencesField: FunctionComponent<
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
 
   const [externalReferenceCreation, setExternalReferenceCreation] = useState(false);
   const [externalReferences, setExternalReferences] = useState<
@@ -171,7 +173,7 @@ export const ExternalReferencesField: FunctionComponent<
         filterOptions={(options: unknown) => (options)}
         textfieldprops={{
           variant: 'standard',
-          label: t_i18n('External references'),
+          label: translateEntityType('External-Reference', { plural: true }),
           helperText: helpertext,
           onFocus: searchExternalReferences,
           required,

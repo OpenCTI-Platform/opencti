@@ -19,6 +19,7 @@ import Drawer from '@components/common/drawer/Drawer';
 import { PirEditionMutation } from './__generated__/PirEditionMutation.graphql';
 import { PirEditionFragment$key } from './__generated__/PirEditionFragment.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import PirEditionForm, { PirEditionFormInputKeys } from './PirEditionForm';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
@@ -50,12 +51,13 @@ const PirEdition = ({
   onClose,
 }: PirEditionProps) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const pir = useFragment(editionFragment, data);
 
   const [editMutation] = useApiMutation<PirEditionMutation>(
     pirEditMutation,
     undefined,
-    { successMessage: `${t_i18n('entity_Pir')} ${t_i18n('successfully updated')}` },
+    { successMessage: `${translateEntityType('Pir')} ${t_i18n('successfully updated')}` },
   );
 
   const onEdit = (field: PirEditionFormInputKeys, value: unknown) => {

@@ -27,6 +27,7 @@ import { ObjectToParse } from '../../../../components/graph/utils/useGraphParser
 import { FieldOption } from '../../../../utils/field';
 import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -297,6 +298,7 @@ const StixCoreRelationshipCreation = ({
 }: StixCoreRelationshipCreationProps) => {
   const classes = useStyles();
   const { t_i18n, fsd } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const theme = useTheme<Theme>();
 
   const [step, setStep] = useState(0);
@@ -506,7 +508,7 @@ const StixCoreRelationshipCreation = ({
                   <div className={classes.type}>
                     {fromObjects[0].relationship_type
                       ? t_i18n('Relationship')
-                      : t_i18n(`entity_${fromObjects[0].entity_type}`)}
+                      : translateEntityType(fromObjects[0].entity_type)}
                   </div>
                 </div>
                 <div className={classes.content}>
@@ -570,7 +572,7 @@ const StixCoreRelationshipCreation = ({
                   <div className={classes.type}>
                     {toObjects[0].relationship_type
                       ? t_i18n('Relationship')
-                      : t_i18n(`entity_${toObjects[0].entity_type}`)}
+                      : translateEntityType(toObjects[0].entity_type)}
                   </div>
                 </div>
                 <div className={classes.content}>
@@ -608,7 +610,7 @@ const StixCoreRelationshipCreation = ({
                   />
                 </div>
                 <div className={classes.type}>
-                  {t_i18n(`entity_${fromObjects[0].entity_type}`)}
+                  {translateEntityType(fromObjects[0].entity_type)}
                 </div>
               </div>
               <div className={classes.content}>
@@ -658,7 +660,7 @@ const StixCoreRelationshipCreation = ({
                   />
                 </div>
                 <div className={classes.type}>
-                  {t_i18n(`entity_${toObjects[0].entity_type}`)}
+                  {translateEntityType(toObjects[0].entity_type)}
                 </div>
               </div>
               <div className={classes.content}>

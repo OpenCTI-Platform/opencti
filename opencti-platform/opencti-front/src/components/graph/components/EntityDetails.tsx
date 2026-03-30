@@ -10,6 +10,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import IconButton from '@common/button/IconButton';
 import { ListItemButton, Stack } from '@mui/material';
 import { useFormatter } from '../../i18n';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 import ItemAuthor from '../../ItemAuthor';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../Loader';
@@ -294,6 +295,7 @@ const EntityDetailsComponent: FunctionComponent<
 > = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const entity = usePreloadedQuery<EntityDetailsQuery>(
     entityDetailsQuery,
     queryRef,
@@ -428,7 +430,7 @@ const EntityDetailsComponent: FunctionComponent<
             (stixCoreObject.reports?.pageInfo.globalCount ?? 0) >= 10
               ? 10
               : stixCoreObject.reports?.pageInfo.globalCount
-          } ${t_i18n('reports')} ${t_i18n('of')} ${stixCoreObject.reports?.pageInfo
+          } ${translateEntityType('Report', { plural: true })} ${t_i18n('of')} ${stixCoreObject.reports?.pageInfo
             .globalCount}`}
         </Label>
         {reportsEdges && reportsEdges.length > 0 ? (

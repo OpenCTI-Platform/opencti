@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { Field } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import { useFormatter } from '../../../components/i18n';
+import useEntityTranslation from '../../../utils/hooks/useEntityTranslation';
 import SelectField from '../../../components/fields/SelectField';
 import { stixCyberObservablesLinesSubTypesQuery } from './stix_cyber_observables/StixCyberObservablesLines';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
@@ -29,6 +30,7 @@ const TypesFieldComponent = ({
   queryRef,
 }: TypesFieldComponentProps) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { subTypes } = usePreloadedQuery(stixCyberObservablesLinesSubTypesQuery, queryRef);
 
   if (subTypes) {
@@ -45,7 +47,7 @@ const TypesFieldComponent = ({
         .map((n) => n.node)
         .map((n) => ({
           ...n,
-          tlabel: t_i18n(`entity_${n.label}`),
+          tlabel: translateEntityType(n.label),
         })),
     );
     return (

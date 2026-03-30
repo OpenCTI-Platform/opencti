@@ -341,7 +341,7 @@ const StixSightingRelationships = () => {
       percentWidth: 12,
       isSortable: false,
       render: ({ from }) => (from !== null
-        ? t_i18n(`entity_${from.entity_type}`)
+        ? translateEntityType(from.entity_type)
         : t_i18n('Restricted')),
     },
     entity: {

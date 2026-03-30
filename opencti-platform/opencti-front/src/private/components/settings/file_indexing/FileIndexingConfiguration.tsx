@@ -26,6 +26,7 @@ import { fileIndexingConfigurationFieldPatch } from '@components/settings/file_i
 import Checkbox from '@mui/material/Checkbox';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -62,6 +63,7 @@ const FileIndexingConfiguration: FunctionComponent<
   FileIndexingConfigurationProps
 > = ({ managerConfiguration }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const { stixCoreObjectTypes: availableEntityTypes } = useAttributes();
   const classes = useStyles();
   const manager_setting = managerConfiguration?.manager_setting;
@@ -181,7 +183,7 @@ const FileIndexingConfiguration: FunctionComponent<
                   <div className={classes.icon}>
                     <ItemIcon type={option} />
                   </div>
-                  <ListItemText primary={t_i18n(`entity_${option}`)} />
+                  <ListItemText primary={translateEntityType(option)} />
                 </li>
               )}
             />

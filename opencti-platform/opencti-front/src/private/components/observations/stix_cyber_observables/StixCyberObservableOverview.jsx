@@ -25,6 +25,7 @@ import ItemScore from '../../../../components/ItemScore';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
 import inject18n from '../../../../components/i18n';
+import withEntityTranslation from '../../../../utils/hooks/withEntityTranslation';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -113,7 +114,7 @@ class StixCyberObservableOverview extends Component {
   }
 
   render() {
-    const { t, fldt, classes, stixCyberObservable } = this.props;
+    const { t, translateEntityType, fldt, classes, stixCyberObservable } = this.props;
     const otherStixIds = stixCyberObservable.x_opencti_stix_ids || [];
     const stixIds = R.filter(
       (n) => n !== stixCyberObservable.standard_id,
@@ -157,7 +158,7 @@ class StixCyberObservableOverview extends Component {
               </Label>
               <Tag
                 color="#203af6"
-                label={t(`entity_${stixCyberObservable.entity_type}`)}
+                label={translateEntityType(stixCyberObservable.entity_type)}
               />
               <Label
                 sx={{ marginTop: 2 }}
@@ -262,5 +263,6 @@ StixCyberObservableOverview.propTypes = {
 
 export default compose(
   inject18n,
+  withEntityTranslation,
   withStyles(styles),
 )(StixCyberObservableOverview);

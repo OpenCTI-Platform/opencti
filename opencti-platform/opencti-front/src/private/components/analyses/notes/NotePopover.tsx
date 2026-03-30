@@ -7,6 +7,7 @@ import StixCoreObjectEnrollPlaybook from '@components/common/stix_core_objects/S
 import StixCoreObjectEnrichment from '@components/common/stix_core_objects/StixCoreObjectEnrichment';
 import StixCoreObjectMenuItemUnderEE from '@components/common/stix_core_objects/StixCoreObjectMenuItemUnderEE';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import { QueryRenderer } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
 import NoteEditionContainer from './NoteEditionContainer';
@@ -52,6 +53,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const note = useFragment(notePopoverFragment, data);
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -179,7 +181,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
       <DeleteDialog
         deletion={noteDeletion}
         submitDelete={submitNoteDelete}
-        message={t_i18n('Do you want to delete this note?')}
+        message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Note') + '?'}
       />
 
       <QueryRenderer

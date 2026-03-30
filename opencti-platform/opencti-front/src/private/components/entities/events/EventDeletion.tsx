@@ -53,7 +53,7 @@ const EventDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolea
       submitDelete={submitDelete}
       isOpen={isOpen}
       onClose={handleClose}
-      message={t_i18n('Do you want to delete this event?')}
+      message={t_i18n('Do you want to delete this') + ' ' + translateEntityType('Event') + '?'}
     />
   );
 };
