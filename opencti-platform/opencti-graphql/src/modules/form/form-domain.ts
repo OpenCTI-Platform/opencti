@@ -957,6 +957,57 @@ export const formSubmit = async (
     if (finalIsDraft) {
       let createdBy: string | null = null;
       const authorizedMembersMap = new Map<string, any>();
+      const normalizeOptionId = (option: any) => {
+        if (typeof option === 'object' && option !== null) {
+          return option.value || option.id;
+        }
+        return option;
+      };
+      const isDefaultEnabled = (defaultConfig: { enabled?: boolean } | undefined, hasContent: boolean) => {
+        if (!defaultConfig) return false;
+        if (defaultConfig.enabled === false) return false;
+        if (defaultConfig.enabled === true) return true;
+        return hasContent;
+      };
+
+      const explicitDraftName = typeof values.draftName === 'string' ? values.draftName.trim() : '';
+      const draftNameDefaultValue = (schema.draftDefaults?.name?.defaultValue ?? '').trim();
+      const defaultDraftName = isDefaultEnabled(schema.draftDefaults?.name, draftNameDefaultValue.length > 0)
+        ? draftNameDefaultValue
+        : '';
+      const finalDraftName = explicitDraftName || defaultDraftName || `${form.name} - ${nowTime()}`;
+
+      const hasExplicitDraftDescription = Object.prototype.hasOwnProperty.call(values, 'draftDescription');
+      const explicitDraftDescription = typeof values.draftDescription === 'string' ? values.draftDescription.trim() : '';
+      const draftDescriptionDefaultValue = (schema.draftDefaults?.description?.defaultValue ?? '').trim();
+      const defaultDraftDescription = isDefaultEnabled(schema.draftDefaults?.description, draftDescriptionDefaultValue.length > 0)
+        ? draftDescriptionDefaultValue
+        : '';
+      const finalDraftDescription = hasExplicitDraftDescription ? explicitDraftDescription : defaultDraftDescription;
+
+      const hasExplicitDraftAssignees = Object.prototype.hasOwnProperty.call(values, 'draftObjectAssignee');
+      const explicitDraftAssignees = Array.isArray(values.draftObjectAssignee)
+        ? values.draftObjectAssignee.map(normalizeOptionId).filter((id) => !!id)
+        : [];
+      const draftAssigneeDefaults = (schema.draftDefaults?.objectAssignee?.defaults ?? [])
+        .map(normalizeOptionId)
+        .filter((id: any) => !!id);
+      const defaultDraftAssignees = isDefaultEnabled(schema.draftDefaults?.objectAssignee, draftAssigneeDefaults.length > 0)
+        ? draftAssigneeDefaults
+        : [];
+      const finalDraftAssignees = hasExplicitDraftAssignees ? explicitDraftAssignees : defaultDraftAssignees;
+
+      const hasExplicitDraftParticipants = Object.prototype.hasOwnProperty.call(values, 'draftObjectParticipant');
+      const explicitDraftParticipants = Array.isArray(values.draftObjectParticipant)
+        ? values.draftObjectParticipant.map(normalizeOptionId).filter((id) => !!id)
+        : [];
+      const draftParticipantDefaults = (schema.draftDefaults?.objectParticipant?.defaults ?? [])
+        .map(normalizeOptionId)
+        .filter((id: any) => !!id);
+      const defaultDraftParticipants = isDefaultEnabled(schema.draftDefaults?.objectParticipant, draftParticipantDefaults.length > 0)
+        ? draftParticipantDefaults
+        : [];
+      const finalDraftParticipants = hasExplicitDraftParticipants ? explicitDraftParticipants : defaultDraftParticipants;
 
       // Apply draft defaults for author
       if (values.draftAuthor) {
@@ -1081,8 +1132,11 @@ export const formSubmit = async (
       const authorized_members = Array.from(authorizedMembersMap.values());
 
       const draftInput: any = {
-        name: `${form.name} - ${nowTime()}`,
+        name: finalDraftName,
       };
+      if (finalDraftDescription.length > 0) draftInput.description = finalDraftDescription;
+      if (finalDraftAssignees.length > 0) draftInput.objectAssignee = finalDraftAssignees;
+      if (finalDraftParticipants.length > 0) draftInput.objectParticipant = finalDraftParticipants;
       if (createdBy) draftInput.createdBy = createdBy;
       if (authorized_members.length > 0) draftInput.authorized_members = authorized_members;
 

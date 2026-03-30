@@ -95,6 +95,30 @@ export interface FormSchemaDefinition {
   isDraftByDefault?: boolean; // Whether forms should be created as draft by default
   allowDraftOverride?: boolean; // Whether users can override the draft setting
   draftDefaults?: {
+    name?: {
+      enabled: boolean;
+      isEditable: boolean;
+      isRequired: boolean;
+      defaultValue?: string;
+    };
+    description?: {
+      enabled: boolean;
+      isEditable: boolean;
+      isRequired: boolean;
+      defaultValue?: string;
+    };
+    objectAssignee?: {
+      enabled: boolean;
+      isEditable: boolean;
+      isRequired: boolean;
+      defaults: Array<any>;
+    };
+    objectParticipant?: {
+      enabled: boolean;
+      isEditable: boolean;
+      isRequired: boolean;
+      defaults: Array<any>;
+    };
     author?: {
       type: 'none' | 'current_user' | 'main_entity_author';
       isEditable: boolean;
@@ -186,6 +210,58 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
     draftDefaults: {
       type: 'object',
       properties: {
+        name: {
+          type: 'object',
+          properties: {
+            enabled: { type: 'boolean' },
+            isEditable: { type: 'boolean' },
+            isRequired: { type: 'boolean' },
+            defaultValue: { type: 'string' },
+          },
+          required: ['enabled'],
+        },
+        description: {
+          type: 'object',
+          properties: {
+            enabled: { type: 'boolean' },
+            isEditable: { type: 'boolean' },
+            isRequired: { type: 'boolean' },
+            defaultValue: { type: 'string' },
+          },
+          required: ['enabled'],
+        },
+        objectAssignee: {
+          type: 'object',
+          properties: {
+            enabled: { type: 'boolean' },
+            isEditable: { type: 'boolean' },
+            isRequired: { type: 'boolean' },
+            defaults: {
+              type: 'array',
+              items: {
+                type: 'object',
+                additionalProperties: true,
+              },
+            },
+          },
+          required: ['enabled'],
+        },
+        objectParticipant: {
+          type: 'object',
+          properties: {
+            enabled: { type: 'boolean' },
+            isEditable: { type: 'boolean' },
+            isRequired: { type: 'boolean' },
+            defaults: {
+              type: 'array',
+              items: {
+                type: 'object',
+                additionalProperties: true,
+              },
+            },
+          },
+          required: ['enabled'],
+        },
         author: {
           type: 'object',
           properties: {

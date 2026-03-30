@@ -1,9 +1,16 @@
 import { describe, it, vi, expect, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import FormView from './FormView';
-import testRender from '../../../../../utils/tests/test-render';
+import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import * as useGrantedModule from '../../../../../utils/hooks/useGranted';
+
+vi.mock('../../../common/form/AuthorizedMembersField', () => ({
+  __esModule: true,
+  default: (props: { disabled?: boolean }) => (
+    <div data-testid="authorized-members-disabled">{String(!!props.disabled)}</div>
+  ),
+}));
 
 // Mock useParams
 vi.mock('react-router-dom', async () => {
@@ -20,9 +27,10 @@ const useGrantedSpy = vi.spyOn(useGrantedModule, 'default');
 
 const formSchema = {
   fields: [
-    { name: 'name', label: 'Name', type: 'text', attributeMapping: { entity: 'main_entity', attributeName: 'name' } }
+    { name: 'name', label: 'Name', type: 'text', attributeMapping: { entity: 'main_entity', attributeName: 'name' } },
   ],
   mainEntityType: 'Report',
+  isDraftByDefault: true,
   draftDefaults: {
     author: { type: 'current_user', isEditable: false },
     authorizedMembers: { enabled: true, defaults: [] },
@@ -37,6 +45,8 @@ const mockForm = {
   form_schema: JSON.stringify(formSchema),
 };
 
+const mockUserContext = createMockUserContext({ entitySettings: { edges: [] } });
+
 describe('FormView', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -45,78 +55,52 @@ describe('FormView', () => {
   it('should render form and fields', async () => {
     useGrantedSpy.mockReturnValue(true); // Grant all by default
 
-    const { environment } = testRender(<FormView />);
+    const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
 
-    environment.mock.resolveMostRecentOperation((operation) => {
-        return MockPayloadGenerator.generate(operation, {
-            Form: () => mockForm,
-        });
-    });
-    
-    // In a real scenario we would wait for the form fields to appear
     await waitFor(() => {
-        expect(screen.getByText('Test Form')).toBeInTheDocument();
+      relayEnv.mock.resolveMostRecentOperation((operation: any) => MockPayloadGenerator.generate(operation, { Form: () => mockForm }));
+    });
+
+    await waitFor(() => {
+        expect(screen.getAllByText('Test Form').length).toBeGreaterThan(0);
     });
   });
 
-  it('should show Enabled Access Restriction switch disabled if user has no BYPASS', async () => {
-    // Mock user having BYPASS = false
-    // useGranted is called nicely, so we can mock implementations.
-    // In FormView: const isBypass = useGranted([BYPASS]);
-    // It also calls useGranted for MODULES and INGESTION.
-    
-    useGrantedSpy.mockImplementation((capabilities) => {
-        if (capabilities.includes(useGrantedModule.BYPASS)) return false;
-        return true; 
+  it('should render form without BYPASS capability', async () => {
+    useGrantedSpy.mockImplementation((capabilities: string[]) => {
+      if (capabilities.includes(useGrantedModule.BYPASS)) return false;
+      return true;
     });
 
-    const { environment } = testRender(<FormView />);
+    const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
 
-    environment.mock.resolveMostRecentOperation((operation) => {
-        return MockPayloadGenerator.generate(operation, {
-            Form: () => mockForm,
-        });
-    });
-
-    // authorizedMembers field is there
     await waitFor(() => {
-        expect(screen.getByText('Authorized Members')).toBeInTheDocument();
+      relayEnv.mock.resolveMostRecentOperation((operation: any) => MockPayloadGenerator.generate(operation, { Form: () => mockForm }));
     });
 
-    // Find the AuthorizedMembersField component output.
-    // It usually renders "Activate access restriction" switch.
-    // And expected to be disabled.
-    // We might need to inspect the DOM structure or check if input is disabled.
-    
-    // Wait for the switch to be available
     await waitFor(() => {
-        expect(screen.getByLabelText('Activate access restriction')).toBeInTheDocument();
+      expect(screen.getAllByText('Test Form').length).toBeGreaterThan(0);
     });
-    
-    const switchInput = screen.getByLabelText('Activate access restriction');
-    expect(switchInput).toBeDisabled();
+
+    expect(screen.getByTestId('authorized-members-disabled')).toHaveTextContent('true');
   });
 
-  it('should show Enabled Access Restriction switch enabled if user HAS BYPASS', async () => {
-    
-    useGrantedSpy.mockImplementation((capabilities) => {
-        if (capabilities.includes(useGrantedModule.BYPASS)) return true;
-        return true; 
+  it('should render form with BYPASS capability', async () => {
+    useGrantedSpy.mockImplementation((capabilities: string[]) => {
+      if (capabilities.includes(useGrantedModule.BYPASS)) return true;
+      return true;
     });
 
-    const { environment } = testRender(<FormView />);
+    const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
 
-    environment.mock.resolveMostRecentOperation((operation) => {
-        return MockPayloadGenerator.generate(operation, {
-            Form: () => mockForm,
-        });
+    await waitFor(() => {
+      relayEnv.mock.resolveMostRecentOperation((operation: any) => MockPayloadGenerator.generate(operation, { Form: () => mockForm }));
     });
 
     await waitFor(() => {
-        expect(screen.getByLabelText('Activate access restriction')).toBeInTheDocument();
+      expect(screen.getAllByText('Test Form').length).toBeGreaterThan(0);
     });
-    
-    const switchInput = screen.getByLabelText('Activate access restriction');
-    expect(switchInput).not.toBeDisabled();
+
+    expect(screen.getByTestId('authorized-members-disabled')).toHaveTextContent('false');
   });
 });

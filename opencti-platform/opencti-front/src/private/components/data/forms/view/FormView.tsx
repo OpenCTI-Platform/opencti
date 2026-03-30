@@ -14,6 +14,7 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Divider from '@mui/material/Divider';
 import TextField from '../../../../../components/TextField';
+import MarkdownField from '../../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../../components/i18n';
 import { FormViewQuery } from './__generated__/FormViewQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
@@ -29,8 +30,10 @@ import { environment } from '../../../../../relay/environment';
 import StixCoreObjectsField from '../../../common/form/StixCoreObjectsField';
 import CreatorField from '../../../common/form/CreatorField';
 import AuthorizedMembersField from '../../../common/form/AuthorizedMembersField';
+import ObjectAssigneeField from '../../../common/form/ObjectAssigneeField';
+import ObjectParticipantField from '../../../common/form/ObjectParticipantField';
 import { AuthorizedMemberOption } from '../../../../../utils/authorizedMembers';
-import ObjectMembersField from '../../../common/form/ObjectMembersField';
+import { FieldOption } from '../../../../../utils/field';
 import useGranted, { BYPASS, INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import useImportAccess from '../../../../../utils/hooks/useImportAccess';
@@ -134,7 +137,7 @@ interface EntityCheckResult {
 }
 
 interface FormInitialValues {
-  [key: string]: string | boolean | string[] | Date | Record<string, unknown> | Record<string, unknown>[] | number | null;
+  [key: string]: string | boolean | string[] | Date | Record<string, unknown> | Record<string, unknown>[] | number | FieldOption[] | null;
 }
 
 const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedded = false, onSuccess }) => {
@@ -183,6 +186,22 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     const mFields = parsedSchema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
 
     // Initialize draft defaults
+    if (parsedSchema.draftDefaults?.name?.enabled) {
+      inits.draftName = parsedSchema.draftDefaults.name.defaultValue || '';
+    }
+
+    if (parsedSchema.draftDefaults?.description?.enabled) {
+      inits.draftDescription = parsedSchema.draftDefaults.description.defaultValue || '';
+    }
+
+    if (parsedSchema.draftDefaults?.objectAssignee?.enabled) {
+      inits.draftObjectAssignee = parsedSchema.draftDefaults.objectAssignee.defaults || [];
+    }
+
+    if (parsedSchema.draftDefaults?.objectParticipant?.enabled) {
+      inits.draftObjectParticipant = parsedSchema.draftDefaults.objectParticipant.defaults || [];
+    }
+
     if (parsedSchema.draftDefaults?.author?.isEditable) {
       if (parsedSchema.draftDefaults?.author?.type === 'current_user' && me) {
         inits.draftAuthor = { value: me.individual_id || me.id, label: me.name };
@@ -192,41 +211,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     }
 
     if (parsedSchema.draftDefaults?.authorizedMembers?.enabled) {
-      const defaultMembers: AuthorizedMemberOption[] = [];
-      if (parsedSchema.draftDefaults.authorizedMembers.defaults) {
-        parsedSchema.draftDefaults.authorizedMembers.defaults.forEach((rule) => {
-          if (rule.type === 'CREATOR') {
-            defaultMembers.push({
-              label: t_i18n('Creators'),
-              value: 'CREATORS',
-              type: t_i18n('Dynamic options'),
-              accessRight: 'admin',
-              groupsRestriction: [],
-            });
-          } else if (rule.type === 'AUTHOR_ORG') {
-            const groups = rule.intersectionGroup ? [{ label: rule.intersectionGroup, value: rule.intersectionGroup }] : [];
-            defaultMembers.push({
-              label: t_i18n('Author (organization)'),
-              value: 'AUTHOR',
-              type: t_i18n('Dynamic options'),
-              accessRight: 'admin',
-              groupsRestriction: groups,
-              // Note: we can't fully resolve intersectionGroup label here without fetching groups
-            });
-          } else if (rule.value === 'CREATORS' || rule.value === 'AUTHOR') {
-            // New format dynamic rules, just pass them through but ensure localized labels
-            defaultMembers.push({
-              ...rule,
-              label: rule.value === 'CREATORS' ? t_i18n('Creators') : t_i18n('Author (organization)'),
-              type: t_i18n('Dynamic options'),
-            });
-          } else {
-            // New format specific entities
-            defaultMembers.push(rule);
-          }
-        });
-      }
-      inits.draftAuthorizedMembers = defaultMembers;
+      inits.draftAuthorizedMembers = parsedSchema.draftDefaults.authorizedMembers.defaults || [];
     }
 
     // If main entity lookup is enabled, initialize the lookup field
@@ -405,6 +390,18 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const validationSchema = React.useMemo(() => {
     let baseSchema = convertFormSchemaToYupSchema(schema, t_i18n);
     const extraShapes: Record<string, Yup.AnySchema> = {};
+    if (isDraft && schema.draftDefaults?.name?.enabled && schema.draftDefaults?.name?.isEditable && schema.draftDefaults?.name?.isRequired) {
+      extraShapes.draftName = Yup.string().trim().required(t_i18n('This field is required'));
+    }
+    if (isDraft && schema.draftDefaults?.description?.enabled && schema.draftDefaults?.description?.isEditable && schema.draftDefaults?.description?.isRequired) {
+      extraShapes.draftDescription = Yup.string().trim().required(t_i18n('This field is required'));
+    }
+    if (isDraft && schema.draftDefaults?.objectAssignee?.enabled && schema.draftDefaults?.objectAssignee?.isEditable && schema.draftDefaults?.objectAssignee?.isRequired) {
+      extraShapes.draftObjectAssignee = Yup.array().min(1, t_i18n('This field is required'));
+    }
+    if (isDraft && schema.draftDefaults?.objectParticipant?.enabled && schema.draftDefaults?.objectParticipant?.isEditable && schema.draftDefaults?.objectParticipant?.isRequired) {
+      extraShapes.draftObjectParticipant = Yup.array().min(1, t_i18n('This field is required'));
+    }
     // main_entity_author: empty is always valid (backend inherits from main entity)
     const authorRequiresExplicitValue = schema.draftDefaults?.author?.type !== 'main_entity_author';
     if (isDraft && schema.draftDefaults?.author?.isEditable && schema.draftDefaults?.author?.isRequired && authorRequiresExplicitValue) {
@@ -938,6 +935,48 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     </>
                   );
                 })()}
+                {isDraft && schema.draftDefaults?.name?.enabled && schema.draftDefaults?.name?.isEditable && (
+                  <div style={{ marginTop: 20 }}>
+                    <Field
+                      component={TextField}
+                      name="draftName"
+                      label={t_i18n('Draft name')}
+                      required={schema.draftDefaults?.name?.isRequired}
+                      fullWidth
+                    />
+                  </div>
+                )}
+                {isDraft && schema.draftDefaults?.description?.enabled && schema.draftDefaults?.description?.isEditable && (
+                  <div style={{ marginTop: 20 }}>
+                    <Field
+                      component={MarkdownField}
+                      name="draftDescription"
+                      label={t_i18n('Draft description')}
+                      required={schema.draftDefaults?.description?.isRequired}
+                      fullWidth={true}
+                      multiline={true}
+                      rows="4"
+                    />
+                  </div>
+                )}
+                {isDraft && schema.draftDefaults?.objectAssignee?.enabled && schema.draftDefaults?.objectAssignee?.isEditable && (
+                  <div style={{ marginTop: 20 }}>
+                    <ObjectAssigneeField
+                      name="draftObjectAssignee"
+                      required={schema.draftDefaults?.objectAssignee?.isRequired}
+                      style={{ width: '100%', marginBottom: 20 }}
+                    />
+                  </div>
+                )}
+                {isDraft && schema.draftDefaults?.objectParticipant?.enabled && schema.draftDefaults?.objectParticipant?.isEditable && (
+                  <div style={{ marginTop: 20 }}>
+                    <ObjectParticipantField
+                      name="draftObjectParticipant"
+                      required={schema.draftDefaults?.objectParticipant?.isRequired}
+                      style={{ width: '100%', marginBottom: 20 }}
+                    />
+                  </div>
+                )}
                 {isDraft && schema.draftDefaults?.author?.isEditable && (
                   <div style={{ marginTop: 20 }}>
                     <CreatorField

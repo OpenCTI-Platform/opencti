@@ -56,8 +56,8 @@ describe('formSubmit', () => {
     vi.resetAllMocks();
     // Default mocks
     vi.spyOn(middlewareLoader, 'storeLoadById').mockResolvedValue(mockForm);
-    vi.spyOn(workDomain, 'createWork').mockResolvedValue({ id: 'work-1' });
-    vi.spyOn(draftWorkspaceDomain, 'addDraftWorkspace').mockResolvedValue({ id: 'draft-1' });
+    vi.spyOn(workDomain, 'createWork').mockResolvedValue({ id: 'work-1' } as any);
+    vi.spyOn(draftWorkspaceDomain, 'addDraftWorkspace').mockResolvedValue({ id: 'draft-1' } as any);
   });
 
   it('should use current user as createdBy when configured in schema', async () => {
