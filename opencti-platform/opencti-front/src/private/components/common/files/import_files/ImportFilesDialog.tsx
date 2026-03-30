@@ -6,7 +6,7 @@ import ImportFilesToggleMode from '@components/common/files/import_files/ImportF
 import ImportFilesFormSelector from '@components/common/files/import_files/ImportFilesFormSelector';
 import ImportFilesFormView from '@components/common/files/import_files/ImportFilesFormView';
 import { DraftAddInput, draftCreationMutation, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
-import { DraftCreationMutation, DraftCreationMutation$data } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
+import { DraftCreationMutation } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
 import ImportFilesUploader from '@components/common/files/import_files/ImportFilesUploader';
 import { ImportFilesContextQuery } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
 import {
@@ -22,7 +22,7 @@ import { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedM
 import { Box, DialogActions } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { FormikConfig, FormikErrors, useFormik } from 'formik';
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { graphql, UseMutationConfig, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { Theme } from '../../../../../components/Theme';

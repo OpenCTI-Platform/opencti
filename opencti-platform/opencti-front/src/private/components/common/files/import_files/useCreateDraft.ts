@@ -74,5 +74,3 @@ const useCreateDraft = (
 };
 
 export default useCreateDraft;
-
-

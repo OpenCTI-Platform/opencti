@@ -335,6 +335,3 @@ describe('ImportFilesDialog – createDraft', () => {
     });
   });
 });
-
-
-
