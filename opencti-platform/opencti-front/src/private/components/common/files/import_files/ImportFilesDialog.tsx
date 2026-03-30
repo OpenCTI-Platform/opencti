@@ -44,6 +44,7 @@ import { hasCustomColor } from '../../../../../utils/theme';
 import { useIsMandatoryAttribute } from '../../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../../utils/hooks/useDefaultValues';
 import useSwitchDraft from '../../../drafts/useSwitchDraft';
+import useCreateDraft from './useCreateDraft';
 
 export const CSV_MAPPER_NAME = '[FILE] CSV Mapper import';
 
@@ -190,52 +191,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     type: 'files',
   });
 
-  const createDraft = useCallback(async (values: DraftAddInput, selectedEntityId?: string) => {
-    try {
-      const { draftWorkspaceAdd } = await new Promise<DraftCreationMutation$data>((resolve, reject) => {
-        commitCreationMutation({
-          variables: {
-            input: {
-              name: values.name,
-              description: values.description,
-              entity_id: selectedEntityId,
-              objectAssignee: values.objectAssignee.map(({ value }) => value),
-              objectParticipant: values.objectParticipant.map(({ value }) => value),
-              createdBy: values.createdBy?.value,
-              authorized_members: !values.authorized_members
-                ? null
-                : values.authorized_members
-                    .filter((v) => v.accessRight !== 'none')
-                    .map((member) => ({
-                      id: member.value,
-                      access_right: member.accessRight,
-                      groups_restriction_ids: member.groupsRestriction?.length > 0
-                        ? member.groupsRestriction.map((group) => group.value)
-                        : undefined,
-                    })),
-            },
-          },
-          onCompleted: (response, errors) => {
-            if (errors) {
-              reject(errors);
-            } else {
-              resolve(response);
-            }
-          },
-          onError: (error) => {
-            reject(error);
-          },
-        });
-      });
-
-      setDraftId(draftWorkspaceAdd?.id);
-      return draftWorkspaceAdd?.id;
-    } catch (error) {
-      const { errors } = (error as unknown as RelayError).res;
-      MESSAGING$.notifyError(errors.at(0)?.message);
-      return undefined;
-    }
-  }, [commitCreationMutation, enterDraft]);
+  const createDraft = useCreateDraft(commitCreationMutation, setDraftId);
 
   const setDraftContext = () => {
     if (draftId) {
