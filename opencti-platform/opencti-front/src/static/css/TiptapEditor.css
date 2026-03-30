@@ -159,15 +159,17 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
 
 .rich-text-editor-wrapper .ProseMirror table {
   border-collapse: collapse;
-  width: 100%;
-  table-layout: fixed;
+  width: auto;
+  max-width: 100%;
+  table-layout: auto;
   overflow: hidden;
+  margin: 0.9em auto;
 }
 
 .rich-text-editor-wrapper .ProseMirror th,
 .rich-text-editor-wrapper .ProseMirror td {
   border: 1px solid #b2b2b2;
-  padding: 6px 12px;
+  padding: 0.4em;
   vertical-align: top;
   position: relative;
 }
@@ -180,7 +182,7 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
 
 html[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror th,
 body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror th {
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 /* Selected cells highlight (prosemirror-tables adds .selectedCell) */
@@ -212,6 +214,12 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror .selectedCell::af
 
 .rich-text-editor-wrapper .ProseMirror.resize-cursor {
   cursor: col-resize;
+}
+
+/* Remove paragraph margin inside table cells */
+.rich-text-editor-wrapper .ProseMirror td p,
+.rich-text-editor-wrapper .ProseMirror th p {
+  margin: 0;
 }
 
 /* Nested tables: slightly smaller, with spacing */
@@ -294,13 +302,13 @@ body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
   page-break-after: always;
 }
 
-/* CKEditor font-size classes — kept for backward compatibility with stored content */
+/* Legacy Editor font-size classes — kept for backward compatibility with stored content */
 .rich-text-content .text-tiny  { font-size: 12px; }
 .rich-text-content .text-small { font-size: 10px; }
 .rich-text-content .text-big   { font-size: 18px; }
 .rich-text-content .text-huge  { font-size: 24px; }
 
-/* CKEditor image figure — kept for backward compatibility with stored content */
+/* Legacy Editor image figure — kept for backward compatibility with stored content */
 .rich-text-content figure.image {
   display: table;
   clear: both;
@@ -321,15 +329,17 @@ body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
 
 .rich-text-content table {
   border-collapse: collapse;
-  width: 100%;
-  table-layout: fixed;
+  width: auto;
+  max-width: 100%;
+  table-layout: auto;
   overflow: hidden;
+  margin: 0.9em auto;
 }
 
 .rich-text-content th,
 .rich-text-content td {
   border: 1px solid #b2b2b2;
-  padding: 6px 12px;
+  padding: 0.4em;
   vertical-align: top;
 }
 
@@ -341,7 +351,18 @@ body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
 
 html[data-theme="dark"] .rich-text-content th,
 body[data-theme="dark"] .rich-text-content th {
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Remove paragraph margin inside table cells — display mode */
+.rich-text-content td p,
+.rich-text-content th p {
+  margin: 0;
+}
+
+/* Legacy Editor figure.table wrapper */
+.rich-text-content figure.table {
+  margin: 0;
 }
 
 /* Nested tables — display mode */
