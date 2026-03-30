@@ -1,7 +1,7 @@
 import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import { RelayEnvironmentProvider } from 'react-relay/hooks';
 import React, { ReactNode } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import { render, renderHook } from '@testing-library/react';
 import { createMockEnvironment } from 'relay-test-utils';
 import { EnvironmentConfig } from 'relay-runtime';

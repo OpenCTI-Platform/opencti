@@ -1,6 +1,6 @@
 import { FunctionComponent, ReactNode } from 'react';
 import Button from '@common/button/Button';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Handle, Position } from 'reactflow';
 import { useFormatter } from 'src/components/i18n';
 import Card from '../../../../../../../components/common/card/Card';

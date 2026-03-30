@@ -18,7 +18,7 @@ import { useTheme } from '@mui/styles';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';

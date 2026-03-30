@@ -4,7 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { BaseSyntheticEvent, useContext, useRef } from 'react';
 import { graphql } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import * as Yup from 'yup';
 import CreateEntityControlledDial from '../../../components/CreateEntityControlledDial';
 import TextField from '../../../components/TextField';

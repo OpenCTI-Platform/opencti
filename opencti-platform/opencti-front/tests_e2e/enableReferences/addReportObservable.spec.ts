@@ -137,6 +137,7 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
 
   // Enable report references and check that removing observable is still possible as admin user
   await leftBarPage.clickOnMenu('Settings', 'Customization');
+  await expect(page.getByText('Workflow status')).toBeVisible();
   const search = new SearchPageModel(page);
   await search.addSearch('report');
   await page.getByRole('link', { name: 'Report' }).click();

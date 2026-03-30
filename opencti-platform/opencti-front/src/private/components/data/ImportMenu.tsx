@@ -1,6 +1,6 @@
 import React from 'react';
 import Tab from '@mui/material/Tab';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 import Tabs from '@mui/material/Tabs';
 import { useFormatter } from '../../../components/i18n';
 

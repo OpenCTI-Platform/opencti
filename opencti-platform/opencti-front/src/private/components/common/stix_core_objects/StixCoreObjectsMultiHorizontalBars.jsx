@@ -1,6 +1,6 @@
 import { graphql } from 'react-relay';
 import { useTheme } from '@mui/styles';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';

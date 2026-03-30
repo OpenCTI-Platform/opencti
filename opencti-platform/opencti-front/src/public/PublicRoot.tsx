@@ -2,7 +2,7 @@ import React from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { loadQuery, usePreloadedQuery } from 'react-relay';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router';
 import { boundaryWrapper } from '@components/Error';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';

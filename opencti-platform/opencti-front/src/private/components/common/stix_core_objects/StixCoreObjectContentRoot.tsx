@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import StixCoreObjectContentHeader from '@components/common/stix_core_objects/StixCoreObjectContentHeader';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router';
 import StixCoreObjectContent from '@components/common/stix_core_objects/StixCoreObjectContent';
 import { StixCoreObjectContent_stixCoreObject$key } from '@components/common/stix_core_objects/__generated__/StixCoreObjectContent_stixCoreObject.graphql';
 import ContainerMappingContent, { containerContentQuery } from '@components/common/containers/ContainerMappingContent';

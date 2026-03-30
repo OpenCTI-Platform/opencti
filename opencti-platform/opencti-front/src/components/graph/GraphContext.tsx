@@ -1,5 +1,5 @@
 import React, { ReactNode, useContext, createContext, useState, useEffect, useMemo, Dispatch, SetStateAction, MutableRefObject, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import * as graph2d from 'react-force-graph-2d';
 import * as graph3d from 'react-force-graph-3d';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../utils/ListParameters';

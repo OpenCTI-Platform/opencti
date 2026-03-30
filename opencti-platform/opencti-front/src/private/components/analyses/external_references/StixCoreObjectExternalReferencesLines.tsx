@@ -22,7 +22,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { includes } from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import DeleteDialog from '../../../../components/DeleteDialog';
