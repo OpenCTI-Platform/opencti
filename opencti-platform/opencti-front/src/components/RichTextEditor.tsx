@@ -694,18 +694,16 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   useEffect(() => {
     if (!editor || !onBlur) return;
-    const dom = editor.view.dom;
-    const handler = (e: FocusEvent) => onBlur(e, createEditorAdapter(editor));
-    dom.addEventListener('blur', handler);
-    return () => dom.removeEventListener('blur', handler);
+    const handler = ({ event }: { event: FocusEvent }) => onBlur(event, createEditorAdapter(editor));
+    editor.on('blur', handler);
+    return () => { editor.off('blur', handler); };
   }, [editor, onBlur]);
 
   useEffect(() => {
     if (!editor || !onFocus) return;
-    const dom = editor.view.dom;
-    const handler = (e: FocusEvent) => onFocus(e);
-    dom.addEventListener('focus', handler);
-    return () => dom.removeEventListener('focus', handler);
+    const handler = ({ event }: { event: FocusEvent }) => onFocus(event);
+    editor.on('focus', handler);
+    return () => { editor.off('focus', handler); };
   }, [editor, onFocus]);
 
   if (!editor) {
