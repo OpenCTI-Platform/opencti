@@ -10,7 +10,7 @@ describe('getCurrentTab', () => {
     expect(value).toBe('knowledge');
   });
 
-  it('returns an empty string when fullpath equals basepath', () => {
+  it('returns false when fullpath equals basepath', () => {
     const value = getCurrentTab(
       '/dashboard/techniques/attack_patterns/965f2989-6acb-4223-a163-89a99411c15c',
       '/dashboard/techniques/attack_patterns/965f2989-6acb-4223-a163-89a99411c15c',

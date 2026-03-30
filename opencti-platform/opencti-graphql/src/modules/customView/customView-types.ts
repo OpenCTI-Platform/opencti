@@ -9,14 +9,18 @@ export const ENTITY_TYPE_CUSTOM_VIEW = 'CustomView';
 export interface BasicStoreEntityCustomView extends BasicStoreEntity {
   name: string;
   description: string;
+  path: string;
   manifest: string;
+  target_entity_type: string;
   restricted_members: Array<AuthorizedMember>;
 }
 
 export interface StoreEntityCustomView extends StoreEntity {
   name: string;
   description: string;
+  path: string;
   manifest: string;
+  target_entity_type: string;
   restricted_members: Array<AuthorizedMember>;
 }
 // endregion
@@ -25,7 +29,9 @@ export interface StoreEntityCustomView extends StoreEntity {
 export interface StixCustomView extends StixObject {
   name: string;
   description: string;
+  path: string;
   manifest: string;
+  target_entity_type: string;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

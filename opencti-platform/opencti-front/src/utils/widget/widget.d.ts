@@ -1,4 +1,5 @@
-import { FilterGroup } from '../filters/filtersHelpers-types';
+import type { DashboardConfig } from '../dashboard';
+import type { FilterGroup } from '../filters/filtersHelpers-types';
 
 export type WidgetContext = 'workspace' | 'fintelTemplate';
 
@@ -63,3 +64,5 @@ export interface Widget {
 interface PirWidgetDataSelection extends WidgetDataSelection {
   pirId: string;
 }
+
+export type WidgetVizConfig = DashboardConfig;

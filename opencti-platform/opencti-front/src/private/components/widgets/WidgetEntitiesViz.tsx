@@ -15,7 +15,7 @@ import StixCoreObjectsRadar from '@components/common/stix_core_objects/StixCoreO
 import StixCoreObjectsMultiHeatMap from '@components/common/stix_core_objects/StixCoreObjectsMultiHeatMap';
 import StixCoreObjectsTreeMap from '@components/common/stix_core_objects/StixCoreObjectsTreeMap';
 import StixCoreObjectsWordCloud from '@components/common/stix_core_objects/StixCoreObjectsWordCloud';
-import type { Widget } from '../../../utils/widget/widget';
+import type { Widget, WidgetVizConfig } from '../../../utils/widget/widget';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../utils/Time';
 import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 import { Box } from '@mui/material';
@@ -23,11 +23,7 @@ import { Box } from '@mui/material';
 interface WidgetEntitiesVizProps {
   widget: Widget;
   popover?: ReactNode;
-  config: {
-    relativeDate: string | undefined;
-    startDate: string;
-    endDate: string;
-  };
+  config: WidgetVizConfig;
 }
 
 const WidgetEntitiesViz = ({

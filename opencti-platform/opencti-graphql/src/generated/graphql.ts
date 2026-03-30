@@ -6444,7 +6444,26 @@ export type CustomView = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
+  target_entity_type: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
+};
+
+export type CustomViewDisplay = {
+  __typename?: 'CustomViewDisplay';
+  manifest?: Maybe<Scalars['String']['output']>;
+};
+
+export type CustomViewDisplayContext = {
+  __typename?: 'CustomViewDisplayContext';
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  path: Scalars['String']['output'];
+};
+
+export type CustomViewsDisplayContext = {
+  __typename?: 'CustomViewsDisplayContext';
+  custom_views_info: Array<CustomViewDisplayContext>;
+  entity_type: Scalars['String']['output'];
 };
 
 export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
@@ -24042,6 +24061,8 @@ export type Query = {
   /** @deprecated [>=6.4 & <6.7]. Use `csvMapperTest mutation`. */
   csvMapperTest?: Maybe<CsvMapperTestResult>;
   csvMappers?: Maybe<CsvMapperConnection>;
+  customViewDisplay?: Maybe<CustomViewDisplay>;
+  customViewsDisplayContext: Array<CustomViewsDisplayContext>;
   dataComponent?: Maybe<DataComponent>;
   dataComponents?: Maybe<DataComponentConnection>;
   dataSource?: Maybe<DataSource>;
@@ -24827,6 +24848,11 @@ export type QueryCsvMappersArgs = {
   orderBy?: InputMaybe<CsvMapperOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryCustomViewDisplayArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -38912,6 +38938,9 @@ export type ResolversTypes = ResolversObject<{
   CsvMapperTestResult: ResolverTypeWrapper<CsvMapperTestResult>;
   CurrentConnectorStatusInput: CurrentConnectorStatusInput;
   CustomView: ResolverTypeWrapper<BasicStoreEntityCustomView>;
+  CustomViewDisplay: ResolverTypeWrapper<CustomViewDisplay>;
+  CustomViewDisplayContext: ResolverTypeWrapper<CustomViewDisplayContext>;
+  CustomViewsDisplayContext: ResolverTypeWrapper<CustomViewsDisplayContext>;
   DataComponent: ResolverTypeWrapper<BasicStoreEntityDataComponent>;
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: ResolverTypeWrapper<Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['DataComponentEdge']>>> }>;
@@ -39986,6 +40015,9 @@ export type ResolversParentTypes = ResolversObject<{
   CsvMapperTestResult: CsvMapperTestResult;
   CurrentConnectorStatusInput: CurrentConnectorStatusInput;
   CustomView: BasicStoreEntityCustomView;
+  CustomViewDisplay: CustomViewDisplay;
+  CustomViewDisplayContext: CustomViewDisplayContext;
+  CustomViewsDisplayContext: CustomViewsDisplayContext;
   DataComponent: BasicStoreEntityDataComponent;
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['DataComponentEdge']>>> };
@@ -42841,8 +42873,24 @@ export type CustomViewResolvers<ContextType = any, ParentType extends ResolversP
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  target_entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CustomViewDisplayResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomViewDisplay'] = ResolversParentTypes['CustomViewDisplay']> = ResolversObject<{
+  manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type CustomViewDisplayContextResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomViewDisplayContext'] = ResolversParentTypes['CustomViewDisplayContext']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type CustomViewsDisplayContextResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomViewsDisplayContext'] = ResolversParentTypes['CustomViewsDisplayContext']> = ResolversObject<{
+  custom_views_info?: Resolver<Array<ResolversTypes['CustomViewDisplayContext']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type DataComponentResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataComponent'] = ResolversParentTypes['DataComponent']> = ResolversObject<{
@@ -48288,6 +48336,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   csvMapperSchemaAttributes?: Resolver<Array<ResolversTypes['CsvMapperSchemaAttributes']>, ParentType, ContextType>;
   csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<QueryCsvMapperTestArgs, 'configuration' | 'content'>>;
   csvMappers?: Resolver<Maybe<ResolversTypes['CsvMapperConnection']>, ParentType, ContextType, Partial<QueryCsvMappersArgs>>;
+  customViewDisplay?: Resolver<Maybe<ResolversTypes['CustomViewDisplay']>, ParentType, ContextType, RequireFields<QueryCustomViewDisplayArgs, 'id'>>;
+  customViewsDisplayContext?: Resolver<Array<ResolversTypes['CustomViewsDisplayContext']>, ParentType, ContextType>;
   dataComponent?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<QueryDataComponentArgs, 'id'>>;
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType, Partial<QueryDataComponentsArgs>>;
   dataSource?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<QueryDataSourceArgs, 'id'>>;
@@ -52177,6 +52227,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CsvMapperSchemaAttributes?: CsvMapperSchemaAttributesResolvers<ContextType>;
   CsvMapperTestResult?: CsvMapperTestResultResolvers<ContextType>;
   CustomView?: CustomViewResolvers<ContextType>;
+  CustomViewDisplay?: CustomViewDisplayResolvers<ContextType>;
+  CustomViewDisplayContext?: CustomViewDisplayContextResolvers<ContextType>;
+  CustomViewsDisplayContext?: CustomViewsDisplayContextResolvers<ContextType>;
   DataComponent?: DataComponentResolvers<ContextType>;
   DataComponentConnection?: DataComponentConnectionResolvers<ContextType>;
   DataComponentEdge?: DataComponentEdgeResolvers<ContextType>;

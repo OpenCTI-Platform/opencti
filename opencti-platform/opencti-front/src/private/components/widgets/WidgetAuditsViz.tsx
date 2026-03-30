@@ -14,17 +14,13 @@ import AuditsMultiHeatMap from '@components/common/audits/AuditsMultiHeatMap';
 import AuditsTreeMap from '@components/common/audits/AuditsTreeMap';
 import AuditsWordCloud from '@components/common/audits/AuditsWordCloud';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../utils/Time';
-import type { Widget } from '../../../utils/widget/widget';
+import type { Widget, WidgetVizConfig } from '../../../utils/widget/widget';
 import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 
 interface WidgetAuditsVizProps {
   widget: Widget;
   popover?: ReactNode;
-  config: {
-    relativeDate: string | undefined;
-    startDate: string;
-    endDate: string;
-  };
+  config: WidgetVizConfig;
 }
 
 const WidgetAuditsViz = ({

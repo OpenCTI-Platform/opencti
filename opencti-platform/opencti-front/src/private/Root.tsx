@@ -291,6 +291,14 @@ const rootPrivateQuery = graphql`
         }
       }
     }
+    customViewsDisplayContext {
+      entity_type
+      custom_views_info {
+        id
+        name
+        path
+      }
+    }
     schemaSCOs: subTypes(type: "Stix-Cyber-Observable") {
       edges {
         node {
@@ -420,6 +428,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
     me: meFragment,
     settings: settingsFragment,
     entitySettings,
+    customViewsDisplayContext: customViews,
     schemaSCOs,
     schemaSDOs,
     schemaSMOs,
@@ -486,6 +495,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
       value={{
         me,
         settings,
+        customViews,
         bannerSettings,
         entitySettings,
         platformModuleHelpers,

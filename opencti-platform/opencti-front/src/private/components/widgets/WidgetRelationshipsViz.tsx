@@ -17,17 +17,13 @@ import StixRelationshipsTreeMap from '@components/common/stix_relationships/Stix
 import StixRelationshipsMap from '@components/common/stix_relationships/StixRelationshipsMap';
 import StixRelationshipsWordCloud from '@components/common/stix_relationships/StixRelationshipsWordCloud';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../utils/Time';
-import type { Widget, WidgetDataSelection } from '../../../utils/widget/widget';
+import type { Widget, WidgetDataSelection, WidgetVizConfig } from '../../../utils/widget/widget';
 import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../utils/filters/filtersUtils';
 
 interface WidgetRelationshipsVizProps {
   widget: Widget;
   popover?: ReactNode;
-  config: {
-    relativeDate: string | undefined;
-    startDate: string;
-    endDate: string;
-  };
+  config: WidgetVizConfig;
 }
 
 const WidgetRelationshipsViz = ({

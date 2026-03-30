@@ -1,19 +1,31 @@
 import { ReactElement, ReactNode } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import StixDomainObjectTabsBox, { type StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
+import RootCustomView from '@components/custom_views/Root';
+import { useCustomViews } from '@components/custom_views/useCustomViews';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 interface StixDomainObjectMainProps {
+  entityType: string;
   basePath: string;
   pages: Partial<Record<StixDomainObjectTabsBoxTab, ReactNode>>;
   extraActions?: ReactNode;
   extraRoutes?: ReactElement<typeof Route> | ReactElement<typeof Route>[];
 }
 
-const StixDomainObjectMain = ({ basePath, extraActions, pages, extraRoutes }: StixDomainObjectMainProps) => {
+const StixDomainObjectMain = ({
+  entityType,
+  basePath,
+  extraActions,
+  pages,
+  extraRoutes,
+}: StixDomainObjectMainProps) => {
   const tabs = Object.keys(pages) as StixDomainObjectTabsBoxTab[];
+  const { customViews } = useCustomViews(entityType);
   return (
     <>
       <StixDomainObjectTabsBox
+        entityType={entityType}
         basePath={basePath}
         tabs={tabs}
         extraActions={extraActions}
@@ -46,7 +58,13 @@ const StixDomainObjectMain = ({ basePath, extraActions, pages, extraRoutes }: St
         {tabs.includes('history') && (
           <Route path="/history" element={pages.history} />
         )}
+        {
+          customViews.map(({ path, id }) => (
+            <Route key={path} path={path} element={<RootCustomView customViewId={id} />} />
+          ))
+        }
         {extraRoutes}
+        <Route path="*" element={<ErrorNotFound />} />
       </Routes>
     </>
   );

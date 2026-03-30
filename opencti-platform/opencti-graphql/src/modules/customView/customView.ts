@@ -20,9 +20,17 @@ export const CUSTOM_VIEW_DEFINITION: ModuleDefinition<StoreEntityCustomView, Sti
     },
   },
   attributes: [
+    /** Display name to render in UI **/
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    /** Description for admin **/
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    /** Relative path used in the URL, concatenation of a slug of the name and the id, no leading slash **/
+    { name: 'path', label: 'Path', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: true, multiple: false, upsert: false, isFilterable: false },
+    /** Serialized content : layout and widgets **/
     { name: 'manifest', label: 'Manifest', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    /** The entity type for which this custom view applies **/
+    { name: 'target_entity_type', label: 'Target entity type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    /** Access restriction management **/
     authorizedMembers,
   ],
   relations: [],

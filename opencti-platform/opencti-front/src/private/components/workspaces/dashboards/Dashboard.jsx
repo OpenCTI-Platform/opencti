@@ -3,10 +3,6 @@ import * as R from 'ramda';
 import { graphql, useFragment } from 'react-relay';
 import ReactGridLayout, { useContainerWidth } from 'react-grid-layout';
 import { v4 as uuid } from 'uuid';
-import WidgetRawViz from '../../widgets/WidgetRawViz';
-import WidgetRelationshipsViz from '../../widgets/WidgetRelationshipsViz';
-import WidgetAuditsViz from '../../widgets/WidgetAuditsViz';
-import WidgetEntitiesViz from '../../widgets/WidgetEntitiesViz';
 import DashboardTimeFilters from './DashboardTimeFilters';
 import WorkspaceHeader from '../workspaceHeader/WorkspaceHeader';
 import { commitMutation, handleError } from '../../../../relay/environment';
@@ -14,11 +10,11 @@ import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import useGranted, { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import WorkspaceWidgetPopover from './WorkspaceWidgetPopover';
 import { fromB64, toB64 } from '../../../../utils/String';
-import { ErrorBoundary } from '../../Error';
 import { deserializeDashboardManifestForFrontend, serializeDashboardManifestForBackend } from '../../../../utils/filters/filtersUtils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { Stack, Box } from '@mui/material';
 import { useTheme } from '@mui/styles';
+import WidgetViz from '@components/widgets/WidgetViz';
 
 const dashboardLayoutMutation = graphql`
   mutation DashboardLayoutMutation($id: ID!, $input: [EditInput!]!) {
@@ -322,39 +318,13 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
                 display: 'relative',
               }}
             >
-              <ErrorBoundary>
-                {widget.id === idToResize ? <div /> : (
-                  <>
-                    {widget.perspective === 'entities' && (
-                      <WidgetEntitiesViz
-                        widget={widget}
-                        config={manifest.config}
-                        popover={popover}
-                      />
-                    )}
-                    {widget.perspective === 'relationships' && (
-                      <WidgetRelationshipsViz
-                        widget={widget}
-                        config={manifest.config}
-                        popover={popover}
-                      />
-                    )}
-                    {widget.perspective === 'audits' && (
-                      <WidgetAuditsViz
-                        widget={widget}
-                        config={manifest.config}
-                        popover={popover}
-                      />
-                    )}
-                    {widget.perspective === null && (
-                      <WidgetRawViz
-                        widget={widget}
-                        popover={popover}
-                      />
-                    )}
-                  </>
-                )}
-              </ErrorBoundary>
+              {widget.id === idToResize ? <div /> : (
+                <WidgetViz
+                  widget={widget}
+                  config={manifest.config}
+                  popover={popover}
+                />
+              )}
             </div>
           );
         })}
