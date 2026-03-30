@@ -428,9 +428,44 @@ export const buildEntityTypes = (
 export const convertFormBuilderDataToSchema = (
   values: FormBuilderData,
 ): FormSchemaDefinition => {
+  const hasNonEmptyString = (value?: string) => (value || '').trim().length > 0;
+  const hasNonEmptyArray = <T, >(value?: T[]) => Array.isArray(value) && value.length > 0;
+
   const normalizedDraftDefaults = values.draftDefaults
     ? {
       ...values.draftDefaults,
+      name: values.draftDefaults.name
+        ? {
+          enabled: hasNonEmptyString(values.draftDefaults.name.defaultValue),
+          isEditable: values.draftDefaults.name.isEditable ?? false,
+          isRequired: values.draftDefaults.name.isRequired ?? false,
+          defaultValue: values.draftDefaults.name.defaultValue ?? '',
+        }
+        : undefined,
+      description: values.draftDefaults.description
+        ? {
+          enabled: hasNonEmptyString(values.draftDefaults.description.defaultValue),
+          isEditable: values.draftDefaults.description.isEditable ?? false,
+          isRequired: values.draftDefaults.description.isRequired ?? false,
+          defaultValue: values.draftDefaults.description.defaultValue ?? '',
+        }
+        : undefined,
+      objectAssignee: values.draftDefaults.objectAssignee
+        ? {
+          enabled: hasNonEmptyArray(values.draftDefaults.objectAssignee.defaults),
+          isEditable: values.draftDefaults.objectAssignee.isEditable ?? false,
+          isRequired: values.draftDefaults.objectAssignee.isRequired ?? false,
+          defaults: values.draftDefaults.objectAssignee.defaults ?? [],
+        }
+        : undefined,
+      objectParticipant: values.draftDefaults.objectParticipant
+        ? {
+          enabled: hasNonEmptyArray(values.draftDefaults.objectParticipant.defaults),
+          isEditable: values.draftDefaults.objectParticipant.isEditable ?? false,
+          isRequired: values.draftDefaults.objectParticipant.isRequired ?? false,
+          defaults: values.draftDefaults.objectParticipant.defaults ?? [],
+        }
+        : undefined,
       author: values.draftDefaults.author
         ? {
           type: values.draftDefaults.author.type,

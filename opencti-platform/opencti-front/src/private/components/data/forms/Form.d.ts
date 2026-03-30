@@ -2,6 +2,8 @@
  * Type definitions for Form components
  */
 
+import { FieldOption } from '../../../../utils/field';
+
 // Field type definitions
 export interface FormFieldAttribute {
   id: string;
@@ -58,6 +60,30 @@ export interface FormBuilderData {
   isDraftByDefault: boolean; // Whether forms should be created as draft by default
   allowDraftOverride: boolean; // Whether users can override the draft setting
   draftDefaults?: {
+    name?: {
+      enabled: boolean;
+      isEditable: boolean;
+      isRequired: boolean;
+      defaultValue?: string;
+    };
+    description?: {
+      enabled: boolean;
+      isEditable: boolean;
+      isRequired: boolean;
+      defaultValue?: string;
+    };
+    objectAssignee?: {
+      enabled: boolean;
+      isEditable: boolean;
+      isRequired: boolean;
+      defaults: FieldOption[];
+    };
+    objectParticipant?: {
+      enabled: boolean;
+      isEditable: boolean;
+      isRequired: boolean;
+      defaults: FieldOption[];
+    };
     author?: {
       type: 'none' | 'current_user' | 'main_entity_author';
       isEditable: boolean;
@@ -109,6 +135,30 @@ export interface FormSchemaDefinition {
   isDraftByDefault?: boolean; // Whether forms should be created as draft by default
   allowDraftOverride?: boolean; // Whether users can override the draft setting
   draftDefaults?: {
+    name?: {
+      enabled: boolean;
+      isEditable: boolean;
+      isRequired: boolean;
+      defaultValue?: string;
+    };
+    description?: {
+      enabled: boolean;
+      isEditable: boolean;
+      isRequired: boolean;
+      defaultValue?: string;
+    };
+    objectAssignee?: {
+      enabled: boolean;
+      isEditable: boolean;
+      isRequired: boolean;
+      defaults: FieldOption[];
+    };
+    objectParticipant?: {
+      enabled: boolean;
+      isEditable: boolean;
+      isRequired: boolean;
+      defaults: FieldOption[];
+    };
     author?: {
       type: 'none' | 'current_user' | 'main_entity_author';
       isEditable: boolean;

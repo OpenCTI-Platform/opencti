@@ -666,6 +666,24 @@ export const formatFormDataForSubmission = (
   }
 
   // Handle draft fields
+  if (Object.prototype.hasOwnProperty.call(values, 'draftName') && typeof values.draftName === 'string') {
+    formattedData.draftName = values.draftName.trim();
+  }
+
+  if (Object.prototype.hasOwnProperty.call(values, 'draftDescription') && typeof values.draftDescription === 'string') {
+    formattedData.draftDescription = values.draftDescription.trim();
+  }
+
+  if (Object.prototype.hasOwnProperty.call(values, 'draftObjectAssignee') && Array.isArray(values.draftObjectAssignee)) {
+    const draftObjectAssignee = values.draftObjectAssignee as any[];
+    formattedData.draftObjectAssignee = draftObjectAssignee;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(values, 'draftObjectParticipant') && Array.isArray(values.draftObjectParticipant)) {
+    const draftObjectParticipant = values.draftObjectParticipant as any[];
+    formattedData.draftObjectParticipant = draftObjectParticipant;
+  }
+
   if (values.draftAuthor) {
     const selectedDraftAuthor = values.draftAuthor as { value: string };
     if (selectedDraftAuthor && selectedDraftAuthor.value) {
