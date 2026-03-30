@@ -4626,6 +4626,7 @@
   "User responsible for data creation": "Пользователь, ответственный за создание данных",
   "User responsible for data creation (empty = System)": "Пользователь, ответственный за создание данных (пусто = Система)",
   "User to send test email to": "Пользователь, которому нужно отправить тестовое письмо",
+  "User used to retrieve data": "Пользователь, используемый для получения данных",
   "User_id": "User_id",
   "user_id": "идентификатор пользователя",
   "Username": "Имя пользователя",

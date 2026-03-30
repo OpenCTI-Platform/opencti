@@ -4626,6 +4626,7 @@
   "User responsible for data creation": "Usuario responsable de la creación de datos",
   "User responsible for data creation (empty = System)": "Usuario responsable de la creación de datos (vacío = System)",
   "User to send test email to": "Usuario al que enviar el correo de prueba",
+  "User used to retrieve data": "Usuario utilizado para recuperar los datos",
   "User_id": "User",
   "user_id": "Usuario",
   "Username": "Nombre de usuario",

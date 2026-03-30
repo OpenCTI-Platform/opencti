@@ -4626,6 +4626,7 @@
   "User responsible for data creation": "负责创建数据的用户",
   "User responsible for data creation (empty = System)": "负责数据创建的用户（空 = System）",
   "User to send test email to": "向用户发送测试电子邮件",
+  "User used to retrieve data": "用于检索数据的用户",
   "User_id": "用户",
   "user_id": "用户",
   "Username": "用户名",
