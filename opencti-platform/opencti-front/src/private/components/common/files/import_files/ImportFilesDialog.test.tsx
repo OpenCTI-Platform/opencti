@@ -70,20 +70,26 @@ vi.mock('@components/common/files/import_files/ImportFilesContext', () => ({
 }));
 
 // ---------------------------------------------------------------------------
-// react-relay – stub usePreloadedQuery while keeping all real exports.
-// We use vi.importActual to avoid dropping exports like createFragmentContainer
-// (which AppIntlProvider.tsx calls at module-load time).
+// useImportFilesData – mock the thin wrapper around usePreloadedQuery so we
+// never need to mock 'react-relay' directly (which causes worker-startup
+// hangs via vite-plugin-relay intercepting the module in Vitest's forks pool).
 // ---------------------------------------------------------------------------
-vi.mock('react-relay', async () => {
-  const actual = await vi.importActual<typeof import('react-relay')>('react-relay');
-  return {
-    ...actual,
-    usePreloadedQuery: vi.fn().mockReturnValue({
-      stixCoreObject: null,
-      connectorsForImport: [],
-    }),
-  };
-});
+vi.mock('./useImportFilesData', () => ({
+  default: vi.fn().mockReturnValue({
+    stixCoreObject: null,
+    connectorsForImport: [],
+  }),
+}));
+
+// ---------------------------------------------------------------------------
+// DraftCreation – prevent loading its heavy field-component imports
+// (ObjectAssigneeField → StixDomainObjectDetectDuplicate →
+//  StixDomainObjectsLines → createPaginationContainer from react-relay).
+// ---------------------------------------------------------------------------
+vi.mock('@components/drafts/DraftCreation', () => ({
+  draftCreationMutation: {},
+  DRAFTWORKSPACE_TYPE: 'DraftWorkspace',
+}));
 
 // ---------------------------------------------------------------------------
 // useApiMutation – identify the draft-creation call via its errorMessage option

@@ -1,4 +1,4 @@
-import { ImportFilesProvider, importFilesQuery, InitialValues, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
+import { ImportFilesProvider, InitialValues, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import ImportFilesOptions from '@components/common/files/import_files/ImportFilesOptions';
 import ImportFilesStepper from '@components/common/files/import_files/ImportFilesStepper';
 import ImportFilesUploadProgress from '@components/common/files/import_files/ImportFilesUploadProgress';
@@ -8,7 +8,7 @@ import ImportFilesFormView from '@components/common/files/import_files/ImportFil
 import { DraftAddInput, draftCreationMutation, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import { DraftCreationMutation } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
 import ImportFilesUploader from '@components/common/files/import_files/ImportFilesUploader';
-import { ImportFilesContextQuery } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
+import useImportFilesData from './useImportFilesData';
 import {
   ImportFilesDialogEntityMutation,
   ImportFilesDialogEntityMutation$variables,
@@ -23,7 +23,7 @@ import { Box, DialogActions } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { FormikConfig, FormikErrors, useFormik } from 'formik';
 import { useMemo, useState } from 'react';
-import { graphql, UseMutationConfig, usePreloadedQuery } from 'react-relay';
+import { graphql, UseMutationConfig } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { Theme } from '../../../../../components/Theme';
 import { THEME_DARK_DIALOG_BACKGROUND } from '../../../../../components/ThemeDark';
@@ -149,10 +149,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   } = useImportFilesContext();
 
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string; status?: 'success' | 'error' }[]>([]);
-  const { stixCoreObject: entity, connectorsForImport } = usePreloadedQuery<ImportFilesContextQuery>(
-    importFilesQuery,
-    queryRef,
-  );
+  const { stixCoreObject: entity, connectorsForImport } = useImportFilesData(queryRef);
 
   const successMessage = t_i18n('Files successfully uploaded');
   const [commitGlobal] = useApiMutation<ImportFilesDialogGlobalMutation>(
