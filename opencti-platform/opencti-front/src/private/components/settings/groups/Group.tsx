@@ -211,33 +211,28 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   {t_i18n('Default dashboard')}
                 </Label>
                 <FieldOrEmpty source={group.default_dashboard}>
-                  <List>
-                    <ListItem
-                      dense={true}
-                      divider={true}
-                      secondaryAction={!canAccessDashboard && (
-                        <Tooltip
-                          title={t_i18n(
-                            'You need to authorize this group to access this dashboard in the permissions of the workspace.',
-                          )}
-                        >
-                          <WarningOutlined color="warning" />
-                        </Tooltip>
-                      )}
-                    >
-                      <ListItemButton
-                        component={Link}
-                        to={`/dashboard/workspaces/dashboards/${group.default_dashboard?.id}`}
+                  <ListItemButton
+                    component={Link}
+                    dense
+                    divider
+                    to={`/dashboard/workspaces/dashboards/${group.default_dashboard?.id}`}
+                  >
+                    <ListItemIcon>
+                      <ItemIcon type="Dashboard" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={truncate(group.default_dashboard?.name, 40)}
+                    />
+                    {!canAccessDashboard && (
+                      <Tooltip
+                        title={t_i18n(
+                          'You need to authorize this group to access this dashboard in the permissions of the workspace.',
+                        )}
                       >
-                        <ListItemIcon>
-                          <ItemIcon type="Dashboard" />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={truncate(group.default_dashboard?.name, 40)}
-                        />
-                      </ListItemButton>
-                    </ListItem>
-                  </List>
+                        <WarningOutlined color="warning" />
+                      </Tooltip>
+                    )}
+                  </ListItemButton>
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={12}>
