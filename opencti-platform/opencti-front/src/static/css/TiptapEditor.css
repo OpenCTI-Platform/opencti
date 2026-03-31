@@ -31,20 +31,32 @@
 }
 
 .rich-text-editor-wrapper .ProseMirror pre {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-  padding: 0.75em 1em;
+  padding: 1em;
+  color: #353535;
+  background: rgba(199, 199, 199, 0.3);
+  border: 1px solid hsl(0, 0%, 77%);
+  border-radius: 2px;
+  text-align: left;
+  direction: ltr;
+  tab-size: 4;
+  white-space: pre-wrap;
+  font-style: normal;
+  min-width: 200px;
   overflow-x: auto;
 }
 
 html[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre,
 body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
+  color: inherit;
   background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(196,196,196);
 }
 
 .rich-text-editor-wrapper .ProseMirror code {
   font-family: monospace;
   font-size: 0.9em;
+  padding: .15em;
+  border-radius: 2px;
 }
 
 .rich-text-editor-wrapper .ProseMirror ul,
@@ -232,6 +244,13 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror .selectedCell::af
   height: auto;
 }
 
+.rich-text-editor-wrapper .ProseMirror hr {
+  margin: 15px 0;
+  height: 4px;
+  background: #dedede;
+  border: 0;
+}
+
 .rich-text-editor-wrapper .ProseMirror a {
   color: #00b1ff;
   text-decoration: none;
@@ -354,6 +373,33 @@ body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
   border-left: solid 5px hsl(0, 0%, 80%);
 }
 
+.rich-text-content pre {
+  padding: 1em;
+  color: #353535;
+  background: rgba(199, 199, 199, 0.3);
+  border: 1px solid hsl(0, 0%, 77%);
+  border-radius: 2px;
+  text-align: left;
+  direction: ltr;
+  tab-size: 4;
+  white-space: pre-wrap;
+  font-style: normal;
+  min-width: 200px;
+  overflow-x: auto;
+}
+
+html[data-theme="dark"] .rich-text-content pre,
+body[data-theme="dark"] .rich-text-content pre {
+  color: inherit;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(196,196,196);
+}
+
+.rich-text-content code {
+  padding: .15em;
+  border-radius: 2px;
+}
+
 .rich-text-content table {
   border-collapse: collapse;
   width: auto;
@@ -409,6 +455,13 @@ body[data-theme="dark"] .rich-text-content th {
 .rich-text-content img {
   max-width: 100%;
   height: auto;
+}
+
+.rich-text-content hr {
+  margin: 15px 0;
+  height: 4px;
+  background: #dedede;
+  border: 0;
 }
 
 .rich-text-content a {
