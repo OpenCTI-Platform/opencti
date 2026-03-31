@@ -44,28 +44,18 @@ const DataTableBody = ({
     hasMore,
   } = data ? { data } : useDataTable(dataQueryArgs); // data is from datatableWithoutFragment
 
-  const allData = useMemo(() => {
+  const resolvedData = useMemo(() => {
     if (!queryData) {
       return [];
     }
-    return resolvePath(queryData);
-  }, [queryData]);
-
-  const resolvedData = useMemo(() => {
-    return allData.slice(pageStart, pageStart + pageSize);
-  }, [allData, pageStart, pageSize]);
+    return resolvePath(queryData).slice(pageStart, pageStart + pageSize);
+  }, [queryData, pageStart, pageSize]);
 
   useEffect(() => {
-    if (isLoading) {
-      return;
+    if (resolvePath(queryData).length < pageStart + pageSize && hasMore?.()) {
+      loadMore?.(pageSize);
     }
-    const totalLoaded = allData.length;
-    const needed = pageStart + pageSize;
-    if (totalLoaded < needed && hasMore?.()) {
-      const itemsToLoad = Math.max(pageSize, needed - totalLoaded);
-      loadMore?.(itemsToLoad);
-    }
-  }, [allData.length, pageStart, pageSize, isLoading]);
+  }, [resolvedData]);
 
   const onToggleShiftEntity: DataTableLineProps['onToggleShiftEntity'] = (currentIndex, currentEntity, event) => {
     if (selectedElements && !R.isEmpty(selectedElements)) {
