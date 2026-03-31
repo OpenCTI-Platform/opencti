@@ -32,7 +32,6 @@ import CreatorField from '../../../common/form/CreatorField';
 import AuthorizedMembersField from '../../../common/form/AuthorizedMembersField';
 import ObjectAssigneeField from '../../../common/form/ObjectAssigneeField';
 import ObjectParticipantField from '../../../common/form/ObjectParticipantField';
-import { AuthorizedMemberOption } from '../../../../../utils/authorizedMembers';
 import { FieldOption } from '../../../../../utils/field';
 import useGranted, { BYPASS, INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
 import useAuth from '../../../../../utils/hooks/useAuth';

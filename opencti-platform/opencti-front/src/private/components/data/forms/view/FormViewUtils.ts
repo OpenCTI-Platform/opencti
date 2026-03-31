@@ -675,12 +675,12 @@ export const formatFormDataForSubmission = (
   }
 
   if (Object.prototype.hasOwnProperty.call(values, 'draftObjectAssignee') && Array.isArray(values.draftObjectAssignee)) {
-    const draftObjectAssignee = values.draftObjectAssignee as any[];
+    const draftObjectAssignee = values.draftObjectAssignee as { value: string }[];
     formattedData.draftObjectAssignee = draftObjectAssignee;
   }
 
   if (Object.prototype.hasOwnProperty.call(values, 'draftObjectParticipant') && Array.isArray(values.draftObjectParticipant)) {
-    const draftObjectParticipant = values.draftObjectParticipant as any[];
+    const draftObjectParticipant = values.draftObjectParticipant as { value: string }[];
     formattedData.draftObjectParticipant = draftObjectParticipant;
   }
 
@@ -692,7 +692,7 @@ export const formatFormDataForSubmission = (
   }
 
   if (values.draftAuthorizedMembers) {
-    const members = values.draftAuthorizedMembers as any[];
+    const members = values.draftAuthorizedMembers as { value: string }[];
     if (members && members.length > 0) {
       // Pass the full member objects to support access rights and group restrictions
       formattedData.draftAuthorizedMembers = members;
