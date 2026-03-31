@@ -35,6 +35,7 @@ import {
   getAttributesForEntityType as getAttributesUtil,
   getAvailableFieldTypes,
   getInitialMandatoryFields,
+  normalizeDraftAuthorizedMembersDefaults,
   CONTAINER_TYPES,
   FIELD_TYPES,
 } from './FormUtils';
@@ -42,7 +43,6 @@ import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
 import type { FormFieldAttribute, AdditionalEntity, EntityRelationship, FormBuilderData, RelationshipTypeOption } from './Form.d';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
 import { FieldOption } from '../../../../utils/field';
 
 const DraftAuthorizedMembersSync = ({ onChange }: { onChange: (vals: AuthorizedMemberOption[]) => void }) => {
@@ -67,36 +67,6 @@ const DraftObjectParticipantsSync = ({ onChange }: { onChange: (vals: FieldOptio
     onChange(values.objectParticipant);
   }, [values.objectParticipant, onChange]);
   return null;
-};
-
-// Map old manual formats to standard AuthorizedMemberOption shapes
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const migrateAuthorizedMembers = (defaults: any[], t: (key: string) => string): AuthorizedMemberOption[] => {
-  return defaults.map((r) => {
-    if (r.type === 'CREATOR') {
-      return {
-        label: t('Creators'),
-        value: 'CREATORS',
-        type: t('Dynamic options'),
-        accessRight: 'admin',
-        groupsRestriction: [],
-      };
-    }
-    if (r.type === 'AUTHOR_ORG') {
-      const groups = r.intersectionGroup ? [{ label: r.intersectionGroup, value: r.intersectionGroup }] : [];
-      return {
-        label: t('Author (organization)'),
-        value: 'AUTHOR',
-        type: t('Dynamic options'),
-        accessRight: 'admin',
-        groupsRestriction: groups,
-      };
-    }
-    return {
-      ...r,
-      groupsRestriction: r.groupsRestriction || [],
-    };
-  });
 };
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -1924,7 +1894,14 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
                   <Formik
                     initialValues={{
-                      authorized_members: migrateAuthorizedMembers(formData.draftDefaults?.authorizedMembers?.defaults || [], t_i18n),
+                      authorized_members: normalizeDraftAuthorizedMembersDefaults(
+                        formData.draftDefaults?.authorizedMembers?.defaults || [],
+                        {
+                          creatorsLabel: t_i18n('Creators'),
+                          authorOrgLabel: t_i18n('Author (organization)'),
+                          dynamicOptionsLabel: t_i18n('Dynamic options'),
+                        },
+                      ),
                     }}
                     onSubmit={() => {}}
                     enableReinitialize

@@ -13,7 +13,7 @@ import type { Theme } from '../../../../components/Theme';
 import FormSchemaEditor from './FormSchemaEditor';
 import { formCreationQuery } from './FormCreation';
 import type { FormBuilderData, FormFieldAttribute } from './Form.d';
-import { convertFormBuilderDataToSchema } from './FormUtils';
+import { convertFormBuilderDataToSchema, normalizeDraftAuthorizedMembersDefaults } from './FormUtils';
 import Loader from '../../../../components/Loader';
 import { useTheme } from '@mui/styles';
 
@@ -122,7 +122,17 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
         includeInContainer: schema.includeInContainer || false,
         isDraftByDefault: schema.isDraftByDefault || false,
         allowDraftOverride: schema.allowDraftOverride || false,
-        draftDefaults: schema.draftDefaults || undefined,
+        draftDefaults: schema.draftDefaults
+          ? {
+              ...schema.draftDefaults,
+              authorizedMembers: schema.draftDefaults.authorizedMembers
+                ? {
+                    ...schema.draftDefaults.authorizedMembers,
+                    defaults: normalizeDraftAuthorizedMembersDefaults(schema.draftDefaults.authorizedMembers.defaults || []),
+                  }
+                : undefined,
+            }
+          : undefined,
         mainEntityMultiple: schema.mainEntityMultiple || false,
         mainEntityLookup: schema.mainEntityLookup || false,
         mainEntityFieldMode: schema.mainEntityFieldMode || 'multiple',

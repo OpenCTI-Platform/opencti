@@ -15,7 +15,7 @@ import { commitMutation, handleError } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { FormAddInput, FormBuilderData, FormFieldAttribute } from './Form.d';
 import FormSchemaEditor from './FormSchemaEditor';
-import { convertFormBuilderDataToSchema } from './FormUtils';
+import { convertFormBuilderDataToSchema, normalizeDraftAuthorizedMembersDefaults } from './FormUtils';
 
 const formCreationMutation = graphql`
   mutation FormCreationMutation($input: FormAddInput!) {
@@ -81,7 +81,17 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
           includeInContainer: schema.includeInContainer || false,
           isDraftByDefault: schema.isDraftByDefault || false,
           allowDraftOverride: schema.allowDraftOverride || false,
-          draftDefaults: schema.draftDefaults || undefined,
+          draftDefaults: schema.draftDefaults
+            ? {
+                ...schema.draftDefaults,
+                authorizedMembers: schema.draftDefaults.authorizedMembers
+                  ? {
+                      ...schema.draftDefaults.authorizedMembers,
+                      defaults: normalizeDraftAuthorizedMembersDefaults(schema.draftDefaults.authorizedMembers.defaults || []),
+                    }
+                  : undefined,
+              }
+            : undefined,
           mainEntityMultiple: schema.mainEntityMultiple || false,
           mainEntityLookup: schema.mainEntityLookup || false,
           mainEntityFieldMode: schema.mainEntityFieldMode || 'multiple',
