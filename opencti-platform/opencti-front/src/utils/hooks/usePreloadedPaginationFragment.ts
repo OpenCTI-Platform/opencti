@@ -1,5 +1,5 @@
 import { PreloadedQuery, usePaginationFragment, usePreloadedQuery } from 'react-relay';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { FragmentType, GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import { UseLocalStorageHelpers } from './useLocalStorage';
 import { numberFormat } from '../Number';
@@ -36,12 +36,29 @@ const usePreloadedPaginationFragment = <QueryType extends OperationType, Fragmen
     }
   }, [data]);
 
+  // Wrap loadNext to accept either a direct callback as second argument
+  // (used by ListLinesContent / ListCardsContent: loadMore(count, callback))
+  // or a Relay options object (used by DataTableBody: loadMore(count)).
+  // Relay's loadNext expects (count, { onComplete }), so without this
+  // wrapper a direct callback is silently dropped, leaving the loading
+  // state stale and preventing further pagination.
+  const loadMore = useCallback(
+    (count: number, callbackOrOptions?: (() => void) | { onComplete?: (err: Error | null) => void }) => {
+      if (typeof callbackOrOptions === 'function') {
+        loadNext(count, { onComplete: callbackOrOptions });
+      } else {
+        loadNext(count, callbackOrOptions);
+      }
+    },
+    [loadNext],
+  );
+
   return {
     data,
     hasMore: () => hasNext,
     isLoadingMore: () => isLoadingNext,
     isLoading: isLoadingNext,
-    loadMore: loadNext,
+    loadMore,
   };
 };
 
