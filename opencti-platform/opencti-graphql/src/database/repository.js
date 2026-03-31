@@ -99,6 +99,7 @@ export const computeManagerConnectorExcerpt = async (_context, _user, cn) => {
   return {
     title: contract.title,
     slug: contract.slug,
+    logo: contract.logo,
   };
 };
 

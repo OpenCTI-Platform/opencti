@@ -16213,6 +16213,7 @@ export type ManagerContractConfiguration = {
 
 export type ManagerContractExcerpt = {
   __typename?: 'ManagerContractExcerpt';
+  logo: Maybe<Scalars['String']['output']>;
   slug: Scalars['String']['output'];
   title: Scalars['String']['output'];
 };
@@ -46093,6 +46094,7 @@ export type ManagerContractConfigurationResolvers<ContextType = any, ParentType 
 }>;
 
 export type ManagerContractExcerptResolvers<ContextType = any, ParentType extends ResolversParentTypes['ManagerContractExcerpt'] = ResolversParentTypes['ManagerContractExcerpt']> = ResolversObject<{
+  logo?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
