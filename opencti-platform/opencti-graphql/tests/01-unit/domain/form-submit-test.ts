@@ -15,7 +15,17 @@ vi.mock('../../../src/database/middleware-loader', () => ({
   fullEntitiesList: vi.fn(),
   pageEntitiesConnection: vi.fn(),
 }));
+vi.mock('../../../src/database/middleware', () => ({
+  createEntity: vi.fn(),
+  deleteElementById: vi.fn(),
+  patchAttribute: vi.fn(),
+  updateAttribute: vi.fn(),
+}));
 vi.mock('../../../src/domain/work');
+vi.mock('../../../src/database/rabbitmq', () => ({
+  pushToWorkerForConnector: vi.fn(),
+  pushToConnector: vi.fn(),
+}));
 vi.mock('../../../src/manager/telemetryManager', () => ({
   addFormIntakeSubmittedCount: vi.fn().mockResolvedValue(undefined),
 }));
