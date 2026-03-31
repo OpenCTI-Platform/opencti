@@ -276,6 +276,10 @@ export const buildCsvLines = (elements: any[], feed: BasicStoreEntityFeed, neigh
   return lines;
 };
 
+export const resolveUserForFeed = async (context: AuthContext, feed: BasicStoreEntityFeed): Promise<AuthUser> => {
+  return context.user ?? resolvePublicUser(context, feed.feed_public_user_id);
+};
+
 const initHttpRollingFeeds = (app: Express.Application) => {
   app.get(`${basePath}/feeds/:id`, async (req: Express.Request, res: Express.Response) => {
     const { id } = req.params as { id: string };
@@ -302,7 +306,7 @@ const initHttpRollingFeeds = (app: Express.Application) => {
         }
       }
       // User is available or feed is public
-      const user = context.user ?? await resolvePublicUser(context, feed.feed_public_user_id);
+      const user = await resolveUserForFeed(context, feed);
       const filters = feed.filters ? JSON.parse(feed.filters) : undefined;
       const fromDate = minutesAgo(feed.rolling_time);
       const field = feed.feed_date_attribute ?? 'created_at';

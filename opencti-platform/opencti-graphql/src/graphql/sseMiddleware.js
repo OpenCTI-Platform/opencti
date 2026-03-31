@@ -166,7 +166,7 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
   return { streamFilters, collection };
 };
 
-const authenticateForPublic = async (req, res, next) => {
+export const authenticateForPublic = async (req, res, next) => {
   const context = await createAuthenticatedContext(req, res, 'stream_authenticate');
   req.context = context;
   req.expirationTime = utcDate().add(1, 'days').toDate();

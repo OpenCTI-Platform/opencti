@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 // noinspection ExceptionCaughtLocallyJS
 
 import * as R from 'ramda';
@@ -64,7 +63,7 @@ const getUpdatedAt = (obj) => {
   return obj?.extensions?.[STIX_EXT_OCTI]?.updated_at;
 };
 
-const extractUserAndCollection = async (req, res, id) => {
+export const extractUserAndCollection = async (req, res, id) => {
   const findCollection = await findById(executionContext('taxii'), SYSTEM_USER, id);
   if (!findCollection) {
     throw ForbiddenAccess();
