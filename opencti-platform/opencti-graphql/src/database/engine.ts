@@ -194,6 +194,7 @@ import type { FiltersWithNested } from './middleware-loader';
 import { pushAll, unshiftAll } from '../utils/arrayUtil';
 import { getRoleAssumerWithWebIdentity } from '../utils/awsSdk';
 import { elConvertHits, elConvertHitsToMap, INNER_HITS_WINDOWS_SIZE } from './engine-data-converter';
+import { isEsScriptFilterEnabled } from './engine-config';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -2538,12 +2539,16 @@ export const buildLocalMustFilter = (validFilter: any) => {
                 fields: arrayKeys.map((k) => `${k}.keyword`),
               },
             });
-          } else if (operator === 'script') {
-            valuesFiltering.push({
-              script: {
-                script: values[i].toString(),
-              },
-            });
+          } else if (operator === 'script' || operator === 'internal_script') {
+            if (operator === 'script' && !isEsScriptFilterEnabled()) {
+              throw UnsupportedError('Filter script is not allowed', { filter: validFilter });
+            } else {
+              valuesFiltering.push({
+                script: {
+                  script: values[i].toString(),
+                },
+              });
+            }
           } else if (operator === 'search') {
             const shouldSearch = elGenerateFieldTextSearchShould(values[i].toString(), arrayKeys);
             const bool = {
