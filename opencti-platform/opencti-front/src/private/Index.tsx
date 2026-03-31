@@ -60,7 +60,7 @@ const Index = ({ settings }: IndexProps) => {
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   // Change the theme body attribute when the mode changes in
-  // the palette because some components like CKEditor uses this
+  // the palette because some components like legacy editor uses this
   // body attribute to display correct styles.
   useEffect(() => {
     const body = document.querySelector('body');

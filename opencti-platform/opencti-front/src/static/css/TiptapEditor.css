@@ -207,9 +207,10 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror .selectedCell::af
   cursor: col-resize;
 }
 
-/* Remove paragraph margin inside table cells */
+/* Remove paragraph margin inside table cells and list items */
 .rich-text-editor-wrapper .ProseMirror td p,
-.rich-text-editor-wrapper .ProseMirror th p {
+.rich-text-editor-wrapper .ProseMirror th p,
+.rich-text-editor-wrapper .ProseMirror li p {
   margin: 0;
 }
 
@@ -309,10 +310,26 @@ body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
 }
 
 /* Legacy Editor font-size classes — kept for backward compatibility with stored content */
-.rich-text-content .text-tiny  { font-size: 12px; }
-.rich-text-content .text-small { font-size: 10px; }
-.rich-text-content .text-big   { font-size: 18px; }
-.rich-text-content .text-huge  { font-size: 24px; }
+.rich-text-content .text-tiny  { font-size: 0.7em; }
+.rich-text-content .text-small { font-size: 0.85em; }
+.rich-text-content .text-big   { font-size: 1.4em; }
+.rich-text-content .text-huge  { font-size: 1.8em; }
+
+/* Legacy Editor highlight classes — kept for backward compatibility with stored content */
+/* Markers: background color */
+.rich-text-content mark.marker-yellow,
+.rich-text-editor-wrapper .ProseMirror mark.marker-yellow { background-color: hsl(60, 75%, 60%); color: inherit; }
+.rich-text-content mark.marker-green,
+.rich-text-editor-wrapper .ProseMirror mark.marker-green  { background-color: hsl(120, 75%, 60%); color: inherit; }
+.rich-text-content mark.marker-pink,
+.rich-text-editor-wrapper .ProseMirror mark.marker-pink   { background-color: hsl(345, 75%, 60%); color: inherit; }
+.rich-text-content mark.marker-blue,
+.rich-text-editor-wrapper .ProseMirror mark.marker-blue   { background-color: hsl(201, 75%, 60%); color: inherit; }
+/* Pens: text color, transparent background */
+.rich-text-content mark.pen-red,
+.rich-text-editor-wrapper .ProseMirror mark.pen-red   { background-color: transparent; color: hsl(0, 75%, 60%); }
+.rich-text-content mark.pen-green,
+.rich-text-editor-wrapper .ProseMirror mark.pen-green { background-color: transparent; color: hsl(120, 75%, 60%); }
 
 /* Legacy Editor image figure — kept for backward compatibility with stored content */
 .rich-text-content figure.image {
@@ -364,9 +381,10 @@ body[data-theme="dark"] .rich-text-content th {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-/* Remove paragraph margin inside table cells — display mode */
+/* Remove paragraph margin inside table cells and list items — display mode */
 .rich-text-content td p,
-.rich-text-content th p {
+.rich-text-content th p,
+.rich-text-content li p {
   margin: 0;
 }
 
