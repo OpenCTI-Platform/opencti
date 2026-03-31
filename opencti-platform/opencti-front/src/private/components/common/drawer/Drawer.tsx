@@ -5,7 +5,7 @@ import Fab from '@mui/material/Fab';
 import { createStyles, useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import classNames from 'classnames';
-import React, { CSSProperties, forwardRef, useEffect, useState } from 'react';
+import React, { CSSProperties, forwardRef, isValidElement, useEffect, useState } from 'react';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -133,6 +133,9 @@ const Drawer = forwardRef<HTMLDivElement, DrawerProps>(({
   if (children) {
     if (typeof children === 'function') {
       component = children({ onClose: handleClose });
+    } else if (isValidElement(children) && children.type === React.Fragment) {
+      // Fragments don't accept props, so we can't pass onClose to them
+      component = children;
     } else {
       component = React.cloneElement(children as React.ReactElement, {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
