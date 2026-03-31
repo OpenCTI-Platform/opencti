@@ -11,11 +11,10 @@ export const STIX_PATTERN_TYPE = 'stix';
 
 const unflatten = (data) => {
   const result = {};
-  // eslint-disable-next-line no-restricted-syntax,guard-for-in
+
   for (const i in data) {
     const keys = i.split('.');
     keys.reduce((r, e, j) => {
-      // eslint-disable-next-line no-nested-ternary,no-param-reassign,no-return-assign
       return r[e] || (r[e] = Number.isNaN(Number(keys[j + 1])) ? (keys.length - 1 === j ? data[i] : {}) : []);
     }, result);
   }
@@ -110,31 +109,47 @@ export const extractValidObservablesFromIndicatorPattern = (pattern) => {
   return observables.filter((obs) => validateObservableGeneration(obs.type, pattern));
 };
 
-export const cleanupIndicatorPattern = (patternType, pattern) => {
-  if (pattern && patternType.toLowerCase() === STIX_PATTERN_TYPE) {
-    const grabInterestingTokens = (ctx, parser, acc) => {
-      const operators = [...parser.symbolicNames, '=', '!=', '<', '>', '<=', '>='];
-      const numberOfTokens = ctx.getChildCount();
-      for (let i = 0; i < numberOfTokens; i += 1) {
-        const child = ctx.getChild(i);
-        const subCount = child.getChildCount();
-        if (subCount > 0) {
-          grabInterestingTokens(child, parser, acc);
-        } else if (operators.includes(child.getText())) {
-          acc.push(` ${child.getText()} `);
-        } else {
-          acc.push(child.getText());
-        }
+// Due to ANTLR parser, property names with hyphens (e.g. 'SHA-256') must remain quoted in the pattern syntax.
+const UNQUOTABLE_IDENTIFIER_REGEX = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+const isValidUnquotedPropertyName = (name) => UNQUOTABLE_IDENTIFIER_REGEX.test(name);
+
+const normalizePropertyName = (quotedToken) => {
+  const unquotedName = quotedToken.slice(1, -1);
+  return isValidUnquotedPropertyName(unquotedName) ? unquotedName : quotedToken;
+};
+
+const isQuotedToken = (text) => text.startsWith("'") && text.endsWith("'");
+
+// Recursively walk the ANTLR parse tree and collect normalized tokens.
+const collectNormalizedTokens = (ctx, operators, tokens) => {
+  const childCount = ctx.getChildCount();
+  for (let i = 0; i < childCount; i += 1) {
+    const child = ctx.getChild(i);
+    if (child.getChildCount() > 0) {
+      collectNormalizedTokens(child, operators, tokens);
+    } else {
+      const tokenText = child.getText();
+      if (operators.includes(tokenText)) {
+        tokens.push(` ${tokenText} `);
+      } else {
+        const prevToken = tokens.length > 0 ? tokens[tokens.length - 1] : '';
+        const isPropertyNameAfterDot = prevToken === '.' && isQuotedToken(tokenText);
+        tokens.push(isPropertyNameAfterDot ? normalizePropertyName(tokenText) : tokenText);
       }
-    };
-    const { parser, parsedPattern } = parsePattern(pattern);
-    const patternContext = parsedPattern.getChild(0);
-    const patternTokens = [];
-    grabInterestingTokens(patternContext, parser, patternTokens);
-    return patternTokens.join('').trim();
+    }
   }
-  // For other pattern type, cleanup is not yet implemented
-  return pattern;
+};
+
+export const cleanupIndicatorPattern = (patternType, pattern) => {
+  if (!pattern || patternType.toLowerCase() !== STIX_PATTERN_TYPE) {
+    // For non-STIX pattern types (yara, pcre, etc.), cleanup is not yet implemented.
+    return pattern;
+  }
+  const { parser, parsedPattern } = parsePattern(pattern);
+  const operators = [...parser.symbolicNames, '=', '!=', '<', '>', '<=', '>='];
+  const tokens = [];
+  collectNormalizedTokens(parsedPattern.getChild(0), operators, tokens);
+  return tokens.join('').trim();
 };
 
 export const systemChecker = /^\d{0,10}$/;
