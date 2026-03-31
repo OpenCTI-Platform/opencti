@@ -29,3 +29,13 @@ export const addAdministrativeArea = async (context: AuthContext, user: AuthUser
   );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
+
+export const addAdministrativeArea2 = async (context: AuthContext, user: AuthUser, administrativeArea: AdministrativeAreaAddInput) => {
+  const created = await createEntity(
+    context,
+    user,
+    { ...administrativeArea, x_opencti_location_type: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA },
+    ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA,
+  );
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
+};
