@@ -92,6 +92,12 @@ describe('Workflow Conditions Resolver', () => {
           },
         },
       },
+      {
+        from: 'done',
+        to: 'done',
+        event: 'validate_requirement_event',
+        actions: [{ type: 'validateDraft' }],
+      },
     ],
   });
 
