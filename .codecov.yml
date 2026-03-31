@@ -9,8 +9,23 @@ coverage:
         informational: true
         flags:
           - opencti-front
-      opencti-graphql:
+      opencti-graphql-mandatory:
         target: 80%
         informational: false
-        flags:
-          - opencti-graphql
+        paths: 
+          - opencti-platform/opencti-graphql/src/modules
+          - opencti-platform/opencti-graphql/src/manager
+          - opencti-platform/opencti-graphql/src/domain
+          - opencti-platform/opencti-graphql/src/resolvers
+          - opencti-platform/opencti-graphql/src/database
+          - opencti-platform/opencti-graphql/src/utils
+      opencti-graphql-info:
+        target: 80%
+        informational: true
+        paths: 
+          - opencti-platform
+      client-python:
+        target: 80%
+        informational: true
+        paths:
+          - client-python
