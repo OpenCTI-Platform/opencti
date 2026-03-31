@@ -86,7 +86,7 @@ it('should buildLocalMustFilter build query from ids filter with terms', () => {
         { terms: { 'standard_id.keyword': ['ID1', 'ID2', 'ID3'] } },
         { terms: { 'x_opencti_stix_ids.keyword': ['ID1', 'ID2', 'ID3'] } },
         { terms: { 'i_aliases_ids.keyword': ['ID1', 'ID2', 'ID3'] } }],
-      minimum_should_match: 1 }
+      minimum_should_match: 1 },
   };
   expect(query).toEqual(expectedQuery);
 });

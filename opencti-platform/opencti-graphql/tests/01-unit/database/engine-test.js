@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import { prepareElementForIndexing } from '../../../src/database/engine';
+import { describe, expect, it, vi } from 'vitest';
+import { buildLocalMustFilter, prepareElementForIndexing } from '../../../src/database/engine';
+import * as engineConfig from '../../../src/database/engine-config';
 
 describe('prepareElementForIndexing testing', () => {
   it('should base trim applied', async () => {
@@ -23,5 +24,70 @@ describe('prepareElementForIndexing testing', () => {
     const now = new Date();
     const element = await prepareElementForIndexing({ date: now });
     expect(element.date).toEqual(now);
+  });
+});
+
+describe('buildLocalMustFilter testing', () => {
+  it('should buildLocalMustFilter with script be refused by default', () => {
+    const scriptFilter = {
+      key: ['name'],
+      values: [
+        'doc.containsKey(\'name.keyword\')',
+      ],
+      operator: 'script',
+    };
+
+    expect(() => buildLocalMustFilter(scriptFilter)).toThrow(/Filter script is not allowed/);
+  });
+
+  it('should buildLocalMustFilter with internal_script should work', () => {
+    const scriptFilter = {
+      key: ['name'],
+      values: [
+        'doc.containsKey(\'name.keyword\')',
+      ],
+      operator: 'internal_script',
+    };
+
+    const result = buildLocalMustFilter(scriptFilter);
+
+    expect(result).toStrictEqual({
+      bool: {
+        minimum_should_match: 1,
+        should: [
+          {
+            script: {
+              script: "doc.containsKey('name.keyword')",
+            },
+          },
+        ],
+      },
+    });
+  });
+
+  it('buildLocalMustFilter with script should work when enabled', () => {
+    vi.spyOn(engineConfig, 'isEsScriptFilterEnabled').mockResolvedValue(true);
+    const scriptFilter = {
+      key: ['name'],
+      values: [
+        'doc.containsKey(\'name.keyword\')',
+      ],
+      operator: 'script',
+    };
+
+    const result = buildLocalMustFilter(scriptFilter);
+
+    expect(result).toStrictEqual({
+      bool: {
+        minimum_should_match: 1,
+        should: [
+          {
+            script: {
+              script: "doc.containsKey('name.keyword')",
+            },
+          },
+        ],
+      },
+    });
   });
 });
