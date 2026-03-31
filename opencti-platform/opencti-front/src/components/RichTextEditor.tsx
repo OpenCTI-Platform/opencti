@@ -246,6 +246,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     editorProps: {
       attributes: {
         class: 'tiptap-editor-content',
+        'aria-label': 'Editing area: main',
         ...(id ? { 'data-editor-id': id } : {}),
       },
       handlePaste: (_view, event) => {
