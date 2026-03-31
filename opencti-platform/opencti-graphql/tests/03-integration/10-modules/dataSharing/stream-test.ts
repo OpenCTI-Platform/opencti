@@ -248,7 +248,7 @@ describe('Stream resolver coverage', () => {
     const response = await fetch(`${getBaseUrl()}/stream/${restrictedStreamId}`, {
       headers: { Accept: 'text/event-stream' },
     });
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(410);
   });
 
   it('Delete public stream collection', async () => {
