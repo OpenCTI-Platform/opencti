@@ -61,6 +61,7 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
       { name: 'change.tone', description: 'Change the tone of content' },
       { name: 'summarize', description: 'Summarize content' },
       { name: 'explain', description: 'Explain content in simple terms' },
+      { name: 'cti.container_summary', description: 'Summarize an OpenCTI container (report, grouping, case)' },
     ],
   });
 

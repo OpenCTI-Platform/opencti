@@ -14,14 +14,16 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Tooltip from '@mui/material/Tooltip';
+import CircularProgress from '@mui/material/CircularProgress';
 import { AISummaryContainersSubscription, AISummaryContainersSubscription$data } from './__generated__/AISummaryContainersSubscription.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import { FilterGroup, handleFilterHelpers } from '../../../../utils/filters/filtersHelpers-types';
+import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { getDefaultAiLanguage } from '../../../../utils/ai/Common';
 import { fetchQuery } from '../../../../relay/environment';
 import { cleanHtmlTags, copyToClipboard } from '../../../../utils/utils';
 import { daysAgo, monthsAgo } from '../../../../utils/Time';
 import { RelayError } from '../../../../relay/relayTypes';
+import { useChatbot } from '../../chatbox/ChatbotContext';
 
 const subscription = graphql`
     subscription AISummaryContainersSubscription($id: ID!) {
@@ -58,6 +60,23 @@ const aISummaryContainersQuery = graphql`
     }
   }
 `;
+
+// ── Shared types ────────────────────────────────────────────────────────
+
+interface ContainersAiSummaryProps {
+  busId: string;
+  isContainer: boolean;
+  filters: FilterGroup;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
+}
+
+// ── XTM One agent helpers (shared) ──────────────────────────────────────
+
+import { type AgentOption, fetchAgentsForIntent, callAgent } from '../../../../utils/ai/agentApi';
+export { type AgentOption, fetchAgentsForIntent, callAgent };
+
+// ── Legacy display sub-component ────────────────────────────────────────
 
 interface AISummaryContainersComponentProps {
   refetch: (newFirst: number, newRelative: string) => void;
@@ -163,16 +182,127 @@ const AISummaryContainersComponent = ({
   );
 };
 
-interface ContainersAiSummaryProps {
-  busId: string;
+// ── XTM One agent-based container summary ───────────────────────────────
+
+interface XtmOneContainerSummaryProps {
   isContainer: boolean;
   filters: FilterGroup;
-  helpers: handleFilterHelpers;
   loading: boolean;
   setLoading: (loading: boolean) => void;
+  selectedAgent: AgentOption | null;
 }
 
-const AISummaryContainers = ({ busId, isContainer, filters, loading, setLoading }: ContainersAiSummaryProps) => {
+const XtmOneContainerSummary = ({ isContainer, filters, loading, setLoading, selectedAgent }: XtmOneContainerSummaryProps) => {
+  const { t_i18n } = useFormatter();
+  const defaultLanguageName = getDefaultAiLanguage();
+  const [content, setContent] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
+  const [language] = useState(defaultLanguageName);
+  const [generatedAt, setGeneratedAt] = useState<string | null>(null);
+
+  // Build a prompt from the filters that describes what to summarize
+  const buildPrompt = useCallback((): string => {
+    const idFilter = filters.filters.find((f) => f.key === 'id');
+    const objectsFilter = filters.filters.find((f) => f.key === 'objects');
+
+    if (isContainer && idFilter && idFilter.values.length > 0) {
+      const containerId = idFilter.values[0];
+      return `Summarize the OpenCTI container with ID: ${containerId}. Language: ${language}.`;
+    }
+
+    if (objectsFilter && objectsFilter.values.length > 0) {
+      const entityId = objectsFilter.values[0];
+      return (
+        `Search for the most recent reports and cases related to entity ID: ${entityId}. `
+        + `Fetch each container using get_opencti_container_full and produce a combined summary. `
+        + `Language: ${language}.`
+      );
+    }
+
+    return `Summarize the most recent OpenCTI containers. Language: ${language}.`;
+  }, [filters, isContainer, language]);
+
+  // Execute agent call
+  const executeCall = useCallback(() => {
+    if (!selectedAgent) return;
+    setLoading(true);
+    setContent('');
+    setErrorMessage(undefined);
+    setGeneratedAt(null);
+
+    const prompt = buildPrompt();
+    callAgent(selectedAgent.slug, prompt)
+      .then((result) => {
+        if (result.status === 'error') {
+          setErrorMessage(result.error ?? 'An unknown error occurred');
+        } else {
+          const cleaned = cleanHtmlTags(result.content);
+          setContent(cleaned);
+          setGeneratedAt(new Date().toISOString());
+        }
+        setLoading(false);
+      })
+      .catch((error: Error) => {
+        setErrorMessage(error.toString());
+        setLoading(false);
+      });
+  }, [selectedAgent, buildPrompt, setLoading]);
+
+  // Auto-execute when agent changes (selected from header) or first load
+  useEffect(() => {
+    if (selectedAgent && !loading) {
+      executeCall();
+    }
+  }, [selectedAgent?.id]);
+
+  const noAgent = !selectedAgent;
+
+  return (
+    <>
+      {noAgent && (
+        <Alert severity="warning" variant="outlined" style={{ marginTop: 10 }}>
+          {t_i18n('No agent is configured for container summaries. Ask your administrator to configure XTM One.')}
+        </Alert>
+      )}
+
+      {errorMessage ? (
+        <Alert severity="warning" variant="outlined" style={{ marginBlock: 20 }}>{errorMessage}</Alert>
+      ) : (
+        <>
+          <Alert severity="info" variant="outlined" style={{ marginTop: 10, marginBottom: 16 }}>
+            {t_i18n('This summary is based on the whole content of related containers (description, content and attached files). It has been generated by AI and can contain mistakes.')}
+          </Alert>
+          {loading && <CircularProgress size={24} style={{ marginTop: 20 }} />}
+          {content && parse(content)}
+          {!loading && content && (
+            <>
+              <Divider />
+              <div style={{ float: 'right', marginTop: 20, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                {generatedAt && (
+                  <Typography variant="caption">Generated on {new Date(generatedAt).toLocaleString()}.</Typography>
+                )}
+                <Tooltip title={t_i18n('Copy to clipboard')}>
+                  <IconButton size="small" color="primary" onClick={() => copyToClipboard(t_i18n, content)}>
+                    <ContentCopyOutlined fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title={t_i18n('Retry')}>
+                  <IconButton size="small" color="primary" onClick={executeCall}>
+                    <AutoModeOutlined fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </div>
+            </>
+          )}
+        </>
+      )}
+    </>
+  );
+};
+
+// ── Legacy GraphQL implementation ───────────────────────────────────────
+
+const LegacyAISummaryContainers = ({ busId, isContainer, filters, loading, setLoading }: ContainersAiSummaryProps) => {
   const defaultLanguageName = getDefaultAiLanguage();
   const [first, setFirst] = useState(isContainer ? 1 : 10);
   const [relative, setRelative] = useState('none');
@@ -195,8 +325,6 @@ const AISummaryContainers = ({ busId, isContainer, filters, loading, setLoading 
     }),
     [busId],
   );
-  // TODO: Check by the engineering team
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   useSubscription(subConfig);
 
@@ -227,7 +355,6 @@ const AISummaryContainers = ({ busId, isContainer, filters, loading, setLoading 
   }, []);
 
   const refetch = useCallback((newFirst: number, newRelative: string) => {
-    // Compute relative date
     let startDate = null;
     if (newRelative === 'days-1') {
       startDate = daysAgo(1);
@@ -293,6 +420,35 @@ const AISummaryContainers = ({ busId, isContainer, filters, loading, setLoading 
         />
       )}
     </>
+  );
+};
+
+// ── Main component (routes between XTM One and legacy) ──────────────────
+
+const AISummaryContainers = ({ busId, isContainer, filters, loading, setLoading, selectedAgent }: ContainersAiSummaryProps & { selectedAgent?: AgentOption | null }) => {
+  const { xtmOneConfigured } = useChatbot();
+  const useXtmOne = xtmOneConfigured === true;
+
+  if (useXtmOne) {
+    return (
+      <XtmOneContainerSummary
+        isContainer={isContainer}
+        filters={filters}
+        loading={loading}
+        setLoading={setLoading}
+        selectedAgent={selectedAgent ?? null}
+      />
+    );
+  }
+
+  return (
+    <LegacyAISummaryContainers
+      busId={busId}
+      isContainer={isContainer}
+      filters={filters}
+      loading={loading}
+      setLoading={setLoading}
+    />
   );
 };
 
