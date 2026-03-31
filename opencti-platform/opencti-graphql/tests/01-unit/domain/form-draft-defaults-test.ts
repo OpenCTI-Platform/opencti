@@ -37,4 +37,32 @@ describe('resolveDraftFieldDefaults', () => {
     expect(resolved.finalDraftAssignees).toEqual([]);
     expect(resolved.finalDraftParticipants).toEqual([]);
   });
+
+  it('should fallback to configured default draft name when explicit name is empty', () => {
+    const resolved = resolveDraftFieldDefaults(
+      'Test Form',
+      {
+        draftName: '   ',
+      },
+      {
+        name: { enabled: true, defaultValue: 'Configured draft name' },
+      } as any,
+    );
+
+    expect(resolved.finalDraftName).toBe('Configured draft name');
+  });
+
+  it('should fallback to timestamp-based draft name when explicit and default names are empty', () => {
+    const resolved = resolveDraftFieldDefaults(
+      'Test Form',
+      {
+        draftName: '',
+      },
+      {
+        name: { enabled: true, defaultValue: '' },
+      } as any,
+    );
+
+    expect(resolved.finalDraftName).toMatch(/^Test Form - /);
+  });
 });
