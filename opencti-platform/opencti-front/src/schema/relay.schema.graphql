@@ -13676,6 +13676,7 @@ type IngestionTaxiiEdge {
 type TaxiiFeedAddInputFromImport {
   name: String!
   description: String!
+  scheduling_period: String
   uri: String!
   version: String!
   collection: String!

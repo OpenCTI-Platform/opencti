@@ -171,6 +171,7 @@ const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({
     uri: Yup.string().required(t_i18n('This field is required')),
     version: Yup.string().required(t_i18n('This field is required')),
     collection: Yup.string().required(t_i18n('This field is required')),
+    scheduling_period: Yup.string().nullable(),
     authentication_type: Yup.string().required(t_i18n('This field is required')),
     authentication_value: Yup.string().nullable(),
     username: Yup.string().nullable(),

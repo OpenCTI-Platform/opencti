@@ -150,7 +150,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
   const initialValues: IngestionTaxiiAddInput = {
     name: ingestionTaxiiData?.name || '',
     description: ingestionTaxiiData?.description || '',
-    scheduling_period: 'PT1H',
+    scheduling_period: ingestionTaxiiData?.scheduling_period ?? 'auto',
     uri: ingestionTaxiiData?.uri || '',
     version: ingestionTaxiiData?.version || '',
     collection: ingestionTaxiiData?.collection || '',

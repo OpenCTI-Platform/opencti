@@ -33546,6 +33546,7 @@ export type TaxiiFeedAddInputFromImport = {
   collection: Scalars['String']['output'];
   description: Scalars['String']['output'];
   name: Scalars['String']['output'];
+  scheduling_period?: Maybe<Scalars['String']['output']>;
   uri: Scalars['String']['output'];
   version: Scalars['String']['output'];
 };
@@ -50683,6 +50684,7 @@ export type TaxiiFeedAddInputFromImportResolvers<ContextType = any, ParentType e
   collection?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
