@@ -28,12 +28,16 @@ const {
 // ---------------------------------------------------------------------------
 // AppIntlProvider – prevent createFragmentContainer from being called at
 // module-load time (it lives at the top level of AppIntlProvider.tsx).
-// This mock also applies to the copy imported by test-render.tsx.
+// We still wrap children in a real IntlProvider so that useIntl() / useFormatter()
+// can find the required `intl` object in the component ancestry.
 // ---------------------------------------------------------------------------
-vi.mock('../../../../../components/AppIntlProvider', () => ({
-  default: ({ children }: { children: React.ReactNode }) => children,
-  ConnectedIntlProvider: ({ children }: { children: React.ReactNode }) => children,
-}));
+vi.mock('../../../../../components/AppIntlProvider', async () => {
+  const { IntlProvider } = await import('react-intl');
+  return {
+    default: ({ children }: { children: React.ReactNode }) => React.createElement(IntlProvider, { locale: 'en', defaultLocale: 'en' }, children),
+    ConnectedIntlProvider: ({ children }: { children: React.ReactNode }) => React.createElement(IntlProvider, { locale: 'en', defaultLocale: 'en' }, children),
+  };
+});
 
 // ---------------------------------------------------------------------------
 // Child component stubs (avoid rendering complex sub-trees)
