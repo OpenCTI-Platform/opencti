@@ -91,8 +91,12 @@ describe('Workflow Actions Resolver', () => {
             },
           ],
         },
+        { statusId: 'validated' },
       ],
-      transitions: [{ from: 'open', to: 'restricted', event: 'restrict_event' }],
+      transitions: [
+        { from: 'open', to: 'restricted', event: 'restrict_event' },
+        { from: 'restricted', to: 'validated', event: 'validate_event', actions: [{ type: 'validateDraft' }] },
+      ],
     });
 
     // 2. Set the workflow definition
