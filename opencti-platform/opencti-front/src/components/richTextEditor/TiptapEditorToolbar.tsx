@@ -31,6 +31,8 @@ import {
   FormatSize,
   FontDownload,
   ArrowDropDown,
+  FormatIndentIncrease,
+  FormatIndentDecrease,
 } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -138,6 +140,9 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
   const insertPageBreak = () => {
     editor.chain().focus().setPageBreak().run();
   };
+
+  const indent = () => editor.chain().focus().indent().run();
+  const outdent = () => editor.chain().focus().outdent().run();
 
   return (
     <Box
@@ -370,6 +375,16 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
           >
             <FormatListNumbered fontSize="small" />
+          </ToggleButton>
+        </Tooltip>
+        <Tooltip title="Indent">
+          <ToggleButton value="indent" onClick={indent}>
+            <FormatIndentIncrease fontSize="small" />
+          </ToggleButton>
+        </Tooltip>
+        <Tooltip title="Outdent">
+          <ToggleButton value="outdent" onClick={outdent}>
+            <FormatIndentDecrease fontSize="small" />
           </ToggleButton>
         </Tooltip>
         <Tooltip title="Todo List">
