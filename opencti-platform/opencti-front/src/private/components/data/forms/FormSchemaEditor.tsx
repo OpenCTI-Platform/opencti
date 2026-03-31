@@ -79,7 +79,7 @@ const migrateAuthorizedMembers = (defaults: any[], t: (key: string) => string): 
         value: 'CREATORS',
         type: t('Dynamic options'),
         accessRight: 'admin',
-        groupsRestriction: []
+        groupsRestriction: [],
       };
     }
     if (r.type === 'AUTHOR_ORG') {
@@ -94,7 +94,7 @@ const migrateAuthorizedMembers = (defaults: any[], t: (key: string) => string): 
     }
     return {
       ...r,
-      groupsRestriction: r.groupsRestriction || []
+      groupsRestriction: r.groupsRestriction || [],
     };
   });
 };

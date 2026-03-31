@@ -58,11 +58,11 @@ describe('FormView', () => {
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
 
     await waitFor(() => {
-      relayEnv.mock.resolveMostRecentOperation((operation: any) => MockPayloadGenerator.generate(operation, { Form: () => mockForm }));
+      relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, { Form: () => mockForm }));
     });
 
     await waitFor(() => {
-        expect(screen.getAllByText('Test Form').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Test Form').length).toBeGreaterThan(0);
     });
   });
 
@@ -75,7 +75,7 @@ describe('FormView', () => {
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
 
     await waitFor(() => {
-      relayEnv.mock.resolveMostRecentOperation((operation: any) => MockPayloadGenerator.generate(operation, { Form: () => mockForm }));
+      relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, { Form: () => mockForm }));
     });
 
     await waitFor(() => {
@@ -94,7 +94,7 @@ describe('FormView', () => {
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
 
     await waitFor(() => {
-      relayEnv.mock.resolveMostRecentOperation((operation: any) => MockPayloadGenerator.generate(operation, { Form: () => mockForm }));
+      relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, { Form: () => mockForm }));
     });
 
     await waitFor(() => {
