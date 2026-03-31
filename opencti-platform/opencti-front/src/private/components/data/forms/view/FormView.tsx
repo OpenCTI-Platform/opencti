@@ -558,7 +558,6 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
 
         <Formik
           initialValues={initialValues}
-          enableReinitialize={true}
           validationSchema={validationSchema}
           onSubmit={handleSubmit as (values: FormInitialValues, formikHelpers: FormikHelpers<FormInitialValues>) => void | Promise<unknown>}
           validateOnChange={true}
