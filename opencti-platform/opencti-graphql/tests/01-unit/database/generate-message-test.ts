@@ -312,6 +312,23 @@ describe('generateMergeMessage tests', () => {
 });
 
 describe('generateMessageFromChanges edge cases', () => {
+  it('should accumulate adds when multiple changes target the same multiple field', () => {
+    // Covers line 186: actions['adds'].push(...) when the key already exists
+    const changes: Change[] = [
+      {
+        field: ENTITY_TYPE_IDENTITY_ORGANIZATION + '--' + xOpenctiAliases.name,
+        changes_added: [{ raw: 'alias1' }],
+        changes_removed: [],
+      },
+      {
+        field: ENTITY_TYPE_IDENTITY_ORGANIZATION + '--' + xOpenctiAliases.name,
+        changes_added: [{ raw: 'alias2' }],
+        changes_removed: [],
+      },
+    ];
+    const message = generateMessageFromChanges({}, changes);
+    expect(message).toEqual('adds `alias1` in `X_Aliases` - `alias2` in `X_Aliases`');
+  });
   it('should generate message with only removes for a multiple field', () => {
     const changes: Change[] = [
       {
