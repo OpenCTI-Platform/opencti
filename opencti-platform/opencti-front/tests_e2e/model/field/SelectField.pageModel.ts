@@ -10,7 +10,7 @@ export default class SelectFieldPageModel {
     private readonly multiple: boolean,
     readonly rootLocator?: Locator,
   ) {
-    this.inputLocator = (rootLocator ?? page).getByRole('combobox', { name: label, exact: true });
+    this.inputLocator = (rootLocator ?? page).getByRole('combobox', { name: label });
     this.parentLocator = this.inputLocator.locator('../..');
   }
 
