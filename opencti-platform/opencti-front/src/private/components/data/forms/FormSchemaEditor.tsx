@@ -43,6 +43,7 @@ import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
 import type { FormFieldAttribute, AdditionalEntity, EntityRelationship, FormBuilderData, RelationshipTypeOption } from './Form.d';
 import useAuth from '../../../../utils/hooks/useAuth';
+import type { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
 import { FieldOption } from '../../../../utils/field';
 
 const DraftAuthorizedMembersSync = ({ onChange }: { onChange: (vals: AuthorizedMemberOption[]) => void }) => {
@@ -67,6 +68,53 @@ const DraftObjectParticipantsSync = ({ onChange }: { onChange: (vals: FieldOptio
     onChange(values.objectParticipant);
   }, [values.objectParticipant, onChange]);
   return null;
+};
+
+const normalizeFieldOption = (option: FieldOption) => {
+  return {
+    value: option.value,
+    label: option.label,
+  };
+};
+
+const areFieldOptionsEqual = (left: FieldOption[], right: FieldOption[]) => {
+  if (left.length !== right.length) {
+    return false;
+  }
+  return left.every((leftOption, index) => {
+    const normalizedLeft = normalizeFieldOption(leftOption);
+    const normalizedRight = normalizeFieldOption(right[index]);
+    return normalizedLeft.value === normalizedRight.value && normalizedLeft.label === normalizedRight.label;
+  });
+};
+
+const normalizeAuthorizedMember = (member: AuthorizedMemberOption) => {
+  return {
+    value: member.value,
+    label: member.label,
+    type: member.type,
+    accessRight: member.accessRight,
+    groupsRestriction: (member.groupsRestriction || [])
+      .map(normalizeFieldOption)
+      .sort((a, b) => `${a.value}`.localeCompare(`${b.value}`)),
+  };
+};
+
+const areAuthorizedMembersEqual = (left: AuthorizedMemberOption[], right: AuthorizedMemberOption[]) => {
+  if (left.length !== right.length) {
+    return false;
+  }
+  return left.every((leftMember, index) => {
+    const normalizedLeft = normalizeAuthorizedMember(leftMember);
+    const normalizedRight = normalizeAuthorizedMember(right[index]);
+    return (
+      normalizedLeft.value === normalizedRight.value
+      && normalizedLeft.label === normalizedRight.label
+      && normalizedLeft.type === normalizedRight.type
+      && normalizedLeft.accessRight === normalizedRight.accessRight
+      && areFieldOptionsEqual(normalizedLeft.groupsRestriction, normalizedRight.groupsRestriction)
+    );
+  });
 };
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -1748,7 +1796,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                       />
                       <DraftObjectAssigneesSync
                         onChange={(vals) => {
-                          if (JSON.stringify(formData.draftDefaults?.objectAssignee?.defaults || []) !== JSON.stringify(vals)) {
+                          if (!areFieldOptionsEqual(formData.draftDefaults?.objectAssignee?.defaults || [], vals)) {
                             handleFieldChange('draftDefaults.objectAssignee.defaults', vals);
                           }
                         }}
@@ -1798,7 +1846,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                       />
                       <DraftObjectParticipantsSync
                         onChange={(vals) => {
-                          if (JSON.stringify(formData.draftDefaults?.objectParticipant?.defaults || []) !== JSON.stringify(vals)) {
+                          if (!areFieldOptionsEqual(formData.draftDefaults?.objectParticipant?.defaults || [], vals)) {
                             handleFieldChange('draftDefaults.objectParticipant.defaults', vals);
                           }
                         }}
@@ -1920,9 +1968,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                           />
                           <DraftAuthorizedMembersSync
                             onChange={(vals) => {
-                              // Prevent infinite loop by checking if it changed deeply, or handling correctly
-                              // but since it's an editor form we will just do standard compare
-                              if (JSON.stringify(formData.draftDefaults?.authorizedMembers?.defaults || []) !== JSON.stringify(vals)) {
+                              if (!areAuthorizedMembersEqual(formData.draftDefaults?.authorizedMembers?.defaults || [], vals)) {
                                 handleFieldChange('draftDefaults.authorizedMembers.defaults', vals);
                               }
                             }}
