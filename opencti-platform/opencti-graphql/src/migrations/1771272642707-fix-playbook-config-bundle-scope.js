@@ -1,7 +1,7 @@
 import { logMigration } from '../config/conf';
 import { elUpdateByQueryForMigration } from '../database/engine';
 import { fullEntitiesList } from '../database/middleware-loader';
-import { READ_DATA_INDICES } from '../database/utils';
+import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT } from '../modules/playbook/components/access-restrictions-component';
 import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from '../modules/playbook/components/container-wrapper-component';
 import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT } from '../modules/playbook/components/manipulate-knowledge-component';
@@ -37,25 +37,16 @@ const elasticUpdate = (convertor) => {
       source: 'if (params.convertor.containsKey(ctx._source.internal_id)) { ctx._source.playbook_definition = params.convertor[ctx._source.internal_id]; }',
     },
     query: {
-      bool: {
-        should: [{
-          bool: {
-            must: [{
-              term: {
-                'entity_type.keyword': {
-                  value: 'Playbook',
-                },
-              },
-            }],
-          },
-        }],
-        minimum_should_match: 1,
+      term: {
+        'entity_type.keyword': {
+          value: ENTITY_TYPE_PLAYBOOK,
+        },
       },
     },
   };
   return elUpdateByQueryForMigration(
-    '[MIGRATION] Playbooks CRON filters keys conversion fix',
-    READ_DATA_INDICES,
+    message,
+    READ_INDEX_INTERNAL_OBJECTS,
     playbooksUpdateQuery,
   );
 };
@@ -80,11 +71,11 @@ export const up = async (next) => {
         if (nodeConfiguration.applyToElements === undefined) {
           const { all, excludeMainElement, ...configTokeep } = nodeConfiguration;
           // Set value for the new attribute
-          let applyToElements = playbookBundleElementsToApply.onlyMain;
+          let applyToElements = playbookBundleElementsToApply.onlyMain.value;
           if (all === true) {
             applyToElements = excludeMainElement
-              ? playbookBundleElementsToApply.allExceptMain
-              : playbookBundleElementsToApply.allElements;
+              ? playbookBundleElementsToApply.allExceptMain.value
+              : playbookBundleElementsToApply.allElements.value;
           }
           // Construct the new config
           newDefinitionNodes.push({
