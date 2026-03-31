@@ -691,12 +691,11 @@ export const formatFormDataForSubmission = (
     }
   }
 
-  if (values.draftAuthorizedMembers) {
+  if (Object.prototype.hasOwnProperty.call(values, 'draftAuthorizedMembers') && Array.isArray(values.draftAuthorizedMembers)) {
     const members = values.draftAuthorizedMembers as { value: string }[];
-    if (members && members.length > 0) {
-      // Pass the full member objects to support access rights and group restrictions
-      formattedData.draftAuthorizedMembers = members;
-    }
+    // Pass the full member objects to support access rights and group restrictions,
+    // including empty arrays so users can explicitly clear members.
+    formattedData.draftAuthorizedMembers = members;
   }
 
   return formattedData;
