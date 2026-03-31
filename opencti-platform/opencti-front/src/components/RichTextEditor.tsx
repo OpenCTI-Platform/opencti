@@ -35,6 +35,7 @@ import { TableContextMenu } from './richTextEditor/TableContextMenu';
 import { PageBreak } from './richTextEditor/extensions/PageBreak';
 import { TableCellSplit } from './richTextEditor/extensions/TableCellSplit';
 import { FontSize } from './richTextEditor/extensions/FontSize';
+import { Paragraph } from './richTextEditor/extensions/Paragraph';
 import type { Theme } from './Theme';
 import '../static/css/TiptapEditor.css';
 
@@ -185,6 +186,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
+        paragraph: false,
       }),
       Link.configure({
         autolink: true,
@@ -211,6 +213,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       Subscript,
       Superscript,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Paragraph,
       Highlight,
       TextStyle,
       Color,
