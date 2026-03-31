@@ -1120,7 +1120,7 @@ export const formSubmit = async (
           // New structure (AuthorizedMemberOption)
           const accessRight = rule.accessRight || 'admin';
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const groupsRestrictionIds = rule.groupsRestriction?.length > 0 ? rule.groupsRestriction.map((g: any) => g.value) : undefined;
+          const groupsRestrictionIds = rule.groupsRestriction?.length > 0 ? rule.groupsRestriction.map((g: any) => g.value || g.id || g) : undefined;
 
           if (rule.value === 'CREATORS') {
             authorizedMembersMap.set(user.id, { id: user.id, access_right: accessRight });

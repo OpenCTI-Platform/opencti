@@ -16,6 +16,9 @@ vi.mock('../../../src/database/middleware-loader', () => ({
   pageEntitiesConnection: vi.fn(),
 }));
 vi.mock('../../../src/domain/work');
+vi.mock('../../../src/manager/telemetryManager', () => ({
+  addFormIntakeSubmittedCount: vi.fn().mockResolvedValue(undefined),
+}));
 
 const mockUser: any = {
   id: 'user-1',
@@ -207,6 +210,87 @@ describe('formSubmit', () => {
             id: orgId,
             access_right: 'view',
             groups_restriction_ids: ['group-2'],
+          }),
+        ]),
+      }),
+    );
+  });
+
+  it('should resolve groupsRestriction from id entries in schema defaults', async () => {
+    const orgId = 'org-1';
+    const userWithOrg = {
+      ...mockUser,
+      organizations: [{ internal_id: orgId }],
+    };
+
+    const input = {
+      formId: 'form-1',
+      values: JSON.stringify({ name: 'Test Individual' }),
+    };
+
+    const form = { ...mockForm };
+    form.form_schema = JSON.stringify({
+      fields: [
+        { name: 'name', label: 'Name', type: 'text', attributeMapping: { entity: 'main_entity', attributeName: 'name' } },
+      ],
+      mainEntityType: 'Individual',
+      draftDefaults: {
+        authorizedMembers: {
+          enabled: true,
+          defaults: [
+            { value: 'AUTHOR', accessRight: 'view', groupsRestriction: [{ id: 'group-id-only' }] },
+          ],
+        },
+      },
+    });
+    mockStoreLoadById.mockResolvedValue(form);
+
+    await formSubmit(mockContext, userWithOrg, input, true);
+
+    expect(draftWorkspaceDomain.addDraftWorkspace).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({
+        authorized_members: expect.arrayContaining([
+          expect.objectContaining({
+            id: orgId,
+            access_right: 'view',
+            groups_restriction_ids: ['group-id-only'],
+          }),
+        ]),
+      }),
+    );
+  });
+
+  it('should resolve groupsRestriction from id entries in explicit BYPASS members', async () => {
+    const input = {
+      formId: 'form-1',
+      values: JSON.stringify({
+        name: 'Test Individual',
+        draftAuthorizedMembers: [
+          {
+            value: 'user-2',
+            accessRight: 'admin',
+            groupsRestriction: [{ id: 'group-id-only' }],
+          },
+        ],
+      }),
+    };
+
+    const userByPass = { ...mockUser, capabilities: [{ name: BYPASS }] };
+    mockStoreLoadById.mockResolvedValue(mockForm);
+
+    await formSubmit(mockContext, userByPass, input, true);
+
+    expect(draftWorkspaceDomain.addDraftWorkspace).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({
+        authorized_members: expect.arrayContaining([
+          expect.objectContaining({
+            id: 'user-2',
+            access_right: 'admin',
+            groups_restriction_ids: ['group-id-only'],
           }),
         ]),
       }),
