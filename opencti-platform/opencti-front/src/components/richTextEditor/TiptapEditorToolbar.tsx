@@ -153,7 +153,7 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
         minHeight: 40,
       }}
     >
-      {/* CKEditor order: heading, fontFamily, fontSize, alignment, pageBreak */}
+      {/* legacy editor order: heading, fontFamily, fontSize, alignment, pageBreak */}
       <Select
         size="small"
         disabled={disabled}

@@ -11,7 +11,7 @@ const determineOrientation = () => {
   const elementEditor = document.querySelector(TIPTAP_EDITOR_SELECTOR);
   if (elementEditor) {
     // We need to get tables and img width inside the editor in order to choose orientation.
-    // Tiptap uses <table>, CKEditor used figure.table
+    // Tiptap uses <table>, legacy editor used figure.table
     const tables = Array.from(elementEditor.querySelectorAll('table, figure.table') ?? []);
     const images = Array.from(elementEditor.querySelectorAll('img') ?? []);
     [...tables, ...images].forEach((child) => {

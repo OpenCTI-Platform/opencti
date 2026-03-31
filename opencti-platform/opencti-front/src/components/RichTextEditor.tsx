@@ -7,7 +7,7 @@ import Underline from '@tiptap/extension-underline';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import TextAlign from '@tiptap/extension-text-align';
-import Highlight from '@tiptap/extension-highlight';
+import { Highlight } from './richTextEditor/extensions/Highlight';
 import { TextStyle } from './richTextEditor/extensions/TextStyle';
 import Color from '@tiptap/extension-color';
 import { FontFamily } from '@tiptap/extension-text-style/font-family';
@@ -211,7 +211,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       Subscript,
       Superscript,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Highlight.configure({ multicolor: false }),
+      Highlight,
       TextStyle,
       Color,
       BackgroundColor,
