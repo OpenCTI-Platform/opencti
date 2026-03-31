@@ -46,27 +46,17 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import type { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
 import { FieldOption } from '../../../../utils/field';
 
-const DraftAuthorizedMembersSync = ({ onChange }: { onChange: (vals: AuthorizedMemberOption[]) => void }) => {
-  const { values } = useFormikContext<{ authorized_members: AuthorizedMemberOption[] }>();
-  useEffect(() => {
-    onChange(values.authorized_members);
-  }, [values.authorized_members, onChange]);
-  return null;
+type DraftAdvancedDefaultsValues = {
+  objectAssignee: FieldOption[];
+  objectParticipant: FieldOption[];
+  authorized_members: AuthorizedMemberOption[];
 };
 
-const DraftObjectAssigneesSync = ({ onChange }: { onChange: (vals: FieldOption[]) => void }) => {
-  const { values } = useFormikContext<{ objectAssignee: FieldOption[] }>();
+const DraftAdvancedDefaultsSync = ({ onChange }: { onChange: (vals: DraftAdvancedDefaultsValues) => void }) => {
+  const { values } = useFormikContext<DraftAdvancedDefaultsValues>();
   useEffect(() => {
-    onChange(values.objectAssignee);
-  }, [values.objectAssignee, onChange]);
-  return null;
-};
-
-const DraftObjectParticipantsSync = ({ onChange }: { onChange: (vals: FieldOption[]) => void }) => {
-  const { values } = useFormikContext<{ objectParticipant: FieldOption[] }>();
-  useEffect(() => {
-    onChange(values.objectParticipant);
-  }, [values.objectParticipant, onChange]);
+    onChange(values);
+  }, [values, onChange]);
   return null;
 };
 
@@ -305,8 +295,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleFieldChange = (path: string, value: string | number | boolean | string[] | Date | null | Array<{ label: string; value: string }> | any) => {
+  const handleFieldChange = (path: string, value: unknown) => {
     updateFormData((prev) => {
       const keys = path.split('.');
       // Prevent prototype pollution by blocking dangerous property names
@@ -1756,105 +1745,85 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 />
               </Box>
 
-              {/* Draft Assignees Section */}
-              <Typography variant="h6" gutterBottom>{t_i18n('Draft Assignees')}</Typography>
-              <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
-                <FormControlLabel
-                  control={(
-                    <Switch
-                      checked={formData.draftDefaults?.objectAssignee?.isEditable || false}
-                      onChange={(e) => handleFieldChange('draftDefaults.objectAssignee.isEditable', e.target.checked)}
-                    />
-                  )}
-                  label={t_i18n('Editable by end user')}
-                  style={{ display: 'block' }}
-                />
-                {formData.draftDefaults?.objectAssignee?.isEditable && (
-                  <FormControlLabel
-                    control={(
-                      <Switch
-                        checked={formData.draftDefaults?.objectAssignee?.isRequired || false}
-                        onChange={(e) => handleFieldChange('draftDefaults.objectAssignee.isRequired', e.target.checked)}
+              <Formik
+                initialValues={{
+                  objectAssignee: formData.draftDefaults?.objectAssignee?.defaults || [],
+                  objectParticipant: formData.draftDefaults?.objectParticipant?.defaults || [],
+                  authorized_members: normalizeDraftAuthorizedMembersDefaults(
+                    formData.draftDefaults?.authorizedMembers?.defaults || [],
+                    {
+                      creatorsLabel: t_i18n('Creators'),
+                      authorOrgLabel: t_i18n('Author (organization)'),
+                      dynamicOptionsLabel: t_i18n('Dynamic options'),
+                    },
+                  ),
+                }}
+                onSubmit={() => {}}
+                enableReinitialize
+              >
+                {() => (
+                  <>
+                    {/* Draft Assignees Section */}
+                    <Typography variant="h6" gutterBottom>{t_i18n('Draft Assignees')}</Typography>
+                    <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                      <FormControlLabel
+                        control={(
+                          <Switch
+                            checked={formData.draftDefaults?.objectAssignee?.isEditable || false}
+                            onChange={(e) => handleFieldChange('draftDefaults.objectAssignee.isEditable', e.target.checked)}
+                          />
+                        )}
+                        label={t_i18n('Editable by end user')}
+                        style={{ display: 'block' }}
                       />
-                    )}
-                    label={t_i18n('Required')}
-                    style={{ display: 'block' }}
-                  />
-                )}
-                <Formik
-                  initialValues={{
-                    objectAssignee: formData.draftDefaults?.objectAssignee?.defaults || [],
-                  }}
-                  onSubmit={() => {}}
-                  enableReinitialize
-                >
-                  {() => (
-                    <>
+                      {formData.draftDefaults?.objectAssignee?.isEditable && (
+                        <FormControlLabel
+                          control={(
+                            <Switch
+                              checked={formData.draftDefaults?.objectAssignee?.isRequired || false}
+                              onChange={(e) => handleFieldChange('draftDefaults.objectAssignee.isRequired', e.target.checked)}
+                            />
+                          )}
+                          label={t_i18n('Required')}
+                          style={{ display: 'block' }}
+                        />
+                      )}
                       <ObjectAssigneeField
                         name="objectAssignee"
                         style={{ marginBottom: 20 }}
                       />
-                      <DraftObjectAssigneesSync
-                        onChange={(vals) => {
-                          if (!areFieldOptionsEqual(formData.draftDefaults?.objectAssignee?.defaults || [], vals)) {
-                            handleFieldChange('draftDefaults.objectAssignee.defaults', vals);
-                          }
-                        }}
-                      />
-                    </>
-                  )}
-                </Formik>
-              </Box>
+                    </Box>
 
-              {/* Draft Participants Section */}
-              <Typography variant="h6" gutterBottom>{t_i18n('Draft Participants')}</Typography>
-              <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
-                <FormControlLabel
-                  control={(
-                    <Switch
-                      checked={formData.draftDefaults?.objectParticipant?.isEditable || false}
-                      onChange={(e) => handleFieldChange('draftDefaults.objectParticipant.isEditable', e.target.checked)}
-                    />
-                  )}
-                  label={t_i18n('Editable by end user')}
-                  style={{ display: 'block' }}
-                />
-                {formData.draftDefaults?.objectParticipant?.isEditable && (
-                  <FormControlLabel
-                    control={(
-                      <Switch
-                        checked={formData.draftDefaults?.objectParticipant?.isRequired || false}
-                        onChange={(e) => handleFieldChange('draftDefaults.objectParticipant.isRequired', e.target.checked)}
+                    {/* Draft Participants Section */}
+                    <Typography variant="h6" gutterBottom>{t_i18n('Draft Participants')}</Typography>
+                    <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                      <FormControlLabel
+                        control={(
+                          <Switch
+                            checked={formData.draftDefaults?.objectParticipant?.isEditable || false}
+                            onChange={(e) => handleFieldChange('draftDefaults.objectParticipant.isEditable', e.target.checked)}
+                          />
+                        )}
+                        label={t_i18n('Editable by end user')}
+                        style={{ display: 'block' }}
                       />
-                    )}
-                    label={t_i18n('Required')}
-                    style={{ display: 'block' }}
-                  />
-                )}
-                <Formik
-                  initialValues={{
-                    objectParticipant: formData.draftDefaults?.objectParticipant?.defaults || [],
-                  }}
-                  onSubmit={() => {}}
-                  enableReinitialize
-                >
-                  {() => (
-                    <>
+                      {formData.draftDefaults?.objectParticipant?.isEditable && (
+                        <FormControlLabel
+                          control={(
+                            <Switch
+                              checked={formData.draftDefaults?.objectParticipant?.isRequired || false}
+                              onChange={(e) => handleFieldChange('draftDefaults.objectParticipant.isRequired', e.target.checked)}
+                            />
+                          )}
+                          label={t_i18n('Required')}
+                          style={{ display: 'block' }}
+                        />
+                      )}
                       <ObjectParticipantField
                         name="objectParticipant"
                         style={{ marginBottom: 20 }}
                       />
-                      <DraftObjectParticipantsSync
-                        onChange={(vals) => {
-                          if (!areFieldOptionsEqual(formData.draftDefaults?.objectParticipant?.defaults || [], vals)) {
-                            handleFieldChange('draftDefaults.objectParticipant.defaults', vals);
-                          }
-                        }}
-                      />
-                    </>
-                  )}
-                </Formik>
-              </Box>
+                    </Box>
 
               {/* Draft Author Section */}
               <Typography variant="h6" gutterBottom>{t_i18n('Draft Author')}</Typography>
@@ -1900,85 +1869,68 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 />
               )}
 
-              {/* Authorized Members Section */}
-              <Typography variant="h6" gutterBottom style={{ marginTop: 20 }}>{t_i18n('Authorized Members')}</Typography>
-              <FormControlLabel
-                control={(
-                  <Switch
-                    checked={formData.draftDefaults?.authorizedMembers?.enabled || false}
-                    onChange={(e) => {
-                      const enabled = e.target.checked;
-                      handleFieldChange('draftDefaults.authorizedMembers.enabled', enabled);
-                      // Set default rule if enabling and no rules exist
-                      if (enabled && (!formData.draftDefaults?.authorizedMembers?.defaults || formData.draftDefaults?.authorizedMembers?.defaults.length === 0)) {
-                        handleFieldChange('draftDefaults.authorizedMembers.defaults', [{
-                          label: t_i18n('Creators'),
-                          value: 'CREATORS',
-                          type: t_i18n('Dynamic options'),
-                          accessRight: 'admin',
-                          groupsRestriction: [],
-                        }]);
-                      }
-                    }}
-                  />
-                )}
-                label={t_i18n('Activate access restriction')}
-                style={{ display: 'block' }}
-              />
+                    {/* Authorized Members Section */}
+                    <Typography variant="h6" gutterBottom style={{ marginTop: 20 }}>{t_i18n('Authorized Members')}</Typography>
+                    <FormControlLabel
+                      control={(
+                        <Switch
+                          checked={formData.draftDefaults?.authorizedMembers?.enabled || false}
+                          onChange={(e) => {
+                            const enabled = e.target.checked;
+                            handleFieldChange('draftDefaults.authorizedMembers.enabled', enabled);
+                            if (enabled && (!formData.draftDefaults?.authorizedMembers?.defaults || formData.draftDefaults?.authorizedMembers?.defaults.length === 0)) {
+                              handleFieldChange('draftDefaults.authorizedMembers.defaults', [{
+                                label: t_i18n('Creators'),
+                                value: 'CREATORS',
+                                type: t_i18n('Dynamic options'),
+                                accessRight: 'admin',
+                                groupsRestriction: [],
+                              }]);
+                            }
+                          }}
+                        />
+                      )}
+                      label={t_i18n('Activate access restriction')}
+                      style={{ display: 'block' }}
+                    />
 
-              {formData.draftDefaults?.authorizedMembers?.enabled && (
-                <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
-                  <FormControlLabel
-                    control={(
-                      <Switch
-                        checked={formData.draftDefaults?.authorizedMembers?.isRequired || false}
-                        onChange={(e) => handleFieldChange('draftDefaults.authorizedMembers.isRequired', e.target.checked)}
-                      />
+                    {formData.draftDefaults?.authorizedMembers?.enabled && (
+                      <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                        <FormControlLabel
+                          control={(
+                            <Switch
+                              checked={formData.draftDefaults?.authorizedMembers?.isRequired || false}
+                              onChange={(e) => handleFieldChange('draftDefaults.authorizedMembers.isRequired', e.target.checked)}
+                            />
+                          )}
+                          label={t_i18n('Required (Users cannot remove default members)')}
+                          style={{ display: 'block', marginBottom: 15 }}
+                        />
+                        <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>{t_i18n('Member Rules')}</Typography>
+                        <Field
+                          name="authorized_members"
+                          component={AuthorizedMembersField}
+                          dynamicKeysForPlaybooks={true}
+                        />
+                      </Box>
                     )}
-                    label={t_i18n('Required (Users cannot remove default members)')}
-                    style={{ display: 'block', marginBottom: 15 }}
-                  />
-                  <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>{t_i18n('Member Rules')}</Typography>
 
-                  <Formik
-                    initialValues={{
-                      authorized_members: normalizeDraftAuthorizedMembersDefaults(
-                        formData.draftDefaults?.authorizedMembers?.defaults || [],
-                        {
-                          creatorsLabel: t_i18n('Creators'),
-                          authorOrgLabel: t_i18n('Author (organization)'),
-                          dynamicOptionsLabel: t_i18n('Dynamic options'),
-                        },
-                      ),
-                    }}
-                    onSubmit={() => {}}
-                    enableReinitialize
-                  >
-                    {() => {
-                      // Call the parent's change handler when values change
-                      // Note: Because Formik context and handleFieldChange are both active,
-                      // we use a simple effect inside an inner component to handle the mapping
-                      // or just a custom wrapper. Actually, we can use an inner component.
-                      return (
-                        <>
-                          <Field
-                            name="authorized_members"
-                            component={AuthorizedMembersField}
-                            dynamicKeysForPlaybooks={true}
-                          />
-                          <DraftAuthorizedMembersSync
-                            onChange={(vals) => {
-                              if (!areAuthorizedMembersEqual(formData.draftDefaults?.authorizedMembers?.defaults || [], vals)) {
-                                handleFieldChange('draftDefaults.authorizedMembers.defaults', vals);
-                              }
-                            }}
-                          />
-                        </>
-                      );
-                    }}
-                  </Formik>
-                </Box>
-              )}
+                    <DraftAdvancedDefaultsSync
+                      onChange={(vals) => {
+                        if (!areFieldOptionsEqual(formData.draftDefaults?.objectAssignee?.defaults || [], vals.objectAssignee)) {
+                          handleFieldChange('draftDefaults.objectAssignee.defaults', vals.objectAssignee);
+                        }
+                        if (!areFieldOptionsEqual(formData.draftDefaults?.objectParticipant?.defaults || [], vals.objectParticipant)) {
+                          handleFieldChange('draftDefaults.objectParticipant.defaults', vals.objectParticipant);
+                        }
+                        if (!areAuthorizedMembersEqual(formData.draftDefaults?.authorizedMembers?.defaults || [], vals.authorized_members)) {
+                          handleFieldChange('draftDefaults.authorizedMembers.defaults', vals.authorized_members);
+                        }
+                      }}
+                    />
+                  </>
+                )}
+              </Formik>
             </AccordionDetails>
           </Accordion>
 
