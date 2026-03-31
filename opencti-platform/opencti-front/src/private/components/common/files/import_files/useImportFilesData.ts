@@ -14,4 +14,3 @@ const useImportFilesData = (queryRef: PreloadedQuery<ImportFilesContextQuery>) =
 };
 
 export default useImportFilesData;
-
