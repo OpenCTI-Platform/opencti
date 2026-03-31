@@ -264,7 +264,7 @@ const WidgetCreationParameters = () => {
             const isNumberError = (dataSelection[i].number ?? 10) > maxResultCount;
 
             return (
-              <div key={i}>
+              <div key={i} data-testid={`widget-params-selection-${i}`}>
                 {type === 'attribute' && (
                   <div style={{ marginTop: 20 }}>
                     <FormControl fullWidth={true}>
@@ -531,8 +531,11 @@ const WidgetCreationParameters = () => {
                           width: '100%',
                         }}
                       >
-                        <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                        <InputLabel id="rel-attribute">
+                          {t_i18n('Attribute')}
+                        </InputLabel>
                         <Select
+                          labelId="rel-attribute"
                           fullWidth={true}
                           value={dataSelection[i].attribute}
                           onChange={(event) => handleChangeDataValidationParameter(
@@ -570,7 +573,9 @@ const WidgetCreationParameters = () => {
                             width: '100%',
                           }}
                         >
-                          <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                          <InputLabel id="entities-attribute">
+                            {t_i18n('Attribute')}
+                          </InputLabel>
                           <QueryRenderer
                             query={stixCyberObservablesLinesAttributesQuery}
                             variables={{
@@ -601,6 +606,7 @@ const WidgetCreationParameters = () => {
                                 }
                                 return (
                                   <Select
+                                    labelId="entities-attribute"
                                     fullWidth={true}
                                     value={dataSelection[i].attribute}
                                     onChange={(event) => handleChangeDataValidationParameter(
@@ -649,8 +655,11 @@ const WidgetCreationParameters = () => {
                           width: '100%',
                         }}
                       >
-                        <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                        <InputLabel id="entities-attribute">
+                          {t_i18n('Attribute')}
+                        </InputLabel>
                         <Select
+                          labelId="entities-attribute"
                           fullWidth={true}
                           value={dataSelection[i].attribute ?? 'entity_type'}
                           onChange={(event) => handleChangeDataValidationParameter(
@@ -688,8 +697,11 @@ const WidgetCreationParameters = () => {
                           width: '100%',
                         }}
                       >
-                        <InputLabel>{t_i18n('Attribute')}</InputLabel>
+                        <InputLabel id="audits-attribute">
+                          {t_i18n('Attribute')}
+                        </InputLabel>
                         <Select
+                          labelId="audits-attribute"
                           fullWidth={true}
                           value={dataSelection[i].attribute ?? 'entity_type'}
                           onChange={(event) => handleChangeDataValidationParameter(

@@ -8,9 +8,13 @@ type WidgetPerspective = 'Entities' | 'Knowledge graph' | 'Activity & history';
 export default class DashboardWidgetsPageModel {
   private labelPerspective?: 'entities' | 'relationships' | 'audits';
 
-  filters = new FiltersPageModel(this.page);
+  filters = new FiltersPageModel(this.page, this.page.getByTestId('widget-selection-0'));
+  subFilters = new FiltersPageModel(this.page, this.page.getByTestId('widget-selection-1'));
   titleField = new TextFieldPageModel(this.page, 'Title', 'text');
-  dateAttribute = new SelectFieldPageModel(this.page, 'Relative time', false);
+  dateAttributeMain = new SelectFieldPageModel(this.page, 'Relative time', false, this.page.getByTestId('widget-params-selection-0'));
+  dateAttributeSub = new SelectFieldPageModel(this.page, 'Relative time', false, this.page.getByTestId('widget-params-selection-1'));
+  attributeFieldMain = new SelectFieldPageModel(this.page, 'Attribute', false, this.page.getByTestId('widget-params-selection-0'));
+  attributeFieldSub = new SelectFieldPageModel(this.page, 'Attribute', false, this.page.getByTestId('widget-params-selection-1'));
 
   constructor(private page: Page) {}
 
@@ -74,6 +78,10 @@ export default class DashboardWidgetsPageModel {
     return this.page.getByText(name).locator('../../..').getByText(value);
   }
 
+  addEntitiesSelection() {
+    return this.page.getByRole('button', { name: 'entities' }).click();
+  }
+
   // region Premade widgets
 
   async createListOfMalwaresWidget() {
@@ -108,7 +116,21 @@ export default class DashboardWidgetsPageModel {
     await this.filters.addFilter('Label', 'e2e');
     await this.validateFilters();
     await this.titleField.fill('Number of entities');
-    await this.dateAttribute.selectOption('created (Functional date)');
+    await this.dateAttributeMain.selectOption('created (Functional date)');
+    await this.createWidget();
+  }
+
+  async createHorizontalBreakdownOfMalwares() {
+    await this.openWidgetModal();
+    await this.selectWidget('Horizontal Bar');
+    await this.selectPerspective('Knowledge graph');
+    await this.filters.addFilter('Source type', 'Malware');
+    await this.filters.addFilter('Relationship type', 'targets');
+    await this.addEntitiesSelection();
+    await this.subFilters.addFilter('Entity type', 'Malware');
+    await this.validateFilters();
+    await this.attributeFieldMain.selectOption('Entity');
+    await this.attributeFieldSub.selectOption('Malware_types');
     await this.createWidget();
   }
 
