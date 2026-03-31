@@ -290,7 +290,7 @@ describe('Group resolver standard behavior', () => {
         }
     `;
     // remove default group Connectors set in data-initialization
-    await queryAsUserWithSuccess(USER_PLATFORM_ADMIN.client, {
+    await queryAsUserWithSuccess(USER_PLATFORM_ADMIN, {
       query: UPDATE_QUERY,
       variables: { id: queryDefaultIngestionGroup.data?.groups.edges[0].node.id, input: { key: 'auto_integration_assignation', value: [] } },
     });
@@ -307,7 +307,7 @@ describe('Group resolver standard behavior', () => {
     expect(defaultIngestionGroupCountResultNoGroup?.data?.defaultIngestionGroupCount).toBe(0);
 
     // AND WHEN 'groupInternalId' is set as default ingestion group
-    const queryResult = await queryAsUserWithSuccess(USER_PLATFORM_ADMIN.client, {
+    const queryResult = await queryAsUserWithSuccess(USER_PLATFORM_ADMIN, {
       query: UPDATE_QUERY,
       variables: { id: groupInternalId, input: { key: 'auto_integration_assignation', value: ['global'] } },
     });
@@ -339,12 +339,12 @@ describe('Group resolver standard behavior', () => {
             }
         }
     `;
-    await queryAsUserWithSuccess(USER_PLATFORM_ADMIN.client, {
+    await queryAsUserWithSuccess(USER_PLATFORM_ADMIN, {
       query: UPDATE_QUERY,
       variables: { id: connectorsGroup.id, input: { key: 'auto_integration_assignation', value: ['global'] } },
     });
 
-    await queryAsUserWithSuccess(USER_PLATFORM_ADMIN.client, {
+    await queryAsUserWithSuccess(USER_PLATFORM_ADMIN, {
       query: UPDATE_QUERY,
       variables: { id: groupInternalId, input: { key: 'auto_integration_assignation', value: [] } },
     });

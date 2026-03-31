@@ -1,8 +1,8 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import * as ee from '../../../src/enterprise-edition/ee';
-import { adminQuery } from '../../utils/testQuery';
 import { awaitUntilCondition } from '../../utils/testQueryHelper';
+import { internalAdminQuery, queryAsAdmin } from '../../utils/testQuery';
 
 describe.skip('Draft organization sharing', () => {
   beforeAll(() => {
@@ -104,7 +104,7 @@ describe.skip('Draft organization sharing', () => {
   describe('Draft Organization Sharing', () => {
     it('should be able to share an entity with an organization in a draft', async () => {
       // 1. Setup: Create Organization and Malware in Live
-      const orgRes = await adminQuery({
+      const orgRes = await queryAsAdmin({
         query: ORGANIZATION_ADD_QUERY,
         variables: {
           input: {
@@ -113,9 +113,9 @@ describe.skip('Draft organization sharing', () => {
           },
         },
       });
-      const orgId = orgRes.data.organizationAdd.id;
+      const orgId = orgRes.data?.organizationAdd.id;
 
-      const malwareRes = await adminQuery({
+      const malwareRes = await queryAsAdmin({
         query: MALWARE_ADD_QUERY,
         variables: {
           input: {
@@ -123,10 +123,10 @@ describe.skip('Draft organization sharing', () => {
           },
         },
       });
-      const malwareId = malwareRes.data.malwareAdd.id;
+      const malwareId = malwareRes.data?.malwareAdd.id;
 
       // 2. Create a Draft Workspace
-      const draftRes = await adminQuery({
+      const draftRes = await queryAsAdmin({
         query: DRAFT_WORKSPACE_ADD_QUERY,
         variables: {
           input: {
@@ -134,97 +134,105 @@ describe.skip('Draft organization sharing', () => {
           },
         },
       });
-      const draftId = draftRes.data.draftWorkspaceAdd.id;
+      const draftId = draftRes.data?.draftWorkspaceAdd.id;
 
       // 3. Share Malware with Org inside the Draft
-      const shareRes = await adminQuery(
+      // Calls main execution context server
+      // as requires passing the extra header
+      // to check logic happening in middleware.
+      // Won't participate in test coverage.
+      const shareRes = await internalAdminQuery(
+        RESTRICTION_ORGANIZATION_ADD_QUERY,
         {
-          query: RESTRICTION_ORGANIZATION_ADD_QUERY,
-          variables: {
-            id: malwareId,
-            organizationId: [orgId],
-          },
+          id: malwareId,
+          organizationId: [orgId],
         },
         { draftId },
       );
 
       expect(
-        shareRes.data.stixCoreObjectEdit.restrictionOrganizationAdd.objectOrganization.length,
+        shareRes.data?.stixCoreObjectEdit.restrictionOrganizationAdd.objectOrganization.length,
       ).toBe(1);
 
       // 4. Verify Malware in Draft has the organization
-      const draftMalwareRes = await adminQuery(
-        {
-          query: MALWARE_QUERY,
-          variables: { id: malwareId },
-        },
+      // Calls main execution context server
+      // as requires passing the extra header
+      // to check logic happening in middleware.
+      // Won't participate in test coverage.
+      const draftMalwareRes = await internalAdminQuery(
+        MALWARE_QUERY,
+        { id: malwareId },
         { draftId },
       );
-      expect(draftMalwareRes.data.malware.objectOrganization.length).toBe(1);
-      expect(draftMalwareRes.data.malware.objectOrganization[0].id).toBe(orgId);
+      expect(draftMalwareRes.data?.malware.objectOrganization.length).toBe(1);
+      expect(draftMalwareRes.data?.malware.objectOrganization[0].id).toBe(orgId);
 
       // 5. Verify Malware in Live STILL has NO organization
-      const liveMalwareRes = await adminQuery({
+      const liveMalwareRes = await queryAsAdmin({
         query: MALWARE_QUERY,
         variables: { id: malwareId },
       });
-      expect(liveMalwareRes.data.malware.objectOrganization.length).toBe(0);
+      expect(liveMalwareRes.data?.malware.objectOrganization.length).toBe(0);
 
       // 6. Test Bulk Sharing via Task Manager in Draft
       // We use queryTaskAdd which creates a background task
-      const taskRes = await adminQuery(
+      // Calls main execution context server
+      // as requires passing the extra header
+      // to check logic happening in middleware.
+      // Won't participate in test coverage.
+      const taskRes = await internalAdminQuery(
+        QUERY_TASK_ADD_QUERY,
         {
-          query: QUERY_TASK_ADD_QUERY,
-          variables: {
-            input: {
-              filters: JSON.stringify({
-                mode: 'and',
-                filters: [{ key: ['internal_id'], values: [malwareId] }],
-                filterGroups: [],
-              }),
-              actions: [
-                {
-                  type: 'SHARE',
-                  context: {
-                    values: [orgId],
-                  },
+          input: {
+            filters: JSON.stringify({
+              mode: 'and',
+              filters: [{ key: ['internal_id'], values: [malwareId] }],
+              filterGroups: [],
+            }),
+            actions: [
+              {
+                type: 'SHARE',
+                context: {
+                  values: [orgId],
                 },
-              ],
-              scope: 'KNOWLEDGE',
-            },
+              },
+            ],
+            scope: 'KNOWLEDGE',
           },
         },
         { draftId },
       );
-      expect(taskRes.data.queryTaskAdd).toBeDefined();
+      expect(taskRes.data?.queryTaskAdd).toBeDefined();
       expect(taskRes.errors).toBeUndefined();
 
       // Wait for task completion
       await awaitUntilCondition(
         async () => {
-          const tRes = await adminQuery({
+          const tRes = await queryAsAdmin({
             query: TASK_QUERY,
-            variables: { id: taskRes.data.queryTaskAdd.id },
+            variables: { id: taskRes.data?.queryTaskAdd.id },
           });
-          return tRes.data.backgroundTask.completed;
+          return tRes.data?.backgroundTask.completed;
         },
         1000,
         10000,
       );
 
       // 7. Test removing the restriction in Draft
-      const unshareRes = await adminQuery(
+      // Calls main execution context server
+      // as requires passing the extra header
+      // to check logic happening in middleware.
+      // Won't participate in test coverage.
+      const unshareRes = await internalAdminQuery(
+        RESTRICTION_ORGANIZATION_DELETE_QUERY,
         {
-          query: RESTRICTION_ORGANIZATION_DELETE_QUERY,
-          variables: {
-            id: malwareId,
-            organizationId: [orgId],
-          },
+          id: malwareId,
+          organizationId: [orgId],
         },
         { draftId },
       );
       expect(
-        unshareRes.data.stixCoreObjectEdit.restrictionOrganizationDelete.objectOrganization.length,
+        unshareRes.data?.stixCoreObjectEdit.restrictionOrganizationDelete.objectOrganization.length,
       ).toBe(0);
 
       // Cleanup (in live)
@@ -235,7 +243,7 @@ describe.skip('Draft organization sharing', () => {
           }
         }
       `;
-      await adminQuery({
+      await queryAsAdmin({
         query: DELETE_MALWARE,
         variables: { id: malwareId },
       });
@@ -247,7 +255,7 @@ describe.skip('Draft organization sharing', () => {
           }
         }
       `;
-      await adminQuery({
+      await queryAsAdmin({
         query: DELETE_ORG,
         variables: { id: orgId },
       });
@@ -257,7 +265,7 @@ describe.skip('Draft organization sharing', () => {
           draftWorkspaceDelete(id: $id)
         }
       `;
-      await adminQuery({
+      await queryAsAdmin({
         query: DELETE_DRAFT,
         variables: { id: draftId },
       });

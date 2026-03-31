@@ -1,12 +1,12 @@
 import gql from 'graphql-tag';
 import { LRUCache } from 'lru-cache';
 import { describe, expect, it } from 'vitest';
-import { ADMIN_USER, adminQuery, testContext } from '../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin, testContext } from '../utils/testQuery';
 import { stixRefsExtractor } from '../../src/schema/stixEmbeddedRelationship';
 import { resolveMissingReferences } from '../../src/graphql/sseMiddleware';
 import { convertStoreToStix_2_1 } from '../../src/database/stix-2-1-converter';
 import { storeLoadByIdWithRefs } from '../../src/database/middleware';
-import { adminQueryWithSuccess } from '../utils/testQueryHelper';
+import { queryAsAdminWithSuccess } from '../utils/testQueryHelper';
 import type { StoreObject } from '../../src/types/store';
 
 const CREATE_REPORT_QUERY = gql`
@@ -64,7 +64,7 @@ describe('Should stream parent resolutions correctly working', () => {
   it('should recursive resolution working as expected', async () => {
     // REPORT 01 -- ref --> CASE 01 -- ref --> CASE 02 -- ref --> REPORT 01
     // CASE 01
-    const case01Resolution = await adminQueryWithSuccess({
+    const case01Resolution = await queryAsAdminWithSuccess({
       query: CREATE_CASE_QUERY,
       variables: {
         input: {
@@ -74,7 +74,7 @@ describe('Should stream parent resolutions correctly working', () => {
     });
     // REPORT 01
     const case01ResolutionId = case01Resolution.data.caseIncidentAdd.id;
-    const report01Resolution = await adminQueryWithSuccess({
+    const report01Resolution = await queryAsAdminWithSuccess({
       query: CREATE_REPORT_QUERY,
       variables: {
         input: {
@@ -87,7 +87,7 @@ describe('Should stream parent resolutions correctly working', () => {
     });
     // CREATE CASE 02
     const report01ResolutionId = report01Resolution.data.reportAdd.id;
-    const case02Resolution = await adminQueryWithSuccess({
+    const case02Resolution = await queryAsAdminWithSuccess({
       query: CREATE_CASE_QUERY,
       variables: {
         input: {
@@ -98,7 +98,7 @@ describe('Should stream parent resolutions correctly working', () => {
     });
     // ADD CASE02 in CASE01 via upsert
     const case02ResolutionId = case02Resolution.data.caseIncidentAdd.id;
-    await adminQueryWithSuccess({
+    await queryAsAdminWithSuccess({
       query: CREATE_CASE_QUERY,
       variables: {
         input: {
@@ -128,8 +128,8 @@ describe('Should stream parent resolutions correctly working', () => {
     expect(missingInstances[3].stix.name).toBe('Case-01-Resolution');
     expect(missingInstances[3].message).toBe('creates a Case-Incident `Case-01-Resolution`');
     // CLEANUP
-    await adminQuery({ query: DELETE_DOMAIN_QUERY, variables: { id: case02ResolutionId } });
-    await adminQuery({ query: DELETE_DOMAIN_QUERY, variables: { id: case01ResolutionId } });
-    await adminQuery({ query: DELETE_DOMAIN_QUERY, variables: { id: report01ResolutionId } });
+    await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: case02ResolutionId } });
+    await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: case01ResolutionId } });
+    await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: report01ResolutionId } });
   });
 });

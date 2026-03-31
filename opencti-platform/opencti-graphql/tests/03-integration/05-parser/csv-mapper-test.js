@@ -82,21 +82,21 @@ describe('CSV-MAPPER', () => {
       ids: [entitySettingArea.id],
       input: {
         key: 'attributes_configuration',
-        value: entitySettingArea.attributes_configuration
-      }
+        value: entitySettingArea.attributes_configuration,
+      },
     });
     await internalAdminQuery(ENTITY_SETTINGS_UPDATE, {
       ids: [entitySettingMalware.id],
       input: {
         key: 'attributes_configuration',
-        value: entitySettingMalware.attributes_configuration
-      }
+        value: entitySettingMalware.attributes_configuration,
+      },
     });
   });
 
   beforeAll(async () => {
     const { data } = await internalAdminQuery(GET_QUERY);
-    [individual,] = data.individuals.edges.map((e) => e.node);
+    [individual] = data.individuals.edges.map((e) => e.node);
     const entitySettings = data.entitySettings.edges.map((e) => e.node);
     entitySettingArea = entitySettings.find((setting) => setting.target_type === ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA);
     entitySettingMalware = entitySettings.find((setting) => setting.target_type === ENTITY_TYPE_MALWARE);
@@ -107,7 +107,7 @@ describe('CSV-MAPPER', () => {
       { name: 'createdBy', default_values: [individual.id], mandatory: false },
       { name: 'latitude', default_values: ['1.11'], mandatory: false },
       { name: 'longitude', default_values: ['2.22'], mandatory: false },
-      { name: 'description', default_values: ['hello'], mandatory: false }
+      { name: 'description', default_values: ['hello'], mandatory: false },
     ];
     await internalAdminQuery(
       ENTITY_SETTINGS_UPDATE,
@@ -115,9 +115,9 @@ describe('CSV-MAPPER', () => {
         ids: [entitySettingArea.id],
         input: {
           key: 'attributes_configuration',
-          value: JSON.stringify(areaDefaultValues)
-        }
-      }
+          value: JSON.stringify(areaDefaultValues),
+        },
+      },
     );
     const malwareDefaultValues = [
       { name: 'createdBy', default_values: [individual.id], mandatory: false },
@@ -125,14 +125,14 @@ describe('CSV-MAPPER', () => {
       { name: 'malware_types', default_values: ['rootkit'], mandatory: false },
       { name: 'implementation_languages', default_values: ['lua', 'perl'], mandatory: false },
       { name: 'architecture_execution_envs', default_values: ['powerpc', 'x86'], mandatory: false },
-      { name: 'description', default_values: ['hello'], mandatory: false }
+      { name: 'description', default_values: ['hello'], mandatory: false },
     ];
     await internalAdminQuery(ENTITY_SETTINGS_UPDATE, {
       ids: [entitySettingMalware.id],
       input: {
         key: 'attributes_configuration',
-        value: JSON.stringify(malwareDefaultValues)
-      }
+        value: JSON.stringify(malwareDefaultValues),
+      },
     });
   });
 
@@ -227,7 +227,7 @@ describe('CSV-MAPPER', () => {
       const killChainPhase = killChainPhases[0];
       const data = (await mapData(
         filePath,
-        csvMapperAreaMalwareDefault(individual.id, [killChainPhase.id])
+        csvMapperAreaMalwareDefault(individual.id, [killChainPhase.id]),
       )).flat();
 
       const morbihan = data.find((object) => object.name === 'morbihan');
@@ -316,8 +316,8 @@ describe('CSV-MAPPER', () => {
         ...ADMIN_USER,
         default_marking: [{
           entity_type: 'GLOBAL',
-          values: [tlpAmber.id]
-        }]
+          values: [tlpAmber.id],
+        }],
       };
     });
 

@@ -500,7 +500,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
   it('should accept the created Case RFI first time be ok', async () => {
     // FIXME use a user and not admin !
     /*
-      const approvalResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+      const approvalResult = await queryAsUserWithSuccess(USER_EDITOR, {
         query: APPROVE_RFI_QUERY,
         variables: { id: caseRfiIdForApproval },
       });
@@ -531,7 +531,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
   it('should accept the created Case RFI second time be ok too', async () => {
     // FIXME use a user and not admin !
     /*
-      const approvalResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+      const approvalResult = await queryAsUserWithSuccess(USER_EDITOR, {
         query: APPROVE_RFI_QUERY,
         variables: { id: caseRfiIdForApproval },
       });
@@ -544,7 +544,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
   });
 
   it('should create a new Request Access and associated Case RFI (For reject use case)', async () => {
-    const requestAccessData = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST.client, {
+    const requestAccessData = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST, {
       query: CREATE_REQUEST_ACCESS_QUERY,
       variables: {
         input: {
@@ -561,7 +561,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
   });
 
   it('should reject the created Case RFI first time be ok', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: DECLINE_RFI_QUERY,
       variables: { id: caseRfiIdForReject },
     });
@@ -581,7 +581,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
   });
 
   it('should reject the created Case RFI second time be ok too', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: DECLINE_RFI_QUERY,
       variables: { input: { id: caseRfiIdForReject }, id: caseRfiIdForReject },
     });
@@ -590,7 +590,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
 
   it('should be ok to accept the Case RFI when already rejected', async () => {
     /* FIXME
-      const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+      const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
         query: APPROVE_RFI_QUERY,
         variables: { input: { id: caseRfiIdForReject }, id: caseRfiIdForReject },
       });

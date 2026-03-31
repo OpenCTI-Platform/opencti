@@ -150,7 +150,7 @@ describe('SupportPackage resolver standard behavior', () => {
 
 describe('SupportPackage rights management checks', () => {
   it('should Participant/Editor user not be allowed to create a SupportPackage.', async () => {
-    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
       query: CREATE_QUERY,
       variables: {
         input: {
