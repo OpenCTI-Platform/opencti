@@ -13,7 +13,7 @@ import { generateStandardId } from '../../schema/identifier';
 import { logApp } from '../../config/conf';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
-import { ConnectorPriorityGroup, ConnectorType, FilterMode, type FormSubmissionInput } from '../../generated/graphql';
+import { ConnectorPriorityGroup, ConnectorType, FilterMode, type DraftWorkspaceAddInput, type FormSubmissionInput, type MemberAccessInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
 import { BYPASS, isUserHasCapability, SYSTEM_USER } from '../../utils/access';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
@@ -453,6 +453,114 @@ export const resolveDraftFieldDefaults = (
     finalDraftAssignees,
     finalDraftParticipants,
   };
+};
+
+const normalizeOptionId = (option: unknown): string | undefined => {
+  if (typeof option === 'object' && option !== null) {
+    const optionValue = (option as { value?: string; id?: string }).value || (option as { value?: string; id?: string }).id;
+    return typeof optionValue === 'string' && optionValue.length > 0 ? optionValue : undefined;
+  }
+  return typeof option === 'string' && option.length > 0 ? option : undefined;
+};
+
+const normalizeGroupsRestrictionIds = (groupsRestriction: unknown): string[] | undefined => {
+  if (!Array.isArray(groupsRestriction)) {
+    return undefined;
+  }
+  const ids = groupsRestriction
+    .map((group) => normalizeOptionId(group))
+    .filter((groupId): groupId is string => !!groupId);
+  return ids.length > 0 ? ids : undefined;
+};
+
+type NormalizedDraftAuthorizedMemberRule = {
+  value: string;
+  accessRight: string;
+  groupsRestrictionIds?: string[];
+};
+
+const normalizeDraftAuthorizedMemberRule = (rule: unknown): NormalizedDraftAuthorizedMemberRule | null => {
+  if (rule === null || rule === undefined) {
+    return null;
+  }
+
+  if (typeof rule === 'object') {
+    const legacyRule = rule as { type?: string; intersectionGroup?: string };
+    if (legacyRule.type === 'CREATOR') {
+      return { value: 'CREATORS', accessRight: 'admin' };
+    }
+    if (legacyRule.type === 'AUTHOR_ORG') {
+      return {
+        value: 'AUTHOR',
+        accessRight: 'admin',
+        groupsRestrictionIds: legacyRule.intersectionGroup ? [legacyRule.intersectionGroup] : undefined,
+      };
+    }
+  }
+
+  const value = normalizeOptionId(rule);
+  if (!value) {
+    return null;
+  }
+
+  const accessRight = (typeof rule === 'object' && rule !== null && (rule as { accessRight?: string }).accessRight)
+    ? (rule as { accessRight: string }).accessRight
+    : 'admin';
+
+  return {
+    value,
+    accessRight,
+    groupsRestrictionIds: typeof rule === 'object' && rule !== null
+      ? normalizeGroupsRestrictionIds((rule as { groupsRestriction?: unknown }).groupsRestriction)
+      : undefined,
+  };
+};
+
+const resolveAuthorizedMembersForDraft = (
+  user: AuthUser,
+  rawRules: unknown[],
+): MemberAccessInput[] => {
+  const authorizedMembersMap = new Map<string, MemberAccessInput>();
+  rawRules.forEach((rule) => {
+    const normalizedRule = normalizeDraftAuthorizedMemberRule(rule);
+    if (!normalizedRule) {
+      return;
+    }
+
+    const { value, accessRight, groupsRestrictionIds } = normalizedRule;
+    if (value === 'CREATORS') {
+      authorizedMembersMap.set(user.id, { id: user.id, access_right: accessRight });
+      return;
+    }
+
+    if (value === 'AUTHOR') {
+      if (user.organizations) {
+        user.organizations.forEach((org) => {
+          const existing = authorizedMembersMap.get(org.internal_id)
+            || { id: org.internal_id, access_right: accessRight };
+          const currentGroupRestrictions = existing.groups_restriction_ids ?? [];
+          const mergedGroupRestrictions = groupsRestrictionIds
+            ? Array.from(new Set([...currentGroupRestrictions, ...groupsRestrictionIds]))
+            : undefined;
+
+          authorizedMembersMap.set(org.internal_id, {
+            ...existing,
+            access_right: existing.access_right || accessRight,
+            groups_restriction_ids: mergedGroupRestrictions,
+          });
+        });
+      }
+      return;
+    }
+
+    authorizedMembersMap.set(value, {
+      id: value,
+      access_right: accessRight,
+      groups_restriction_ids: groupsRestrictionIds,
+    });
+  });
+
+  return Array.from(authorizedMembersMap.values());
 };
 
 // Submit a form and convert to STIX bundle
@@ -1022,7 +1130,6 @@ export const formSubmit = async (
     let draftId = null;
     if (finalIsDraft) {
       let createdBy: string | null = null;
-      const authorizedMembersMap = new Map<string, any>();
       const {
         finalDraftName,
         finalDraftDescription,
@@ -1032,8 +1139,7 @@ export const formSubmit = async (
 
       // Apply draft defaults for author
       if (values.draftAuthor) {
-        const isObject = typeof values.draftAuthor === 'object' && values.draftAuthor !== null;
-        createdBy = isObject ? (values.draftAuthor.value || values.draftAuthor.id) : values.draftAuthor;
+        createdBy = normalizeOptionId(values.draftAuthor) || null;
       } else if (schema.draftDefaults?.author) {
         if (schema.draftDefaults.author.type === 'current_user') {
           createdBy = user.individual_id || null;
@@ -1041,10 +1147,7 @@ export const formSubmit = async (
           const possibleAuthor = values.createdBy
             || values.mainEntityFields?.createdBy
             || (values.mainEntityGroups && values.mainEntityGroups.length > 0 ? values.mainEntityGroups[0].createdBy : undefined);
-          if (possibleAuthor) {
-            const isObject = typeof possibleAuthor === 'object' && possibleAuthor !== null;
-            createdBy = isObject ? (possibleAuthor.value || possibleAuthor.id) : possibleAuthor;
-          }
+          createdBy = normalizeOptionId(possibleAuthor) || null;
         } else if (schema.draftDefaults.author.type === 'none') {
           createdBy = null;
         }
@@ -1053,106 +1156,14 @@ export const formSubmit = async (
       // Apply explicit authorized members from form submission
       // Only users with BYPASS capability can override authorized members
       const isBypass = isUserHasCapability(user, BYPASS);
-      if (isBypass && values.draftAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
-        values.draftAuthorizedMembers.forEach((val: any) => {
-          // Handle object (new format) or string (old format / backward compat)
-          const isObject = typeof val === 'object' && val !== null;
-          const id = isObject ? (val.value || val.id) : val;
-          const accessRight = (isObject && val.accessRight) ? val.accessRight : 'admin';
-          const groupsRestriction = (isObject && val.groupsRestriction && Array.isArray(val.groupsRestriction))
-            ? val.groupsRestriction.map((g: any) => g.value || g.id || g)
-            : undefined;
-
-          // Resolve dynamic values
-          if (id === 'CREATORS') {
-            authorizedMembersMap.set(user.id, { id: user.id, access_right: accessRight });
-          } else if (id === 'AUTHOR') {
-            if (user.organizations) {
-              user.organizations.forEach((org) => {
-                const existing = authorizedMembersMap.get(org.internal_id) || { id: org.internal_id, access_right: accessRight, groups_restriction_ids: [] };
-                if (groupsRestriction) {
-                  if (!existing.groups_restriction_ids) {
-                    existing.groups_restriction_ids = [];
-                  }
-                  groupsRestriction.forEach((groupId: string) => {
-                    if (existing.groups_restriction_ids && !existing.groups_restriction_ids.includes(groupId)) {
-                      existing.groups_restriction_ids.push(groupId);
-                    }
-                  });
-                } else {
-                  existing.groups_restriction_ids = undefined;
-                }
-                authorizedMembersMap.set(org.internal_id, existing);
-              });
-            }
-          } else if (id) {
-            // Standard member (User/Group/Organization)
-            authorizedMembersMap.set(id, { id, access_right: accessRight, groups_restriction_ids: groupsRestriction });
-          }
-        });
+      let authorized_members: MemberAccessInput[] = [];
+      if (isBypass && Array.isArray(values.draftAuthorizedMembers)) {
+        authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers);
       } else if (schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
-        const defaultRules = schema.draftDefaults.authorizedMembers.defaults;
-        defaultRules.forEach((rule) => {
-          // Backward compatibility for old rules
-          if (rule.type === 'CREATOR') {
-            authorizedMembersMap.set(user.id, { id: user.id, access_right: 'admin' });
-            return;
-          } else if (rule.type === 'AUTHOR_ORG') {
-            if (user.organizations) {
-              user.organizations.forEach((org) => {
-                const existing = authorizedMembersMap.get(org.internal_id) || { id: org.internal_id, access_right: 'admin', groups_restriction_ids: [] };
-                if (rule.intersectionGroup) {
-                  if (!existing.groups_restriction_ids) {
-                    existing.groups_restriction_ids = [];
-                  }
-                  if (!existing.groups_restriction_ids.includes(rule.intersectionGroup)) {
-                    existing.groups_restriction_ids.push(rule.intersectionGroup);
-                  }
-                } else {
-                  existing.groups_restriction_ids = undefined;
-                }
-                authorizedMembersMap.set(org.internal_id, existing);
-              });
-            }
-            return;
-          }
-
-          // New structure (AuthorizedMemberOption)
-          const accessRight = rule.accessRight || 'admin';
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const groupsRestrictionIds = rule.groupsRestriction?.length > 0 ? rule.groupsRestriction.map((g: any) => g.value || g.id || g) : undefined;
-
-          if (rule.value === 'CREATORS') {
-            authorizedMembersMap.set(user.id, { id: user.id, access_right: accessRight });
-          } else if (rule.value === 'AUTHOR') {
-            if (user.organizations) {
-              user.organizations.forEach((org) => {
-                const existing = authorizedMembersMap.get(org.internal_id) || { id: org.internal_id, access_right: accessRight, groups_restriction_ids: [] };
-                if (groupsRestrictionIds) {
-                  if (!existing.groups_restriction_ids) {
-                    existing.groups_restriction_ids = [];
-                  }
-                  groupsRestrictionIds.forEach((groupId: string) => {
-                    if (existing.groups_restriction_ids && !existing.groups_restriction_ids.includes(groupId)) {
-                      existing.groups_restriction_ids.push(groupId);
-                    }
-                  });
-                } else {
-                  existing.groups_restriction_ids = undefined;
-                }
-                authorizedMembersMap.set(org.internal_id, existing);
-              });
-            }
-          } else if (rule.value) {
-            // Specific selected member (Organization/Group/User)
-            authorizedMembersMap.set(rule.value, { id: rule.value, access_right: accessRight, groups_restriction_ids: groupsRestrictionIds });
-          }
-        });
+        authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults);
       }
 
-      const authorized_members = Array.from(authorizedMembersMap.values());
-
-      const draftInput: any = {
+      const draftInput: DraftWorkspaceAddInput = {
         name: finalDraftName,
       };
       if (finalDraftDescription.length > 0) draftInput.description = finalDraftDescription;
