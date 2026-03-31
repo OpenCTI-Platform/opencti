@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, editorQuery, getUserIdByEmail, queryAsAdmin, testContext, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, getUserIdByEmail, queryAsAdmin, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { MEMBER_ACCESS_ALL } from '../../../src/utils/access';
-import { createUploadFromTestDataFile, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { createUploadFromTestDataFile, queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { toB64 } from '../../../src/utils/base64';
 
 const LIST_QUERY = gql`
@@ -584,7 +584,7 @@ describe('Workspace resolver standard behavior', () => {
         }
       }
     `;
-    const sector = await editorQuery({
+    const sector = await queryAsUser(USER_EDITOR, {
       query: CREATE_SECTOR_QUERY,
       variables: SECTOR_TO_CREATE,
     });
@@ -603,7 +603,7 @@ describe('Workspace resolver standard behavior', () => {
         }
       }
     `;
-    const individual = await editorQuery({
+    const individual = await queryAsUser(USER_EDITOR, {
       query: CREATE_INDIVIDUAL_QUERY,
       variables: INDIVIDUAL_TO_CREATE,
     });
@@ -625,7 +625,7 @@ describe('Workspace resolver standard behavior', () => {
       },
     };
 
-    const workspace = await editorQuery({
+    const workspace = await queryAsUser(USER_EDITOR, {
       query: CREATE_QUERY,
       variables: WORKSPACE_WITH_WANTED_ENTITIES_TO_CREATE,
     });
@@ -791,7 +791,7 @@ describe('Workspace member access behavior', () => {
         ],
       },
     };
-    const workspace1 = await editorQuery({
+    const workspace1 = await queryAsUser(USER_EDITOR, {
       query: CREATE_QUERY,
       variables: WORKSPACE1_TO_CREATE,
     });
@@ -846,7 +846,7 @@ describe('Workspace member access behavior', () => {
   });
 
   it('User gets only the 3 shared workspaces', async () => {
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: LIST_QUERY,
       variables: { first: 10 },
     });
@@ -854,7 +854,7 @@ describe('Workspace member access behavior', () => {
   });
 
   it('User with view access right cannot update workspace3', async () => {
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: UPDATE_QUERY,
       variables: {
         id: workspace3InternalId,
@@ -864,7 +864,7 @@ describe('Workspace member access behavior', () => {
   });
 
   it('User with edit access right updates workspace2', async () => {
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: UPDATE_QUERY,
       variables: {
         id: workspace2InternalId,
@@ -891,7 +891,7 @@ describe('Workspace member access behavior', () => {
         access_right: 'view',
       },
     ];
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: UPDATE_MEMBERS_QUERY,
       variables: { id: workspace1InternalId, input: authorizedMembersUpdate },
     });
@@ -911,7 +911,7 @@ describe('Workspace member access behavior', () => {
         access_right: 'edit',
       },
     ];
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: UPDATE_MEMBERS_QUERY,
       variables: { id: workspace1InternalId, input: authorizedMembersUpdate },
     });
@@ -932,7 +932,7 @@ describe('Workspace member access behavior', () => {
         access_right: 'admin',
       },
     ];
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: UPDATE_MEMBERS_QUERY,
       variables: { id: workspace2InternalId, input: authorizedMembersUpdate },
     });
@@ -940,7 +940,7 @@ describe('Workspace member access behavior', () => {
 
   it('User with admin access right deletes workspace1', async () => {
     // Delete the workspace
-    const editorDeleteResult = await editorQuery({
+    const editorDeleteResult = await queryAsUser(USER_EDITOR, {
       query: DELETE_QUERY,
       variables: { id: workspace1InternalId },
     });

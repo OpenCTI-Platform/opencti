@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, AMBER_GROUP, editorQuery, queryAsAdmin, securityQuery, USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
+import { ADMIN_USER, AMBER_GROUP, queryAsAdmin, USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
 import { EVENT_TYPE_CREATE } from '../../../src/database/utils';
-import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { authorizedMembers } from '../../../src/schema/attribute-definition';
 
 const LIST_TRIGGERS_KNOWLEDGE_QUERY = gql`
@@ -222,7 +222,7 @@ describe('Trigger knowledge resolver standard behavior', () => {
         instance_trigger: false,
       },
     };
-    const trigger = await securityQuery({ query: CREATE_TRIGGER_KNOWLEDGE_LIVE_QUERY, variables: TRIGGER_TO_CREATE_FOR_USER });
+    const trigger = await queryAsUser(USER_SECURITY, { query: CREATE_TRIGGER_KNOWLEDGE_LIVE_QUERY, variables: TRIGGER_TO_CREATE_FOR_USER });
     expect(trigger).not.toBeNull();
     expect(trigger.data.triggerKnowledgeLiveAdd).not.toBeNull();
     expect(trigger.data.triggerKnowledgeLiveAdd.name).toEqual('trigger');
@@ -239,9 +239,9 @@ describe('Trigger knowledge resolver standard behavior', () => {
         mode: 'and',
         filters: [{ key: `${authorizedMembers.name}.id`, values: [ADMIN_USER.id] }],
         filterGroups: [],
-      }
+      },
     };
-    const queryResult = await securityQuery({ query: LIST_TRIGGERS_KNOWLEDGE_QUERY, variables });
+    const queryResult = await queryAsUser(USER_SECURITY, { query: LIST_TRIGGERS_KNOWLEDGE_QUERY, variables });
     expect(queryResult.data.triggersKnowledge.edges.length).toEqual(3);
   });
   it('should update trigger', async () => {
@@ -269,12 +269,12 @@ describe('Trigger knowledge resolver standard behavior', () => {
   });
   it('security user should Admin trigger deleted', async () => {
     // Delete the trigger
-    await securityQuery({
+    await queryAsUser(USER_SECURITY, {
       query: DELETE_TRIGGER_KNOWLEDGE_QUERY,
       variables: { id: triggerUserInternalId },
     });
     // Verify is no longer found
-    const queryResult = await securityQuery({ query: READ_TRIGGER_KNOWLEDGE_QUERY, variables: { id: triggerUserInternalId } });
+    const queryResult = await queryAsUser(USER_SECURITY, { query: READ_TRIGGER_KNOWLEDGE_QUERY, variables: { id: triggerUserInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.triggerKnowledge).toBeNull();
   });
@@ -292,7 +292,7 @@ describe('Trigger knowledge resolver standard behavior', () => {
         instance_trigger: false,
       },
     };
-    const trigger = await securityQuery({
+    const trigger = await queryAsUser(USER_SECURITY, {
       query: CREATE_TRIGGER_KNOWLEDGE_LIVE_QUERY,
       variables: GROUP_TRIGGER_TO_CREATE,
     });
@@ -302,24 +302,24 @@ describe('Trigger knowledge resolver standard behavior', () => {
     triggerGroupInternalId = trigger.data.triggerKnowledgeLiveAdd.id;
   });
   it('editor user should list group triggers via knowledge triggers API', async () => {
-    const queryResult = await editorQuery({ query: LIST_TRIGGERS_KNOWLEDGE_QUERY, variables: { first: 10 } });
+    const queryResult = await queryAsUser(USER_EDITOR, { query: LIST_TRIGGERS_KNOWLEDGE_QUERY, variables: { first: 10 } });
     expect(queryResult.data.triggersKnowledge.edges.length).toEqual(1);
   });
   it('editor user should list group triggers via triggers API', async () => {
-    const queryResult = await editorQuery({ query: LIST_TRIGGERS_QUERY, variables: { first: 10 } });
+    const queryResult = await queryAsUser(USER_EDITOR, { query: LIST_TRIGGERS_QUERY, variables: { first: 10 } });
     expect(queryResult.data.triggers.edges.length).toEqual(1);
   });
   it('editor user should not update group trigger', async () => {
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: UPDATE_TRIGGER_KNOWLEDGE_QUERY,
       variables: { id: triggerGroupInternalId, input: { key: 'name', value: ['group trigger - updated'] } },
     });
   });
   it('security user should group trigger deleted', async () => {
     // Delete the trigger
-    await securityQuery({ query: DELETE_TRIGGER_KNOWLEDGE_QUERY, variables: { id: triggerGroupInternalId } });
+    await queryAsUser(USER_SECURITY, { query: DELETE_TRIGGER_KNOWLEDGE_QUERY, variables: { id: triggerGroupInternalId } });
     // Verify is no longer found
-    const queryResult = await securityQuery({ query: READ_TRIGGER_KNOWLEDGE_QUERY, variables: { id: triggerGroupInternalId } });
+    const queryResult = await queryAsUser(USER_SECURITY, { query: READ_TRIGGER_KNOWLEDGE_QUERY, variables: { id: triggerGroupInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.triggerKnowledge).toBeNull();
   });
@@ -337,7 +337,7 @@ describe('Trigger knowledge resolver standard behavior', () => {
         instance_trigger: false,
       },
     };
-    const trigger = await securityQuery({
+    const trigger = await queryAsUser(USER_SECURITY, {
       query: CREATE_TRIGGER_KNOWLEDGE_LIVE_QUERY,
       variables: ORGANIZATION_TRIGGER_TO_CREATE,
     });
@@ -347,20 +347,20 @@ describe('Trigger knowledge resolver standard behavior', () => {
     triggerOrganizationInternalId = trigger.data.triggerKnowledgeLiveAdd.id;
   });
   it('editor user should list organization trigger', async () => {
-    const queryResult = await editorQuery({ query: LIST_TRIGGERS_KNOWLEDGE_QUERY, variables: { first: 10 } });
+    const queryResult = await queryAsUser(USER_EDITOR, { query: LIST_TRIGGERS_KNOWLEDGE_QUERY, variables: { first: 10 } });
     expect(queryResult.data.triggersKnowledge.edges.length).toEqual(1);
   });
   it('editor user should not update organization trigger', async () => {
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: UPDATE_TRIGGER_KNOWLEDGE_QUERY,
       variables: { id: triggerOrganizationInternalId, input: { key: 'name', value: ['organization trigger - updated'] } },
     });
   });
   it('security user should organization trigger deleted', async () => {
     // Delete the trigger
-    await securityQuery({ query: DELETE_TRIGGER_KNOWLEDGE_QUERY, variables: { id: triggerOrganizationInternalId } });
+    await queryAsUser(USER_SECURITY, { query: DELETE_TRIGGER_KNOWLEDGE_QUERY, variables: { id: triggerOrganizationInternalId } });
     // Verify is no longer found
-    const queryResult = await securityQuery({ query: READ_TRIGGER_KNOWLEDGE_QUERY, variables: { id: triggerOrganizationInternalId } });
+    const queryResult = await queryAsUser(USER_SECURITY, { query: READ_TRIGGER_KNOWLEDGE_QUERY, variables: { id: triggerOrganizationInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.triggerKnowledge).toBeNull();
   });
@@ -380,7 +380,7 @@ describe('Trigger activity resolver standard behavior', () => {
   let triggerActivityDigestInternalId;
   it('should activity live trigger created', async () => {
     // Create the trigger
-    const trigger = await securityQuery({ query: CREATE_TRIGGER_ACTIVITY_LIVE_QUERY, variables: TRIGGER_ACTIVITY_LIVE_TO_CREATE });
+    const trigger = await queryAsUser(USER_SECURITY, { query: CREATE_TRIGGER_ACTIVITY_LIVE_QUERY, variables: TRIGGER_ACTIVITY_LIVE_TO_CREATE });
     expect(trigger).not.toBeNull();
     expect(trigger.data.triggerActivityLiveAdd).not.toBeNull();
     expect(trigger.data.triggerActivityLiveAdd.name).toEqual('activity live trigger');
@@ -397,21 +397,21 @@ describe('Trigger activity resolver standard behavior', () => {
       },
     };
     // Create the digest
-    const digest = await securityQuery({ query: CREATE_TRIGGER_ACTIVITY_DIGEST_QUERY, variables: TRIGGER_ACTIVITY_DIGEST_TO_CREATE });
+    const digest = await queryAsUser(USER_SECURITY, { query: CREATE_TRIGGER_ACTIVITY_DIGEST_QUERY, variables: TRIGGER_ACTIVITY_DIGEST_TO_CREATE });
     expect(digest).not.toBeNull();
     expect(digest.data.triggerActivityDigestAdd).not.toBeNull();
     expect(digest.data.triggerActivityDigestAdd.name).toEqual('activity regular digest');
     triggerActivityDigestInternalId = digest.data.triggerActivityDigestAdd.id;
   });
   it('should activity live trigger loaded by internal id', async () => {
-    const queryResult = await securityQuery({ query: READ_TRIGGER_ACTIVITY_QUERY, variables: { id: triggerActivityLiveInternalId } });
+    const queryResult = await queryAsUser(USER_SECURITY, { query: READ_TRIGGER_ACTIVITY_QUERY, variables: { id: triggerActivityLiveInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.triggerActivity).not.toBeNull();
     expect(queryResult.data.triggerActivity.id).toEqual(triggerActivityLiveInternalId);
     expect(queryResult.data.triggerActivity.name).toEqual('activity live trigger');
   });
   it('should activity digest trigger loaded by internal id', async () => {
-    const queryResult = await securityQuery({ query: READ_TRIGGER_ACTIVITY_QUERY, variables: { id: triggerActivityDigestInternalId } });
+    const queryResult = await queryAsUser(USER_SECURITY, { query: READ_TRIGGER_ACTIVITY_QUERY, variables: { id: triggerActivityDigestInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.triggerActivity).not.toBeNull();
     expect(queryResult.data.triggerActivity.id).toEqual(triggerActivityDigestInternalId);
@@ -420,7 +420,7 @@ describe('Trigger activity resolver standard behavior', () => {
   // make sure editor can't call activity APIs (missing capa)
   it('editor user should not create / read / list / update / delete activity live trigger', async () => {
     // create forbidden
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: CREATE_TRIGGER_ACTIVITY_LIVE_QUERY,
       variables: TRIGGER_ACTIVITY_LIVE_TO_CREATE,
     });
@@ -433,39 +433,39 @@ describe('Trigger activity resolver standard behavior', () => {
         recipients: [USER_SECURITY.id],
       },
     };
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: CREATE_TRIGGER_ACTIVITY_DIGEST_QUERY,
       variables: TRIGGER_ACTIVITY_DIGEST_TO_CREATE,
     });
     // read forbidden
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: READ_TRIGGER_ACTIVITY_QUERY,
       variables: { id: triggerActivityLiveInternalId },
     });
     // update forbidden
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: UPDATE_TRIGGER_ACTIVITY_QUERY,
       variables: { id: triggerActivityLiveInternalId, input: { key: 'name', value: ['activity live trigger - updated'] } },
     });
     // delete forbidden
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: DELETE_TRIGGER_ACTIVITY_QUERY,
       variables: { id: triggerActivityLiveInternalId },
     });
     // list forbidden
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: LIST_TRIGGERS_ACTIVITY_QUERY,
       variables: { first: 10 },
     });
   });
   // list activity triggers
   it('security user should list activity triggers', async () => {
-    const queryResult = await securityQuery({ query: LIST_TRIGGERS_ACTIVITY_QUERY, variables: { first: 10 } });
+    const queryResult = await queryAsUser(USER_SECURITY, { query: LIST_TRIGGERS_ACTIVITY_QUERY, variables: { first: 10 } });
     expect(queryResult.data.triggersActivity.edges.length).toEqual(2);
   });
   // update activity trigger
   it('should update trigger', async () => {
-    const queryResult = await securityQuery({
+    const queryResult = await queryAsUser(USER_SECURITY, {
       query: UPDATE_TRIGGER_ACTIVITY_QUERY,
       variables: { id: triggerActivityLiveInternalId, input: { key: 'name', value: ['activity live trigger - updated'] } },
     });
@@ -483,29 +483,29 @@ describe('Trigger activity resolver standard behavior', () => {
         instance_trigger: false,
       },
     };
-    const trigger = await securityQuery({ query: CREATE_TRIGGER_KNOWLEDGE_LIVE_QUERY, variables: TRIGGER_TO_CREATE });
+    const trigger = await queryAsUser(USER_SECURITY, { query: CREATE_TRIGGER_KNOWLEDGE_LIVE_QUERY, variables: TRIGGER_TO_CREATE });
     expect(trigger).not.toBeNull();
     expect(trigger.data.triggerKnowledgeLiveAdd).not.toBeNull();
     const triggerToDeleteId = trigger.data.triggerKnowledgeLiveAdd.id;
     // list activity triggers
-    const activityTriggersList = await securityQuery({ query: LIST_TRIGGERS_ACTIVITY_QUERY, variables: { first: 10 } });
+    const activityTriggersList = await queryAsUser(USER_SECURITY, { query: LIST_TRIGGERS_ACTIVITY_QUERY, variables: { first: 10 } });
     expect(activityTriggersList.data.triggersActivity.edges.length).toEqual(2);
     // list all triggers => we should have now 3 triggers : 2 activity & 1 knowledge
-    let queryResult = await securityQuery({ query: LIST_TRIGGERS_QUERY, variables: { first: 10 } });
+    let queryResult = await queryAsUser(USER_SECURITY, { query: LIST_TRIGGERS_QUERY, variables: { first: 10 } });
     expect(queryResult.data.triggers.edges.length, `triggers ${JSON.stringify(queryResult)}`).toEqual(3);
     // delete the live trigger
-    await securityQuery({ query: DELETE_TRIGGER_KNOWLEDGE_QUERY, variables: { id: triggerToDeleteId } });
+    await queryAsUser(USER_SECURITY, { query: DELETE_TRIGGER_KNOWLEDGE_QUERY, variables: { id: triggerToDeleteId } });
     // list all triggers => we should have now only 2 triggers
-    queryResult = await securityQuery({ query: LIST_TRIGGERS_QUERY, variables: { first: 10 } });
+    queryResult = await queryAsUser(USER_SECURITY, { query: LIST_TRIGGERS_QUERY, variables: { first: 10 } });
     expect(queryResult.data.triggers.edges.length).toEqual(2);
   });
   // delete activity triggers
   it('security user should delete all activity triggers', async () => {
     // Delete live & digest trigger
-    await securityQuery({ query: DELETE_TRIGGER_ACTIVITY_QUERY, variables: { id: triggerActivityLiveInternalId } });
-    await securityQuery({ query: DELETE_TRIGGER_ACTIVITY_QUERY, variables: { id: triggerActivityDigestInternalId } });
+    await queryAsUser(USER_SECURITY, { query: DELETE_TRIGGER_ACTIVITY_QUERY, variables: { id: triggerActivityLiveInternalId } });
+    await queryAsUser(USER_SECURITY, { query: DELETE_TRIGGER_ACTIVITY_QUERY, variables: { id: triggerActivityDigestInternalId } });
     // Verify there is no activity triggers
-    const queryResult = await securityQuery({ query: LIST_TRIGGERS_ACTIVITY_QUERY, variables: { first: 10 } });
+    const queryResult = await queryAsUser(USER_SECURITY, { query: LIST_TRIGGERS_ACTIVITY_QUERY, variables: { first: 10 } });
     expect(queryResult.data.triggersActivity.edges.length).toEqual(0);
   });
 });

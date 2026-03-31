@@ -5,7 +5,7 @@ import { registerConnector } from '../../../src/domain/connector';
 import { ConnectorType } from '../../../src/generated/graphql';
 import * as catalogDomain from '../../../src/modules/catalog/catalog-domain';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
-import { adminQueryWithSuccess, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 
 const CREATE_USER_QUERY = gql`
   mutation UserAdd($input: UserAddInput!) {
@@ -97,7 +97,7 @@ describe.todo('Check connector migration', () => {
    * - Get catalogId
    */
   beforeAll(async () => {
-    const user = await adminQueryWithSuccess({
+    const user = await queryAsAdminWithSuccess({
       query: CREATE_USER_QUERY,
       variables: { input: {
         name: 'firstname lastname',
@@ -171,7 +171,7 @@ describe.todo('Check connector migration', () => {
         expect(standaloneConnector.connector_user_id).toMatch(userId);
         expect(standaloneConnector.connector_user.user_service_account).toBeFalsy();
 
-        const managedConnectorResult = await adminQueryWithSuccess({
+        const managedConnectorResult = await queryAsAdminWithSuccess({
           query: MIGRATE_CONNECTOR_TO_MANAGED,
           variables: {
             input: {
@@ -290,7 +290,7 @@ describe.todo('Check connector migration', () => {
 
   //   // MIGRATE_CONNECTOR_TO_MANAGED;
 
-  //   const managedConnector = await adminQueryWithSuccess({
+  //   const managedConnector = await queryAsAdminWithSuccess({
   //     query: MIGRATE_CONNECTOR_TO_MANAGED,
   //     variables: {
   //       input: {

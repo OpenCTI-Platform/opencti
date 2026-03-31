@@ -103,7 +103,7 @@ describe('Saved Filter Resolver', () => {
         expect(savedFilters.length).toEqual(1);
       });
       it('gives the list of saved filters with restricted members', async () => {
-        const result = await queryAsUserWithSuccess(USER_EDITOR.client, {
+        const result = await queryAsUserWithSuccess(USER_EDITOR, {
           query: GET_SAVED_FILTERS_QUERY,
           variables: {},
         });

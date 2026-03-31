@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import type { GraphQLFormattedError } from 'graphql';
 import { createUploadFromTestDataFile, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { IngestionAuthType, TaxiiVersion } from '../../../src/generated/graphql';
-import { ADMIN_USER, adminQuery, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { now } from '../../../src/utils/format';
 import { findById as findIngestionById, patchTaxiiIngestion } from '../../../src/modules/ingestion/ingestion-taxii-domain';
 import { findById as findUserById } from '../../../src/domain/user';
@@ -149,14 +149,14 @@ describe('TAXII ingestion resolver standard behavior', () => {
     const createdUser = await findUserById(testContext, ADMIN_USER, userIdCreated);
     expect(createdUser.name).toBe('[F] Taxii ingester for integration test');
     // Delete just created user
-    await adminQuery({
+    await queryAsAdmin({
       query: DELETE_USER_QUERY,
       variables: { id: createdUser.id },
     });
     // Verify no longer found
-    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
+    const queryResult = await queryAsAdmin({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).toBeNull();
+    expect(queryResult.data?.user).toBeNull();
   });
 
   it('should edit a TAXII ingester', async () => {
@@ -201,14 +201,14 @@ describe('TAXII ingestion resolver standard behavior', () => {
     });
     expect(updateTaxiiFeedWithAutoUserResult?.data?.ingestionTaxiiAddAutoUser?.user?.name).toBe('AutoUser');
     // Delete just created user
-    await adminQuery({
+    await queryAsAdmin({
       query: DELETE_USER_QUERY,
       variables: { id: updateTaxiiFeedWithAutoUserResult?.data?.ingestionTaxiiAddAutoUser?.user?.id },
     });
     // Verify no longer found
-    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: updateTaxiiFeedWithAutoUserResult?.data?.ingestionTaxiiAddAutoUser?.user?.id } });
+    const queryResult = await queryAsAdmin({ query: READ_USER_QUERY, variables: { id: updateTaxiiFeedWithAutoUserResult?.data?.ingestionTaxiiAddAutoUser?.user?.id } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).toBeNull();
+    expect(queryResult.data?.user).toBeNull();
   });
 
   it('should reset cursor when a user change the start date', async () => {

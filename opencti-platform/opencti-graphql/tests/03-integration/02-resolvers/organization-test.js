@@ -257,12 +257,12 @@ describe('Organization resolver standard behavior', () => {
     expect(queryResult.data.organization).toBeNull();
   });
   it('should not delete organization if it has members', async () => {
-    await queryAsUserIsExpectedError(USER_EDITOR.client, {
+    await queryAsUserIsExpectedError(USER_EDITOR, {
       query: DELETE_QUERY,
       variables: { id: TEST_ORGANIZATION.id },
     }, 'Cannot delete the organization.', 'FUNCTIONAL_ERROR');
 
-    await queryAsUserIsExpectedError(USER_SECURITY.client, {
+    await queryAsUserIsExpectedError(USER_SECURITY, {
       query: DELETE_QUERY,
       variables: { id: TEST_ORGANIZATION.id },
     }, 'Cannot delete an organization that has members.', 'FUNCTIONAL_ERROR');

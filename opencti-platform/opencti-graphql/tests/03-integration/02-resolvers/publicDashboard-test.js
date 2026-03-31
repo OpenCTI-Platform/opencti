@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, editorQuery, getUserIdByEmail, participantQuery, queryAsAdmin, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_USER, getUserIdByEmail, queryAsAdmin, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { PRIVATE_DASHBOARD_MANIFEST } from './publicDashboard-data';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../../../src/modules/publicDashboard/publicDashboard-types';
-import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { toB64 } from '../../../src/utils/base64';
 
 const LIST_QUERY = gql`
@@ -258,7 +258,7 @@ describe('PublicDashboard resolver', () => {
             enabled: true,
           },
         };
-        await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+        await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
           query: CREATE_QUERY,
           variables: PUBLICDASHBOARD2_TO_CREATE,
         });
@@ -292,7 +292,7 @@ describe('PublicDashboard resolver', () => {
             enabled: true,
           },
         };
-        const queryResult = await editorQuery({
+        const queryResult = await queryAsUser(USER_EDITOR, {
           query: CREATE_QUERY,
           variables: PUBLICDASHBOARD3_TO_CREATE,
         });
@@ -331,7 +331,7 @@ describe('PublicDashboard resolver', () => {
           },
         };
 
-        const publicDashboardQuery = await editorQuery({
+        const publicDashboardQuery = await queryAsUser(USER_EDITOR, {
           query: CREATE_QUERY,
           variables: PUBLIC_DASHBOARD_TO_CREATE,
         });
@@ -352,7 +352,7 @@ describe('PublicDashboard resolver', () => {
           },
         };
 
-        const publicDashboardQuery = await editorQuery({
+        const publicDashboardQuery = await queryAsUser(USER_EDITOR, {
           query: CREATE_QUERY,
           variables: PUBLIC_DASHBOARD_TO_CREATE,
         });
@@ -433,7 +433,7 @@ describe('PublicDashboard resolver', () => {
 
       it('should not update publicDashboard if not allowed', async () => {
         const updatedName = `${publicDashboardName} - updated`;
-        const queryResult = await participantQuery({
+        const queryResult = await queryAsUser(USER_PARTICIPATE, {
           query: UPDATE_QUERY,
           variables: {
             id: publicDashboardInternalId,
@@ -447,7 +447,7 @@ describe('PublicDashboard resolver', () => {
 
       it('should not update publicDashboard if not allowed', async () => {
         const updatedName = `${publicDashboardName} - updated`;
-        const queryResult = await participantQuery({
+        const queryResult = await queryAsUser(USER_PARTICIPATE, {
           query: UPDATE_QUERY,
           variables: {
             id: publicDashboardInternalId,
@@ -547,12 +547,12 @@ describe('PublicDashboard resolver', () => {
               administrativeAreaAdd(input: $input) { id }
             }
           `;
-          const france = await editorQuery({
+          const france = await queryAsUser(USER_EDITOR, {
             query: CREATE_AREA,
             variables: { input: { name: 'france', description: 'widget tests' } },
           });
           franceId = france.data.administrativeAreaAdd.id;
-          const belgique = await editorQuery({
+          const belgique = await queryAsUser(USER_EDITOR, {
             query: CREATE_AREA,
             variables: { input: { name: 'belgique', description: 'widget tests' } },
           });
@@ -565,17 +565,17 @@ describe('PublicDashboard resolver', () => {
               malwareAdd(input: $input) { id }
             }
           `;
-          const vador = await editorQuery({
+          const vador = await queryAsUser(USER_EDITOR, {
             query: CREATE_MALWARES,
             variables: { input: { name: 'vador', malware_types: ['ddos'], description: 'widget tests' } },
           });
           vadorId = vador.data.malwareAdd.id;
-          const magneto = await editorQuery({
+          const magneto = await queryAsUser(USER_EDITOR, {
             query: CREATE_MALWARES,
             variables: { input: { name: 'magneto', malware_types: ['backdoor'], description: 'widget tests' } },
           });
           magnetoId = magneto.data.malwareAdd.id;
-          const octopus = await editorQuery({
+          const octopus = await queryAsUser(USER_EDITOR, {
             query: CREATE_MALWARES,
             variables: { input: { name: 'octopus', malware_types: ['rootkit'], description: 'widget tests' } },
           });
@@ -588,44 +588,44 @@ describe('PublicDashboard resolver', () => {
               stixCoreRelationshipAdd(input: $input) { id }
             }
           `;
-          await editorQuery({
+          await queryAsUser(USER_EDITOR, {
             query: ADD_TARGETS_REL,
             variables: {
               input: {
                 relationship_type: 'targets',
                 fromId: vadorId,
-                toId: franceId
-              }
+                toId: franceId,
+              },
             },
           });
-          await editorQuery({
+          await queryAsUser(USER_EDITOR, {
             query: ADD_TARGETS_REL,
             variables: {
               input: {
                 relationship_type: 'targets',
                 fromId: magnetoId,
-                toId: franceId
-              }
+                toId: franceId,
+              },
             },
           });
-          await editorQuery({
+          await queryAsUser(USER_EDITOR, {
             query: ADD_TARGETS_REL,
             variables: {
               input: {
                 relationship_type: 'targets',
                 fromId: magnetoId,
-                toId: belgiqueId
-              }
+                toId: belgiqueId,
+              },
             },
           });
-          await editorQuery({
+          await queryAsUser(USER_EDITOR, {
             query: ADD_TARGETS_REL,
             variables: {
               input: {
                 relationship_type: 'targets',
                 fromId: octopusId,
-                toId: belgiqueId
-              }
+                toId: belgiqueId,
+              },
             },
           });
           // endregion
@@ -665,7 +665,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCO_NUMBER_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: 'ebb25410-7048-4de7-9288-704e962215f6'
+              widgetId: 'ebb25410-7048-4de7-9288-704e962215f6',
             },
           });
           expect(data.publicStixCoreObjectsNumber).toBeNull();
@@ -707,7 +707,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCO_NUMBER_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: 'ebb25410-7048-4de7-9288-704e962215f6'
+              widgetId: 'ebb25410-7048-4de7-9288-704e962215f6',
             },
           });
           const { publicStixCoreObjectsNumber } = data;
@@ -720,7 +720,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCR_NUMBER_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
+              widgetId: 'ecb25410-7048-4de7-9288-704e962215f6',
             },
           });
           const { publicStixRelationshipsNumber } = data;
@@ -753,7 +753,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCO_LIST_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: '0a471055-7426-4840-9501-33770b845f92'
+              widgetId: '0a471055-7426-4840-9501-33770b845f92',
             },
           });
           const { publicStixCoreObjectsMultiTimeSeries } = data;
@@ -790,7 +790,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCR_LIST_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: '9e6afa7e-0db7-424c-8951-16b867245583'
+              widgetId: '9e6afa7e-0db7-424c-8951-16b867245583',
             },
           });
           const { publicStixRelationshipsMultiTimeSeries } = data;
@@ -825,7 +825,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCO_DONUT_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: '9865bec0-d8b1-4592-b14e-0e81e1645f59'
+              widgetId: '9865bec0-d8b1-4592-b14e-0e81e1645f59',
             },
           });
           const { publicStixCoreObjectsDistribution } = data;
@@ -836,7 +836,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCO_DONUT_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: '1865bec0-d8b1-4592-b14e-0e81e1645f59'
+              widgetId: '1865bec0-d8b1-4592-b14e-0e81e1645f59',
             },
           });
           const malwaresDistribution = dataMalwares.publicStixCoreObjectsDistribution;
@@ -881,7 +881,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCR_DONUT_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: '2b3c637b-bf25-46ca-8b28-b891d349cc31'
+              widgetId: '2b3c637b-bf25-46ca-8b28-b891d349cc31',
             },
           });
           const { publicStixRelationshipsDistribution } = data;
@@ -925,7 +925,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCO_LIST_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: 'bec879df-4da2-46c0-994a-e795c1b3a649'
+              widgetId: 'bec879df-4da2-46c0-994a-e795c1b3a649',
             },
           });
           const { publicStixCoreObjects } = data;
@@ -968,7 +968,7 @@ describe('PublicDashboard resolver', () => {
             query: API_SCR_LIST_QUERY,
             variables: {
               uriKey: publicDashboardUriKey,
-              widgetId: '6dbb6564-3e4a-4a28-85b1-e2ac479e38e7'
+              widgetId: '6dbb6564-3e4a-4a28-85b1-e2ac479e38e7',
             },
           });
           const { publicStixRelationships } = data;
@@ -979,7 +979,7 @@ describe('PublicDashboard resolver', () => {
 
       it('should not delete publicDashboard if not allowed', async () => {
         // Delete the publicDashboard
-        const queryResult = await participantQuery({
+        const queryResult = await queryAsUser(USER_PARTICIPATE, {
           query: DELETE_QUERY,
           variables: { id: publicDashboardInternalId },
         });
@@ -1066,7 +1066,7 @@ describe('PublicDashboard resolver', () => {
             enabled: true,
           },
         };
-        const greenPublicDashboard = await editorQuery({
+        const greenPublicDashboard = await queryAsUser(USER_EDITOR, {
           query: CREATE_QUERY,
           variables: GREEN_PUBLIC_DASHBOARD_TO_CREATE,
         });
@@ -1079,7 +1079,7 @@ describe('PublicDashboard resolver', () => {
             enabled: true,
           },
         };
-        const clearPublicDashboard = await editorQuery({
+        const clearPublicDashboard = await queryAsUser(USER_EDITOR, {
           query: CREATE_QUERY,
           variables: CLEAR_PUBLIC_DASHBOARD_TO_CREATE,
         });
@@ -1099,8 +1099,8 @@ describe('PublicDashboard resolver', () => {
             input: {
               name: 'spain',
               description: 'widget tests',
-              objectMarking: [tlpGreen.id]
-            }
+              objectMarking: [tlpGreen.id],
+            },
           },
         });
         spainId = spain.data.administrativeAreaAdd.id;
@@ -1118,20 +1118,20 @@ describe('PublicDashboard resolver', () => {
               name: 'raditz',
               malware_types: ['ddos'],
               description: 'widget tests',
-              objectMarking: [tlpGreen.id]
-            }
+              objectMarking: [tlpGreen.id],
+            },
           },
         });
         raditzId = raditz.data.malwareAdd.id;
-        const vegeta = await editorQuery({
+        const vegeta = await queryAsUser(USER_EDITOR, {
           query: CREATE_MALWARES,
           variables: {
             input: {
               name: 'vegeta',
               malware_types: ['backdoor'],
               description: 'widget tests',
-              objectMarking: [tlpGreen.id]
-            }
+              objectMarking: [tlpGreen.id],
+            },
           },
         });
         vegetaId = vegeta.data.malwareAdd.id;
@@ -1142,26 +1142,26 @@ describe('PublicDashboard resolver', () => {
             stixCoreRelationshipAdd(input: $input) { id }
           }
         `;
-        await editorQuery({
+        await queryAsUser(USER_EDITOR, {
           query: ADD_TARGETS_REL,
           variables: {
             input: {
               relationship_type: 'targets',
               fromId: raditzId,
               toId: spainId,
-              objectMarking: [tlpGreen.id]
-            }
+              objectMarking: [tlpGreen.id],
+            },
           },
         });
-        await editorQuery({
+        await queryAsUser(USER_EDITOR, {
           query: ADD_TARGETS_REL,
           variables: {
             input: {
               relationship_type: 'targets',
               fromId: vegetaId,
               toId: spainId,
-              objectMarking: [tlpGreen.id]
-            }
+              objectMarking: [tlpGreen.id],
+            },
           },
         });
         // endregion
@@ -1172,7 +1172,7 @@ describe('PublicDashboard resolver', () => {
           query: API_SCR_NUMBER_QUERY,
           variables: {
             uriKey: 'public-dashboard-marking-green',
-            widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
+            widgetId: 'ecb25410-7048-4de7-9288-704e962215f6',
           },
         });
         const result = aaa.data.publicStixRelationshipsNumber;
@@ -1186,7 +1186,7 @@ describe('PublicDashboard resolver', () => {
           query: API_SCR_NUMBER_QUERY,
           variables: {
             uriKey: 'public-dashboard-marking-clear',
-            widgetId: 'ecb25410-7048-4de7-9288-704e962215f6'
+            widgetId: 'ecb25410-7048-4de7-9288-704e962215f6',
           },
         });
         const result = aaa.data.publicStixRelationshipsNumber;

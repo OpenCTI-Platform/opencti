@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
-import { adminQuery, ADMIN_USER, USER_EDITOR, ROLE_EDITOR, createTokenHttpClient, executeInternalQuery } from '../../utils/testQuery';
+import { ADMIN_USER, USER_EDITOR, ROLE_EDITOR, createTokenHttpClient, executeInternalQuery, queryAsAdmin, queryAsAuthUser, internalAdminQuery, internalQuery } from '../../utils/testQuery';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY } from '../../../src/schema/internalObject';
 import { queryAsUser } from '../../utils/testQueryHelper';
@@ -63,7 +63,7 @@ const REMOVE_CAPABILITY_MUTATION = gql`
 describe('User Token behavior', () => {
   it('should generate a new API token', async () => {
     // 1. Generate Token
-    const mutationResult = await adminQuery({
+    const mutationResult = await queryAsAdmin({
       query: TOKEN_ADD_MUTATION,
       variables: {
         input: {
@@ -76,7 +76,10 @@ describe('User Token behavior', () => {
     expect(mutationResult.errors).toBeUndefined();
     expect(mutationResult.data?.userTokenAdd).toBeDefined();
 
-    const { token_id, plaintext_token, masked_token, expires_at } = mutationResult.data.userTokenAdd;
+    const token_id = mutationResult.data?.userTokenAdd.token_id;
+    const plaintext_token = mutationResult.data?.userTokenAdd.plaintext_token;
+    const masked_token = mutationResult.data?.userTokenAdd.masked_token;
+    const expires_at = mutationResult.data?.userTokenAdd.expires_at;
 
     expect(token_id).toBeDefined();
     expect(plaintext_token).toBeDefined();
@@ -85,7 +88,7 @@ describe('User Token behavior', () => {
     expect(expires_at).not.toBeNull();
 
     // 2. Verify Token is present on User
-    const userResult = await adminQuery({
+    const userResult = await queryAsAdmin({
       query: USER_QUERY,
       variables: { id: ADMIN_USER.id },
     });
@@ -102,7 +105,10 @@ describe('User Token behavior', () => {
     expect(foundToken.masked_token).toEqual(masked_token);
 
     // 3. Revoke Token
-    const revokeResult = await adminQuery({
+    const revokeResult = await queryAsAuthUser({
+      ...ADMIN_USER,
+      api_tokens: ADMIN_USER.api_tokens.concat(foundToken),
+    }, {
       query: REVOKE_MUTATION,
       variables: { id: token_id },
     });
@@ -111,7 +117,7 @@ describe('User Token behavior', () => {
     expect(revokeResult.data?.userTokenRevoke).toEqual(token_id);
 
     // 4. Verify Token is removed
-    const userResultAfter = await adminQuery({
+    const userResultAfter = await queryAsAdmin({
       query: USER_QUERY,
       variables: { id: ADMIN_USER.id },
     });
@@ -130,15 +136,15 @@ describe('User Token behavior', () => {
     // Note: createTestUsers might just init DB, but we need to ensure ROLE_EDITOR has SETTINGS_SETACCESSTOKEN.
     // We added it to testQuery.ts, so createRole will include it.
 
-    const mutationResult = await queryAsUser(USER_EDITOR.client, {
-      query: TOKEN_ADD_MUTATION,
-      variables: {
+    const mutationResult = await internalQuery(USER_EDITOR,
+      TOKEN_ADD_MUTATION,
+      {
         input: {
           name: 'Editor Token',
           duration: 'DAYS_30',
         },
       },
-    });
+    );
 
     expect(mutationResult.errors).toBeUndefined();
     const token = mutationResult.data?.userTokenAdd.plaintext_token;
@@ -153,14 +159,14 @@ describe('User Token behavior', () => {
     // 3. Remove capability from ROLE_EDITOR
     const capabilityId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'APIACCESS_USETOKEN' });
 
-    const removeResult = await adminQuery({
-      query: REMOVE_CAPABILITY_MUTATION,
-      variables: { id: ROLE_EDITOR.id, toId: capabilityId },
-    });
+    const removeResult = await internalAdminQuery(
+      REMOVE_CAPABILITY_MUTATION,
+      { id: ROLE_EDITOR.id, toId: capabilityId },
+    );
     expect(removeResult.errors).toBeUndefined();
 
     // 4. User Editor tries to create token -> Fail (Mutation Enforcement)
-    const failMutationResult = await queryAsUser(USER_EDITOR.client, {
+    const failMutationResult = await queryAsUser(USER_EDITOR, {
       query: TOKEN_ADD_MUTATION,
       variables: {
         input: {
@@ -202,10 +208,10 @@ describe('User Token behavior', () => {
     }
 
     // 6. Restore capability
-    await adminQuery({
-      query: ADD_CAPABILITY_MUTATION,
-      variables: { id: ROLE_EDITOR.id, toId: capabilityId },
-    });
+    await internalAdminQuery(
+      ADD_CAPABILITY_MUTATION,
+      { id: ROLE_EDITOR.id, toId: capabilityId },
+    );
 
     // 7. Verify Auth works again
     const meResultRestored = await executeInternalQuery(client, print(gql`query { me { standard_id } }`));

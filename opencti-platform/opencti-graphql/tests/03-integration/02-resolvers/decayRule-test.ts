@@ -387,30 +387,30 @@ describe('DecayRule rights management checks', () => {
         order: 12,
       },
     };
-    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
       query: CREATE_QUERY,
       variables: DECAY_RULE_TO_CREATE,
     });
 
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: CREATE_QUERY,
       variables: DECAY_RULE_TO_CREATE,
     });
   });
 
   it('should Participant/Editor user not be allowed to list DecayRules.', async () => {
-    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, { query: DECAY_RULE_LIST_QUERY, variables: { first: 10 } });
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: DECAY_RULE_LIST_QUERY, variables: { first: 10 } });
 
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, { query: DECAY_RULE_LIST_QUERY, variables: { first: 10 } });
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: DECAY_RULE_LIST_QUERY, variables: { first: 10 } });
   });
 
   it('should Participant/Editor user not be allowed to delete DecayRules.', async () => {
-    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
       query: DELETE_QUERY,
       variables: { id: 'dummy-id' },
     });
 
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: DELETE_QUERY,
       variables: { id: 'dummy-id' },
     });

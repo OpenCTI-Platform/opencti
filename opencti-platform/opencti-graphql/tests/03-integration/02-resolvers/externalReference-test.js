@@ -1,9 +1,10 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, queryAsAdmin, securityQuery } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, queryAsAdmin, USER_SECURITY } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { taskQuery } from '../../../src/manager/taskManager';
 import { pushAll } from '../../../src/utils/arrayUtil';
+import { queryAsUser } from '../../utils/testQueryHelper';
 
 const LIST_QUERY = gql`
   query externalReferences(
@@ -82,7 +83,8 @@ describe('ExternalReference resolver standard behavior', () => {
     const externalReference = await queryAsAdmin({
       query: CREATE_QUERY,
       variables: EXTERNAL_REFERENCE_TO_CREATE,
-    }); expect(externalReference).not.toBeNull();
+    });
+    expect(externalReference).not.toBeNull();
     expect(externalReference.data.externalReferenceAdd).not.toBeNull();
     expect(externalReference.data.externalReferenceAdd.source_name).toEqual('ExternalReferenceForTest');
     externalReferenceInternalId = externalReference.data.externalReferenceAdd.id;
@@ -245,7 +247,7 @@ describe('ExternalReference resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await securityQuery({
+    const queryResult = await queryAsUser(USER_SECURITY, {
       query: RELATION_ADD_QUERY,
       variables: {
         id: externalReferenceInternalId,

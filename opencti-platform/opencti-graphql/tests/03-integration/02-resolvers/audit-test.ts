@@ -47,7 +47,7 @@ describe('Log/Audit resolver rights management checks', () => {
     `;
 
   it('should Participant user not be allowed to request audit data.', async () => {
-    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
       query: AUDIT_QUERY,
       variables: {
         types: ['Activity'],
@@ -57,7 +57,7 @@ describe('Log/Audit resolver rights management checks', () => {
   });
 
   it('should Security user be allowed to request audit data.', async () => {
-    await queryAsUserWithSuccess(USER_SECURITY.client, {
+    await queryAsUserWithSuccess(USER_SECURITY, {
       query: AUDIT_QUERY,
       variables: {
         types: ['Activity'],

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, it, expect, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { addIngestionCsv, deleteIngestionCsv, ingestionCsvAddAutoUser } from '../../../src/modules/ingestion/ingestion-csv-domain';
-import { adminQuery, PLATFORM_ORGANIZATION, USER_EDITOR } from '../../utils/testQuery';
+import { PLATFORM_ORGANIZATION, queryAsAdmin, USER_EDITOR } from '../../utils/testQuery';
 import { type EditInput, IngestionAuthType, type IngestionCsv, type IngestionCsvAddAutoUserInput, type IngestionCsvAddInput } from '../../../src/generated/graphql';
 import { unSetOrganization, setOrganization } from '../../utils/testQueryHelper';
 import { getFakeAuthUser, getOrganizationEntity } from '../../utils/domainQueryHelper';
@@ -87,14 +87,14 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     expect(createdUser.groups.length, 'Platform default group should not apply, only default ingestion group').toBe(1);
     expect(createdUser.organizations.length, 'There is no platform org, so user should not have an organization').toBe(0);
     // Delete just created user
-    await adminQuery({
+    await queryAsAdmin({
       query: DELETE_USER_QUERY,
       variables: { id: createdUser.id },
     });
     // Verify no longer found
-    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
+    const queryResult = await queryAsAdmin({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).toBeNull();
+    expect(queryResult.data?.user).toBeNull();
   });
 
   it('should create a CSV Feed with auto user creation works fine with platform org', async () => {
@@ -129,14 +129,14 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
       expect(createdUser.organizations.length, 'There is one platform org, so user should not have organization').toBe(0);
     }
     // Delete just created user
-    await adminQuery({
+    await queryAsAdmin({
       query: DELETE_USER_QUERY,
       variables: { id: createdUser.id },
     });
     // Verify no longer found
-    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
+    const queryResult = await queryAsAdmin({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).toBeNull();
+    expect(queryResult.data?.user).toBeNull();
   });
 
   it('should create a CSV Feed with System user refused', async () => {
@@ -193,14 +193,14 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     expect(userInDefaultGroup[0].name).toBe('Connectors'); // just to check that user is in default ingestion group
     expect(createdUser.groups.length, 'Platform default group should not apply, only default ingestion group').toBe(1);
     // Delete just created user
-    await adminQuery({
+    await queryAsAdmin({
       query: DELETE_USER_QUERY,
       variables: { id: createdUser.id },
     });
     // Verify no longer found
-    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
+    const queryResult = await queryAsAdmin({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).toBeNull();
+    expect(queryResult.data?.user).toBeNull();
   });
 
   it('should a CSV Feed with auto user creation be refused when no default group', async () => {
@@ -249,14 +249,14 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
 
     // Delete just created user
     const createdUser = await findUserById(currentTestContext, SYSTEM_USER, firstIngestionCreated.user_id);
-    await adminQuery({
+    await queryAsAdmin({
       query: DELETE_USER_QUERY,
       variables: { id: createdUser.id },
     });
     // Verify no longer found
-    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
+    const queryResult = await queryAsAdmin({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).toBeNull();
+    expect(queryResult.data?.user).toBeNull();
   });
 });
 
@@ -289,14 +289,14 @@ describe('Ingestion CSV domain - ingestionCsvAddAutoUser', async () => {
     expect(createdUser.user_service_account).toBeTruthy();
     expect(createdUser.user_confidence_level?.max_confidence).toBe(32);
     // Delete just created user
-    await adminQuery({
+    await queryAsAdmin({
       query: DELETE_USER_QUERY,
       variables: { id: createdUser.id },
     });
     // Verify no longer found
-    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
+    const queryResult = await queryAsAdmin({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).toBeNull();
+    expect(queryResult.data?.user).toBeNull();
   });
 
   it('should create an automatic user and associate it to the ingestion feed', async () => {
@@ -311,13 +311,13 @@ describe('Ingestion CSV domain - ingestionCsvAddAutoUser', async () => {
     expect(createdUser.user_service_account).toBeTruthy();
     expect(createdUser.user_confidence_level?.max_confidence).toBe(63);
     // Delete just created user
-    await adminQuery({
+    await queryAsAdmin({
       query: DELETE_USER_QUERY,
       variables: { id: createdUser.id },
     });
     // Verify no longer found
-    const queryResult = await adminQuery({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
+    const queryResult = await queryAsAdmin({ query: READ_USER_QUERY, variables: { id: createdUser.id } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).toBeNull();
+    expect(queryResult.data?.user).toBeNull();
   });
 });

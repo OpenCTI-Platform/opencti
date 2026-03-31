@@ -171,7 +171,7 @@ describe('Taxii collection resolver coverage', () => {
   });
 
   it('List all taxii with a user that has TAXIIAPI capacity', async () => {
-    const allTaxiisResponse = await queryAsUser(USER_CONNECTOR.client, {
+    const allTaxiisResponse = await queryAsUser(USER_CONNECTOR, {
       query: gql`
                 query taxiiCollections {
                     taxiiCollections(search: "") {
@@ -206,7 +206,7 @@ describe('Taxii collection resolver coverage', () => {
   });
 
   it('List all taxii with a user that has not TAXIIAPI capacity', async () => {
-    const allTaxiisResponse = await queryAsUser(USER_PARTICIPATE.client, {
+    const allTaxiisResponse = await queryAsUser(USER_PARTICIPATE, {
       query: gql`
                 query taxiiCollections {
                     taxiiCollections(search: "") {

@@ -1,7 +1,7 @@
 import { ApolloServer } from '@apollo/server';
 import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
-import { print } from 'graphql';
+import { print, type ASTNode } from 'graphql';
 import axios, { type AxiosInstance } from 'axios';
 import createSchema from '../../src/graphql/schema';
 import conf, { ACCOUNT_STATUS_ACTIVE, PORT } from '../../src/config/conf';
@@ -104,8 +104,27 @@ export const executeInternalQuery = async (client: AxiosInstance, query: unknown
   return response.data;
 };
 const adminClient = createHttpClient();
-export const internalAdminQuery = async (query: unknown, variables = {}, options: QueryOption = {}) => {
-  return executeInternalQuery(adminClient, query, variables, options);
+
+/**
+ * Make a query but targeting the server in main process thus the server code
+ * handling the request won't take part in the coverage.
+ * To be used only when there's some logic in express middleware you want to
+ * trigger by passing a specific header via the `options` parameter.
+ */
+export const internalAdminQuery = async (query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
+  const queryAsStr = typeof query === 'string' ? query : print(query);
+  return executeInternalQuery(adminClient, queryAsStr, variables, options);
+};
+
+/**
+ * Make a query but targeting the server in main process thus the server code
+ * handling the request won't take part in the coverage.
+ * To be used only when there's some logic in express middleware you want to
+ * trigger by passing a specific header via the `options` parameter.
+ */
+export const internalQuery = async (user: UserTestData, query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
+  const queryAsStr = typeof query === 'string' ? query : print(query);
+  return executeInternalQuery(user.client, queryAsStr, variables, options);
 };
 
 // Roles
@@ -157,7 +176,7 @@ export const ROLE_SECURITY: Role = {
     'SETTINGS_SETAUTH', 'SETTINGS_SECURITYACTIVITY',
     'AUTOMATION_AUTMANAGE',
     'APIACCESS_USEBASICAUTH',
-  ]
+  ],
 };
 TESTING_ROLES.push(ROLE_SECURITY);
 
@@ -334,7 +353,7 @@ export const PLATFORM_ORGANIZATION: OrganizationTestData = {
 TESTING_ORGS.push(PLATFORM_ORGANIZATION);
 
 // Users
-interface UserTestData {
+export interface UserTestData {
   id: string;
   email: string;
   password: string;
@@ -554,22 +573,6 @@ const assignOrganizationToUser = async (organization: OrganizationTestData, user
   await internalAdminQuery(ORGANIZATION_ASSIGN_MUTATION, { userId: user.id, toId: organization.id });
 };
 // endregion
-
-export const adminQuery = async (request: any, options: QueryOption = {}) => {
-  return internalAdminQuery(print(request.query), request.variables, options);
-};
-
-export const editorQuery = async (request: any, options: QueryOption = {}) => {
-  return executeInternalQuery(USER_EDITOR.client, print(request.query), request.variables, options);
-};
-
-export const securityQuery = async (request: any) => {
-  return executeInternalQuery(USER_SECURITY.client, print(request.query), request.variables);
-};
-
-export const participantQuery = async (request: any) => {
-  return executeInternalQuery(USER_PARTICIPATE.client, print(request.query), request.variables);
-};
 
 export const userQuery = async (userClient: AxiosInstance, request: any) => {
   return executeInternalQuery(userClient, print(request.query), request.variables);
@@ -795,17 +798,34 @@ const serverFromUser = new ApolloServer<AuthContext>({
   persistedQueries: false,
 });
 
-export const queryAsAdmin = async <T = Record<string, any>>(request: any, draftContext?: any) => {
-  const execContext = executionContext('test', ADMIN_USER, draftContext ?? undefined);
+const query = async <T = Record<string, any>>(params: { user?: AuthUser; request: any; draftContext?: any }) => {
+  const execContext = executionContext('test', params.user, params.draftContext ?? undefined);
   execContext.changeDraftContext = (draftId) => {
     execContext.draft_context = draftId;
   };
-  execContext.batch = computeLoaders(execContext, ADMIN_USER);
-  const { body } = await serverFromUser.executeOperation<T>(request, { contextValue: execContext });
+  execContext.batch = computeLoaders(execContext, params.user);
+  const { body } = await serverFromUser.executeOperation<T>(params.request, { contextValue: execContext });
   if (body.kind === 'single') {
     return body.singleResult;
   }
   return body.initialResult;
+};
+
+export const queryAsAdmin = async <T = Record<string, any>>(request: any, draftContext?: any) => {
+  return query<T>({ user: ADMIN_USER, request, draftContext });
+};
+
+export const queryAsAnonymous = async <T = Record<string, any>>(request: any, draftContext?: any) => {
+  return query<T>({ user: undefined, request, draftContext });
+};
+
+export const queryAsAuthUser = async <T = Record<string, any>>(user: AuthUser, request: any, draftContext?: any) => {
+  return query<T>({ user, request, draftContext });
+};
+
+export const queryAsTestUser = async <T = Record<string, any>>(testUser: UserTestData, request: any, draftContext?: any) => {
+  const user = await getAuthUser(testUser.id);
+  return query<T>({ user, request, draftContext });
 };
 
 export const isSorted = (arr: []) => {

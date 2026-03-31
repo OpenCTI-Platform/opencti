@@ -1,19 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import type { CaseIncident, EntitySettingEdge } from '../../../src/generated/graphql';
-import {
-  ADMIN_USER,
-  adminQuery,
-  editorQuery,
-  getOrganizationIdByName,
-  getUserIdByEmail,
-  PLATFORM_ORGANIZATION,
-  securityQuery,
-  TEST_ORGANIZATION,
-  USER_EDITOR,
-  USER_SECURITY,
-} from '../../utils/testQuery';
-import { adminQueryWithSuccess, unSetOrganization, setOrganization, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { ADMIN_USER, getOrganizationIdByName, getUserIdByEmail, PLATFORM_ORGANIZATION, queryAsAdmin, TEST_ORGANIZATION, USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
+import { queryAsAdminWithSuccess, unSetOrganization, setOrganization, queryAsUserIsExpectedForbidden, queryAsUser } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
 import conf from '../../../src/config/conf';
 import { authorizedMembers } from '../../../src/schema/attribute-definition';
@@ -179,7 +168,7 @@ describe('container-authorized-members', () => {
     let userEditorId: string;
     it('should Case Incident Response created', async () => {
     // Create Case Incident Response
-      const caseIncidentResponseCreateQueryResult = await adminQuery({
+      const caseIncidentResponseCreateQueryResult = await queryAsAdmin({
         query: CREATE_QUERY,
         variables: {
           input: {
@@ -196,7 +185,7 @@ describe('container-authorized-members', () => {
       caseIncident = caseIncidentResponseCreateQueryResult?.data?.caseIncidentAdd;
     });
     it('should Editor user access Case Incident Response', async () => {
-      const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIncident.id } });
+      const caseIRQueryResult = await queryAsUser(USER_EDITOR, { query: READ_QUERY, variables: { id: caseIncident.id } });
       expect(caseIRQueryResult).not.toBeNull();
       expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
       expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIncident.id);
@@ -213,14 +202,14 @@ describe('container-authorized-members', () => {
           },
         ],
       };
-      await queryAsUserIsExpectedForbidden(USER_SECURITY.client, {
+      await queryAsUserIsExpectedForbidden(USER_SECURITY, {
         query: EDIT_AUTHORIZED_MEMBERS_QUERY,
         variables: restrictedMembers,
       });
     });
     it('should Admin user edit authorized members', async () => {
       // Activate Authorized members
-      const caseIncidentResponseUpdatedQueryResult = await adminQuery({
+      const caseIncidentResponseUpdatedQueryResult = await queryAsAdmin({
         query: EDIT_AUTHORIZED_MEMBERS_QUERY,
         variables: {
           id: caseIncident?.id,
@@ -242,14 +231,14 @@ describe('container-authorized-members', () => {
       ]);
     });
     it('should Editor user not access Case Incident Response', async () => {
-      const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIncident.id } });
+      const caseIRQueryResult = await queryAsUser(USER_EDITOR, { query: READ_QUERY, variables: { id: caseIncident.id } });
       expect(caseIRQueryResult).not.toBeNull();
       expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
       expect(caseIRQueryResult?.data?.caseIncident).toBeNull();
     });
     it('should Admin user edit authorized members: Editor has view access right', async () => {
       // Add Editor user in authorized members
-      const caseIncidentResponseUpdatedQueryResult = await adminQuery({
+      const caseIncidentResponseUpdatedQueryResult = await queryAsAdmin({
         query: EDIT_AUTHORIZED_MEMBERS_QUERY,
         variables: {
           id: caseIncident.id,
@@ -281,20 +270,20 @@ describe('container-authorized-members', () => {
       ]);
     });
     it('should Editor user access Case Incident Response', async () => {
-      const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIncident.id } });
+      const caseIRQueryResult = await queryAsUser(USER_EDITOR, { query: READ_QUERY, variables: { id: caseIncident.id } });
       expect(caseIRQueryResult).not.toBeNull();
       expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
       expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIncident.id);
       expect(caseIRQueryResult?.data?.caseIncident.currentUserAccessRight).toEqual('view');
     });
     it('should Editor user not edit case incident with view access right', async () => {
-      await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
         query: UPDATE_QUERY,
         variables: { id: caseIncident.id, input: { key: 'name', value: ['Case Incident Response - updated'] } },
       });
     });
     it('should Admin user edit authorized members: Editor has edit access right', async () => {
-      const caseIncidentResponseUpdatedQueryResult = await adminQuery({
+      const caseIncidentResponseUpdatedQueryResult = await queryAsAdmin({
         query: EDIT_AUTHORIZED_MEMBERS_QUERY,
         variables: {
           id: caseIncident.id,
@@ -313,7 +302,7 @@ describe('container-authorized-members', () => {
       expect(caseIncidentResponseUpdatedQueryResult).not.toBeNull();
       expect(caseIncidentResponseUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members).not.toBeUndefined();
       // edit access can't see authorized_members list
-      const editorQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIncident.id } });
+      const editorQueryResult = await queryAsUser(USER_EDITOR, { query: READ_QUERY, variables: { id: caseIncident.id } });
       expect(editorQueryResult).not.toBeNull();
       expect(editorQueryResult?.data?.caseIncident).not.toBeUndefined();
       expect(editorQueryResult?.data?.caseIncident.id).toEqual(caseIncident.id);
@@ -321,7 +310,7 @@ describe('container-authorized-members', () => {
       expect(editorQueryResult?.data?.caseIncident.authorized_members.length).toEqual(0);
     });
     it('should Editor user edit case incident', async () => {
-      const queryResult = await editorQuery({
+      const queryResult = await queryAsUser(USER_EDITOR, {
         query: UPDATE_QUERY,
         variables: { id: caseIncident.id, input: { key: 'name', value: ['Case Incident Response - updated'] } },
       });
@@ -329,13 +318,13 @@ describe('container-authorized-members', () => {
       expect(queryResult?.data?.stixDomainObjectEdit.fieldPatch.currentUserAccessRight).toEqual('edit');
     });
     it('should Editor user not delete case incident with edit access right', async () => {
-      await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
         query: DELETE_QUERY,
         variables: { id: caseIncident.id },
       });
     });
     it('should Admin user edit authorized members: Editor has admin access right', async () => {
-      const caseIncidentResponseUpdatedQueryResult = await adminQuery({
+      const caseIncidentResponseUpdatedQueryResult = await queryAsAdmin({
         query: EDIT_AUTHORIZED_MEMBERS_QUERY,
         variables: {
           id: caseIncident.id,
@@ -367,12 +356,12 @@ describe('container-authorized-members', () => {
     });
     it('should Editor user Case Incident Response deleted', async () => {
       // Delete the case
-      await editorQuery({
+      await queryAsUser(USER_EDITOR, {
         query: DELETE_QUERY,
         variables: { id: caseIncident.id },
       });
       // Verify is no longer found
-      const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: caseIncident.id } });
+      const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseIncident.id } });
       expect(queryResult).not.toBeNull();
       expect(queryResult?.data?.caseIncident).toBeNull();
     });
@@ -409,7 +398,7 @@ describe('container-authorized-members', () => {
           }
         }
       `;
-      const queryResult = await adminQuery({ query: ENTITY_SETTINGS_QUERY });
+      const queryResult = await queryAsAdmin({ query: ENTITY_SETTINGS_QUERY });
 
       const entitySettingCaseIncidentResponse = queryResult.data?.entitySettings.edges
         .filter((entitySetting: EntitySettingEdge) => entitySetting.node.target_type === ENTITY_TYPE_CONTAINER_CASE_INCIDENT)[0];
@@ -429,12 +418,12 @@ describe('container-authorized-members', () => {
           ],
         },
       ]);
-      const updateEntitySettingsResult = await adminQuery({
+      const updateEntitySettingsResult = await queryAsAdmin({
         query: ENTITY_SETTINGS_UPDATE_QUERY,
         variables: { ids: [entitySettingIdCaseIncidentResponse], input: { key: 'attributes_configuration', value: [authorizedMembersConfiguration] } },
       });
       expect(updateEntitySettingsResult.data?.entitySettingsFieldPatch?.[0]?.attributes_configuration).toEqual(authorizedMembersConfiguration);
-      const caseIncidentResponseAuthorizedMembersData = await adminQuery({
+      const caseIncidentResponseAuthorizedMembersData = await queryAsAdmin({
         query: CREATE_QUERY,
         variables: {
           input: {
@@ -453,7 +442,7 @@ describe('container-authorized-members', () => {
       caseIncidentResponseAuthorizedMembersFromSettings = caseIncidentResponseAuthorizedMembersData?.data?.caseIncidentAdd;
       // Clean
       const cleanAuthorizedMembersConfiguration = JSON.stringify([{ name: authorizedMembers.name, default_values: null }]);
-      const cleanEntitySettingsResult = await adminQuery({
+      const cleanEntitySettingsResult = await queryAsAdmin({
         query: ENTITY_SETTINGS_UPDATE_QUERY,
         variables: { ids: [entitySettingIdCaseIncidentResponse], input: { key: 'attributes_configuration', value: [cleanAuthorizedMembersConfiguration] } },
       });
@@ -461,12 +450,12 @@ describe('container-authorized-members', () => {
     });
     it('should Case Incident Response deleted', async () => {
       // Delete the case
-      await adminQuery({
+      await queryAsAdmin({
         query: DELETE_QUERY,
         variables: { id: caseIncidentResponseAuthorizedMembersFromSettings.id },
       });
       // Verify is no longer found
-      const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: caseIncidentResponseAuthorizedMembersFromSettings.id } });
+      const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseIncidentResponseAuthorizedMembersFromSettings.id } });
       expect(queryResult).not.toBeNull();
       expect(queryResult?.data?.caseIncident).toBeNull();
     });
@@ -477,7 +466,7 @@ describe('container-authorized-members', () => {
     let organizationId: string;
     it('should Case Incident Response created', async () => {
       // Create Case Incident Response
-      const caseIRCreateQueryResult = await adminQuery({
+      const caseIRCreateQueryResult = await queryAsAdmin({
         query: CREATE_QUERY,
         variables: {
           input: {
@@ -493,38 +482,38 @@ describe('container-authorized-members', () => {
     it('should share Case Incident Response with Organization', async () => {
       // Get organization id
       organizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
-      const organizationSharingQueryResult = await adminQuery({
+      const organizationSharingQueryResult = await queryAsAdmin({
         query: ORGANIZATION_SHARING_QUERY,
         variables: { id: caseIrId, organizationId, directContainerSharing: true },
       });
       expect(organizationSharingQueryResult).not.toBeNull();
       expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
       // Verify Editor user has access to Case incident after sharing
-      const caseIRQueryResult = await adminQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+      const caseIRQueryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseIrId } });
       expect(caseIRQueryResult).not.toBeNull();
       expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
       expect(caseIRQueryResult?.data?.caseIncident.objectOrganization[0].id).toEqual(organizationId);
     });
     it('should Editor user from different organization access Case Incident Response', async () => {
-      const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+      const caseIRQueryResult = await queryAsUser(USER_EDITOR, { query: READ_QUERY, variables: { id: caseIrId } });
       expect(caseIRQueryResult).not.toBeNull();
       expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
       expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIrId);
     });
     it('should Security user from shared organization access Case Incident Response', async () => {
-      const caseIRQueryResult = await securityQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+      const caseIRQueryResult = await queryAsUser(USER_SECURITY, { query: READ_QUERY, variables: { id: caseIrId } });
       expect(caseIRQueryResult).not.toBeNull();
       expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
       expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIrId);
     });
     it('should Case Incident Response deleted', async () => {
       // Delete the case
-      await adminQuery({
+      await queryAsAdmin({
         query: DELETE_QUERY,
         variables: { id: caseIrId },
       });
       // Verify is no longer found
-      const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+      const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseIrId } });
       expect(queryResult).not.toBeNull();
       expect(queryResult?.data?.caseIncident).toBeNull();
     });
@@ -552,11 +541,11 @@ describe('container-authorized-members', () => {
           }
         }
       `;
-      const queryResult = await adminQuery({ query: SETTINGS_READ_QUERY, variables: {} });
+      const queryResult = await queryAsAdmin({ query: SETTINGS_READ_QUERY, variables: {} });
       settingsInternalId = queryResult.data?.settings?.id;
 
       // Set platform organization
-      const platformOrganization = await adminQueryWithSuccess({
+      const platformOrganization = await queryAsAdminWithSuccess({
         query: PLATFORM_ORGANIZATION_QUERY,
         variables: {
           id: settingsInternalId,
@@ -572,7 +561,7 @@ describe('container-authorized-members', () => {
     });
     it('should Case Incident Response created', async () => {
       // Create Case Incident Response
-      const caseIRCreateQueryResult = await adminQuery({
+      const caseIRCreateQueryResult = await queryAsAdmin({
         query: CREATE_QUERY,
         variables: {
           input: {
@@ -586,13 +575,13 @@ describe('container-authorized-members', () => {
       caseIrId = caseIRCreateQueryResult?.data?.caseIncidentAdd.id;
     });
     it('should Editor user not access Case Incident Response', async () => {
-      const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+      const caseIRQueryResult = await queryAsUser(USER_EDITOR, { query: READ_QUERY, variables: { id: caseIrId } });
       expect(caseIRQueryResult).not.toBeNull();
       expect(caseIRQueryResult.data?.caseIncident).toBeNull();
     });
     it('should Admin user activate Authorized Members', async () => {
       userEditorId = await getUserIdByEmail(USER_EDITOR.email);
-      const caseIRUpdatedQueryResult = await adminQuery({
+      const caseIRUpdatedQueryResult = await queryAsAdmin({
         query: EDIT_AUTHORIZED_MEMBERS_QUERY,
         variables: {
           id: caseIrId,
@@ -622,24 +611,24 @@ describe('container-authorized-members', () => {
       ]);
     });
     it('should Editor user access Case Incident Response out of her organization if authorized members activated', async () => {
-      const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+      const caseIRQueryResult = await queryAsUser(USER_EDITOR, { query: READ_QUERY, variables: { id: caseIrId } });
       expect(caseIRQueryResult).not.toBeNull();
       expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
       expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIrId);
       expect(caseIRQueryResult?.data?.caseIncident.currentUserAccessRight).toEqual('view');
     });
     it('user without bypass should not be allowed list all auth member restricted entities', async () => {
-      await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
         query: LIST_RESTRICTED_ENTITIES,
         variables: { first: 10 },
       });
     });
     it('should BYPASS user be allowed list all auth member restricted entities', async () => {
-      const queryResult = await adminQueryWithSuccess({ query: LIST_RESTRICTED_ENTITIES, variables: { first: 10 } });
+      const queryResult = await queryAsAdminWithSuccess({ query: LIST_RESTRICTED_ENTITIES, variables: { first: 10 } });
       expect(queryResult?.data?.stixCoreObjectsRestricted.edges.length).toEqual(1);
     });
     it('should Admin user deactivate authorized members', async () => {
-      await adminQuery({
+      await queryAsAdmin({
         query: EDIT_AUTHORIZED_MEMBERS_QUERY,
         variables: {
           id: caseIrId,
@@ -647,28 +636,28 @@ describe('container-authorized-members', () => {
         },
       });
       // Verify Editor user has no more access to Case incident
-      const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+      const caseIRQueryResult = await queryAsUser(USER_EDITOR, { query: READ_QUERY, variables: { id: caseIrId } });
       expect(caseIRQueryResult).not.toBeNull();
       expect(caseIRQueryResult.data?.caseIncident).toBeNull();
     });
     it('should share Case Incident Response with Organization', async () => {
       // Get organization id
       testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
-      const organizationSharingQueryResult = await adminQuery({
+      const organizationSharingQueryResult = await queryAsAdmin({
         query: ORGANIZATION_SHARING_QUERY,
         variables: { id: caseIrId, organizationId: testOrganizationId, directContainerSharing: true },
       });
       expect(organizationSharingQueryResult).not.toBeNull();
       expect(organizationSharingQueryResult?.data?.stixCoreObjectEdit.restrictionOrganizationAdd).not.toBeNull();
       // Verify Editor user has access to Case incident
-      const caseIRQueryResult = await editorQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+      const caseIRQueryResult = await queryAsUser(USER_EDITOR, { query: READ_QUERY, variables: { id: caseIrId } });
       expect(caseIRQueryResult).not.toBeNull();
       expect(caseIRQueryResult?.data?.caseIncident).not.toBeUndefined();
       expect(caseIRQueryResult?.data?.caseIncident.id).toEqual(caseIrId);
     });
     it('should platform organization sharing and EE deactivated', async () => {
       // Remove platform organization
-      const platformOrganization = await adminQueryWithSuccess({
+      const platformOrganization = await queryAsAdminWithSuccess({
         query: PLATFORM_ORGANIZATION_QUERY,
         variables: {
           id: settingsInternalId,
@@ -682,12 +671,12 @@ describe('container-authorized-members', () => {
     });
     it('should Case Incident Response deleted', async () => {
       // Delete the case
-      await adminQuery({
+      await queryAsAdmin({
         query: DELETE_QUERY,
         variables: { id: caseIrId },
       });
       // Verify is no longer found
-      const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+      const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseIrId } });
       expect(queryResult).not.toBeNull();
       expect(queryResult?.data?.caseIncident).toBeNull();
     });
@@ -702,7 +691,7 @@ describe('container-authorized-members', () => {
     });
     it('should Case Incident Response created', async () => {
       // Create Case Incident Response
-      const caseIRCreateQueryResult = await adminQueryWithSuccess({
+      const caseIRCreateQueryResult = await queryAsAdminWithSuccess({
         query: CREATE_QUERY,
         variables: {
           input: {
@@ -715,7 +704,7 @@ describe('container-authorized-members', () => {
     }); // +1 create
     it('should Admin user activate Authorized Members for Case IR', async () => { // +1 update
       userEditorId = await getUserIdByEmail(USER_EDITOR.email);
-      const caseIRUpdatedQueryResult = await adminQuery({
+      const caseIRUpdatedQueryResult = await queryAsAdmin({
         query: EDIT_AUTHORIZED_MEMBERS_QUERY,
         variables: {
           id: caseIrId,
@@ -746,7 +735,7 @@ describe('container-authorized-members', () => {
     });
     it('should Report created', async () => { // +1 create
       // Create Report
-      const reportCreateQueryResult = await adminQueryWithSuccess({
+      const reportCreateQueryResult = await queryAsAdminWithSuccess({
         query: CREATE_REPORT_QUERY,
         variables: {
           input: {
@@ -760,7 +749,7 @@ describe('container-authorized-members', () => {
     });
     it('should Admin user activate Authorized Members for Report', async () => {
       userEditorId = await getUserIdByEmail(USER_EDITOR.email);
-      const reportUpdatedQueryResult = await adminQueryWithSuccess({
+      const reportUpdatedQueryResult = await queryAsAdminWithSuccess({
         query: EDIT_AUTHORIZED_MEMBERS_QUERY,
         variables: {
           id: reportId,
@@ -790,13 +779,13 @@ describe('container-authorized-members', () => {
       expect(reportUpdatedQueryResult?.data?.containerEdit.editAuthorizedMembers.authorized_members_activation_date).toBeDefined();
     }); // +1 update
     it('using platform org - user without bypass should not be allowed list all auth member restricted entities', async () => {
-      await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
         query: LIST_RESTRICTED_ENTITIES,
         variables: { first: 10 },
       });
     });
     it('using platform org - should BYPASS user be allowed list all auth member restricted entities', async () => {
-      const queryResult = await adminQueryWithSuccess({ query: LIST_RESTRICTED_ENTITIES, variables: { first: 10 } });
+      const queryResult = await queryAsAdminWithSuccess({ query: LIST_RESTRICTED_ENTITIES, variables: { first: 10 } });
       expect(queryResult?.data?.stixCoreObjectsRestricted.edges.length).toEqual(2);
     });
     it('should platform organization sharing and EE deactivated', async () => {
@@ -804,23 +793,23 @@ describe('container-authorized-members', () => {
     });
     it('should Case Incident Response deleted', async () => {
       // Delete the case
-      await adminQuery({
+      await queryAsAdmin({
         query: DELETE_QUERY,
         variables: { id: caseIrId },
       });
       // Verify that it is no longer found
-      const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: caseIrId } });
+      const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseIrId } });
       expect(queryResult).not.toBeNull();
       expect(queryResult?.data?.caseIncident).toBeNull();
     }); // +1 delete
     it('should Report deleted', async () => {
       // Delete the case
-      await adminQuery({
+      await queryAsAdmin({
         query: DELETE_REPORT_QUERY,
         variables: { id: reportId },
       });
       // Verify is no longer found
-      const queryResult = await adminQueryWithSuccess({ query: READ_REPORT_QUERY, variables: { id: reportId } });
+      const queryResult = await queryAsAdminWithSuccess({ query: READ_REPORT_QUERY, variables: { id: reportId } });
       expect(queryResult?.data?.report).toBeNull();
     }); // +1 delete
   });

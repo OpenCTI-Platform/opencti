@@ -1,20 +1,9 @@
 import { expect } from 'vitest';
-import { print } from 'graphql';
-import type { AxiosInstance } from 'axios';
 import readline from 'node:readline';
 import fs from 'node:fs';
 import path from 'node:path';
 import Upload from 'graphql-upload/Upload.mjs';
-import {
-  ADMIN_USER,
-  adminQuery,
-  createUnauthenticatedClient,
-  executeInternalQuery,
-  getOrganizationIdByName,
-  type OrganizationTestData,
-  queryAsAdmin,
-  testContext,
-} from './testQuery';
+import { ADMIN_USER, getOrganizationIdByName, type OrganizationTestData, queryAsAdmin, queryAsAnonymous, queryAsTestUser, testContext, type UserTestData } from './testQuery';
 import { downloadFile } from '../../src/database/raw-file-storage';
 import { streamConverter } from '../../src/database/file-storage';
 import { logApp } from '../../src/config/conf';
@@ -42,20 +31,10 @@ export const queryAsAdminWithSuccess = async (request: { query: any; variables: 
     logApp.info('Unexpected error; requestResult:', { requestResult });
   }
   expect(requestResult.errors, `This errors should not be there: ${JSON.stringify(requestResult.errors)}`).toBeUndefined();
-  return requestResult;
-};
-
-export const adminQueryWithSuccess = async (request: { query: any; variables: any }) => {
-  const requestResult = await adminQuery({
-    query: request.query,
-    variables: request.variables,
-  });
-  expect(requestResult, `Something is wrong with this query: ${request.query}`).toBeDefined();
-  if (requestResult.errors) {
-    logApp.info('Unexpected error; requestResult:', { requestResult });
-  }
-  expect(requestResult.errors, `This errors should not be there: ${JSON.stringify(requestResult.errors)}`).toBeUndefined();
-  return requestResult;
+  expect(requestResult.data, 'No data in succesful response').toBeDefined();
+  return {
+    data: requestResult.data!,
+  };
 };
 
 export const adminQueryWithError = async (
@@ -63,17 +42,17 @@ export const adminQueryWithError = async (
   errorMessage?: string,
   errorName?: string,
 ) => {
-  const requestResult = await adminQuery({
+  const requestResult = await queryAsAdmin({
     query: request.query,
     variables: request.variables,
   });
   expect(requestResult, `Something is wrong with this query: ${request.query}`).toBeDefined();
-  expect(requestResult.errors.length).toEqual(1);
+  expect(requestResult.errors?.length).toEqual(1);
   if (errorMessage) {
-    expect(requestResult.errors[0].message, `error message: ${errorMessage} is expected, but got ${requestResult.errors[0].message}`).toBe(errorMessage);
+    expect(requestResult.errors?.[0].message, `error message: ${errorMessage} is expected, but got ${requestResult.errors?.[0].message}`).toBe(errorMessage);
   }
   if (errorName) {
-    expect(requestResult.errors[0].extensions.code, `error is expected but got ${requestResult.errors[0].name}`).toBe(errorName);
+    expect(requestResult.errors?.[0].extensions?.code, `error is expected but got ${requestResult.errors?.[0].extensions?.code}`).toBe(errorName);
   }
   return requestResult;
 };
@@ -83,14 +62,20 @@ export const adminQueryWithError = async (
  * @param client
  * @param request
  */
-export const queryAsUserWithSuccess = async (client: AxiosInstance, request: { query: any; variables: any }) => {
-  const requestResult = await executeInternalQuery(client, print(request.query), request.variables);
+export const queryAsUserWithSuccess = async (testUser: UserTestData, request: { query: any; variables: any }) => {
+  const requestResult = await queryAsTestUser(testUser, {
+    query: request.query,
+    variables: request.variables,
+  });
   expect(requestResult, `Something is wrong with this query: ${request.query}`).toBeDefined();
   if (requestResult.errors) {
     logApp.error('Unexpected error; request:', { request, requestResult });
   }
   expect(requestResult.errors, `This errors should not be there: ${JSON.stringify(requestResult.errors)}`).toBeUndefined();
-  return requestResult;
+  expect(requestResult.data, 'No data in succesful response').toBeDefined();
+  return {
+    data: requestResult.data!,
+  };
 };
 
 /**
@@ -98,9 +83,12 @@ export const queryAsUserWithSuccess = async (client: AxiosInstance, request: { q
  * @param client
  * @param request
  */
-export const queryAsUser = async (client: AxiosInstance, request: { query: any; variables: any }) => {
-  const result = await executeInternalQuery(client, print(request.query), request.variables);
-  return result;
+export const queryAsUser = async (testUser: UserTestData, request: { query: any; variables: any }) => {
+  const requestResult = await queryAsTestUser(testUser, {
+    query: request.query,
+    variables: request.variables,
+  });
+  return requestResult;
 };
 
 /**
@@ -108,12 +96,15 @@ export const queryAsUser = async (client: AxiosInstance, request: { query: any; 
  * @param client
  * @param request
  */
-export const queryAsUserIsExpectedForbidden = async (client: AxiosInstance, request: any, message?: string) => {
-  const queryResult = await executeInternalQuery(client, print(request.query), request.variables);
+export const queryAsUserIsExpectedForbidden = async (testUser: UserTestData, request: any, message?: string) => {
+  const queryResult = await queryAsTestUser(testUser, {
+    query: request.query,
+    variables: request.variables,
+  });
   logApp.info('queryAsUserIsExpectedForbidden=> queryResult:', queryResult);
   expect(queryResult.errors, 'FORBIDDEN_ACCESS is expected.').toBeDefined();
   expect(queryResult.errors?.length, message ?? `FORBIDDEN_ACCESS is expected, but got ${queryResult.errors?.length} errors`).toBe(1);
-  expect(queryResult.errors[0].extensions.code, `FORBIDDEN_ACCESS is expected but got ${queryResult.errors[0].name}`).toBe(FORBIDDEN_ACCESS);
+  expect(queryResult.errors?.[0].extensions?.code, `FORBIDDEN_ACCESS is expected but got ${queryResult.errors?.[0].extensions?.code}`).toBe(FORBIDDEN_ACCESS);
 };
 
 /**
@@ -123,16 +114,19 @@ export const queryAsUserIsExpectedForbidden = async (client: AxiosInstance, requ
  * @param errorMessage
  * @param errorName
  */
-export const queryAsUserIsExpectedError = async (client: AxiosInstance, request: any, errorMessage?: string, errorName?: string) => {
-  const queryResult = await executeInternalQuery(client, print(request.query), request.variables);
+export const queryAsUserIsExpectedError = async (testUser: UserTestData, request: any, errorMessage?: string, errorName?: string) => {
+  const queryResult = await queryAsTestUser(testUser, {
+    query: request.query,
+    variables: request.variables,
+  });
   logApp.info('queryAsUserIsExpectedError=> queryResult:', queryResult);
   expect(queryResult.errors, 'error is expected.').toBeDefined();
   expect(queryResult.errors?.length, `1 error is expected, but got ${queryResult.errors?.length} errors`).toBe(1);
   if (errorMessage) {
-    expect(queryResult.errors[0].message, `error message: ${errorMessage} is expected, but got ${queryResult.errors[0].message}`).toBe(errorMessage);
+    expect(queryResult.errors?.[0].message, `error message: ${errorMessage} is expected, but got ${queryResult.errors?.[0].message}`).toBe(errorMessage);
   }
   if (errorName) {
-    expect(queryResult.errors[0].extensions.code, `error is expected but got ${queryResult.errors[0].name}`).toBe(errorName);
+    expect(queryResult.errors?.[0].extensions?.code, `error is expected but got ${queryResult.errors?.[0].extensions?.code}`).toBe(errorName);
   }
 };
 
@@ -141,12 +135,13 @@ export const queryAsUserIsExpectedError = async (client: AxiosInstance, request:
  * @param request
  */
 export const queryUnauthenticatedIsExpectedForbidden = async (request: any) => {
-  const anonymous = createUnauthenticatedClient();
-
-  const queryResult = await executeInternalQuery(anonymous, print(request.query), request.variables);
+  const queryResult = await queryAsAnonymous({
+    query: request.query,
+    variables: request.variables,
+  });
   expect(queryResult.errors, 'AUTH_REQUIRED error is expected but got zero errors.').toBeDefined();
   expect(queryResult.errors?.length, `AUTH_REQUIRED is expected, but got ${queryResult.errors?.length} errors`).toBe(1);
-  expect(queryResult.errors[0].extensions.code, `AUTH_REQUIRED is expected but got ${queryResult.errors[0].name}`).toBe(AUTH_REQUIRED);
+  expect(queryResult.errors?.[0].extensions?.code, `AUTH_REQUIRED is expected but got ${queryResult.errors?.[0].extensions?.code}`).toBe(AUTH_REQUIRED);
 };
 
 export const requestFileFromStorageAsAdmin = async (storageId: string) => {
