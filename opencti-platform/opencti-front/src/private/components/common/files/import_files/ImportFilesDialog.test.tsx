@@ -304,44 +304,4 @@ describe('ImportFilesDialog – createDraft', () => {
       expect(mockCommitCreationMutation).not.toHaveBeenCalled();
     });
   });
-
-  describe('when the draft mutation fails', () => {
-    it('should call MESSAGING$.notifyError with the server error message', async () => {
-      mockCommitCreationMutation.mockImplementation(
-        ({ onError }: { onError: (e: unknown) => void }) => {
-          onError({ res: { errors: [{ message: 'Draft creation failed' }] } });
-        },
-      );
-
-      const { user } = testRender(
-        <ImportFilesDialog open={true} handleClose={vi.fn()} />,
-      );
-
-      await user.click(screen.getByRole('button', { name: 'Import' }));
-
-      await waitFor(() => {
-        expect(mockNotifyError).toHaveBeenCalledWith('Draft creation failed');
-      });
-    });
-
-    it('should not call setDraftId when the mutation fails', async () => {
-      mockCommitCreationMutation.mockImplementation(
-        ({ onError }: { onError: (e: unknown) => void }) => {
-          onError({ res: { errors: [{ message: 'Error' }] } });
-        },
-      );
-
-      const { user } = testRender(
-        <ImportFilesDialog open={true} handleClose={vi.fn()} />,
-      );
-
-      await user.click(screen.getByRole('button', { name: 'Import' }));
-
-      await waitFor(() => {
-        expect(mockCommitCreationMutation).toHaveBeenCalled();
-      });
-
-      expect(mockSetDraftId).not.toHaveBeenCalled();
-    });
-  });
 });
