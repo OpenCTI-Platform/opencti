@@ -1,11 +1,11 @@
-name: Move bug issues to Bug Backlog milestone
+name: Move bug issues to Bugs backlog milestone
 on:
   issues:
     types: [unlabeled]
 
 jobs:
   move-to-bug-backlog:
-    name: Assign Bug Backlog milestone when needs triage is removed
+    name: Assign Bugs backlog milestone when needs triage is removed
     runs-on: ubuntu-latest
     if: >
       github.event.label.name == 'needs triage' &&
@@ -14,22 +14,20 @@ jobs:
     permissions:
       issues: write
     steps:
-      - name: Get or create Bug Backlog milestone
+      - name: Get Bugs backlog milestone
         id: milestone
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
-          MILESTONE_NUMBER=$(gh api repos/$REPO/milestones --paginate --jq '.[] | select(.title == "Bug Backlog") | .number' | head -1)
+          MILESTONE_NUMBER=$(gh api repos/$REPO/milestones --paginate --jq '.[] | select(.title == "Bugs backlog") | .number' | head -1)
           if [ -z "$MILESTONE_NUMBER" ]; then
-            MILESTONE_NUMBER=$(gh api repos/$REPO/milestones --method POST --field title="Bug Backlog" --jq '.number' 2>/dev/null || true)
-          fi
-          if [ -z "$MILESTONE_NUMBER" ]; then
-            MILESTONE_NUMBER=$(gh api repos/$REPO/milestones --paginate --jq '.[] | select(.title == "Bug Backlog") | .number' | head -1)
+            echo "::error::Milestone 'Bugs backlog' not found. Please create it before using this workflow."
+            exit 1
           fi
           echo "number=$MILESTONE_NUMBER" >> "$GITHUB_OUTPUT"
 
-      - name: Assign issue to Bug Backlog milestone
+      - name: Assign issue to Bugs backlog milestone
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
