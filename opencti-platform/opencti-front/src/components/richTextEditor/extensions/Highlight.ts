@@ -24,7 +24,7 @@ export const Highlight = HighlightBase.extend({
       // Accept legacy editor marker class marks
       ...Object.keys(LEGACY_HIGHLIGHT_MAP).map((cls) => ({
         tag: `mark.${cls}`,
-        getAttrs: (node: HTMLElement) => ({
+        getAttrs: (_node: HTMLElement) => ({
           color: LEGACY_HIGHLIGHT_MAP[cls] ?? null,
         }),
       })),
