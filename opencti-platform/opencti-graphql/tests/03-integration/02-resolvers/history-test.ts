@@ -108,7 +108,7 @@ describe('Testing History search', () => {
     expect(logs.edges[0].node.context_data.message).toBe('Update 1 elements');
     const batchResolvedLogs = await batchContextDataForLog(testContext, ADMIN_USER, logs.edges.map((l) => ({ log: l.node })));
     expect(batchResolvedLogs.length).toBe(3);
-    expect(batchResolvedLogs[0].message).toBe('add `TLP:TEST` in `Markings` | removes `TLP:CLEAR` in `Markings`');
+    expect(batchResolvedLogs[0].message).toBe('adds `TLP:TEST` in `Markings` | removes `TLP:CLEAR` in `Markings`');
   });
 
   it('Is history batchContextDataForLog resolved for old changes format', async () => {
