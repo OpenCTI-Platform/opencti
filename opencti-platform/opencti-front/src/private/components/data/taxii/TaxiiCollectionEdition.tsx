@@ -49,6 +49,7 @@ const taxiiCollectionValidation = (requiredSentence: string) => Yup.object().sha
   description: Yup.string().nullable(),
   restricted_members: Yup.array().nullable(),
   taxii_public: Yup.bool().nullable(),
+  taxii_public_user_id: Yup.mixed().nullable(),
   include_inferences: Yup.bool().nullable(),
   score_to_confidence: Yup.bool().nullable(),
 });

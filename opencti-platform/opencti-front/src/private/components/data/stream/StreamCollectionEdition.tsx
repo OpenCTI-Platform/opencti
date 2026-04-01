@@ -45,6 +45,7 @@ const streamCollectionValidation = (requiredSentence: string) => Yup.object().sh
   name: Yup.string().required(requiredSentence),
   description: Yup.string().nullable(),
   stream_public: Yup.bool().nullable(),
+  stream_public_user_id: Yup.mixed().nullable(),
   restricted_members: Yup.array().nullable(),
 });
 
