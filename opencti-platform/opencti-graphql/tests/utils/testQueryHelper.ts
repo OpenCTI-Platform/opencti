@@ -16,7 +16,7 @@ import type { AuthUser } from '../../src/types/user';
 import { computeLoaders } from '../../src/http/httpAuthenticatedContext';
 import { executionContext } from '../../src/utils/access';
 
-type Request = { query: any; variables: any };
+type Request = { query: any; variables?: any };
 
 // ------------------------------------------------------------------------------
 // Helpers/utilities for integration test case usage.
