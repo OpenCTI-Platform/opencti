@@ -54,7 +54,7 @@ vi.mock('../../../src/modules/playbook/playbook-types', () => ({
   ENTITY_TYPE_PLAYBOOK: 'Playbook',
 }));
 
-// Mock LRUCache so the cache never returns stale data between tests
+// Mock LRUCache so the cache never returns stale data between test
 vi.mock('lru-cache', () => {
   class FakeLRUCache {
     get() {
