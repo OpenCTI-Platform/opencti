@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import type { GraphQLFormattedError } from 'graphql/error';
+import type { GraphQLFormattedError } from 'graphql';
 import { createUploadFromTestDataFile, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { IngestionAuthType, TaxiiVersion } from '../../../src/generated/graphql';
 import { ADMIN_USER, adminQuery, queryAsAdmin, testContext } from '../../utils/testQuery';
@@ -64,8 +64,6 @@ describe('TAXII ingestion resolver standard behavior', () => {
       authentication_value: '',
     });
   });
-
-
 
   it('should create a TAXII ingester with existing user', async () => {
     const INGESTER_TO_CREATE = {

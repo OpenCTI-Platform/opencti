@@ -1,5 +1,5 @@
 import { head, includes } from 'ramda';
-import { stripIgnoredCharacters } from 'graphql/utilities';
+import { stripIgnoredCharacters } from 'graphql';
 import { meterManager } from '../config/tracing';
 import { AUTH_FAILURE, AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../config/errors';
 import { isEmptyField } from '../database/utils';
