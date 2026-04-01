@@ -42,4 +42,3 @@ export const callAgent = async (agentSlug: string, content: string): Promise<Age
     code: data.code,
   };
 };
-

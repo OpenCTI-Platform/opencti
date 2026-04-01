@@ -28,12 +28,10 @@ import type { AgentAction } from '../../private/components/common/form/TextField
 // and in legacy mode ResponseDialog embeds TextFieldAskAI for follow-up actions.
 import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI';
 import useAI from '../hooks/useAI';
-import { type AgentOption, type AgentResponse, fetchAgentsForIntent, callAgent } from './agentApi';
+import { type AgentOption, fetchAgentsForIntent, callAgent } from './agentApi';
 import useHelper from '../hooks/useHelper';
 
 // region types
-
-
 interface ResponseDialogProps {
   id: string;
   isOpen: boolean;
@@ -64,7 +62,6 @@ const subscription = graphql`
         }
     }
 `;
-
 
 const buildPrompt = (
   action: AgentAction,
