@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import fs from 'node:fs';
-import { ADMIN_USER, queryInitPlatformAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { csvMapperAreaMalware, csvMapperAreaMalwareDefault } from './default-values/mapper-area-malware';
 import { parseReadableToLines, parsingProcess } from '../../../src/parser/csv-parser';
 import { handleRefEntities, mappingProcess } from '../../../src/parser/csv-mapper';
@@ -8,6 +8,7 @@ import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../src/modules/a
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { csvMapperFile } from './files-hashes/mapper-files';
 import { csvMapperAreaMarking } from './default-values/mapper-area-marking';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 
 const ENTITY_SETTINGS_UPDATE = `
   mutation entitySettingsEdit($ids: [ID!]!, $input: [EditInput!]!) {
@@ -78,24 +79,30 @@ describe('CSV-MAPPER', () => {
   let markings;
 
   afterAll(async () => {
-    await queryInitPlatformAsAdmin(ENTITY_SETTINGS_UPDATE, {
-      ids: [entitySettingArea.id],
-      input: {
-        key: 'attributes_configuration',
-        value: entitySettingArea.attributes_configuration,
+    await queryAsAdmin({
+      query: ENTITY_SETTINGS_UPDATE,
+      variables: {
+        ids: [entitySettingArea.id],
+        input: {
+          key: 'attributes_configuration',
+          value: entitySettingArea.attributes_configuration,
+        },
       },
     });
-    await queryInitPlatformAsAdmin(ENTITY_SETTINGS_UPDATE, {
-      ids: [entitySettingMalware.id],
-      input: {
-        key: 'attributes_configuration',
-        value: entitySettingMalware.attributes_configuration,
+    await queryAsAdmin({
+      query: ENTITY_SETTINGS_UPDATE,
+      variables: {
+        ids: [entitySettingMalware.id],
+        input: {
+          key: 'attributes_configuration',
+          value: entitySettingMalware.attributes_configuration,
+        },
       },
     });
   });
 
   beforeAll(async () => {
-    const { data } = await queryInitPlatformAsAdmin(GET_QUERY);
+    const { data } = await queryAsAdmin({ query: GET_QUERY });
     [individual] = data.individuals.edges.map((e) => e.node);
     const entitySettings = data.entitySettings.edges.map((e) => e.node);
     entitySettingArea = entitySettings.find((setting) => setting.target_type === ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA);
@@ -109,16 +116,16 @@ describe('CSV-MAPPER', () => {
       { name: 'longitude', default_values: ['2.22'], mandatory: false },
       { name: 'description', default_values: ['hello'], mandatory: false },
     ];
-    await queryInitPlatformAsAdmin(
-      ENTITY_SETTINGS_UPDATE,
-      {
+    await queryAsAdmin({
+      query: ENTITY_SETTINGS_UPDATE,
+      variables: {
         ids: [entitySettingArea.id],
         input: {
           key: 'attributes_configuration',
           value: JSON.stringify(areaDefaultValues),
         },
       },
-    );
+    });
     const malwareDefaultValues = [
       { name: 'createdBy', default_values: [individual.id], mandatory: false },
       { name: 'killChainPhases', default_values: killChainPhases.map((p) => p.id), mandatory: false },
@@ -127,11 +134,14 @@ describe('CSV-MAPPER', () => {
       { name: 'architecture_execution_envs', default_values: ['powerpc', 'x86'], mandatory: false },
       { name: 'description', default_values: ['hello'], mandatory: false },
     ];
-    await queryInitPlatformAsAdmin(ENTITY_SETTINGS_UPDATE, {
-      ids: [entitySettingMalware.id],
-      input: {
-        key: 'attributes_configuration',
-        value: JSON.stringify(malwareDefaultValues),
+    await queryAsAdmin({
+      query: ENTITY_SETTINGS_UPDATE,
+      variables: {
+        ids: [entitySettingMalware.id],
+        input: {
+          key: 'attributes_configuration',
+          value: JSON.stringify(malwareDefaultValues),
+        },
       },
     });
   });

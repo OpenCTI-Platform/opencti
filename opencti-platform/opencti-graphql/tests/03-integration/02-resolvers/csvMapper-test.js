@@ -1,6 +1,5 @@
 import { expect, it, describe, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
-import { queryInitPlatformAsAdmin } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../../src/schema/general';
 import { createUploadFromTestDataFile } from '../../utils/testQueryHelper';
@@ -15,75 +14,75 @@ const MAPPER_INPUT = {
       id: 'representation-area',
       type: 'entity',
       target: {
-        entity_type: 'Administrative-Area'
+        entity_type: 'Administrative-Area',
       },
       attributes: [
         {
           key: 'name',
           column: {
             column_name: 'A',
-          }
+          },
         },
         {
           key: 'description',
           column: {
             column_name: 'B',
-          }
-        }
-      ]
+          },
+        },
+      ],
     },
     {
       id: 'representation-malware',
       type: 'entity',
       target: {
-        entity_type: 'Malware'
+        entity_type: 'Malware',
       },
       attributes: [
         {
           key: 'name',
           column: {
             column_name: 'E',
-          }
+          },
         },
         {
           key: 'is_family',
           column: {
             column_name: 'F',
-          }
+          },
         },
         {
           key: 'malware_types',
           column: {
             column_name: 'G',
-          }
-        }
-      ]
+          },
+        },
+      ],
     },
     {
       id: 'rel-area-malware',
       type: 'relationship',
       target: {
-        entity_type: 'targets'
+        entity_type: 'targets',
       },
       attributes: [
         {
           key: 'from',
           based_on: {
             representations: [
-              'representation-malware'
-            ]
-          }
+              'representation-malware',
+            ],
+          },
         },
         {
           key: 'to',
           based_on: {
             representations: [
-              'representation-area'
-            ]
-          }
-        }
-      ]
-    }
+              'representation-area',
+            ],
+          },
+        },
+      ],
+    },
   ]),
   skipLineChar: '#',
 };
@@ -258,35 +257,35 @@ describe('CSV Mapper Resolver', () => {
   let addedMapper;
 
   beforeAll(async () => {
-    const { data } = await queryInitPlatformAsAdmin(ENTITY_SETTINGS_GET);
+    const { data } = await queryAsAdmin({ query: ENTITY_SETTINGS_GET });
     const entitySettings = data.entitySettings.edges.map((e) => e.node);
     entitySettingStixCoreRel = entitySettings.find((setting) => setting.target_type === ABSTRACT_STIX_CORE_RELATIONSHIP);
 
-    await queryInitPlatformAsAdmin(
-      ENTITY_SETTINGS_UPDATE,
-      {
+    await queryAsAdmin({
+      query: ENTITY_SETTINGS_UPDATE,
+      variables: {
         ids: [entitySettingStixCoreRel.id],
         input: {
           key: 'attributes_configuration',
           value: JSON.stringify([
-            { name: 'description', default_values: ['hello'], mandatory: true }
-          ])
-        }
-      }
-    );
+            { name: 'description', default_values: ['hello'], mandatory: true },
+          ]),
+        },
+      },
+    });
   });
 
   afterAll(async () => {
-    await queryInitPlatformAsAdmin(
-      ENTITY_SETTINGS_UPDATE,
-      {
+    await queryAsAdmin({
+      query: ENTITY_SETTINGS_UPDATE,
+      variables: {
         ids: [entitySettingStixCoreRel.id],
         input: {
           key: 'attributes_configuration',
-          value: entitySettingStixCoreRel.attributes_configuration
-        }
-      }
-    );
+          value: entitySettingStixCoreRel.attributes_configuration,
+        },
+      },
+    });
   });
 
   it('should create a mapper', async () => {
@@ -311,7 +310,7 @@ describe('CSV Mapper Resolver', () => {
         input: {
           ...MAPPER_INPUT,
           representations: '{ invalid // json --',
-        }
+        },
       },
     });
     expect(errors).toBeDefined();
@@ -325,7 +324,7 @@ describe('CSV Mapper Resolver', () => {
         input: {
           ...MAPPER_INPUT,
           representations: JSON.stringify('{ "id": "test", "type": "InvalidType" }'),
-        }
+        },
       },
     });
     expect(errors).toBeDefined();
@@ -335,7 +334,7 @@ describe('CSV Mapper Resolver', () => {
   it('should retrieve a mapper by internal id', async () => {
     const { data } = await queryAsAdmin({
       query: READ_QUERY,
-      variables: { id: addedMapper.id }
+      variables: { id: addedMapper.id },
     });
     const { csvMapper } = data;
 
@@ -349,7 +348,7 @@ describe('CSV Mapper Resolver', () => {
   it('should retrieve a mapper by standard id', async () => {
     const { data } = await queryAsAdmin({
       query: READ_QUERY,
-      variables: { id: addedMapper.standard_id }
+      variables: { id: addedMapper.standard_id },
     });
     const { csvMapper } = data;
 
@@ -363,7 +362,7 @@ describe('CSV Mapper Resolver', () => {
   it('should generate correct export configuration', async () => {
     const { data } = await queryAsAdmin({
       query: READ_QUERY,
-      variables: { id: addedMapper.standard_id }
+      variables: { id: addedMapper.standard_id },
     });
     const { csvMapper } = data;
     const expectedConfigurationExport = JSON.stringify({
@@ -394,8 +393,8 @@ describe('CSV Mapper Resolver', () => {
       query: TEST_QUERY,
       variables: {
         configuration: JSON.stringify(addedMapper),
-        content: MAPPER_TEST_CONTENT
-      }
+        content: MAPPER_TEST_CONTENT,
+      },
     });
     const { csvMapperTest } = data;
     const objects = JSON.parse(csvMapperTest.objects);
