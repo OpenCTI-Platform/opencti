@@ -21,6 +21,7 @@ directive @constraint(
   exclusiveMax: Int
   multipleOf: Int
 ) on INPUT_FIELD_DEFINITION
+directive @ff(flags: [String!]!, softFail: Boolean = false) on FIELD_DEFINITION
 
 ### SCALAR
 

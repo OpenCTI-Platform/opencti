@@ -40780,6 +40780,13 @@ export type ConstraintDirectiveArgs = {
 
 export type ConstraintDirectiveResolver<Result, Parent, ContextType = any, Args = ConstraintDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
+export type FfDirectiveArgs = {
+  flags: Array<Scalars['String']['input']>;
+  softFail?: Maybe<Scalars['Boolean']['input']>;
+};
+
+export type FfDirectiveResolver<Result, Parent, ContextType = any, Args = FfDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
 export type PublicDirectiveArgs = { };
 
 export type PublicDirectiveResolver<Result, Parent, ContextType = any, Args = PublicDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
@@ -52734,5 +52741,6 @@ export type DirectiveResolvers<ContextType = any> = ResolversObject<{
   allowUnprotectedOTP?: AllowUnprotectedOtpDirectiveResolver<any, any, ContextType>;
   auth?: AuthDirectiveResolver<any, any, ContextType>;
   constraint?: ConstraintDirectiveResolver<any, any, ContextType>;
+  ff?: FfDirectiveResolver<any, any, ContextType>;
   public?: PublicDirectiveResolver<any, any, ContextType>;
 }>;
