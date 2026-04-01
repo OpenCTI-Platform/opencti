@@ -320,7 +320,7 @@ const AIInsights = ({
                 {...params}
                 variant="outlined"
                 size="small"
-                placeholder={agentOptions.length === 0 ? t_i18n('No agent') : t_i18n('Select agent')}
+                placeholder={agentOptions.length === 0 ? t_i18n('No agent available') : t_i18n('Select agent')}
                 InputProps={{
                   ...params.InputProps,
                   endAdornment: (

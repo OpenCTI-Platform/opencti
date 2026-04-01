@@ -214,7 +214,7 @@ const XtmOneContainerSummary = ({ isContainer, filters, loading, setLoading, sel
       const entityId = objectsFilter.values[0];
       return (
         `Search for the most recent reports and cases related to entity ID: ${entityId}. `
-        + `Fetch each container using get_opencti_container_full and produce a combined summary. `
+        + 'Fetch each container using get_opencti_container_full and produce a combined summary. '
         + `Language: ${language}.`
       );
     }
@@ -261,7 +261,7 @@ const XtmOneContainerSummary = ({ isContainer, filters, loading, setLoading, sel
     <>
       {noAgent && (
         <Alert severity="warning" variant="outlined" style={{ marginTop: 10 }}>
-          {t_i18n('No agent is configured for container summaries. Ask your administrator to configure XTM One.')}
+          {t_i18n('No agent available for this action. Ask your administrator to configure XTM One.')}
         </Alert>
       )}
 
@@ -325,7 +325,6 @@ const LegacyAISummaryContainers = ({ busId, isContainer, filters, loading, setLo
     }),
     [busId],
   );
-  // @ts-ignore
   useSubscription(subConfig);
 
   // Query
