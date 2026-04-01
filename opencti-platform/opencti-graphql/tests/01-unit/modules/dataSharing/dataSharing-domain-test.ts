@@ -6,7 +6,13 @@ import { createFeed, editFeed } from '../../../../src/modules/dataSharing/feed-d
 import { createStreamCollection, streamCollectionEditField } from '../../../../src/modules/dataSharing/streamCollection-domain';
 import { createTaxiiCollection, taxiiCollectionEditField } from '../../../../src/modules/dataSharing/taxiiCollection-domain';
 import type { FeedAddInput, StreamCollectionAddInput, TaxiiCollectionAddInput } from '../../../../src/generated/graphql';
-import { SYSTEM_USER } from '../../../../src/utils/access';
+import { SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../../../../src/utils/access';
+
+// A user with only TAXIIAPI_SETCOLLECTIONS but NOT SETTINGS_SET_ACCESSES
+const mockLimitedUser = {
+  ...SYSTEM_USER,
+  capabilities: [{ name: TAXIIAPI_SETCOLLECTIONS }],
+} as any;
 
 vi.mock('../../../../src/database/cache');
 
@@ -78,6 +84,11 @@ describe('createFeed domain validation', () => {
     await expect(createFeed(mockContext, mockUser, input)).rejects.toThrow('A user must be configured when the feed is public');
   });
 
+  it('should throw when user lacks SETTINGS_SET_ACCESSES and feed_public is true', async () => {
+    const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: true, feed_date_attribute: 'created_at', rolling_time: 60, include_header: false } as FeedAddInput;
+    await expect(createFeed(mockContext, mockLimitedUser, input)).rejects.toThrow('You must have the SETTINGS_SETACCESSES capability to create a public feed');
+  });
+
   it('should throw when feed_public_user_id refers to a non-existent user', async () => {
     vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map() as any);
     const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: true, feed_public_user_id: NONEXISTENT_USER_ID, feed_date_attribute: 'created_at', rolling_time: 60, include_header: false } as FeedAddInput;
@@ -98,6 +109,12 @@ describe('editFeed domain validation', () => {
     vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ _index: 'idx', internal_id: 'feed-id', name: 'F' } as any);
     const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: true, feed_date_attribute: 'created_at', rolling_time: 60, include_header: false } as FeedAddInput;
     await expect(editFeed(mockContext, mockUser, 'feed-id', input)).rejects.toThrow('A user must be configured when the feed is public');
+  });
+
+  it('should throw when user lacks SETTINGS_SET_ACCESSES and public fields changed', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ _index: 'idx', internal_id: 'feed-id', name: 'F', feed_public: false } as any);
+    const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: true, feed_date_attribute: 'created_at', rolling_time: 60, include_header: false } as FeedAddInput;
+    await expect(editFeed(mockContext, mockLimitedUser, 'feed-id', input)).rejects.toThrow('You must have the SETTINGS_SETACCESSES capability to modify public feed settings');
   });
 
   it('should throw when feed_public_user_id refers to a non-existent user', async () => {
@@ -131,6 +148,11 @@ describe('createStreamCollection domain validation', () => {
     await expect(createStreamCollection(mockContext, mockUser, input)).rejects.toThrow('A user must be configured when the stream collection is public');
   });
 
+  it('should throw when user lacks SETTINGS_SET_ACCESSES and stream_public is true', async () => {
+    const input = { name: 'S', stream_public: true } as StreamCollectionAddInput;
+    await expect(createStreamCollection(mockContext, mockLimitedUser, input)).rejects.toThrow('You must have the SETTINGS_SETACCESSES capability to create a public stream collection');
+  });
+
   it('should throw when stream_public_user_id refers to a non-existent user', async () => {
     vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map() as any);
     const input = { name: 'S', stream_public: true, stream_public_user_id: NONEXISTENT_USER_ID } as StreamCollectionAddInput;
@@ -160,6 +182,11 @@ describe('streamCollectionEditField validation', () => {
     await expect(streamCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('The user configured for this public sharing no longer exists');
   });
 
+  it('should throw when user lacks SETTINGS_SET_ACCESSES and public fields are in edit input', async () => {
+    const input = [{ key: 'stream_public', value: ['true'] }];
+    await expect(streamCollectionEditField(mockContext, mockLimitedUser, 'col-id', input)).rejects.toThrow('You must have the SETTINGS_SETACCESSES capability to modify public stream collection settings');
+  });
+
   it('should proceed when stream_public_user_id edit is valid', async () => {
     vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map([[VALID_USER_ID, mockRealUser]]) as any);
     vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: { name: 'S', id: 'col-id' } } as any);
@@ -183,6 +210,11 @@ describe('createTaxiiCollection domain validation', () => {
   it('should throw when taxii_public is true without taxii_public_user_id', async () => {
     const input = { name: 'T', taxii_public: true } as TaxiiCollectionAddInput;
     await expect(createTaxiiCollection(mockContext, mockUser, input)).rejects.toThrow('A user must be configured when the Taxii collection is public');
+  });
+
+  it('should throw when user lacks SETTINGS_SET_ACCESSES and taxii_public is true', async () => {
+    const input = { name: 'T', taxii_public: true } as TaxiiCollectionAddInput;
+    await expect(createTaxiiCollection(mockContext, mockLimitedUser, input)).rejects.toThrow('You must have the SETTINGS_SETACCESSES capability to create a public Taxii collection');
   });
 
   it('should throw when taxii_public_user_id refers to a non-existent user', async () => {
@@ -212,6 +244,11 @@ describe('taxiiCollectionEditField validation', () => {
     vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map() as any);
     const input = [{ key: 'taxii_public_user_id', value: [NONEXISTENT_USER_ID] }];
     await expect(taxiiCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('The user configured for this public sharing no longer exists');
+  });
+
+  it('should throw when user lacks SETTINGS_SET_ACCESSES and public fields are in edit input', async () => {
+    const input = [{ key: 'taxii_public', value: ['true'] }];
+    await expect(taxiiCollectionEditField(mockContext, mockLimitedUser, 'col-id', input)).rejects.toThrow('You must have the SETTINGS_SETACCESSES capability to modify public Taxii collection settings');
   });
 
   it('should proceed when taxii_public_user_id edit is valid', async () => {
