@@ -23,6 +23,7 @@ This table regroups all the breaking changes introduced, with the corresponding 
 <a id="filter-script-api"></a>
 ### Removal of filter script
 This filter option has been disabled by default from graphQL API for security reason.
+If a custom script uses it you will see a "Filter script is not allowed" error.
 
 It can be enabled at your own risk by using this option:
 ```shell
