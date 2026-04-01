@@ -114,7 +114,7 @@ const adminClient = createHttpClient();
  * To be used only when there's some logic in express middleware you want to
  * trigger by passing a specific header via the `options` parameter.
  *
- * Prefer using the helpers in `testQueryHelpers` if possible to gain coverage.
+ * Prefer using the helpers in `./testQueryHelpers.ts` if possible to gain coverage.
  */
 export const queryInitPlatformAsAdmin = async (query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
   return executeInitPlatformQuery(adminClient, query, variables, options);
@@ -128,7 +128,7 @@ export const queryInitPlatformAsAdmin = async (query: string | ASTNode, variable
  * To be used only when there's some logic in express middleware you want to
  * trigger by passing a specific header via the `options` parameter.
  *
- * Prefer using the helpers in `testQueryHelpers` if possible to gain coverage.
+ * Prefer using the helpers in `./testQueryHelpers.ts` if possible to gain coverage.
  */
 export const queryInitPlatformAsUser = async (user: UserTestData, query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
   const client = createHttpClient(user.email, user.password);
@@ -143,7 +143,7 @@ export const queryInitPlatformAsUser = async (user: UserTestData, query: string 
  * To be used only when there's some logic in express middleware you want to
  * trigger by passing a specific header via the `options` parameter.
  *
- * Prefer using the helpers in `testQueryHelpers` if possible to gain coverage.
+ * Prefer using the helpers in `./testQueryHelpers.ts` if possible to gain coverage.
  */
 export const queryInitPlatformAsAnonymous = async (query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
   const anonymous = createUnauthenticatedClient();
@@ -158,7 +158,7 @@ export const queryInitPlatformAsAnonymous = async (query: string | ASTNode, vari
  * To be used only when there's some logic in express middleware you want to
  * trigger by passing a specific header via the `options` parameter.
  *
- * Prefer using the helpers in `testQueryHelpers` if possible to gain coverage.
+ * Prefer using the helpers in `./testQueryHelpers.ts` if possible to gain coverage.
  */
 export const queryInitPlatformAsTokenBearer = async (token: string, query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
   const anonymous = createTokenHttpClient(token);

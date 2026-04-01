@@ -16,15 +16,32 @@ import type { AuthUser } from '../../src/types/user';
 import { computeLoaders } from '../../src/http/httpAuthenticatedContext';
 import { executionContext } from '../../src/utils/access';
 
-// Helper for test usage whit expect inside.
-// vitest cannot be an import of testQuery, so it must be a separate file.
+type Request = { query: any; variables: any };
+
+// ------------------------------------------------------------------------------
+// Helpers/utilities for integration test case usage.
+//
+// These helpers trigger a request directly on a light-weight Apollo Server,
+// shunting the entire Express middleware logic.
+// Should be called in test cases only, not during the globalSetup phase.
+// The good sides :
+// - it makes it easy and fast to test resolvers
+// - handlers participate in code coverage
+// The sides to improve:
+// - middleware logic is not included which makes it impossible to test some
+// use cases correctly. For those you can fall back to using the
+// `queryInitPlatform...` helpers in `testQuery.ts` for now. We're working on
+// improving the setup in order to unify the experience while remaining able
+// to track coverage.
+// Note: vitest cannot be an import of testQuery, so it must be a separate file.
+// ------------------------------------------------------------------------------
 
 /**
  * Test utility.
  * Execute the query and verify that there is no error before returning result.
  * @param request
  */
-export const queryAsAdminWithSuccess = async (request: { query: any; variables: any }) => {
+export const queryAsAdminWithSuccess = async (request: Request) => {
   const requestResult = await queryAsAdmin({
     query: request.query,
     variables: request.variables,
@@ -41,7 +58,7 @@ export const queryAsAdminWithSuccess = async (request: { query: any; variables: 
 };
 
 export const queryAsAdminWithError = async (
-  request: { query: any; variables: any },
+  request: Request,
   errorMessage?: string,
   errorName?: string,
 ) => {
@@ -62,10 +79,10 @@ export const queryAsAdminWithError = async (
 
 /**
  * Execute the query as some User, and verify success and return query result.
- * @param client
+ * @param testUser
  * @param request
  */
-export const queryAsUserWithSuccess = async (testUser: UserTestData, request: { query: any; variables: any }) => {
+export const queryAsUserWithSuccess = async (testUser: UserTestData, request: Request) => {
   const requestResult = await queryAsTestUser(testUser, {
     query: request.query,
     variables: request.variables,
@@ -83,10 +100,10 @@ export const queryAsUserWithSuccess = async (testUser: UserTestData, request: { 
 
 /**
  * Execute the query as some User, and just return response (no validation).
- * @param client
+ * @param testUser
  * @param request
  */
-export const queryAsUser = async (testUser: UserTestData, request: { query: any; variables: any }) => {
+export const queryAsUser = async (testUser: UserTestData, request: Request) => {
   const requestResult = await queryAsTestUser(testUser, {
     query: request.query,
     variables: request.variables,
@@ -96,10 +113,10 @@ export const queryAsUser = async (testUser: UserTestData, request: { query: any;
 
 /**
  * Execute the query as some User (see testQuery.ts), and verify that access is forbidden.
- * @param client
+ * @param testUser
  * @param request
  */
-export const queryAsUserIsExpectedForbidden = async (testUser: UserTestData, request: any, message?: string) => {
+export const queryAsUserIsExpectedForbidden = async (testUser: UserTestData, request: Request, message?: string) => {
   const queryResult = await queryAsTestUser(testUser, {
     query: request.query,
     variables: request.variables,
@@ -112,12 +129,12 @@ export const queryAsUserIsExpectedForbidden = async (testUser: UserTestData, req
 
 /**
  * Execute the query as some User (see testQuery.ts), and verify that error is thrown.
- * @param client
+ * @param testUser
  * @param request
  * @param errorMessage
  * @param errorName
  */
-export const queryAsUserIsExpectedError = async (testUser: UserTestData, request: any, errorMessage?: string, errorName?: string) => {
+export const queryAsUserIsExpectedError = async (testUser: UserTestData, request: Request, errorMessage?: string, errorName?: string) => {
   const queryResult = await queryAsTestUser(testUser, {
     query: request.query,
     variables: request.variables,
@@ -137,7 +154,7 @@ export const queryAsUserIsExpectedError = async (testUser: UserTestData, request
  * Call a graphQL request with no authentication / no login and verify that access is forbidden.
  * @param request
  */
-export const queryUnauthenticatedIsExpectedForbidden = async (request: any) => {
+export const queryUnauthenticatedIsExpectedForbidden = async (request: Request) => {
   const queryResult = await queryAsAnonymous({
     query: request.query,
     variables: request.variables,
@@ -145,6 +162,52 @@ export const queryUnauthenticatedIsExpectedForbidden = async (request: any) => {
   expect(queryResult.errors, 'AUTH_REQUIRED error is expected but got zero errors.').toBeDefined();
   expect(queryResult.errors?.length, `AUTH_REQUIRED is expected, but got ${queryResult.errors?.length} errors`).toBe(1);
   expect(queryResult.errors?.[0].extensions?.code, `AUTH_REQUIRED is expected but got ${queryResult.errors?.[0].extensions?.code}`).toBe(AUTH_REQUIRED);
+};
+
+/**
+ * Execute a query as an anonymous user (so no user in execution context)
+ * @param request
+ * @param draftContext
+ */
+export const queryAsAnonymous = async <T = Record<string, any>>(request: Request, draftContext?: any) => {
+  return query<T>({ user: undefined, request, draftContext });
+};
+
+/**
+ * Execute a query as an admin
+ * @param request
+ * @param draftContext
+ */
+export const queryAsAdmin = async <T = Record<string, any>>(request: Request, draftContext?: any) => {
+  return query<T>({ user: ADMIN_USER, request, draftContext });
+};
+
+/**
+ * Execute a query as an AuthUser
+ * @param user
+ * @param request
+ * @param draftContext
+ */
+export const queryAsAuthUser = async <T = Record<string, any>>(user: AuthUser, request: Request, draftContext?: any) => {
+  return query<T>({ user, request, draftContext });
+};
+
+const queryAsTestUser = async <T = Record<string, any>>(testUser: UserTestData, request: Request, draftContext?: any) => {
+  const user = await getAuthUser(testUser.id);
+  return query<T>({ user, request, draftContext });
+};
+
+const query = async <T = Record<string, any>>(params: { user?: AuthUser; request: Request; draftContext?: any }) => {
+  const execContext = executionContext('test', params.user, params.draftContext ?? undefined);
+  execContext.changeDraftContext = (draftId) => {
+    execContext.draft_context = draftId;
+  };
+  execContext.batch = computeLoaders(execContext, params.user);
+  const { body } = await serverFromUser.executeOperation<T>(params.request, { contextValue: execContext });
+  if (body.kind === 'single') {
+    return body.singleResult;
+  }
+  return body.initialResult;
 };
 
 export const requestFileFromStorageAsAdmin = async (storageId: string) => {
@@ -241,34 +304,4 @@ export const awaitUntilCondition = async (
   if (!isConditionOk === expectToBeTrue) {
     throw new Error(`Condition not met after ${loopCount} attempts - ${message}`);
   }
-};
-
-export const queryAsAnonymous = async <T = Record<string, any>>(request: any, draftContext?: any) => {
-  return query<T>({ user: undefined, request, draftContext });
-};
-
-export const queryAsAdmin = async <T = Record<string, any>>(request: any, draftContext?: any) => {
-  return query<T>({ user: ADMIN_USER, request, draftContext });
-};
-
-export const queryAsAuthUser = async <T = Record<string, any>>(user: AuthUser, request: any, draftContext?: any) => {
-  return query<T>({ user, request, draftContext });
-};
-
-const queryAsTestUser = async <T = Record<string, any>>(testUser: UserTestData, request: any, draftContext?: any) => {
-  const user = await getAuthUser(testUser.id);
-  return query<T>({ user, request, draftContext });
-};
-
-const query = async <T = Record<string, any>>(params: { user?: AuthUser; request: any; draftContext?: any }) => {
-  const execContext = executionContext('test', params.user, params.draftContext ?? undefined);
-  execContext.changeDraftContext = (draftId) => {
-    execContext.draft_context = draftId;
-  };
-  execContext.batch = computeLoaders(execContext, params.user);
-  const { body } = await serverFromUser.executeOperation<T>(params.request, { contextValue: execContext });
-  if (body.kind === 'single') {
-    return body.singleResult;
-  }
-  return body.initialResult;
 };
