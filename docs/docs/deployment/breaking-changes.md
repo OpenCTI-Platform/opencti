@@ -10,14 +10,32 @@ This table regroups all the breaking changes introduced, with the corresponding 
 
 | Change                                                                                                              | Deprecated in | Changed in |
 |:--------------------------------------------------------------------------------------------------------------------|:--------------|:-----------|
+| [Removal of filter script](#filter-script-api)                                                                      | -             | 7.260401.0 |
 | [SSO, cryptography and tokens management](#cryptography-and-tokens-management)                                      | -             | 7.260224.0 |
-| [Update license for SSO (& migration to UI)](#SSO-update-license)                                                |               | 7.260224.0        |
+| [Update license for SSO (& migration to UI)](#SSO-update-license)                                                   |               | 7.260224.0 |
 | [XTM Composer version compatibility](#xtm-composer-version-compatibility)                                           | -             | 7.260224.0 |
 | [GenerationScenario Mutations in OpenCTI - OpenBAS](#generation-scenario-mutation-openti-openbas-with-placeholders) | 6.5           | 6.8        |
 | [Removing bi-directional stream connectors](#removing-some-stream-connectors)                                       | 6.3           | 6.6        |
 | [Promote Observable API](#change-to-the-observable-promote-API)                                                     | 6.2           | 6.8        |
 | [SAML authentication parameters](#change-to-SAML-authentication)                                                    |               | 6.2        |
 | [Major changes to Filtering API](#new-filtering-API)                                                                |               | 5.12       |
+
+<a id="filter-script-api"></a>
+### Removal of filter script
+This filter option has been disabled by default from graphQL API for security reason.
+
+It can be enabled at your own risk by using this option:
+```shell
+ELASTICSEARCH__UNSECURE_SCRIPT_FILTER_ENABLED=true
+```
+or
+```json
+{
+  "elasticsearch": {
+    "script_filter_enabled": true
+  }
+}
+```
 
 
 <a id="cryptography-and-tokens-management"></a>
