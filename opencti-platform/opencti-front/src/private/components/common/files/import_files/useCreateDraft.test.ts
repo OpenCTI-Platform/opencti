@@ -6,27 +6,6 @@ import { UseMutationConfig } from 'react-relay';
 import { DraftCreationMutation } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
 
 // ---------------------------------------------------------------------------
-// Hoisted mocks
-// ---------------------------------------------------------------------------
-const { mockNotifyError } = vi.hoisted(() => ({
-  mockNotifyError: vi.fn(),
-}));
-
-// ---------------------------------------------------------------------------
-// relay/environment – capture notifyError calls without loading real module
-// ---------------------------------------------------------------------------
-vi.mock('../../../../../relay/environment', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../../../relay/environment')>();
-  return {
-    ...actual,
-    MESSAGING$: {
-      notifyError: mockNotifyError,
-      notifySuccess: vi.fn(),
-    },
-  };
-});
-
-// ---------------------------------------------------------------------------
 // Shared helpers
 // ---------------------------------------------------------------------------
 const minimalDraftValues: DraftAddInput = {
@@ -219,23 +198,9 @@ describe('useCreateDraft', () => {
   });
 
   describe('when the mutation fails via onError', () => {
-    it('should call MESSAGING$.notifyError with the server error message', async () => {
+    it('should return undefined when the mutation fails (notification is delegated to the caller via useApiMutation)', async () => {
       const mockCommit = vi.fn().mockImplementation(({ onError }) => {
         onError({ res: { errors: [{ message: 'Draft creation failed' }] } });
-      });
-
-      const { result } = makeHook(mockCommit);
-
-      await act(async () => {
-        await result.current(minimalDraftValues);
-      });
-
-      expect(mockNotifyError).toHaveBeenCalledWith('Draft creation failed');
-    });
-
-    it('should return undefined when the mutation fails', async () => {
-      const mockCommit = vi.fn().mockImplementation(({ onError }) => {
-        onError({ res: { errors: [{ message: 'Error' }] } });
       });
 
       const { result } = makeHook(mockCommit);
@@ -265,18 +230,19 @@ describe('useCreateDraft', () => {
   });
 
   describe('when the mutation fails via onCompleted with errors', () => {
-    it('should call MESSAGING$.notifyError with the payload error message', async () => {
+    it('should return undefined when onCompleted receives errors (notification is delegated to the caller via useApiMutation)', async () => {
       const mockCommit = vi.fn().mockImplementation(({ onCompleted }) => {
         onCompleted(null, [{ message: 'Payload error' }]);
       });
 
       const { result } = makeHook(mockCommit);
 
+      let returnedId: string | undefined = 'initial';
       await act(async () => {
-        await result.current(minimalDraftValues);
+        returnedId = await result.current(minimalDraftValues);
       });
 
-      expect(mockNotifyError).toHaveBeenCalledWith('Payload error');
+      expect(returnedId).toBeUndefined();
     });
 
     it('should not call setDraftId when onCompleted receives errors', async () => {

@@ -2,8 +2,6 @@ import { useCallback } from 'react';
 import { UseMutationConfig } from 'react-relay';
 import { DraftCreationMutation, DraftCreationMutation$data } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
 import { DraftAddInput } from '@components/drafts/DraftCreation';
-import { MESSAGING$ } from '../../../../../relay/environment';
-import { RelayError } from '../../../../../relay/relayTypes';
 
 type CommitCreationMutation = (args: UseMutationConfig<DraftCreationMutation>) => void;
 
@@ -58,16 +56,9 @@ const useCreateDraft = (
 
       setDraftId(draftWorkspaceAdd?.id);
       return draftWorkspaceAdd?.id;
-    } catch (error) {
-      // onError path: error is a RelayError with a .res.errors array
-      if (error && typeof error === 'object' && 'res' in error) {
-        const { errors } = (error as unknown as RelayError).res;
-        MESSAGING$.notifyError(errors.at(0)?.message);
-      } else if (Array.isArray(error)) {
-        // onCompleted path: error is the PayloadError[] array
-        const firstError = error[0] as { message?: string };
-        MESSAGING$.notifyError(firstError?.message);
-      }
+    } catch {
+      // The caller handles notifications via useApiMutation options
+      // (errorMessage / successMessage) to avoid duplicate toasts.
       return undefined;
     }
   }, [commitCreationMutation, setDraftId]);
