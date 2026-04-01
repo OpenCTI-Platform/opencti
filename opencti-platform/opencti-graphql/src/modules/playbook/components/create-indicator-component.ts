@@ -30,7 +30,7 @@ import type { StixRelation } from '../../../types/stix-2-1-sro';
 import { STIX_PATTERN_TYPE } from '../../../utils/syntax';
 import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../../indicator/indicator-types';
 import { schemaTypesDefinition } from '../../../schema/schema-types';
-import { extractBundleBaseElement } from '../playbook-utils';
+import { extractBundleBaseElement, isBundleElementInScope } from '../playbook-utils';
 import { convertStoreToStix_2_1 } from '../../../database/stix-2-1-converter';
 import { pushAll } from '../../../utils/arrayUtil';
 
@@ -83,23 +83,13 @@ export const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndica
     const context = executionContext('playbook_components');
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
 
-    let observables: StixObject[];
-    if (applyToElements === playbookBundleElementsToApply.allElements.value) {
-      // add all objects in the bundle if requested in the playbook config
-      observables = [...bundle.objects];
-    } else if (applyToElements === playbookBundleElementsToApply.allExceptMain.value) {
-      // If we want to apply to all elements except main, exclude the main element from the bundle
-      observables = bundle.objects.filter((o) => o.id !== baseData.id);
-    } else {
-      // Only add main element in the bundle (default: onlyMain)
-      observables = [baseData];
-    }
+    const observablesToApply = bundle.objects.filter((object) => isBundleElementInScope(object, applyToElements, dataInstanceId));
 
     const { type: baseDataType, id } = baseData.extensions[STIX_EXT_OCTI];
     const isBaseDataAContainer = isStixDomainObjectContainer(baseDataType);
     const objectsToPush: StixObject[] = [];
-    for (let index = 0; index < observables.length; index += 1) {
-      const observable = observables[index] as StixCyberObject;
+    for (let index = 0; index < observablesToApply.length; index += 1) {
+      const observable = observablesToApply[index] as StixCyberObject;
       let { type } = observable.extensions[STIX_EXT_OCTI];
       if (isStixCyberObservable(type) && (isEmptyField(types) || types.includes(type))) {
         const indicatorName = observableValue({ ...observable, entity_type: type });
