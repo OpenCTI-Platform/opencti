@@ -9,6 +9,8 @@ import Loader from './components/Loader';
 const PublicRoot = lazy(() => import('./public/PublicRoot'));
 const PrivateRoot = lazy(() => import('./private/Root'));
 
+/* Dummy change in the frontend repository */
+
 const App = () => (
   <CookiesProvider>
     <BrowserRouter basename={APP_BASE_PATH}>
