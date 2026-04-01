@@ -258,7 +258,7 @@ const buildAndSendBundle = async (context, user, task, objects, opts) => {
   });
 };
 
-const sendResultToQueue = async (context, user, task, objects, opts = {}) => {
+export const sendResultToQueue = async (context, user, task, objects, opts = {}) => {
   const { forceNoSplit } = opts;
   if (forceNoSplit === true) {
     await buildAndSendBundle(context, user, task, objects, opts);
