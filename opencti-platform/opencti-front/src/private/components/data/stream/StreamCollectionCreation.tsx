@@ -20,6 +20,7 @@ import { fieldSpacingContainerStyle, FieldOption } from '../../../../utils/field
 import CreatorField from '../../common/form/CreatorField';
 import { emptyFilterGroup, serializeFilterGroupForBackend, stixFilters } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -63,6 +64,7 @@ const StreamCollectionCreationForm = ({
   helpers,
 }: StreamCollectionFormProps) => {
   const { t_i18n } = useFormatter();
+  const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
 
   const [commit] = useApiMutation<StreamCollectionCreationMutation>(streamCollectionCreationMutation);
 
@@ -165,6 +167,7 @@ const StreamCollectionCreationForm = ({
                   <Switch
                     checked={values.stream_public}
                     onChange={(_, checked) => setFieldValue('stream_public', checked)}
+                    disabled={!isGrantedToSetAccesses}
                   />
                 )}
                 style={{ marginLeft: 1 }}

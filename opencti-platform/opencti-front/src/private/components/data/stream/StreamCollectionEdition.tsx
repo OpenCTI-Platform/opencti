@@ -20,6 +20,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import CreatorField from '../../common/form/CreatorField';
 import { convertAuthorizedMembers, convertUser } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { useTheme } from '@mui/material/styles';
 
 interface StreamCollectionCreationForm {
@@ -50,6 +51,7 @@ const streamCollectionValidation = (requiredSentence: string) => Yup.object().sh
 const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: StreamCollectionEdition_streamCollection$data }> = ({ streamCollection }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
   const initialValues = { ...streamCollection,
     restricted_members: convertAuthorizedMembers(streamCollection),
     stream_public: streamCollection.stream_public ?? null,
@@ -160,7 +162,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
               {t_i18n('Make this stream public and available to anyone')}
             </AlertTitle>
             <FormControlLabel
-              control={<Switch defaultChecked={!!initialValues.stream_public} />}
+              control={<Switch defaultChecked={!!initialValues.stream_public} disabled={!isGrantedToSetAccesses} />}
               style={{ marginLeft: 1 }}
               onChange={(_, checked) => handleSubmitField('stream_public', checked.toString())}
               label={t_i18n('Public stream')}
@@ -180,6 +182,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
                 name="stream_public_user_id"
                 label={t_i18n('Share data corresponding to the right associated with this user')}
                 containerStyle={fieldSpacingContainerStyle}
+                disabled={!isGrantedToSetAccesses}
                 onChange={(_, value) => handleSubmitField('stream_public_user_id', (value as FieldOption)?.value ?? '')}
               />
             )}

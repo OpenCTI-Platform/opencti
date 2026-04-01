@@ -19,6 +19,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers, convertUser } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { useTheme } from '@mui/material/styles';
 import CreatorField from '../../common/form/CreatorField';
 
@@ -55,6 +56,7 @@ const taxiiCollectionValidation = (requiredSentence: string) => Yup.object().sha
 const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: TaxiiCollectionEdition_taxiiCollection$data }> = ({ taxiiCollection }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
   const initialValues = {
     name: taxiiCollection.name ?? '',
     description: taxiiCollection.description ?? '',
@@ -169,7 +171,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
               {t_i18n('Make this TAXII collection public and available to anyone')}
             </AlertTitle>
             <FormControlLabel
-              control={<Switch defaultChecked={!!initialValues.taxii_public} />}
+              control={<Switch defaultChecked={!!initialValues.taxii_public} disabled={!isGrantedToSetAccesses} />}
               style={{ marginLeft: 1 }}
               onChange={(_, checked) => handleSubmitField('taxii_public', checked.toString())}
               label={t_i18n('Public collection')}
@@ -189,6 +191,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
                 name="taxii_public_user_id"
                 label={t_i18n('Share data corresponding to the right associated with this user')}
                 containerStyle={fieldSpacingContainerStyle}
+                disabled={!isGrantedToSetAccesses}
                 onChange={(_, value) => handleSubmitField('taxii_public_user_id', (value as FieldOption)?.value ?? '')}
               />
             )}

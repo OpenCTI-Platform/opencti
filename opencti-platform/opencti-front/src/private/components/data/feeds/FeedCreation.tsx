@@ -52,6 +52,7 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import { PaginationOptions } from '../../../../components/list_lines';
@@ -174,6 +175,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const { schema } = useAuth();
+  const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
 
   const [selectedTypes, setSelectedTypes] = useState(feed?.feed_types ?? []);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(feed?.filters) ?? emptyFilterGroup);
@@ -497,7 +499,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                           {t_i18n('Make this feed public and available to anyone')}
                         </AlertTitle>
                         <FormControlLabel
-                          control={<Switch />}
+                          control={<Switch disabled={!isGrantedToSetAccesses} />}
                           style={{ marginLeft: 1 }}
                           name="feed_public"
                           onChange={(_, checked) => setFieldValue('feed_public', checked)}

@@ -46,6 +46,7 @@ import CreatorField from '../../common/form/CreatorField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers, convertUser } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useTheme } from '@mui/material/styles';
@@ -163,6 +164,7 @@ const FeedEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
   const { ignoredAttributesInFeeds } = useAttributes();
   const { schema } = useAuth();
+  const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
 
   const [selectedTypes, setSelectedTypes] = useState(feed.feed_types);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(feed.filters));
@@ -452,6 +454,7 @@ const FeedEditionContainer = (props) => {
                         name="feed_public"
                         containerstyle={{ marginLeft: 2, marginTop: 20 }}
                         label={t_i18n('Public feed')}
+                        disabled={!isGrantedToSetAccesses}
                       />
                       {!values.feed_public && (
                         <ObjectMembersField
@@ -467,6 +470,7 @@ const FeedEditionContainer = (props) => {
                           name="feed_public_user_id"
                           label={t_i18n('Share data corresponding to the right associated with this user')}
                           containerStyle={fieldSpacingContainerStyle}
+                          disabled={!isGrantedToSetAccesses}
                           onChange={(name, value) => setFieldValue(name, value)}
                         />
                       )}

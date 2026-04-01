@@ -20,6 +20,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { PaginationOptions } from '../../../../components/list_lines';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
@@ -81,6 +82,7 @@ const CreateTaxiiCollectionControlledDial = (props: DrawerControlledDialProps) =
 const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> = ({ paginationOptions }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
   const [filters, helpers] = useFiltersState(emptyFilterGroup);
 
   const onSubmit: FormikConfig<TaxiiCollectionCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
@@ -171,7 +173,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                   {t_i18n('Make this TAXII collection public and available to anyone')}
                 </AlertTitle>
                 <FormControlLabel
-                  control={<Switch />}
+                  control={<Switch disabled={!isGrantedToSetAccesses} />}
                   style={{ marginLeft: 1 }}
                   name="taxii_public"
                   onChange={(_, checked) => setFieldValue('taxii_public', checked)}
