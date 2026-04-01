@@ -3,7 +3,9 @@ import readline from 'node:readline';
 import fs from 'node:fs';
 import path from 'node:path';
 import Upload from 'graphql-upload/Upload.mjs';
-import { ADMIN_USER, getAuthUser, getOrganizationIdByName, type OrganizationTestData, serverFromUser, testContext, type UserTestData } from './testQuery';
+import { ApolloServer } from '@apollo/server';
+import createSchema from '../../src/graphql/schema';
+import { ADMIN_USER, getAuthUser, getOrganizationIdByName, type OrganizationTestData, testContext, type UserTestData } from './testQuery';
 import { downloadFile } from '../../src/database/raw-file-storage';
 import { streamConverter } from '../../src/database/file-storage';
 import { logApp } from '../../src/config/conf';
@@ -12,7 +14,7 @@ import { getSettings, settingsEditField } from '../../src/domain/settings';
 import { fileToReadStream } from '../../src/database/file-storage';
 import { resetCacheForEntity } from '../../src/database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../src/schema/internalObject';
-import type { AuthUser } from '../../src/types/user';
+import type { AuthContext, AuthUser } from '../../src/types/user';
 import { computeLoaders } from '../../src/http/httpAuthenticatedContext';
 import { executionContext } from '../../src/utils/access';
 
@@ -305,3 +307,9 @@ export const awaitUntilCondition = async (
     throw new Error(`Condition not met after ${loopCount} attempts - ${message}`);
   }
 };
+
+const serverFromUser = new ApolloServer<AuthContext>({
+  schema: createSchema(),
+  introspection: true,
+  persistedQueries: false,
+});

@@ -1,15 +1,14 @@
-import { ApolloServer } from '@apollo/server';
 import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
 import { print, type ASTNode } from 'graphql';
 import axios, { type AxiosInstance } from 'axios';
-import createSchema from '../../src/graphql/schema';
+
 import conf, { ACCOUNT_STATUS_ACTIVE, PORT } from '../../src/config/conf';
 import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../../src/utils/access';
 
 // region static graphql modules
 import '../../src/modules/index';
-import type { AuthContext, AuthUser } from '../../src/types/user';
+import type { AuthUser } from '../../src/types/user';
 import type { StoreMarkingDefinition } from '../../src/types/store';
 import { generateStandardId, MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_CLEAR, MARKING_TLP_GREEN } from '../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../../src/schema/internalObject';
@@ -818,12 +817,6 @@ export const isPlatformAlive = async () => {
   const { data } = await queryInitPlatformAsAdmin(HEALTHCHECK_QUERY, { });
   return !!data?.about.version;
 };
-
-export const serverFromUser = new ApolloServer<AuthContext>({
-  schema: createSchema(),
-  introspection: true,
-  persistedQueries: false,
-});
 
 export const isSorted = (arr: []) => {
   let second_index;
