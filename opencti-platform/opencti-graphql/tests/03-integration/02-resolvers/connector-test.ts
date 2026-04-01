@@ -1,6 +1,7 @@
 import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
+import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { ConnectorInfo, Connector } from '../../../src/generated/graphql';
 import { BACKGROUND_TASK_QUEUES } from '../../../src/database/rabbitmq';

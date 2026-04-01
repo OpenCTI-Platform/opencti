@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { adminQueryWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { PlaybookAddLinkInput, PlaybookAddNodeInput } from '../../../src/generated/graphql';
 import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
 import { UNSUPPORTED_ERROR } from '../../../src/config/errors';
@@ -282,7 +282,7 @@ describe('Playbook resolver standard behavior', () => {
         name: 'duplicate-entry',
         position: { x: 1, y: 2 },
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_NODE_PLAYBOOK,
           variables: { id: playbookId, input: addNodeInput },
@@ -299,7 +299,7 @@ describe('Playbook resolver standard behavior', () => {
         name: 'unknown-component',
         position: { x: 3, y: 12 },
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_NODE_PLAYBOOK,
           variables: { id: playbookId, input: addNodeInput },
@@ -321,7 +321,7 @@ describe('Playbook resolver standard behavior', () => {
         name: 'incorrectNode',
         position: { x: 1, y: 1 },
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_NODE_PLAYBOOK,
           variables: { id: playbookId, input: addNodeInput },
@@ -343,7 +343,7 @@ describe('Playbook resolver standard behavior', () => {
         name: 'incorrectNode',
         position: { x: 1, y: 1 },
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_NODE_PLAYBOOK,
           variables: { id: playbookId, input: addNodeInput },
@@ -390,7 +390,7 @@ describe('Playbook resolver standard behavior', () => {
         name: 'bad-node',
         position: { x: 1, y: 1 },
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: REPLACE_NODE_PLAYBOOK,
           variables: { id: playbookId, nodeId: entryNodeId, input: replaceNodeInput },
@@ -412,7 +412,7 @@ describe('Playbook resolver standard behavior', () => {
         name: 'bad-filters-node',
         position: { x: 1, y: 1 },
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: REPLACE_NODE_PLAYBOOK,
           variables: { id: playbookId, nodeId: entryNodeId, input: replaceNodeInput },
@@ -467,7 +467,7 @@ describe('Playbook resolver standard behavior', () => {
         from_port: 'out',
         to_node: matchingNodeId,
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_LINK_PLAYBOOK,
           variables: { id: playbookId, input: addLinkInput },
@@ -483,7 +483,7 @@ describe('Playbook resolver standard behavior', () => {
         from_port: 'out',
         to_node: matchingNodeId,
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_LINK_PLAYBOOK,
           variables: { id: playbookId, input: addLinkInput },
@@ -499,7 +499,7 @@ describe('Playbook resolver standard behavior', () => {
         from_port: 'fake-port',
         to_node: matchingNodeId,
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_LINK_PLAYBOOK,
           variables: { id: playbookId, input: addLinkInput },
@@ -515,7 +515,7 @@ describe('Playbook resolver standard behavior', () => {
         from_port: 'out',
         to_node: 'fake-node-id',
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_LINK_PLAYBOOK,
           variables: { id: playbookId, input: addLinkInput },

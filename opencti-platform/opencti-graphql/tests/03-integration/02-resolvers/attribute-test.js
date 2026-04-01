@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_LOCATION_POSITION, ENTITY_TYPE_VULNERABILITY } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../../src/schema/stixMetaObject';
 import { ENTITY_TYPE_MIGRATION_STATUS } from '../../../src/schema/internalObject';

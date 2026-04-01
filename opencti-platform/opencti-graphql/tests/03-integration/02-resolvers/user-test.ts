@@ -10,9 +10,8 @@ import {
   getOrganizationIdByName,
   getUserIdByEmail,
   GREEN_GROUP,
-  internalAdminQuery,
+  queryInitPlatformAsAdmin,
   PLATFORM_ORGANIZATION,
-  queryAsAdmin,
   TEST_ORGANIZATION,
   testContext,
   TESTING_USERS,
@@ -21,10 +20,11 @@ import {
   USER_PARTICIPATE,
   USER_SECURITY,
 } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
 import {
-  adminQueryWithError,
+  queryAsAdminWithError,
   queryAsAdminWithSuccess,
   queryAsUser,
   queryAsUserIsExpectedError,
@@ -1155,7 +1155,7 @@ describe('User is impersonated', async () => {
     // as requires passing the extra header
     // to check logic happening in middleware.
     // Won't participate in test coverage.
-    const reportQuery = await internalAdminQuery(
+    const reportQuery = await queryInitPlatformAsAdmin(
       CREATE_REPORT_QUERY,
       REPORT_TO_CREATE,
       { applicantId: USER_CONNECTOR.id },
@@ -1252,7 +1252,7 @@ describe('Service account User coverage', async () => {
     expect(userCreated.password).toBeUndefined();
   });
   it('should not update password for service account', async () => {
-    await adminQueryWithError({
+    await queryAsAdminWithError({
       query: UPDATE_QUERY,
       variables: {
         id: userInternalId,

@@ -1,7 +1,8 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import Upload from 'graphql-upload/Upload.mjs';
-import { ADMIN_USER, queryAsAdmin, testContext, TEST_ORGANIZATION, USER_PARTICIPATE, getUserIdByEmail, getOrganizationIdByName, internalAdminQuery } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, TEST_ORGANIZATION, USER_PARTICIPATE, getUserIdByEmail, getOrganizationIdByName, queryInitPlatformAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { buildDraftValidationBundle } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import { DRAFT_VALIDATION_CONNECTOR_ID } from '../../../src/modules/draftWorkspace/draftWorkspace-connector';
@@ -267,7 +268,7 @@ const READ_DRAFT_WORKSPACE_FULL_QUERY = gql`
 `;
 
 const modifyAdminDraftContext = async (draftId: string) => {
-  const meUserModifyResult = await internalAdminQuery(
+  const meUserModifyResult = await queryInitPlatformAsAdmin(
     MODIFY_USER_DRAFT_WORKSPACE_QUERY,
     { input: { key: 'draft_context', value: draftId } },
   );
@@ -387,14 +388,14 @@ describe('Drafts workspace resolver testing', () => {
       },
     };
 
-    const report = await internalAdminQuery(CREATE_REPORT_QUERY, REPORT_TO_CREATE);
+    const report = await queryInitPlatformAsAdmin(CREATE_REPORT_QUERY, REPORT_TO_CREATE);
     const reportInternalId = report.data?.reportAdd.id;
 
-    const getReportInDraftQuery = await internalAdminQuery(READ_REPORT_QUERY, { id: reportInternalId });
+    const getReportInDraftQuery = await queryInitPlatformAsAdmin(READ_REPORT_QUERY, { id: reportInternalId });
     expect(getReportInDraftQuery.data?.report.id).toBe(reportInternalId);
 
     await modifyAdminDraftContext('');
-    const getReportOutOfDraftQuery = await internalAdminQuery(READ_REPORT_QUERY, { id: reportInternalId });
+    const getReportOutOfDraftQuery = await queryInitPlatformAsAdmin(READ_REPORT_QUERY, { id: reportInternalId });
     expect(getReportOutOfDraftQuery.data?.report).toBeNull();
   });
 
@@ -410,7 +411,7 @@ describe('Drafts workspace resolver testing', () => {
         objectMarking: [],
       },
     };
-    const report = await internalAdminQuery(CREATE_REPORT_QUERY, REPORT_TO_CREATE);
+    const report = await queryInitPlatformAsAdmin(CREATE_REPORT_QUERY, REPORT_TO_CREATE);
     const reportInternalId = report.data?.reportAdd.id;
 
     // Add a file to stixDomainObject with importPush
@@ -441,24 +442,24 @@ describe('Drafts workspace resolver testing', () => {
     };
 
     await modifyAdminDraftContext('');
-    const report = await internalAdminQuery(CREATE_REPORT_QUERY, LIVE_REPORT_TO_CREATE);
+    const report = await queryInitPlatformAsAdmin(CREATE_REPORT_QUERY, LIVE_REPORT_TO_CREATE);
     const reportInternalId = report.data?.reportAdd.id;
 
     await modifyAdminDraftContext(addedDraftId);
-    await internalAdminQuery(
+    await queryInitPlatformAsAdmin(
       UPDATE_REPORT_QUERY,
       { id: reportInternalId, input: { key: 'description', value: draftDescription } },
     );
-    const getReportInDraftQuery = await internalAdminQuery(READ_REPORT_QUERY, { id: reportInternalId });
+    const getReportInDraftQuery = await queryInitPlatformAsAdmin(READ_REPORT_QUERY, { id: reportInternalId });
     expect(getReportInDraftQuery.data?.report.id).toBe(reportInternalId);
     expect(getReportInDraftQuery.data?.report.description).toBe(draftDescription);
 
     await modifyAdminDraftContext('');
-    const getReportOutOfDraftQuery = await internalAdminQuery(READ_REPORT_QUERY, { id: reportInternalId });
+    const getReportOutOfDraftQuery = await queryInitPlatformAsAdmin(READ_REPORT_QUERY, { id: reportInternalId });
     expect(getReportOutOfDraftQuery.data?.report.id).toBe(reportInternalId);
     expect(getReportOutOfDraftQuery.data?.report.description).toBe(liveDescription);
 
-    await internalAdminQuery(
+    await queryInitPlatformAsAdmin(
       DELETE_REPORT_QUERY,
       { id: reportInternalId },
     );
@@ -501,7 +502,7 @@ describe('Drafts workspace resolver testing', () => {
         confidence: 90,
       },
     };
-    const report = await internalAdminQuery(CREATE_REPORT_QUERY, REPORT_TO_CREATE);
+    const report = await queryInitPlatformAsAdmin(CREATE_REPORT_QUERY, REPORT_TO_CREATE);
     const reportStandardId = report.data?.reportAdd.standard_id;
 
     // Add a file to report
@@ -525,7 +526,7 @@ describe('Drafts workspace resolver testing', () => {
     expect(bundleData.objects[0].extensions[STIX_EXT_OCTI].files[0].data).toBeDefined();
 
     // Validate draft, verify work result and that draft was correctly deleted
-    const validateResult = await internalAdminQuery(
+    const validateResult = await queryInitPlatformAsAdmin(
       VALIDATE_DRAFT_WORKSPACE_QUERY,
       { id: addedDraftId },
     );
@@ -534,7 +535,7 @@ describe('Drafts workspace resolver testing', () => {
     expect(validateResult.data?.draftWorkspaceValidate.connector.id).toEqual(DRAFT_VALIDATION_CONNECTOR_ID);
 
     // Verify that draft still exists, but that the draft is in validated state.
-    const draftWorkspaceResult = await internalAdminQuery(
+    const draftWorkspaceResult = await queryInitPlatformAsAdmin(
       READ_DRAFT_WORKSPACE_QUERY,
       { id: addedDraftId },
     );
@@ -543,9 +544,9 @@ describe('Drafts workspace resolver testing', () => {
     expect(draftWorkspaceResult.data?.draftWorkspace.draft_status).toEqual(DRAFT_STATUS_VALIDATED);
 
     // Verify that me user has been moved outside of draft, and that me user can't move back into a draft in a validated state
-    const meUserResult = await internalAdminQuery(READ_ME_USER_DRAFT_WORKSPACE_QUERY);
+    const meUserResult = await queryInitPlatformAsAdmin(READ_ME_USER_DRAFT_WORKSPACE_QUERY);
     expect(meUserResult.data?.me.draftContext).toBeNull();
-    const meUserModifyResult = await internalAdminQuery(
+    const meUserModifyResult = await queryInitPlatformAsAdmin(
       MODIFY_USER_DRAFT_WORKSPACE_QUERY,
       { input: { key: 'draft_context', value: addedDraftId } },
     );
@@ -573,10 +574,10 @@ describe('Drafts workspace resolver testing', () => {
         confidence: 90,
       },
     };
-    const report = await internalAdminQuery(CREATE_REPORT_QUERY, REPORT_TO_CREATE);
+    const report = await queryInitPlatformAsAdmin(CREATE_REPORT_QUERY, REPORT_TO_CREATE);
     const reportStandardId = report.data?.reportAdd.standard_id;
-    await internalAdminQuery(REMOVE_STIX_CORE_OBJECT_FROM_DRAFT_QUERY, { id: reportStandardId });
-    const getRemovedCreatedReportQuery = await internalAdminQuery(READ_REPORT_QUERY, { id: reportStandardId });
+    await queryInitPlatformAsAdmin(REMOVE_STIX_CORE_OBJECT_FROM_DRAFT_QUERY, { id: reportStandardId });
+    const getRemovedCreatedReportQuery = await queryInitPlatformAsAdmin(READ_REPORT_QUERY, { id: reportStandardId });
     expect(getRemovedCreatedReportQuery.data?.report).toBeNull();
 
     // Verify that report updated in draft is removed and reverted to live version
@@ -591,19 +592,19 @@ describe('Drafts workspace resolver testing', () => {
         confidence: 90,
       },
     };
-    const reportToUpdate = await internalAdminQuery(CREATE_REPORT_QUERY, REPORT_TO_UPDATE);
+    const reportToUpdate = await queryInitPlatformAsAdmin(CREATE_REPORT_QUERY, REPORT_TO_UPDATE);
     const reportToUpdateStandardId = reportToUpdate.data?.reportAdd.standard_id;
 
     await modifyAdminDraftContext(addedDraftId);
-    await internalAdminQuery(
+    await queryInitPlatformAsAdmin(
       UPDATE_REPORT_QUERY,
       { id: reportToUpdateStandardId, input: { key: 'description', value: updateDescription } },
     );
-    await internalAdminQuery(REMOVE_STIX_CORE_OBJECT_FROM_DRAFT_QUERY, { id: reportToUpdateStandardId });
-    const reportAfterRemoval = await internalAdminQuery(READ_REPORT_QUERY, { id: reportToUpdateStandardId });
+    await queryInitPlatformAsAdmin(REMOVE_STIX_CORE_OBJECT_FROM_DRAFT_QUERY, { id: reportToUpdateStandardId });
+    const reportAfterRemoval = await queryInitPlatformAsAdmin(READ_REPORT_QUERY, { id: reportToUpdateStandardId });
     expect(reportAfterRemoval.data?.report.description).toBe(originalDescription);
     await modifyAdminDraftContext('');
-    await internalAdminQuery(
+    await queryInitPlatformAsAdmin(
       DELETE_REPORT_QUERY,
       { id: reportToUpdateStandardId },
     );
@@ -617,21 +618,21 @@ describe('Drafts workspace resolver testing', () => {
         confidence: 90,
       },
     };
-    const reportToDelete = await internalAdminQuery(CREATE_REPORT_QUERY, REPORT_TO_DELETE);
+    const reportToDelete = await queryInitPlatformAsAdmin(CREATE_REPORT_QUERY, REPORT_TO_DELETE);
     const reportToDeleteStandardId = reportToDelete.data?.reportAdd.standard_id;
 
     await modifyAdminDraftContext(addedDraftId);
-    await internalAdminQuery(
+    await queryInitPlatformAsAdmin(
       DELETE_REPORT_QUERY,
       { id: reportToDeleteStandardId },
     );
-    const getReportDeletedQuery = await internalAdminQuery(READ_REPORT_QUERY, { id: reportToDeleteStandardId });
+    const getReportDeletedQuery = await queryInitPlatformAsAdmin(READ_REPORT_QUERY, { id: reportToDeleteStandardId });
     expect(getReportDeletedQuery.data?.report).toBeNull();
-    await internalAdminQuery(REMOVE_STIX_CORE_OBJECT_FROM_DRAFT_QUERY, { id: reportToDeleteStandardId });
-    const reportAfterDeleteRemoval = await internalAdminQuery(READ_REPORT_QUERY, { id: reportToDeleteStandardId });
+    await queryInitPlatformAsAdmin(REMOVE_STIX_CORE_OBJECT_FROM_DRAFT_QUERY, { id: reportToDeleteStandardId });
+    const reportAfterDeleteRemoval = await queryInitPlatformAsAdmin(READ_REPORT_QUERY, { id: reportToDeleteStandardId });
     expect(reportAfterDeleteRemoval.data?.report).toBeDefined();
     await modifyAdminDraftContext('');
-    await internalAdminQuery(
+    await queryInitPlatformAsAdmin(
       DELETE_REPORT_QUERY,
       { id: reportToDeleteStandardId },
     );

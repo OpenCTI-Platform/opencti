@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, AMBER_GROUP, queryAsAdmin, USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
+import { ADMIN_USER, AMBER_GROUP, USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { EVENT_TYPE_CREATE } from '../../../src/database/utils';
 import { queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { authorizedMembers } from '../../../src/schema/attribute-definition';

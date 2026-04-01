@@ -4,7 +4,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { registerConnector } from '../../../src/domain/connector';
 import { ConnectorType } from '../../../src/generated/graphql';
 import * as catalogDomain from '../../../src/modules/catalog/catalog-domain';
-import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 
 const CREATE_USER_QUERY = gql`

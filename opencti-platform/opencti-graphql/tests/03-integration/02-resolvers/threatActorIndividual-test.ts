@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
 import { now } from 'moment';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import type { EditInput, EntitySettingEdge, ThreatActorIndividualAddInput } from '../../../src/generated/graphql';
 import { EditOperation } from '../../../src/generated/graphql';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';

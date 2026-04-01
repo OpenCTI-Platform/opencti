@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, describe, it, expect, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { addIngestionCsv, deleteIngestionCsv, ingestionCsvAddAutoUser } from '../../../src/modules/ingestion/ingestion-csv-domain';
-import { PLATFORM_ORGANIZATION, queryAsAdmin, USER_EDITOR } from '../../utils/testQuery';
+import { PLATFORM_ORGANIZATION, USER_EDITOR } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { type EditInput, IngestionAuthType, type IngestionCsv, type IngestionCsvAddAutoUserInput, type IngestionCsvAddInput } from '../../../src/generated/graphql';
 import { unSetOrganization, setOrganization } from '../../utils/testQueryHelper';
 import { getFakeAuthUser, getOrganizationEntity } from '../../utils/domainQueryHelper';

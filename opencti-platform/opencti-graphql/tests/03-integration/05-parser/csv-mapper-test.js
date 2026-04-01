@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import fs from 'node:fs';
-import { ADMIN_USER, internalAdminQuery, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, queryInitPlatformAsAdmin, testContext } from '../../utils/testQuery';
 import { csvMapperAreaMalware, csvMapperAreaMalwareDefault } from './default-values/mapper-area-malware';
 import { parseReadableToLines, parsingProcess } from '../../../src/parser/csv-parser';
 import { handleRefEntities, mappingProcess } from '../../../src/parser/csv-mapper';
@@ -78,14 +78,14 @@ describe('CSV-MAPPER', () => {
   let markings;
 
   afterAll(async () => {
-    await internalAdminQuery(ENTITY_SETTINGS_UPDATE, {
+    await queryInitPlatformAsAdmin(ENTITY_SETTINGS_UPDATE, {
       ids: [entitySettingArea.id],
       input: {
         key: 'attributes_configuration',
         value: entitySettingArea.attributes_configuration,
       },
     });
-    await internalAdminQuery(ENTITY_SETTINGS_UPDATE, {
+    await queryInitPlatformAsAdmin(ENTITY_SETTINGS_UPDATE, {
       ids: [entitySettingMalware.id],
       input: {
         key: 'attributes_configuration',
@@ -95,7 +95,7 @@ describe('CSV-MAPPER', () => {
   });
 
   beforeAll(async () => {
-    const { data } = await internalAdminQuery(GET_QUERY);
+    const { data } = await queryInitPlatformAsAdmin(GET_QUERY);
     [individual] = data.individuals.edges.map((e) => e.node);
     const entitySettings = data.entitySettings.edges.map((e) => e.node);
     entitySettingArea = entitySettings.find((setting) => setting.target_type === ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA);
@@ -109,7 +109,7 @@ describe('CSV-MAPPER', () => {
       { name: 'longitude', default_values: ['2.22'], mandatory: false },
       { name: 'description', default_values: ['hello'], mandatory: false },
     ];
-    await internalAdminQuery(
+    await queryInitPlatformAsAdmin(
       ENTITY_SETTINGS_UPDATE,
       {
         ids: [entitySettingArea.id],
@@ -127,7 +127,7 @@ describe('CSV-MAPPER', () => {
       { name: 'architecture_execution_envs', default_values: ['powerpc', 'x86'], mandatory: false },
       { name: 'description', default_values: ['hello'], mandatory: false },
     ];
-    await internalAdminQuery(ENTITY_SETTINGS_UPDATE, {
+    await queryInitPlatformAsAdmin(ENTITY_SETTINGS_UPDATE, {
       ids: [entitySettingMalware.id],
       input: {
         key: 'attributes_configuration',

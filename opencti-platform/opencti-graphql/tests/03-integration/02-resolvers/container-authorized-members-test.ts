@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import type { CaseIncident, EntitySettingEdge } from '../../../src/generated/graphql';
-import { ADMIN_USER, getOrganizationIdByName, getUserIdByEmail, PLATFORM_ORGANIZATION, queryAsAdmin, TEST_ORGANIZATION, USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
+import { ADMIN_USER, getOrganizationIdByName, getUserIdByEmail, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess, unSetOrganization, setOrganization, queryAsUserIsExpectedForbidden, queryAsUser } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
 import conf from '../../../src/config/conf';

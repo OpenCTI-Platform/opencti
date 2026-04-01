@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, USER_PARTICIPATE, internalAdminQuery, internalQuery, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_PARTICIPATE, queryInitPlatformAsAdmin, queryInitPlatformAsUser, USER_EDITOR } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
@@ -163,7 +163,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
     // as requires passing the extra header
     // to check logic happening in middleware.
     // Won't participate in test coverage.
-    const queryResult = await internalAdminQuery(
+    const queryResult = await queryInitPlatformAsAdmin(
       CREATE_QUERY,
       ADMINISTRATIVEAREA_TO_CREATE,
       { synchronizedUpsert: 'true' },
@@ -242,7 +242,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
       },
     };
     const previousStandard = 'location--345ba2b4-3c57-5b5e-bc6d-b79aaa36d941';
-    const queryResult = await internalQuery(
+    const queryResult = await queryInitPlatformAsUser(
       USER_EDITOR,
       CREATE_QUERY,
       ADMINISTRATIVEAREA_TO_CREATE,
@@ -267,7 +267,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
         description: 'Administrative-Area description',
       },
     };
-    const queryResult = await internalQuery(
+    const queryResult = await queryInitPlatformAsUser(
       USER_EDITOR,
       CREATE_QUERY,
       ADMINISTRATIVEAREA_TO_CREATE,

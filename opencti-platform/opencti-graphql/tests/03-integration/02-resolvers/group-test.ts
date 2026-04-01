@@ -1,10 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin, testContext, USER_PLATFORM_ADMIN } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_PLATFORM_ADMIN } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
-import { adminQueryWithError, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { getGroupEntityByName } from '../../utils/domainQueryHelper';
 import type { BasicStoreEntityMarkingDefinition } from '../../../src/types/store';
 import { deleteElementById } from '../../../src/database/middleware';
@@ -577,7 +578,7 @@ describe('Group resolver standard behavior', () => {
         }
       }
     `;
-    await adminQueryWithError({
+    await queryAsAdminWithError({
       query: UPDATE_QUERY,
       variables: {
         id: groupInternalId,
@@ -592,7 +593,7 @@ describe('Group resolver standard behavior', () => {
       },
     }, 'Validation against schema failed on attribute [max_confidence]: this mandatory field cannot be nil');
 
-    await adminQueryWithError(
+    await queryAsAdminWithError(
       {
         query: UPDATE_QUERY,
         variables: {
@@ -607,7 +608,7 @@ describe('Group resolver standard behavior', () => {
       'Validation against schema failed on attribute [overrides]: mandatory field [max_confidence] is not present',
     );
 
-    await adminQueryWithError(
+    await queryAsAdminWithError(
       {
         query: UPDATE_QUERY,
         variables: {
@@ -623,7 +624,7 @@ describe('Group resolver standard behavior', () => {
       'Validation against schema failed on attribute [group_confidence_level]: mandatory field [overrides] is not present',
     );
 
-    await adminQueryWithError(
+    await queryAsAdminWithError(
       {
         query: UPDATE_QUERY,
         variables: {

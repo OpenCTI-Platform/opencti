@@ -5,12 +5,12 @@ import {
   getOrganizationIdByName,
   GREEN_GROUP,
   PLATFORM_ORGANIZATION,
-  queryAsAdmin,
-  queryAsAuthUser,
   testContext,
   USER_EDITOR,
   USER_SECURITY,
 } from '../../utils/testQuery';
+import { queryAsAuthUser } from '../../utils/testQueryHelper';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { getInferences } from '../../utils/rule-utils';
 import ParticipateToPartsRule from '../../../src/rules/participate-to-parts/ParticipateToPartsRule';
 import { RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationship';
