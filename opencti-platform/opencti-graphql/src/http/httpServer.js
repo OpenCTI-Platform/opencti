@@ -25,6 +25,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
 import { isWorkAlive } from '../domain/work';
+import { computeLoaders } from './httpAuthenticatedContext';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -98,6 +99,7 @@ const createHttpServer = async () => {
         const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
         const logged = platformUsers.get(wsSession?.user.id);
         context.user = { ...wsSession?.user, ...logged, origin };
+        context.batch = computeLoaders(context, context.user);
         return context;
       }
       throw ForbiddenAccess('User must be authenticated');
