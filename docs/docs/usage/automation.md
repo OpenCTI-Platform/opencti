@@ -387,7 +387,8 @@ Will send an email using the template that you can set in Parameters/security (u
 
 Will generate indicator based on observables contained in the received STIX 2.1 bundle. 
 
-By default, it is applied to entities having triggered the playbook. You can toggle the corresponding option to apply it to all observables in the bundle (e.g. observables that might result from predefined rule).
+By default, creation is applied to the entity triggering the playbook. You can change this behavior with the following options:
+
 - all elements in the bundle (elements that might result from enrichment for example)
 - all elements except the entity triggering the playbook
 
