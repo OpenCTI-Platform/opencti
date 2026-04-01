@@ -226,11 +226,15 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     }
   };
 
-  const handleLink = (url: string) => {
+  const handleLink = (url: string, event?: React.MouseEvent) => {
     if (isFail || isOutdated || isProgress) return;
     handleCloseDownload();
     handleClose();
-    window.location.pathname = url;
+    if (event && (event.ctrlKey || event.metaKey)) {
+      window.open(url, '_blank');
+    } else {
+      window.location.pathname = url;
+    }
   };
   const generateIcon = () => {
     const fileInDraft = file?.draftVersion;
@@ -314,7 +318,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                         if (isWarning) {
                           handleOpen(event);
                         } else {
-                          handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`);
+                          handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`, event);
                         }
                       }}
                       aria-haspopup="true"
@@ -404,7 +408,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           rel="noopener noreferrer"
           onClick={
             onClick
-            || (() => (isWarning ? setDisplayDownload(true) : handleLink(listUri)))
+            || ((event: React.MouseEvent) => (isWarning ? setDisplayDownload(true) : handleLink(listUri, event)))
           }
         >
           <ListItemIcon>

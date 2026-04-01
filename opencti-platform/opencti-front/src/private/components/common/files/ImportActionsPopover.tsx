@@ -100,9 +100,14 @@ const ImportActionsPopover = ({
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem
-          onClick={(event: UIEvent) => {
+          onClick={(event: React.MouseEvent) => {
             stopEvent(event);
-            window.location.pathname = `${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`;
+            const url = `${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`;
+            if (event.ctrlKey || event.metaKey) {
+              window.open(url, '_blank');
+            } else {
+              window.location.pathname = url;
+            }
           }}
           disabled={file.uploadStatus === 'progress'}
         >
