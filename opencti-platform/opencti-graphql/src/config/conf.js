@@ -10,7 +10,7 @@ import { HttpsProxyAgent } from 'https-proxy-agent';
 import { HttpProxyAgent } from 'http-proxy-agent';
 import { ProxyAgent } from 'undici';
 import { v4 as uuid } from 'uuid';
-import { GraphQLError } from 'graphql/index';
+import { GraphQLError } from 'graphql';
 import * as O from '../schema/internalObject';
 import * as M from '../schema/stixMetaObject';
 import {

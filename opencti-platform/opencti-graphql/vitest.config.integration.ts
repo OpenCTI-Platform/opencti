@@ -1,4 +1,5 @@
- import { defineConfig } from 'vitest/config';
+import path from 'node:path';
+import { defineConfig } from 'vitest/config';
 import graphql from '@rollup/plugin-graphql';
 import type { PluginOption } from 'vite';
 import { BaseSequencer, type TestSpecification } from 'vitest/node';
@@ -26,15 +27,17 @@ export const buildIntegrationTestConfig = (include: string[]) => defineConfig({
     sequence: {
       shuffle: false,
       sequencer: class Sequencer extends BaseSequencer {
-         
         async shard(files: TestSpecification[]) {
           return files;
         }
-         
+
         async sort(files: TestSpecification[]) {
           return files.sort((testA, testB) => (testA.moduleId > testB.moduleId ? 1 : -1));
         }
       },
+    },
+    alias: {
+      graphql: path.resolve(__dirname, './node_modules/graphql/index.js'),
     },
   },
 });

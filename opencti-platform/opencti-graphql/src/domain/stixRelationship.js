@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { GraphQLError } from 'graphql/index';
+import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { deleteElementById, distributionRelations, timeSeriesRelations } from '../database/middleware';
 import { ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
