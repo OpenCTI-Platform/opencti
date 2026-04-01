@@ -102,9 +102,10 @@ const ImportActionsPopover = ({
         <MenuItem
           onClick={(event: React.MouseEvent) => {
             stopEvent(event);
+            setAnchorEl(null);
             const url = `${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`;
             if (event.ctrlKey || event.metaKey) {
-              window.open(url, '_blank');
+              window.open(url, '_blank', 'noopener,noreferrer');
             } else {
               window.location.pathname = url;
             }
