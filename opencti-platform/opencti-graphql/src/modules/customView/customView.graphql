@@ -71,9 +71,9 @@ type Query {
 
   # Provides context when browsing to know which custom views are
   # available for which entity types
-  customViewsDisplayContext: [CustomViewsDisplayContext!]! @auth
+  customViewsDisplayContext: [CustomViewsDisplayContext!] @auth @ff(flags: ["CUSTOM_VIEW"], softFail: true)
   # Display a custom view
-  customViewDisplay(id: String!): CustomViewDisplay @auth
+  customViewDisplay(id: String!): CustomViewDisplay @auth @ff(flags: ["CUSTOM_VIEW"])
 
   ## Administration use cases
 

@@ -3,7 +3,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import useHelper from '../../../utils/hooks/useHelper';
 import { RootPrivateQuery$data } from '../../__generated__/RootPrivateQuery.graphql';
 
-type CustomViewsInfo = RootPrivateQuery$data['customViewsDisplayContext'][number]['custom_views_info'];
+type CustomViewsInfo = NonNullable<RootPrivateQuery$data['customViewsDisplayContext']>[number]['custom_views_info'];
 
 export const CUSTOM_VIEW_TAB_VALUE = 'custom-view';
 

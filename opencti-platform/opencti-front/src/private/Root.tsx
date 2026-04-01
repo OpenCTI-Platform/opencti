@@ -495,7 +495,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
       value={{
         me,
         settings,
-        customViews,
+        customViews: customViews ?? [],
         bannerSettings,
         entitySettings,
         platformModuleHelpers,

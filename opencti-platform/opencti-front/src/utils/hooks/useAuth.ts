@@ -51,7 +51,7 @@ export interface UserContextType {
   settings: RootSettings$data | undefined;
   bannerSettings: BannerSettings | undefined;
   entitySettings: RootPrivateQuery$data['entitySettings'] | undefined;
-  customViews: RootPrivateQuery$data['customViewsDisplayContext'];
+  customViews: NonNullable<RootPrivateQuery$data['customViewsDisplayContext']>;
   platformModuleHelpers: ModuleHelper | undefined;
   schema: SchemaType | undefined;
   isXTMHubAccessible: boolean | null | undefined;
