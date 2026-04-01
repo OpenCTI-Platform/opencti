@@ -162,7 +162,6 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
 
 .rich-text-editor-wrapper .ProseMirror table {
   border-collapse: collapse;
-  width: auto;
   max-width: 100%;
   table-layout: auto;
   overflow: hidden;
@@ -173,7 +172,6 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
 .rich-text-editor-wrapper .ProseMirror td {
   border: 1px solid #b2b2b2;
   padding: 0.4em;
-  vertical-align: top;
   position: relative;
 }
 
@@ -402,7 +400,6 @@ body[data-theme="dark"] .rich-text-content pre {
 
 .rich-text-content table {
   border-collapse: collapse;
-  width: auto;
   max-width: 100%;
   table-layout: auto;
   overflow: hidden;
@@ -413,7 +410,6 @@ body[data-theme="dark"] .rich-text-content pre {
 .rich-text-content td {
   border: 1px solid #b2b2b2;
   padding: 0.4em;
-  vertical-align: top;
 }
 
 /* Header cells — display mode */
@@ -436,7 +432,7 @@ body[data-theme="dark"] .rich-text-content th {
 
 /* Legacy Editor figure.table wrapper */
 .rich-text-content figure.table {
-  margin: 0;
+  margin: 0.9em auto;
 }
 
 /* Nested tables — display mode */
