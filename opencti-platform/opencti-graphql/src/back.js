@@ -18,6 +18,8 @@ import { platformStart } from './boot';
 import { ENABLED_TRACING, logApp } from './config/conf';
 import { isNotEmptyField } from './database/utils';
 
+// Dummy change in the backend
+
 // -- Apply telemetry
 // ------- Tracing
 if (ENABLED_TRACING) {
