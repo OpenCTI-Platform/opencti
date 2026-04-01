@@ -7,6 +7,7 @@ import type { StixRelation } from '../../../../src/types/stix-2-1-sro';
 import { RELATION_BASED_ON, RELATION_INDICATES } from '../../../../src/schema/stixCoreRelationship';
 import type { StixId } from '../../../../src/types/stix-2-0-common';
 import type { StixCyberObject } from '../../../../src/types/stix-2-1-common';
+import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
 
 const OBSERVABLE_ID = 'domain-name--a1b2c3d4-0000-0000-0000-000000000001' as const;
 const INTRUSION_SET_ID = 'intrusion-set--1ad04810-ab05-5873-96f5-a89d19607e1c' as const;
@@ -43,7 +44,7 @@ describe('Create indicator component', () => {
       testExecutor({
         mainId: OBSERVABLE_ID,
         bundleObjects: [domainObservable()],
-        configuration: { applyToElements: 'only-main', wrap_in_container: false, types: [] },
+        configuration: { applyToElements: playbookBundleElementsToApply.onlyMain.value, wrap_in_container: false, types: [] },
       }),
     );
 
@@ -78,7 +79,7 @@ describe('Create indicator component', () => {
             octiExtension: { type: 'Intrusion-Set', id: '' },
           }),
         ],
-        configuration: { applyToElements: 'only-main', wrap_in_container: false, types: [] },
+        configuration: { applyToElements: playbookBundleElementsToApply.onlyMain.value, wrap_in_container: false, types: [] },
       }),
     );
 
@@ -95,7 +96,7 @@ describe('Create indicator component', () => {
       testExecutor({
         mainId: OBSERVABLE_ID,
         bundleObjects: [domainObservable()],
-        configuration: { applyToElements: 'only-main', wrap_in_container: false, types: ['IPv4-Addr'] },
+        configuration: { applyToElements: playbookBundleElementsToApply.onlyMain.value, wrap_in_container: false, types: ['IPv4-Addr'] },
       }),
     );
 
@@ -112,7 +113,7 @@ describe('Create indicator component', () => {
       testExecutor({
         mainId: OBSERVABLE_ID,
         bundleObjects: [domainObservable()],
-        configuration: { applyToElements: 'only-main', wrap_in_container: false, types: ['Domain-Name'] },
+        configuration: { applyToElements: playbookBundleElementsToApply.onlyMain.value, wrap_in_container: false, types: ['Domain-Name'] },
       }),
     );
 
@@ -131,7 +132,7 @@ describe('Create indicator component', () => {
       testExecutor({
         mainId: OBSERVABLE_ID,
         bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
-        configuration: { applyToElements: 'all-elements', wrap_in_container: false, types: [] },
+        configuration: { applyToElements: playbookBundleElementsToApply.allElements.value, wrap_in_container: false, types: [] },
       }),
     );
 
@@ -157,7 +158,7 @@ describe('Create indicator component', () => {
       testExecutor({
         mainId: OBSERVABLE_ID,
         bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
-        configuration: { applyToElements: 'all-except-main', wrap_in_container: false, types: [] },
+        configuration: { applyToElements: playbookBundleElementsToApply.allExceptMain.value, wrap_in_container: false, types: [] },
       }),
     );
 
@@ -174,6 +175,33 @@ describe('Create indicator component', () => {
   });
 
   // ------------------------------------------------------------------
+  // applyToElements: only-main — creates indicators only for main
+  // ------------------------------------------------------------------
+
+  it('should create indicators only for main when applyToElements is only-main', async () => {
+    const OBSERVABLE_ID_2 = 'domain-name--a1b2c3d4-0000-0000-0000-000000000002' as StixId;
+
+    const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
+      testExecutor({
+        mainId: OBSERVABLE_ID,
+        bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
+        configuration: { applyToElements: playbookBundleElementsToApply.onlyMain.value, wrap_in_container: false, types: [] },
+      }),
+    );
+
+    expect(result.output_port).toBe('out');
+
+    const indicators = result.bundle.objects.filter((o) => o.type === 'indicator') as StixIndicator[];
+    expect(indicators).toHaveLength(1);
+
+    const basedOnRels = result.bundle.objects.filter(
+      (o) => o.type === 'relationship' && (o as StixRelation).relationship_type === RELATION_BASED_ON,
+    ) as StixRelation[];
+    expect(basedOnRels).toHaveLength(1);
+    expect(basedOnRels[0].target_ref).toBe(OBSERVABLE_ID);
+  });
+
+  // ------------------------------------------------------------------
   // Wrap in container
   // ------------------------------------------------------------------
 
@@ -182,7 +210,7 @@ describe('Create indicator component', () => {
       testExecutor({
         mainId: REPORT_ID,
         bundleObjects: [reportObject(), domainObservable()],
-        configuration: { applyToElements: 'all-elements', wrap_in_container: true, types: [] },
+        configuration: { applyToElements: playbookBundleElementsToApply.allElements.value, wrap_in_container: true, types: [] },
       }),
     );
 
@@ -223,7 +251,7 @@ describe('Create indicator component', () => {
       testExecutor({
         mainId: OBSERVABLE_ID,
         bundleObjects: [domainObservable(), relatedToRelationship as any],
-        configuration: { applyToElements: 'only-main', wrap_in_container: false, types: [] },
+        configuration: { applyToElements: playbookBundleElementsToApply.onlyMain.value, wrap_in_container: false, types: [] },
       }),
     );
 
