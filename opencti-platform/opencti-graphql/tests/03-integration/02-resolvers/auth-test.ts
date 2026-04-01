@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createUnauthenticatedClient, executeInternalQuery } from '../../utils/testQuery';
 import gql from 'graphql-tag';
 import { validate as uuidValidate } from 'uuid';
-import { print } from 'graphql/index';
+import { print } from 'graphql';
 
 describe('askSendOtp', () => {
   it('Should return a transactionId with a wrong email', async () => {

@@ -1,5 +1,5 @@
 import { expect } from 'vitest';
-import { print } from 'graphql/index';
+import { print } from 'graphql';
 import type { AxiosInstance } from 'axios';
 import readline from 'node:readline';
 import fs from 'node:fs';

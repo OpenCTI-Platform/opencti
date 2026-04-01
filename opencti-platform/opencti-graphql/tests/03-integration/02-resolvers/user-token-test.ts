@@ -4,7 +4,7 @@ import { adminQuery, ADMIN_USER, USER_EDITOR, ROLE_EDITOR, createTokenHttpClient
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY } from '../../../src/schema/internalObject';
 import { queryAsUser } from '../../utils/testQueryHelper';
-import { print } from 'graphql/index';
+import { print } from 'graphql';
 
 const TOKEN_ADD_MUTATION = gql`
   mutation UserTokenAdd($input: UserTokenAddInput!) {
