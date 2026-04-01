@@ -1,5 +1,5 @@
 import { filter, head, isEmpty, isNil } from 'ramda';
-import { stripIgnoredCharacters } from 'graphql/utilities';
+import { stripIgnoredCharacters } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import conf, { appLogExtendedErrors, booleanConf, logApp } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';

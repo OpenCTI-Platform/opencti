@@ -1,4 +1,4 @@
-import { GraphQLError } from 'graphql/index';
+import { GraphQLError } from 'graphql';
 
 const CATEGORY_TECHNICAL = 'TECHNICAL';
 const CATEGORY_BUSINESS = 'BUSINESS';
