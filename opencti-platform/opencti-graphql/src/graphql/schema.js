@@ -54,7 +54,7 @@ import observedDataResolvers from '../resolvers/observedData';
 import opinionResolvers from '../resolvers/opinion';
 import indicatorResolvers from '../modules/indicator/indicator-resolver';
 import incidentResolvers from '../resolvers/incident';
-import { authDirectiveBuilder, makeAuthDirectiveTransformer } from './authDirective';
+import { makeAuthDirectiveTransformer } from './authDirective';
 import connectorResolvers from '../resolvers/connector';
 import fileResolvers from '../resolvers/file';
 import indexedFileResolvers from '../resolvers/indexedFile';
@@ -72,7 +72,7 @@ import stixMetaObjectResolvers from '../resolvers/stixMetaObject';
 import filterKeysSchemaResolver from '../resolvers/filterKeysSchema';
 import basicObjectResolvers from '../resolvers/basicObject';
 import { FunctionalError } from '../config/errors';
-import { featureFlagDirectiveBuilder, getFeatureFlagDirectiveTransformer, makeFeatureFlagDirectiveTransformer } from './featureFlagDirective';
+import { makeFeatureFlagDirectiveTransformer } from './featureFlagDirective';
 
 const schemaTypeDefs = [globalTypeDefs];
 
