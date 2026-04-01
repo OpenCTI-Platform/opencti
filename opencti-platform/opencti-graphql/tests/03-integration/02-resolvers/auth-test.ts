@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { createUnauthenticatedClient, executeInternalQuery } from '../../utils/testQuery';
+import { queryInitPlatformAsAnonymous } from '../../utils/testQuery';
 import gql from 'graphql-tag';
 import { validate as uuidValidate } from 'uuid';
-import { print } from 'graphql/index';
 
 describe('askSendOtp', () => {
   it('Should return a transactionId with a wrong email', async () => {
@@ -11,8 +10,7 @@ describe('askSendOtp', () => {
         askSendOtp(input: $input)
       }
     `;
-    const anonymous = createUnauthenticatedClient();
-    const queryResult = await executeInternalQuery(anonymous, print(ASKSENDOTP_QUERY), { input: { email: 'noResul@opencti.io' } });
+    const queryResult = await queryInitPlatformAsAnonymous(ASKSENDOTP_QUERY, { input: { email: 'noResul@opencti.io' } });
     expect(uuidValidate(queryResult.data.askSendOtp)).toBeTruthy();
   });
 });

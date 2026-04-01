@@ -1,6 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, queryAsAdmin, TESTING_ROLES } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, TESTING_ROLES } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 import { ENTITY_TYPE_CAPABILITY } from '../../../src/schema/internalObject';
 import { generateStandardId } from '../../../src/schema/identifier';

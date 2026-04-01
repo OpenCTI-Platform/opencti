@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_USER, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { ENTITY_BANK_ACCOUNT, ENTITY_EMAIL_ADDR, ENTITY_EMAIL_MESSAGE, ENTITY_IPV6_ADDR, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
 import {
   BUILT_IN_DECAY_RULE_IP_URL,

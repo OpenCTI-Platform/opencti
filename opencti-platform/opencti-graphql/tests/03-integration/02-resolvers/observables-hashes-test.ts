@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { type EditInput, EditOperation, type StixFileAddInput } from '../../../src/generated/graphql';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { IDS_STIX } from '../../../src/schema/general';
 

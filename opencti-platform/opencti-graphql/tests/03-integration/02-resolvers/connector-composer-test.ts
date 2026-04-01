@@ -2,7 +2,7 @@ import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
-import { adminQueryWithError, awaitUntilCondition, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdminWithError, awaitUntilCondition, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
@@ -1324,7 +1324,7 @@ describe('Connector Composer and Managed Connectors', () => {
         }),
       };
 
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_MANAGED_CONNECTOR_MUTATION,
           variables: { input: duplicateInput },
@@ -1344,7 +1344,7 @@ describe('Connector Composer and Managed Connectors', () => {
         }),
       };
 
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_MANAGED_CONNECTOR_MUTATION,
           variables: { input: duplicateSanitizedInput },

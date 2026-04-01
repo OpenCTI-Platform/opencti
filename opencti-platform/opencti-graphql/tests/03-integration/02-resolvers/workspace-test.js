@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, getUserIdByEmail, queryAsAdmin, testContext, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, getUserIdByEmail, testContext, USER_EDITOR } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 import { MEMBER_ACCESS_ALL } from '../../../src/utils/access';
 import { createUploadFromTestDataFile, queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';

@@ -1,6 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin, testContext, USER_EDITOR } from '../../utils/testQuery';
+import { testContext, USER_EDITOR } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_DATA_COMPONENT } from '../../../src/schema/stixDomainObject';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { type AttributeConfiguration, type BasicStoreEntityEntitySetting, ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';

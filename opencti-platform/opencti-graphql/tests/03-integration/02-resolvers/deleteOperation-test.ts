@@ -1,6 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_API_TOKEN, ADMIN_USER, API_URI, PYTHON_PATH, queryAsAdmin, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_API_TOKEN, ADMIN_USER, API_URI, PYTHON_PATH, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess, queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { MARKING_TLP_AMBER_STRICT, MARKING_TLP_RED } from '../../../src/schema/identifier';

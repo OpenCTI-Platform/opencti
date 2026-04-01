@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { addAllowedMarkingDefinition } from '../../../src/domain/markingDefinition';
 import { deleteElementById, distributionRelations } from '../../../src/database/middleware';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';

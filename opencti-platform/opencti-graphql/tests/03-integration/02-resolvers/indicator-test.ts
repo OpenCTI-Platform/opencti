@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { ENTITY_DOMAIN_NAME } from '../../../src/schema/stixCyberObservable';
 import { MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 import type { BasicNodeEdge } from '../../../src/types/store';

@@ -1,7 +1,8 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import Upload from 'graphql-upload/Upload.mjs';
-import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { fileToReadStream } from '../../../src/database/file-storage';
 import { MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 import { addTool } from '../../../src/domain/tool';

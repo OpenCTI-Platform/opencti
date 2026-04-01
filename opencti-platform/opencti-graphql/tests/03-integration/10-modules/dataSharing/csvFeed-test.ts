@@ -1,6 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { queryAsAdmin } from '../../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess, queryAsUser } from '../../../utils/testQueryHelper';
 import { logApp } from '../../../../src/config/conf';
 

@@ -1,6 +1,7 @@
 import { expect, it, describe, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
-import { internalAdminQuery, queryAsAdmin } from '../../utils/testQuery';
+import { queryInitPlatformAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../../src/schema/general';
 import { createUploadFromTestDataFile } from '../../utils/testQueryHelper';
 import { PLATFORM_VERSION } from '../../../src/config/conf';
@@ -257,11 +258,11 @@ describe('CSV Mapper Resolver', () => {
   let addedMapper;
 
   beforeAll(async () => {
-    const { data } = await internalAdminQuery(ENTITY_SETTINGS_GET);
+    const { data } = await queryInitPlatformAsAdmin(ENTITY_SETTINGS_GET);
     const entitySettings = data.entitySettings.edges.map((e) => e.node);
     entitySettingStixCoreRel = entitySettings.find((setting) => setting.target_type === ABSTRACT_STIX_CORE_RELATIONSHIP);
 
-    await internalAdminQuery(
+    await queryInitPlatformAsAdmin(
       ENTITY_SETTINGS_UPDATE,
       {
         ids: [entitySettingStixCoreRel.id],
@@ -276,7 +277,7 @@ describe('CSV Mapper Resolver', () => {
   });
 
   afterAll(async () => {
-    await internalAdminQuery(
+    await queryInitPlatformAsAdmin(
       ENTITY_SETTINGS_UPDATE,
       {
         ids: [entitySettingStixCoreRel.id],

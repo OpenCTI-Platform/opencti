@@ -3,7 +3,7 @@ import readline from 'node:readline';
 import fs from 'node:fs';
 import path from 'node:path';
 import Upload from 'graphql-upload/Upload.mjs';
-import { ADMIN_USER, getOrganizationIdByName, type OrganizationTestData, queryAsAdmin, queryAsAnonymous, queryAsTestUser, testContext, type UserTestData } from './testQuery';
+import { ADMIN_USER, getAuthUser, getOrganizationIdByName, type OrganizationTestData, serverFromUser, testContext, type UserTestData } from './testQuery';
 import { downloadFile } from '../../src/database/raw-file-storage';
 import { streamConverter } from '../../src/database/file-storage';
 import { logApp } from '../../src/config/conf';
@@ -12,6 +12,9 @@ import { getSettings, settingsEditField } from '../../src/domain/settings';
 import { fileToReadStream } from '../../src/database/file-storage';
 import { resetCacheForEntity } from '../../src/database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../src/schema/internalObject';
+import type { AuthUser } from '../../src/types/user';
+import { computeLoaders } from '../../src/http/httpAuthenticatedContext';
+import { executionContext } from '../../src/utils/access';
 
 // Helper for test usage whit expect inside.
 // vitest cannot be an import of testQuery, so it must be a separate file.
@@ -37,7 +40,7 @@ export const queryAsAdminWithSuccess = async (request: { query: any; variables: 
   };
 };
 
-export const adminQueryWithError = async (
+export const queryAsAdminWithError = async (
   request: { query: any; variables: any },
   errorMessage?: string,
   errorName?: string,
@@ -238,4 +241,34 @@ export const awaitUntilCondition = async (
   if (!isConditionOk === expectToBeTrue) {
     throw new Error(`Condition not met after ${loopCount} attempts - ${message}`);
   }
+};
+
+export const queryAsAnonymous = async <T = Record<string, any>>(request: any, draftContext?: any) => {
+  return query<T>({ user: undefined, request, draftContext });
+};
+
+export const queryAsAdmin = async <T = Record<string, any>>(request: any, draftContext?: any) => {
+  return query<T>({ user: ADMIN_USER, request, draftContext });
+};
+
+export const queryAsAuthUser = async <T = Record<string, any>>(user: AuthUser, request: any, draftContext?: any) => {
+  return query<T>({ user, request, draftContext });
+};
+
+const queryAsTestUser = async <T = Record<string, any>>(testUser: UserTestData, request: any, draftContext?: any) => {
+  const user = await getAuthUser(testUser.id);
+  return query<T>({ user, request, draftContext });
+};
+
+const query = async <T = Record<string, any>>(params: { user?: AuthUser; request: any; draftContext?: any }) => {
+  const execContext = executionContext('test', params.user, params.draftContext ?? undefined);
+  execContext.changeDraftContext = (draftId) => {
+    execContext.draft_context = draftId;
+  };
+  execContext.batch = computeLoaders(execContext, params.user);
+  const { body } = await serverFromUser.executeOperation<T>(params.request, { contextValue: execContext });
+  if (body.kind === 'single') {
+    return body.singleResult;
+  }
+  return body.initialResult;
 };

@@ -2,7 +2,8 @@ import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import * as ee from '../../../src/enterprise-edition/ee';
 import { awaitUntilCondition } from '../../utils/testQueryHelper';
-import { internalAdminQuery, queryAsAdmin } from '../../utils/testQuery';
+import { queryInitPlatformAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 
 describe.skip('Draft organization sharing', () => {
   beforeAll(() => {
@@ -141,7 +142,7 @@ describe.skip('Draft organization sharing', () => {
       // as requires passing the extra header
       // to check logic happening in middleware.
       // Won't participate in test coverage.
-      const shareRes = await internalAdminQuery(
+      const shareRes = await queryInitPlatformAsAdmin(
         RESTRICTION_ORGANIZATION_ADD_QUERY,
         {
           id: malwareId,
@@ -159,7 +160,7 @@ describe.skip('Draft organization sharing', () => {
       // as requires passing the extra header
       // to check logic happening in middleware.
       // Won't participate in test coverage.
-      const draftMalwareRes = await internalAdminQuery(
+      const draftMalwareRes = await queryInitPlatformAsAdmin(
         MALWARE_QUERY,
         { id: malwareId },
         { draftId },
@@ -180,7 +181,7 @@ describe.skip('Draft organization sharing', () => {
       // as requires passing the extra header
       // to check logic happening in middleware.
       // Won't participate in test coverage.
-      const taskRes = await internalAdminQuery(
+      const taskRes = await queryInitPlatformAsAdmin(
         QUERY_TASK_ADD_QUERY,
         {
           input: {
@@ -223,7 +224,7 @@ describe.skip('Draft organization sharing', () => {
       // as requires passing the extra header
       // to check logic happening in middleware.
       // Won't participate in test coverage.
-      const unshareRes = await internalAdminQuery(
+      const unshareRes = await queryInitPlatformAsAdmin(
         RESTRICTION_ORGANIZATION_DELETE_QUERY,
         {
           id: malwareId,

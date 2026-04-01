@@ -1,7 +1,8 @@
 import gql from 'graphql-tag';
 import { LRUCache } from 'lru-cache';
 import { describe, expect, it } from 'vitest';
-import { ADMIN_USER, queryAsAdmin, testContext } from '../utils/testQuery';
+import { ADMIN_USER, testContext } from '../utils/testQuery';
+import { queryAsAdmin } from '../utils/testQueryHelper';
 import { stixRefsExtractor } from '../../src/schema/stixEmbeddedRelationship';
 import { resolveMissingReferences } from '../../src/graphql/sseMiddleware';
 import { convertStoreToStix_2_1 } from '../../src/database/stix-2-1-converter';

@@ -1,6 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, queryAsAdmin, USER_SECURITY } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_SECURITY } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 import { taskQuery } from '../../../src/manager/taskManager';
 import { pushAll } from '../../../src/utils/arrayUtil';
