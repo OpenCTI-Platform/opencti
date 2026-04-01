@@ -11,9 +11,22 @@ The first way to create a draft is to manually create one, in the Drafts page. W
 
 ![Draft creation page](assets/draftWorkspace-manual-creation.png)
 
+When creating a draft manually, the following metadata can be filled in:
+
+- **Name** (required): the name of the draft workspace.
+- **Description**: a free-text description to explain the purpose of the draft.
+- **Assignees**: users responsible for working on this draft.
+- **Participants**: users who are involved in this draft but are not the primary owners.
+- **Author**: the identity (individual, organization, or system) that authored this draft.
+- **Authorized members**: users or groups who are granted access to this draft, along with their access rights. When
+  set, only the listed members will be able to see and interact with the draft.
+
 The second way drafts can be created is when files are imported in the platform. Depending on the platform and connector configuration, uploading a file can automatically generate an import of that file. This automatic import can generate a draft where the result of the file import is available. We have created a variable to let you choose your import (either workbench or draft): [Configuration](../deployment/configuration.md).
 
-In addition, files can be manually imported. When that is the case, an option is available to decide the validation mode to use. When the draft validation mode is selected, a draft will be automatically created and the result of the file import will be available in it.
+In addition, files can be manually imported. When that is the case, an option is available to decide the validation mode
+to use. When the draft validation mode is selected, a draft will be automatically created and the result of the file
+import will be available in it. The same metadata fields (name, description, assignees, participants, author, authorized
+members) can be filled in at this stage.
 
 !!! warning "Import data without update"
 
@@ -32,11 +45,41 @@ Otherwise, a draft can be accessed by clicking on it in the draft list.
 
 ## Draft overview
 
-When entering a draft, the landing page will be the overview of the modifications contained in the draft
+When entering a draft, the content is organized into several tabs: **Overview**, **Entities**, **Observables**, *
+*Relationships**, **Sightings**, **Containers**, and **Files**.
+
+### Overview tab
+
+The Overview tab is the landing page of the draft. It presents the draft metadata in two cards:
+
+- **Details**: displays the draft's name and description.
+- **Basic information**: displays the author, the list of assignees, and the list of participants. Assignees and
+  participants can be added directly from this card using the "+" button.
+
+#### Editing draft metadata
+
+Users with edit rights on the draft can update its metadata directly from the Overview tab. An edition panel is
+available on the right-hand side of the page, with the following editable fields:
+
+- **Name**
+- **Description**
+- **Author** (Created By)
+- **Assignees**
+- **Participants**
+
+Each field is saved individually as soon as it is modified, without requiring an explicit save action.
+
+### Content tabs
+
+The other tabs each contain the list of modifications applied to items of the corresponding type:
+
+- **Entities**: STIX domain objects modified in the draft.
+- **Observables**: STIX cyber observables modified in the draft.
+- **Relationships**: relationships modified in the draft.
+- **Sightings**: sightings modified in the draft.
+- **Containers**: containers (reports, groupings, etc.) modified in the draft.
 
 ![Draft overview](assets/draftWorkspace-draft-overview.png)
-
-This overview is separated into different tabs: entities, observables, relationships, sightings and containers. Each tab contains the list of the modifications applied to an item of this type.
 
 ### Operation types
 
@@ -60,9 +103,10 @@ In addition to these lists of entities modified, a file tab is also available.
 
 In this tab, additional files can be uploaded and imported within the draft workspace without impacting the main knowledge base. These files will only be visible in the current draft.
 
-### Top bar actions
+### Bottom bar actions
 
-When in a draft, the top bar is modified as a reminder that everything done in the platform will only impact the current draft.
+When in a draft, the bottom bar is modified as a reminder that everything done in the platform will only impact the
+current draft.
 
 ![Draft context banner](assets/draftWorkspace-context-banner.png)
 
