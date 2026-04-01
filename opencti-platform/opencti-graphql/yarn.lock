@@ -8389,26 +8389,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-ws@npm:6.0.8":
-  version: 6.0.8
-  resolution: "graphql-ws@npm:6.0.8"
-  peerDependencies:
-    "@fastify/websocket": ^10 || ^11
-    crossws: ~0.3
-    graphql: ^15.10.1 || ^16
-    ws: ^8
-  peerDependenciesMeta:
-    "@fastify/websocket":
-      optional: true
-    crossws:
-      optional: true
-    ws:
-      optional: true
-  checksum: 10c0/df3672448de0ba77052697ad4285330cde49d3fef29a283974b47ce9cf9de46aa7f9c1ea9fe084877aeeab817a0264d65c987e58cb866fcf1beac9ac70368df7
-  languageName: node
-  linkType: hard
-
-"graphql-ws@npm:^6.0.6":
+"graphql-ws@npm:6.0.8, graphql-ws@npm:^6.0.6":
   version: 6.0.8
   resolution: "graphql-ws@npm:6.0.8"
   peerDependencies:
