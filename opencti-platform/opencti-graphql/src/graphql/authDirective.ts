@@ -39,18 +39,6 @@ const PUBLIC_PROTECT_DIRECTIVE = 'public';
 const OTP_PROTECT_DIRECTIVE = 'allowUnprotectedOTP';
 const LTS_PROTECT_DIRECTIVE = 'allowUnlicensedLTS';
 
-/**
- * Return type of authDirectiveBuilder function
- */
-interface AuthDirectiveBuilder {
-  /**
-   * Transforms a GraphQL schema by applying auth directive logic
-   * @param schema - The GraphQL schema to transform
-   * @returns The transformed schema with auth checks
-   */
-  authDirectiveTransformer: (schema: GraphQLSchema) => GraphQLSchema;
-}
-
 const checkCapabilities = (capabilities: string[], userCapabilities: string[], matchAll: boolean): boolean => {
   if (capabilities.length === 0) return false;
   const capabilityMatches = (requestedCapability: string) =>
@@ -59,117 +47,117 @@ const checkCapabilities = (capabilities: string[], userCapabilities: string[], m
   return matchAll ? capabilities.every(capabilityMatches) : capabilities.some(capabilityMatches);
 };
 
-export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilder => {
+const AUTH_DIRECTIVE = 'auth';
+
+export const makeAuthDirectiveTransformer = (): (schema: GraphQLSchema) => GraphQLSchema => {
   const typeDirectiveArgumentMaps: TypeDirectiveArgumentMaps = {};
 
-  return {
-    authDirectiveTransformer: (schema: GraphQLSchema) => mapSchema(schema, {
-      [MapperKind.TYPE]: (type) => {
-        const directive = getDirective(schema, type, directiveName);
-        const authDirective = directive?.[0] as AuthDirectiveArgs | undefined;
-        if (authDirective) {
-          typeDirectiveArgumentMaps[type.name] = authDirective;
+  return (schema: GraphQLSchema) => mapSchema(schema, {
+    [MapperKind.TYPE]: (type) => {
+      const directive = getDirective(schema, type, AUTH_DIRECTIVE);
+      const authDirective = directive?.[0] as AuthDirectiveArgs | undefined;
+      if (authDirective) {
+        typeDirectiveArgumentMaps[type.name] = authDirective;
+      }
+      return undefined;
+    },
+    [MapperKind.OBJECT_FIELD]: (fieldConfig: GraphQLFieldConfig<any, any>, _fieldName: string, typeName: string) => {
+      const directive = getDirective(schema, fieldConfig, AUTH_DIRECTIVE);
+      const authDirective = (directive?.[0] as AuthDirectiveArgs | undefined) ?? typeDirectiveArgumentMaps[typeName];
+
+      if (!authDirective && (typeName === TYPE_QUERY || typeName === TYPE_MUTATION)) {
+        const publicDirective = getDirective(schema, fieldConfig, PUBLIC_PROTECT_DIRECTIVE)?.[0];
+        if (!publicDirective) {
+          throw UnsupportedError('Unsecure schema: missing auth or public directive', { field: _fieldName });
         }
-        return undefined;
-      },
-      [MapperKind.OBJECT_FIELD]: (fieldConfig: GraphQLFieldConfig<any, any>, _fieldName: string, typeName: string) => {
-        const directive = getDirective(schema, fieldConfig, directiveName);
-        const authDirective = (directive?.[0] as AuthDirectiveArgs | undefined) ?? typeDirectiveArgumentMaps[typeName];
+      }
 
-        if (!authDirective && (typeName === TYPE_QUERY || typeName === TYPE_MUTATION)) {
-          const publicDirective = getDirective(schema, fieldConfig, PUBLIC_PROTECT_DIRECTIVE)?.[0];
-          if (!publicDirective) {
-            throw UnsupportedError('Unsecure schema: missing auth or public directive', { field: _fieldName });
-          }
-        }
+      if (authDirective) {
+        const { for: requiredCapabilitiesBase, and: requiredAll, forDraft: requiredCapabilitiesInDraft } = authDirective;
 
-        if (authDirective) {
-          const { for: requiredCapabilitiesBase, and: requiredAll, forDraft: requiredCapabilitiesInDraft } = authDirective;
+        if (requiredCapabilitiesBase || requiredCapabilitiesInDraft) {
+          const { resolve = defaultFieldResolver } = fieldConfig;
 
-          if (requiredCapabilitiesBase || requiredCapabilitiesInDraft) {
-            const { resolve = defaultFieldResolver } = fieldConfig;
-
-            fieldConfig.resolve = (source: any, args: any, context: AuthContext, info: any) => {
-              // Get user from the session
-              const { user, otp_mandatory, user_otp_validated, blocked_for_lts_validation } = context;
-              // User must be authenticated.
-              if (!user) {
-                throw AuthRequired();
-              }
-              const allowUnprotectedOTP = !!getDirective(schema, fieldConfig, OTP_PROTECT_DIRECTIVE)?.[0];
-              if (!allowUnprotectedOTP) {
-                // If the platform enforce OTP
-                if (otp_mandatory) {
-                  // If user have not validated is OTP in session
-                  // by default user_otp_validated is true for direct api usage
-                  if (!user_otp_validated) {
-                    // If OTP is not setup, return a specific error
-                    if (!user.otp_activated) {
-                      throw OtpRequiredActivation();
-                    }
-                    // If already setup but not validated, return the validation screen
-                    throw OtpRequired();
+          fieldConfig.resolve = (source: any, args: any, context: AuthContext, info: any) => {
+            // Get user from the session
+            const { user, otp_mandatory, user_otp_validated, blocked_for_lts_validation } = context;
+            // User must be authenticated.
+            if (!user) {
+              throw AuthRequired();
+            }
+            const allowUnprotectedOTP = !!getDirective(schema, fieldConfig, OTP_PROTECT_DIRECTIVE)?.[0];
+            if (!allowUnprotectedOTP) {
+              // If the platform enforce OTP
+              if (otp_mandatory) {
+                // If user have not validated is OTP in session
+                // by default user_otp_validated is true for direct api usage
+                if (!user_otp_validated) {
+                  // If OTP is not setup, return a specific error
+                  if (!user.otp_activated) {
+                    throw OtpRequiredActivation();
                   }
-                } else if (user.otp_activated && !user_otp_validated) {
-                  // If user self activate OTP, session must be validated
+                  // If already setup but not validated, return the validation screen
                   throw OtpRequired();
                 }
+              } else if (user.otp_activated && !user_otp_validated) {
+                // If user self activate OTP, session must be validated
+                throw OtpRequired();
               }
-              // LTS version must be validated
-              const allowUnlicensedLTS = !!getDirective(schema, fieldConfig, LTS_PROTECT_DIRECTIVE)?.[0];
-              if (blocked_for_lts_validation && !allowUnlicensedLTS) {
-                throw LtsRequiredActivation();
-              }
+            }
+            // LTS version must be validated
+            const allowUnlicensedLTS = !!getDirective(schema, fieldConfig, LTS_PROTECT_DIRECTIVE)?.[0];
+            if (blocked_for_lts_validation && !allowUnlicensedLTS) {
+              throw LtsRequiredActivation();
+            }
 
-              if (requiredCapabilitiesBase.length === 0 && requiredCapabilitiesInDraft?.length === 0) {
-                return resolve(source, args, context, info);
-              }
-
-              const userBaseCapabilities = user.capabilities.map((c) => c.name);
-              const userCapabilitiesInDraft = user.capabilitiesInDraft?.map((c) => c.name) ?? [];
-
-              // Accept everything if bypass capability or the system user (protection).
-              const shouldBypass = userBaseCapabilities.includes(BYPASS) || user.id === OPENCTI_ADMIN_UUID;
-              if (shouldBypass) {
-                return resolve(source, args, context, info);
-              }
-
-              // Check base capabilities
-              const baseGranted = checkCapabilities(requiredCapabilitiesBase, userBaseCapabilities, !!requiredAll);
-
-              // Check capabilities in Draft if provided
-              const draftGranted = requiredCapabilitiesInDraft?.length
-                ? checkCapabilities(requiredCapabilitiesInDraft, userCapabilitiesInDraft, !!requiredAll)
-                : false;
-
-              // Check base and draft capabilities in draft context
-              const isInDraftContext = !!getDraftContext(context, user);
-              const draftGrantedInDraftContext = isInDraftContext
-                ? checkCapabilities(requiredCapabilitiesBase, [...userBaseCapabilities, ...userCapabilitiesInDraft], !!requiredAll)
-                : false;
-
-              // Access is granted if EITHER check passes
-              const isGrantedAccess = baseGranted || draftGranted || draftGrantedInDraftContext;
-
-              if (typeName === ENTITY_TYPE_IDENTITY_ORGANIZATION
-                && requiredCapabilitiesBase.includes(VIRTUAL_ORGANIZATION_ADMIN)
-                && !userBaseCapabilities.includes(SETTINGS_SET_ACCESSES)) {
-                if (user.administrated_organizations.some(({ id }) => id === source.id)) {
-                  return resolve(source, args, context, info);
-                }
-                return null;
-              }
-
-              if (!isGrantedAccess) {
-                throw ForbiddenAccess();
-              }
+            if (requiredCapabilitiesBase.length === 0 && requiredCapabilitiesInDraft?.length === 0) {
               return resolve(source, args, context, info);
-            };
-            return fieldConfig;
-          }
+            }
+
+            const userBaseCapabilities = user.capabilities.map((c) => c.name);
+            const userCapabilitiesInDraft = user.capabilitiesInDraft?.map((c) => c.name) ?? [];
+
+            // Accept everything if bypass capability or the system user (protection).
+            const shouldBypass = userBaseCapabilities.includes(BYPASS) || user.id === OPENCTI_ADMIN_UUID;
+            if (shouldBypass) {
+              return resolve(source, args, context, info);
+            }
+
+            // Check base capabilities
+            const baseGranted = checkCapabilities(requiredCapabilitiesBase, userBaseCapabilities, !!requiredAll);
+
+            // Check capabilities in Draft if provided
+            const draftGranted = requiredCapabilitiesInDraft?.length
+              ? checkCapabilities(requiredCapabilitiesInDraft, userCapabilitiesInDraft, !!requiredAll)
+              : false;
+
+            // Check base and draft capabilities in draft context
+            const isInDraftContext = !!getDraftContext(context, user);
+            const draftGrantedInDraftContext = isInDraftContext
+              ? checkCapabilities(requiredCapabilitiesBase, [...userBaseCapabilities, ...userCapabilitiesInDraft], !!requiredAll)
+              : false;
+
+            // Access is granted if EITHER check passes
+            const isGrantedAccess = baseGranted || draftGranted || draftGrantedInDraftContext;
+
+            if (typeName === ENTITY_TYPE_IDENTITY_ORGANIZATION
+              && requiredCapabilitiesBase.includes(VIRTUAL_ORGANIZATION_ADMIN)
+              && !userBaseCapabilities.includes(SETTINGS_SET_ACCESSES)) {
+              if (user.administrated_organizations.some(({ id }) => id === source.id)) {
+                return resolve(source, args, context, info);
+              }
+              return null;
+            }
+
+            if (!isGrantedAccess) {
+              throw ForbiddenAccess();
+            }
+            return resolve(source, args, context, info);
+          };
+          return fieldConfig;
         }
-        return fieldConfig;
-      },
-    }),
-  };
+      }
+      return fieldConfig;
+    },
+  });
 };

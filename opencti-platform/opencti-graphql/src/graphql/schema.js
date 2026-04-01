@@ -54,7 +54,7 @@ import observedDataResolvers from '../resolvers/observedData';
 import opinionResolvers from '../resolvers/opinion';
 import indicatorResolvers from '../modules/indicator/indicator-resolver';
 import incidentResolvers from '../resolvers/incident';
-import { authDirectiveBuilder } from './authDirective';
+import { authDirectiveBuilder, makeAuthDirectiveTransformer } from './authDirective';
 import connectorResolvers from '../resolvers/connector';
 import fileResolvers from '../resolvers/file';
 import indexedFileResolvers from '../resolvers/indexedFile';
@@ -273,14 +273,14 @@ schemaTypeDefs.push(rateLimitDirectiveTypeDefs);
 
 const createSchema = () => {
   const resolvers = mergeResolvers(schemaResolvers);
-  const { authDirectiveTransformer } = authDirectiveBuilder('auth');
   let schema = makeExecutableSchema({
     typeDefs: schemaTypeDefs,
     resolvers,
     inheritResolversFromInterfaces: true,
   });
   schema = constraintDirectiveDocumentation()(schema);
-  schema = rateLimitDirectiveTransformer(authDirectiveTransformer(schema));
+  schema = makeAuthDirectiveTransformer()(schema);
+  schema = rateLimitDirectiveTransformer(schema);
   schema = makeFeatureFlagDirectiveTransformer()(schema);
   return schema;
 };
