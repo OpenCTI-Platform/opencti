@@ -26,7 +26,7 @@ import ObjectParticipantField from '@components/common/form/ObjectParticipantFie
 import CreatedByField from '@components/common/form/CreatedByField';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
-import { DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
+import { DraftAddInput, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 interface LaunchImportDialogProps {
@@ -39,14 +39,6 @@ interface LaunchImportDialogProps {
 }
 
 type ConnectorType = NonNullable<ImportWorksDrawerQuery$data['connectorsForImport']>[number];
-
-interface DraftAddInputWithoutName {
-  description: string;
-  objectAssignee: FieldOption[];
-  objectParticipant: FieldOption[];
-  createdBy: FieldOption | undefined;
-  authorized_members?: AuthorizedMembersFieldValue;
-}
 
 const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   file,
@@ -195,7 +187,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
     && selectedConnector?.configurations?.length === 0;
 
-  const draftInitialValues = useDefaultValues<DraftAddInputWithoutName>(DRAFTWORKSPACE_TYPE, {
+  const draftInitialValues = useDefaultValues<Omit<DraftAddInput, 'name'>>(DRAFTWORKSPACE_TYPE, {
     description: '',
     objectAssignee: [],
     objectParticipant: [],
