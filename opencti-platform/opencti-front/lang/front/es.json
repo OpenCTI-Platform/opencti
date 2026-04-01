@@ -230,6 +230,7 @@
   "All notifications, triggers and digests associated with the user will be deleted.": "Se eliminarán todas las notificaciones, activadores y resúmenes asociados con el usuario.",
   "All observables": "Todos los observables",
   "All other filters": "Todos los demás filtros",
+  "All public streams, taxii, csv using this user right to share data will not work anymore.": "Todos los streams públicos, taxii, csv que utilicen este derecho de usuario para compartir datos dejarán de funcionar.",
   "All reports": "Todos los informes",
   "All rule targets": "Todos los objetivos de las reglas",
   "All the results may not be displayed for these filter values, read documentation for more information.": "Puede que no se muestren todos los resultados para estos valores de filtro, {link} para más información",

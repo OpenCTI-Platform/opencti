@@ -230,6 +230,7 @@
   "All notifications, triggers and digests associated with the user will be deleted.": "与用户关联的所有通知、触发器和摘要都将被删除",
   "All observables": "所有可观测数据",
   "All other filters": "所有其他筛选器",
+  "All public streams, taxii, csv using this user right to share data will not work anymore.": "使用此用户权限共享数据的所有公共数据流、taxii、csv 将不再有效。",
   "All reports": "所有报告",
   "All rule targets": "所有规则目标",
   "All the results may not be displayed for these filter values, read documentation for more information.": "这些过滤值可能无法显示所有结果，{link} 获取更多信息",
