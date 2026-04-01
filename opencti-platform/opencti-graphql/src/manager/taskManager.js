@@ -264,7 +264,7 @@ const sendResultToQueue = async (context, user, task, objects, opts = {}) => {
     await buildAndSendBundle(context, user, task, objects, opts);
   } else {
     for (let index = 0; index < objects.length; index += 1) {
-      const splitObject = objects[index]fi;
+      const splitObject = objects[index];
       await buildAndSendBundle(context, user, task, [splitObject], opts);
     }
   }
