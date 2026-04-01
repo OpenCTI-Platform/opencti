@@ -5,7 +5,6 @@ import path from 'node:path';
 import Upload from 'graphql-upload/Upload.mjs';
 import { ApolloServer } from '@apollo/server';
 import createSchema from '../../src/graphql/schema';
-import { ADMIN_USER, getAuthUser, getOrganizationIdByName, type OrganizationTestData, testContext, type UserTestData } from './testQuery';
 import { downloadFile } from '../../src/database/raw-file-storage';
 import { streamConverter } from '../../src/database/file-storage';
 import { logApp } from '../../src/config/conf';
@@ -17,6 +16,7 @@ import { ENTITY_TYPE_SETTINGS } from '../../src/schema/internalObject';
 import type { AuthContext, AuthUser } from '../../src/types/user';
 import { computeLoaders } from '../../src/http/httpAuthenticatedContext';
 import { executionContext } from '../../src/utils/access';
+import { ADMIN_USER, getAuthUser, getOrganizationIdByName, type OrganizationTestData, testContext, type UserTestData } from './testQuery';
 
 type Request = { query: any; variables?: any };
 
