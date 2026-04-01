@@ -257,7 +257,6 @@ By default, creation is applied to the entity triggering the playbook. You can c
 ### Share with organizations
 
 Will share every entity in the received STIX 2.1 bundle with Organizations you configured. Your platform needs to have declared a platform main organization in Settings/Parameters.
-You can decide to share only the main triggering element, or the whole bundle thanks to the toggle.
 
 Compared to other components, this component **makes direct call to the database**: this means that the query will be applied before the "send to ingestion" step. As a result, if, **within the same playbook**, you attempt to create a new entity (via the wrap in container step) and share the entity, the playbook will fail. Indeed, the entity will not yet be created, since it won't be sent to ingestion yet. You need to share the entity in another playbook to achieve this use case.
 
@@ -273,9 +272,15 @@ By default, modification is applied to the entity triggering the playbook. You c
 ### Unshare with organizations
 
 Will unshare every entity in the received STIX 2.1 bundle with Organizations you configured. Your platform needs to have declared a platform main organization in Settings/Parameters.
-You can decide to share only the main triggering element, or the whole bundle thanks to the toggle.
 
 Compared to other components, this component **makes a direct call to the database**: this means that the query will be applied before the "send to ingestion" step. As a result, if, **within the same playbook**, you attempt to create a new entity (via the wrap in container step) and unshare the entity, the playbook will fail. Indeed, the entity will not yet be created, since it won't be sent to ingestion yet. You need to unshare the entity in another playbook to achieve this use case.
+
+By default, modification is applied to the entity triggering the playbook. You can change this behavior with the following options:
+
+- all elements in the bundle (elements that might result from enrichment for example)
+- all elements except the entity triggering the playbook
+
+![Enroll entity in playbook](assets/playbook_select_bundle_scope.png)
 
 ### Manage Access Restriction
 
