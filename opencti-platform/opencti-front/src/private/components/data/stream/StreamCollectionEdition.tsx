@@ -178,7 +178,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
             {initialValues.stream_public && (
               <CreatorField
                 name="stream_public_user_id"
-                label={t_i18n('User used to retrieve data')}
+                label={t_i18n('Share data corresponding to the right associated with this user')}
                 containerStyle={fieldSpacingContainerStyle}
                 onChange={(_, value) => handleSubmitField('stream_public_user_id', (value as FieldOption)?.value ?? '')}
               />

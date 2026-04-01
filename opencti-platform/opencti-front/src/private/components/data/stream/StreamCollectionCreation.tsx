@@ -149,7 +149,13 @@ const StreamCollectionCreationForm = ({
               icon={false}
               severity="warning"
               variant="outlined"
-              sx={{ width: '100%', position: 'relative' }}
+              sx={{ width: '100%',
+                position: 'relative',
+                '& .MuiAlert-message': {
+                  width: '100%',
+                  overflow: 'hidden',
+                },
+              }}
             >
               <AlertTitle>
                 {t_i18n('Make this stream public and available to anyone')}
@@ -161,6 +167,7 @@ const StreamCollectionCreationForm = ({
                     onChange={(_, checked) => setFieldValue('stream_public', checked)}
                   />
                 )}
+                style={{ marginLeft: 1 }}
                 label={t_i18n('Public stream')}
               />
               {!values.stream_public && (
@@ -175,7 +182,7 @@ const StreamCollectionCreationForm = ({
               {values.stream_public && (
                 <CreatorField
                   name="stream_public_user_id"
-                  label={t_i18n('User used to retrieve data')}
+                  label={t_i18n('Share data corresponding to the right associated with this user')}
                   containerStyle={fieldSpacingContainerStyle}
                   onChange={(name, value) => setFieldValue(name, value)}
                 />
