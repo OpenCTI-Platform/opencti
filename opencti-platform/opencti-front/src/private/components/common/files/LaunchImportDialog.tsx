@@ -26,7 +26,7 @@ import ObjectParticipantField from '@components/common/form/ObjectParticipantFie
 import CreatedByField from '@components/common/form/CreatedByField';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
-import { DraftAddInput, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
+import { DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 interface LaunchImportDialogProps {
@@ -39,6 +39,14 @@ interface LaunchImportDialogProps {
 }
 
 type ConnectorType = NonNullable<ImportWorksDrawerQuery$data['connectorsForImport']>[number];
+
+interface DraftAddInputWithoutName {
+  description: string;
+  objectAssignee: FieldOption[];
+  objectParticipant: FieldOption[];
+  createdBy: FieldOption | undefined;
+  authorized_members?: AuthorizedMembersFieldValue;
+}
 
 const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   file,
@@ -149,7 +157,6 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
     });
 
     const draftShape = {
-      name: requiredWhenDraftAndMandatory('name', Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters'))),
       description: requiredWhenDraftAndMandatory('description', Yup.string()),
       objectAssignee: Yup.array().when('validation_mode', {
         is: isDraft,
@@ -188,8 +195,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
     && selectedConnector?.configurations?.length === 0;
 
-  const draftInitialValues = useDefaultValues<DraftAddInput>(DRAFTWORKSPACE_TYPE, {
-    name: '',
+  const draftInitialValues = useDefaultValues<DraftAddInputWithoutName>(DRAFTWORKSPACE_TYPE, {
     description: '',
     objectAssignee: [],
     objectParticipant: [],
