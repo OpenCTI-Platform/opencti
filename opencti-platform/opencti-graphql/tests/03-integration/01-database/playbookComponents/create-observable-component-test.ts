@@ -5,6 +5,7 @@ import type { StixCyberObject } from '../../../../src/types/stix-2-1-common';
 import type { StixRelation } from '../../../../src/types/stix-2-1-sro';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../../src/types/stix-2-1-extensions';
 import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
+import type { StixIndicator } from '../../../../src/modules/indicator/indicator-types';
 
 describe('PLAYBOOK_CREATE_OBSERVABLE_COMPONENT', () => {
   const MALWARE_ID = 'malware--09bd862a-f030-55f2-920a-900c4913d9ff';
@@ -13,7 +14,7 @@ describe('PLAYBOOK_CREATE_OBSERVABLE_COMPONENT', () => {
   const SECOND_INDICATOR_ID = 'indicator--3e01a7d8-997b-5e7b-a1a3-32f8956ca752';
 
   const BUNDLE_OBJECTS = [
-    testBundleObject({
+    testBundleObject<StixIndicator>({
       id: MAIN_INDICATOR_ID,
       type: 'indicator',
       pattern: "[domain-name:value = 'example.org']",
@@ -26,7 +27,7 @@ describe('PLAYBOOK_CREATE_OBSERVABLE_COMPONENT', () => {
       id: CAMPAIGN_ID,
       type: 'Campaign',
     }),
-    testBundleObject({
+    testBundleObject<StixIndicator>({
       id: SECOND_INDICATOR_ID,
       type: 'indicator',
       pattern: "[ipv4-addr:value = '8.8.8.8']",

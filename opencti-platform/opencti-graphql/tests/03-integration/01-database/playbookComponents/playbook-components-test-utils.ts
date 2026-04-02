@@ -7,7 +7,6 @@ import type { ExecutorParameters } from '../../../../src/modules/playbook/playbo
 type TestBundleObjectArgs<T extends StixObject> = {
   id?: StixId;
   type: string;
-  pattern?: string;
   octiExtension?: Partial<StixOpenctiExtension>;
 } & Partial<Omit<T, 'extensions' | 'id' | 'type'>>;
 
