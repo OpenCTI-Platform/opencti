@@ -279,7 +279,7 @@ describe('CustomView resolvers for display use cases', () => {
         'CustomView',
       );
 
-      const result = await queryAsUserWithSuccess(USER_PARTICIPATE.client, {
+      const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
         query: READ_CONTEXT_QUERY,
         variables: {},
       });
@@ -309,7 +309,7 @@ describe('CustomView resolvers for display use cases', () => {
         'CustomView',
       );
 
-      const result = await queryAsUserWithSuccess(USER_PARTICIPATE.client, {
+      const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
         query: READ_CONTEXT_QUERY,
         variables: {},
       });
@@ -322,7 +322,7 @@ describe('CustomView resolvers for display use cases', () => {
 
   describe('customViewDisplay', () => {
     it('should retrieve serialized dashboard manifest', async () => {
-      const result = await queryAsUserWithSuccess(USER_PARTICIPATE.client, {
+      const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
         query: READ_CUSTOM_VIEW_FOR_DISPLAY_QUERY,
         variables: {
           id: customViewId1,
