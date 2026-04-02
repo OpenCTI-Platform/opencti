@@ -135,7 +135,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
       initialValues={initialValues}
       validationSchema={taxiiCollectionValidation(t_i18n('This field is required'))}
     >
-      {() => (
+      {({ values, setFieldValue }) => (
         <Form>
           <Field
             component={TextField}
@@ -172,12 +172,17 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
               {t_i18n('Make this TAXII collection public and available to anyone')}
             </AlertTitle>
             <FormControlLabel
-              control={<Switch defaultChecked={!!initialValues.taxii_public} disabled={!isGrantedToSetAccesses} />}
+              control={<Switch checked={!!values.taxii_public} disabled={!isGrantedToSetAccesses} />}
               style={{ marginLeft: 1 }}
-              onChange={(_, checked) => handleSubmitField('taxii_public', checked.toString())}
+              onChange={(_, checked) => {
+                setFieldValue('taxii_public', checked);
+                if (!checked) {
+                  handleSubmitField('taxii_public', 'false');
+                }
+              }}
               label={t_i18n('Public collection')}
             />
-            {!initialValues.taxii_public && (
+            {!values.taxii_public && (
               <ObjectMembersField
                 label="Accessible for"
                 style={fieldSpacingContainerStyle}
@@ -187,13 +192,35 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
                 name="restricted_members"
               />
             )}
-            {initialValues.taxii_public && (
+            {values.taxii_public && (
               <CreatorField
                 name="taxii_public_user_id"
                 label={t_i18n('Share data corresponding to the right associated with this user')}
                 containerStyle={fieldSpacingContainerStyle}
                 disabled={!isGrantedToSetAccesses}
-                onChange={(_, value) => handleSubmitField('taxii_public_user_id', (value as FieldOption)?.value ?? '')}
+                onChange={(_, value) => {
+                  const userId = (value as FieldOption)?.value ?? '';
+                  if (!taxiiCollection.taxii_public) {
+                    commitMutation({
+                      mutation: taxiiCollectionMutationFieldPatch,
+                      variables: {
+                        id: taxiiCollection.id,
+                        input: [
+                          { key: 'taxii_public_user_id', value: userId },
+                          { key: 'taxii_public', value: 'true' },
+                        ],
+                      },
+                      setSubmitting: undefined,
+                      onCompleted: undefined,
+                      onError: undefined,
+                      optimisticResponse: undefined,
+                      optimisticUpdater: undefined,
+                      updater: undefined,
+                    });
+                  } else {
+                    handleSubmitField('taxii_public_user_id', userId);
+                  }
+                }}
               />
             )}
           </Alert>
