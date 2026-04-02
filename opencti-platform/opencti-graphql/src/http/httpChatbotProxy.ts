@@ -21,6 +21,9 @@ export const XTM_ONE_CHATBOT_URL = `${XTM_ONE_URL}/chatbot`;
 /**
  * Authenticate the request and verify chatbot prerequisites (CGU + license).
  * Returns the authenticated context or null (response already sent in that case).
+ *
+ * When XTM One is configured, the license check is relaxed because XTM One
+ * handles its own licensing validation during registration.
  */
 const authenticateAndVerify = async (req: Express.Request, res: Express.Response) => {
   const context = await createAuthenticatedContext(req, res, 'chatbot');
@@ -261,6 +264,98 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
     res.json({ content: response.data?.content ?? '', status: 'success' });
   } catch (e: unknown) {
     logApp.error('Error in agent message proxy', { cause: e });
+    const { message } = e as Error;
+    if (axios.isAxiosError(e) && e.response) {
+      const detail = e.response.data?.detail ?? message;
+      setCookieError(res, message);
+      res.status(200).json({ content: '', status: 'error', error: detail, code: e.response.status });
+    } else {
+      setCookieError(res, message);
+      res.status(200).json({ content: '', status: 'error', error: message, code: 503 });
+    }
+  }
+};
+
+// ── POST /chatbot/import-document-ai ──────────────────────────────────────
+// Convenience non-streaming call that asks an agent to execute the
+// `import_opencti_document_ai` tool with the provided file payload.
+// Body:
+// {
+//   entity_id: string,
+//   file_name: string,
+//   file_content: string,
+//   encoding?: 'text' | 'base64',
+//   mime_type?: string,
+//   agent_slug?: string
+// }
+
+export const postImportDocumentAi = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context) return;
+
+    const {
+      entity_id,
+      file_name,
+      file_content,
+      encoding = 'text',
+      mime_type = 'application/octet-stream',
+      agent_slug = 'opencti-assistant',
+    } = req.body || {};
+
+    if (!entity_id || !file_name || !file_content) {
+      res.status(400).json({
+        error: 'entity_id, file_name, and file_content are required',
+      });
+      return;
+    }
+
+    if (!['text', 'base64'].includes(encoding)) {
+      res.status(400).json({ error: "encoding must be 'text' or 'base64'" });
+      return;
+    }
+
+    const toolArgs = {
+      entity_id,
+      file_name,
+      file_content,
+      encoding,
+      mime_type,
+    };
+
+    const content = [
+      'Execute exactly one tool call to import a document into OpenCTI using AI extraction.',
+      'Tool name: import_opencti_document_ai',
+      'Use these exact arguments:',
+      JSON.stringify(toolArgs),
+      'After the tool call, return only a short status summary and include the File ID if available.',
+    ].join('\n\n');
+
+    const url = `${XTM_ONE_URL}/api/v1/platform/chat/messages`;
+    const jwt = await issueAuthenticationJWT(context.user);
+    const response = await axios.post(url, {
+      agent_slug,
+      content,
+      stream: false,
+    }, {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+        'Content-Type': 'application/json',
+        'X-Platform-URL': getChatbotUrl(req),
+        'X-Platform-Product': 'opencti',
+        'X-Platform-Version': PLATFORM_VERSION,
+      },
+      timeout: 180000,
+    });
+
+    res.json({
+      status: 'success',
+      content: response.data?.content ?? '',
+      agent_slug,
+      tool: 'import_opencti_document_ai',
+    });
+  } catch (e: unknown) {
+    logApp.error('Error in import document AI proxy', { cause: e });
     const { message } = e as Error;
     if (axios.isAxiosError(e) && e.response) {
       const detail = e.response.data?.detail ?? message;
