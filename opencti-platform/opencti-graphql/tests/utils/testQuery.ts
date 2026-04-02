@@ -113,6 +113,7 @@ const adminClient = createHttpClient();
  * To be used only when there's some logic in express middleware you want to
  * trigger by passing a specific header via the `options` parameter.
  *
+ * @deprecated
  * Prefer using the helpers in `./testQueryHelpers.ts` if possible to gain coverage.
  */
 export const queryInitPlatformAsAdmin = async (query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
@@ -127,6 +128,7 @@ export const queryInitPlatformAsAdmin = async (query: string | ASTNode, variable
  * To be used only when there's some logic in express middleware you want to
  * trigger by passing a specific header via the `options` parameter.
  *
+ * @deprecated
  * Prefer using the helpers in `./testQueryHelpers.ts` if possible to gain coverage.
  */
 export const queryInitPlatformAsUser = async (user: UserTestData, query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
@@ -157,6 +159,7 @@ export const queryInitPlatformAsAnonymous = async (query: string | ASTNode, vari
  * To be used only when there's some logic in express middleware you want to
  * trigger by passing a specific header via the `options` parameter.
  *
+ * @deprecated
  * Prefer using the helpers in `./testQueryHelpers.ts` if possible to gain coverage.
  */
 export const queryInitPlatformAsTokenBearer = async (token: string, query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
