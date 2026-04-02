@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import gql from 'graphql-tag';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 

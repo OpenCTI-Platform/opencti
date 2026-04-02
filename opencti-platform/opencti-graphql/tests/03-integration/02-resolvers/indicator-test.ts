@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { adminQuery, queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { ENTITY_DOMAIN_NAME } from '../../../src/schema/stixCyberObservable';
 import { MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 import type { BasicNodeEdge } from '../../../src/types/store';
@@ -248,26 +248,26 @@ describe('Indicator resolver standard behavior', () => {
     }
   });
   it('should not update indicator with score negative value and value higher than 100', async () => {
-    const queryResulAbove100 = await adminQuery({
+    const queryResulAbove100 = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: firstIndicatorInternalId, input: { key: 'x_opencti_score', value: ['142'] } },
     });
     expect(queryResulAbove100.errors).toBeDefined();
-    expect(queryResulAbove100.errors[0].message).toBe('The score should be an integer between 0 and 100');
-    const queryResultBelow0 = await adminQuery({
+    expect(queryResulAbove100.errors?.[0].message).toBe('The score should be an integer between 0 and 100');
+    const queryResultBelow0 = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: firstIndicatorInternalId, input: { key: 'x_opencti_score', value: ['-42'] } },
     });
     expect(queryResultBelow0.errors).toBeDefined();
-    expect(queryResultBelow0.errors[0].message).toBe('The score should be an integer between 0 and 100');
+    expect(queryResultBelow0.errors?.[0].message).toBe('The score should be an integer between 0 and 100');
   });
   it('should not update indicator with incorrectly formatted pattern', async () => {
-    const queryResult = await adminQuery({
+    const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: firstIndicatorInternalId, input: { key: 'pattern', value: ["[domain-name:value &&& 'www.wrong.pattern']"] } },
     });
     expect(queryResult.errors).toBeDefined();
-    expect(queryResult.errors[0].message).toBe('Indicator of type stix is not correctly formatted.');
+    expect(queryResult.errors?.[0].message).toBe('Indicator of type stix is not correctly formatted.');
   });
   it('should update indicator', async () => {
     const queryResult = await queryAsAdminWithSuccess({

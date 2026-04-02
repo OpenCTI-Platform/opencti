@@ -5,15 +5,13 @@ import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import {
   ADMIN_USER,
-  adminQuery,
   AMBER_GROUP,
-  editorQuery,
   getGroupIdByName,
   getOrganizationIdByName,
   getUserIdByEmail,
   GREEN_GROUP,
+  queryInitPlatformAsAdmin,
   PLATFORM_ORGANIZATION,
-  queryAsAdmin,
   TEST_ORGANIZATION,
   testContext,
   TESTING_USERS,
@@ -22,12 +20,13 @@ import {
   USER_PARTICIPATE,
   USER_SECURITY,
 } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
 import {
-  adminQueryWithError,
-  adminQueryWithSuccess,
+  queryAsAdminWithError,
   queryAsAdminWithSuccess,
+  queryAsUser,
   queryAsUserIsExpectedError,
   queryAsUserIsExpectedForbidden,
   queryAsUserWithSuccess,
@@ -285,22 +284,22 @@ describe('User resolver standard behavior', () => {
         lastname: 'OpenCTI',
       },
     };
-    const user = await adminQuery({
+    const user = await queryAsAdmin({
       query: CREATE_QUERY,
       variables: USER_TO_CREATE,
     });
     expect(user).not.toBeNull();
-    expect(user.data.userAdd).not.toBeNull();
-    userInternalId = user.data.userAdd.id;
-    userStandardId = user.data.userAdd.standard_id;
+    expect(user.data?.userAdd).not.toBeNull();
+    userInternalId = user.data?.userAdd.id;
+    userStandardId = user.data?.userAdd.standard_id;
     userToDeleteIds.push(userInternalId);
 
-    expect(user.data.userAdd.name).toEqual('User');
-    expect(user.data.userAdd.user_confidence_level).toBeNull();
+    expect(user.data?.userAdd.name).toEqual('User');
+    expect(user.data?.userAdd.user_confidence_level).toBeNull();
     // user created with default group, so effective confidence level shall be set
-    expect(user.data.userAdd.effective_confidence_level.max_confidence).toEqual(100);
-    expect(user.data.userAdd.effective_confidence_level.source.type).toEqual('Group');
-    expect(user.data.userAdd.effective_confidence_level.source.object).toBeDefined();
+    expect(user.data?.userAdd.effective_confidence_level.max_confidence).toEqual(100);
+    expect(user.data?.userAdd.effective_confidence_level.source.type).toEqual('Group');
+    expect(user.data?.userAdd.effective_confidence_level.source.object).toBeDefined();
 
     const USER_TO_CREATE_WITH_CONFIDENCE = {
       input: {
@@ -313,18 +312,18 @@ describe('User resolver standard behavior', () => {
         },
       },
     };
-    const user2 = await adminQuery({
+    const user2 = await queryAsAdmin({
       query: CREATE_QUERY,
       variables: USER_TO_CREATE_WITH_CONFIDENCE,
     });
-    expect(user2.data.userAdd.user_confidence_level).toEqual({
+    expect(user2.data?.userAdd.user_confidence_level).toEqual({
       max_confidence: 50,
       overrides: [{ entity_type: 'Report', max_confidence: 80 }],
     });
-    expect(user2.data.userAdd.effective_confidence_level.max_confidence).toEqual(50);
-    expect(user2.data.userAdd.effective_confidence_level.source.type).toEqual('User');
-    expect(user2.data.userAdd.effective_confidence_level.source.object.id).toEqual(user2.data.userAdd.id);
-    userToDeleteIds.push(user2.data.userAdd.id);
+    expect(user2.data?.userAdd.effective_confidence_level.max_confidence).toEqual(50);
+    expect(user2.data?.userAdd.effective_confidence_level.source.type).toEqual('User');
+    expect(user2.data?.userAdd.effective_confidence_level.source.object.id).toEqual(user2.data?.userAdd.id);
+    userToDeleteIds.push(user2.data?.userAdd.id);
   });
   it('should user loaded by standard id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userStandardId } });
@@ -403,16 +402,16 @@ describe('User resolver standard behavior', () => {
   });
 
   it('should update user confidence level', async () => {
-    const queryResult = await adminQuery({
+    const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: {
         id: userInternalId,
         input: { key: 'user_confidence_level', value: { max_confidence: 33, overrides: [] } },
       },
     });
-    expect(queryResult.data.userEdit.fieldPatch.user_confidence_level.max_confidence).toEqual(33);
-    expect(queryResult.data.userEdit.fieldPatch.effective_confidence_level.max_confidence).toEqual(33);
-    expect(queryResult.data.userEdit.fieldPatch.effective_confidence_level.source.object.id).toEqual(userInternalId);
+    expect(queryResult.data?.userEdit.fieldPatch.user_confidence_level.max_confidence).toEqual(33);
+    expect(queryResult.data?.userEdit.fieldPatch.effective_confidence_level.max_confidence).toEqual(33);
+    expect(queryResult.data?.userEdit.fieldPatch.effective_confidence_level.source.object.id).toEqual(userInternalId);
   });
   it('should context patch user', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -458,15 +457,15 @@ describe('User resolver standard behavior', () => {
         },
       },
     };
-    const group = await adminQuery({
+    const group = await queryAsAdmin({
       query: GROUP_ADD_QUERY,
       variables: GROUP_TO_CREATE,
     });
     expect(group).not.toBeNull();
-    expect(group.data.groupAdd).not.toBeNull();
-    expect(group.data.groupAdd.name).toEqual('Group of user');
-    expect(group.data.groupAdd.group_confidence_level.max_confidence).toEqual(60);
-    groupInternalId = group.data.groupAdd.id;
+    expect(group.data?.groupAdd).not.toBeNull();
+    expect(group.data?.groupAdd.name).toEqual('Group of user');
+    expect(group.data?.groupAdd.group_confidence_level.max_confidence).toEqual(60);
+    groupInternalId = group.data?.groupAdd.id;
     const RELATION_ADD_QUERY = gql`
       mutation GroupEdit($id: ID!, $input: InternalRelationshipAddInput!) {
         groupEdit(id: $id) {
@@ -487,7 +486,7 @@ describe('User resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await adminQuery({
+    const queryResult = await queryAsAdmin({
       query: RELATION_ADD_QUERY,
       variables: {
         id: groupInternalId,
@@ -497,34 +496,33 @@ describe('User resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.groupEdit.relationAdd.to.members.edges.length).toEqual(1);
+    expect(queryResult.data?.groupEdit.relationAdd.to.members.edges.length).toEqual(1);
   });
   it('should user groups to be accurate', async () => {
-    const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: userInternalId } });
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).not.toBeNull();
-    expect(queryResult.data.user.groups.edges.length).toEqual(2); // the 2 groups are: 'Group of user' and 'Default'
+    expect(queryResult.data?.user).not.toBeNull();
+    expect(queryResult.data?.user.groups.edges.length).toEqual(2); // the 2 groups are: 'Group of user' and 'Default'
   });
   it('should user confidence level be unchanged', async () => {
-    const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: userInternalId } });
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).not.toBeNull();
-    expect(queryResult.data.user.user_confidence_level.max_confidence).toEqual(33);
-    expect(queryResult.data.user.effective_confidence_level.max_confidence).toEqual(33);
-    expect(queryResult.data.user.effective_confidence_level.source.object.id).toEqual(userInternalId);
+    expect(queryResult.data?.user).not.toBeNull();
+    expect(queryResult.data?.user.user_confidence_level.max_confidence).toEqual(33);
+    expect(queryResult.data?.user.effective_confidence_level.max_confidence).toEqual(33);
+    expect(queryResult.data?.user.effective_confidence_level.source.object.id).toEqual(userInternalId);
   });
   it('should remove user confidence level, effective level should be accurate', async () => {
-    const queryResult = await adminQuery({
+    const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: {
         id: userInternalId,
         input: { key: 'user_confidence_level', value: [null] },
       },
     });
-    const { userEdit } = queryResult.data;
-    expect(userEdit.fieldPatch.user_confidence_level).toBeNull();
+    expect(queryResult.data?.userEdit.fieldPatch.user_confidence_level).toBeNull();
     // now effective level is the highest values among the 2 groups (default: 100)
-    expect(userEdit.fieldPatch.effective_confidence_level.max_confidence).toEqual(100);
+    expect(queryResult.data?.userEdit.fieldPatch.effective_confidence_level.max_confidence).toEqual(100);
   });
   it('should add role in group', async () => {
     const ROLE_ADD_QUERY = gql`
@@ -698,7 +696,7 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data?.userEdit.relationDelete.groups.edges.length).toEqual(1);
     expect(queryResult.data?.userEdit.relationDelete.groups.edges[0].node.name).toEqual('Default');
     // Delete the group
-    await adminQuery({
+    await queryAsAdmin({
       query: DELETE_GROUP_QUERY,
       variables: { id: groupInternalId },
     });
@@ -707,22 +705,22 @@ describe('User resolver standard behavior', () => {
     // Delete the users
     for (let i = 0; i < userToDeleteIds.length; i += 1) {
       const userId = userToDeleteIds[i];
-      await adminQuery({
+      await queryAsAdmin({
         query: DELETE_QUERY,
         variables: { id: userId },
       });
       // Verify is no longer found
-      const queryResult = await adminQuery({ query: READ_QUERY, variables: { id: userId } });
+      const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userId } });
       expect(queryResult).not.toBeNull();
-      expect(queryResult.data.user).toBeNull();
+      expect(queryResult.data?.user).toBeNull();
     }
   });
 });
 
 describe('User list members query behavior', () => {
   it('Should user lists all members', async () => {
-    const queryResult = await editorQuery({ query: LIST_MEMBERS_QUERY });
-    const usersEdges = queryResult.data.members.edges as { node: Member }[];
+    const queryResult = await queryAsUser(USER_EDITOR, { query: LIST_MEMBERS_QUERY, variables: {} });
+    const usersEdges = queryResult.data?.members.edges as { node: Member }[];
     expect(usersEdges.length).toEqual(25);
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(TESTING_USERS.length + 1); // +1 = Plus admin user
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(entitiesCounter.Group);
@@ -749,8 +747,8 @@ describe('User creator completion', () => {
         name: 'Consulting',
       },
     };
-    const queryResult = await editorQuery({ query: SECTOR_CREATE_QUERY, variables: SECTOR_TO_CREATE });
-    expect(queryResult.data.sectorAdd.creators.length).toEqual(2);
+    const queryResult = await queryAsUser(USER_EDITOR, { query: SECTOR_CREATE_QUERY, variables: SECTOR_TO_CREATE });
+    expect(queryResult.data?.sectorAdd.creators.length).toEqual(2);
   });
 });
 
@@ -878,7 +876,7 @@ describe('User has no settings capability and is organization admin query behavi
         `;
 
     // Delete admin to ORGANIZATION
-    await adminQuery({
+    await queryAsAdmin({
       query: ORGA_ADMIN_DELETE_QUERY, // +1 update organization
       variables: {
         id: testOrganizationId,
@@ -887,7 +885,7 @@ describe('User has no settings capability and is organization admin query behavi
     });
     for (let i = 0; i < organizationsIds.length; i += 1) {
       // remove granted_groups to ORGANIZATION
-      await adminQuery({
+      await queryAsAdmin({
         query: UPDATE_ORGANIZATION_QUERY, // +1 update organization for each (+2 total)
         variables: { id: organizationsIds[i], input: { key: 'grantable_groups', value: [] } },
       });
@@ -896,22 +894,22 @@ describe('User has no settings capability and is organization admin query behavi
   it('should has the capability to administrate the Organization', async () => {
     // set USER_EDITOR has organization administrator of TEST_ORGANIZATION
     // USER_EDITOR is perfect because he has no settings capabilities and is part of TEST_ORGANIZATION
-    const organizationAdminAddQueryResult = await adminQueryWithSuccess({
+    const organizationAdminAddQueryResult = await queryAsAdminWithSuccess({
       query: ORGA_ADMIN_ADD_QUERY, // +1 update event of organization
       variables: {
         id: TEST_ORGANIZATION.id,
         memberId: userEditorId,
       },
     });
-    expect(organizationAdminAddQueryResult.data.organizationAdminAdd).not.toBeNull();
-    expect(organizationAdminAddQueryResult.data.organizationAdminAdd.standard_id).toEqual(TEST_ORGANIZATION.id);
+    expect(organizationAdminAddQueryResult.data?.organizationAdminAdd).not.toBeNull();
+    expect(organizationAdminAddQueryResult.data?.organizationAdminAdd.standard_id).toEqual(TEST_ORGANIZATION.id);
 
     // Check that USER_EDITOR is Organization administrator
-    const editorUserQueryResult = await adminQuery({ query: READ_QUERY, variables: { id: userEditorId } });
+    const editorUserQueryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userEditorId } });
     expect(editorUserQueryResult).not.toBeNull();
-    expect(editorUserQueryResult.data.user).not.toBeNull();
-    expect(editorUserQueryResult.data.user.capabilities.length).toEqual(10);
-    const { capabilities } = editorUserQueryResult.data.user;
+    expect(editorUserQueryResult.data?.user).not.toBeNull();
+    expect(editorUserQueryResult.data?.user.capabilities.length).toEqual(10);
+    const capabilities = editorUserQueryResult.data?.user.capabilities ?? [];
     expect(capabilities.some((capa: Capability) => capa.name === VIRTUAL_ORGANIZATION_ADMIN)).toEqual(true);
   });
   it('should user created', async () => {
@@ -933,54 +931,54 @@ describe('User has no settings capability and is organization admin query behavi
     };
 
     // Need to add granted_groups to TEST_ORGANIZATION because of line 533 in domain/user.js
-    const queryResult = await adminQuery({
+    const queryResult = await queryAsAdmin({
       query: UPDATE_ORGANIZATION_QUERY,
       variables: { id: testOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },
     });
-    expect(queryResult.data.organizationFieldPatch.grantable_groups.length).toEqual(1);
-    expect(queryResult.data.organizationFieldPatch.grantable_groups[0]).toEqual({ id: amberGroupId });
+    expect(queryResult.data?.organizationFieldPatch.grantable_groups.length).toEqual(1);
+    expect(queryResult.data?.organizationFieldPatch.grantable_groups[0]).toEqual({ id: amberGroupId });
 
     // Create User
-    const user = await editorQuery({
+    const user = await queryAsUser(USER_EDITOR, {
       query: CREATE_QUERY,
       variables: USER_TO_CREATE,
     });
     expect(user).not.toBeNull();
-    expect(user.data.userAdd).not.toBeNull();
-    expect(user.data.userAdd.name).toEqual('User');
-    userInternalId = user.data.userAdd.id;
+    expect(user.data?.userAdd).not.toBeNull();
+    expect(user.data?.userAdd.name).toEqual('User');
+    userInternalId = user.data?.userAdd.id;
   });
   it('should list users from its own organization', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: LIST_QUERY,
       variables: {},
     });
-    expect(queryResult.data.users.edges.length).toEqual(3);
-    expect([userInternalId, userEditorId, userParticipateId].every((userId) => queryResult.data.users.edges.map((n: any) => n.node.id).includes(userId)))
+    expect(queryResult.data?.users.edges.length).toEqual(3);
+    expect([userInternalId, userEditorId, userParticipateId].every((userId) => queryResult.data?.users.edges.map((n: any) => n.node.id).includes(userId)))
       .toBeTruthy();
   });
   it('should update user from its own organization', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: UPDATE_QUERY,
       variables: { id: userInternalId, input: { key: 'account_status', value: ['Inactive'] } },
     });
-    expect(queryResult.data.userEdit.fieldPatch.account_status).toEqual('Inactive');
+    expect(queryResult.data?.userEdit.fieldPatch.account_status).toEqual('Inactive');
   });
   it('should not update user with no organization', async () => {
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: UPDATE_QUERY,
       variables: { id: ADMIN_USER.id, input: { key: 'account_status', value: ['Inactive'] } },
     });
   });
   it('should not update user from an other organization', async () => {
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: UPDATE_QUERY,
       variables: { id: USER_SECURITY.id, input: { key: 'account_status', value: ['Inactive'] } },
     });
   });
   it('should not add organization to user if not admin', async () => {
     platformOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: ORGANIZATION_ADD_QUERY,
       variables: {
         id: userInternalId,
@@ -989,7 +987,7 @@ describe('User has no settings capability and is organization admin query behavi
     });
   });
   it('should not add organization to user if user is not in its own organization', async () => {
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: ORGANIZATION_ADD_QUERY,
       variables: {
         id: ADMIN_USER.id,
@@ -999,16 +997,16 @@ describe('User has no settings capability and is organization admin query behavi
   });
   it('should administrate more than 1 organization', async () => {
     // Need to add granted_groups to PLATFORM_ORGANIZATION because of line 533 in domain/user.js
-    const grantableGroupQueryResult = await adminQuery({
+    const grantableGroupQueryResult = await queryAsAdmin({
       query: UPDATE_ORGANIZATION_QUERY,
       variables: { id: platformOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },
     });
-    expect(grantableGroupQueryResult.data.organizationFieldPatch.grantable_groups.length).toEqual(1);
-    expect(grantableGroupQueryResult.data.organizationFieldPatch.grantable_groups[0]).toEqual({ id: amberGroupId });
+    expect(grantableGroupQueryResult.data?.organizationFieldPatch.grantable_groups.length).toEqual(1);
+    expect(grantableGroupQueryResult.data?.organizationFieldPatch.grantable_groups[0]).toEqual({ id: amberGroupId });
     organizationsIds.push(platformOrganizationId);
 
     // Add Editor to PLATFORM_ORGANIZATION
-    const addEditorToOrgaQuery = await adminQueryWithSuccess({
+    const addEditorToOrgaQuery = await queryAsAdminWithSuccess({
       query: ORGANIZATION_ADD_QUERY, // +1 create of relation between orga & user
       variables: {
         id: userEditorId,
@@ -1018,7 +1016,7 @@ describe('User has no settings capability and is organization admin query behavi
     expect(addEditorToOrgaQuery.data.userEdit.organizationAdd.id).toEqual(userEditorId);
 
     // Editor administrate PLATFORM_ORGANIZATION
-    const queryResult = await adminQueryWithSuccess({
+    const queryResult = await queryAsAdminWithSuccess({
       query: ORGA_ADMIN_ADD_QUERY, // +1 update event of organization
       variables: {
         id: PLATFORM_ORGANIZATION.id,
@@ -1029,7 +1027,7 @@ describe('User has no settings capability and is organization admin query behavi
     expect(queryResult.data.organizationAdminAdd.standard_id).toEqual(PLATFORM_ORGANIZATION.id);
   });
   it('should add 2nd organization to user if admin', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: ORGANIZATION_ADD_QUERY, // +1 create of relation between orga & user
       variables: {
         id: userInternalId,
@@ -1039,7 +1037,7 @@ describe('User has no settings capability and is organization admin query behavi
     expect(queryResult.data.userEdit.organizationAdd.id).toEqual(userInternalId);
   });
   it('should delete 2nd organization to user if admin', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: ORGANIZATION_DELETE_QUERY, // +1 delete of relation between orga & user
       variables: {
         id: userInternalId,
@@ -1049,7 +1047,7 @@ describe('User has no settings capability and is organization admin query behavi
     expect(queryResult.data.userEdit.organizationDelete.id).toEqual(userInternalId);
   });
   it('should remove Editor from PLATFORM_ORGANIZATION', async () => {
-    const queryResult = await adminQueryWithSuccess({
+    const queryResult = await queryAsAdminWithSuccess({
       query: ORGANIZATION_DELETE_QUERY, // +1 delete event (delete relation) +1 update event
       variables: {
         id: userEditorId,
@@ -1060,12 +1058,12 @@ describe('User has no settings capability and is organization admin query behavi
   });
   it('should user deleted', async () => {
     // Delete user
-    await editorQuery({
+    await queryAsUser(USER_EDITOR, {
       query: DELETE_QUERY,
       variables: { id: userInternalId },
     });
     // Verify is no longer found
-    const queryResult = await adminQueryWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
+    const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult.data.user).toBeNull();
   });
 });
@@ -1096,11 +1094,11 @@ describe('meUser specific resolvers', async () => {
         { key: 'language', value: 'fr-fr' },
       ],
     };
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: ME_EDIT,
       variables,
     });
-    expect(queryResult.data.meEdit.language).toEqual('fr-fr');
+    expect(queryResult.data?.meEdit.language).toEqual('fr-fr');
   });
 
   it('User should update multiple authorized attributes', async () => {
@@ -1111,11 +1109,11 @@ describe('meUser specific resolvers', async () => {
         { key: 'theme', value: 'dark' },
       ],
     };
-    const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
       query: ME_EDIT,
       variables,
     });
-    expect(queryResult.data.meEdit.language).toEqual('en-us');
+    expect(queryResult.data?.meEdit.language).toEqual('en-us');
   });
 
   it('User should NOT update password without providing proper current password', async () => {
@@ -1125,7 +1123,7 @@ describe('meUser specific resolvers', async () => {
         { key: 'password', value: 'new_password' },
       ],
     };
-    await queryAsUserIsExpectedError(USER_EDITOR.client, {
+    await queryAsUserIsExpectedError(USER_EDITOR, {
       query: ME_EDIT,
       variables,
     });
@@ -1153,10 +1151,15 @@ describe('User is impersonated', async () => {
         name: 'ReportCreationFail',
       },
     };
-    const reportQuery = await adminQuery({
-      query: CREATE_REPORT_QUERY,
-      variables: REPORT_TO_CREATE,
-    }, { applicantId: USER_CONNECTOR.id });
+    // Calls main execution context server
+    // as requires passing the extra header
+    // to check logic happening in middleware.
+    // Won't participate in test coverage.
+    const reportQuery = await queryInitPlatformAsAdmin(
+      CREATE_REPORT_QUERY,
+      REPORT_TO_CREATE,
+      { applicantId: USER_CONNECTOR.id },
+    );
     expect(reportQuery.errors).toBeDefined();
 
     // revert platform orga
@@ -1175,7 +1178,7 @@ describe('Service account User coverage', async () => {
       groups: [],
       objectOrganization: [],
     };
-    const user = await adminQueryWithSuccess({
+    const user = await queryAsAdminWithSuccess({
       query: CREATE_QUERY,
       variables: { input: USER_TO_CREATE },
     });
@@ -1221,7 +1224,7 @@ describe('Service account User coverage', async () => {
     expect(queryResult.data?.user.id).toEqual(userInternalId);
   });
   it('should turn service account into user', async () => {
-    const queryResult = await adminQueryWithSuccess({
+    const queryResult = await queryAsAdminWithSuccess({
       query: UPDATE_QUERY,
       variables: {
         id: userInternalId,
@@ -1235,7 +1238,7 @@ describe('Service account User coverage', async () => {
     expect(userCreated.password).toBeDefined();
   });
   it('should turn user into service account', async () => {
-    const queryResult = await adminQueryWithSuccess({
+    const queryResult = await queryAsAdminWithSuccess({
       query: UPDATE_QUERY,
       variables: {
         id: userInternalId,
@@ -1249,7 +1252,7 @@ describe('Service account User coverage', async () => {
     expect(userCreated.password).toBeUndefined();
   });
   it('should not update password for service account', async () => {
-    await adminQueryWithError({
+    await queryAsAdminWithError({
       query: UPDATE_QUERY,
       variables: {
         id: userInternalId,
@@ -1261,12 +1264,12 @@ describe('Service account User coverage', async () => {
     // Delete the users
     for (let i = 0; i < userToDeleteIds.length; i += 1) {
       const userId = userToDeleteIds[i];
-      await adminQueryWithSuccess({
+      await queryAsAdminWithSuccess({
         query: DELETE_QUERY,
         variables: { id: userId },
       });
       // Verify is no longer found
-      const queryResult = await adminQueryWithSuccess({ query: READ_QUERY, variables: { id: userId } });
+      const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userId } });
       expect(queryResult.data.user).toBeNull();
     }
   });
@@ -1286,7 +1289,7 @@ describe('User API Token Mutation', () => {
   // Use the admin user ID for testing
 
   it('should admin generate a token for themselves', async () => {
-    const queryResult = await adminQueryWithSuccess({
+    const queryResult = await queryAsAdminWithSuccess({
       query: USER_TOKEN_ADD_MUTATION,
       variables: {
         input: {
@@ -1310,7 +1313,7 @@ describe('User API Token Mutation', () => {
     // The current mutation definition doesn't accept a userId to generate FOR someone else directly unless impersonating.
     // For this test, we verify basic functionality first.
 
-    const queryResult = await adminQueryWithSuccess({
+    const queryResult = await queryAsAdminWithSuccess({
       query: USER_TOKEN_ADD_MUTATION,
       variables: {
         input: {

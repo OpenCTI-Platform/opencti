@@ -2,7 +2,7 @@ import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
-import { adminQueryWithError, awaitUntilCondition, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdminWithError, awaitUntilCondition, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
@@ -1324,7 +1324,7 @@ describe('Connector Composer and Managed Connectors', () => {
         }),
       };
 
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_MANAGED_CONNECTOR_MUTATION,
           variables: { input: duplicateInput },
@@ -1344,7 +1344,7 @@ describe('Connector Composer and Managed Connectors', () => {
         }),
       };
 
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_MANAGED_CONNECTOR_MUTATION,
           variables: { input: duplicateSanitizedInput },
@@ -1362,7 +1362,7 @@ describe('Connector Composer and Managed Connectors', () => {
         public_key: 'Unauthorized Composer',
       };
 
-      await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
         query: REGISTER_CONNECTORS_MANAGER_MUTATION,
         variables: { input },
       });
@@ -1377,7 +1377,7 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_configuration: [],
       };
 
-      await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
         query: ADD_MANAGED_CONNECTOR_MUTATION,
         variables: { input },
       });
@@ -1414,7 +1414,7 @@ describe('Connector Composer and Managed Connectors', () => {
         logs: ['User log line from connector'],
       };
 
-      const result = await queryAsUserWithSuccess(USER_CONNECTOR.client, {
+      const result = await queryAsUserWithSuccess(USER_CONNECTOR, {
         query: UPDATE_CONNECTOR_LOGS_MUTATION,
         variables: { input },
       });
@@ -1455,7 +1455,7 @@ describe('Connector Composer and Managed Connectors', () => {
       // Note: Not adding to createdConnectorIds as it's cleaned up in this test
 
       // Try to delete as non-admin user
-      await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
         query: DELETE_CONNECTOR_MUTATION,
         variables: { id: testConnectorId },
       });

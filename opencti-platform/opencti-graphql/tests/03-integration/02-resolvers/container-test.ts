@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { isStixCoreObject } from '../../../src/schema/stixCoreObject';
 import { isStixCoreRelationship } from '../../../src/schema/stixCoreRelationship';
 import { isStixRefRelationship } from '../../../src/schema/stixRefRelationship';

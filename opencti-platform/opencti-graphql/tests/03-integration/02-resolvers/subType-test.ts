@@ -1,6 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, isSorted, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, isSorted, testContext } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_DATA_COMPONENT } from '../../../src/schema/stixDomainObject';
 import { STIX_CYBER_OBSERVABLES } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';

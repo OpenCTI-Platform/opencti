@@ -1,6 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { editorQuery, queryAsAdmin, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { queryAsAdmin } from '../../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess, queryAsUser } from '../../../utils/testQueryHelper';
 import { logApp } from '../../../../src/config/conf';
 
@@ -123,7 +124,7 @@ describe('CSV Feed resolver standard behavior', () => {
         }
       }
     `);
-    const feed = await editorQuery({
+    const feed = await queryAsUser(USER_EDITOR, {
       query: QUERY_FEED,
       variables: { id: internalFeedId },
     });
@@ -164,7 +165,7 @@ describe('CSV Feed resolver standard behavior', () => {
   });
 
   it('List all CSV Feed with a user that has not TAXIIAPI capacity', async () => {
-    const allFeedsResponse = await queryAsUser(USER_PARTICIPATE.client, {
+    const allFeedsResponse = await queryAsUser(USER_PARTICIPATE, {
       query: gql`
         query feeds {
           feeds(search: "") {

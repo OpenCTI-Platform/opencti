@@ -1,22 +1,20 @@
-import { ApolloServer } from '@apollo/server';
 import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
-import { print } from 'graphql';
+import { print, type ASTNode } from 'graphql';
 import axios, { type AxiosInstance } from 'axios';
-import createSchema from '../../src/graphql/schema';
+
 import conf, { ACCOUNT_STATUS_ACTIVE, PORT } from '../../src/config/conf';
 import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../../src/utils/access';
 
 // region static graphql modules
 import '../../src/modules/index';
-import type { AuthContext, AuthUser } from '../../src/types/user';
+import type { AuthUser } from '../../src/types/user';
 import type { StoreMarkingDefinition } from '../../src/types/store';
 import { generateStandardId, MARKING_TLP_AMBER, MARKING_TLP_AMBER_STRICT, MARKING_TLP_CLEAR, MARKING_TLP_GREEN } from '../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../../src/schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/modules/organization/organization-types';
 import type { ConfidenceLevel } from '../../src/generated/graphql';
 import { findById } from '../../src/domain/user';
-import { computeLoaders } from '../../src/http/httpAuthenticatedContext';
 // endregion
 
 export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');
@@ -92,7 +90,9 @@ interface QueryOption {
   applicantId?: string;
   draftId?: string;
 }
-export const executeInternalQuery = async (client: AxiosInstance, query: unknown, variables = {}, options: QueryOption = {}) => {
+
+const executeInitPlatformQuery = async (client: AxiosInstance, query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
+  const queryStr = typeof query === 'string' ? query : print(query);
   const headers: any = {};
   if (options.workId) headers['opencti-work-id'] = options.workId;
   if (options.eventId) headers['opencti-event-id'] = options.eventId;
@@ -100,12 +100,71 @@ export const executeInternalQuery = async (client: AxiosInstance, query: unknown
   if (options.synchronizedUpsert) headers['synchronized-upsert'] = options.synchronizedUpsert;
   if (options.applicantId) headers['opencti-applicant-id'] = options.applicantId;
   if (options.draftId) headers['opencti-draft-id'] = options.draftId;
-  const response = await client.post(`${API_URI}/graphql`, { query, variables }, { withCredentials: true, headers });
+  const response = await client.post(`${API_URI}/graphql`, { query: queryStr, variables }, { withCredentials: true, headers });
   return response.data;
 };
 const adminClient = createHttpClient();
-export const internalAdminQuery = async (query: unknown, variables = {}, options: QueryOption = {}) => {
-  return executeInternalQuery(adminClient, query, variables, options);
+
+/**
+ * Make a query as an admin but targeting the Init Platform in the globalSetup execution context.
+ *
+ * @remarks
+ * The code handling the request won't take part in the coverage.
+ * To be used only when there's some logic in express middleware you want to
+ * trigger by passing a specific header via the `options` parameter.
+ *
+ * @deprecated
+ * Prefer using the helpers in `./testQueryHelpers.ts` if possible to gain coverage.
+ */
+export const queryInitPlatformAsAdmin = async (query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
+  return executeInitPlatformQuery(adminClient, query, variables, options);
+};
+
+/**
+ * Make a query as a test user but targeting the Init Platform in the globalSetup execution context.
+ *
+ * @remarks
+ * The code handling the request won't take part in the coverage.
+ * To be used only when there's some logic in express middleware you want to
+ * trigger by passing a specific header via the `options` parameter.
+ *
+ * @deprecated
+ * Prefer using the helpers in `./testQueryHelpers.ts` if possible to gain coverage.
+ */
+export const queryInitPlatformAsUser = async (user: UserTestData, query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
+  const client = createHttpClient(user.email, user.password);
+  return executeInitPlatformQuery(client, query, variables, options);
+};
+
+/**
+ * Make a query as an anonymous user but targeting the Init Platform in the globalSetup execution context.
+ *
+ * @remarks
+ * The code handling the request won't take part in the coverage.
+ * To be used only when there's some logic in express middleware you want to
+ * trigger by passing a specific header via the `options` parameter.
+ *
+ * Prefer using the helpers in `./testQueryHelpers.ts` if possible to gain coverage.
+ */
+export const queryInitPlatformAsAnonymous = async (query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
+  const anonymous = createUnauthenticatedClient();
+  return executeInitPlatformQuery(anonymous, query, variables, options);
+};
+
+/**
+ * Make a query using a token but targeting the Init Platform in the globalSetup execution context.
+ *
+ * @remarks
+ * The code handling the request won't take part in the coverage.
+ * To be used only when there's some logic in express middleware you want to
+ * trigger by passing a specific header via the `options` parameter.
+ *
+ * @deprecated
+ * Prefer using the helpers in `./testQueryHelpers.ts` if possible to gain coverage.
+ */
+export const queryInitPlatformAsTokenBearer = async (token: string, query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
+  const anonymous = createTokenHttpClient(token);
+  return executeInitPlatformQuery(anonymous, query, variables, options);
 };
 
 // Roles
@@ -157,7 +216,7 @@ export const ROLE_SECURITY: Role = {
     'SETTINGS_SETAUTH', 'SETTINGS_SECURITYACTIVITY',
     'AUTOMATION_AUTMANAGE',
     'APIACCESS_USEBASICAUTH',
-  ]
+  ],
 };
 TESTING_ROLES.push(ROLE_SECURITY);
 
@@ -334,14 +393,13 @@ export const PLATFORM_ORGANIZATION: OrganizationTestData = {
 TESTING_ORGS.push(PLATFORM_ORGANIZATION);
 
 // Users
-interface UserTestData {
+export interface UserTestData {
   id: string;
   email: string;
   password: string;
   roles?: Role[];
   organizations?: OrganizationTestData[];
   groups: GroupTestData[];
-  client: AxiosInstance;
 }
 
 export const ADMIN_USER: AuthUser = {
@@ -388,7 +446,6 @@ export const USER_PARTICIPATE: UserTestData = {
   password: 'participate',
   organizations: [TEST_ORGANIZATION],
   groups: [GREEN_GROUP],
-  client: createHttpClient('participate@opencti.io', 'participate'),
 };
 TESTING_USERS.push(USER_PARTICIPATE);
 export const USER_EDITOR: UserTestData = {
@@ -397,7 +454,6 @@ export const USER_EDITOR: UserTestData = {
   password: 'editor',
   organizations: [TEST_ORGANIZATION],
   groups: [AMBER_GROUP],
-  client: createHttpClient('editor@opencti.io', 'editor'),
 };
 TESTING_USERS.push(USER_EDITOR);
 
@@ -407,7 +463,6 @@ export const USER_SECURITY: UserTestData = {
   password: 'security',
   organizations: [PLATFORM_ORGANIZATION],
   groups: [AMBER_STRICT_GROUP],
-  client: createHttpClient('security@opencti.io', 'security'),
 };
 TESTING_USERS.push(USER_SECURITY);
 
@@ -416,7 +471,6 @@ export const USER_CONNECTOR: UserTestData = {
   email: 'connector@opencti.io',
   password: 'connector',
   groups: [CONNECTOR_GROUP],
-  client: createHttpClient('connector@opencti.io', 'connector'),
 };
 TESTING_USERS.push(USER_CONNECTOR);
 
@@ -426,7 +480,6 @@ export const USER_DISINFORMATION_ANALYST: UserTestData = {
   password: 'disinformation',
   organizations: [PLATFORM_ORGANIZATION],
   groups: [GREEN_DISINFORMATION_ANALYST_GROUP],
-  client: createHttpClient('anais@opencti.io', 'disinformation'),
 };
 TESTING_USERS.push(USER_DISINFORMATION_ANALYST);
 
@@ -435,7 +488,6 @@ export const USER_PLATFORM_ADMIN: UserTestData = {
   email: 'platform@opencti.io',
   password: 'platformadmin',
   groups: [PLATFORM_ADMIN_GROUP],
-  client: createHttpClient('platform@opencti.io', 'platformadmin'),
 };
 TESTING_USERS.push(USER_PLATFORM_ADMIN);
 
@@ -493,16 +545,16 @@ const GROUP_ASSIGN_MUTATION = `
   }
 `;
 const createGroup = async (input: GroupTestData): Promise<string> => {
-  const { data } = await internalAdminQuery(GROUP_CREATION_MUTATION, {
+  const { data } = await queryInitPlatformAsAdmin(GROUP_CREATION_MUTATION, {
     input: { name: input.name, group_confidence_level: input.group_confidence_level },
   });
   for (let index = 0; index < input.markings.length; index += 1) {
     const marking = input.markings[index];
-    await internalAdminQuery(GROUP_EDITION_MARKINGS_MUTATION, { groupId: data.groupAdd.id, toId: marking });
+    await queryInitPlatformAsAdmin(GROUP_EDITION_MARKINGS_MUTATION, { groupId: data.groupAdd.id, toId: marking });
   }
   for (let index = 0; index < input.max_shareable_markings.length; index += 1) {
     const maxMarking = input.max_shareable_markings[index];
-    await internalAdminQuery(GROUP_EDITION_SHAREABLE_MARKINGS_MUTATION, {
+    await queryInitPlatformAsAdmin(GROUP_EDITION_SHAREABLE_MARKINGS_MUTATION, {
       groupId: data.groupAdd.id,
       input: {
         key: 'max_shareable_markings',
@@ -512,12 +564,12 @@ const createGroup = async (input: GroupTestData): Promise<string> => {
   }
   for (let index = 0; index < input.roles.length; index += 1) {
     const role = input.roles[index];
-    await internalAdminQuery(GROUP_EDITION_ROLES_MUTATION, { groupId: data.groupAdd.id, toId: role.id });
+    await queryInitPlatformAsAdmin(GROUP_EDITION_ROLES_MUTATION, { groupId: data.groupAdd.id, toId: role.id });
   }
   return data.groupAdd.id;
 };
 const assignGroupToUser = async (group: GroupTestData, user: UserTestData) => {
-  await internalAdminQuery(GROUP_ASSIGN_MUTATION, { userId: user.id, toId: group.id });
+  await queryInitPlatformAsAdmin(GROUP_ASSIGN_MUTATION, { userId: user.id, toId: group.id });
 };
 // endregion
 
@@ -546,34 +598,14 @@ const ORGANIZATION_ASSIGN_MUTATION = `
   }
 `;
 const createOrganization = async (input: { name: string }): Promise<string> => {
-  const organization = await internalAdminQuery(ORGANIZATION_CREATION_MUTATION, input);
+  const organization = await queryInitPlatformAsAdmin(ORGANIZATION_CREATION_MUTATION, input);
   return organization.data.organizationAdd.id;
 };
 
 const assignOrganizationToUser = async (organization: OrganizationTestData, user: UserTestData) => {
-  await internalAdminQuery(ORGANIZATION_ASSIGN_MUTATION, { userId: user.id, toId: organization.id });
+  await queryInitPlatformAsAdmin(ORGANIZATION_ASSIGN_MUTATION, { userId: user.id, toId: organization.id });
 };
 // endregion
-
-export const adminQuery = async (request: any, options: QueryOption = {}) => {
-  return internalAdminQuery(print(request.query), request.variables, options);
-};
-
-export const editorQuery = async (request: any, options: QueryOption = {}) => {
-  return executeInternalQuery(USER_EDITOR.client, print(request.query), request.variables, options);
-};
-
-export const securityQuery = async (request: any) => {
-  return executeInternalQuery(USER_SECURITY.client, print(request.query), request.variables);
-};
-
-export const participantQuery = async (request: any) => {
-  return executeInternalQuery(USER_PARTICIPATE.client, print(request.query), request.variables);
-};
-
-export const userQuery = async (userClient: AxiosInstance, request: any) => {
-  return executeInternalQuery(userClient, print(request.query), request.variables);
-};
 
 // region role management
 const ROLE_CREATION_MUTATION = `
@@ -600,11 +632,11 @@ const ROLE_EDITION_MUTATION = `
   }
 `;
 const createRole = async (input: { name: string; description: string; capabilities: string[] }): Promise<string> => {
-  const { data } = await internalAdminQuery(ROLE_CREATION_MUTATION, { name: input.name, description: input.description });
+  const { data } = await queryInitPlatformAsAdmin(ROLE_CREATION_MUTATION, { name: input.name, description: input.description });
   for (let index = 0; index < input.capabilities.length; index += 1) {
     const capability = input.capabilities[index];
     const generateToId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capability });
-    await internalAdminQuery(ROLE_EDITION_MUTATION, { roleId: data.roleAdd.id, toId: generateToId });
+    await queryInitPlatformAsAdmin(ROLE_EDITION_MUTATION, { roleId: data.roleAdd.id, toId: generateToId });
   }
   return data.roleAdd.id;
 };
@@ -632,7 +664,7 @@ const createUser = async (user: UserTestData) => {
         const role = group.roles[index];
         await createRole(role);
       }
-      await internalAdminQuery(USER_CREATION_MUTATION, {
+      await queryInitPlatformAsAdmin(USER_CREATION_MUTATION, {
         email: user.email,
         name: user.email,
         password: user.password,
@@ -669,7 +701,7 @@ const USERS_SEARCH_QUERY = `
   }
 `;
 export const getUserIdByEmail = async (email: string) => {
-  const { data } = await internalAdminQuery(USERS_SEARCH_QUERY, { search: `"${email}"` });
+  const { data } = await queryInitPlatformAsAdmin(USERS_SEARCH_QUERY, { search: `"${email}"` });
   if (!data?.users.edges.length) {
     return null;
   }
@@ -698,7 +730,7 @@ const ORGANIZATION_SEARCH_QUERY = `
   }
 `;
 export const getOrganizationIdByName = async (name: string) => {
-  const { data } = await internalAdminQuery(ORGANIZATION_SEARCH_QUERY, { search: `"${name}"` });
+  const { data } = await queryInitPlatformAsAdmin(ORGANIZATION_SEARCH_QUERY, { search: `"${name}"` });
   if (!data?.organizations.edges.length) {
     return null;
   }
@@ -720,7 +752,7 @@ const GROUP_SEARCH_QUERY = `
   }
 `;
 export const getGroupIdByName = async (name: string) => {
-  const { data } = await internalAdminQuery(GROUP_SEARCH_QUERY, { search: `"${name}"` });
+  const { data } = await queryInitPlatformAsAdmin(GROUP_SEARCH_QUERY, { search: `"${name}"` });
   if (!data?.groups.edges.length) {
     return null;
   }
@@ -785,27 +817,8 @@ const HEALTHCHECK_QUERY = `
 `;
 
 export const isPlatformAlive = async () => {
-  const { data } = await internalAdminQuery(HEALTHCHECK_QUERY, { });
+  const { data } = await queryInitPlatformAsAdmin(HEALTHCHECK_QUERY, { });
   return !!data?.about.version;
-};
-
-const serverFromUser = new ApolloServer<AuthContext>({
-  schema: createSchema(),
-  introspection: true,
-  persistedQueries: false,
-});
-
-export const queryAsAdmin = async <T = Record<string, any>>(request: any, draftContext?: any) => {
-  const execContext = executionContext('test', ADMIN_USER, draftContext ?? undefined);
-  execContext.changeDraftContext = (draftId) => {
-    execContext.draft_context = draftId;
-  };
-  execContext.batch = computeLoaders(execContext, ADMIN_USER);
-  const { body } = await serverFromUser.executeOperation<T>(request, { contextValue: execContext });
-  if (body.kind === 'single') {
-    return body.singleResult;
-  }
-  return body.initialResult;
 };
 
 export const isSorted = (arr: []) => {

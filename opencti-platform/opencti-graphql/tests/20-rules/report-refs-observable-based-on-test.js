@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { FIVE_MINUTES, queryAsAdmin, TEN_SECONDS, testContext } from '../utils/testQuery';
+import { FIVE_MINUTES, TEN_SECONDS, testContext } from '../utils/testQuery';
+import { queryAsAdmin } from '../utils/testQueryHelper';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
 import { createRelation, deleteElementById, deleteRelationsByFromAndTo } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';

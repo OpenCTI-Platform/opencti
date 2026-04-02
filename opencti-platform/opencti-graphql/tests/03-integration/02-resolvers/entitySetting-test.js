@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { initCreateEntitySettings } from '../../../src/modules/entitySetting/entitySetting-domain';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
 import { ENTITY_TYPE_CONTAINER_NOTE } from '../../../src/schema/stixDomainObject';

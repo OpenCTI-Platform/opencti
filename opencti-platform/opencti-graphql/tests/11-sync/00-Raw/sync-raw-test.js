@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_API_TOKEN, ADMIN_USER, API_URI, FIFTEEN_MINUTES, PYTHON_PATH, queryAsAdmin, SYNC_RAW_START_REMOTE_URI, testContext } from '../../utils/testQuery';
+import { ADMIN_API_TOKEN, ADMIN_USER, API_URI, FIFTEEN_MINUTES, PYTHON_PATH, SYNC_RAW_START_REMOTE_URI, testContext } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { checkPostSyncContent, checkPreSyncContent, INDICATOR_NUMBERS, LABEL_NUMBERS, MALWARE_NUMBERS, VOCABULARY_NUMBERS } from '../sync-utils';
 import { elAggregationCount } from '../../../src/database/engine';

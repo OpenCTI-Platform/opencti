@@ -1,6 +1,6 @@
 import { expect, it, describe, vi, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 const LIST_QUERY = gql`

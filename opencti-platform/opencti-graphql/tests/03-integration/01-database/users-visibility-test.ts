@@ -2,20 +2,19 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import {
   ADMIN_USER,
-  createHttpClient,
-  editorQuery,
   getOrganizationIdByName,
   GREEN_GROUP,
   PLATFORM_ORGANIZATION,
-  queryAsAdmin,
-  securityQuery,
   testContext,
-  userQuery,
+  USER_EDITOR,
+  USER_SECURITY,
 } from '../../utils/testQuery';
+import { queryAsAuthUser } from '../../utils/testQueryHelper';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { getInferences } from '../../utils/rule-utils';
 import ParticipateToPartsRule from '../../../src/rules/participate-to-parts/ParticipateToPartsRule';
 import { RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationship';
-import { adminQueryWithSuccess, setOrganization, unSetOrganization } from '../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess, queryAsUser, setOrganization, unSetOrganization } from '../../utils/testQueryHelper';
 import type { BasicStoreBase, BasicStoreRelation } from '../../../src/types/store';
 import { createRuleContent } from '../../../src/rules/rules-utils';
 import { createInferredRelation, deleteInferredRuleElement } from '../../../src/database/middleware';
@@ -29,7 +28,6 @@ import type { AuthUser } from '../../../src/types/user';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 import { addReport } from '../../../src/domain/report';
-import type { AxiosInstance } from 'axios';
 import { INPUT_ASSIGNEE, INPUT_PARTICIPANT } from '../../../src/schema/general';
 import { MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 import { type FilterGroupWithNested, pageEntitiesConnection } from '../../../src/database/middleware-loader';
@@ -202,10 +200,6 @@ describe('Users visibility according to their direct organizations', () => {
   let USER_AB: AuthUser;
   let USER_O: AuthUser;
 
-  let USER_A_CLIENT: AxiosInstance;
-  let USER_A2_CLIENT: AxiosInstance;
-  let USER_AB_CLIENT: AxiosInstance;
-
   let reportInternalId: string;
 
   const usersNames = ['userA', 'userA2', 'userB', 'userAB', 'userO', 'userServiceAccount'];
@@ -216,24 +210,18 @@ describe('Users visibility according to their direct organizations', () => {
     fetchUserA: () => AuthUser,
     fetchUserAB: () => AuthUser,
     fetchUserO: () => AuthUser,
-    fetchUserAClient: () => AxiosInstance,
-    fetchUserA2Client: () => AxiosInstance,
     fetchReportInternalId: () => string,
     contextExplanation: string,
   ) => {
     let USER_A: AuthUser;
     let USER_AB: AuthUser;
     let USER_O: AuthUser;
-    let USER_A_CLIENT: AxiosInstance;
-    let USER_A2_CLIENT: AxiosInstance;
     let reportInternalId: string;
 
     beforeAll(() => {
       USER_A = fetchUserA();
       USER_AB = fetchUserAB();
       USER_O = fetchUserO();
-      USER_A_CLIENT = fetchUserAClient();
-      USER_A2_CLIENT = fetchUserA2Client();
       reportInternalId = fetchReportInternalId();
     });
 
@@ -249,7 +237,7 @@ describe('Users visibility according to their direct organizations', () => {
       let queryResult = await queryAsAdmin({ query: READ_MEMBERS_QUERY, variables: { filters } });
       expect(queryResult.data?.members.edges.filter((n: any) => n.node.entity_type === ENTITY_TYPE_USER).length).toEqual(6); // the admin can see all the users
 
-      queryResult = await editorQuery({ query: READ_MEMBERS_QUERY, variables: { filters, entityTypes: [ENTITY_TYPE_USER] } });
+      queryResult = await queryAsUser(USER_EDITOR, { query: READ_MEMBERS_QUERY, variables: { filters, entityTypes: [ENTITY_TYPE_USER] } });
       expect(queryResult.data?.members.edges.length).toEqual(6);
 
       let paginatedMembersResult = await findMembersPaginated(testContext, USER_A, { filters });
@@ -273,11 +261,11 @@ describe('Users visibility according to their direct organizations', () => {
       expect(visibleAssigneesFromQueryResult(reportQueryResult).length).toEqual(6); // all the assignees of the report
       expect(visibleParticipantsFromQueryResult(reportQueryResult).length).toEqual(6); // all the participants of the report
 
-      reportQueryResult = await userQuery(USER_A_CLIENT, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
+      reportQueryResult = await queryAsAuthUser(USER_A, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
       expect(visibleAssigneesFromQueryResult(reportQueryResult).length).toEqual(6);
       expect(visibleParticipantsFromQueryResult(reportQueryResult).length).toEqual(6);
 
-      reportQueryResult = await userQuery(USER_A2_CLIENT, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
+      reportQueryResult = await queryAsAuthUser(USER_A2, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
       expect(visibleAssigneesFromQueryResult(reportQueryResult).length).toEqual(6);
       expect(visibleParticipantsFromQueryResult(reportQueryResult).length).toEqual(6);
     });
@@ -286,10 +274,10 @@ describe('Users visibility according to their direct organizations', () => {
       let queryResult = await queryAsAdmin({ query: READ_ASSIGNEES_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
       expect(queryResult.data?.assignees.edges.length).toEqual(6);
 
-      queryResult = await userQuery(USER_A_CLIENT, { query: READ_ASSIGNEES_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
+      queryResult = await queryAsAuthUser(USER_A, { query: READ_ASSIGNEES_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
       expect(queryResult.data?.assignees.edges.length).toEqual(6);
 
-      queryResult = await userQuery(USER_A2_CLIENT, { query: READ_ASSIGNEES_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
+      queryResult = await queryAsAuthUser(USER_A2, { query: READ_ASSIGNEES_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
       expect(queryResult.data?.assignees.edges.length).toEqual(6);
     });
 
@@ -297,13 +285,13 @@ describe('Users visibility according to their direct organizations', () => {
       let queryResult = await queryAsAdmin({ query: READ_PARTICIPANTS_QUERY, variables: {} });
       expect(queryResult.data?.participants.edges.length).toEqual(6);
 
-      queryResult = await editorQuery({ query: READ_PARTICIPANTS_QUERY, variables: {} });
+      queryResult = await queryAsUser(USER_EDITOR, { query: READ_PARTICIPANTS_QUERY, variables: {} });
       expect(queryResult.data?.participants.edges.length).toEqual(6);
 
-      queryResult = await userQuery(USER_A_CLIENT, { query: READ_PARTICIPANTS_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
+      queryResult = await queryAsAuthUser(USER_A, { query: READ_PARTICIPANTS_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
       expect(queryResult.data?.participants.edges.length).toEqual(6);
 
-      queryResult = await userQuery(USER_A2_CLIENT, { query: READ_PARTICIPANTS_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
+      queryResult = await queryAsAuthUser(USER_A2, { query: READ_PARTICIPANTS_QUERY, variables: { entityTypes: [ENTITY_TYPE_CONTAINER_REPORT] } });
       expect(queryResult.data?.participants.edges.length).toEqual(6);
     });
   };
@@ -353,7 +341,6 @@ describe('Users visibility according to their direct organizations', () => {
         groups: [GREEN_GROUP.id],
       },
     };
-    USER_A_CLIENT = createHttpClient(USER_TO_CREATE_A.input.user_email, USER_TO_CREATE_A.input.password);
     const USER_TO_CREATE_A2 = {
       input: {
         name: 'userA2',
@@ -363,7 +350,6 @@ describe('Users visibility according to their direct organizations', () => {
         groups: [GREEN_GROUP.id],
       },
     };
-    USER_A2_CLIENT = createHttpClient(USER_TO_CREATE_A2.input.user_email, USER_TO_CREATE_A2.input.password);
     const USER_TO_CREATE_B = {
       input: {
         name: 'userB',
@@ -382,7 +368,6 @@ describe('Users visibility according to their direct organizations', () => {
         groups: [GREEN_GROUP.id],
       },
     };
-    USER_AB_CLIENT = createHttpClient(USER_TO_CREATE_AB.input.user_email, USER_TO_CREATE_AB.input.password);
     const USER_TO_CREATE_O = {
       input: {
         name: 'userO',
@@ -473,14 +458,14 @@ describe('Users visibility according to their direct organizations', () => {
       query: DELETE_USER_QUERY,
       variables: { id: userId },
     })));
-    const userQueryResult = await adminQueryWithSuccess({ query: READ_USER_QUERY, variables: { id: userAInternalId } });
+    const userQueryResult = await queryAsAdminWithSuccess({ query: READ_USER_QUERY, variables: { id: userAInternalId } });
     expect(userQueryResult.data.user).toBeNull();
     // Delete the organizations
     await Promise.all([orgaAInternalId, orgaBInternalId, orgaABInternalId, orgaCInternalId].map((orgaId) => queryAsAdmin({
       query: DELETE_ORGANIZATION_QUERY,
       variables: { id: orgaId },
     })));
-    const orgaQueryResult = await adminQueryWithSuccess({ query: READ_ORGANIZATION_QUERY, variables: { id: orgaAInternalId } });
+    const orgaQueryResult = await queryAsAdminWithSuccess({ query: READ_ORGANIZATION_QUERY, variables: { id: orgaAInternalId } });
     expect(orgaQueryResult.data.organization).toBeNull();
   });
 
@@ -533,7 +518,7 @@ describe('Users visibility according to their direct organizations', () => {
     });
 
     it('regardingOf filter used with ids of entities the user has not access to should throw an error', async () => {
-      const queryResult = await userQuery(USER_A2_CLIENT, { query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaAInternalId]) } });
+      const queryResult = await queryAsAuthUser(USER_A2, { query: LIST_USERS_QUERY, variables: { filters: generateRegardingOfFilters('eq', RELATION_PARTICIPATE_TO, 'false', [orgaAInternalId]) } });
       expect(queryResult.errors?.[0].message).toEqual('You are not allowed to do this.');
     });
 
@@ -731,8 +716,6 @@ describe('Users visibility according to their direct organizations', () => {
       () => USER_A,
       () => USER_AB,
       () => USER_O,
-      () => USER_A_CLIENT,
-      () => USER_A2_CLIENT,
       () => reportInternalId,
       'no organization sharing and view_all_users=true',
     );
@@ -773,11 +756,11 @@ describe('Users visibility according to their direct organizations', () => {
       let queryResult = await queryAsAdmin({ query: READ_MEMBERS_QUERY, variables: { filters: thisTestfileUsersFilters, entityTypes: [ENTITY_TYPE_USER] } });
       expect(queryResult.data?.members.edges.length).toEqual(6); // the admin can see all the users
 
-      queryResult = await editorQuery({ query: READ_MEMBERS_QUERY, variables: { filters: thisTestfileUsersFilters, entityTypes: [ENTITY_TYPE_USER] } });
+      queryResult = await queryAsUser(USER_EDITOR, { query: READ_MEMBERS_QUERY, variables: { filters: thisTestfileUsersFilters, entityTypes: [ENTITY_TYPE_USER] } });
       expect(queryResult.data?.members.edges.length).toEqual(2); // userO which is in no organization, and userServiceAccount
       expect([userOInternalId, userServiceAccountInternalId].every((u) => queryResult.data?.members.edges.map((n: any) => n.node.id).includes(u))).toBeTruthy();
 
-      queryResult = await securityQuery({ query: READ_MEMBERS_QUERY, variables: { filters: thisTestfileUsersFilters, entityTypes: [ENTITY_TYPE_USER] } });
+      queryResult = await queryAsUser(USER_SECURITY, { query: READ_MEMBERS_QUERY, variables: { filters: thisTestfileUsersFilters, entityTypes: [ENTITY_TYPE_USER] } });
       expect(queryResult.data?.members.edges.length).toEqual(6); // user with set_access rights can see all the users
 
       // fetch members with pagination
@@ -820,16 +803,16 @@ describe('Users visibility according to their direct organizations', () => {
       expect(visibleAssigneesFromQueryResult(reportQueryResult).length).toEqual(6); // all the assignees of the report
       expect(visibleParticipantsFromQueryResult(reportQueryResult).length).toEqual(6); // all the participants of the report
 
-      reportQueryResult = await userQuery(USER_A_CLIENT, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
+      reportQueryResult = await queryAsAuthUser(USER_A, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
       expect(reportQueryResult.data?.report?.[INPUT_ASSIGNEE]?.length).toEqual(6); // all the users before filtering the restricted ones
       expect(visibleAssigneesFromQueryResult(reportQueryResult).length).toEqual(4); // userA, userA2, userO, userServiceAccount
       expect(visibleParticipantsFromQueryResult(reportQueryResult).length).toEqual(4); // userA, userA2, userO, userServiceAccount
 
-      reportQueryResult = await userQuery(USER_A2_CLIENT, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
+      reportQueryResult = await queryAsAuthUser(USER_A2, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
       expect(visibleAssigneesFromQueryResult(reportQueryResult).length).toEqual(4); // userA, userA2, userO, userServiceAccount
       expect(visibleParticipantsFromQueryResult(reportQueryResult).length).toEqual(4); // userA, userA2, userO, userServiceAccount
 
-      reportQueryResult = await userQuery(USER_AB_CLIENT, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
+      reportQueryResult = await queryAsAuthUser(USER_AB, { query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
       expect(reportQueryResult.data?.report).toEqual(null); // the report is not visible for userAB
     });
   });

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, adminQuery, editorQuery, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_PARTICIPATE, queryInitPlatformAsAdmin, queryInitPlatformAsUser, USER_EDITOR } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
-import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { utcDate } from '../../../src/utils/format';
 
 const LIST_QUERY = gql`
@@ -70,7 +70,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
         description: 'Administrative-Area description',
       },
     };
-    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
       query: CREATE_QUERY,
       variables: ADMINISTRATIVEAREA_TO_CREATE,
     });
@@ -94,7 +94,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
         objectMarking: [MARKING_TLP_RED],
       },
     };
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: CREATE_QUERY,
       variables: ADMINISTRATIVEAREA_TO_CREATE,
     });
@@ -126,7 +126,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
         objectLabel: ['report', 'note', 'malware'],
       },
     };
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: CREATE_QUERY,
       variables: ADMINISTRATIVEAREA_TO_CREATE,
     });
@@ -159,10 +159,15 @@ describe('AdministrativeArea resolver standard behavior', () => {
         objectLabel: ['opinion'],
       },
     };
-    const queryResult = await adminQuery({
-      query: CREATE_QUERY,
-      variables: ADMINISTRATIVEAREA_TO_CREATE,
-    }, { synchronizedUpsert: 'true' });
+    // Calls main execution context server
+    // as requires passing the extra header
+    // to check logic happening in middleware.
+    // Won't participate in test coverage.
+    const queryResult = await queryInitPlatformAsAdmin(
+      CREATE_QUERY,
+      ADMINISTRATIVEAREA_TO_CREATE,
+      { synchronizedUpsert: 'true' },
+    );
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.administrativeAreaAdd).not.toBeNull();
     expect(queryResult.data.administrativeAreaAdd.name).toEqual('Administrative-Area');
@@ -170,21 +175,21 @@ describe('AdministrativeArea resolver standard behavior', () => {
     expect(queryResult.data.administrativeAreaAdd.objectLabel[0].value).toEqual('opinion');
   });
   it('should administrativeArea loaded by internal id', async () => {
-    const queryResult = await editorQuery({ query: READ_QUERY, variables: { id: administrativeAreaInternalId } });
+    const queryResult = await queryAsUser(USER_EDITOR, { query: READ_QUERY, variables: { id: administrativeAreaInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.administrativeArea).not.toBeNull();
     expect(queryResult.data.administrativeArea.id).toEqual(administrativeAreaInternalId);
     expect(queryResult.data.administrativeArea.toStix.length).toBeGreaterThan(5);
   });
   it('should administrativeArea loaded by stix id', async () => {
-    const queryResult = await editorQuery({ query: READ_QUERY, variables: { id: administrativeAreaStixId } });
+    const queryResult = await queryAsUser(USER_EDITOR, { query: READ_QUERY, variables: { id: administrativeAreaStixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.administrativeArea).not.toBeNull();
     expect(queryResult.data.administrativeArea.id).toEqual(administrativeAreaInternalId);
   });
   it('should administrativeArea country to be accurate', async () => {
     const administrativeArea = await elLoadById(testContext, ADMIN_USER, 'location--861af688-581e-4571-a0d9-955c9096fb42');
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: READ_QUERY,
       variables: { id: administrativeArea.internal_id }, // f036de6b-10d9-4e85-a13f-0d013b2393e6
     });
@@ -194,7 +199,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
     expect(queryResult.data.administrativeArea.country.name).toEqual('France');
   });
   it('should list administrativeAreas', async () => {
-    const queryResult = await editorQuery({ query: LIST_QUERY, variables: { first: 10 } });
+    const queryResult = await queryAsUser(USER_EDITOR, { query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data.administrativeAreas.edges.length).toEqual(2);
   });
   it('should update administrativeArea', async () => {
@@ -208,7 +213,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
             }
         }
     `;
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: UPDATE_QUERY,
       variables: {
         id: administrativeAreaInternalId,
@@ -237,8 +242,12 @@ describe('AdministrativeArea resolver standard behavior', () => {
       },
     };
     const previousStandard = 'location--345ba2b4-3c57-5b5e-bc6d-b79aaa36d941';
-    const queryResult = await editorQuery({ query: CREATE_QUERY, variables: ADMINISTRATIVEAREA_TO_CREATE }, { previousStandard });
-    expect(queryResult.data.administrativeAreaAdd.name).toEqual('Administrative-Area by previous');
+    const queryResult = await queryInitPlatformAsUser(
+      USER_EDITOR,
+      CREATE_QUERY,
+      ADMINISTRATIVEAREA_TO_CREATE,
+      { previousStandard });
+    expect(queryResult.data?.administrativeAreaAdd.name).toEqual('Administrative-Area by previous');
   });
   it('should not upsert administrativeArea if outdated', async () => {
     const eventId = `${utcDate().subtract(1, 'minute').valueOf()}-0`;
@@ -258,7 +267,12 @@ describe('AdministrativeArea resolver standard behavior', () => {
         description: 'Administrative-Area description',
       },
     };
-    const queryResult = await editorQuery({ query: CREATE_QUERY, variables: ADMINISTRATIVEAREA_TO_CREATE }, { eventId });
+    const queryResult = await queryInitPlatformAsUser(
+      USER_EDITOR,
+      CREATE_QUERY,
+      ADMINISTRATIVEAREA_TO_CREATE,
+      { eventId },
+    );
     expect(queryResult.data.administrativeAreaAdd.description).toEqual('Administrative-Area - test');
   });
   it('should context patch administrativeArea', async () => {
@@ -269,7 +283,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
             }
         }
     `;
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: CONTEXT_PATCH_QUERY,
       variables: { id: administrativeAreaInternalId, input: { focusOn: 'description' } },
     });
@@ -283,7 +297,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
             }
         }
     `;
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: CONTEXT_CLEAN_QUERY,
       variables: { id: administrativeAreaInternalId },
     });
@@ -304,7 +318,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
               }
           }
       `;
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: RELATION_ADD_QUERY,
       variables: {
         id: administrativeAreaInternalId,
@@ -327,7 +341,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
                 }
             }
         `;
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: administrativeAreaInternalId,
@@ -344,12 +358,12 @@ describe('AdministrativeArea resolver standard behavior', () => {
             }
         `;
     // Delete the administrativeArea
-    await editorQuery({
+    await queryAsUser(USER_EDITOR, {
       query: DELETE_QUERY,
       variables: { id: administrativeAreaInternalId },
     });
     // Verify is no longer found
-    const queryResult = await editorQuery({ query: READ_QUERY, variables: { id: administrativeAreaStixId } });
+    const queryResult = await queryAsUser(USER_EDITOR, { query: READ_QUERY, variables: { id: administrativeAreaStixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.administrativeArea).toBeNull();
   });

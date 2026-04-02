@@ -1,7 +1,8 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_API_TOKEN, ADMIN_USER, API_URI, editorQuery, PYTHON_PATH, queryAsAdmin, TEST_ORGANIZATION, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
-import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { ADMIN_API_TOKEN, ADMIN_USER, API_URI, PYTHON_PATH, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess, queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { MARKING_TLP_AMBER_STRICT, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { wait } from '../../../src/database/utils';
@@ -167,7 +168,7 @@ describe('Delete operation resolver testing', () => {
     expect(reportAfterImport.data?.report.id).toBe(reportInternalId);
     expect(reportAfterImport.data?.report.importFiles.edges[0].node.name).toBe('poisonivy.json');
 
-    await queryAsAdmin({ query: DELETE_REPORT_QUERY, variables: { id: reportInternalId }, });
+    await queryAsAdmin({ query: DELETE_REPORT_QUERY, variables: { id: reportInternalId } });
 
     // Check that an associated delete operation was created
     const getAllDeletedOperations = await queryAsAdminWithSuccess({ query: LIST_DELETE_OPERATION_QUERY,
@@ -185,7 +186,7 @@ describe('Delete operation resolver testing', () => {
     expect(getAllDeletedOperations.data?.deleteOperations.edges.length).toEqual(1);
     deleteOperationId = getAllDeletedOperations.data?.deleteOperations.edges[0].node.id;
 
-    const getDeleteOperation = await queryAsAdmin({ query: READ_DELETE_OPERATION_QUERY, variables: { id: deleteOperationId, }, });
+    const getDeleteOperation = await queryAsAdmin({ query: READ_DELETE_OPERATION_QUERY, variables: { id: deleteOperationId } });
     expect(getDeleteOperation.data?.deleteOperation).toBeDefined();
     expect(getDeleteOperation.data?.deleteOperation.main_entity_type).toBe(ENTITY_TYPE_CONTAINER_REPORT);
     expect(getDeleteOperation.data?.deleteOperation.main_entity_id).toBe(reportInternalId);
@@ -197,16 +198,16 @@ describe('Delete operation resolver testing', () => {
   });
 
   it('should Participant user not be allowed to list deleteOperations', async () => {
-    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, { query: LIST_DELETE_OPERATION_QUERY, variables: { first: 10 } });
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: LIST_DELETE_OPERATION_QUERY, variables: { first: 10 } });
   });
 
   it('should TLP:AMBER user not be able to query TLP_RED deleteOperation', async () => {
-    const getDeleteOperation = await editorQuery({ query: READ_DELETE_OPERATION_QUERY, variables: { id: deleteOperationId, }, });
+    const getDeleteOperation = await queryAsUser(USER_EDITOR, { query: READ_DELETE_OPERATION_QUERY, variables: { id: deleteOperationId } });
     expect(getDeleteOperation.data?.deleteOperation).toBeNull();
   });
 
   it('should deleteOperation be confirmed', async () => {
-    await queryAsAdmin({ query: DELETE_CONFIRM_MUTATION, variables: { id: deleteOperationId }, });
+    await queryAsAdmin({ query: DELETE_CONFIRM_MUTATION, variables: { id: deleteOperationId } });
 
     const queryResult = await queryAsAdminWithSuccess({ query: READ_DELETE_OPERATION_QUERY, variables: { id: deleteOperationId } });
     expect(queryResult.data?.deleteOperation).toBeNull();
@@ -231,7 +232,7 @@ describe('Delete operation resolver testing', () => {
     expect(execution).not.toBeNull();
     expect(execution.status).toEqual('success');
 
-    await queryAsAdmin({ query: DELETE_REPORT_QUERY, variables: { id: reportInternalId }, });
+    await queryAsAdmin({ query: DELETE_REPORT_QUERY, variables: { id: reportInternalId } });
 
     // Retrieve the associated delete operation
     const getAllDeletedOperations = await queryAsAdminWithSuccess({ query: LIST_DELETE_OPERATION_QUERY,
@@ -251,7 +252,7 @@ describe('Delete operation resolver testing', () => {
 
     // Restore the report (wait 5s for report deletion lock to expire before restoring)
     await wait(5010);
-    await queryAsAdmin({ query: DELETE_RESTORE_MUTATION, variables: { id: deleteOperationId }, });
+    await queryAsAdmin({ query: DELETE_RESTORE_MUTATION, variables: { id: deleteOperationId } });
 
     const deleteOperationQueryResult = await queryAsAdminWithSuccess({ query: READ_DELETE_OPERATION_QUERY, variables: { id: deleteOperationId } });
     expect(deleteOperationQueryResult.data?.deleteOperation).toBeNull();
@@ -264,6 +265,6 @@ describe('Delete operation resolver testing', () => {
     expect(reportQueryAfterResult.data?.report.objects.edges.length).toEqual(1);
     expect(reportQueryAfterResult.data?.report.objects.edges[0].node.standard_id).toEqual('campaign--bce98eb5-25a9-5ba7-b4a0-b160a79d0de7');
 
-    await queryAsAdmin({ query: DELETE_REPORT_QUERY, variables: { id: reportInternalId }, });
+    await queryAsAdmin({ query: DELETE_REPORT_QUERY, variables: { id: reportInternalId } });
   });
 });

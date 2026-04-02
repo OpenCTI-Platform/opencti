@@ -1,15 +1,13 @@
-import { describe, expect, it } from 'vitest';
-import { testContext } from '../../utils/testQuery';
-import { checkPasswordInlinePolicy, isSensitiveChangesAllowed } from '../../../src/domain/user';
-import { addUserToken, generateSecureToken } from '../../../src/modules/user/user-domain';
+import { describe, expect, it, vi } from 'vitest';
+import { DateTime } from 'luxon';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { updateAttribute } from '../../../src/database/middleware';
-
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
-import { vi } from 'vitest';
-import { DateTime } from 'luxon';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import { TokenDuration, type UserTokenAddInput } from '../../../src/generated/graphql';
+import { checkPasswordInlinePolicy, isSensitiveChangesAllowed } from '../../../src/domain/user';
+import { addUserToken, generateSecureToken } from '../../../src/modules/user/user-domain';
+import { testContext } from '../../utils/testQuery';
 
 vi.mock('../../../src/database/middleware', () => ({
   patchAttribute: vi.fn(),

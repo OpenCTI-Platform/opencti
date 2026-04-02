@@ -1,10 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin, testContext, USER_PLATFORM_ADMIN } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_PLATFORM_ADMIN } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
-import { adminQueryWithError, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { getGroupEntityByName } from '../../utils/domainQueryHelper';
 import type { BasicStoreEntityMarkingDefinition } from '../../../src/types/store';
 import { deleteElementById } from '../../../src/database/middleware';
@@ -290,7 +291,7 @@ describe('Group resolver standard behavior', () => {
         }
     `;
     // remove default group Connectors set in data-initialization
-    await queryAsUserWithSuccess(USER_PLATFORM_ADMIN.client, {
+    await queryAsUserWithSuccess(USER_PLATFORM_ADMIN, {
       query: UPDATE_QUERY,
       variables: { id: queryDefaultIngestionGroup.data?.groups.edges[0].node.id, input: { key: 'auto_integration_assignation', value: [] } },
     });
@@ -307,7 +308,7 @@ describe('Group resolver standard behavior', () => {
     expect(defaultIngestionGroupCountResultNoGroup?.data?.defaultIngestionGroupCount).toBe(0);
 
     // AND WHEN 'groupInternalId' is set as default ingestion group
-    const queryResult = await queryAsUserWithSuccess(USER_PLATFORM_ADMIN.client, {
+    const queryResult = await queryAsUserWithSuccess(USER_PLATFORM_ADMIN, {
       query: UPDATE_QUERY,
       variables: { id: groupInternalId, input: { key: 'auto_integration_assignation', value: ['global'] } },
     });
@@ -339,12 +340,12 @@ describe('Group resolver standard behavior', () => {
             }
         }
     `;
-    await queryAsUserWithSuccess(USER_PLATFORM_ADMIN.client, {
+    await queryAsUserWithSuccess(USER_PLATFORM_ADMIN, {
       query: UPDATE_QUERY,
       variables: { id: connectorsGroup.id, input: { key: 'auto_integration_assignation', value: ['global'] } },
     });
 
-    await queryAsUserWithSuccess(USER_PLATFORM_ADMIN.client, {
+    await queryAsUserWithSuccess(USER_PLATFORM_ADMIN, {
       query: UPDATE_QUERY,
       variables: { id: groupInternalId, input: { key: 'auto_integration_assignation', value: [] } },
     });
@@ -577,7 +578,7 @@ describe('Group resolver standard behavior', () => {
         }
       }
     `;
-    await adminQueryWithError({
+    await queryAsAdminWithError({
       query: UPDATE_QUERY,
       variables: {
         id: groupInternalId,
@@ -592,7 +593,7 @@ describe('Group resolver standard behavior', () => {
       },
     }, 'Validation against schema failed on attribute [max_confidence]: this mandatory field cannot be nil');
 
-    await adminQueryWithError(
+    await queryAsAdminWithError(
       {
         query: UPDATE_QUERY,
         variables: {
@@ -607,7 +608,7 @@ describe('Group resolver standard behavior', () => {
       'Validation against schema failed on attribute [overrides]: mandatory field [max_confidence] is not present',
     );
 
-    await adminQueryWithError(
+    await queryAsAdminWithError(
       {
         query: UPDATE_QUERY,
         variables: {
@@ -623,7 +624,7 @@ describe('Group resolver standard behavior', () => {
       'Validation against schema failed on attribute [group_confidence_level]: mandatory field [overrides] is not present',
     );
 
-    await adminQueryWithError(
+    await queryAsAdminWithError(
       {
         query: UPDATE_QUERY,
         variables: {
