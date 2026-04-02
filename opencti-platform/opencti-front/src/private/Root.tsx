@@ -287,7 +287,7 @@ const rootPrivateQuery = graphql`
       edges {
         node {
           id
-          ...EntitySettingSettings_entitySetting
+          ...EntitySettingsFragment_entitySetting
         }
       }
     }
