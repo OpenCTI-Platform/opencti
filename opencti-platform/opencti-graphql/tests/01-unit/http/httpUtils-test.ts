@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { encodeOidcState, decodeOidcState, buildPublicHelmetParameters, buildDefaultHelmetParameters } from '../../../src/http/httpUtils';
 import * as httpConfig from '../../../src/http/httpConfig';
 
@@ -57,6 +57,14 @@ describe('httpUtils: OIDC state encoding/decoding', () => {
 });
 
 describe('buildHelmetParameters coverage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('should most secure option works file', () => {
     vi.spyOn(httpConfig, 'isDevMode').mockReturnValue(false);
     vi.spyOn(httpConfig, 'isUnsecureHttpResourceAllowed').mockReturnValue(false);
