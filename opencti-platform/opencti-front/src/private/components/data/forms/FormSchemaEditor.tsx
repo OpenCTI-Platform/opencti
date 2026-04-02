@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState, useMemo, useCallback, useEffect } from 'react';
+import React, { FunctionComponent, useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { Add, DeleteOutlined, AddCircleOutlined, ArrowUpward, ArrowDownward, ExpandMore } from '@mui/icons-material';
 import {
@@ -49,14 +49,27 @@ import { FieldOption } from '../../../../utils/field';
 type DraftAdvancedDefaultsValues = {
   objectAssignee: FieldOption[];
   objectParticipant: FieldOption[];
-  authorized_members: AuthorizedMemberOption[];
 };
 
 const DraftAdvancedDefaultsSync = ({ onChange }: { onChange: (vals: DraftAdvancedDefaultsValues) => void }) => {
   const { values } = useFormikContext<DraftAdvancedDefaultsValues>();
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
   useEffect(() => {
-    onChange(values);
-  }, [values, onChange]);
+    onChangeRef.current(values);
+  }, [values]);
+  return null;
+};
+
+type AuthorizedMembersDefaultsValues = { authorized_members: AuthorizedMemberOption[] };
+
+const AuthorizedMembersSync = ({ onChange }: { onChange: (vals: AuthorizedMemberOption[]) => void }) => {
+  const { values } = useFormikContext<AuthorizedMembersDefaultsValues>();
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  useEffect(() => {
+    onChangeRef.current(values.authorized_members);
+  }, [values.authorized_members]);
   return null;
 };
 
@@ -240,26 +253,28 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     }
   }, [entityTypes, formData.mainEntityType, formData.fields.length, t_i18n, initialValues]);
 
-  // Call onChange only when component mounts to ensure parent has the initial data
+  // Notify parent after formData changes (never call parent setState inside a state updater)
+  const isFirstRender = useRef(true);
   useEffect(() => {
-    if (onChange && !initialValues) {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      if (!initialValues && onChange) {
+        onChange(formData);
+      }
+      return;
+    }
+    if (onChange) {
       onChange(formData);
     }
-  }, []);
+    if (onSchemaChange) {
+      const formSchema = convertFormBuilderDataToSchema(formData);
+      onSchemaChange(JSON.stringify(formSchema, null, 2));
+    }
+  }, [formData]);
 
   const updateFormData = useCallback((updater: (prev: FormBuilderData) => FormBuilderData) => {
-    setFormData((prev) => {
-      const newData = updater(prev);
-      if (onChange) {
-        onChange(newData);
-      }
-      if (onSchemaChange) {
-        const formSchema = convertFormBuilderDataToSchema(newData);
-        onSchemaChange(JSON.stringify(formSchema, null, 2));
-      }
-      return newData;
-    });
-  }, [onChange, onSchemaChange]);
+    setFormData((prev) => updater(prev));
+  }, []);
 
   const mainEntityInfo = entityTypes.find((e) => e.value === formData.mainEntityType);
   const isContainer = mainEntityInfo?.isContainer || false;
@@ -1749,14 +1764,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 initialValues={{
                   objectAssignee: formData.draftDefaults?.objectAssignee?.defaults || [],
                   objectParticipant: formData.draftDefaults?.objectParticipant?.defaults || [],
-                  authorized_members: normalizeDraftAuthorizedMembersDefaults(
-                    formData.draftDefaults?.authorizedMembers?.defaults || [],
-                    {
-                      creatorsLabel: t_i18n('Creators'),
-                      authorOrgLabel: t_i18n('Author (organization)'),
-                      dynamicOptionsLabel: t_i18n('Dynamic options'),
-                    },
-                  ),
                 }}
                 onSubmit={() => {}}
                 enableReinitialize
@@ -1907,11 +1914,36 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                           style={{ display: 'block', marginBottom: 15 }}
                         />
                         <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>{t_i18n('Member Rules')}</Typography>
-                        <Field
-                          name="authorized_members"
-                          component={AuthorizedMembersField}
-                          dynamicKeysForPlaybooks={true}
-                        />
+                        <Formik
+                          initialValues={{
+                            authorized_members: normalizeDraftAuthorizedMembersDefaults(
+                              formData.draftDefaults?.authorizedMembers?.defaults || [],
+                              {
+                                creatorsLabel: t_i18n('Creators'),
+                                authorOrgLabel: t_i18n('Author (organization)'),
+                                dynamicOptionsLabel: t_i18n('Dynamic options'),
+                              },
+                            ),
+                          }}
+                          onSubmit={() => {}}
+                        >
+                          {() => (
+                            <>
+                              <Field
+                                name="authorized_members"
+                                component={AuthorizedMembersField}
+                                dynamicKeysForPlaybooks={true}
+                              />
+                              <AuthorizedMembersSync
+                                onChange={(vals) => {
+                                  if (!areAuthorizedMembersEqual(formData.draftDefaults?.authorizedMembers?.defaults || [], vals)) {
+                                    handleFieldChange('draftDefaults.authorizedMembers.defaults', vals);
+                                  }
+                                }}
+                              />
+                            </>
+                          )}
+                        </Formik>
                       </Box>
                     )}
 
@@ -1922,9 +1954,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                         }
                         if (!areFieldOptionsEqual(formData.draftDefaults?.objectParticipant?.defaults || [], vals.objectParticipant)) {
                           handleFieldChange('draftDefaults.objectParticipant.defaults', vals.objectParticipant);
-                        }
-                        if (!areAuthorizedMembersEqual(formData.draftDefaults?.authorizedMembers?.defaults || [], vals.authorized_members)) {
-                          handleFieldChange('draftDefaults.authorizedMembers.defaults', vals.authorized_members);
                         }
                       }}
                     />
