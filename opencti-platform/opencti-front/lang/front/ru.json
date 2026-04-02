@@ -2509,6 +2509,7 @@
   "Live trigger": "Живой триггер",
   "Loading current message count...": "Загрузка текущего количества сообщений...",
   "Local": "Локальный",
+  "Local authentication cannot be changed when authentication is managed by environment configuration": "Локальная аутентификация не может быть изменена, если аутентификация управляется конфигурацией среды",
   "Local authentication cannot be disabled when no other authentication provider is enabled": "Локальная аутентификация не может быть отключена, если не включен другой провайдер аутентификации",
   "Local password policies": "Локальные политики паролей",
   "Local settings": "Локальные настройки",

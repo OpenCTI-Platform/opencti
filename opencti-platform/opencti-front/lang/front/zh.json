@@ -2509,6 +2509,7 @@
   "Live trigger": "实时触发器",
   "Loading current message count...": "正在加载当前信息数...",
   "Local": "本地",
+  "Local authentication cannot be changed when authentication is managed by environment configuration": "当身份验证由环境配置管理时，无法更改本地身份验证",
   "Local authentication cannot be disabled when no other authentication provider is enabled": "当未启用其他身份验证提供程序时，无法禁用本地身份验证",
   "Local password policies": "本地密码策略",
   "Local settings": "本地设置",
