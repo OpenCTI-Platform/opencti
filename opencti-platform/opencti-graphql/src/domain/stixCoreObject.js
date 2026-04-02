@@ -96,6 +96,7 @@ import {
   systemPrompt,
 } from '../utils/ai/dataResolutionHelpers';
 import { queryAi } from '../database/ai-llm';
+import { checkPlatformAiEnabled } from '../utils/ai/platformAiEnabled';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
@@ -1073,6 +1074,7 @@ export const stixCoreObjectEditContext = async (context, user, stixCoreObjectId,
 // region ai
 export const aiActivity = async (context, user, args) => {
   await checkEnterpriseEdition(context);
+  await checkPlatformAiEnabled(context);
 
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
@@ -1113,6 +1115,7 @@ export const aiActivity = async (context, user, args) => {
 
 export const aiForecast = async (context, user, args) => {
   await checkEnterpriseEdition(context);
+  await checkPlatformAiEnabled(context);
 
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
@@ -1144,6 +1147,7 @@ export const aiForecast = async (context, user, args) => {
 
 export const aiHistory = async (context, user, args) => {
   await checkEnterpriseEdition(context);
+  await checkPlatformAiEnabled(context);
   const { id, language = 'English', forceRefresh = false } = args;
   // Resolve in cache
   const identifier = `${id}-history`;
