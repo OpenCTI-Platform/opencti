@@ -948,7 +948,7 @@
   "Custom dashboard": "カスタムダッシュボード",
   "Custom dashboards": "カスタムダッシュボード",
   "Custom dashboards | Dashboards": "カスタムダッシュボード｜ダッシュボード",
-  "Custom views": "カスタムビュー",
+  "Custom view": "カスタムビュー",
   "Customization": "カスタマイズ",
   "Customize columns": "コラムのカスタマイズ",
   "Customize provider identifier": "プロバイダ識別子のカスタマイズ",
@@ -4872,3 +4872,4 @@
   "Zoom in": "ズームイン",
   "Zoom out": "ズームアウト"
 }
+

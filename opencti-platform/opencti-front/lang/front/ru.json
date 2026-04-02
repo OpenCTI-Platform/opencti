@@ -948,7 +948,7 @@
   "Custom dashboard": "Пользовательский дашборд",
   "Custom dashboards": "Пользовательские дашборды",
   "Custom dashboards | Dashboards": "Пользовательские панели | Панели инструментов",
-  "Custom views": "Пользовательские виды",
+  "Custom view": "Пользовательское представление",
   "Customization": "Настройка",
   "Customize columns": "Настройте столбцы",
   "Customize provider identifier": "Настроить идентификатор провайдера",
@@ -4872,3 +4872,4 @@
   "Zoom in": "Увеличить",
   "Zoom out": "Уменьшить масштаб"
 }
+

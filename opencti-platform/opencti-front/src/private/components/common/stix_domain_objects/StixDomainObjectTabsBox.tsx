@@ -6,8 +6,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { getCurrentTab } from '../../../../utils/utils';
 import { useFormatter } from '../../../../components/i18n';
-import TabWithDropDownMenu from '../../../../components/TabWithDropDownMenu';
 import { CUSTOM_VIEW_TAB_VALUE, useCustomViews } from '../../custom_views/useCustomViews';
+import useTabWithDropDownMenu from '../../../../components/TabWithDropDownMenu';
 
 export type StixDomainObjectTabsBoxTab
   = | 'overview'
@@ -92,13 +92,9 @@ const EXTRA_ACTIONS_STYLE = {
   gap: '10px',
 };
 
-const MENU_ITEM_STYLE = {
-  // Maximize link area
-  padding: 0,
-};
-
 const MENU_ITEM_LINK_STYLE = {
   padding: '10px',
+  color: 'inherit',
 };
 
 /**
@@ -112,6 +108,22 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
   const { customViews, getCurrentCustomViewTab } = useCustomViews(entityType);
   const currentTab = getCurrentCustomViewTab(location.pathname, basePath)
     ?? getCurrentTab(location.pathname, basePath);
+
+  const shouldDisplayCustomViewTab = customViews.length === 1;
+  const shouldDisplayCustomViewTabWithDropDown = customViews.length > 1;
+  const { TabWithDropDown: CustomViewTabWithDropDown, DropDown: CustomViewsDropDown } = useTabWithDropDownMenu({
+    skip: !shouldDisplayCustomViewTabWithDropDown,
+    value: CUSTOM_VIEW_TAB_VALUE,
+    label: t_i18n('Custom view'),
+    renderMenuItems: () => customViews.map(({ id, name, path }) => {
+      const isSelected = getCurrentTab(location.pathname, basePath) === path;
+      return (
+        <MenuItem key={id} sx={{ p: 0, color: isSelected ? 'primary.main' : undefined }}>
+          <Link role="link" style={MENU_ITEM_LINK_STYLE} to={`${basePath}/${path}`}>{name}</Link>
+        </MenuItem>
+      );
+    }),
+  });
   return (
     <Box sx={CONTAINER_STYLE}>
       <Tabs value={currentTab}>
@@ -127,28 +139,17 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
               />
             ))
         }
-        {customViews.length === 1 ? (
+        {shouldDisplayCustomViewTab ? (
           <Tab
             component={Link}
             to={customViews[0].path}
             value={CUSTOM_VIEW_TAB_VALUE}
             label={customViews[0].name}
           />
-        ) : customViews.length > 1 ? (
-          <TabWithDropDownMenu
-            value={CUSTOM_VIEW_TAB_VALUE}
-            label={t_i18n('Custom views')}
-            MenuItems={
-              customViews.map(({ id, name, path }) => (
-                <MenuItem key={id} style={MENU_ITEM_STYLE}>
-                  <Link role="link" style={MENU_ITEM_LINK_STYLE} to={`${basePath}/${path}`}>{name}</Link>
-                </MenuItem>
-              ))
-            }
-          />
-        ) : null
-        }
+        ) : null}
+        {shouldDisplayCustomViewTabWithDropDown ? CustomViewTabWithDropDown : null }
       </Tabs>
+      {shouldDisplayCustomViewTabWithDropDown ? CustomViewsDropDown : null }
       {extraActions ? (
         <div style={EXTRA_ACTIONS_STYLE}>
           {extraActions}
