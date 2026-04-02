@@ -2,6 +2,10 @@ name: OpenCTI CI
 on:
   workflow_dispatch:
   push:
+    branches:
+      - master
+      - 'lts/**'
+      - 'release/**'
     paths-ignore:
       - 'docs/**'
       - '**.md'
@@ -66,7 +70,8 @@ jobs:
 
   wf-backend-test:
       name: Backend
-      needs: wf-build-image
+      needs: [detect-changes, wf-build-image]
+      if: needs.detect-changes.outputs.backend == 'true'
       uses: ./.github/workflows/ci-test-backend.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
@@ -84,7 +89,8 @@ jobs:
 
   wf-client-python-test:
       name: Client Python
-      needs: wf-build-image
+      needs: [detect-changes, wf-build-image]
+      if: needs.detect-changes.outputs.client_python == 'true' || needs.detect-changes.outputs.backend == 'true' || needs.detect-changes.outputs.worker == 'true'
       uses: ./.github/workflows/ci-test-client-python.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
