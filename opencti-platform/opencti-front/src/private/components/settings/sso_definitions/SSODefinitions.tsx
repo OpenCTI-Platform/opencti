@@ -328,6 +328,7 @@ const SSODefinitions = () => {
       {settings.is_authentication_by_env && (
         <>
           <AuthenticationGlobalSettings />
+          <SSOSingletonStrategies />
           <Alert severity="error" variant="outlined" sx={{ mt: 2 }}>
             <AlertTitle>{t_i18n('Deprecated — Authentication management is disabled by environment configuration')}</AlertTitle>
             <Typography variant="body1" sx={{ mb: 2 }}>

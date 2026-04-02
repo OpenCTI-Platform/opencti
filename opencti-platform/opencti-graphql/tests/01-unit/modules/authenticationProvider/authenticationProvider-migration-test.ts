@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isLocalAuthEnabledInEnv } from '../../../../src/modules/authenticationProvider/authenticationProvider-migration';
+import { isLocalAuthEnabledInEnv } from '../../../../src/modules/authenticationProvider/providers-configuration';
 
 // ==========================================================================
 // resolveLocalAuthEnabled

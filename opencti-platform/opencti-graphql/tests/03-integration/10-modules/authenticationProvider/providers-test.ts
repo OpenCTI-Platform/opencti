@@ -8,7 +8,7 @@ import { buildAvailableProviders } from '../../../../src/domain/setting-auth';
 import { PROVIDERS } from '../../../../src/modules/authenticationProvider/providers-configuration';
 
 describe('initializeAuthenticationProviders coverage', () => {
-  const clearProviderArray = () => {
+  const clearEnvProviderArray = () => {
     const len = PROVIDERS.length;
     for (let i = 0; i < len; i++) {
       PROVIDERS.pop();
@@ -17,7 +17,7 @@ describe('initializeAuthenticationProviders coverage', () => {
 
   it('should force env & local disabled along with a strategy be correct', async () => {
     // GIVEN a force env, and a configuration with a local disabled and an OpenID configured
-    clearProviderArray();
+    clearEnvProviderArray();
 
     vi.spyOn(mockProviderEnv, 'isAuthenticationForcedFromEnv').mockReturnValue(true);
     vi.spyOn(mockProviderEnv, 'getProvidersFromEnvironment').mockReturnValue({
@@ -60,7 +60,7 @@ describe('initializeAuthenticationProviders coverage', () => {
 
   it('should force env & local disabled with no strategy still register local', async () => {
     // GIVEN a force env, and a configuration with only a local disabled
-    clearProviderArray();
+    clearEnvProviderArray();
     vi.spyOn(mockProviderEnv, 'isAuthenticationForcedFromEnv').mockReturnValue(true);
     vi.spyOn(mockProviderEnv, 'getProvidersFromEnvironment').mockReturnValue({
       local: {
