@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { readFileSync } from 'fs';
 import { SourceMapConsumer } from 'source-map';
 
@@ -6,14 +5,14 @@ import { SourceMapConsumer } from 'source-map';
  * This code will allow you to convert a built stack error to the real lines of code
  * For that you need to align your code version and build the backend/frontend to have the correct back.js.map file
  * For the backend, <yarn build> in opencti-graphql
- * For the frontend, <yarn build:standalone> in opencti-front
+ * For the frontend, <yarn build> in opencti-front
  * Then you just have to put your json log of the error in a .env files at the root directory of opencti-graphql
  * .env => backend_log='{...}' or frontend_log='{...}'
  * and start the script yarn stack:analysis
  */
 
 const BACKEND_MAP = './build/back.js.map';
-const FRONT_MAP = '../opencti-front/builder/prod/build/static/js/front.js.map';
+const FRONT_MAP = '../opencti-front/dist/assets/front.js.map';
 const isExecTypeBack = process.argv[process.argv.length - 1] === 'back';
 const stackData = isExecTypeBack ? process.env.BACKEND_LOG : process.env.frontend_log;
 
@@ -24,7 +23,6 @@ const specificErrorKeys = ['componentStack', 'codeStack'];
 const specificStartErrorMessages = ['Error', 'GraphQLError', 'TypeError'];
 const getAllLogStacks = (obj, results = []) => {
   if (typeof obj === 'object' && obj !== null) {
-    // eslint-disable-next-line no-restricted-syntax
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
         const value = obj[key];
@@ -51,7 +49,7 @@ const parseStackTrace = async (stackTrace, sourceMap) => {
         const [, functionName,, lineNumber, columnNumber] = match;
         const originalPosition = consumer.originalPositionFor({
           line: parseInt(lineNumber, 10),
-          column: parseInt(columnNumber, 10)
+          column: parseInt(columnNumber, 10),
         });
         if (originalPosition.source) {
           return `at ${functionName} (${originalPosition.source}:${originalPosition.line}:${originalPosition.column})`;
@@ -61,7 +59,7 @@ const parseStackTrace = async (stackTrace, sourceMap) => {
         const [, lineNumber, columnNumber] = match.slice(5);
         const originalPosition = consumer.originalPositionFor({
           line: parseInt(lineNumber, 10),
-          column: parseInt(columnNumber, 10)
+          column: parseInt(columnNumber, 10),
         });
         if (originalPosition.source) {
           return `at ${originalPosition.source}:${originalPosition.line}:${originalPosition.column}`;

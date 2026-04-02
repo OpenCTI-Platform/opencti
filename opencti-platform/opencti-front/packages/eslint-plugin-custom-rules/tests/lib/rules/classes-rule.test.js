@@ -1,9 +1,9 @@
-const rule = require("../../../lib/rules/classes-rule"),
-  RuleTester = require("eslint").RuleTester;
-
+import rule from '../../../lib/rules/classes-rule';
+import { RuleTester } from 'eslint';
+import parser from '@typescript-eslint/parser';
 
 const ruleTester = new RuleTester({
-  parser: require.resolve('@typescript-eslint/parser'),
+  parser,
   parserOptions: {
     ecmaVersion: 2020,
   }
