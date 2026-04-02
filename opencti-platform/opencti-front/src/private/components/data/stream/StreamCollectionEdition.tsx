@@ -17,8 +17,10 @@ import Filters from '../../common/lists/Filters';
 import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend, stixFilters } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { convertAuthorizedMembers } from '../../../../utils/edition';
+import CreatorField from '../../common/form/CreatorField';
+import { convertAuthorizedMembers, convertUser } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { useTheme } from '@mui/material/styles';
 
 interface StreamCollectionCreationForm {
@@ -26,6 +28,7 @@ interface StreamCollectionCreationForm {
   stream_public: boolean | null;
   name: string | null;
   description: string | null;
+  stream_public_user_id?: FieldOption | string | null;
 }
 
 export const streamCollectionMutationFieldPatch = graphql`
@@ -42,17 +45,20 @@ const streamCollectionValidation = (requiredSentence: string) => Yup.object().sh
   name: Yup.string().required(requiredSentence),
   description: Yup.string().nullable(),
   stream_public: Yup.bool().nullable(),
+  stream_public_user_id: Yup.mixed().nullable(),
   restricted_members: Yup.array().nullable(),
 });
 
 const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: StreamCollectionEdition_streamCollection$data }> = ({ streamCollection }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
   const initialValues = { ...streamCollection,
     restricted_members: convertAuthorizedMembers(streamCollection),
     stream_public: streamCollection.stream_public ?? null,
     name: streamCollection.name ?? '',
     description: streamCollection.description ?? '',
+    stream_public_user_id: convertUser(streamCollection, 'stream_public_user'),
   };
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(streamCollection.filters) ?? undefined);
   const handleSubmitField = (name: string, value: FieldOption[] | string) => {
@@ -157,7 +163,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
               {t_i18n('Make this stream public and available to anyone')}
             </AlertTitle>
             <FormControlLabel
-              control={<Switch defaultChecked={!!initialValues.stream_public} />}
+              control={<Switch defaultChecked={!!initialValues.stream_public} disabled={!isGrantedToSetAccesses} />}
               style={{ marginLeft: 1 }}
               onChange={(_, checked) => handleSubmitField('stream_public', checked.toString())}
               label={t_i18n('Public stream')}
@@ -170,6 +176,15 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
                 multiple={true}
                 helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
                 name="restricted_members"
+              />
+            )}
+            {initialValues.stream_public && (
+              <CreatorField
+                name="stream_public_user_id"
+                label={t_i18n('Share data corresponding to the right associated with this user')}
+                containerStyle={fieldSpacingContainerStyle}
+                disabled={!isGrantedToSetAccesses}
+                onChange={(_, value) => handleSubmitField('stream_public_user_id', (value as FieldOption)?.value ?? '')}
               />
             )}
           </Alert>
@@ -211,6 +226,11 @@ const StreamCollectionEditionFragment = createFragmentContainer(
                 filters
                 stream_live
                 stream_public
+                stream_public_user {
+                    id
+                    entity_type
+                    name
+                }
                 authorized_members {
                     id
                     member_id
