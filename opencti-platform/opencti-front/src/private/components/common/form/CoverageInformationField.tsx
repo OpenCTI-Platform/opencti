@@ -2,7 +2,7 @@ import React, { FunctionComponent, ReactElement } from 'react';
 import { Field, FieldArray } from 'formik';
 import Button from '@common/button/Button';
 import { IconButton } from '@mui/material';
-import { AddOutlined, DeleteOutlined } from '@mui/icons-material';
+import { DeleteOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import { graphql } from 'react-relay';
 import OpenVocabField from '@components/common/form/OpenVocabField';
@@ -144,8 +144,7 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
               ))}
               <Button
                 size="small"
-                startIcon={<AddOutlined />}
-                aria-label="Add"
+                aria-label={t_i18n('Add coverage metric')}
                 id="addCoverageInfo"
                 onClick={() => {
                   arrayHelpers.push({ coverage_name: '', coverage_score: '' });
@@ -311,8 +310,7 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
               ))}
               <Button
                 size="small"
-                startIcon={<AddOutlined />}
-                aria-label="Add"
+                aria-label={t_i18n('Add coverage metric')}
                 id="addCoverageInfo"
                 onClick={() => {
                   const newCoverage = { coverage_name: '', coverage_score: 0 };
