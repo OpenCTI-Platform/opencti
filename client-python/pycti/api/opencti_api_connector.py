@@ -88,7 +88,6 @@ class OpenCTIApiConnector:
                             use_ssl
                             port
                             user
-                            pass
                         }
                         listen
                         listen_exchange
