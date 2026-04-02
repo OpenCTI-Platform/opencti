@@ -4,10 +4,17 @@ import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import type { BasicStoreSettings } from '../../../../src/types/settings';
 import * as mockProviderEnv from '../../../../src/modules/authenticationProvider/providers-configuration';
 import { getSettings, getSettingsFromDatabase } from '../../../../src/domain/settings';
-import { buildAvailableProviders, updateCertAuth, updateLocalAuth } from '../../../../src/domain/setting-auth';
+import { buildAvailableProviders, updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../../../../src/domain/setting-auth';
 import { type ProviderConfiguration, PROVIDERS } from '../../../../src/modules/authenticationProvider/providers-configuration';
-import type { CertAuthConfigInput, LocalAuthConfigInput } from '../../../../src/generated/graphql';
+import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput } from '../../../../src/generated/graphql';
+import { findAllAuthenticationProvider } from '../../../../src/modules/authenticationProvider/authenticationProvider-domain';
+import { SYSTEM_USER } from '../../../../src/utils/access';
+import { elDeleteElements } from '../../../../src/database/engine';
 
+const clearDbProvider = async () => {
+  const authenticators = await findAllAuthenticationProvider(testContext, SYSTEM_USER);
+  await elDeleteElements(testContext, SYSTEM_USER, authenticators, { forceDelete: true, forceRefresh: true });
+};
 const clearEnvProviderArray = () => {
   const len = PROVIDERS.length;
   for (let i = 0; i < len; i++) {
@@ -44,15 +51,16 @@ describe('Provider coverage', () => {
           config: {
             disabled: true,
           },
-        }, oick: {
-          identifier: 'oick',
-          strategy: 'OpenIDConnectStrategy',
-          enabled: true,
+        }, saml_p_test: {
+          identifier: 'saml_p_test',
+          strategy: 'SamlStrategy',
           config: {
-            issuer: 'http://localhost:9999/realms/master',
-            client_id: 'openctioid',
-            client_secret: 'xxxxxxxxxxxxx',
-            redirect_uris: ['http://localhost:4000/auth/oick/callback'],
+            issuer: 'saml_p_test',
+            label: 'saml_p_test',
+            entry_point: 'http://localhost:9999/realms/master/protocol/saml_p_test',
+            saml_callback_url: 'http://localhost:4000/auth/saml_p_test/callback',
+            cert: 'xxxxxxxxxxxxxxxxxxxxxxxx',
+            logout_remote: false,
           },
         },
       });
@@ -67,10 +75,10 @@ describe('Provider coverage', () => {
       // Should have only the OpenID, and no local since local is disabled in env
       expect(settingsProviders).toStrictEqual([
         {
-          logout_remote: undefined,
-          name: 'oick',
-          provider: 'oick',
-          strategy: 'OpenIDConnectStrategy',
+          logout_remote: false,
+          name: 'saml_p_test',
+          provider: 'saml_p_test',
+          strategy: 'SamlStrategy',
           type: 'SSO',
         },
       ]);
@@ -88,6 +96,29 @@ describe('Provider coverage', () => {
           },
         },
       });
+
+      // WHEN initializing providers
+      await initializeAuthenticationProviders(testContext);
+
+      // THEN
+      // Should have only the OpenID, and no local since local is disabled in env
+      const finalSettings = await getSettings(testContext) as unknown as BasicStoreSettings;
+      const settingsProviders = await buildAvailableProviders(finalSettings);
+
+      expect(settingsProviders).toStrictEqual([
+        {
+          name: 'local',
+          provider: 'local',
+          strategy: 'LocalStrategy',
+          type: 'FORM',
+        },
+      ]);
+    });
+
+    it('should force env & local disabled with no strategy still register local', async () => {
+      // GIVEN an empty configuration in DB
+      await clearDbProvider();
+      vi.spyOn(mockProviderEnv, 'isAuthenticationForcedFromEnv').mockReturnValue(false);
 
       // WHEN initializing providers
       await initializeAuthenticationProviders(testContext);
@@ -338,7 +369,7 @@ describe('Provider coverage', () => {
           email_expr: 'user.email',
           name_expr: 'user.name',
         },
-        enabled: true,
+        enabled: false,
       };
       const result = await updateCertAuth(testContext, ADMIN_USER, settings.id, localUpdateInput);
 
@@ -378,6 +409,72 @@ describe('Provider coverage', () => {
         user_info_mapping: {
           email_expr: 'user.email',
           name_expr: 'user.name',
+        },
+      });
+    });
+
+    it('should update header work', async () => {
+      const settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+      const localUpdateInput: HeadersAuthConfigInput = {
+        button_label_override: 'MyHeader',
+        description: 'Header auth for tests',
+        groups_mapping: {
+          auto_create_groups: false,
+          default_groups: ['HeaderTestGroup'],
+          groups_expr: ['header.group'],
+          groups_mapping: [{ provider: 'Admin', platform: 'Administrator' }],
+          prevent_default_groups: false,
+        },
+        organizations_mapping: {
+          auto_create_organizations: false,
+          default_organizations: [],
+          organizations_expr: ['header.org'],
+          organizations_mapping: [{ provider: 'Filigran', platform: 'Filigran' }],
+        },
+        user_info_mapping: {
+          email_expr: 'header.email',
+          name_expr: 'header.name',
+        },
+        enabled: false,
+      };
+      const result = await updateHeaderAuth(testContext, ADMIN_USER, settings.id, localUpdateInput);
+
+      expect(result.headers_auth).toStrictEqual({
+        button_label_override: 'MyHeader',
+        description: 'Header auth for tests',
+        enabled: false,
+        groups_mapping: {
+          auto_create_groups: false,
+          default_groups: [
+            'HeaderTestGroup',
+          ],
+          groups_expr: [
+            'header.group',
+          ],
+          groups_mapping: [
+            {
+              platform: 'Administrator',
+              provider: 'Admin',
+            },
+          ],
+          prevent_default_groups: false,
+        },
+        organizations_mapping: {
+          auto_create_organizations: false,
+          default_organizations: [],
+          organizations_expr: [
+            'header.org',
+          ],
+          organizations_mapping: [
+            {
+              platform: 'Filigran',
+              provider: 'Filigran',
+            },
+          ],
+        },
+        user_info_mapping: {
+          email_expr: 'header.email',
+          name_expr: 'header.name',
         },
       });
     });

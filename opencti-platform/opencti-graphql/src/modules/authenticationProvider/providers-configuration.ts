@@ -4,7 +4,6 @@ import * as R from 'ramda';
 import type { AuthenticationProviderType } from '../../generated/graphql';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import { logAuthError, logAuthInfo } from './providers-logger';
-import type { BasicStoreSettings } from '../../types/settings';
 
 export const LOCAL_STRATEGY_IDENTIFIER = 'local';
 export const HEADERS_STRATEGY_IDENTIFIER = 'headers';
