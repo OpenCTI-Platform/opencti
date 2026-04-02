@@ -176,7 +176,7 @@ export const initializeAuthenticationProviders = async (context: AuthContext) =>
     const confProviders = getProvidersFromEnvironment();
 
     // First Local singleton provider - updating settings with environment setup
-    if (isLocalAuthEnabledInEnv(confProviders)) {
+    if (isLocalAuthEnabledInEnv(confProviders) || isLocalAuthForcedEnabledFromEnv()) {
       await registerLocalStrategy();
       await updateLocalAuth(context, SYSTEM_USER, settings.id, { enabled: true });
     } else {
@@ -195,7 +195,7 @@ export const initializeAuthenticationProviders = async (context: AuthContext) =>
     await runAuthenticationProviderMigration(context, SYSTEM_USER);
     // In standard mode, init from providers in the database
     // Singleton initialization
-    if (settings.local_auth?.enabled === true) {
+    if (settings.local_auth?.enabled === true || isLocalAuthForcedEnabledFromEnv()) {
       await registerLocalStrategy();
     }
 
