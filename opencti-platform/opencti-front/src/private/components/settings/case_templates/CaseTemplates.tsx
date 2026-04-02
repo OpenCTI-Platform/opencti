@@ -3,7 +3,6 @@ import React from 'react';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import LabelsVocabulariesMenu from '../LabelsVocabulariesMenu';
 import { CaseTemplateLine_node$data } from './__generated__/CaseTemplateLine_node.graphql';
 import { CaseTemplateLinesPaginationQuery, CaseTemplateLinesPaginationQuery$variables } from './__generated__/CaseTemplateLinesPaginationQuery.graphql';
 import CaseTemplateCreation from './CaseTemplateCreation';
@@ -110,7 +109,6 @@ const CaseTemplates = () => {
 
   return (
     <div className={classes.container} data-testid="case-template-page">
-      <LabelsVocabulariesMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Case templates'), current: true }]} />
       {renderLines()}
     </div>

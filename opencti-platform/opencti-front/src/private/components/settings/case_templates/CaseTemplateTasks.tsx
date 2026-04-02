@@ -18,7 +18,6 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import LabelsVocabulariesMenu from '../LabelsVocabulariesMenu';
 import { CaseTemplateEditionQuery } from './__generated__/CaseTemplateEditionQuery.graphql';
 import { CaseTemplateLine_node$key } from './__generated__/CaseTemplateLine_node.graphql';
 import { CaseTemplateTasksLine_node$data } from './__generated__/CaseTemplateTasksLine_node.graphql';
@@ -244,7 +243,6 @@ const CaseTemplateTasks = () => {
           </React.Suspense>
         </>
       )}
-      <LabelsVocabulariesMenu />
       {renderLines()}
     </div>
   );
