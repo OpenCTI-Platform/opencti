@@ -2145,7 +2145,7 @@ type ManagerContractConfiguration {
 type ManagerContractExcerpt {
   title: String!
   slug: String!
-  logo: String
+  logo: String!
 }
 
 enum ConnectorPriorityGroup {
