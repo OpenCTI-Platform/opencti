@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 // noinspection ExceptionCaughtLocallyJS
 
 import * as R from 'ramda';
@@ -12,6 +11,7 @@ import { AuthRequired, error, ForbiddenAccess, UNSUPPORTED_ERROR, UnsupportedErr
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { findById, restAllCollections, restBuildCollection, restCollectionManifest, restCollectionStix } from '../modules/dataSharing/taxiiCollection-domain';
 import { executionContext, isUserHasCapability, SYSTEM_USER } from '../utils/access';
+import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { findById as findTaxiiCollection } from '../modules/ingestion/ingestion-taxii-collection-domain';
 import { handleConfidenceToScoreTransformation, pushBundleToConnectorQueue } from '../manager/ingestionManager';
 import { now } from '../utils/format';
@@ -63,13 +63,14 @@ const getUpdatedAt = (obj) => {
   return obj?.extensions?.[STIX_EXT_OCTI]?.updated_at;
 };
 
-const extractUserAndCollection = async (req, res, id) => {
+export const extractUserAndCollection = async (req, res, id) => {
   const findCollection = await findById(executionContext('taxii'), SYSTEM_USER, id);
   if (!findCollection) {
     throw ForbiddenAccess();
   }
   if (findCollection.taxii_public) {
-    return { user: SYSTEM_USER, collection: findCollection };
+    const publicUser = await resolvePublicUser(executionContext('taxii'), findCollection.taxii_public_user_id);
+    return { user: publicUser, collection: findCollection };
   }
   const context = await checkAuthenticationFromRequest(req, res);
   const userCollection = await findById(context, context.user, id);
