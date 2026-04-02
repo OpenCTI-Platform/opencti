@@ -26,26 +26,17 @@ const CaseTemplates = lazy(() => import('./case_templates/CaseTemplates'));
 const CaseTemplateTasks = lazy(() => import('./case_templates/CaseTemplateTasks'));
 const KillChainPhases = lazy(() => import('./KillChainPhases'));
 const Labels = lazy(() => import('./Labels'));
-const Notifiers = lazy(() => import('./Notifiers'));
-const Retention = lazy(() => import('./Retention'));
-const Rules = lazy(() => import('./rules/Rules'));
 const Settings = lazy(() => import('./Settings'));
 const FileIndexing = lazy(() => import('./file_indexing/FileIndexing'));
 const StatusTemplates = lazy(() => import('./status_templates/StatusTemplates'));
-const RootSubType = lazy(() => import('./sub_types/Root'));
-const SubTypes = lazy(() => import('./sub_types/SubTypes'));
 const Vocabularies = lazy(() => import('./Vocabularies'));
 const VocabularyCategories = lazy(() => import('./VocabularyCategories'));
 const Audit = lazy(() => import('./activity/audit/Root'));
 const Configuration = lazy(() => import('./activity/configuration/Configuration'));
 const Alerting = lazy(() => import('./activity/alerting/Alerting'));
-const DecayRuleTabs = lazy(() => import('./decay/DecayRuleTabs'));
-const DecayRule = lazy(() => import('./decay/DecayRule'));
-const ExclusionLists = lazy(() => import('./exclusion_lists/ExclusionLists'));
-const FintelDesigns = lazy(() => import('./fintel_design/FintelDesigns'));
-const FintelDesign = lazy(() => import('./fintel_design/FintelDesign'));
 const Experience = lazy(() => import('./Experience'));
 const RootAccesses = lazy(() => import('./accesses/Root'));
+const RootCustomization = lazy(() => import('./customization/Root'));
 
 const Root = () => {
   const isGrantedToLabels = useGranted([SETTINGS_SETLABELS]);
@@ -140,90 +131,10 @@ const Root = () => {
             )}
           />
           <Route
-            path="/customization"
+            path="/customization/*"
             element={(
               <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
-                <Navigate to="/dashboard/settings/customization/entity_types" replace={true} />
-              </Security>
-            )}
-          />
-          <Route
-            path="/customization/entity_types"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
-                <SubTypes />
-              </Security>
-            )}
-          />
-          <Route
-            path="/customization/retention"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
-                <Retention />
-              </Security>
-            )}
-          />
-          <Route
-            path="/customization/entity_types/:subTypeId/*"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
-                <RootSubType />
-              </Security>
-            )}
-          />
-          <Route
-            path="/customization/rules"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
-                <Rules />
-              </Security>
-            )}
-          />
-          <Route
-            path="customization/decay"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
-                <DecayRuleTabs />
-              </Security>
-            )}
-          />
-          <Route
-            path="customization/decay/:decayRuleId/*"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
-                <DecayRule />
-              </Security>
-            )}
-          />
-          <Route
-            path="customization/exclusion_lists"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
-                <ExclusionLists />
-              </Security>
-            )}
-          />
-          <Route
-            path="customization/fintel_designs"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
-                <FintelDesigns />
-              </Security>
-            )}
-          />
-          <Route
-            path="customization/fintel_designs/:fintelDesignId/*"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
-                <FintelDesign />
-              </Security>
-            )}
-          />
-          <Route
-            path="/customization/notifiers"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
-                <Notifiers />
+                <RootCustomization />
               </Security>
             )}
           />
