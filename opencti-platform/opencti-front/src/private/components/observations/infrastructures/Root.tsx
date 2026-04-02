@@ -28,6 +28,7 @@ import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../uti
 import InfrastructureEdition from './InfrastructureEdition';
 import InfrastructureDeletion from './InfrastructureDeletion';
 import { PATH_INFRASTRUCTURE, PATH_INFRASTRUCTURES } from '@components/common/routes/paths';
+import { getPaddingRight } from '../../../../utils/utils';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {
@@ -91,17 +92,12 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
   const { infrastructure, connectorsForImport, connectorsForExport } = data;
   const { forceUpdate } = useForceUpdate();
   const basePath = PATH_INFRASTRUCTURE(infrastructureId);
-  const paddingRightValue = () => {
-    if (location.pathname.includes(`${basePath}/knowledge`)) return 200;
-    if (location.pathname.includes(`${basePath}/content`)) return 350;
-    if (location.pathname.includes(`${basePath}/content/mapping`)) return 0;
-    return 0;
-  };
+  const paddingRight = getPaddingRight(location.pathname, basePath, true);
   return (
     <CreateRelationshipContextProvider>
       {infrastructure ? (
         <div
-          style={{ paddingRight: paddingRightValue() }}
+          style={{ paddingRight }}
           data-testid="infrastructure-details-page"
         >
           <Breadcrumbs elements={[

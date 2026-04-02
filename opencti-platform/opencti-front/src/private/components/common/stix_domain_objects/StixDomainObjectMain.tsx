@@ -1,5 +1,6 @@
 import { ReactElement, ReactNode } from 'react';
 import { Route, Routes } from 'react-router-dom';
+import Stack from '@mui/material/Stack';
 import StixDomainObjectTabsBox, { type StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
 
 interface StixDomainObjectMainProps {
@@ -12,7 +13,7 @@ interface StixDomainObjectMainProps {
 const StixDomainObjectMain = ({ basePath, extraActions, pages, extraRoutes }: StixDomainObjectMainProps) => {
   const tabs = Object.keys(pages) as StixDomainObjectTabsBoxTab[];
   return (
-    <>
+    <Stack gap={3}>
       <StixDomainObjectTabsBox
         basePath={basePath}
         tabs={tabs}
@@ -51,7 +52,7 @@ const StixDomainObjectMain = ({ basePath, extraActions, pages, extraRoutes }: St
         )}
         {extraRoutes}
       </Routes>
-    </>
+    </Stack>
   );
 };
 

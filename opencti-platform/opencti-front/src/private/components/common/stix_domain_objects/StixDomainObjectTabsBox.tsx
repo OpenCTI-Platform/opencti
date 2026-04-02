@@ -1,7 +1,8 @@
+import React from 'react';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import React from 'react';
+import Stack from '@mui/material/Stack';
 import { Link, useLocation } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import { getCurrentTab } from '../../../../utils/utils';
@@ -35,7 +36,7 @@ interface TabInfo {
 
 // Information about static tabs.
 // Order is important, will be reflected in the UI.
-const TABS_INFO = Object.freeze([{
+const TABS_INFO: readonly TabInfo[] = [{
   tab: 'overview',
   path: '',
   label: 'Overview',
@@ -75,7 +76,7 @@ const TABS_INFO = Object.freeze([{
   tab: 'history',
   path: 'history',
   label: 'History',
-}] satisfies TabInfo[]);
+}] satisfies TabInfo[];
 
 const StixDomainObjectTabsBox = ({ basePath, extraActions, tabs }: StixDomainObjectTabsBoxProps) => {
   const { t_i18n } = useFormatter();
@@ -85,7 +86,6 @@ const StixDomainObjectTabsBox = ({ basePath, extraActions, tabs }: StixDomainObj
       sx={{
         borderBottom: 1,
         borderColor: 'divider',
-        marginBottom: 3,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -106,9 +106,9 @@ const StixDomainObjectTabsBox = ({ basePath, extraActions, tabs }: StixDomainObj
         }
       </Tabs>
       {extraActions ? (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+        <Stack gap={2} direction="row" justifyContent="space-between" alignItems="center">
           {extraActions}
-        </div>
+        </Stack>
       ) : null}
     </Box>
   );
