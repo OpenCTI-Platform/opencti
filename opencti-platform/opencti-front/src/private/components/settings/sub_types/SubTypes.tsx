@@ -8,7 +8,6 @@ import { SubTypeLineDummy } from './SubTypesLine';
 import { SubTypesLinesQuery, SubTypesLinesQuery$variables } from './__generated__/SubTypesLinesQuery.graphql';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import ToolBar from './ToolBar';
-import CustomizationMenu from '../CustomizationMenu';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
@@ -76,7 +75,6 @@ const SubTypes = () => {
   } = useEntityToggle(LOCAL_STORAGE_KEY_SUB_TYPES);
   return (
     <div className={classes.container} data-testid="subtypes-page">
-      <CustomizationMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Entity types'), current: true }]} />
       <ListLines
         handleSearch={helpers.handleSearch}
