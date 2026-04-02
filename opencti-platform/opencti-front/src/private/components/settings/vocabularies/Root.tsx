@@ -117,4 +117,3 @@ const RootVocabularies = () => {
 };
 
 export default RootVocabularies;
-
