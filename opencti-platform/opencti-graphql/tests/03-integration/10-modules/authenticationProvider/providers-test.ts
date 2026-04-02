@@ -4,9 +4,9 @@ import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import type { BasicStoreSettings } from '../../../../src/types/settings';
 import * as mockProviderEnv from '../../../../src/modules/authenticationProvider/providers-configuration';
 import { getSettings, getSettingsFromDatabase } from '../../../../src/domain/settings';
-import { buildAvailableProviders, updateLocalAuth } from '../../../../src/domain/setting-auth';
+import { buildAvailableProviders, updateCertAuth, updateLocalAuth } from '../../../../src/domain/setting-auth';
 import { type ProviderConfiguration, PROVIDERS } from '../../../../src/modules/authenticationProvider/providers-configuration';
-import type { LocalAuthConfigInput } from '../../../../src/generated/graphql';
+import type { CertAuthConfigInput, LocalAuthConfigInput } from '../../../../src/generated/graphql';
 
 const clearEnvProviderArray = () => {
   const len = PROVIDERS.length;
@@ -308,6 +308,78 @@ describe('Provider coverage', () => {
 
       expect(result.local_auth.enabled).toBeTruthy();
       expect(result.password_policy_max_length).toBe(1);
+      expect(result.password_policy_min_length).toBe(2);
+      expect(result.password_policy_min_lowercase).toBe(3);
+      expect(result.password_policy_min_numbers).toBe(4);
+      expect(result.password_policy_min_symbols).toBe(5);
+      expect(result.password_policy_min_uppercase).toBe(6);
+      expect(result.password_policy_min_words).toBe(7);
+    });
+
+    it('should update cert work', async () => {
+      const settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+      const localUpdateInput: CertAuthConfigInput = {
+        button_label_override: 'MyCert',
+        description: 'Cert auth for tests',
+        groups_mapping: {
+          auto_create_groups: false,
+          default_groups: ['TestGroup'],
+          groups_expr: ['test.group'],
+          groups_mapping: [{ provider: 'Admin', platform: 'Administrator' }],
+          prevent_default_groups: false,
+        },
+        organizations_mapping: {
+          auto_create_organizations: false,
+          default_organizations: [],
+          organizations_expr: ['test.org'],
+          organizations_mapping: [{ provider: 'Filigran', platform: 'Filigran' }],
+        },
+        user_info_mapping: {
+          email_expr: 'user.email',
+          name_expr: 'user.name',
+        },
+        enabled: true,
+      };
+      const result = await updateCertAuth(testContext, ADMIN_USER, settings.id, localUpdateInput);
+
+      expect(result.cert_auth).toStrictEqual({
+        button_label_override: 'MyCert',
+        description: 'Cert auth for tests',
+        enabled: false,
+        groups_mapping: {
+          auto_create_groups: false,
+          default_groups: [
+            'TestGroup',
+          ],
+          groups_expr: [
+            'test.group',
+          ],
+          groups_mapping: [
+            {
+              platform: 'Administrator',
+              provider: 'Admin',
+            },
+          ],
+          prevent_default_groups: false,
+        },
+        organizations_mapping: {
+          auto_create_organizations: false,
+          default_organizations: [],
+          organizations_expr: [
+            'test.org',
+          ],
+          organizations_mapping: [
+            {
+              platform: 'Filigran',
+              provider: 'Filigran',
+            },
+          ],
+        },
+        user_info_mapping: {
+          email_expr: 'user.email',
+          name_expr: 'user.name',
+        },
+      });
     });
   });
 });
