@@ -23,7 +23,7 @@ interface FeatureFlagDirectiveArgs {
    * before feature flags being available in the client.
    * Defaults to `false`.
    */
-  softFail: boolean;
+  softFail?: boolean;
 }
 
 const FF_DIRECTIVE = 'ff';
