@@ -22,7 +22,7 @@ import FintelTemplatesGrid from './fintel_templates/FintelTemplatesGrid';
 const entitySettingSubscription = graphql`
   subscription SubTypeOverviewEntitySettingSubscription($id: ID!) {
     entitySetting(id: $id) {
-      ...EntitySettingSettings_entitySetting
+      ...EntitySettingsFragment_entitySetting
     }
   }
 `;

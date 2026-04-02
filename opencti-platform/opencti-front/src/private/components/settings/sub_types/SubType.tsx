@@ -22,7 +22,7 @@ export const subTypeQuery = graphql`
         id
         availableSettings
         ...EntitySettingsOverviewLayoutCustomization_entitySetting
-        ...EntitySettingSettings_entitySetting
+        ...EntitySettingsFragment_entitySetting
         ...EntitySettingAttributes_entitySetting
         ...FintelTemplatesGrid_templates
         requestAccessConfiguration{

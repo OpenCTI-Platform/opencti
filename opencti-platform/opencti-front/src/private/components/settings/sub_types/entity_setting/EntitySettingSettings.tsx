@@ -13,58 +13,8 @@ import { SETTINGS_SETACCESSES } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
 import GroupEntitySettingHiddenTypesList from '../../groups/GroupEntitySettingHiddenTypesList';
 import SettingsOrganizationEntitySettingHiddenTypesList from '../../organizations/SettingsOrganizationEntitySettingHiddenTypesList';
-import { EntitySettingSettings_entitySetting$key } from './__generated__/EntitySettingSettings_entitySetting.graphql';
-
-export const entitySettingFragment = graphql`
-  fragment EntitySettingSettings_entitySetting on EntitySetting {
-    id
-    target_type
-    platform_entity_files_ref
-    platform_hidden_type
-    enforce_reference
-    availableSettings
-    mandatoryAttributes
-    scaleAttributes {
-      name
-      scale
-    }
-    defaultValuesAttributes {
-      name
-      type
-      defaultValues {
-        id
-        name
-      }
-    }
-    overview_layout_customization {
-        key
-        width
-        label
-    }
-    requestAccessConfiguration {
-        id
-        approval_admin {
-            id
-            name
-        }
-        declined_status {
-            id
-            template {
-                id
-                name
-                color
-            }
-        }
-        approved_status {
-            template {
-                id
-                name
-                color
-            }
-        }
-    }
-  }
-`;
+import { EntitySettingsFragment_entitySetting$key } from './__generated__/EntitySettingsFragment_entitySetting.graphql';
+import { entitySettingsFragment } from './EntitySettingsFragment';
 
 export const entitySettingPatch = graphql`
   mutation EntitySettingSettingsPatchMutation(
@@ -72,18 +22,18 @@ export const entitySettingPatch = graphql`
     $input: [EditInput!]!
   ) {
     entitySettingsFieldPatch(ids: $ids, input: $input) {
-      ...EntitySettingSettings_entitySetting
+      ...EntitySettingsFragment_entitySetting
     }
   }
 `;
 
 interface EntitySettingSettingsProps {
-  entitySettingsData: EntitySettingSettings_entitySetting$key;
+  entitySettingsData: EntitySettingsFragment_entitySetting$key;
 }
 
 const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProps) => {
   const { t_i18n } = useFormatter();
-  const entitySetting = useFragment(entitySettingFragment, entitySettingsData);
+  const entitySetting = useFragment(entitySettingsFragment, entitySettingsData);
   if (!entitySetting) {
     return <ErrorNotFound />;
   }
