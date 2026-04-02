@@ -53,4 +53,3 @@ const RootActivity = () => {
 };
 
 export default RootActivity;
-
