@@ -86,6 +86,7 @@ const StixDomainObjectTabsBox = ({ basePath, extraActions, tabs }: StixDomainObj
       sx={{
         borderBottom: 1,
         borderColor: 'divider',
+        marginBottom: 3,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
