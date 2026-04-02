@@ -1,4 +1,5 @@
 import Button from '@common/button/Button';
+import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
 import CoreForm from '@rjsf/core';
 import JsonForm from '@rjsf/mui';
@@ -190,21 +191,37 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
               multiple={true}
               name="restricted_members"
             />
-            <JsonForm
-              uiSchema={{
-                ...JSON.parse(data?.notifier_connector?.connector_schema_ui ?? ' {}'),
-                ...uiSchema,
+            <Box
+              sx={{
+                paddingLeft: '15px',
+                '& .MuiGrid-root': {
+                  flexDirection: 'column',
+                  paddingTop: '16px',
+                },
+                '& .MuiGrid-container': {
+                  paddingTop: '10px',
+                },
               }}
-              ref={formRef}
-              showErrorList={false}
-              liveValidate
-              schema={JSON.parse(data?.notifier_connector?.connector_schema ?? ' {}')}
-              formData={JSON.parse(notifierConfiguration.current)}
-              validator={notifierValidator}
-              onChange={(newValue) => {
-                notifierConfiguration.current = JSON.stringify(newValue.formData);
-              }}
-            />
+            >
+              <JsonForm
+                uiSchema={{
+                  ...JSON.parse(data?.notifier_connector?.connector_schema_ui ?? ' {}'),
+                  ...uiSchema,
+                }}
+                ref={formRef}
+                tagName="div"
+                showErrorList={false}
+                liveValidate
+                schema={JSON.parse(data?.notifier_connector?.connector_schema ?? ' {}')}
+                formData={JSON.parse(notifierConfiguration.current)}
+                validator={notifierValidator}
+                onChange={(newValue) => {
+                  notifierConfiguration.current = JSON.stringify(newValue.formData);
+                }}
+              >
+                <></>
+              </JsonForm>
+            </Box>
             <div className={classes.buttons}>
               <Button
                 onClick={() => {
