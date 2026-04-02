@@ -3878,6 +3878,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rjsf/validator-ajv8@npm:6.4.2":
+  version: 6.4.2
+  resolution: "@rjsf/validator-ajv8@npm:6.4.2"
+  dependencies:
+    ajv: "npm:^8.17.1"
+    ajv-formats: "npm:^2.1.1"
+    lodash: "npm:^4.17.23"
+    lodash-es: "npm:^4.17.23"
+  peerDependencies:
+    "@rjsf/utils": ^6.4.x
+  checksum: 10c0/e6edc0347e49ffd3125985c8d70bc3c458abb6f61b3450902771f16ab9c1c72a334291d25c118b6eb7bafb18329513cca614a164e4c75a9d3117db06e21ba7c4
+  languageName: node
+  linkType: hard
+
 "@rolldown/binding-android-arm64@npm:1.0.0-rc.12":
   version: 1.0.0-rc.12
   resolution: "@rolldown/binding-android-arm64@npm:1.0.0-rc.12"
@@ -5540,7 +5554,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ajv@npm:^8.0.0, ajv@npm:^8.6.1, ajv@npm:^8.9.0":
+"ajv@npm:^8.0.0, ajv@npm:^8.17.1, ajv@npm:^8.6.1, ajv@npm:^8.9.0":
   version: 8.18.0
   resolution: "ajv@npm:8.18.0"
   dependencies:
@@ -12127,6 +12141,7 @@ __metadata:
     "@rjsf/core": "npm:6.4.2"
     "@rjsf/mui": "npm:6.4.2"
     "@rjsf/utils": "npm:6.4.2"
+    "@rjsf/validator-ajv8": "npm:6.4.2"
     "@stylistic/eslint-plugin": "npm:5.10.0"
     "@testing-library/dom": "npm:10.4.1"
     "@testing-library/jest-dom": "npm:6.9.1"

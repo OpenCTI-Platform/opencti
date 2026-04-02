@@ -52,6 +52,7 @@
     "@rjsf/core": "6.4.2",
     "@rjsf/mui": "6.4.2",
     "@rjsf/utils": "6.4.2",
+    "@rjsf/validator-ajv8": "6.4.2",
     "analytics": "0.8.19",
     "apexcharts": "4.4.0",
     "axios": "1.14.0",
