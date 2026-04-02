@@ -16215,7 +16215,7 @@ export type ManagerContractConfiguration = {
 
 export type ManagerContractExcerpt = {
   __typename?: 'ManagerContractExcerpt';
-  logo: Maybe<Scalars['String']['output']>;
+  logo: Scalars['String']['output'];
   slug: Scalars['String']['output'];
   title: Scalars['String']['output'];
 };
