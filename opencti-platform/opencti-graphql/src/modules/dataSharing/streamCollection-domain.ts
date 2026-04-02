@@ -81,6 +81,14 @@ export const streamCollectionEditField = async (context: AuthContext, user: Auth
   if (publicUserIdItem?.value?.[0]) {
     await validatePublicUserId(context, publicUserIdItem.value[0]);
   }
+  const settingPublicTrue = input.find((item) => item.key === 'stream_public' && item.value?.[0] === 'true');
+  if (settingPublicTrue) {
+    const existingCollection = await findById(context, user, collectionId);
+    const effectiveUserId = publicUserIdItem?.value?.[0] ?? existingCollection?.stream_public_user_id;
+    if (!effectiveUserId) {
+      throw FunctionalError('A user must be configured when the stream collection is public');
+    }
+  }
   const finalInput = input.map(({ key, value }) => {
     const item = { key, value };
     if (key === authorizedMembers.name) {
