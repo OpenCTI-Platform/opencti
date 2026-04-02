@@ -9,13 +9,6 @@ type WorkflowActionConfig {
     mode: WorkflowActionMode!
 }
 
-type WorkflowConditionConfig {
-    type: String
-    field: String
-    operator: String
-    value: String
-}
-
 type WorkflowSerializedState {
     statusId: String!
     onEnter: [WorkflowActionConfig!]
@@ -27,7 +20,7 @@ type WorkflowSerializedTransition {
     to: String!
     event: String!
     actions: [WorkflowActionConfig!]
-    conditions: [WorkflowConditionConfig!]
+    conditions: JSON!
 }
 
 type WorkflowSchema {

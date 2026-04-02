@@ -1,6 +1,7 @@
 import type { Node, Edge } from 'reactflow';
 import { SubTypeWorkflowQuery$data, WorkflowActionMode } from '../__generated__/SubTypeWorkflowQuery.graphql';
 import { AuthorizedMemberOption } from '../../../../../utils/authorizedMembers';
+import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 
 export type Condition = { field: string; operator: string; value: string }
   | { type: string };
@@ -21,7 +22,7 @@ export type Status = {
 export type Transition = {
   event: string;
   actions?: Action[];
-  conditions?: Condition[];
+  conditions?: FilterGroup;
 };
 
 export const NEW_EVENT_NAME = 'NEW_EVENT';
@@ -89,7 +90,7 @@ const transformToWorkflowDefinition = (
   // 2. Extract transitions
   const transitions = nodes.flatMap((node) => {
     if (node.type === WorkflowNodeType.transition) {
-      const { event, conditions = [], actions = [] } = node.data;
+      const { event, conditions = {}, actions = [] } = node.data;
 
       // Find ALL incoming edges (From Status -> This Transition)
       const incomingEdges = edges.filter((e) => e.target === node.id);

@@ -72,8 +72,8 @@ const TransitionNode = ({ data, id }: NodeProps) => {
             </div>
             <ul style={{ margin: 0, padding: 0, listStyleType: 'none' }}>
               <li>
-                {!!data.conditions?.length && `${data.conditions?.length} ${t_i18n('conditions')}`}
-                {!!data.conditions?.length && !!data.actions?.length ? ' | ' : ' '}
+                {!!data.conditions?.filters?.filters && `${data.conditions.filters?.filters?.length} ${t_i18n('conditions')}`}
+                {!!data.conditions?.filters?.filters && !!data.actions?.length ? ' | ' : ' '}
                 {!!data.actions?.length && `${data.actions?.length} ${t_i18n('actions')}`}
               </li>
             </ul>

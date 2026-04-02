@@ -1,4 +1,4 @@
-import type { WorkflowActionMode } from '../../../generated/graphql';
+import type { FilterGroup, WorkflowActionMode } from '../../../generated/graphql';
 
 /**
  * Serialized configuration for a side effect action.
@@ -7,17 +7,6 @@ export interface ActionConfig {
   type: string;
   params?: any;
   mode: WorkflowActionMode;
-}
-
-/**
- * Serialized configuration for a guard condition.
- */
-export interface ConditionConfig {
-  type?: string; // For named registry conditions
-  params?: any; // Params for named conditions
-  field?: string; // For direct field comparison
-  operator?: 'eq' | 'neq' | 'gt' | 'lt' | 'gte' | 'lte' | 'contains';
-  value?: any;
 }
 
 /**
@@ -38,7 +27,7 @@ export interface SerializedTransition {
   to: string; // ID of the destination StatusTemplate
   event: string;
   actions?: ActionConfig[];
-  conditions?: ConditionConfig[];
+  conditions?: FilterGroup;
 }
 
 /**

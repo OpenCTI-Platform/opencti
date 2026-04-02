@@ -107,7 +107,7 @@ const Workflow = ({ queryRef }: { queryRef: PreloadedQuery<SubTypeWorkflowQuery>
       const newState = {
         id: edge.id,
         type: WorkflowNodeType.placeholder,
-        data: { name: null, conditions: [] },
+        data: { name: null, conditions: {} },
         position: { x: 0, y: 0 },
         source: edge.source,
         target: edge.target,
