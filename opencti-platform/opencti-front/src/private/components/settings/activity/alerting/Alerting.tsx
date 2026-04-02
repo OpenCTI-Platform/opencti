@@ -9,7 +9,6 @@ import usePreloadedPaginationFragment from '../../../../../utils/hooks/usePreloa
 import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
 import { AlertingPaginationQuery, AlertingPaginationQuery$variables } from './__generated__/AlertingPaginationQuery.graphql';
 import AlertCreation from './AlertCreation';
-import ActivityMenu from '../../ActivityMenu';
 import { AlertingLines_data$key } from './__generated__/AlertingLines_data.graphql';
 import { AlertingLineComponent, AlertingLineDummy } from './AlertingLine';
 import type { Theme } from '../../../../../components/Theme';
@@ -221,7 +220,6 @@ const Alerting: FunctionComponent = () => {
 
   return (
     <div className={classes.container} data-testid="alerting-page">
-      <ActivityMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Alerting'), current: true }]} />
       {renderLines()}
     </div>

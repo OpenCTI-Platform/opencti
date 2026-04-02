@@ -24,11 +24,9 @@ import useSettingsFallbackUrl from '../../../utils/hooks/useSettingsFallbackUrl'
 const Security = lazy(() => import('../../../utils/Security'));
 const Settings = lazy(() => import('./Settings'));
 const FileIndexing = lazy(() => import('./file_indexing/FileIndexing'));
-const Audit = lazy(() => import('./activity/audit/Root'));
-const Configuration = lazy(() => import('./activity/configuration/Configuration'));
-const Alerting = lazy(() => import('./activity/alerting/Alerting'));
 const Experience = lazy(() => import('./Experience'));
 const RootAccesses = lazy(() => import('./accesses/Root'));
+const RootActivity = lazy(() => import('./activity/Root'));
 const RootCustomization = lazy(() => import('./customization/Root'));
 const RootVocabularies = lazy(() => import('./vocabularies/Root'));
 
@@ -62,34 +60,10 @@ const Root = () => {
             )}
           />
           <Route
-            path="/activity"
+            path="/activity/*"
             element={(
               <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={fallbackUrl} />}>
-                <Navigate to="/dashboard/settings/activity/audit" replace={true} />
-              </Security>
-            )}
-          />
-          <Route
-            path="/activity/audit"
-            element={(
-              <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={fallbackUrl} />}>
-                <Audit />
-              </Security>
-            )}
-          />
-          <Route
-            path="/activity/configuration"
-            element={(
-              <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={fallbackUrl} />}>
-                <Configuration />
-              </Security>
-            )}
-          />
-          <Route
-            path="/activity/alerting"
-            element={(
-              <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={fallbackUrl} />}>
-                <Alerting />
+                <RootActivity />
               </Security>
             )}
           />
