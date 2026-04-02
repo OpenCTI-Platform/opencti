@@ -76,7 +76,7 @@ const TABS_INFO: readonly TabInfo[] = [{
   tab: 'history',
   path: 'history',
   label: 'History',
-}] satisfies TabInfo[];
+}];
 
 const StixDomainObjectTabsBox = ({ basePath, extraActions, tabs }: StixDomainObjectTabsBoxProps) => {
   const { t_i18n } = useFormatter();
