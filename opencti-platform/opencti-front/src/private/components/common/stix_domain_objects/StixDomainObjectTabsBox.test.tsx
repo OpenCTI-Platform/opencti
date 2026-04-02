@@ -77,7 +77,7 @@ describe('StixDomainObjectTabsBox', () => {
         name: new RegExp(customViewDisplayName, 'i'),
       })).not.toBeInTheDocument();
       expect(screen.queryByRole('tab', {
-        name: /Custom views/i,
+        name: /Custom view/i,
       })).not.toBeInTheDocument();
     });
   });
@@ -149,7 +149,7 @@ describe('StixDomainObjectTabsBox', () => {
           }),
         },
       );
-      const tabElem = screen.getByRole('tab', { name: /Custom views/i });
+      const tabElem = screen.getByRole('tab', { name: /Custom view/i });
       expect(tabElem).toBeInTheDocument();
       await user.click(tabElem);
       const firstLinkElem = screen.getByRole('link', { name: /My first custom view/i });
@@ -196,7 +196,7 @@ describe('StixDomainObjectTabsBox', () => {
         name: new RegExp(customViewDisplayName, 'i'),
       })).not.toBeInTheDocument();
       expect(screen.queryByRole('tab', {
-        name: /Custom views/i,
+        name: /Custom view/i,
       })).not.toBeInTheDocument();
     });
   });
