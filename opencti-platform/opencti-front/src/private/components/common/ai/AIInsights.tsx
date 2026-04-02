@@ -188,7 +188,15 @@ const AIInsights = ({
   const { xtmOneConfigured } = useChatbot();
   const useXtmOne = xtmOneConfigured === true;
 
-  // ── Agent state (lifted from AISummaryContainers for header placement) ──
+  // ── Intent mapping per tab ──
+  const intentForTab: Record<string, string> = {
+    activity: 'cti.entity_activity',
+    containers: 'cti.container_summary',
+    forecast: 'cti.entity_forecast',
+    history: 'cti.entity_history',
+  };
+
+  // ── Agent state (per-tab agent selection) ──
   const [agentOptions, setAgentOptions] = useState<AgentOption[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<AgentOption | undefined>(undefined);
   const [loadingAgents, setLoadingAgents] = useState(true);
@@ -198,14 +206,18 @@ const AIInsights = ({
       setLoadingAgents(false);
       return;
     }
-    fetchAgentsForIntent('cti.container_summary').then((agents) => {
+    const intent = intentForTab[currentTab] ?? 'cti.container_summary';
+    setLoadingAgents(true);
+    fetchAgentsForIntent(intent).then((agents) => {
       setAgentOptions(agents);
       if (agents.length > 0) {
         setSelectedAgent(agents[0]);
+      } else {
+        setSelectedAgent(undefined);
       }
       setLoadingAgents(false);
     });
-  }, [useXtmOne]);
+  }, [useXtmOne, currentTab]);
 
   const handleAgentChange = (_event: unknown, newValue: AgentOption | null) => {
     if (newValue) {
@@ -270,7 +282,7 @@ const AIInsights = ({
     );
   }
 
-  if (isEnterpriseEdition && !fullyActive) {
+  if (isEnterpriseEdition && !fullyActive && !useXtmOne) {
     return (
       <>
         <AiInsightButton
@@ -361,6 +373,7 @@ const AIInsights = ({
               id={id}
               loading={loading}
               setLoading={setLoading}
+              selectedAgent={selectedAgent}
             />
           )}
           {currentTab === 'containers' && (
@@ -378,6 +391,7 @@ const AIInsights = ({
               id={id}
               loading={loading}
               setLoading={setLoading}
+              selectedAgent={selectedAgent}
             />
           )}
           {currentTab === 'history' && (
@@ -385,6 +399,7 @@ const AIInsights = ({
               id={id}
               loading={loading}
               setLoading={setLoading}
+              selectedAgent={selectedAgent}
             />
           )}
         </div>
