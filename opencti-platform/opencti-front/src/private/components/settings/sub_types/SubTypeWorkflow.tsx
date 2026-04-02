@@ -35,13 +35,7 @@ export const workflowQuery = graphql`
           mode
           params
         }
-        conditions {
-          type
-          field
-          operator
-          value
-        }
-        
+        conditions
       }
     }
     members(search: "", first: 100) {

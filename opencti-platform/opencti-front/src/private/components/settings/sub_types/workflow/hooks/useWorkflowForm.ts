@@ -6,7 +6,9 @@ import { useFormatter } from '../../../../../../components/i18n';
 import useAddStatus from './useAddStatus';
 import useDeleteElement from './useDeleteElement';
 import { WorkflowEditionFormValues } from '../WorkflowEditionDrawer';
-import { Action, Condition, WorkflowActionType, WorkflowDataType, WorkflowNodeType } from '../utils';
+import { Action, WorkflowActionType, WorkflowDataType, WorkflowNodeType } from '../utils';
+import type { FilterGroup } from '../../../../../../utils/filters/filtersHelpers-types';
+import { emptyFilterGroup } from '../../../../../../utils/filters/filtersUtils';
 
 // Validation Factory
 const getValidationSchema = (isStatus: boolean, t: (s: string) => string) => {
@@ -49,18 +51,16 @@ export const useWorkflowForm = (selectedElement: Node | Edge, onClose: () => voi
     setFieldValue: FormikHelpers<WorkflowEditionFormValues>['setFieldValue'],
     values: WorkflowEditionFormValues,
   ) => {
-    let newItem: Action | Condition;
-
     if (type === WorkflowDataType.conditions) {
-      newItem = { field: '', operator: 'eq', value: '' };
+      const newItem: FilterGroup = emptyFilterGroup;
+      setFieldValue(type, newItem);
     } else {
-      newItem = actionName === WorkflowActionType.updateAuthorizedMembers
+      const newItem: Action = actionName === WorkflowActionType.updateAuthorizedMembers
         ? { type: actionName, params: { authorized_members: [] } }
         : { type: actionName };
+      const currentList = values[type] || [];
+      setFieldValue(type, [...currentList, newItem]);
     }
-
-    const currentList = values[type] || [];
-    setFieldValue(type, [...currentList, newItem]);
   };
 
   const onSubmit = (values: WorkflowEditionFormValues) => {

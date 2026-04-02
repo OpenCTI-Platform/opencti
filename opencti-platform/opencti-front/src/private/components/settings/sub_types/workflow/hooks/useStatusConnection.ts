@@ -32,7 +32,7 @@ export const useStatusConnection = () => {
       const newTransitionNode: Node = {
         id: transitionId,
         type: WorkflowNodeType.transition,
-        data: { event: NEW_EVENT_NAME, conditions: [] },
+        data: { event: NEW_EVENT_NAME, conditions: {} },
         position: { x: 0, y: 0 },
       };
 

@@ -30,7 +30,7 @@ const useAddStatus = (selectedElement: Node | Edge) => {
       const newTransitionNode: Node = {
         id: transitionId,
         type: WorkflowNodeType.transition,
-        data: { event: NEW_EVENT_NAME, conditions: [] },
+        data: { event: NEW_EVENT_NAME, conditions: {} },
         position: sourceNode.position,
       };
 
@@ -72,7 +72,7 @@ const useAddStatus = (selectedElement: Node | Edge) => {
         firstNewNode = {
           id: transitionId,
           type: WorkflowNodeType.transition,
-          data: { event: NEW_EVENT_NAME, conditions: [] },
+          data: { event: NEW_EVENT_NAME, conditions: {} },
           position: sourceNode.position,
         };
         secondNewNode = {
@@ -92,7 +92,7 @@ const useAddStatus = (selectedElement: Node | Edge) => {
         secondNewNode = {
           id: transitionId,
           type: WorkflowNodeType.transition,
-          data: { event: NEW_EVENT_NAME, conditions: [] },
+          data: { event: NEW_EVENT_NAME, conditions: {} },
           position: targetNode.position,
         };
       }

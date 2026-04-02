@@ -26,6 +26,9 @@ import {
   RELATION_DYNAMIC_TO_FILTER,
   SIGHTED_BY_FILTER,
   SPECIAL_FILTER_KEYS,
+  WORKFLOW_USER_FILTER,
+  WORKFLOW_ORGANIZATION_FILTER,
+  WORKFLOW_GROUP_FILTER,
 } from './filtering-constants';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
@@ -320,6 +323,9 @@ const specialFilterKeysConvertor = new Map([
   [MEMBERS_USER_FILTER, 'user_id'],
   [MEMBERS_GROUP_FILTER, 'group_ids'],
   [MEMBERS_ORGANIZATION_FILTER, 'organization_ids'],
+  [WORKFLOW_USER_FILTER, 'user_id'],
+  [WORKFLOW_GROUP_FILTER, 'group_ids'],
+  [WORKFLOW_ORGANIZATION_FILTER, 'organization_ids'],
 ]);
 
 /**

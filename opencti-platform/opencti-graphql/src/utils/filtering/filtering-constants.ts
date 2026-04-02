@@ -111,6 +111,11 @@ export const PIR_IDS_SUBFILTER = 'pir_ids';
 // for users
 export const USER_SERVICE_ACCOUNT_FILTER = 'user_service_account';
 
+// for workflow
+export const WORKFLOW_USER_FILTER = 'workflow_user';
+export const WORKFLOW_GROUP_FILTER = 'workflow_group';
+export const WORKFLOW_ORGANIZATION_FILTER = 'workflow_organization';
+
 const COMPLEX_CONVERSION_FILTER_KEYS = [
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)
   TYPE_FILTER, // values should match any parent_types
@@ -169,6 +174,9 @@ export const SPECIAL_FILTER_KEYS = [
   MEMBERS_USER_FILTER,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
+  WORKFLOW_USER_FILTER,
+  WORKFLOW_GROUP_FILTER,
+  WORKFLOW_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
   ...COMPLEX_CONVERSION_FILTER_KEYS,
 ];
@@ -196,6 +204,9 @@ export const SPECIAL_FILTER_KEYS_WHOSE_VALUE_TO_RESOLVE = [
   MEMBERS_USER_FILTER,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
+  WORKFLOW_USER_FILTER,
+  WORKFLOW_GROUP_FILTER,
+  WORKFLOW_ORGANIZATION_FILTER,
   RULE_FILTER, // for inference engine rules
   WORKFLOW_FILTER,
   INSTANCE_RELATION_FILTER,
@@ -214,6 +225,7 @@ export const FILTER_KEYS_WITH_ME_VALUE = [
   CREATOR_FILTER,
   CONTEXT_ENTITY_ID_FILTER,
   MEMBERS_USER_FILTER,
+  WORKFLOW_USER_FILTER,
 ];
 
 // multi filter keys
