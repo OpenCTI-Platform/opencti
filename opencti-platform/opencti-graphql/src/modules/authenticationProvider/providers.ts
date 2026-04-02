@@ -175,7 +175,7 @@ export const initializeAuthenticationProviders = async (context: AuthContext) =>
     // First manage local
     const confProviders = getProvidersFromEnvironment();
 
-    // First Local singleton provider
+    // First Local singleton provider - updating settings with environment setup
     if (isLocalAuthEnabledInEnv(confProviders)) {
       await registerLocalStrategy();
       await updateLocalAuth(context, SYSTEM_USER, settings.id, { enabled: true });

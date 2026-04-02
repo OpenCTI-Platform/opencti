@@ -136,16 +136,3 @@ export const isLocalAuthEnabledInEnv = (envProviders: Record<string, any>): bool
   const local = envProviders['local'];
   return local?.config?.disabled !== true;
 };
-
-export const isLocalAuthEnabled = (platformSettings: BasicStoreSettings) => {
-  if (isLocalAuthForcedEnabledFromEnv()) {
-    return true;
-  } else {
-    if (isAuthenticationForcedFromEnv()) {
-      const envConfigurations = getProvidersFromEnvironment() ?? {};
-      return isLocalAuthEnabledInEnv(envConfigurations);
-    } else {
-      return platformSettings.local_auth?.enabled;
-    }
-  }
-};

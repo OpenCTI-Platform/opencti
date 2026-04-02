@@ -7,7 +7,7 @@ import { publishUserAction } from '../listener/UserActionListener';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 import { LOCAL_PROVIDER } from '../modules/authenticationProvider/provider-local';
-import { AuthType, EnvStrategyType, isLocalAuthEnabled, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
+import { AuthType, EnvStrategyType, isLocalAuthForcedEnabledFromEnv, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -17,7 +17,7 @@ import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput 
 
 export const buildAvailableProviders = async (platformSettings: BasicStoreSettings) => {
   const availableProviders = [...PROVIDERS];
-  if (isLocalAuthEnabled(platformSettings)) {
+  if (platformSettings.local_auth?.enabled || isLocalAuthForcedEnabledFromEnv()) {
     availableProviders.push({
       name: platformSettings.local_auth?.button_label_override || 'local',
       type: AuthType.AUTH_FORM,
