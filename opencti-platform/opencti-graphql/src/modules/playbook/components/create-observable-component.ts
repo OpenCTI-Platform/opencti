@@ -51,10 +51,6 @@ export const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObser
   executor: async ({ playbookNode, dataInstanceId, bundle }) => {
     const { applyToElements, wrap_in_container } = playbookNode.configuration;
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    // const indicators = [baseData];
-    // if (all) {
-    //   pushAll(indicators, bundle.objects.filter((object) => object.id !== dataInstanceId));
-    // }
 
     const elementsToApply = bundle.objects.filter((object) => isBundleElementInScope(object, applyToElements, dataInstanceId));
     const { type: baseDataType } = baseData.extensions[STIX_EXT_OCTI];
