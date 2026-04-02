@@ -4562,7 +4562,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/hoist-non-react-statics@npm:^3.3.1, @types/hoist-non-react-statics@npm:^3.3.6":
+"@types/hoist-non-react-statics@npm:^3.3.1, @types/hoist-non-react-statics@npm:^3.3.7":
   version: 3.3.7
   resolution: "@types/hoist-non-react-statics@npm:3.3.7"
   dependencies:
@@ -12239,7 +12239,7 @@ __metadata:
     react-apexcharts: "npm:1.7.0"
     react-color: "npm:2.19.3"
     react-compound-slider: "npm:3.4.0"
-    react-cookie: "npm:8.0.1"
+    react-cookie: "npm:8.1.0"
     react-csv: "npm:2.2.2"
     react-dom: "npm:19.2.4"
     react-draggable: "npm:4.5.0"
@@ -12898,16 +12898,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-cookie@npm:8.0.1":
-  version: 8.0.1
-  resolution: "react-cookie@npm:8.0.1"
+"react-cookie@npm:8.1.0":
+  version: 8.1.0
+  resolution: "react-cookie@npm:8.1.0"
   dependencies:
-    "@types/hoist-non-react-statics": "npm:^3.3.6"
+    "@types/hoist-non-react-statics": "npm:^3.3.7"
     hoist-non-react-statics: "npm:^3.3.2"
     universal-cookie: "npm:^8.0.0"
   peerDependencies:
     react: ">= 16.3.0"
-  checksum: 10c0/af6136c79129d7ffd78a399b169b814c5ea1f05324bfd5ca65e5361e7bdf66de7699fc6d2303641cd7d6c5cc3364b3682510a7a1bdc7f59a721afa01bf13b79f
+  checksum: 10c0/5186fa81ad71251f9ea6bfc4d5e6231b199afb65eb67cd66813d016fdaf7ea4c9469f1a9082b81884dd1b34c95915be81fec34d8ea8a2921cd9b682b50f37342
   languageName: node
   linkType: hard
 
