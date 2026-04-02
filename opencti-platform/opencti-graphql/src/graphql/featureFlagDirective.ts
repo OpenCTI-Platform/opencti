@@ -49,7 +49,7 @@ export const makeFeatureFlagDirectiveTransformer = (): (schema: GraphQLSchema) =
           if (softFail) {
             return null;
           } else {
-            throw ForbiddenAccess();
+            throw ForbiddenAccess('Feature is disabled', { flags });
           }
         }
         return resolve(source, args, context, info);
