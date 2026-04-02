@@ -5352,10 +5352,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ae-cvss-calculator@npm:1.0.11":
-  version: 1.0.11
-  resolution: "ae-cvss-calculator@npm:1.0.11"
-  checksum: 10c0/a8cc5385ce84a67d1f7e137fbefb8e22b32de1f39fa83cbe30f38a33d46ab30ebffca33ce53d7dc68dee4e84493dab7bb9b56c901545f9b414d5b70150bc6d72
+"ae-cvss-calculator@npm:1.0.12":
+  version: 1.0.12
+  resolution: "ae-cvss-calculator@npm:1.0.12"
+  checksum: 10c0/2ee4b60a9482acfb678371e901975efabe7abe8b69b48b754b422332a271dbd2d212f3b6e7771e8a0e0fd52514e11d0b81277a7bfc9eb9e0a7737d667a39dd1d
   languageName: node
   linkType: hard
 
@@ -10565,7 +10565,7 @@ __metadata:
     "@types/validator": "npm:13.15.10"
     "@types/xml2js": "npm:0.4.14"
     "@vitest/coverage-v8": "npm:3.2.4"
-    ae-cvss-calculator: "npm:1.0.11"
+    ae-cvss-calculator: "npm:1.0.12"
     ajv: "npm:8.18.0"
     ajv-formats: "npm:3.0.1"
     amqplib: "npm:1.0.2"
