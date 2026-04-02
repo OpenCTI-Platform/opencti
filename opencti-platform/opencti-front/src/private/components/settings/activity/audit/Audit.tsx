@@ -20,7 +20,6 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Alert from '@mui/material/Alert';
 import { CSVLink } from 'react-csv';
 import { graphql } from 'react-relay';
-import ActivityMenu from '../../ActivityMenu';
 import type { Theme } from '../../../../../components/Theme';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
@@ -220,7 +219,6 @@ const Audit = () => {
   ) : <></>;
   return (
     <div className={classes.container} data-testid="audit-page">
-      <ActivityMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, {
         label: t_i18n('Events'),
         current: true,
