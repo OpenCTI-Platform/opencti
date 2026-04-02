@@ -33,8 +33,12 @@ describe('featureFlagDirective', () => {
     const result = await graphql({ schema, source: '{ flaggedFeature }' });
 
     expect(result.errors).not.toBeUndefined();
-    expect(result.errors?.[0].message).toMatch(/You are not allowed to do this/i);
+    expect(result.errors?.[0].message).toMatch(/Feature is disabled/i);
     expect(result.errors?.[0].extensions?.code).toMatch(/FORBIDDEN_ACCESS/i);
+    expect(result.errors?.[0].extensions?.data).toMatchObject({
+      flags: ['SOME_FLAG', 'SOME_OTHER_FLAG'],
+      http_status: 403,
+    });
   });
 
   it('calls the resolver when one of the flags is enabled', async () => {
