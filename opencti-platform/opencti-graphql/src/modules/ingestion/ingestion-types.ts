@@ -53,6 +53,7 @@ export const ENTITY_TYPE_INGESTION_TAXII = 'IngestionTaxii';
 export interface BasicStoreEntityIngestionTaxii extends BasicStoreEntity {
   name: string;
   description: string;
+  scheduling_period: string;
   uri: string;
   version: string;
   collection: string;
@@ -70,6 +71,7 @@ export interface BasicStoreEntityIngestionTaxii extends BasicStoreEntity {
 export interface StoreEntityIngestionTaxii extends StoreEntity {
   name: string;
   description: string;
+  scheduling_period: string;
   uri: string;
   version: string;
   collection: string;

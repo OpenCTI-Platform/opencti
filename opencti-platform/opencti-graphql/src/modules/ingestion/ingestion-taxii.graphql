@@ -22,6 +22,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
     refreshed_at: DateTime
     name: String!
     description: String
+    scheduling_period: String
     uri: String!
     collection: String!
     version: TaxiiVersion!
@@ -56,6 +57,7 @@ type IngestionTaxiiEdge {
 type TaxiiFeedAddInputFromImport {
     name: String!
     description: String!
+    scheduling_period: String
     uri: String!
     version: String!
     collection: String!
@@ -85,6 +87,7 @@ type Query {
 input IngestionTaxiiAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
+    scheduling_period: String
     version: TaxiiVersion!
     authentication_type: IngestionAuthType!
     authentication_value: String

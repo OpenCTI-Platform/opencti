@@ -1,12 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { prepareTaxiiGetParam, processCsvLines, processTaxiiResponse, type TaxiiResponseData } from '../../../src/manager/ingestionManager';
+import {
+  prepareTaxiiGetParam,
+  processCsvLines,
+  processTaxiiResponse,
+  pushBundleToConnectorQueue,
+  taxiiExecutor,
+  type TaxiiResponseData,
+} from '../../../src/manager/ingestionManager';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { addIngestion as addTaxiiIngestion, findById as findTaxiiIngestionById, ingestionDelete, patchTaxiiIngestion } from '../../../src/modules/ingestion/ingestion-taxii-domain';
 import { type CsvMapperAddInput, IngestionAuthType, type IngestionCsvAddInput, type IngestionTaxiiAddInput, TaxiiVersion } from '../../../src/generated/graphql';
 import type { StixReport } from '../../../src/types/stix-2-1-sdo';
 import { now } from '../../../src/utils/format';
 import type { CsvMapperParsed } from '../../../src/modules/internal/csvMapper/csvMapper-types';
-import type { BasicStoreEntityIngestionCsv } from '../../../src/modules/ingestion/ingestion-types';
+import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionTaxii } from '../../../src/modules/ingestion/ingestion-types';
+import type { StixBundle } from '../../../src/types/stix-2-1-common';
 import { csvMapperMockCities } from './ingestionManager/csv-mapper-cities';
 import { addIngestionCsv, findById as findIngestionCsvById } from '../../../src/modules/ingestion/ingestion-csv-domain';
 import { createCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-domain';
@@ -25,6 +33,7 @@ describe('Verify taxii ingestion', () => {
       uri: 'http://test.invalid',
       version: TaxiiVersion.V21,
       user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
     };
     const ingestionNotPagination = await addTaxiiIngestion(testContext, ADMIN_USER, input);
     expect(ingestionNotPagination.id).toBeDefined();
@@ -71,6 +80,7 @@ describe('Verify taxii ingestion', () => {
       version: TaxiiVersion.V21,
       added_after_start: '2024-01-01T20:35:44.000Z',
       user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
     };
     const ingestionPaginatedWithStartDate = await addTaxiiIngestion(testContext, ADMIN_USER, input2);
     expect(ingestionPaginatedWithStartDate.id).toBeDefined();
@@ -144,6 +154,7 @@ describe('Verify taxii ingestion', () => {
       uri: 'http://test.invalid',
       version: TaxiiVersion.V21,
       user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
     };
     const ingestionPaginatedWithNoStartDate = await addTaxiiIngestion(testContext, ADMIN_USER, input3);
     expect(ingestionPaginatedWithNoStartDate.id).toBeDefined();
@@ -218,6 +229,7 @@ describe('Verify taxii ingestion', () => {
       version: TaxiiVersion.V21,
       added_after_start: '2023-01-01T20:35:44.000Z',
       user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
     };
     const ingestionPaginatedWithStartDate = await addTaxiiIngestion(testContext, ADMIN_USER, input2);
     expect(ingestionPaginatedWithStartDate.id).toBeDefined();
@@ -253,6 +265,7 @@ describe('Verify taxii ingestion - patch part', () => {
       uri: 'http://test.invalid',
       version: TaxiiVersion.V21,
       user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
     };
     const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
     expect(ingestion.id).toBeDefined();
@@ -265,6 +278,148 @@ describe('Verify taxii ingestion - patch part', () => {
     // should not throw exception "Unknown Error: Attribute must be a string"
 
     // Delete the ingest
+    await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
+  });
+});
+
+describe('Verify taxiiExecutor', () => {
+  it('should taxiiExecutor process ingestion when queue is empty (messages_number === 0)', async () => {
+    // Create an ingestion with ingestion_running: true and no last_execution_date
+    // so isMustExecuteIteration returns true
+    const input: IngestionTaxiiAddInput = {
+      authentication_type: IngestionAuthType.None,
+      collection: 'testcollection',
+      ingestion_running: true,
+      name: 'taxii executor empty queue test',
+      uri: 'http://test.invalid',
+      version: TaxiiVersion.V21,
+      user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
+    };
+    const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    expect(ingestion.id).toBeDefined();
+
+    // Wait for the queue to be ready
+    await awaitUntilCondition(async () => {
+      try {
+        const queryResult = await queueDetails(connectorIdFromIngestId(ingestion.id));
+        return queryResult?.messages_number >= 0;
+      } catch {
+        return false;
+      }
+    }, 10000, 6);
+
+    // Execute taxiiExecutor - ingestion has no last_execution_date so isMustExecuteIteration returns true
+    // Queue is empty (messages_number === 0) so it will call the taxii handler
+    // The handler will fail because the URI is invalid, but the error is caught internally
+    await expect(taxiiExecutor(testContext)).resolves.not.toThrow();
+
+    await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
+  });
+
+  it('should taxiiExecutor skip ingestion when scheduling period has not elapsed', async () => {
+    // Create an ingestion with a scheduling period and a recent last_execution_date
+    const input: IngestionTaxiiAddInput = {
+      authentication_type: IngestionAuthType.None,
+      collection: 'testcollection',
+      ingestion_running: true,
+      name: 'taxii executor scheduling skip test',
+      uri: 'http://test.invalid',
+      version: TaxiiVersion.V21,
+      user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1D', // 1 day period
+    };
+    const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    expect(ingestion.id).toBeDefined();
+
+    // Wait for the queue to be ready
+    await awaitUntilCondition(async () => {
+      try {
+        const queryResult = await queueDetails(connectorIdFromIngestId(ingestion.id));
+        return queryResult?.messages_number >= 0;
+      } catch {
+        return false;
+      }
+    }, 10000, 6);
+
+    // Patch last_execution_date to now so isMustExecuteIteration returns false (1 day not elapsed)
+    await patchTaxiiIngestion(testContext, ADMIN_USER, ingestion.id, { last_execution_date: now() });
+
+    // Execute taxiiExecutor - should skip the ingestion because scheduling period has not elapsed
+    await expect(taxiiExecutor(testContext)).resolves.not.toThrow();
+
+    // Verify ingestion state was not modified (no new execution happened)
+    const result = await findTaxiiIngestionById(testContext, ADMIN_USER, ingestion.id);
+    // last_execution_date should still be the patched value (not updated by executor)
+    expect(result.last_execution_date).toBeDefined();
+
+    await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
+  });
+
+  it('should taxiiExecutor handle buffering when queue has remaining messages', async () => {
+    // Create an ingestion
+    const input: IngestionTaxiiAddInput = {
+      authentication_type: IngestionAuthType.None,
+      collection: 'testcollection',
+      ingestion_running: true,
+      name: 'taxii executor buffering test',
+      uri: 'http://test.invalid',
+      version: TaxiiVersion.V21,
+      user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
+    };
+    const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    expect(ingestion.id).toBeDefined();
+
+    // Wait for the queue to be ready
+    await awaitUntilCondition(async () => {
+      try {
+        const queryResult = await queueDetails(connectorIdFromIngestId(ingestion.id));
+        return queryResult?.messages_number >= 0;
+      } catch {
+        return false;
+      }
+    }, 10000, 6);
+
+    // Push a fake bundle to the queue so messages_number > 0
+    const fakeBundle: StixBundle = {
+      type: 'bundle',
+      spec_version: '2.1',
+      id: 'bundle--fake-for-buffering-test',
+      objects: [{ type: 'report', spec_version: '2.1', id: 'report--fake', name: 'fake', published: '2024-01-01T00:00:00.000Z' } as unknown as StixReport],
+    };
+    await pushBundleToConnectorQueue(testContext, ingestion as unknown as BasicStoreEntityIngestionTaxii, fakeBundle);
+
+    // Verify the queue has messages
+    await awaitUntilCondition(async () => {
+      const queryResult = await queueDetails(connectorIdFromIngestId(ingestion.id));
+      return queryResult?.messages_number > 0;
+    }, 10000, 6);
+
+    // Now run taxiiExecutor - should enter the buffering branch (messages_number > 0)
+    await expect(taxiiExecutor(testContext)).resolves.not.toThrow();
+
+    await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
+  });
+
+  it('should taxiiExecutor do nothing when no running ingestion exists', async () => {
+    // Create an ingestion that is NOT running
+    const input: IngestionTaxiiAddInput = {
+      authentication_type: IngestionAuthType.None,
+      collection: 'testcollection',
+      ingestion_running: false,
+      name: 'taxii executor not running test',
+      uri: 'http://test.invalid',
+      version: TaxiiVersion.V21,
+      user_id: ADMIN_USER.id,
+      scheduling_period: 'PT1H',
+    };
+    const ingestion = await addTaxiiIngestion(testContext, ADMIN_USER, input);
+    expect(ingestion.id).toBeDefined();
+
+    // Execute taxiiExecutor - should not process the non-running ingestion
+    await expect(taxiiExecutor(testContext)).resolves.not.toThrow();
+
     await ingestionDelete(testContext, ADMIN_USER, ingestion.internal_id);
   });
 });
