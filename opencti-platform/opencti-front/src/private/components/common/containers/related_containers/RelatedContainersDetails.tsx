@@ -48,7 +48,7 @@ const RelatedContainersDetailsDistribution: React.FC<{
   );
 
   const series = data?.stixCoreObjectsDistribution?.map((objectDistribution) => ({
-    name: translateEntityType(objectDistribution?.label),
+    name: translateEntityType(objectDistribution?.label ?? ''),
     data: [objectDistribution?.value],
   })) as ApexAxisChartSeries;
 

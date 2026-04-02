@@ -332,7 +332,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
                 style={{ width: dataColumns.entity_type.width }}
               >
                 {!restricted
-                  ? translateEntityType(entity?.entity_type)
+                  ? translateEntityType(entity?.entity_type ?? '')
                   : t_i18n('Restricted')}
               </div>
               <div

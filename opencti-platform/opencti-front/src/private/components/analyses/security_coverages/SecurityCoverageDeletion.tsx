@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
+import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../components/DeleteDialog';
@@ -26,6 +27,7 @@ const SecurityCoverageDeletion: FunctionComponent<SecurityCoverageDeletionProps>
   objectPath = '/dashboard/analyses/security_coverages',
 }) => {
   const { t_i18n } = useFormatter();
+  const { translateEntityType } = useEntityTranslation();
   const navigate = useNavigate();
   const [commitMutation] = useApiMutation(securityCoverageDeletionMutation);
   const deletion = useDeletion({ handleClose });
