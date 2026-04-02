@@ -1,2 +1,5 @@
-const requireIndex = require("requireindex");
-module.exports.rules = requireIndex(__dirname + "/rules");
+import classesRules from './rules/classes-rule.js';
+
+export default {
+  'classes-rule': classesRules,
+};
