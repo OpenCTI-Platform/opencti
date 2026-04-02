@@ -47,7 +47,7 @@ describe('initializeAuthenticationProviders coverage', () => {
 
     // THEN
     // Should have only the OpenID, and no local since local is disabled in env
-    expect(settingsProviders).toBe([
+    expect(settingsProviders).toStrictEqual([
       {
         logout_remote: undefined,
         name: 'oick',
@@ -79,7 +79,7 @@ describe('initializeAuthenticationProviders coverage', () => {
     const finalSettings = await getSettings(testContext) as unknown as BasicStoreSettings;
     const settingsProviders = await buildAvailableProviders(finalSettings);
 
-    expect(settingsProviders).toBe([
+    expect(settingsProviders).toStrictEqual([
       {
         name: 'local',
         provider: 'local',
