@@ -1,16 +1,16 @@
 import { useMemo, Suspense } from 'react';
-import { Route, Routes, Navigate, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import ToolEdition from '@components/arsenal/tools/ToolEdition';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Tool from './Tool';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -26,6 +26,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import ToolKnowledge from './ToolKnowledge';
 import ToolDeletion from './ToolDeletion';
+import { PATH_TOOL, PATH_TOOLS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootToolSubscription($id: ID!) {
@@ -100,8 +101,9 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
 
   const { forceUpdate } = useForceUpdate();
 
-  const paddingRight = getPaddingRight(location.pathname, toolId, '/dashboard/arsenal/tools');
-  const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
+  const basePath = PATH_TOOL(toolId);
+  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
       {tool ? (
@@ -133,7 +135,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Arsenal') },
-              { label: t_i18n('Tools'), link: '/dashboard/arsenal/tools' },
+              { label: t_i18n('Tools'), link: PATH_TOOLS },
               { label: tool.name, current: true },
             ]}
             />
@@ -162,78 +164,41 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               redirectToContent={true}
               enableEnrollPlaybook={true}
             />
-            <StixDomainObjectTabsBox
-              basePath="/dashboard/arsenal/tools"
-              entity={tool}
-              tabs={[
-                'overview',
-                'knowledge-overview',
-                'content',
-                'analyses',
-                'files',
-                'history',
-              ]}
-            />
-            <Routes>
-              <Route
-                path="/"
-                element={(
-                  <Tool toolData={tool} />
-                )}
-              />
-              <Route
-                path="/knowledge"
-                element={(
-                  <Navigate
-                    replace={true}
-                    to={`/dashboard/arsenal/tools/${toolId}/knowledge/overview`}
-                  />
-                )}
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
+            <StixDomainObjectMain
+              basePath={basePath}
+              pages={{
+                overview:
+                  <Tool toolData={tool} />,
+                knowledge: (
                   <div key={forceUpdate}>
                     <ToolKnowledge toolData={tool} />
                   </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
+                ),
+                content: (
                   <StixCoreObjectContentRoot
                     stixCoreObject={tool}
                   />
-                )}
-              />
-              <Route
-                path="/analyses/*"
-                element={(
+                ),
+                analyses: (
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={tool}
                   />
-                )}
-              />
-              <Route
-                path="/files"
-                element={(
+                ),
+                files: (
                   <FileManager
                     id={toolId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={tool}
                   />
-                )}
-              />
-              <Route
-                path="/history"
-                element={(
+                ),
+                history: (
                   <StixCoreObjectHistory
                     stixCoreObjectId={toolId}
                   />
-                )}
-              />
-            </Routes>
+                ),
+              }}
+            />
           </div>
         </>
       ) : (

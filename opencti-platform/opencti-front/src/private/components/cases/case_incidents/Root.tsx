@@ -3,9 +3,9 @@
 // @ts-nocheck
 import React, { useMemo } from 'react';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import Security from 'src/utils/Security';
@@ -30,6 +30,7 @@ import { getPaddingRight } from '../../../../utils/utils';
 import CaseIncidentEdition from './CaseIncidentEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import CaseIncidentDeletion from './CaseIncidentDeletion';
+import { PATH_CASE_INCIDENT, PATH_CASE_INCIDENTS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
@@ -105,14 +106,15 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
   if (!caseData) {
     return <ErrorNotFound />;
   }
-  const paddingRight = getPaddingRight(location.pathname, caseData.id, '/dashboard/cases/incidents', false);
+  const basePath = PATH_CASE_INCIDENT(caseId);
+  const paddingRight = getPaddingRight(location.pathname, basePath, false);
   const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
   const currentAccessRight = useGetCurrentUserAccessRight(caseData.currentUserAccessRight);
   return (
     <div style={{ paddingRight }} data-testid="incident-details-page">
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
-        { label: t_i18n('Incident responses'), link: '/dashboard/cases/incidents' },
+        { label: t_i18n('Incident responses'), link: PATH_CASE_INCIDENTS },
         { label: caseData.name, current: true },
       ]}
       />
@@ -133,77 +135,35 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
         redirectToContent={true}
         enableEnricher={true}
       />
-      <StixDomainObjectTabsBox
-        basePath="/dashboard/cases/incidents"
-        entity={caseData}
-        tabs={[
-          'overview',
-          'knowledge-graph',
-          'content',
-          'entities',
-          'observables',
-          'files',
-        ]}
-        extraActions={!isKnowledgeOrContent && (
-          <>
-            <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
-            <StixCoreObjectSecurityCoverage id={caseData.id} coverage={caseData.securityCoverage} />
-          </>
-        )}
-      />
-      <Routes>
-        <Route
-          path="/"
-          element={<CaseIncident caseIncidentData={caseData} enableReferences={enableReferences} />}
-        />
-        <Route
-          path="/entities"
-          element={(
-            <ContainerStixDomainObjects
-              container={caseData}
-              enableReferences={enableReferences}
-            />
-          )}
-        />
-        <Route
-          path="/observables"
-          element={(
-            <ContainerStixCyberObservables
-              container={caseData}
-              enableReferences={enableReferences}
-            />
-          )}
-        />
-        <Route
-          path="/knowledge"
-          element={(
-            <Navigate
-              replace={true}
-              to={`/dashboard/cases/incidents/${caseId}/knowledge/graph`}
-            />
-          )}
-        />
-        <Route
-          path="/content/*"
-          element={(
-            <StixCoreObjectContentRoot
-              stixCoreObject={caseData}
-              isContainer={true}
-            />
-          )}
-        />
-        <Route
-          path="/knowledge/*"
-          element={(
+      <StixDomainObjectMain
+        basePath={basePath}
+        pages={{
+          overview: <CaseIncident caseIncidentData={caseData} enableReferences={enableReferences} />,
+          knowledge: (
             <IncidentKnowledge
               caseData={caseData}
               enableReferences={enableReferences}
             />
-          )}
-        />
-        <Route
-          path="/files"
-          element={(
+          ),
+          content: (
+            <StixCoreObjectContentRoot
+              stixCoreObject={caseData}
+              isContainer={true}
+            />
+          ),
+          entities: (
+            <ContainerStixDomainObjects
+              container={caseData}
+              enableReferences={enableReferences}
+            />
+          ),
+          observables: (
+            <ContainerStixCyberObservables
+              container={caseData}
+              enableReferences={enableReferences}
+            />
+          ),
+          files: (
             <StixCoreObjectFilesAndHistory
               id={caseId}
               connectorsExport={connectorsForExport}
@@ -212,9 +172,15 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
               withoutRelations={true}
               bypassEntityId={true}
             />
-          )}
-        />
-      </Routes>
+          ),
+        }}
+        extraActions={!isKnowledgeOrContent && (
+          <>
+            <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
+            <StixCoreObjectSecurityCoverage id={caseData.id} coverage={caseData.securityCoverage} />
+          </>
+        )}
+      />
     </div>
   );
 };

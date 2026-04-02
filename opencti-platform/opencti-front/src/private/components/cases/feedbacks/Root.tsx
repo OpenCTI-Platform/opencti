@@ -2,12 +2,12 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, useLocation, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import Security from 'src/utils/Security';
 import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from 'src/utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -26,6 +26,7 @@ import { getPaddingRight } from '../../../../utils/utils';
 import FeedbackEdition from './FeedbackEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import FeedbackDeletion from './FeedbackDeletion';
+import { PATH_FEEDBACK, PATH_FEEDBACKS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootFeedbackSubscription($id: ID!) {
@@ -105,13 +106,14 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
   if (!feedbackData) {
     return <ErrorNotFound />;
   }
-  const paddingRight = getPaddingRight(location.pathname, feedbackData.id, '/dashboard/cases/feedbacks');
+  const basePath = PATH_FEEDBACK(caseId);
+  const paddingRight = getPaddingRight(location.pathname, basePath);
   const { canEdit } = useGetCurrentUserAccessRight(feedbackData.currentUserAccessRight);
   return (
     <div style={{ paddingRight }}>
       <Breadcrumbs elements={[
         { label: t_i18n('Cases') },
-        { label: t_i18n('Feedbacks'), link: '/dashboard/cases/feedbacks' },
+        { label: t_i18n('Feedbacks'), link: PATH_FEEDBACKS },
         { label: feedbackData.name, current: true },
       ]}
       />
@@ -132,62 +134,45 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
         enableQuickSubscription
         redirectToContent={true}
       />
-      <StixDomainObjectTabsBox
-        basePath="/dashboard/cases/feedbacks"
-        entity={feedbackData}
-        tabs={[
-          'overview',
-          'content',
-          'files',
-          'history',
-        ]}
-      />
-      <Routes>
-        <Route
-          path="/"
-          element={(
+      <StixDomainObjectMain
+        basePath={basePath}
+        pages={{
+          overview: (
             <Feedback
               feedbackData={feedbackData}
               enableReferences={enableReferences}
             />
-          )}
-        />
-        <Route
-          path="/content/*"
-          element={(
+          ),
+          content: (
             <StixCoreObjectContentRoot
               stixCoreObject={feedbackData}
             />
-          )}
-        />
-        <Route
-          path="/files"
-          element={(
+          ),
+          files: (
             <FileManager
               id={caseId}
               connectorsExport={connectorsForExport}
               connectorsImport={connectorsForImport}
               entity={feedbackData}
             />
-          )}
-        />
-        <Route
-          path="/history"
-          element={(
+          ),
+          history: (
             <StixCoreObjectHistory
               stixCoreObjectId={caseId}
             />
-          )}
-        />
-        <Route
-          path="/knowledge/relations/:relationId"
-          element={(
-            <StixCoreRelationship
-              entityId={feedbackData.id}
-            />
-          )}
-        />
-      </Routes>
+          ),
+        }}
+        extraRoutes={(
+          <Route
+            path="/knowledge/relations/:relationId"
+            element={(
+              <StixCoreRelationship
+                entityId={feedbackData.id}
+              />
+            )}
+          />
+        )}
+      />
     </div>
   );
 };

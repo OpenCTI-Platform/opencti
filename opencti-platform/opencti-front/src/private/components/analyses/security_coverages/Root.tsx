@@ -1,6 +1,6 @@
 import { Suspense, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
-import { Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, useLocation, useParams } from 'react-router-dom';
 import Security from 'src/utils/Security';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import FileManager from '@components/common/files/FileManager';
@@ -9,8 +9,8 @@ import SecurityCoverageKnowledge from '@components/analyses/security_coverages/S
 import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 import SecurityCoverage from './SecurityCoverage';
 import { RootSecurityCoverageQuery } from './__generated__/RootSecurityCoverageQuery.graphql';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -26,6 +26,7 @@ import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 import { RootSecurityCoverageSubscription } from '@components/analyses/security_coverages/__generated__/RootSecurityCoverageSubscription.graphql';
 import SecurityCoverageResult from '@components/analyses/security_coverages/SecurityCoverageResult';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { PATH_SECURITY_COVERAGE, PATH_SECURITY_COVERAGES } from '@components/common/routes/paths';
 
 const subscription = graphql`
     subscription RootSecurityCoverageSubscription($id: ID!) {
@@ -94,7 +95,8 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
 
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
   const hasExternalUri = isNotEmptyField(securityCoverage?.external_uri);
-  const paddingRight = getPaddingRight(location.pathname, securityCoverageId, '/dashboard/analyses/security_coverages', false);
+  const basePath = PATH_SECURITY_COVERAGE(securityCoverageId);
+  const paddingRight = getPaddingRight(location.pathname, basePath, false);
   const isContent = location.pathname.includes('content');
   return (
     <>
@@ -102,7 +104,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Analyses') },
-            { label: t_i18n('Security coverages'), link: '/dashboard/analyses/security_coverages' },
+            { label: t_i18n('Security coverages'), link: PATH_SECURITY_COVERAGES },
             { label: securityCoverage.name, current: true },
           ]}
           />
@@ -125,16 +127,31 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
             noAliases={true}
             enableEnrollPlaybook={true}
           />
-          <StixDomainObjectTabsBox
-            basePath="/dashboard/analyses/security_coverages"
-            entity={securityCoverage}
-            tabs={[
-              'overview',
-              ...(isOAEVResultFeatureEnabled ? ['result' as const] : []),
-              'content',
-              'files',
-              'history',
-            ]}
+          <StixDomainObjectMain
+            basePath={basePath}
+            pages={{
+              overview:
+                <SecurityCoverage data={securityCoverage} />,
+              ...(isOAEVResultFeatureEnabled ? { result: <SecurityCoverageResult id={securityCoverage.id} /> } : {}),
+              content: (
+                <StixCoreObjectContentRoot
+                  stixCoreObject={securityCoverage}
+                />
+              ),
+              files: (
+                <FileManager
+                  id={securityCoverageId}
+                  connectorsImport={connectorsForImport}
+                  connectorsExport={connectorsForExport}
+                  entity={securityCoverage}
+                />
+              ),
+              history: (
+                <StixCoreObjectHistory
+                  stixCoreObjectId={securityCoverageId}
+                />
+              ),
+            }}
             extraActions={!isContent && (
               <>
                 <Button
@@ -155,69 +172,30 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                 />
               </>
             )}
-          />
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <SecurityCoverage data={securityCoverage} />
-              }
-            />
-
-            {isOAEVResultFeatureEnabled && (
-              <Route
-                path="/result"
-                element={(
-                  <SecurityCoverageResult id={securityCoverage.id} />
-                )}
-              />
+            extraRoutes={(
+              <>
+                <Route
+                  path="/knowledge/*"
+                  element={(
+                    <div>
+                      <SecurityCoverageKnowledge
+                        securityCoverageData={securityCoverage}
+                      />
+                    </div>
+                  )}
+                />
+                {/** Is this route an error ? **/}
+                <Route
+                  path="/relations/:relationId"
+                  element={(
+                    <StixCoreRelationship
+                      entityId={securityCoverageId}
+                    />
+                  )}
+                />
+              </>
             )}
-            <Route
-              path="/knowledge/*"
-              element={(
-                <div>
-                  <SecurityCoverageKnowledge
-                    securityCoverageData={securityCoverage}
-                  />
-                </div>
-              )}
-            />
-            <Route
-              path="/content/*"
-              element={(
-                <StixCoreObjectContentRoot
-                  stixCoreObject={securityCoverage}
-                />
-              )}
-            />
-            <Route
-              path="/files"
-              element={(
-                <FileManager
-                  id={securityCoverageId}
-                  connectorsImport={connectorsForImport}
-                  connectorsExport={connectorsForExport}
-                  entity={securityCoverage}
-                />
-              )}
-            />
-            <Route
-              path="/history"
-              element={(
-                <StixCoreObjectHistory
-                  stixCoreObjectId={securityCoverageId}
-                />
-              )}
-            />
-            <Route
-              path="/relations/:relationId"
-              element={(
-                <StixCoreRelationship
-                  entityId={securityCoverageId}
-                />
-              )}
-            />
-          </Routes>
+          />
         </div>
       ) : (
         <ErrorNotFound />

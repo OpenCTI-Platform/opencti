@@ -1,5 +1,5 @@
 import React, { useMemo, Suspense, useState } from 'react';
-import { Route, Routes, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { propOr } from 'ramda';
@@ -7,13 +7,13 @@ import { RootSystemQuery } from '@components/entities/systems/__generated__/Root
 import { RootSystemsSubscription } from '@components/entities/systems/__generated__/RootSystemsSubscription.graphql';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import System from './System';
 import SystemKnowledge from './SystemKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -29,6 +29,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import SystemEdition from './SystemEdition';
 import SystemDeletion from './SystemDeletion';
+import { PATH_SYSTEM, PATH_SYSTEMS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootSystemsSubscription($id: ID!) {
@@ -123,8 +124,9 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
 
   const { forceUpdate } = useForceUpdate();
 
-  const link = `/dashboard/entities/systems/${systemId}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, systemId, '/dashboard/entities/systems');
+  const basePath = PATH_SYSTEM(systemId);
+  const link = `${basePath}/knowledge`;
+  const paddingRight = getPaddingRight(location.pathname, basePath);
   return (
     <CreateRelationshipContextProvider>
       {system ? (
@@ -157,7 +159,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: t_i18n('Systems'), link: '/dashboard/entities/systems' },
+              { label: t_i18n('Systems'), link: PATH_SYSTEMS },
               { label: system.name, current: true },
             ]}
             />
@@ -189,69 +191,35 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
               redirectToContent={true}
               enableEnrollPlaybook={true}
             />
-            <StixDomainObjectTabsBox
-              basePath="/dashboard/entities/systems"
-              entity={system}
-              tabs={[
-                'overview',
-                'knowledge-overview',
-                'content',
-                'analyses',
-                'sightings',
-                'files',
-                'history',
-              ]}
-            />
-            <Routes>
-              <Route
-                path="/"
-                element={(
+            <StixDomainObjectMain
+              basePath={basePath}
+              pages={{
+                overview: (
                   <System
                     systemData={system}
                     viewAs={viewAs}
                   />
-                )}
-              />
-              <Route
-                path="/knowledge"
-                element={(
-                  <Navigate
-                    replace={true}
-                    to={`/dashboard/entities/systems/${systemId}/knowledge/overview`}
-                  />
-                )}
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
+                ),
+                knowledge: (
                   <div key={forceUpdate}>
                     <SystemKnowledge
                       systemData={system}
                       viewAs={viewAs}
                     />
                   </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
+                ),
+                content: (
                   <StixCoreObjectContentRoot
                     stixCoreObject={system}
                   />
-                )}
-              />
-              <Route
-                path="/analyses/*"
-                element={(
+                ),
+                analyses: (
                   <SystemAnalysis
                     system={system}
                     viewAs={viewAs}
                   />
-                )}
-              />
-              <Route
-                path="/sightings"
-                element={(
+                ),
+                sightings: (
                   <EntityStixSightingRelationships
                     entityId={system.id}
                     entityLink={link}
@@ -268,28 +236,22 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
                       'System',
                     ]}
                   />
-                )}
-              />
-              <Route
-                path="/files"
-                element={(
+                ),
+                files: (
                   <FileManager
                     id={systemId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={system}
                   />
-                )}
-              />
-              <Route
-                path="/history"
-                element={(
+                ),
+                history: (
                   <StixCoreObjectHistory
                     stixCoreObjectId={systemId}
                   />
-                )}
-              />
-            </Routes>
+                ),
+              }}
+            />
           </div>
         </>
       ) : (

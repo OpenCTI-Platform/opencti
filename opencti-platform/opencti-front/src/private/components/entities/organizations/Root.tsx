@@ -1,13 +1,13 @@
 import { propOr } from 'ramda';
 import React, { useMemo, Suspense, useState } from 'react';
-import { Route, Routes, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootOrganizationQuery } from '@components/entities/organizations/__generated__/RootOrganizationQuery.graphql';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import { RootOrganizationSubscription } from '@components/entities/organizations/__generated__/RootOrganizationSubscription.graphql';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
@@ -29,6 +29,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import OrganizationEdition from './OrganizationEdition';
 import OrganizationDeletion from './OrganizationDeletion';
+import { PATH_ORGANIZATION, PATH_ORGANIZATIONS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -135,8 +136,9 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
 
   const { forceUpdate } = useForceUpdate();
 
-  const link = `/dashboard/entities/organizations/${organizationId}/knowledge`;
-  const paddingRight = getPaddingRight(location.pathname, organizationId, '/dashboard/entities/organizations', viewAs === 'knowledge');
+  const basePath = PATH_ORGANIZATION(organizationId);
+  const link = `${basePath}/knowledge`;
+  const paddingRight = getPaddingRight(location.pathname, basePath, viewAs === 'knowledge');
   return (
     <CreateRelationshipContextProvider>
       {organization ? (
@@ -172,7 +174,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: t_i18n('Organizations'), link: '/dashboard/entities/organizations' },
+              { label: t_i18n('Organizations'), link: PATH_ORGANIZATIONS },
               { label: organization.name, current: true },
             ]}
             />
@@ -206,70 +208,36 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               enableEnricher={true}
               enableEnrollPlaybook={true}
             />
-            <StixDomainObjectTabsBox
-              basePath="/dashboard/entities/organizations"
-              entity={organization}
-              tabs={[
-                'overview',
-                'knowledge-overview',
-                'content',
-                'analyses',
-                'sightings',
-                'files',
-                'history',
-              ]}
-            />
-            <Routes>
-              <Route
-                path="/"
-                element={(
+            <StixDomainObjectMain
+              basePath={basePath}
+              pages={{
+                overview: (
                   <Organization
                     organizationData={organization}
                     viewAs={viewAs}
                   />
-                )}
-              />
-              <Route
-                path="/knowledge"
-                element={(
-                  <Navigate
-                    replace={true}
-                    to={`/dashboard/entities/organizations/${organizationId}/knowledge/overview`}
-                  />
-                )}
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
+                ),
+                knowledge: (
                   <div key={forceUpdate}>
                     <OrganizationKnowledge
                       organizationData={organization}
                       viewAs={viewAs}
                     />
                   </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
+                ),
+                content: (
                   <StixCoreObjectContentRoot
                     stixCoreObject={organization}
                   />
-                )}
-              />
-              <Route
-                path="/analyses"
-                element={(
+                ),
+                analyses: (
                   <OrganizationAnalysis
                     organization={organization}
                     viewAs={viewAs}
                     onViewAs={handleChangeViewAs}
                   />
-                )}
-              />
-              <Route
-                path="/sightings"
-                element={(
+                ),
+                sightings: (
                   <EntityStixSightingRelationships
                     entityId={organization.id}
                     entityLink={link}
@@ -286,28 +254,22 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                       'System',
                     ]}
                   />
-                )}
-              />
-              <Route
-                path="/files"
-                element={(
+                ),
+                files: (
                   <FileManager
                     id={organizationId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={organization}
                   />
-                )}
-              />
-              <Route
-                path="/history"
-                element={(
+                ),
+                history: (
                   <StixCoreObjectHistory
                     stixCoreObjectId={organizationId}
                   />
-                )}
-              />
-            </Routes>
+                ),
+              }}
+            />
           </div>
         </>
       ) : (
