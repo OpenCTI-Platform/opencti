@@ -12,15 +12,11 @@ import { convertAllSSOEnvProviders } from './authenticationProvider-migration-co
 import { addAuthenticationProvider, getAllIdentifiers, resolveProviderIdentifier } from './authenticationProvider-domain';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { AuthRequired } from '../../config/errors';
-import { isAuthenticationProviderMigrated } from './providers-configuration';
+import { getProvidersFromEnvironment, isAuthenticationProviderMigrated, isLocalAuthEnabledInEnv } from './providers-configuration';
 import nconf from 'nconf';
-import { getSettings, updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../../domain/settings';
+import { getSettings } from '../../domain/settings';
 import type { BasicStoreSettings } from '../../types/settings';
-
-export const isLocalAuthEnabledInEnv = (envProviders: Record<string, any>): boolean => {
-  const local = envProviders['local'];
-  return local?.config?.disabled !== true;
-};
+import { updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../../domain/setting-auth';
 
 // ---------------------------------------------------------------------------
 // Provider type mapping
@@ -69,7 +65,7 @@ const parseMappingStrings = (mapping: any) => {
  */
 const migrateLocalAuthIfNeeded = async (context: AuthContext, user: AuthUser) => {
   const settings = await getSettings(context) as unknown as BasicStoreSettings;
-  const envConfigurations = nconf.get('providers') ?? {};
+  const envConfigurations = getProvidersFromEnvironment() ?? {};
   if (!settings.local_auth) {
     logApp.info('[SINGLETON-MIGRATION] local_auth is absent, creating with defaults');
     await updateLocalAuth(context, user, settings.id, { enabled: isLocalAuthEnabledInEnv(envConfigurations) });
@@ -86,7 +82,7 @@ const migrateLocalAuthIfNeeded = async (context: AuthContext, user: AuthUser) =>
 const migrateHeadersAuthIfNeeded = async (context: AuthContext, user: AuthUser) => {
   const settings = await getSettings(context) as unknown as BasicStoreSettings;
   if (!settings.headers_auth || !settings.headers_auth.button_label_override) {
-    const envConfigurations = nconf.get('providers') ?? {};
+    const envConfigurations = getProvidersFromEnvironment() ?? {};
     const certProvider: any | undefined = Object.values(envConfigurations).filter((pr: any) => pr.strategy === 'HeaderStrategy')?.[0];
     const { config, enabled } = certProvider ?? {};
     const groupsHeader = config?.groups_management?.groups_header;

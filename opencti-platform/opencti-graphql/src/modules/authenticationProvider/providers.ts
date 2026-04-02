@@ -11,7 +11,7 @@ import { initializeEnvAuthenticationProviders, registerAuthenticationProvider, u
 import { createSAMLStrategy } from './provider-saml';
 import { createLDAPStrategy } from './provider-ldap';
 import { createOpenIdStrategy } from './provider-oidc';
-import { IS_AUTHENTICATION_FORCE_LOCAL, isAuthenticationForcedFromEnv } from './providers-configuration';
+import { getProvidersFromEnvironment, isAuthenticationForcedFromEnv, isLocalAuthEnabledInEnv, isLocalAuthForcedEnabledFromEnv } from './providers-configuration';
 import { PROVIDERS } from './providers-configuration';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { findAllAuthenticationProvider, resolveProviderIdentifier } from './authenticationProvider-domain';
@@ -22,12 +22,13 @@ import { loginFromProvider } from '../../domain/user';
 import { addUserLoginCount } from '../../manager/telemetryManager';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import conf, { logApp } from '../../config/conf';
-import { getSettings, updateLocalAuth } from '../../domain/settings';
+import { getSettings, getSettingsFromDatabase } from '../../domain/settings';
 import { getEnterpriseEditionInfo } from '../settings/licensing';
 import type { BasicStoreSettings } from '../../types/settings';
 import { runAuthenticationProviderMigration } from './authenticationProvider-migration';
 import { registerCertStrategy } from './provider-cert';
 import { elDeleteElements } from '../../database/engine';
+import { updateLocalAuth } from '../../domain/setting-auth';
 
 export interface ProviderAuthInfo {
   userMapping: {
@@ -139,7 +140,7 @@ export const registerStrategy = async (authenticationProvider: BasicStoreEntityA
     }
     logger.success('Provider started successfully');
   } catch (e) {
-    logger.error('Provider failed to start', {}, e);
+    logger.error('Provider failed to start', { err: e }, e);
   } finally {
     startingProviders.delete(authenticationProvider.internal_id);
   }
@@ -159,10 +160,8 @@ export const initDatabaseAuthenticationProviders = async (context: AuthContext, 
 };
 
 export const initializeAuthenticationProviders = async (context: AuthContext) => {
-  // Singleton strategies: always register
-  await registerLocalStrategy();
-  await registerCertStrategy();
-  await registerHeadersStrategy(context);
+  const settings = await getSettingsFromDatabase(context) as unknown as BasicStoreSettings;
+
   // In force env
   // Settings must be aligned on env definition
   // AuthenticationProviders must be deleted from the database
@@ -172,13 +171,41 @@ export const initializeAuthenticationProviders = async (context: AuthContext) =>
     // Cleanup providers from database
     const authenticators = await findAllAuthenticationProvider(context, SYSTEM_USER);
     await elDeleteElements(context, SYSTEM_USER, authenticators, { forceDelete: true, forceRefresh: true });
+
+    // First manage local
+    const confProviders = getProvidersFromEnvironment();
+
+    // First Local singleton provider
+    if (isLocalAuthEnabledInEnv(confProviders)) {
+      await registerLocalStrategy();
+      await updateLocalAuth(context, SYSTEM_USER, settings.id, { enabled: true });
+    } else {
+      await updateLocalAuth(context, SYSTEM_USER, settings.id, { enabled: false });
+    }
+
+    // TODO what about cert signleton, here on in next method ??
+    // For now keeping existing code but it's buggy IMO
+    await registerCertStrategy();
+    await registerHeadersStrategy(context);
+
     // Init providers from env
     await initializeEnvAuthenticationProviders();
   } else {
     // Migration first (already created will be not replayed)
     await runAuthenticationProviderMigration(context, SYSTEM_USER);
     // In standard mode, init from providers in the database
-    // Singleton already initialized
+    // Singleton initialization
+    if (settings.local_auth?.enabled === true) {
+      await registerLocalStrategy();
+    }
+
+    if (settings.cert_auth?.enabled === true) {
+      await registerCertStrategy();
+    }
+
+    if (settings.headers_auth?.enabled === true) {
+      await registerHeadersStrategy(context);
+    }
     await initDatabaseAuthenticationProviders(context, SYSTEM_USER);
   }
   // Safety net: force local_auth enabled when no other provider is available
@@ -189,9 +216,14 @@ export const initializeAuthenticationProviders = async (context: AuthContext) =>
     const hasCert = finalSettings.cert_auth?.enabled === true && eeActive && isHttpsEnabled;
     const hasHeader = finalSettings.headers_auth?.enabled === true && eeActive;
     const dbProviders = await findAllAuthenticationProvider(context, SYSTEM_USER);
+    const hasEnvProviders = PROVIDERS.length > 0;
     const hasDbProvider = eeActive && dbProviders.some((p) => p.enabled);
-    if (IS_AUTHENTICATION_FORCE_LOCAL || (!hasCert && !hasHeader && !hasDbProvider)) {
+
+    const hasSSOProviders = ((isAuthenticationForcedFromEnv() && hasEnvProviders) || (!isAuthenticationForcedFromEnv() && hasDbProvider));
+
+    if (isLocalAuthForcedEnabledFromEnv() || (!hasCert && !hasHeader && !hasSSOProviders)) {
       logApp.warn('[MIGRATION-SAFETY] No other provider available, forcing local_auth to enabled');
+      await registerLocalStrategy();
       await updateLocalAuth(context, SYSTEM_USER, finalSettings.id, { enabled: true });
     }
   }
