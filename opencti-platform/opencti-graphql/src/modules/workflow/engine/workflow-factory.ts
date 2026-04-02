@@ -37,7 +37,10 @@ export class WorkflowFactory {
       return (ctx: TContext) => {
         if (!config.field || !config.operator) return true;
 
-        const actualValue = this.getNestedValue(ctx, config.field);
+        let actualValue = this.getNestedValue(ctx, config.field);
+        if (actualValue === undefined && ctx?.entity) {
+          actualValue = this.getNestedValue(ctx.entity, config.field);
+        }
 
         switch (config.operator) {
           case 'eq': return actualValue == config.value;

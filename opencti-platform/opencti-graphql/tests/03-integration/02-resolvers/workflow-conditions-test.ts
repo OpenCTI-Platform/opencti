@@ -52,7 +52,7 @@ describe('Workflow Conditions Resolver', () => {
         from: 'step1',
         to: 'step2',
         event: 'field_comparison_event',
-        conditions: [{ field: 'entity.name', operator: 'eq', value: workspaceName }],
+        conditions: [{ field: 'name', operator: 'eq', value: workspaceName }],
       },
       {
         from: 'step2',
@@ -60,8 +60,14 @@ describe('Workflow Conditions Resolver', () => {
         event: 'mixed_conditions_event',
         conditions: [
           { type: 'isAdmin' },
-          { field: 'entity.name', operator: 'contains', value: 'Conditions' },
+          { field: 'name', operator: 'contains', value: 'Conditions' },
         ],
+      },
+      {
+        from: 'done',
+        to: 'done',
+        event: 'validate_requirement_event',
+        actions: [{ type: 'validateDraft' }],
       },
     ],
   });
