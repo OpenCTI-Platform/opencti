@@ -788,7 +788,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           fullWidth
           variant="standard"
           style={{ marginTop: 20 }}
-          disabled={!field.attributeMapping.attributeName}
+          disabled={!field.attributeMapping.attributeName || !!getVocabularyMappingByAttribute(field.attributeMapping.attributeName)}
         >
           <InputLabel>{t_i18n('Field Type')}</InputLabel>
           <Select
