@@ -230,7 +230,7 @@
   "All notifications, triggers and digests associated with the user will be deleted.": "Все уведомления, триггеры и дайджесты, связанные с этим пользователем, будут удалены.",
   "All observables": "Все наблюдаемые объекты",
   "All other filters": "Все остальные фильтры",
-  "All public streams, taxii, csv using this user right to share data will not work anymore.": "Все публичные потоки, taxii, csv, использующие это право пользователя для обмена данными, больше не будут работать.",
+  "All public streams, taxii, csv using this user right to share data will be stopped and turn private. Please update them with a new user to turn them public again.": "Все публичные потоки, taxii, csv, использующие это право пользователя для обмена данными, больше не будут работать.",
   "All reports": "Все отчёты",
   "All rule targets": "Все цели правил",
   "All the results may not be displayed for these filter values, read documentation for more information.": "Для этих значений фильтра могут отображаться не все результаты, для получения дополнительной информации читайте документацию.",
