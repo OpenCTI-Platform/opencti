@@ -72,6 +72,7 @@ import stixMetaObjectResolvers from '../resolvers/stixMetaObject';
 import filterKeysSchemaResolver from '../resolvers/filterKeysSchema';
 import basicObjectResolvers from '../resolvers/basicObject';
 import { FunctionalError } from '../config/errors';
+import { makeFeatureFlagDirectiveTransformer } from './featureFlagDirective';
 
 const schemaTypeDefs = [globalTypeDefs];
 
@@ -280,6 +281,7 @@ const createSchema = () => {
   });
   schema = constraintDirectiveDocumentation()(schema);
   schema = rateLimitDirectiveTransformer(authDirectiveTransformer(schema));
+  schema = makeFeatureFlagDirectiveTransformer()(schema);
   return schema;
 };
 
