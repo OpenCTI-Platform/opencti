@@ -4,6 +4,8 @@ import { fullEntitiesList } from '../database/middleware-loader';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT } from '../modules/playbook/components/access-restrictions-component';
 import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from '../modules/playbook/components/container-wrapper-component';
+import { PLAYBOOK_CREATE_INDICATOR_COMPONENT } from '../modules/playbook/components/create-indicator-component';
+import { PLAYBOOK_CREATE_OBSERVABLE_COMPONENT } from '../modules/playbook/components/create-observable-component';
 import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT } from '../modules/playbook/components/manipulate-knowledge-component';
 import { PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT } from '../modules/playbook/components/remove-access-restrictions-component';
 import { PLAYBOOK_SECURITY_COVERAGE_COMPONENT } from '../modules/playbook/components/security-coverage-component';
@@ -26,8 +28,8 @@ const IDS_TO_MANAGE = [
   PLAYBOOK_SECURITY_COVERAGE_COMPONENT.id,
   PLAYBOOK_SHARING_COMPONENT.id,
   PLAYBOOK_UNSHARING_COMPONENT.id,
-  // TODO Add promote obs
-  // TODO Add extract obs
+  PLAYBOOK_CREATE_INDICATOR_COMPONENT.id,
+  PLAYBOOK_CREATE_OBSERVABLE_COMPONENT.id,
 ];
 
 const elasticUpdate = (convertor) => {
