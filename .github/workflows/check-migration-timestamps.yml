@@ -1,0 +1,81 @@
+name: Check migration file timestamps
+
+on:
+  pull_request:
+    paths:
+      - 'opencti-platform/opencti-graphql/src/migrations/**'
+
+permissions:
+  contents: read
+
+jobs:
+  check-migration-timestamps:
+    name: Check that new migrations have newer timestamps
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check migration timestamps
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          MIGRATIONS_DIR="opencti-platform/opencti-graphql/src/migrations"
+
+          # Find migration files added in this PR (not modified or deleted)
+          ADDED_MIGRATIONS=$(git diff --name-only --diff-filter=A "$BASE_SHA" "$HEAD_SHA" -- "$MIGRATIONS_DIR/" \
+            | xargs -I{} basename {} | sort)
+
+          if [ -z "$ADDED_MIGRATIONS" ]; then
+            echo "No migration files added in this PR. Skipping timestamp check."
+            exit 0
+          fi
+
+          echo "Added migration files:"
+          echo "$ADDED_MIGRATIONS"
+          echo ""
+
+          # Get the most recent timestamp among existing migrations in the base branch
+          LATEST_TIMESTAMP=$(git ls-tree --name-only -r "$BASE_SHA" -- "$MIGRATIONS_DIR/" \
+            | xargs -I{} basename {} \
+            | grep -oE '^[0-9]+' \
+            | sort -n \
+            | tail -1)
+
+          if [ -z "$LATEST_TIMESTAMP" ]; then
+            echo "No existing migrations found in base branch. Skipping timestamp check."
+            exit 0
+          fi
+
+          echo "Latest migration timestamp in base branch: $LATEST_TIMESTAMP"
+          echo ""
+
+          # Verify each added migration file has a timestamp newer than the latest base branch timestamp
+          FAILED=0
+          while IFS= read -r migration; do
+            TIMESTAMP=$(echo "$migration" | grep -oE '^[0-9]+')
+            if [ -z "$TIMESTAMP" ]; then
+              echo "WARNING: Could not extract timestamp from file: $migration"
+              continue
+            fi
+            if [ "$TIMESTAMP" -le "$LATEST_TIMESTAMP" ]; then
+              echo "ERROR: '$migration' has timestamp $TIMESTAMP which is not newer than the base branch latest ($LATEST_TIMESTAMP)."
+              FAILED=1
+            else
+              echo "OK: '$migration' has timestamp $TIMESTAMP."
+            fi
+          done <<< "$ADDED_MIGRATIONS"
+
+          if [ "$FAILED" -eq 1 ]; then
+            echo ""
+            echo "One or more added migration files have timestamps that are not newer than existing migrations."
+            echo "Please ensure all new migrations have timestamps newer than $LATEST_TIMESTAMP."
+            exit 1
+          fi
+
+          echo ""
+          echo "All added migration files have valid timestamps."
