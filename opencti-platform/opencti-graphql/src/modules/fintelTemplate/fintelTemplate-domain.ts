@@ -14,7 +14,7 @@ import { createEntity, deleteElementById, updateAttribute } from '../../database
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE, type StoreEntityFintelTemplate } from './fintelTemplate-types';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, isFeatureEnabled } from '../../config/conf';
+import { BUS_TOPICS } from '../../config/conf';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { storeLoadById } from '../../database/middleware-loader';
 import { generateFintelTemplateExecutiveSummary } from '../../utils/fintelTemplate/__executiveSummary.template';
@@ -94,8 +94,7 @@ export const addFintelTemplate = async (
   checkFintelTemplateWidgetsValidity(input.fintel_template_widgets ?? []);
   // get settings type
   const { settings_types: [settings_type] } = input;
-  const isFintelForEntityFeatureEnabled = isFeatureEnabled('FINTEL_FOR_ENTITY');
-  const isContainer = isFintelForEntityFeatureEnabled ? isStixDomainObjectContainer(settings_type) : true;
+  const isContainer = isStixDomainObjectContainer(settings_type);
   // add id to fintel template widgets
   const widgetsWithIds = (input.fintel_template_widgets ?? []).map((templateWidget) => ({
     ...templateWidget,
