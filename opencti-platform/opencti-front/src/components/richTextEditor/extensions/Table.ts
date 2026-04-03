@@ -60,8 +60,10 @@ class CustomTableView extends TableView {
  */
 export const Table = TiptapTable.extend({
   addOptions() {
+    const parentOptions = this.parent?.() || {};
     return {
-      ...this.parent?.(),
+      ...parentOptions,
+      HTMLAttributes: parentOptions.HTMLAttributes || {},
       View: CustomTableView,
     };
   },
