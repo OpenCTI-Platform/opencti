@@ -4,6 +4,7 @@ import parse from 'html-react-parser';
 import { truncate } from '../utils/String';
 import FieldOrEmpty from './FieldOrEmpty';
 import { isEmptyField } from '../utils/utils';
+import useHelper from '../utils/hooks/useHelper';
 
 interface HtmlDisplayProps {
   content: string | null;
@@ -16,11 +17,23 @@ const SANITIZE_CONFIG = {
 };
 
 const HtmlDisplay: FunctionComponent<HtmlDisplayProps> = ({ content, limit }) => {
+  const { isTiptapEditorEnable } = useHelper();
+  const tiptapEnabled = isTiptapEditorEnable();
+
   if (isEmptyField(content)) {
     return (
       <FieldOrEmpty source={content}>{content}</FieldOrEmpty>
     );
   }
+
+  if (!tiptapEnabled) {
+    return (
+      <div className="ck-content">
+        {limit ? parse(purify.sanitize(truncate(content, limit))) : parse(purify.sanitize(content))}
+      </div>
+    );
+  }
+
   const sanitize = (html: string) => purify.sanitize(html, SANITIZE_CONFIG);
   const normalizeImageMetadata = (html: string) => {
     const parser = new DOMParser();

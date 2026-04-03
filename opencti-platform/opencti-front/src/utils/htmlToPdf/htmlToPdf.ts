@@ -29,10 +29,10 @@ import { dateFormat } from '../Time';
  * @param checkOrientation True if check content to determine PDF orientation.
  * @returns PDF ready to be downloaded.
  */
-const generatePdf = (pdfMakeObject: TDocumentDefinitions, checkOrientation = false) => {
+const generatePdf = (pdfMakeObject: TDocumentDefinitions, checkOrientation = false, isTiptapEnabled = false) => {
   const docDefinition = { ...pdfMakeObject };
   if (checkOrientation) {
-    docDefinition.pageOrientation = determineOrientation();
+    docDefinition.pageOrientation = determineOrientation(isTiptapEnabled);
   }
   pdfMake.setTableLayouts(defaultTableLayout);
   pdfMake.setFonts(FONTS);
@@ -46,9 +46,9 @@ const generatePdf = (pdfMakeObject: TDocumentDefinitions, checkOrientation = fal
  * @param content The content of the file.
  * @returns PDF object ready to be downloaded.
  */
-export const htmlToPdf = (fileName: string, content: string) => {
+export const htmlToPdf = (fileName: string, content: string, isTiptapEnabled = false) => {
   let htmlData = removeUnnecessaryHtml(content);
-  htmlData = setImagesWidth(htmlData);
+  htmlData = setImagesWidth(htmlData, undefined, isTiptapEnabled);
 
   // Improve render for markdown files.
   if (fileName && fileName.endsWith('.md')) {
@@ -61,7 +61,7 @@ export const htmlToPdf = (fileName: string, content: string) => {
     ignoreStyles: ['font-family'], // Ignoring fonts to force Roboto later.
   }) as unknown as TDocumentDefinitions; // Because wrong type when using imagesByReference: true.
 
-  return generatePdf(pdfMakeObject);
+  return generatePdf(pdfMakeObject, false, isTiptapEnabled);
 };
 
 /**
@@ -115,6 +115,7 @@ export const htmlToPdfReport = async (
   templateName: string,
   markingNames: string[],
   fintelDesign?: FintelDesign | null | undefined,
+  isTiptapEnabled = false,
 ) => {
   const formattedTemplateName = capitalizeWords(templateName);
   let logo;
@@ -135,7 +136,7 @@ export const htmlToPdfReport = async (
   }
 
   let htmlData = removeUnnecessaryHtml(content);
-  htmlData = setImagesWidth(htmlData);
+  htmlData = setImagesWidth(htmlData, undefined, isTiptapEnabled);
   htmlData = setTableFullWidth(htmlData);
   htmlData = addPageBreaks(htmlData);
 
@@ -238,5 +239,5 @@ export const htmlToPdfReport = async (
     pageBreakBefore: pdfPageBreaks,
   };
 
-  return generatePdf(docDefinition);
+  return generatePdf(docDefinition, false, isTiptapEnabled);
 };

@@ -6,10 +6,14 @@ import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
 import { useTheme } from '@mui/styles';
 import type { Editor } from '@tiptap/react';
+import { ClassicEditor } from 'ckeditor5';
 import { FieldProps, useField } from 'formik';
 import { isNil } from 'ramda';
 import { CSSProperties, useRef, useState } from 'react';
 import useAI from '../../utils/hooks/useAI';
+import useHelper from '../../utils/hooks/useHelper';
+import { getHtmlTextContent } from '../../utils/html';
+import CKEditor from '../CKEditor';
 import RichTextEditor from '../RichTextEditor';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
@@ -45,21 +49,23 @@ const RichTextField = ({
 }: RichTextFieldProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const editorReference = useRef<Editor | null>(null);
+  const { isTiptapEditorEnable } = useHelper();
+  const tiptapEditorRef = useRef<Editor | null>(null);
+  const ckEditorRef = useRef<ClassicEditor>(undefined);
   const [fullScreen, setFullScreen] = useState(false);
   const [, meta] = useField(name);
   const { fullyActive } = useAI();
 
   const fieldErrors = errors[name] as string;
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
-  const RichTextEditorInstance = (
+  const RichTextEditorInstance = isTiptapEditorEnable() ? (
     <RichTextEditor
       onReady={(editor) => {
-        editorReference.current = editor;
+        tiptapEditorRef.current = editor;
         editor.on('selectionUpdate', () => {
-          if (editorReference.current && onTextSelection && !editorReference.current.isEditable && !fullScreen) {
-            const { from, to } = editorReference.current.state.selection;
-            const text = editorReference.current.state.doc.textBetween(from, to).trim();
+          if (tiptapEditorRef.current && onTextSelection && !tiptapEditorRef.current.isEditable && !fullScreen) {
+            const { from, to } = tiptapEditorRef.current.state.selection;
+            const text = tiptapEditorRef.current.state.doc.textBetween(from, to).trim();
             if (text.length > 2) onTextSelection(text);
           }
         });
@@ -69,6 +75,34 @@ const RichTextField = ({
         const html = adapter.getData();
         setFieldValue(name, html);
         onChange?.(name, html);
+      }}
+      onBlur={() => {
+        setFieldTouched(name, true);
+        onSubmit?.(name, value);
+      }}
+      onFocus={() => onFocus?.(name)}
+      disabled={disabled}
+    />
+  ) : (
+    <CKEditor
+      onReady={(editor) => {
+        ckEditorRef.current = editor;
+        ckEditorRef.current.model.document.selection.on('change', () => {
+          if (ckEditorRef.current && onTextSelection && ckEditorRef.current.isReadOnly && !fullScreen) {
+            const htmlContent = ckEditorRef.current.data.stringify(
+              ckEditorRef.current.model.getSelectedContent(
+                ckEditorRef.current.model.document.selection,
+              ),
+            );
+            const text = getHtmlTextContent(htmlContent).trim();
+            if (text.length > 2) onTextSelection(text);
+          }
+        });
+      }}
+      data={value}
+      onChange={(_, editor) => {
+        setFieldValue(name, editor.getData());
+        onChange?.(name, editor.getData());
       }}
       onBlur={() => {
         setFieldTouched(name, true);
