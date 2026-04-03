@@ -2,17 +2,17 @@ import Typography from '@mui/material/Typography';
 import React, { CSSProperties } from 'react';
 import SubTypeStatusPopover from '@components/settings/sub_types/SubTypeWorkflowPopover';
 import { graphql, useFragment } from 'react-relay';
-import RequestAccessConfigurationPopover from '@components/settings/sub_types/workflow/RequestAccessConfigurationPopover';
-import RequestAccessStatus from '@components/settings/sub_types/workflow/RequestAccessStatus';
-import { RequestAccessConfigurationEdition_requestAccess$key } from '@components/settings/sub_types/workflow/__generated__/RequestAccessConfigurationEdition_requestAccess.graphql';
+import RequestAccessConfigurationPopover from '@components/settings/sub_types/global_workflow_request_access/RequestAccessConfigurationPopover';
+import RequestAccessStatus from '@components/settings/sub_types/global_workflow_request_access/RequestAccessStatus';
 import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../../components/i18n';
 import { StatusScopeEnum } from '../../../../../utils/statusConstants';
 import ItemStatusTemplate from '../../../../../components/ItemStatusTemplate';
-import { RequestAccessSettings_requestAccess$key } from './__generated__/RequestAccessSettings_requestAccess.graphql';
 import type { Theme } from '../../../../../components/Theme';
 import { Stack } from '@mui/material';
+import { RequestAccessConfigurationEdition_requestAccess$key } from './__generated__/RequestAccessConfigurationEdition_requestAccess.graphql';
+import { RequestAccessSettings_requestAccess$key } from './__generated__/RequestAccessSettings_requestAccess.graphql';
 
 const requestAccessSettingsFragment = graphql`
   fragment RequestAccessSettings_requestAccess on SubType {
