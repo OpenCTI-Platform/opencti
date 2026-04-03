@@ -46,22 +46,51 @@ describe('Workflow Conditions Resolver', () => {
         from: 'open',
         to: 'step1',
         event: 'named_condition_event',
-        conditions: [{ type: 'isAdmin' }],
+        conditions: {
+          filters: {
+            mode: 'and',
+            filters: [],
+            filterGroups: [],
+          },
+        },
       },
       {
         from: 'step1',
         to: 'step2',
         event: 'field_comparison_event',
-        conditions: [{ field: 'entity.name', operator: 'eq', value: workspaceName }],
+        conditions: {
+          filters: {
+            mode: 'and',
+            filters: [
+              {
+                key: 'name',
+                operator: 'eq',
+                values: [workspaceName],
+                mode: 'or',
+              },
+            ],
+            filterGroups: [],
+          },
+        },
       },
       {
         from: 'step2',
         to: 'done',
         event: 'mixed_conditions_event',
-        conditions: [
-          { type: 'isAdmin' },
-          { field: 'entity.name', operator: 'contains', value: 'Conditions' },
-        ],
+        conditions: {
+          filters: {
+            mode: 'and',
+            filters: [
+              {
+                key: 'name',
+                operator: 'contains',
+                values: ['Conditions'],
+                mode: 'or',
+              },
+            ],
+            filterGroups: [],
+          },
+        },
       },
     ],
   });
@@ -86,7 +115,7 @@ describe('Workflow Conditions Resolver', () => {
     });
   });
 
-  it('should pass named condition (isAdmin)', async () => {
+  it('should pass empty filter condition', async () => {
     const result = await queryAsAdmin({
       query: TRIGGER_WORKFLOW_EVENT_MUTATION,
       variables: {
@@ -98,7 +127,7 @@ describe('Workflow Conditions Resolver', () => {
     expect(result.data?.triggerWorkflowEvent.newState).toBe('step1');
   });
 
-  it('should pass field comparison (entity.name eq workspaceName)', async () => {
+  it('should pass name filter (name eq workspaceName)', async () => {
     const result = await queryAsAdmin({
       query: TRIGGER_WORKFLOW_EVENT_MUTATION,
       variables: {
@@ -110,7 +139,7 @@ describe('Workflow Conditions Resolver', () => {
     expect(result.data?.triggerWorkflowEvent.newState).toBe('step2');
   });
 
-  it('should pass mixed conditions (named + field)', async () => {
+  it('should pass name filter (name contains Conditions)', async () => {
     const result = await queryAsAdmin({
       query: TRIGGER_WORKFLOW_EVENT_MUTATION,
       variables: {
