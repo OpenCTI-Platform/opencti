@@ -2,7 +2,7 @@ import Card from '@common/card/Card';
 import { SubTypeQuery } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
 import { Box, Stack } from '@mui/material';
 import React, { Suspense } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Outlet, useParams } from 'react-router-dom';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -15,6 +15,8 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import CustomizationMenu from '../CustomizationMenu';
 import SubTypeMenu from './SubTypeMenu';
 import EntitySettingSettings from './entity_setting/EntitySettingSettings';
+import { entitySettingsOverviewLayoutCustomizationFragment } from './entity_setting/EntitySettingsOverviewLayoutCustomization';
+import { EntitySettingsOverviewLayoutCustomization_entitySetting$key } from './entity_setting/__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
 
 export const subTypeQuery = graphql`
   query SubTypeQuery($id: String!){
@@ -50,6 +52,12 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { isFeatureEnable } = useHelper();
 
   const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
+
+  const entitySetting = useFragment(
+    entitySettingsOverviewLayoutCustomizationFragment,
+    (subType?.settings ?? null) as EntitySettingsOverviewLayoutCustomization_entitySetting$key,
+  );
+
   if (!subType) return <ErrorNotFound />;
 
   const subTypeSettingsId = subType.settings?.id;
@@ -65,6 +73,8 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
       && subType.settings?.availableSettings.includes('templates');
 
   const isAttributesConfigurationEnabled = subType.settings?.availableSettings.includes('attributes_configuration');
+
+  const isCustomLayoutEnabled = !!entitySetting?.overview_layout_customization;
 
   return (
     <Stack sx={{ pr: '200px', pb: 4 }} gap={2}>
@@ -96,13 +106,21 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
         isFINTELTemplatesEnabled={isFINTELTemplatesEnabled}
         isAttributesConfigurationEnabled={isAttributesConfigurationEnabled}
         isWorkflowConfigurationEnabled={isWorkflowConfigurationEnabled}
+        isCustomLayoutEnabled={isCustomLayoutEnabled}
       />
-      {/* {isDraftWorkspaceType && (<SubTypeMenu entityType={subType.label} />)} */}
 
       {/** add a minHeight to prevent page jumps when switching tab
        * that have different content size with magic number */}
       <Box sx={{ minHeight: '240px' }}>
-        <Outlet context={{ subType }} />
+        <Outlet
+          context={{
+            subType,
+            isWorkflowConfigurationEnabled,
+            isAttributesConfigurationEnabled,
+            isFINTELTemplatesEnabled,
+            isCustomLayoutEnabled,
+          }}
+        />
       </Box>
 
     </Stack>
