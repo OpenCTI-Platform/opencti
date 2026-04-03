@@ -113,9 +113,6 @@ export const initializeEnvAuthenticationProviders = async () => {
       const mappedConfig = configRemapping(config);
       if (config === undefined || !config.disabled) {
         const providerName = config?.label || providerIdent;
-        // SINGLETON
-        // DO we put back header and cert here ??
-
         // FORM Strategies
         if (strategy === EnvStrategyType.STRATEGY_LDAP) {
           const providerRef = identifier || 'ldapauth';

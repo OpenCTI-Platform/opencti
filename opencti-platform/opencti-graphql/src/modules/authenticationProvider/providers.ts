@@ -173,7 +173,7 @@ export const initializeAuthenticationProviders = async (context: AuthContext) =>
     await elDeleteElements(context, SYSTEM_USER, authenticators, { forceDelete: true, forceRefresh: true });
 
     // First manage local
-    const confProviders = getProvidersFromEnvironment();
+    const confProviders = getProvidersFromEnvironment() ?? {};
 
     // First Local singleton provider - updating settings with environment setup
     if (isLocalAuthEnabledInEnv(confProviders) || isLocalAuthForcedEnabledFromEnv()) {
@@ -182,11 +182,13 @@ export const initializeAuthenticationProviders = async (context: AuthContext) =>
     } else {
       await updateLocalAuth(context, SYSTEM_USER, settings.id, { enabled: false });
     }
-
-    // TODO what about cert signleton, here on in next method ??
-    // For now keeping existing code but it's buggy IMO
-    await registerCertStrategy();
-    await registerHeadersStrategy(context);
+    // Cert and Header are still persisted in setting, even with force env
+    if (settings.cert_auth?.enabled === true) {
+      await registerCertStrategy();
+    }
+    if (settings.headers_auth?.enabled === true) {
+      await registerHeadersStrategy(context);
+    }
 
     // Init providers from env
     await initializeEnvAuthenticationProviders();
@@ -194,15 +196,14 @@ export const initializeAuthenticationProviders = async (context: AuthContext) =>
     // Migration first (already created will be not replayed)
     await runAuthenticationProviderMigration(context, SYSTEM_USER);
     // In standard mode, init from providers in the database
+
     // Singleton initialization
     if (settings.local_auth?.enabled === true || isLocalAuthForcedEnabledFromEnv()) {
       await registerLocalStrategy();
     }
-
     if (settings.cert_auth?.enabled === true) {
       await registerCertStrategy();
     }
-
     if (settings.headers_auth?.enabled === true) {
       await registerHeadersStrategy(context);
     }

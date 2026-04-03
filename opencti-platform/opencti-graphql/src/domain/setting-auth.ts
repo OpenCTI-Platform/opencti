@@ -7,7 +7,15 @@ import { publishUserAction } from '../listener/UserActionListener';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 import { LOCAL_PROVIDER } from '../modules/authenticationProvider/provider-local';
-import { AuthType, EnvStrategyType, isLocalAuthForcedEnabledFromEnv, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
+import {
+  AuthType,
+  CERT_STRATEGY_IDENTIFIER,
+  EnvStrategyType,
+  HEADERS_STRATEGY_IDENTIFIER,
+  isLocalAuthForcedEnabledFromEnv,
+  LOCAL_STRATEGY_IDENTIFIER,
+  PROVIDERS,
+} from '../modules/authenticationProvider/providers-configuration';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -22,7 +30,7 @@ export const buildAvailableProviders = async (platformSettings: BasicStoreSettin
       name: platformSettings.local_auth?.button_label_override || 'local',
       type: AuthType.AUTH_FORM,
       strategy: EnvStrategyType.STRATEGY_LOCAL,
-      provider: LOCAL_PROVIDER?.provider ?? '',
+      provider: LOCAL_PROVIDER?.provider ?? LOCAL_STRATEGY_IDENTIFIER,
     });
   }
   if (platformSettings.cert_auth?.enabled) {
@@ -30,7 +38,7 @@ export const buildAvailableProviders = async (platformSettings: BasicStoreSettin
       name: platformSettings.cert_auth?.button_label_override || 'cert',
       type: AuthType.AUTH_SSO,
       strategy: EnvStrategyType.STRATEGY_CERT,
-      provider: CERT_PROVIDER?.provider ?? '',
+      provider: CERT_PROVIDER?.provider ?? CERT_STRATEGY_IDENTIFIER,
     });
   }
   if (platformSettings.headers_auth?.enabled) {
@@ -38,7 +46,7 @@ export const buildAvailableProviders = async (platformSettings: BasicStoreSettin
       name: platformSettings.headers_auth?.button_label_override || 'headers',
       type: AuthType.AUTH_SSO,
       strategy: EnvStrategyType.STRATEGY_HEADER,
-      provider: HEADERS_PROVIDER?.provider ?? '',
+      provider: HEADERS_PROVIDER?.provider ?? HEADERS_STRATEGY_IDENTIFIER,
     });
   }
   return availableProviders;

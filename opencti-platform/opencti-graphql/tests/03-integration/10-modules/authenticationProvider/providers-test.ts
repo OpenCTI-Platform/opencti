@@ -1,4 +1,4 @@
-import { describe, it, vi, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, vi, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import { initializeAuthenticationProviders } from '../../../../src/modules/authenticationProvider/providers';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import type { BasicStoreSettings } from '../../../../src/types/settings';
@@ -9,7 +9,10 @@ import { type ProviderConfiguration, PROVIDERS } from '../../../../src/modules/a
 import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput } from '../../../../src/generated/graphql';
 import { findAllAuthenticationProvider } from '../../../../src/modules/authenticationProvider/authenticationProvider-domain';
 import { SYSTEM_USER } from '../../../../src/utils/access';
-import { elDeleteElements } from '../../../../src/database/engine';
+import { elDeleteElements, elIndexElements } from '../../../../src/database/engine';
+import { patchAttribute } from '../../../../src/database/middleware';
+import { ENTITY_TYPE_SETTINGS } from '../../../../src/schema/internalObject';
+import type { BasicStoreEntityAuthenticationProvider } from '../../../../src/modules/authenticationProvider/authenticationProvider-types';
 
 const clearDbProvider = async () => {
   const authenticators = await findAllAuthenticationProvider(testContext, SYSTEM_USER);
@@ -24,22 +27,64 @@ const clearEnvProviderArray = () => {
 
 describe('Provider coverage', () => {
   const PROVIDER_SAVE: ProviderConfiguration[] = [];
+  let savedDbProviders: BasicStoreEntityAuthenticationProvider[] = [];
+  let savedSettings: BasicStoreSettings;
+
   beforeAll(async () => {
+    // Snapshot in-memory PROVIDERS
     const len = PROVIDERS.length;
     for (let i = 0; i < len; i++) {
       PROVIDER_SAVE.push(PROVIDERS[i]);
     }
+    // Snapshot DB authentication provider entities
+    savedDbProviders = await findAllAuthenticationProvider(testContext, SYSTEM_USER);
+    // Snapshot settings auth/password fields
+    savedSettings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
   });
 
   afterAll(async () => {
+    // Restore in-memory PROVIDERS
     clearEnvProviderArray();
     const len = PROVIDER_SAVE.length;
     for (let i = 0; i < len; i++) {
       PROVIDERS.push(PROVIDER_SAVE[i]);
     }
+
+    // Restore settings auth/password fields
+    const settingsPatch: Record<string, any> = {
+      local_auth: savedSettings.local_auth,
+      cert_auth: savedSettings.cert_auth,
+      headers_auth: savedSettings.headers_auth,
+      password_policy_min_length: (savedSettings as any).password_policy_min_length,
+      password_policy_max_length: (savedSettings as any).password_policy_max_length,
+      password_policy_min_symbols: (savedSettings as any).password_policy_min_symbols,
+      password_policy_min_numbers: (savedSettings as any).password_policy_min_numbers,
+      password_policy_min_words: (savedSettings as any).password_policy_min_words,
+      password_policy_min_lowercase: (savedSettings as any).password_policy_min_lowercase,
+      password_policy_min_uppercase: (savedSettings as any).password_policy_min_uppercase,
+    };
+    await patchAttribute(testContext, ADMIN_USER, savedSettings.id, ENTITY_TYPE_SETTINGS, settingsPatch);
+
+    // Restore DB authentication provider entities:
+    // delete whatever providers exist now, then re-index the originals
+    const currentProviders = await findAllAuthenticationProvider(testContext, SYSTEM_USER);
+    if (currentProviders.length > 0) {
+      await elDeleteElements(testContext, SYSTEM_USER, currentProviders, { forceDelete: true, forceRefresh: true });
+    }
+    if (savedDbProviders.length > 0) {
+      await elIndexElements(testContext, SYSTEM_USER, undefined, savedDbProviders);
+    }
   });
 
   describe('initializeAuthenticationProviders coverage', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
     it('should force env & local disabled along with a strategy be correct', async () => {
     // GIVEN a force env, and a configuration with a local disabled and an OpenID configured
       clearEnvProviderArray();
