@@ -206,8 +206,11 @@ For any authentication strategy (except Local), you can define the organization 
 Organization mapping allows you to automatically create the organizations you have mapped. **This option is disabled by default**.
 
 The behavior is similar to group mapping: you need to provide
+
 - the organization expression: identification of where to find the organization information 
+
 - the organization splitter: if the organization information contains multiple organizations,  this splitter character will be used to extract the individual organization names 
+
 - the organization mapping: the mapping between the value of the organization in your provider and the organizations that exist in the platform. Be sure to type the exact same organization name as it exists in the platform to avoid organization duplication. 
 
 
@@ -218,10 +221,15 @@ When setting up an authentication, it might be difficult to have it right at fir
 
 For each authentication except Local, the last 50 logs are available to help you troubleshoot any configurations (next to the edit button).
 Each log will have the following information:
+
 - Timestamp: when did the log occur
+
 - Level: Info, Success, Warning or Error.
+
 - Message: the message indicating the error
+
 - Details: you can view the full log by clicking on the button on the right-hand side.
+
 
 ### In case you are locked out
 It is possible to lock yourself out of the platform.
@@ -232,9 +240,13 @@ We have a few safeguards to avoid this situation, but it can still happen: for i
 In case your authentication used to work prior to the [migration](../deployment/breaking-changes/7.260224.0-SSO-authentication-migration.md), there is a solution: 
 
 Steps to unblock yourself: 
+
 1. In your configuration file, add the variable **app:authentication:force_env**.
+
 2. Set the value to **true**.
+
 3. Restart your platform again.
+
 
 This will allow you to use your configuration file to login instead of the configurations stored in database. 
 
@@ -251,8 +263,11 @@ This solution however relies on one of the following pre-requisites:
 - you have access to the administrator credentials defined in your configuration file.
 
 Steps to unblock yourself:
+
 1. Go into your configuration file and add the variable **app:authentication:force_local**.
+
 2. Set the value to **true**.
+
 3. Restart your platform using this configuration.
 
 You should be able to log in via username and password. Once logged in, enable local authentication again in the authentication menu, then remove this variable from your configuration file.
@@ -263,10 +278,15 @@ You should be able to log in via username and password. Once logged in, enable l
 This is the exact same situation as above, but you do not have any local account and you have disabled the administrator defined in the configuration file.
 
 Steps to unblock yourself:
+
 1. Go into your configuration file and add the variable **app:admin:externally_managed**.
+
 2. Set the value to **true**.
+
 3. Add the variable **app:authentication:force_local**.
+
 4. Set the value to **false**.
+
 5. Restart your platform using this configuration.
 
 You should be able to log in via username and password. Once logged in, enable local authentication again in the authentication menu, then remove the added variables from your configuration file.
