@@ -24,8 +24,17 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import pjson from '../../../package.json';
 import { convertWidgetsIds } from '../workspace/workspace-utils';
-import { SELF_ID, widgetAttackPatterns, widgetContainerObservables, widgetIndicators } from '../../utils/fintelTemplate/__fintelTemplateWidgets';
+import {
+  SELF_ID,
+  widgetContainerAttackPatterns,
+  widgetContainerIndicators,
+  widgetContainerObservables,
+  widgetEntityAttackPatterns,
+  widgetEntityIndicators,
+  widgetEntityObservables,
+} from '../../utils/fintelTemplate/__fintelTemplateWidgets';
 import { fintelTemplateVariableNameChecker } from '../../utils/syntax';
+import { isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 
 // to customize a template we need : EE, FF enabled
 // but also to have the SETTINGS_SETCUSTOMIZATION capability !!
@@ -79,12 +88,14 @@ export const addFintelTemplate = async (
   input: FintelTemplateAddInput,
   preventDefaultWidgets = false,
 ) => {
-  const isFintelForEntityFeatureEnabled = isFeatureEnabled('FINTEL_FOR_ENTITY');
-
   // check rights
   await canCustomizeTemplate(context);
   // check input validity
   checkFintelTemplateWidgetsValidity(input.fintel_template_widgets ?? []);
+  // get settings type
+  const { settings_types: [settings_type] } = input;
+  const isFintelForEntityFeatureEnabled = isFeatureEnabled('FINTEL_FOR_ENTITY');
+  const isContainer = isFintelForEntityFeatureEnabled ? isStixDomainObjectContainer(settings_type) : true;
   // add id to fintel template widgets
   const widgetsWithIds = (input.fintel_template_widgets ?? []).map((templateWidget) => ({
     ...templateWidget,
@@ -103,7 +114,7 @@ export const addFintelTemplate = async (
           columns: [{
             label: 'Representative',
             attribute: 'representative.main',
-            variableName: isFintelForEntityFeatureEnabled ? 'entityRepresentative' : 'containerRepresentative',
+            variableName: isContainer ? 'containerRepresentative' : 'entityRepresentative',
           }],
           instance_id: SELF_ID,
         }],
@@ -113,29 +124,20 @@ export const addFintelTemplate = async (
         },
       },
     });
-    // - list widgets of observables
-    widgetsWithIds.push({
-      variable_name: widgetContainerObservables.variable_name,
-      widget: {
-        id: uuidv4(),
-        ...widgetContainerObservables.widget,
-      },
-    });
-    // - list widgets of attack patterns
-    widgetsWithIds.push({
-      variable_name: widgetAttackPatterns.variable_name,
-      widget: {
-        id: uuidv4(),
-        ...widgetAttackPatterns.widget,
-      },
-    });
-    // - list widgets indicators
-    widgetsWithIds.push({
-      variable_name: widgetIndicators.variable_name,
-      widget: {
-        id: uuidv4(),
-        ...widgetIndicators.widget,
-      },
+
+    const relatedDataWidgets = isContainer
+      ? [widgetContainerObservables, widgetContainerAttackPatterns, widgetContainerIndicators]
+      : [widgetEntityObservables, widgetEntityAttackPatterns, widgetEntityIndicators];
+
+    // Add related data widgets depending on the settings type (container or entity)
+    relatedDataWidgets.forEach(({ variable_name, widget }) => {
+      widgetsWithIds.push({
+        variable_name: variable_name,
+        widget: {
+          id: uuidv4(),
+          ...widget,
+        },
+      });
     });
   }
 

@@ -1,9 +1,9 @@
 import {
   widgetAllEntitiesAndObservables,
-  widgetAttackPatterns,
+  widgetContainerAttackPatterns,
   widgetGroupingMultiAttributes,
   widgetIncidentResponseMultiAttributes,
-  widgetIndicators,
+  widgetContainerIndicators,
   widgetReportMultiAttributes,
   widgetRFIMultiAttributes,
   widgetRFTMultiAttributes,
@@ -169,8 +169,8 @@ export const generateFintelTemplateExecutiveSummary = (containerType: string): F
     start_date: '1970-01-01T00:00:00Z',
     fintel_template_widgets: [
       multiAttributesWidget,
-      widgetIndicators,
-      widgetAttackPatterns,
+      widgetContainerIndicators,
+      widgetContainerAttackPatterns,
       widgetThreats,
       widgetVictims,
       widgetAllEntitiesAndObservables,
