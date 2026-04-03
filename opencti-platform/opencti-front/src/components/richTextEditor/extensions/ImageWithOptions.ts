@@ -25,55 +25,89 @@ export const ImageWithOptions = Image.extend<ImageWithOptionsOptions>({
       ...this.parent?.(),
       alt: {
         default: null,
-        parseHTML: (element) => {
-          const img = element.tagName === 'IMG' ? element : element.querySelector('img');
-          return img?.getAttribute('alt') ?? null;
-        },
         renderHTML: (attrs) => (attrs.alt != null && attrs.alt !== '' ? { alt: String(attrs.alt) } : {}),
       },
       title: {
         default: null,
-        parseHTML: (element) => {
-          const img = element.tagName === 'IMG' ? element : element.querySelector('img');
-          return img?.getAttribute('title') ?? null;
-        },
         renderHTML: (attrs) => (attrs.title != null && attrs.title !== '' ? { title: String(attrs.title) } : {}),
       },
       caption: {
         default: null,
-        parseHTML: (element) => {
-          const fig = element.tagName === 'FIGURE' ? element : element.closest('figure');
-          const cap = fig?.querySelector('figcaption');
-          return cap?.textContent?.trim() ?? null;
-        },
         renderHTML: () => ({}),
       },
       href: {
         default: null,
-        parseHTML: (element) => {
-          const img = element.tagName === 'IMG' ? element : element.querySelector('img');
-          const a = img?.closest('a');
-          return a?.getAttribute('href') ?? null;
-        },
+        renderHTML: () => ({}),
+      },
+      figureStyle: {
+        default: null,
+        renderHTML: () => ({}),
+      },
+      figureClass: {
+        default: null,
+        renderHTML: () => ({}),
+      },
+      imgStyle: {
+        default: null,
         renderHTML: () => ({}),
       },
     };
   },
 
   parseHTML() {
+    const parseDimension = (styleStr: string | null | undefined, dimension: 'width' | 'height'): number | null => {
+      if (!styleStr) return null;
+      const regex = new RegExp(`${dimension}\\s*:\\s*([0-9.]+)(px|%)?`, 'i');
+      const match = styleStr.match(regex);
+      return match && match[1] ? parseInt(match[1], 10) : null;
+    };
+
+    const extractDimensions = (figStyle: string | null | undefined, imgStyle: string | null | undefined, attrWidth: number | null, attrHeight: number | null) => {
+      const styleWidth = parseDimension(figStyle, 'width') ?? parseDimension(imgStyle, 'width');
+      const styleHeight = parseDimension(figStyle, 'height') ?? parseDimension(imgStyle, 'height');
+
+      let finalWidth = styleWidth ?? attrWidth;
+      let finalHeight = styleHeight ?? attrHeight;
+
+      // Si le style surcharge la largeur mais pas la hauteur (ou inversement),
+      // il faut recalculer l'autre dimension pour respecter le ratio d'origine
+      if (styleWidth && !styleHeight && attrWidth && attrHeight) {
+        finalHeight = Math.round(styleWidth * (attrHeight / attrWidth));
+      } else if (styleHeight && !styleWidth && attrWidth && attrHeight) {
+        finalWidth = Math.round(styleHeight * (attrWidth / attrHeight));
+      } else if (styleWidth && !styleHeight && !attrHeight) {
+        finalHeight = null;
+      } else if (styleHeight && !styleWidth && !attrWidth) {
+        finalWidth = null;
+      }
+
+      return { finalWidth, finalHeight };
+    };
+
     const getFigureAttrs = (node: HTMLElement) => {
       const img = node.querySelector('img');
       if (!img) return false;
       const a = img.closest('a');
       const cap = node.querySelector('figcaption');
+      const figStyle = node.getAttribute('style');
+      const imgStyle = img.getAttribute('style');
+
+      const attrWidth = img.getAttribute('width') ? parseInt(img.getAttribute('width') ?? '', 10) : null;
+      const attrHeight = img.getAttribute('height') ? parseInt(img.getAttribute('height') ?? '', 10) : null;
+
+      const { finalWidth, finalHeight } = extractDimensions(figStyle, imgStyle, attrWidth, attrHeight);
+
       return {
         src: img.getAttribute('src'),
         alt: img.getAttribute('alt'),
         title: img.getAttribute('title') ?? img.getAttribute('data-title'),
-        width: img.getAttribute('width') ? parseInt(img.getAttribute('width') ?? '', 10) : null,
-        height: img.getAttribute('height') ? parseInt(img.getAttribute('height') ?? '', 10) : null,
+        width: finalWidth,
+        height: finalHeight,
         href: a?.getAttribute('href') ?? img.getAttribute('data-href') ?? null,
         caption: cap?.textContent?.trim() ?? img.getAttribute('data-caption') ?? null,
+        figureStyle: figStyle ? figStyle.replace(/(width|height)\s*:\s*[^;]+;?/gi, '').trim() : null,
+        figureClass: node.getAttribute('class') ?? null,
+        imgStyle: imgStyle ? imgStyle.replace(/(width|height)\s*:\s*[^;]+;?/gi, '').trim() : null,
       };
     };
     return [
@@ -83,14 +117,25 @@ export const ImageWithOptions = Image.extend<ImageWithOptionsOptions>({
         tag: 'img[src]',
         getAttrs: (node) => {
           if (typeof node !== 'object' || !(node instanceof HTMLElement)) return false;
+          const fig = node.closest('figure');
+          const figStyle = fig?.getAttribute('style');
+          const imgStyle = node.getAttribute('style');
+          const attrWidth = node.getAttribute('width') ? parseInt(node.getAttribute('width') ?? '', 10) : null;
+          const attrHeight = node.getAttribute('height') ? parseInt(node.getAttribute('height') ?? '', 10) : null;
+
+          const { finalWidth, finalHeight } = extractDimensions(figStyle, imgStyle, attrWidth, attrHeight);
+
           return {
             src: node.getAttribute('src'),
             alt: node.getAttribute('alt'),
             title: node.getAttribute('title') ?? node.getAttribute('data-title'),
-            width: node.getAttribute('width') ? parseInt(node.getAttribute('width') ?? '', 10) : null,
-            height: node.getAttribute('height') ? parseInt(node.getAttribute('height') ?? '', 10) : null,
+            width: finalWidth,
+            height: finalHeight,
             href: node.getAttribute('data-href') ?? null,
             caption: node.getAttribute('data-caption') ?? null,
+            figureStyle: figStyle ? figStyle.replace(/(width|height)\s*:\s*[^;]+;?/gi, '').trim() : null,
+            figureClass: fig?.getAttribute('class') ?? null,
+            imgStyle: imgStyle ? imgStyle.replace(/(width|height)\s*:\s*[^;]+;?/gi, '').trim() : null,
           };
         },
       },
@@ -98,7 +143,7 @@ export const ImageWithOptions = Image.extend<ImageWithOptionsOptions>({
   },
 
   renderHTML({ node, HTMLAttributes }) {
-    const { caption, href, ...rest } = node.attrs;
+    const { caption, href, figureStyle, figureClass, imgStyle, ...rest } = node.attrs;
     const merged = mergeAttributes(this.options.HTMLAttributes ?? {}, rest, HTMLAttributes);
     // ProseMirror renderSpec requires attribute values to be strings; omit null/undefined
     const imgAttrs: Record<string, string> = {};
@@ -123,6 +168,9 @@ export const ImageWithOptions = Image.extend<ImageWithOptionsOptions>({
     if (titleText) {
       imgAttrs['data-title'] = titleText;
     }
+    if (imgStyle && String(imgStyle).trim() !== '') {
+      imgAttrs['style'] = String(imgStyle).trim();
+    }
 
     // Always wrap in figure.image-figure for CKEditor compatibility (centering, margins)
     const imgTag: [string, Record<string, string>] = ['img', imgAttrs];
@@ -130,10 +178,20 @@ export const ImageWithOptions = Image.extend<ImageWithOptionsOptions>({
       ? ['a', { href: String(href).trim(), target: '_blank', rel: 'noopener noreferrer' }, imgTag]
       : imgTag;
 
-    if (hasCaption) {
-      return ['figure', { class: 'image-figure' }, wrappedImg, ['figcaption', {}, captionText]];
+    const figAttrs: Record<string, string> = {};
+    if (figureClass && String(figureClass).trim() !== '') {
+      figAttrs['class'] = `image-figure ${String(figureClass).trim().replace('image-figure', '')}`.replace(/\s+/g, ' ').trim();
+    } else {
+      figAttrs['class'] = 'image-figure';
     }
-    return ['figure', { class: 'image-figure' }, wrappedImg];
+    if (figureStyle && String(figureStyle).trim() !== '') {
+      figAttrs['style'] = String(figureStyle).trim();
+    }
+
+    if (hasCaption) {
+      return ['figure', figAttrs, wrappedImg, ['figcaption', {}, captionText]];
+    }
+    return ['figure', figAttrs, wrappedImg];
   },
 
   addNodeView() {
@@ -142,12 +200,16 @@ export const ImageWithOptions = Image.extend<ImageWithOptionsOptions>({
     const resizeEnabled = resizeOpts?.enabled && resizeOpts?.directions?.length;
 
     return ({ node, getPos, HTMLAttributes, editor }) => {
-      const { caption, href, width, height, ...imgRest } = node.attrs as Record<string, unknown>;
+      const { caption, href, width, height, figureStyle, figureClass, imgStyle, ...imgRest } = node.attrs as Record<string, unknown>;
       const hasCaption = caption && typeof caption === 'string';
       const hasLink = href && String(href).trim() !== '';
 
       const img = document.createElement('img');
       img.src = HTMLAttributes.src ?? '';
+
+      if (imgStyle && String(imgStyle).trim() !== '') {
+        img.setAttribute('style', String(imgStyle).trim());
+      }
       Object.entries(imgRest).forEach(([key, value]) => {
         if (value != null && value !== '') img.setAttribute(key, String(value));
       });
@@ -192,7 +254,17 @@ export const ImageWithOptions = Image.extend<ImageWithOptionsOptions>({
 
         /* Always use figure wrapper when resize is on so we can show/update caption in update() */
         const figure = document.createElement('figure');
-        figure.className = 'image-figure';
+
+        let nodeFigureClass = 'image-figure';
+        if (figureClass && String(figureClass).trim() !== '') {
+          nodeFigureClass = `image-figure ${String(figureClass).trim().replace('image-figure', '')}`.replace(/\s+/g, ' ').trim();
+        }
+        figure.className = nodeFigureClass;
+
+        if (figureStyle && String(figureStyle).trim() !== '') {
+          figure.setAttribute('style', String(figureStyle).trim());
+        }
+
         if (hasLink) {
           const a = document.createElement('a');
           a.href = String(href).trim();
@@ -244,7 +316,15 @@ export const ImageWithOptions = Image.extend<ImageWithOptionsOptions>({
       }
 
       const figure = document.createElement('figure');
-      figure.className = 'image-figure';
+      let nodeFigureClass = 'image-figure';
+      if (figureClass && String(figureClass).trim() !== '') {
+        nodeFigureClass = `image-figure ${String(figureClass).trim().replace('image-figure', '')}`.replace(/\s+/g, ' ').trim();
+      }
+      figure.className = nodeFigureClass;
+
+      if (figureStyle && String(figureStyle).trim() !== '') {
+        figure.setAttribute('style', String(figureStyle).trim());
+      }
       if (hasLink) {
         const a = document.createElement('a');
         a.href = String(href).trim();
