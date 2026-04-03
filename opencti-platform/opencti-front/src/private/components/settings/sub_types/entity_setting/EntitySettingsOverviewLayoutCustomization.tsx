@@ -9,11 +9,11 @@ import TableBody from '@mui/material/TableBody';
 import Switch from '@mui/material/Switch';
 import { DragIndicatorOutlined } from '@mui/icons-material';
 import { Form, Formik } from 'formik';
-import { EntitySettingSettings_entitySetting$data } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingSettings_entitySetting.graphql';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../../components/Theme';
+import { EntitySettingsFragment_entitySetting$data } from './__generated__/EntitySettingsFragment_entitySetting.graphql';
 
 export const entitySettingsOverviewLayoutCustomizationFragment = graphql`
   fragment EntitySettingsOverviewLayoutCustomization_entitySetting on EntitySetting {
@@ -42,7 +42,7 @@ export const entitySettingsOverviewLayoutCustomizationEdit = graphql`
 type NonNullableFields<T> = {
   [P in keyof T]: NonNullable<T[P]>;
 };
-export type EntitySettingsOverviewLayoutCustomizationData = NonNullableFields<Pick<EntitySettingSettings_entitySetting$data, 'id' | 'overview_layout_customization'>>;
+export type EntitySettingsOverviewLayoutCustomizationData = NonNullableFields<Pick<EntitySettingsFragment_entitySetting$data, 'id' | 'overview_layout_customization'>>;
 
 interface EntitySettingsOverviewLayoutCustomizationProps {
   entitySettingsData: EntitySettingsOverviewLayoutCustomizationData;

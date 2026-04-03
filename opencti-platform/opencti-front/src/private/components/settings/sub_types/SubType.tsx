@@ -1,16 +1,22 @@
-import React, { Suspense } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import Card from '@common/card/Card';
 import { SubTypeQuery } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
+import { Box, Stack } from '@mui/material';
+import React, { Suspense } from 'react';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Outlet, useParams } from 'react-router-dom';
-import { useFormatter } from '../../../../components/i18n';
-import CustomizationMenu from '../CustomizationMenu';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
-import SubTypeMenu from './SubTypeMenu';
+import { useFormatter } from '../../../../components/i18n';
+import useAttributes from '../../../../utils/hooks/useAttributes';
 import useHelper from '../../../../utils/hooks/useHelper';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import CustomizationMenu from '../CustomizationMenu';
+import SubTypeMenu from './SubTypeMenu';
+import EntitySettingSettings from './entity_setting/EntitySettingSettings';
+import { entitySettingsOverviewLayoutCustomizationFragment } from './entity_setting/EntitySettingsOverviewLayoutCustomization';
+import { EntitySettingsOverviewLayoutCustomization_entitySetting$key } from './entity_setting/__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
 
 export const subTypeQuery = graphql`
   query SubTypeQuery($id: String!){
@@ -22,9 +28,9 @@ export const subTypeQuery = graphql`
         id
         availableSettings
         ...EntitySettingsOverviewLayoutCustomization_entitySetting
-        ...EntitySettingSettings_entitySetting
+        ...EntitySettingsFragment_entitySetting
         ...EntitySettingAttributes_entitySetting
-        ...FintelTemplatesGrid_templates
+        ...FintelTemplatesManager_templates
         requestAccessConfiguration{
             ...RequestAccessStatusFragment_requestAccess
             ...RequestAccessConfigurationEdition_requestAccess
@@ -42,18 +48,36 @@ interface SubTypeProps {
 
 const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { t_i18n } = useFormatter();
+  const { typesWithFintelTemplates } = useAttributes();
+  const { isFeatureEnable } = useHelper();
 
   const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
+
+  const entitySetting = useFragment(
+    entitySettingsOverviewLayoutCustomizationFragment,
+    (subType?.settings ?? null) as EntitySettingsOverviewLayoutCustomization_entitySetting$key,
+  );
+
   if (!subType) return <ErrorNotFound />;
 
   const subTypeSettingsId = subType.settings?.id;
   if (!subTypeSettingsId) return <ErrorNotFound />;
 
-  const { isFeatureEnable } = useHelper();
   const isDraftWorkflowFeatureEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const isDraftWorkspaceType = subType.label === 'DraftWorkspace' && isDraftWorkflowFeatureEnabled;
+
+  const isWorkflowConfigurationEnabled = subType.settings?.availableSettings.includes('workflow_configuration');
+
+  const isFINTELTemplatesEnabled
+    = typesWithFintelTemplates.includes(subType.id)
+      && subType.settings?.availableSettings.includes('templates');
+
+  const isAttributesConfigurationEnabled = subType.settings?.availableSettings.includes('attributes_configuration');
+
+  const isCustomLayoutEnabled = !!entitySetting?.overview_layout_customization;
+
   return (
-    <div style={{ margin: 0, padding: '0 200px 50px 0' }}>
+    <Stack sx={{ pr: '200px', pb: 4 }} gap={2}>
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Customization') },
@@ -62,16 +86,43 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
       ]}
       />
 
-      <CustomizationMenu />
-
-      {isDraftWorkspaceType && (<SubTypeMenu entityType={subType.label} />)}
-
-      <TitleMainEntity sx={{ mb: 3 }}>
+      <TitleMainEntity>
         {t_i18n(`entity_${subType.label}`)}
       </TitleMainEntity>
 
-      <Outlet context={{ subType }} />
-    </div>
+      {
+        !isDraftWorkspaceType && (
+
+          <EntitySettingSettings entitySettingsData={subType.settings} />
+        )
+      }
+
+      {/** right menu drawer permanent */}
+      <CustomizationMenu />
+
+      <SubTypeMenu
+        entityType={subType.label}
+        isFINTELTemplatesEnabled={isFINTELTemplatesEnabled}
+        isAttributesConfigurationEnabled={isAttributesConfigurationEnabled}
+        isWorkflowConfigurationEnabled={isWorkflowConfigurationEnabled}
+        isCustomLayoutEnabled={isCustomLayoutEnabled}
+      />
+
+      {/** add a minHeight to prevent page jumps when switching tab
+       * that have different content size with magic number */}
+      <Box sx={{ minHeight: '240px' }}>
+        <Outlet
+          context={{
+            subType,
+            isWorkflowConfigurationEnabled,
+            isAttributesConfigurationEnabled,
+            isFINTELTemplatesEnabled,
+            isCustomLayoutEnabled,
+          }}
+        />
+      </Box>
+
+    </Stack>
   );
 };
 
