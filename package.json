@@ -16,6 +16,8 @@
     "build:venv": "yarn with-python-venv yarn build",
     "dev:venv": "yarn with-python-venv yarn dev",
     "test:venv": "yarn with-python-venv yarn test",
+    "build:ubi9": "nx run-many --tuiAutoExit --target build-ubi9",
+    "push:ubi9": "nx run-many --tuiAutoExit --target push-ubi9",
     "renovate:dry-run": "LOG_LEVEL=debug yarn dlx renovate --dry-run --platform=local"
   },
   "dependenciesMeta": {
