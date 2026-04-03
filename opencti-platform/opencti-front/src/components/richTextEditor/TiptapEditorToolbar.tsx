@@ -540,6 +540,17 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
         onClose={() => setTextColorAnchor(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       >
+        <Box sx={{ p: 1, borderBottom: 1, borderColor: 'divider', display: 'flex', justifyContent: 'center' }}>
+          <MenuItem
+            sx={{ borderRadius: 1, typography: 'body2', py: 0.5, flexGrow: 1, justifyContent: 'center' }}
+            onClick={() => {
+              editor.chain().focus().unsetColor().run();
+              setTextColorAnchor(null);
+            }}
+          >
+            Reset Default Color
+          </MenuItem>
+        </Box>
         <SketchPicker
           color={currentColor || '#000000'}
           onChangeComplete={(color) => {
@@ -553,6 +564,17 @@ export const TiptapEditorToolbar: React.FC<TiptapEditorToolbarProps> = ({
         onClose={() => setBgColorAnchor(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       >
+        <Box sx={{ p: 1, borderBottom: 1, borderColor: 'divider', display: 'flex', justifyContent: 'center' }}>
+          <MenuItem
+            sx={{ borderRadius: 1, typography: 'body2', py: 0.5, flexGrow: 1, justifyContent: 'center' }}
+            onClick={() => {
+              editor.chain().focus().unsetBackgroundColor().run();
+              setBgColorAnchor(null);
+            }}
+          >
+            Reset Background Color
+          </MenuItem>
+        </Box>
         <SketchPicker
           color={currentBgColor || '#ffff00'}
           onChangeComplete={(color) => {

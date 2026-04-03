@@ -347,20 +347,24 @@ body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
 .rich-text-content .text-huge  { font-size: 1.8em; }
 
 /* Legacy Editor highlight classes — kept for backward compatibility with stored content */
+/* General marks */
+.rich-text-content mark,
+.rich-text-editor-wrapper .ProseMirror mark { color: #000000; }
+
 /* Markers: background color */
 .rich-text-content mark.marker-yellow,
-.rich-text-editor-wrapper .ProseMirror mark.marker-yellow { background-color: hsl(60, 75%, 60%); color: inherit; }
+.rich-text-editor-wrapper .ProseMirror mark.marker-yellow { background-color: rgb(255, 255, 0); color: #000000; }
 .rich-text-content mark.marker-green,
-.rich-text-editor-wrapper .ProseMirror mark.marker-green  { background-color: hsl(120, 75%, 60%); color: inherit; }
+.rich-text-editor-wrapper .ProseMirror mark.marker-green  { background-color: rgb(98, 249, 98); color: #000000; }
 .rich-text-content mark.marker-pink,
-.rich-text-editor-wrapper .ProseMirror mark.marker-pink   { background-color: hsl(345, 75%, 60%); color: inherit; }
+.rich-text-editor-wrapper .ProseMirror mark.marker-pink   { background-color: rgb(252, 120, 153); color: #000000; }
 .rich-text-content mark.marker-blue,
-.rich-text-editor-wrapper .ProseMirror mark.marker-blue   { background-color: hsl(201, 75%, 60%); color: inherit; }
+.rich-text-editor-wrapper .ProseMirror mark.marker-blue   { background-color: rgb(15, 188, 255); color: #000000; }
 /* Pens: text color, transparent background */
 .rich-text-content mark.pen-red,
-.rich-text-editor-wrapper .ProseMirror mark.pen-red   { background-color: transparent; color: hsl(0, 75%, 60%); }
+.rich-text-editor-wrapper .ProseMirror mark.pen-red   { background-color: transparent !important; color: rgb(231, 19, 19) !important; }
 .rich-text-content mark.pen-green,
-.rich-text-editor-wrapper .ProseMirror mark.pen-green { background-color: transparent; color: hsl(120, 75%, 60%); }
+.rich-text-editor-wrapper .ProseMirror mark.pen-green { background-color: transparent !important; color: rgb(18, 138, 0) !important; }
 
 /* Legacy Editor image figure — kept for backward compatibility with stored content */
 .rich-text-content figure.image,
