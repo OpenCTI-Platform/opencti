@@ -4,6 +4,7 @@ import { booleanConf, logApp } from '../config/conf';
 import { isEmptyField } from '../database/utils';
 import { URL } from 'node:url';
 import { getPublicAuthorizedDomainsFromConfiguration, isDevMode, isUnsecureHttpResourceAllowed } from './httpConfig';
+import type { HelmetOptions } from 'helmet';
 
 export const setCookieError = (res: Express.Response, message: string) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -107,7 +108,7 @@ export const buildPublicHelmetParameters = () => {
   const ancestorsFromConfig = getPublicAuthorizedDomainsFromConfiguration();
   const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
   const allowedFrameSrc = ["'self'"];
-  return {
+  const helmetConfiguration: HelmetOptions = {
     referrerPolicy: { policy: 'unsafe-url' },
     crossOriginEmbedderPolicy: false,
     crossOriginOpenerPolicy: false,
@@ -131,10 +132,11 @@ export const buildPublicHelmetParameters = () => {
     // false means disable the header when frame-ancestors allows external domains
     xFrameOptions: frameAncestorDomains === "'none'" ? { action: 'deny' } : false,
   };
+  return helmetConfiguration;
 };
 
 export const buildDefaultHelmetParameters = () => {
-  return {
+  const helmetConfiguration: HelmetOptions = {
     referrerPolicy: { policy: 'unsafe-url' },
     crossOriginEmbedderPolicy: false,
     crossOriginOpenerPolicy: false,
@@ -154,5 +156,7 @@ export const buildDefaultHelmetParameters = () => {
         frameAncestors: "'none'",
       },
     },
+    xFrameOptions: { action: 'deny' },
   };
+  return helmetConfiguration;
 };
