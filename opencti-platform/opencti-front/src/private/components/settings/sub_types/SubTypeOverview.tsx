@@ -13,10 +13,8 @@ import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useHelper from '../../../../utils/hooks/useHelper';
-import useAttributes from '../../../../utils/hooks/useAttributes';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import EntitySettingAttributes from './entity_setting/EntitySettingAttributes';
-import FintelTemplatesManager from './fintel_templates/FintelTemplatesManager';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeOverviewEntitySettingSubscription($id: ID!) {
@@ -129,9 +127,7 @@ const SubTypeOverview = () => {
         </Grid>
       )}
 
-      <EntitySettingCustomOverview
-        entitySettingsData={subType.settings}
-      />
+      <EntitySettingCustomOverview />
     </Grid>
   );
 };

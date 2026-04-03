@@ -6,9 +6,10 @@ interface SubTypeMenuProps {
   entityType: string;
   isFINTELTemplatesEnabled?: boolean;
   isAttributesConfigurationEnabled?: boolean;
+  isWorkflowConfigurationEnabled?: boolean;
 }
 
-const SubTypeMenu = ({ entityType, isFINTELTemplatesEnabled, isAttributesConfigurationEnabled }: SubTypeMenuProps) => {
+const SubTypeMenu = ({ entityType, isFINTELTemplatesEnabled, isAttributesConfigurationEnabled, isWorkflowConfigurationEnabled }: SubTypeMenuProps) => {
   const { t_i18n } = useFormatter();
   const location = useLocation();
 
@@ -23,12 +24,15 @@ const SubTypeMenu = ({ entityType, isFINTELTemplatesEnabled, isAttributesConfigu
         value={`/dashboard/settings/customization/entity_types/${entityType}`}
         label={t_i18n('Overview')}
       />
-      <Tab
-        component={Link}
-        to={`/dashboard/settings/customization/entity_types/${entityType}/workflow`}
-        value={`/dashboard/settings/customization/entity_types/${entityType}/workflow`}
-        label={t_i18n('Workflow')}
-      />
+
+      {isWorkflowConfigurationEnabled && (
+        <Tab
+          component={Link}
+          to={`/dashboard/settings/customization/entity_types/${entityType}/workflow`}
+          value={`/dashboard/settings/customization/entity_types/${entityType}/workflow`}
+          label={t_i18n('Workflow')}
+        />
+      )}
 
       {
         isAttributesConfigurationEnabled && (
