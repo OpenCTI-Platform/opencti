@@ -126,7 +126,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
       initialValues={initialValues}
       validationSchema={streamCollectionValidation(t_i18n('This field is required'))}
     >
-      {() => (
+      {({ values, setFieldValue }) => (
         <Form>
           <Field
             component={TextField}
@@ -163,12 +163,17 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
               {t_i18n('Make this stream public and available to anyone')}
             </AlertTitle>
             <FormControlLabel
-              control={<Switch defaultChecked={!!initialValues.stream_public} disabled={!isGrantedToSetAccesses} />}
+              control={<Switch checked={!!values.stream_public} disabled={!isGrantedToSetAccesses} />}
               style={{ marginLeft: 1 }}
-              onChange={(_, checked) => handleSubmitField('stream_public', checked.toString())}
+              onChange={(_, checked) => {
+                setFieldValue('stream_public', checked);
+                if (!checked) {
+                  handleSubmitField('stream_public', 'false');
+                }
+              }}
               label={t_i18n('Public stream')}
             />
-            {!initialValues.stream_public && (
+            {!values.stream_public && (
               <ObjectMembersField
                 label="Accessible for"
                 style={fieldSpacingContainerStyle}
@@ -178,13 +183,35 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
                 name="restricted_members"
               />
             )}
-            {initialValues.stream_public && (
+            {values.stream_public && (
               <CreatorField
                 name="stream_public_user_id"
                 label={t_i18n('Share data corresponding to the right associated with this user')}
                 containerStyle={fieldSpacingContainerStyle}
                 disabled={!isGrantedToSetAccesses}
-                onChange={(_, value) => handleSubmitField('stream_public_user_id', (value as FieldOption)?.value ?? '')}
+                onChange={(_, value) => {
+                  const userId = (value as FieldOption)?.value ?? '';
+                  if (!streamCollection.stream_public) {
+                    commitMutation({
+                      mutation: streamCollectionMutationFieldPatch,
+                      variables: {
+                        id: streamCollection.id,
+                        input: [
+                          { key: 'stream_public_user_id', value: userId },
+                          { key: 'stream_public', value: 'true' },
+                        ],
+                      },
+                      setSubmitting: undefined,
+                      onCompleted: undefined,
+                      onError: undefined,
+                      optimisticResponse: undefined,
+                      optimisticUpdater: undefined,
+                      updater: undefined,
+                    });
+                  } else {
+                    handleSubmitField('stream_public_user_id', userId);
+                  }
+                }}
               />
             )}
           </Alert>

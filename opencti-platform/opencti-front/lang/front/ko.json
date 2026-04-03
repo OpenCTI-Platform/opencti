@@ -230,6 +230,7 @@
   "All notifications, triggers and digests associated with the user will be deleted.": "사용자와 연결된 모든 알림, 트리거 및 요약이 삭제됩니다.",
   "All observables": "모든 관찰 가능 항목",
   "All other filters": "다른 모든 필터",
+  "All public streams, taxii, csv using this user right to share data will be stopped and turn private. Please update them with a new user to turn them public again.": "이 사용자 권한을 사용하여 데이터를 공유하는 모든 공개 스트림, 택시, CSV는 더 이상 작동하지 않습니다.",
   "All reports": "모든 보고서",
   "All rule targets": "모든 규칙 대상",
   "All the results may not be displayed for these filter values, read documentation for more information.": "이러한 필터 값에 대해 모든 결과가 표시되지 않을 수 있습니다. 자세한 내용은 {link}을 참조하세요",

@@ -230,6 +230,7 @@
   "All notifications, triggers and digests associated with the user will be deleted.": "All notifications, triggers and digests associated with the user will be deleted.",
   "All observables": "All observables",
   "All other filters": "All other filters",
+  "All public streams, taxii, csv using this user right to share data will be stopped and turn private. Please update them with a new user to turn them public again.": "All public streams, taxii, csv using this user right to share data will be stopped and turn private. Please update them with a new user to turn them public again.",
   "All reports": "All reports",
   "All rule targets": "All rule targets",
   "All the results may not be displayed for these filter values, read documentation for more information.": "All the results may not be displayed for these filter values, {link} for more information",
