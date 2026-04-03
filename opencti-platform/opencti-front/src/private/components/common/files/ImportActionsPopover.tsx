@@ -12,7 +12,7 @@ import { ProgressUpload } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import ImportWorksDrawer from '@components/common/files/ImportWorksDrawer';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { APP_BASE_PATH, MESSAGING$ } from '../../../../relay/environment';
+import { MESSAGING$ } from '../../../../relay/environment';
 import stopEvent from '../../../../utils/domEvent';
 import { RelayError } from '../../../../relay/relayTypes';
 import { deleteNode } from '../../../../utils/store';
