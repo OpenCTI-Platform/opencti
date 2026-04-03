@@ -3126,7 +3126,6 @@ const upsertElement = async (
       delete basePatch.decay_exclusion_applied_rule;
     }
   }
-
   const confidenceForUpsert = controlUpsertInputWithUserConfidence(user, basePatch as ObjectWithConfidence, resolvedElement);
 
   const updatePatch = buildUpdatePatchForUpsert(user, resolvedElement, type, basePatch, confidenceForUpsert);
@@ -3134,6 +3133,130 @@ const upsertElement = async (
   // upsertOperations : resolve refs
   if (updatePatch.upsertOperations?.length > 0) {
     updatePatch.upsertOperations = await resolveRefsForInputs(context, user, type, updatePatch.upsertOperations);
+  }
+
+  // Upsert relations with times extensions
+  if (isStixCoreRelationship(type)) {
+    const { date: cStartTime } = computeExtendedDateValues(updatePatch.start_time, resolvedElement.start_time, ALIGN_OLDEST);
+    const { date: cStopTime } = computeExtendedDateValues(updatePatch.stop_time, resolvedElement.stop_time, ALIGN_NEWEST);
+    updatePatch.start_time = cStartTime;
+    updatePatch.stop_time = cStopTime;
+  }
+  if (isStixSightingRelationship(type)) {
+    const { date: cFs, updated: isCFsUpdated } = computeExtendedDateValues(updatePatch.first_seen, resolvedElement.first_seen, ALIGN_OLDEST);
+    const { date: cLs, updated: isCLsUpdated } = computeExtendedDateValues(updatePatch.last_seen, resolvedElement.last_seen, ALIGN_NEWEST);
+    updatePatch.first_seen = cFs;
+    updatePatch.last_seen = cLs;
+    if (isCFsUpdated || isCLsUpdated) {
+      updatePatch.attribute_count = resolvedElement.attribute_count + updatePatch.attribute_count;
+    }
+  }
+  const inputs = []; // All inputs impacted by modifications (+inner)
+  // If file directly attached
+  if (!isEmptyField(updatePatch.file)) {
+    const path = `import/${resolvedElement.entity_type}/${resolvedElement.internal_id}`;
+    const { upload: file } = await uploadToStorage(context, user, path, updatePatch.file, { entity: resolvedElement });
+    const convertedFile = storeFileConverter(user, file);
+    // The impact in the database is the completion of the files
+    const fileImpact = { key: 'x_opencti_files', value: [...(resolvedElement.x_opencti_files ?? []), convertedFile] };
+    inputs.push(fileImpact);
+  }
+  // region confidence control / upsert
+  updatePatch.confidence = confidenceLevelToApply;
+  // note that if the existing data has no confidence (null) it will still be updated below, even if isConfidenceMatch = false
+  // endregion
+  // Preserve vulnerability name (CVE) if missing from update patch
+  // This fixes issue #13169 where CVE information is deleted when Jira connector sends updates without name field
+  if (type === ENTITY_TYPE_VULNERABILITY && isEmptyField(updatePatch.name) && isNotEmptyField(resolvedElement.name)) {
+    // Preserve existing name (CVE identifier) if not in update patch
+    updatePatch.name = resolvedElement.name;
+  }
+  // -- Upsert attributes
+  const attributes = Array.from(schemaAttributesDefinition.getAttributes(type).values());
+  for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
+    const attribute = attributes[attrIndex];
+    const attributeKey = attribute.name;
+    const isInputAvailable = attributeKey in updatePatch;
+    if (isInputAvailable) { // The attribute is explicitly available in the patch
+      const inputData = updatePatch[attributeKey];
+      const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, attributeKey);
+      const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creatorsAttribute.name; // Ids and creators consolidation is always granted
+      const isFullSync = context.synchronizedUpsert || attribute.upsert_force_replace; // In case of full synchronization or force full upsert, just update the data
+      const isInputWithData = typeof inputData === 'string' ? isNotEmptyField(inputData.trim()) : isNotEmptyField(inputData);
+      const isCurrentlyEmpty = isEmptyField(resolvedElement[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
+      // Field can be upsert if:
+      // 1. Confidence is correct
+      // 2. Attribute is declared upsert=true in the schema
+      // 3. Data from the inputs is not empty to prevent any data cleaning
+      const canBeUpsert = isConfidenceMatch && attribute.upsert && isInputWithData;
+      // Upsert will be done if upsert is well-defined but also in full synchro mode or if the current value is empty
+      if (!isOutDatedModification) {
+        if (isStructuralUpsert || canBeUpsert || isFullSync || isCurrentlyEmpty) {
+          inputs.push(...buildAttributeUpdate(isFullSync, attribute, resolvedElement[attributeKey], inputData));
+        }
+      } else {
+        logApp.info('Discarding outdated attribute update mutation', { key: attributeKey });
+      }
+    }
+  }
+  // -- Upsert refs
+  const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(resolvedElement.entity_type).map((ref) => ref.name);
+  for (let fieldIndex = 0; fieldIndex < metaInputFields.length; fieldIndex += 1) {
+    const inputField = metaInputFields[fieldIndex];
+    const relDef = schemaRelationsRefDefinition.getRelationRef(resolvedElement.entity_type, inputField);
+    const isInputAvailable = inputField in updatePatch;
+    if (isInputAvailable) {
+      const patchInputData = updatePatch[inputField];
+      const isInputWithData = isNotEmptyField(patchInputData);
+      const isUpsertSynchro = context.synchronizedUpsert;
+      const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, inputField);
+      if (!isOutDatedModification) {
+        if (relDef.multiple) {
+          const currentData = resolvedElement[relDef.databaseName] ?? [];
+          const currentDataSet = new Set(currentData);
+          const isCurrentWithData = isNotEmptyField(currentData);
+          const fullPatchInputData = patchInputData ?? [];
+          const fullPatchInputDataSet = new Set(fullPatchInputData.map((i) => i.internal_id));
+          // Specific case for organization restriction, has EE must be activated.
+          // If not supported, upsert of organization is not applied
+          const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && settings.valid_enterprise_edition === true;
+          const allowedOperation = relDef.databaseName !== RELATION_GRANTED_TO || (relDef.databaseName === RELATION_GRANTED_TO && isUserCanManipulateGrantedRefs);
+          const inputToCurrentDiff = fullPatchInputData.filter((target) => !currentDataSet.has(target.internal_id));
+          const currentToInputDiff = currentData.filter((current) => !fullPatchInputDataSet.has(current));
+          // If expected data is different from current data
+          if (allowedOperation && (inputToCurrentDiff.length + currentToInputDiff.length) > 0) {
+            // In full synchro, just replace everything
+            if (isUpsertSynchro) {
+              inputs.push({ key: inputField, value: fullPatchInputData, operation: UPDATE_OPERATION_REPLACE });
+            } else if ((isCurrentWithData && isInputWithData && inputToCurrentDiff.length > 0 && isConfidenceMatch)
+                || (isInputWithData && !isCurrentWithData)
+            ) {
+              // If data is provided, different from existing data, and of higher confidence
+              // OR if existing data is empty and data is provided (even if lower confidence, it's better than nothing),
+              // --> apply an add operation
+              inputs.push({ key: inputField, value: inputToCurrentDiff, operation: UPDATE_OPERATION_ADD });
+            }
+          }
+        } else { // not multiple
+          // If expected data is different from current data...
+          const currentData = resolvedElement[relDef.databaseName];
+          const isCurrentEmptyData = isEmptyField(currentData);
+          const isInputDifferentFromCurrent = !R.equals(currentData, patchInputData);
+          // ... and data can be updated:
+          // forced synchro
+          // OR the field is currently null (auto consolidation)
+          // OR the confidence matches
+          // To prevent too much flickering on multi sources the created-by will be replaced only for strict upper confidence
+          const isProtectedCreatedBy = relDef.databaseName === RELATION_CREATED_BY && !isCurrentEmptyData && !isConfidenceUpper;
+          const updatable = ((isInputWithData && isCurrentEmptyData) || isConfidenceMatch) && !isProtectedCreatedBy;
+          if (isInputDifferentFromCurrent && (isUpsertSynchro || updatable)) {
+            inputs.push({ key: inputField, value: [patchInputData] });
+          }
+        }
+      } else {
+        logApp.info('Discarding outdated attribute update mutation', { key: inputField });
+      }
+    }
   }
 
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
