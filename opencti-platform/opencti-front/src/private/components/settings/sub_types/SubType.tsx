@@ -11,6 +11,10 @@ import Loader from '../../../../components/Loader';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import SubTypeMenu from './SubTypeMenu';
 import useHelper from '../../../../utils/hooks/useHelper';
+import Card from '@common/card/Card';
+import EntitySettingSettings from './entity_setting/EntitySettingSettings';
+import { Stack } from '@mui/material';
+import useAttributes from '../../../../utils/hooks/useAttributes';
 
 export const subTypeQuery = graphql`
   query SubTypeQuery($id: String!){
@@ -24,7 +28,7 @@ export const subTypeQuery = graphql`
         ...EntitySettingsOverviewLayoutCustomization_entitySetting
         ...EntitySettingsFragment_entitySetting
         ...EntitySettingAttributes_entitySetting
-        ...FintelTemplatesGrid_templates
+        ...FintelTemplatesManager_templates
         requestAccessConfiguration{
             ...RequestAccessStatusFragment_requestAccess
             ...RequestAccessConfigurationEdition_requestAccess
@@ -42,6 +46,8 @@ interface SubTypeProps {
 
 const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { t_i18n } = useFormatter();
+  const { typesWithFintelTemplates } = useAttributes();
+  const { isFeatureEnable } = useHelper();
 
   const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
   if (!subType) return <ErrorNotFound />;
@@ -49,11 +55,16 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const subTypeSettingsId = subType.settings?.id;
   if (!subTypeSettingsId) return <ErrorNotFound />;
 
-  const { isFeatureEnable } = useHelper();
   const isDraftWorkflowFeatureEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const isDraftWorkspaceType = subType.label === 'DraftWorkspace' && isDraftWorkflowFeatureEnabled;
+
+  const isFINTELTemplatesEnabled
+    = typesWithFintelTemplates.includes(subType.id)
+      && subType.settings?.availableSettings.includes('templates');
+
+  // style={{ margin: 0, padding: '0 200px 50px 0' }}>
   return (
-    <div style={{ margin: 0, padding: '0 200px 50px 0' }}>
+    <Stack sx={{ pr: '200px', pb: 4 }} gap={2}>
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Customization') },
@@ -62,16 +73,29 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
       ]}
       />
 
-      <CustomizationMenu />
-
-      {isDraftWorkspaceType && (<SubTypeMenu entityType={subType.label} />)}
-
-      <TitleMainEntity sx={{ mb: 3 }}>
+      <TitleMainEntity>
         {t_i18n(`entity_${subType.label}`)}
       </TitleMainEntity>
 
+      {
+        !isDraftWorkspaceType && (
+          <Card title={t_i18n('Configuration')}>
+            <EntitySettingSettings entitySettingsData={subType.settings} />
+          </Card>
+        )
+      }
+
+      {/** right menu drawer permanent */}
+      <CustomizationMenu />
+
+      <SubTypeMenu
+        entityType={subType.label}
+        isFINTELTemplatesEnabled={isFINTELTemplatesEnabled}
+      />
+      {/* {isDraftWorkspaceType && (<SubTypeMenu entityType={subType.label} />)} */}
+
       <Outlet context={{ subType }} />
-    </div>
+    </Stack>
   );
 };
 
