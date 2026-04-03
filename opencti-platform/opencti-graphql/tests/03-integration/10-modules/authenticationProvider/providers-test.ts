@@ -86,7 +86,7 @@ describe('Provider coverage', () => {
     });
 
     it('should force env & local disabled along with a strategy be correct', async () => {
-    // GIVEN a force env, and a configuration with a local disabled and an OpenID configured
+    // GIVEN a force env, and a configuration with a local disabled and an SAML configured
       clearEnvProviderArray();
 
       vi.spyOn(mockProviderEnv, 'isAuthenticationForcedFromEnv').mockReturnValue(true);
@@ -117,7 +117,7 @@ describe('Provider coverage', () => {
       const settingsProviders = await buildAvailableProviders(finalSettings);
 
       // THEN
-      // Should have only the OpenID, and no local since local is disabled in env
+      // Should have only the SAML, and no local since local is disabled in env
       expect(settingsProviders).toStrictEqual([
         {
           logout_remote: false,
@@ -146,7 +146,7 @@ describe('Provider coverage', () => {
       await initializeAuthenticationProviders(testContext);
 
       // THEN
-      // Should have only the OpenID, and no local since local is disabled in env
+      // Should have only the local since there is no other strategy
       const finalSettings = await getSettings(testContext) as unknown as BasicStoreSettings;
       const settingsProviders = await buildAvailableProviders(finalSettings);
 
@@ -160,7 +160,7 @@ describe('Provider coverage', () => {
       ]);
     });
 
-    it('should force env & local disabled with no strategy still register local', async () => {
+    it('should no force env and with no strategy still register local', async () => {
       // GIVEN an empty configuration in DB
       await clearDbProvider();
       vi.spyOn(mockProviderEnv, 'isAuthenticationForcedFromEnv').mockReturnValue(false);
@@ -169,7 +169,7 @@ describe('Provider coverage', () => {
       await initializeAuthenticationProviders(testContext);
 
       // THEN
-      // Should have only the OpenID, and no local since local is disabled in env
+      // Should have only the local
       const finalSettings = await getSettings(testContext) as unknown as BasicStoreSettings;
       const settingsProviders = await buildAvailableProviders(finalSettings);
 
