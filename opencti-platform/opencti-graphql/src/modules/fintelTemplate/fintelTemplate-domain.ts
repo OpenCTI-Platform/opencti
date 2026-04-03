@@ -88,15 +88,14 @@ export const addFintelTemplate = async (
   input: FintelTemplateAddInput,
   preventDefaultWidgets = false,
 ) => {
-  const isFintelForEntityFeatureEnabled = isFeatureEnabled('FINTEL_FOR_ENTITY');
-
   // check rights
   await canCustomizeTemplate(context);
   // check input validity
   checkFintelTemplateWidgetsValidity(input.fintel_template_widgets ?? []);
   // get settings type
   const { settings_types: [settings_type] } = input;
-  const isContainer = isStixDomainObjectContainer(settings_type);
+  const isFintelForEntityFeatureEnabled = isFeatureEnabled('FINTEL_FOR_ENTITY');
+  const isContainer = isFintelForEntityFeatureEnabled ? isStixDomainObjectContainer(settings_type) : true;
   // add id to fintel template widgets
   const widgetsWithIds = (input.fintel_template_widgets ?? []).map((templateWidget) => ({
     ...templateWidget,
@@ -115,7 +114,7 @@ export const addFintelTemplate = async (
           columns: [{
             label: 'Representative',
             attribute: 'representative.main',
-            variableName: isFintelForEntityFeatureEnabled ? 'entityRepresentative' : 'containerRepresentative',
+            variableName: isContainer ? 'containerRepresentative' : 'entityRepresentative',
           }],
           instance_id: SELF_ID,
         }],
@@ -125,57 +124,21 @@ export const addFintelTemplate = async (
         },
       },
     });
-    if (isContainer) {
-      // - list widgets of observables
+
+    const relatedDataWidgets = isContainer
+      ? [widgetContainerObservables, widgetContainerAttackPatterns, widgetContainerIndicators]
+      : [widgetEntityObservables, widgetEntityAttackPatterns, widgetEntityIndicators];
+
+    // Add related data widgets depending on the settings type (container or entity)
+    relatedDataWidgets.forEach(({ variable_name, widget }) => {
       widgetsWithIds.push({
-        variable_name: widgetContainerObservables.variable_name,
+        variable_name: variable_name,
         widget: {
           id: uuidv4(),
-          ...widgetContainerObservables.widget,
+          ...widget,
         },
       });
-      // - list widgets of attack patterns
-      widgetsWithIds.push({
-        variable_name: widgetContainerAttackPatterns.variable_name,
-        widget: {
-          id: uuidv4(),
-          ...widgetContainerAttackPatterns.widget,
-        },
-      });
-      // - list widgets indicators
-      widgetsWithIds.push({
-        variable_name: widgetContainerIndicators.variable_name,
-        widget: {
-          id: uuidv4(),
-          ...widgetContainerIndicators.widget,
-        },
-      });
-    } else {
-      // - list widgets of observables
-      widgetsWithIds.push({
-        variable_name: widgetEntityObservables.variable_name,
-        widget: {
-          id: uuidv4(),
-          ...widgetEntityObservables.widget,
-        },
-      });
-      // - list widgets of attack patterns
-      widgetsWithIds.push({
-        variable_name: widgetEntityAttackPatterns.variable_name,
-        widget: {
-          id: uuidv4(),
-          ...widgetEntityAttackPatterns.widget,
-        },
-      });
-      // - list widgets indicators
-      widgetsWithIds.push({
-        variable_name: widgetEntityIndicators.variable_name,
-        widget: {
-          id: uuidv4(),
-          ...widgetEntityIndicators.widget,
-        },
-      });
-    }
+    });
   }
 
   const finalInput: FintelTemplateAddInput = {
