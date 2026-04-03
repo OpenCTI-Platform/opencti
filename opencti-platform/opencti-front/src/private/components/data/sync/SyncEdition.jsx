@@ -23,7 +23,6 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import PasswordTextField from '../../../../components/PasswordTextField';
-import { extractToken } from '../../../../utils/ingestionAuthentificationUtils';
 import { useTheme } from '@mui/styles';
 import IngestionEditionUserHandling from '../../../../private/components/data/IngestionEditionUserHandling';
 import { EMPTY_VALUE } from '../../../../utils/String';
@@ -60,14 +59,8 @@ const syncMutationFieldPatch = graphql`
 
 export const syncEditionUserHandlingPatch = graphql`
   mutation SyncEditionUserHandlingMutation($id: ID!, $input: SynchronizerAddAutoUserInput!) {
-      synchronizerAddAutoUser(id: $id, input: $input) {
-        id
-        name
-        user {
-            id
-            entity_type
-            name
-        }
+    synchronizerAddAutoUser(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -100,7 +93,6 @@ const SyncEditionContainer = ({ synchronizer }) => {
   const initialValues = {
     name: synchronizer.name,
     uri: synchronizer.uri,
-    token: extractToken(synchronizer.token),
     stream_id: synchronizer.stream_id,
     listen_deletion: synchronizer.listen_deletion,
     no_dependencies: synchronizer.no_dependencies,
@@ -346,7 +338,6 @@ const SyncEditionFragment = createFragmentContainer(SyncEditionContainer, {
       id
       name
       uri
-      token
       stream_id
       listen_deletion
       no_dependencies

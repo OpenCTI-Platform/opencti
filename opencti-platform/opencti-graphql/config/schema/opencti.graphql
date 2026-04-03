@@ -667,7 +667,6 @@ type Synchronizer {
   id: ID!
   name: String!
   uri: String!
-  token: String
   stream_id: String!
   user: Creator
   running: Boolean!
