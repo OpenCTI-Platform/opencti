@@ -147,6 +147,7 @@ export const addUserLoginCount = () => {
 // End Region user event counters
 
 const telemetryInitializer = async (): Promise<HandlerInput> => {
+  const startTime = new Date().getTime();
   const context = executionContext('telemetry_manager');
   const filigranMetricReaders = [];
   const collectorCallback = async () => {
@@ -214,10 +215,12 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   const filigranMeterProvider = new MeterProvider(({ resource, readers: filigranMetricReaders }));
   const filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
   filigranTelemetryMeterManager.registerFiligranTelemetry();
+  logApp.info(`[TELEMETRY] Initialized in ${new Date().getTime() - startTime} ms`);
   return filigranTelemetryMeterManager;
 };
 
 export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
+  const startTime = new Date().getTime();
   try {
     const context = executionContext('telemetry_manager');
     // region Settings information
@@ -332,7 +335,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setFormIntakeSubmittedCount(formIntakeSubmittedCountInRedis);
     // end region Telemetry user events
 
-    logApp.debug('[TELEMETRY] Fetching telemetry data successfully');
+    logApp.debug(`[TELEMETRY] Fetching telemetry data successfully in ${new Date().getTime() - startTime} ms`);
   } catch (e) {
     logApp.error('[TELEMETRY] Error fetching platform information', { cause: e });
   }

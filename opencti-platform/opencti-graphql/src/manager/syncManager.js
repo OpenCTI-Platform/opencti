@@ -16,10 +16,13 @@ import { createSyncHttpUri, httpBase } from '../domain/connector-utils';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { storeSyncConsumerMetrics, clearSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { createParser } from 'eventsource-parser';
+import { InterruptibleTimer } from './interruptible-timer';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
 const WAIT_TIME_ACTION = 2000;
+
+const waitLoopTimer = new InterruptibleTimer();
 
 const syncManagerInstance = (syncId) => {
   // Variables
@@ -30,6 +33,7 @@ const syncManagerInstance = (syncId) => {
   let lastEventDate; // Track the last saved event date (ISO string) for reconnection
   let running = false;
   let abortController = null;
+
   // Async generator that yields SSE events from a raw HTTP stream.
   // Backpressure is natural: when the consumer is busy processing an event,
   // the generator is suspended, bytes are not read from the socket,
@@ -89,10 +93,13 @@ const syncManagerInstance = (syncId) => {
   return {
     id: syncId,
     stop: () => {
+      const startTime = new Date().getTime();
       logApp.info(`[OPENCTI] Sync ${syncId}: stopping manager`);
       running = false;
+      waitLoopTimer.interrupt();
       if (abortController) abortController.abort();
       clearSyncConsumerMetrics(syncId).catch(() => {});
+      logApp.info(`[OPENCTI] Sync ${syncId}: manager stopped in ${new Date().getTime() - startTime} ms`);
     },
     start: async (context) => {
       running = true;
@@ -190,6 +197,7 @@ const initSyncManager = () => {
   let scheduler;
   let syncListening = true;
   let managerRunning = false;
+
   const syncManagers = new Map();
   const processStep = async () => {
     // Get syncs definition
@@ -230,7 +238,7 @@ const initSyncManager = () => {
     while (syncListening) {
       lock.signal.throwIfAborted();
       await processStep();
-      await wait(WAIT_TIME_ACTION);
+      await waitLoopTimer.start(WAIT_TIME_ACTION);
     }
     // Stopping
     for (const syncManager of syncManagers.values()) {
@@ -272,11 +280,13 @@ const initSyncManager = () => {
       };
     },
     shutdown: async () => {
+      const startTime = new Date().getTime();
       logApp.info('[OPENCTI-MODULE] Stopping Sync manager');
       syncListening = false;
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }
+      logApp.info(`[OPENCTI-MODULE] Stopping Sync manager ${new Date().getTime() - startTime} ms`);
       return true;
     },
   };

@@ -36,6 +36,7 @@ import type { Representative } from '../types/store';
 import type { BasicStoreSettings } from '../types/settings';
 import { type BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { NOTIFIER_CONNECTOR_WEBHOOK } from '../modules/notifier/notifier-statics';
+import { InterruptibleTimer } from './interruptible-timer';
 
 const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
 const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
@@ -650,11 +651,9 @@ const initNotificationManager = () => {
   let streamProcessor: StreamProcessor;
   let running = false;
   let shutdown = false;
-  const wait = (ms: number) => {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
-  };
+  const liveTimer = new InterruptibleTimer();
+  const cronTimer = new InterruptibleTimer();
+
   const notificationLiveHandler = async () => {
     let lock;
     try {
@@ -667,7 +666,7 @@ const initNotificationManager = () => {
       await streamProcessor.start(lastEventState ?? 'live');
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
-        await wait(WAIT_TIME_ACTION);
+        await liveTimer.start(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of notification manager processing (live)');
     } catch (e: any) {
@@ -692,7 +691,7 @@ const initNotificationManager = () => {
       while (!shutdown) {
         lock.signal.throwIfAborted();
         await handleDigestNotifications(context);
-        await wait(CRON_SCHEDULE_TIME);
+        await cronTimer.start(CRON_SCHEDULE_TIME);
       }
       logApp.info('[OPENCTI-MODULE] End of notification manager processing (digest)');
     } catch (e: any) {
@@ -722,10 +721,14 @@ const initNotificationManager = () => {
       };
     },
     shutdown: async () => {
+      const startTime = new Date().getTime();
       logApp.info('[OPENCTI-MODULE] Stopping notification manager');
       shutdown = true;
+      liveTimer.interrupt();
+      cronTimer.interrupt();
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
       if (cronScheduler) await clearIntervalAsync(cronScheduler);
+      logApp.info(`[OPENCTI-MODULE] Notification manager stopped in ${new Date().getTime() - startTime} ms`);
       return true;
     },
   };
