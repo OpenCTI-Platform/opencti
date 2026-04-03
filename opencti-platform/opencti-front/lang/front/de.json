@@ -230,7 +230,7 @@
   "All notifications, triggers and digests associated with the user will be deleted.": "Alle Benachrichtigungen, Trigger und Digests, die mit dem Benutzer verbunden sind, werden gelöscht.",
   "All observables": "Alle Observablen",
   "All other filters": "Alle anderen Filter",
-  "All public streams, taxii, csv using this user right to share data will not work anymore.": "Alle öffentlichen Streams, taxii, csv, die dieses Benutzerrecht zur gemeinsamen Nutzung von Daten verwenden, funktionieren nicht mehr.",
+  "All public streams, taxii, csv using this user right to share data will be stopped and turn private. Please update them with a new user to turn them public again.": "Alle öffentlichen Streams, taxii, csv, die dieses Benutzerrecht zur gemeinsamen Nutzung von Daten verwenden, funktionieren nicht mehr.",
   "All reports": "Alle Berichte",
   "All rule targets": "Alle Regelziele",
   "All the results may not be displayed for these filter values, read documentation for more information.": "Für diese Filterwerte werden möglicherweise nicht alle Ergebnisse angezeigt, {link} für weitere Informationen",
