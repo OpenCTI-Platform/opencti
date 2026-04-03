@@ -23,7 +23,7 @@
     "paths": {
       "@common/*": ["src/components/common/*"],
       "@components/*": ["src/private/components/*"],
-      "src": ["src/*"]
+      "src/*": ["src/*"]
     },
     "types": ["@testing-library/jest-dom"]
   },
