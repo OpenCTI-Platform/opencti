@@ -364,7 +364,9 @@ body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
 
 /* Legacy Editor image figure — kept for backward compatibility with stored content */
 .rich-text-content figure.image,
-.rich-text-content figure.image-figure {
+.rich-text-content figure.image-figure,
+.rich-text-editor-wrapper .ProseMirror figure.image,
+.rich-text-editor-wrapper .ProseMirror figure.image-figure {
   display: table;
   clear: both;
   text-align: center;
@@ -372,9 +374,19 @@ body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
   min-width: 50px;
 }
 .rich-text-content figure.image img,
-.rich-text-content figure.image-figure img {
+.rich-text-content figure.image-figure img,
+.rich-text-editor-wrapper .ProseMirror figure.image img,
+.rich-text-editor-wrapper .ProseMirror figure.image-figure img {
   display: block;
   max-width: 100%;
+}
+
+/* Legacy Editor support for right-aligned image figures */
+.rich-text-content figure.image-style-side,
+.rich-text-editor-wrapper .ProseMirror figure.image-style-side {
+  float: right !important;
+  clear: none !important;
+  margin: 0.9em 0 0.9em 1.5em !important;
 }
 
 .rich-text-content blockquote {
