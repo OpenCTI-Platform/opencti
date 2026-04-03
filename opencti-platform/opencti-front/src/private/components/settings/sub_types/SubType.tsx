@@ -92,9 +92,8 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
       {
         !isDraftWorkspaceType && (
-          <Card title={t_i18n('Configuration')}>
-            <EntitySettingSettings entitySettingsData={subType.settings} />
-          </Card>
+
+          <EntitySettingSettings entitySettingsData={subType.settings} />
         )
       }
 
