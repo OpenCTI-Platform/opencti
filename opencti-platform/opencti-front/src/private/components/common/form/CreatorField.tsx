@@ -20,6 +20,7 @@ interface CreatorFieldProps {
   showConfidence?: boolean;
   helpertext?: string;
   required?: boolean;
+  clearable?: boolean;
   disabled?: boolean;
 }
 
@@ -56,6 +57,8 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
   containerStyle,
   onChange,
   showConfidence = false,
+  helpertext,
+  clearable = false,
   disabled = false,
 }) => {
   const { t_i18n } = useFormatter();
@@ -126,9 +129,10 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
         textfieldprops={{
           variant: 'standard',
           label,
+          helperText: helpertext,
           onFocus: searchCreators,
         }}
-        disableClearable
+        disableClearable={!clearable}
         onChange={onChange}
         style={containerStyle}
         noOptionsText={t_i18n('No available options')}

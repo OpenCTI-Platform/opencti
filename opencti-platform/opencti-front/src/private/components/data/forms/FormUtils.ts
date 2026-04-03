@@ -3,6 +3,8 @@
  */
 import type { FormFieldAttribute, EntityTypeOption, AttributeOption, RelationshipTypeOption, FormBuilderData, FormSchemaDefinition } from './Form.d';
 import { getOpenVocabAttributes, getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
+import type { AuthorizedMemberOption, AccessRight } from '../../../../utils/authorizedMembers';
+import type { FieldOption } from '../../../../utils/field';
 
 // Field type options for the UI
 export const FIELD_TYPES = [
@@ -420,6 +422,89 @@ export const buildEntityTypes = (
   return types;
 };
 
+type NormalizeDraftAuthorizedMembersOptions = {
+  creatorsLabel?: string;
+  authorOrgLabel?: string;
+  dynamicOptionsLabel?: string;
+};
+
+const normalizeGroupsRestriction = (groupsRestriction: unknown): FieldOption[] => {
+  if (!Array.isArray(groupsRestriction)) {
+    return [];
+  }
+  return groupsRestriction
+    .map((group): FieldOption | null => {
+      if (typeof group === 'string' && group.length > 0) {
+        return { value: group, label: group };
+      }
+      if (typeof group === 'object' && group !== null) {
+        const value = (group as { value?: string; id?: string }).value || (group as { value?: string; id?: string }).id;
+        if (value) {
+          const label = (group as { label?: string }).label || value;
+          return { value, label };
+        }
+      }
+      return null;
+    })
+    .filter((group): group is FieldOption => !!group);
+};
+
+export const normalizeDraftAuthorizedMembersDefaults = (
+  defaults: unknown[],
+  options: NormalizeDraftAuthorizedMembersOptions = {},
+): AuthorizedMemberOption[] => {
+  const creatorsLabel = options.creatorsLabel || 'Creators';
+  const authorOrgLabel = options.authorOrgLabel || 'Author (organization)';
+  const dynamicOptionsLabel = options.dynamicOptionsLabel || 'Dynamic options';
+
+  return defaults
+    .map((rule): AuthorizedMemberOption | null => {
+      if (!rule || typeof rule !== 'object') {
+        return null;
+      }
+
+      const legacyRule = rule as { type?: string; intersectionGroup?: string };
+      if (legacyRule.type === 'CREATOR') {
+        return {
+          label: creatorsLabel,
+          value: 'CREATORS',
+          type: dynamicOptionsLabel,
+          accessRight: 'admin',
+          groupsRestriction: [],
+        };
+      }
+      if (legacyRule.type === 'AUTHOR_ORG') {
+        return {
+          label: authorOrgLabel,
+          value: 'AUTHOR',
+          type: dynamicOptionsLabel,
+          accessRight: 'admin',
+          groupsRestriction: legacyRule.intersectionGroup
+            ? [{ label: legacyRule.intersectionGroup, value: legacyRule.intersectionGroup }]
+            : [],
+        };
+      }
+
+      const value = (rule as { value?: string; id?: string }).value || (rule as { value?: string; id?: string }).id;
+      if (!value) {
+        return null;
+      }
+
+      const type = (rule as { type?: string }).type || (value === 'CREATORS' || value === 'AUTHOR' ? dynamicOptionsLabel : '');
+      const accessRight = ((rule as { accessRight?: AccessRight }).accessRight || 'admin') as AccessRight;
+
+      return {
+        ...(rule as AuthorizedMemberOption),
+        label: (rule as { label?: string }).label || (value === 'CREATORS' ? creatorsLabel : value === 'AUTHOR' ? authorOrgLabel : value),
+        value,
+        type,
+        accessRight,
+        groupsRestriction: normalizeGroupsRestriction((rule as { groupsRestriction?: unknown }).groupsRestriction),
+      };
+    })
+    .filter((rule): rule is AuthorizedMemberOption => !!rule);
+};
+
 /**
  * Convert FormBuilderData to FormSchemaDefinition for backend
  * @param values The form builder data from UI
@@ -428,12 +513,71 @@ export const buildEntityTypes = (
 export const convertFormBuilderDataToSchema = (
   values: FormBuilderData,
 ): FormSchemaDefinition => {
+  const hasNonEmptyString = (value?: string) => (value || '').trim().length > 0;
+  const hasNonEmptyArray = <T>(value?: T[]) => Array.isArray(value) && value.length > 0;
+
+  const normalizedDraftAuthorizedMembersDefaults = values.draftDefaults?.authorizedMembers
+    ? normalizeDraftAuthorizedMembersDefaults(values.draftDefaults.authorizedMembers.defaults || [])
+    : [];
+
+  const normalizedDraftDefaults = values.draftDefaults
+    ? {
+        name: values.draftDefaults.name
+          ? {
+              enabled: hasNonEmptyString(values.draftDefaults.name.defaultValue),
+              isEditable: values.draftDefaults.name.isEditable ?? false,
+              isRequired: values.draftDefaults.name.isRequired ?? false,
+              defaultValue: values.draftDefaults.name.defaultValue ?? '',
+            }
+          : undefined,
+        description: values.draftDefaults.description
+          ? {
+              enabled: hasNonEmptyString(values.draftDefaults.description.defaultValue),
+              isEditable: values.draftDefaults.description.isEditable ?? false,
+              isRequired: values.draftDefaults.description.isRequired ?? false,
+              defaultValue: values.draftDefaults.description.defaultValue ?? '',
+            }
+          : undefined,
+        objectAssignee: values.draftDefaults.objectAssignee
+          ? {
+              enabled: hasNonEmptyArray(values.draftDefaults.objectAssignee.defaults),
+              isEditable: values.draftDefaults.objectAssignee.isEditable ?? false,
+              isRequired: values.draftDefaults.objectAssignee.isRequired ?? false,
+              defaults: values.draftDefaults.objectAssignee.defaults ?? [],
+            }
+          : undefined,
+        objectParticipant: values.draftDefaults.objectParticipant
+          ? {
+              enabled: hasNonEmptyArray(values.draftDefaults.objectParticipant.defaults),
+              isEditable: values.draftDefaults.objectParticipant.isEditable ?? false,
+              isRequired: values.draftDefaults.objectParticipant.isRequired ?? false,
+              defaults: values.draftDefaults.objectParticipant.defaults ?? [],
+            }
+          : undefined,
+        author: values.draftDefaults.author
+          ? {
+              type: values.draftDefaults.author.type,
+              isEditable: values.draftDefaults.author.isEditable ?? false,
+              isRequired: values.draftDefaults.author.isRequired ?? false,
+            }
+          : undefined,
+        authorizedMembers: values.draftDefaults.authorizedMembers
+          ? {
+              enabled: hasNonEmptyArray(normalizedDraftAuthorizedMembersDefaults),
+              isRequired: values.draftDefaults.authorizedMembers.isRequired ?? false,
+              defaults: normalizedDraftAuthorizedMembersDefaults,
+            }
+          : undefined,
+      }
+    : undefined;
+
   return {
     version: '2.0',
     mainEntityType: values.mainEntityType,
     includeInContainer: values.includeInContainer,
     isDraftByDefault: values.isDraftByDefault,
     allowDraftOverride: values.allowDraftOverride,
+    draftDefaults: normalizedDraftDefaults,
     mainEntityMultiple: values.mainEntityMultiple,
     mainEntityLookup: values.mainEntityLookup,
     mainEntityDisableCreation: values.mainEntityDisableCreation,

@@ -665,5 +665,38 @@ export const formatFormDataForSubmission = (
     }
   }
 
+  // Handle draft fields
+  if (Object.prototype.hasOwnProperty.call(values, 'draftName') && typeof values.draftName === 'string') {
+    formattedData.draftName = values.draftName.trim();
+  }
+
+  if (Object.prototype.hasOwnProperty.call(values, 'draftDescription') && typeof values.draftDescription === 'string') {
+    formattedData.draftDescription = values.draftDescription.trim();
+  }
+
+  if (Object.prototype.hasOwnProperty.call(values, 'draftObjectAssignee') && Array.isArray(values.draftObjectAssignee)) {
+    const draftObjectAssignee = values.draftObjectAssignee as { value: string }[];
+    formattedData.draftObjectAssignee = draftObjectAssignee;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(values, 'draftObjectParticipant') && Array.isArray(values.draftObjectParticipant)) {
+    const draftObjectParticipant = values.draftObjectParticipant as { value: string }[];
+    formattedData.draftObjectParticipant = draftObjectParticipant;
+  }
+
+  if (values.draftAuthor) {
+    const selectedDraftAuthor = values.draftAuthor as { value: string };
+    if (selectedDraftAuthor && selectedDraftAuthor.value) {
+      formattedData.draftAuthor = selectedDraftAuthor.value;
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(values, 'draftAuthorizedMembers') && Array.isArray(values.draftAuthorizedMembers)) {
+    const members = values.draftAuthorizedMembers as { value: string }[];
+    // Pass the full member objects to support access rights and group restrictions,
+    // including empty arrays so users can explicitly clear members.
+    formattedData.draftAuthorizedMembers = members;
+  }
+
   return formattedData;
 };

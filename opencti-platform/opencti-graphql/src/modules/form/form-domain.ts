@@ -13,9 +13,9 @@ import { generateStandardId } from '../../schema/identifier';
 import { logApp } from '../../config/conf';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
-import { ConnectorPriorityGroup, ConnectorType, FilterMode, type FormSubmissionInput } from '../../generated/graphql';
+import { ConnectorPriorityGroup, ConnectorType, FilterMode, type DraftWorkspaceAddInput, type FormSubmissionInput, type MemberAccessInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
-import { SYSTEM_USER } from '../../utils/access';
+import { BYPASS, isUserHasCapability, SYSTEM_USER } from '../../utils/access';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
@@ -387,6 +387,180 @@ export const completeEntity = (entityType: string, entity: StoreEntity) => {
   }
   finalEntity.id = finalEntity.internal_id;
   return finalEntity;
+};
+
+export const resolveDraftFieldDefaults = (
+  formName: string,
+  values: Record<string, any>,
+  draftDefaults: FormSchemaDefinition['draftDefaults'] | undefined,
+) => {
+  const normalizeOptionId = (option: any) => {
+    if (typeof option === 'object' && option !== null) {
+      return option.value || option.id;
+    }
+    return option;
+  };
+
+  const isDefaultEnabled = (defaultConfig: { enabled?: boolean } | undefined, hasContent: boolean) => {
+    if (!defaultConfig) return false;
+    if (defaultConfig.enabled === false) return false;
+    if (defaultConfig.enabled === true) return true;
+    return hasContent;
+  };
+
+  const explicitDraftName = typeof values.draftName === 'string' ? values.draftName.trim() : '';
+  const draftNameDefaultValue = (draftDefaults?.name?.defaultValue ?? '').trim();
+  const defaultDraftName = isDefaultEnabled(draftDefaults?.name, draftNameDefaultValue.length > 0)
+    ? draftNameDefaultValue
+    : '';
+  const finalDraftName = explicitDraftName || defaultDraftName || `${formName} - ${nowTime()}`;
+
+  const hasExplicitDraftDescription = Object.prototype.hasOwnProperty.call(values, 'draftDescription');
+  const explicitDraftDescription = typeof values.draftDescription === 'string' ? values.draftDescription.trim() : '';
+  const draftDescriptionDefaultValue = (draftDefaults?.description?.defaultValue ?? '').trim();
+  const defaultDraftDescription = isDefaultEnabled(draftDefaults?.description, draftDescriptionDefaultValue.length > 0)
+    ? draftDescriptionDefaultValue
+    : '';
+  const finalDraftDescription = hasExplicitDraftDescription ? explicitDraftDescription : defaultDraftDescription;
+
+  const hasExplicitDraftAssignees = Object.prototype.hasOwnProperty.call(values, 'draftObjectAssignee');
+  const explicitDraftAssignees = Array.isArray(values.draftObjectAssignee)
+    ? values.draftObjectAssignee.map(normalizeOptionId).filter((id) => !!id)
+    : [];
+  const draftAssigneeDefaults = (draftDefaults?.objectAssignee?.defaults ?? [])
+    .map(normalizeOptionId)
+    .filter((id: any) => !!id);
+  const defaultDraftAssignees = isDefaultEnabled(draftDefaults?.objectAssignee, draftAssigneeDefaults.length > 0)
+    ? draftAssigneeDefaults
+    : [];
+  const finalDraftAssignees = hasExplicitDraftAssignees ? explicitDraftAssignees : defaultDraftAssignees;
+
+  const hasExplicitDraftParticipants = Object.prototype.hasOwnProperty.call(values, 'draftObjectParticipant');
+  const explicitDraftParticipants = Array.isArray(values.draftObjectParticipant)
+    ? values.draftObjectParticipant.map(normalizeOptionId).filter((id) => !!id)
+    : [];
+  const draftParticipantDefaults = (draftDefaults?.objectParticipant?.defaults ?? [])
+    .map(normalizeOptionId)
+    .filter((id: any) => !!id);
+  const defaultDraftParticipants = isDefaultEnabled(draftDefaults?.objectParticipant, draftParticipantDefaults.length > 0)
+    ? draftParticipantDefaults
+    : [];
+  const finalDraftParticipants = hasExplicitDraftParticipants ? explicitDraftParticipants : defaultDraftParticipants;
+
+  return {
+    finalDraftName,
+    finalDraftDescription,
+    finalDraftAssignees,
+    finalDraftParticipants,
+  };
+};
+
+const normalizeOptionId = (option: unknown): string | undefined => {
+  if (typeof option === 'object' && option !== null) {
+    const optionValue = (option as { value?: string; id?: string }).value || (option as { value?: string; id?: string }).id;
+    return typeof optionValue === 'string' && optionValue.length > 0 ? optionValue : undefined;
+  }
+  return typeof option === 'string' && option.length > 0 ? option : undefined;
+};
+
+const normalizeGroupsRestrictionIds = (groupsRestriction: unknown): string[] | undefined => {
+  if (!Array.isArray(groupsRestriction)) {
+    return undefined;
+  }
+  const ids = groupsRestriction
+    .map((group) => normalizeOptionId(group))
+    .filter((groupId): groupId is string => !!groupId);
+  return ids.length > 0 ? ids : undefined;
+};
+
+type NormalizedDraftAuthorizedMemberRule = {
+  value: string;
+  accessRight: string;
+  groupsRestrictionIds?: string[];
+};
+
+const normalizeDraftAuthorizedMemberRule = (rule: unknown): NormalizedDraftAuthorizedMemberRule | null => {
+  if (rule === null || rule === undefined) {
+    return null;
+  }
+
+  if (typeof rule === 'object') {
+    const legacyRule = rule as { type?: string; intersectionGroup?: string };
+    if (legacyRule.type === 'CREATOR') {
+      return { value: 'CREATORS', accessRight: 'admin' };
+    }
+    if (legacyRule.type === 'AUTHOR_ORG') {
+      return {
+        value: 'AUTHOR',
+        accessRight: 'admin',
+        groupsRestrictionIds: legacyRule.intersectionGroup ? [legacyRule.intersectionGroup] : undefined,
+      };
+    }
+  }
+
+  const value = normalizeOptionId(rule);
+  if (!value) {
+    return null;
+  }
+
+  const accessRight = (typeof rule === 'object' && rule !== null && (rule as { accessRight?: string }).accessRight)
+    ? (rule as { accessRight: string }).accessRight
+    : 'admin';
+
+  return {
+    value,
+    accessRight,
+    groupsRestrictionIds: typeof rule === 'object' && rule !== null
+      ? normalizeGroupsRestrictionIds((rule as { groupsRestriction?: unknown }).groupsRestriction)
+      : undefined,
+  };
+};
+
+const resolveAuthorizedMembersForDraft = (
+  user: AuthUser,
+  rawRules: unknown[],
+): MemberAccessInput[] => {
+  const authorizedMembersMap = new Map<string, MemberAccessInput>();
+  rawRules.forEach((rule) => {
+    const normalizedRule = normalizeDraftAuthorizedMemberRule(rule);
+    if (!normalizedRule) {
+      return;
+    }
+
+    const { value, accessRight, groupsRestrictionIds } = normalizedRule;
+    if (value === 'CREATORS') {
+      authorizedMembersMap.set(user.id, { id: user.id, access_right: accessRight });
+      return;
+    }
+
+    if (value === 'AUTHOR') {
+      if (user.organizations) {
+        user.organizations.forEach((org) => {
+          const existing = authorizedMembersMap.get(org.internal_id)
+            || { id: org.internal_id, access_right: accessRight };
+          const currentGroupRestrictions = existing.groups_restriction_ids ?? [];
+          const mergedGroupRestrictions = groupsRestrictionIds
+            ? Array.from(new Set([...currentGroupRestrictions, ...groupsRestrictionIds]))
+            : undefined;
+
+          authorizedMembersMap.set(org.internal_id, {
+            ...existing,
+            access_right: existing.access_right || accessRight,
+            groups_restriction_ids: mergedGroupRestrictions,
+          });
+        });
+      }
+      return;
+    }
+
+    authorizedMembersMap.set(value, {
+      id: value,
+      access_right: accessRight,
+      groups_restriction_ids: groupsRestrictionIds,
+    });
+  });
+
+  return Array.from(authorizedMembersMap.values());
 };
 
 // Submit a form and convert to STIX bundle
@@ -955,7 +1129,50 @@ export const formSubmit = async (
 
     let draftId = null;
     if (finalIsDraft) {
-      const draft = await addDraftWorkspace(context, user, { name: `${form.name} - ${nowTime()}` });
+      let createdBy: string | null = null;
+      const {
+        finalDraftName,
+        finalDraftDescription,
+        finalDraftAssignees,
+        finalDraftParticipants,
+      } = resolveDraftFieldDefaults(form.name, values, schema.draftDefaults);
+
+      // Apply draft defaults for author
+      if (values.draftAuthor) {
+        createdBy = normalizeOptionId(values.draftAuthor) || null;
+      } else if (schema.draftDefaults?.author) {
+        if (schema.draftDefaults.author.type === 'current_user') {
+          createdBy = user.individual_id || null;
+        } else if (schema.draftDefaults.author.type === 'main_entity_author') {
+          const possibleAuthor = values.createdBy
+            || values.mainEntityFields?.createdBy
+            || (values.mainEntityGroups && values.mainEntityGroups.length > 0 ? values.mainEntityGroups[0].createdBy : undefined);
+          createdBy = normalizeOptionId(possibleAuthor) || null;
+        } else if (schema.draftDefaults.author.type === 'none') {
+          createdBy = null;
+        }
+      }
+
+      // Apply explicit authorized members from form submission
+      // Only users with BYPASS capability can override authorized members
+      const isBypass = isUserHasCapability(user, BYPASS);
+      let authorized_members: MemberAccessInput[] = [];
+      if (isBypass && Array.isArray(values.draftAuthorizedMembers)) {
+        authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers);
+      } else if (schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
+        authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults);
+      }
+
+      const draftInput: DraftWorkspaceAddInput = {
+        name: finalDraftName,
+      };
+      if (finalDraftDescription.length > 0) draftInput.description = finalDraftDescription;
+      if (finalDraftAssignees.length > 0) draftInput.objectAssignee = finalDraftAssignees;
+      if (finalDraftParticipants.length > 0) draftInput.objectParticipant = finalDraftParticipants;
+      if (createdBy) draftInput.createdBy = createdBy;
+      if (authorized_members.length > 0) draftInput.authorized_members = authorized_members;
+
+      const draft = await addDraftWorkspace(context, user, draftInput);
       draftId = draft.id;
     }
     await pushToWorkerForConnector(connectorId, {

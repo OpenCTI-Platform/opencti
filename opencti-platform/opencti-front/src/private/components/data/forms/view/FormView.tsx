@@ -14,19 +14,27 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Divider from '@mui/material/Divider';
 import TextField from '../../../../../components/TextField';
+import MarkdownField from '../../../../../components/fields/MarkdownField';
 import { useFormatter } from '../../../../../components/i18n';
 import { FormViewQuery } from './__generated__/FormViewQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { FormFieldRendererProps } from './FormFieldRenderer';
 import { FormSchemaDefinition } from '../Form.d';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import * as Yup from 'yup';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import type { Theme } from '../../../../../components/Theme';
 import useEntitySettings from '../../../../../utils/hooks/useEntitySettings';
 import { convertFormSchemaToYupSchema, formatFormDataForSubmission } from './FormViewUtils';
 import { environment } from '../../../../../relay/environment';
 import StixCoreObjectsField from '../../../common/form/StixCoreObjectsField';
-import useGranted, { INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
+import CreatorField from '../../../common/form/CreatorField';
+import AuthorizedMembersField from '../../../common/form/AuthorizedMembersField';
+import ObjectAssigneeField from '../../../common/form/ObjectAssigneeField';
+import ObjectParticipantField from '../../../common/form/ObjectParticipantField';
+import { FieldOption } from '../../../../../utils/field';
+import useGranted, { BYPASS, INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
+import useAuth from '../../../../../utils/hooks/useAuth';
 import useImportAccess from '../../../../../utils/hooks/useImportAccess';
 import Card from '../../../../../components/common/card/Card';
 import FormFields from './FormFields';
@@ -128,13 +136,14 @@ interface EntityCheckResult {
 }
 
 interface FormInitialValues {
-  [key: string]: string | boolean | string[] | Date | Record<string, unknown> | Record<string, unknown>[] | number | null;
+  [key: string]: string | boolean | string[] | Date | Record<string, unknown> | Record<string, unknown>[] | number | FieldOption[] | null;
 }
 
 const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedded = false, onSuccess }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
+  const { me } = useAuth();
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [pollingEntityId, setPollingEntityId] = useState<string | null>(null);
@@ -142,6 +151,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const [pollingTimeout, setPollingTimeout] = useState(false);
   const isConnectorReader = useGranted([MODULES]);
   const isGrantedIngestion = useGranted([INGESTION]);
+  const isBypass = useGranted([BYPASS]);
   const { isForcedImportToDraft } = useImportAccess();
 
   const data = usePreloadedQuery(formViewQuery, queryRef);
@@ -166,182 +176,247 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     );
   }
 
-  const schema: FormSchemaDefinition = JSON.parse(form.form_schema);
-  const validationSchema = convertFormSchemaToYupSchema(schema, t_i18n);
-  const initialValues: FormInitialValues = {};
+  const { form_schema } = form;
+  const { schema, initialValues, mainEntityFields } = React.useMemo(() => {
+    const parsedSchema: FormSchemaDefinition = JSON.parse(form_schema);
+    const inits: FormInitialValues = {};
+
+    // Initialize values for main entity fields
+    const mFields = parsedSchema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+
+    // Initialize draft defaults
+    if (parsedSchema.draftDefaults?.name?.enabled) {
+      inits.draftName = parsedSchema.draftDefaults.name.defaultValue || '';
+    }
+
+    if (parsedSchema.draftDefaults?.description?.enabled) {
+      inits.draftDescription = parsedSchema.draftDefaults.description.defaultValue || '';
+    }
+
+    if (parsedSchema.draftDefaults?.objectAssignee?.enabled) {
+      inits.draftObjectAssignee = parsedSchema.draftDefaults.objectAssignee.defaults || [];
+    }
+
+    if (parsedSchema.draftDefaults?.objectParticipant?.enabled) {
+      inits.draftObjectParticipant = parsedSchema.draftDefaults.objectParticipant.defaults || [];
+    }
+
+    if (parsedSchema.draftDefaults?.author?.isEditable) {
+      if (parsedSchema.draftDefaults?.author?.type === 'current_user' && me) {
+        inits.draftAuthor = { value: me.individual_id || me.id, label: me.name };
+      } else {
+        inits.draftAuthor = null;
+      }
+    }
+
+    if (parsedSchema.draftDefaults?.authorizedMembers?.enabled) {
+      inits.draftAuthorizedMembers = parsedSchema.draftDefaults.authorizedMembers.defaults || [];
+    }
+
+    // If main entity lookup is enabled, initialize the lookup field
+    if (parsedSchema.mainEntityLookup) {
+      if (parsedSchema.mainEntityMultiple) {
+        inits.mainEntityLookup = [];
+      } else {
+        inits.mainEntityLookup = '';
+      }
+    } else if (parsedSchema.mainEntityMultiple && parsedSchema.mainEntityFieldMode === 'parsed') {
+      // For parsed mode, just initialize a single text field
+      inits.mainEntityParsed = '';
+      // Also initialize additional fields for parsed mode
+      const fieldsObj: Record<string, unknown> = {};
+      mFields.forEach((field) => {
+        if (field.type === 'checkbox' || field.type === 'toggle') {
+          fieldsObj[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
+        } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
+          fieldsObj[field.name] = field.defaultValue || [];
+        } else if (field.type === 'datetime') {
+          fieldsObj[field.name] = field.defaultValue || new Date().toISOString();
+        } else {
+          fieldsObj[field.name] = field.defaultValue || '';
+        }
+      });
+      inits.mainEntityFields = fieldsObj;
+    } else if (parsedSchema.mainEntityMultiple && parsedSchema.mainEntityFieldMode === 'multiple') {
+      // For multi mode, initialize an array with one set of fields
+      const fieldGroup: Record<string, unknown> = {};
+      mFields.forEach((field) => {
+        if (field.type === 'checkbox' || field.type === 'toggle') {
+          fieldGroup[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
+        } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
+          fieldGroup[field.name] = field.defaultValue || [];
+        } else if (field.type === 'datetime') {
+          fieldGroup[field.name] = field.defaultValue || new Date().toISOString();
+        } else {
+          fieldGroup[field.name] = field.defaultValue || '';
+        }
+      });
+      inits.mainEntityGroups = [fieldGroup];
+    } else {
+      // Single entity mode
+      mFields.forEach((field) => {
+        if (field.type === 'checkbox' || field.type === 'toggle') {
+          inits[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
+        } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
+          inits[field.name] = field.defaultValue || [];
+        } else if (field.type === 'datetime') {
+          inits[field.name] = field.defaultValue || new Date().toISOString();
+        } else {
+          inits[field.name] = field.defaultValue || '';
+        }
+      });
+    }
+
+    // Initialize values for relationships if any
+    if (parsedSchema.relationships) {
+      parsedSchema.relationships.forEach((relationship) => {
+        inits[`relationship_${relationship.id}`] = {};
+        // Initialize fields for each relationship
+        if (relationship.fields) {
+          const relationshipFields: Record<string, unknown> = {};
+          relationship.fields.forEach((field) => {
+            if (field.type === 'checkbox' || field.type === 'toggle') {
+              relationshipFields[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
+            } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences') {
+              relationshipFields[field.name] = field.defaultValue || [];
+            } else if (field.type === 'datetime') {
+              relationshipFields[field.name] = field.defaultValue || new Date().toISOString();
+            } else {
+              relationshipFields[field.name] = field.defaultValue || '';
+            }
+          });
+          inits[`relationship_${relationship.id}`] = relationshipFields;
+        }
+      });
+    }
+
+    // Initialize values for additional entities if any
+    if (parsedSchema.additionalEntities) {
+      parsedSchema.additionalEntities.forEach((entity) => {
+        const entityFields = parsedSchema.fields.filter((field) => field.attributeMapping.entity === entity.id);
+
+        if (entity.lookup) {
+          // Lookup mode
+          if (entity.multiple) {
+            inits[`additional_${entity.id}_lookup`] = [];
+          } else {
+            inits[`additional_${entity.id}_lookup`] = '';
+          }
+        } else if (entity.multiple && entity.fieldMode === 'parsed') {
+          // Parsed mode
+          inits[`additional_${entity.id}_parsed`] = '';
+          // Also initialize additional fields for parsed mode
+          const fieldsObj: Record<string, unknown> = {};
+          entityFields.forEach((field) => {
+            if (field.type === 'checkbox' || field.type === 'toggle') {
+              fieldsObj[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
+            } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
+              fieldsObj[field.name] = field.defaultValue || [];
+            } else if (field.type === 'datetime') {
+              fieldsObj[field.name] = field.defaultValue || new Date().toISOString();
+            } else {
+              fieldsObj[field.name] = field.defaultValue || '';
+            }
+          });
+          inits[`additional_${entity.id}_fields`] = fieldsObj;
+        } else if (entity.multiple && entity.fieldMode === 'multiple') {
+          // Multi mode
+          // Initialize with the minimum amount of field groups
+          const minAmount = entity.minAmount ?? 0;
+          const initialGroups: Record<string, unknown>[] = [];
+
+          for (let i = 0; i < minAmount; i += 1) {
+            const fieldGroup: Record<string, unknown> = {};
+            entityFields.forEach((field) => {
+              if (field.type === 'checkbox' || field.type === 'toggle') {
+                fieldGroup[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
+              } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
+                fieldGroup[field.name] = field.defaultValue || [];
+              } else if (field.type === 'datetime') {
+                fieldGroup[field.name] = field.defaultValue || new Date().toISOString();
+              } else {
+                fieldGroup[field.name] = field.defaultValue || '';
+              }
+            });
+            initialGroups.push(fieldGroup);
+          }
+
+          inits[`additional_${entity.id}_groups`] = initialGroups;
+        } else if (!entity.required) {
+          // Single entity mode - optional entities
+          // For optional entities, only initialize if there are default values
+          // Don't initialize empty values for optional entities
+          const entityValues: Record<string, unknown> = {};
+          let hasDefaultValues = false;
+
+          entityFields.forEach((field) => {
+            // Only initialize if field has a default value
+            if (field.defaultValue !== undefined && field.defaultValue !== null && field.defaultValue !== '') {
+              hasDefaultValues = true;
+              entityValues[field.name] = field.defaultValue;
+            }
+          });
+
+          // Only set initial values if there are actual default values
+          if (hasDefaultValues) {
+            inits[`additional_${entity.id}`] = entityValues;
+          }
+        } else {
+          // For required entities, initialize all fields as before
+          const entityValues: Record<string, unknown> = {};
+          entityFields.forEach((field) => {
+            if (field.type === 'checkbox' || field.type === 'toggle') {
+              entityValues[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
+            } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
+              entityValues[field.name] = field.defaultValue || [];
+            } else if (field.type === 'datetime') {
+              entityValues[field.name] = field.defaultValue || new Date().toISOString();
+            } else {
+              entityValues[field.name] = field.defaultValue || '';
+            }
+          });
+          inits[`additional_${entity.id}`] = entityValues;
+        }
+      });
+    }
+
+    return { schema: parsedSchema, initialValues: inits, mainEntityFields: mFields };
+  }, [form_schema, me]);
 
   // Initialize isDraft based on schema settings or import context override
   const [isDraft, setIsDraft] = useState(isForcedImportToDraft || schema.isDraftByDefault || false);
 
-  // Initialize values for main entity fields
-  const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
-
-  // If main entity lookup is enabled, initialize the lookup field
-  if (schema.mainEntityLookup) {
-    if (schema.mainEntityMultiple) {
-      initialValues.mainEntityLookup = [];
-    } else {
-      initialValues.mainEntityLookup = '';
+  const validationSchema = React.useMemo(() => {
+    let baseSchema = convertFormSchemaToYupSchema(schema, t_i18n);
+    const extraShapes: Record<string, Yup.AnySchema> = {};
+    if (isDraft && schema.draftDefaults?.name?.enabled && schema.draftDefaults?.name?.isEditable && schema.draftDefaults?.name?.isRequired) {
+      extraShapes.draftName = Yup.string().trim().required(t_i18n('This field is required'));
     }
-  } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') {
-    // For parsed mode, just initialize a single text field
-    initialValues.mainEntityParsed = '';
-    // Also initialize additional fields for parsed mode
-    const fieldsObj: Record<string, unknown> = {};
-    mainEntityFields.forEach((field) => {
-      if (field.type === 'checkbox' || field.type === 'toggle') {
-        fieldsObj[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
-      } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
-        fieldsObj[field.name] = field.defaultValue || [];
-      } else if (field.type === 'datetime') {
-        fieldsObj[field.name] = field.defaultValue || new Date().toISOString();
-      } else {
-        fieldsObj[field.name] = field.defaultValue || '';
-      }
-    });
-    initialValues.mainEntityFields = fieldsObj;
-  } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') {
-    // For multi mode, initialize an array with one set of fields
-    const fieldGroup: Record<string, unknown> = {};
-    mainEntityFields.forEach((field) => {
-      if (field.type === 'checkbox' || field.type === 'toggle') {
-        fieldGroup[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
-      } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
-        fieldGroup[field.name] = field.defaultValue || [];
-      } else if (field.type === 'datetime') {
-        fieldGroup[field.name] = field.defaultValue || new Date().toISOString();
-      } else {
-        fieldGroup[field.name] = field.defaultValue || '';
-      }
-    });
-    initialValues.mainEntityGroups = [fieldGroup];
-  } else {
-    // Single entity mode
-    mainEntityFields.forEach((field) => {
-      if (field.type === 'checkbox' || field.type === 'toggle') {
-        initialValues[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
-      } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
-        initialValues[field.name] = field.defaultValue || [];
-      } else if (field.type === 'datetime') {
-        initialValues[field.name] = field.defaultValue || new Date().toISOString();
-      } else {
-        initialValues[field.name] = field.defaultValue || '';
-      }
-    });
-  }
-
-  // Initialize values for relationships if any
-  if (schema.relationships) {
-    schema.relationships.forEach((relationship) => {
-      initialValues[`relationship_${relationship.id}`] = {};
-      // Initialize fields for each relationship
-      if (relationship.fields) {
-        const relationshipFields: Record<string, unknown> = {};
-        relationship.fields.forEach((field) => {
-          if (field.type === 'checkbox' || field.type === 'toggle') {
-            relationshipFields[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
-          } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences') {
-            relationshipFields[field.name] = field.defaultValue || [];
-          } else if (field.type === 'datetime') {
-            relationshipFields[field.name] = field.defaultValue || new Date().toISOString();
-          } else {
-            relationshipFields[field.name] = field.defaultValue || '';
-          }
-        });
-        initialValues[`relationship_${relationship.id}`] = relationshipFields;
-      }
-    });
-  }
-
-  // Initialize values for additional entities if any
-  if (schema.additionalEntities) {
-    schema.additionalEntities.forEach((entity) => {
-      const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
-
-      if (entity.lookup) {
-        // Lookup mode
-        if (entity.multiple) {
-          initialValues[`additional_${entity.id}_lookup`] = [];
-        } else {
-          initialValues[`additional_${entity.id}_lookup`] = '';
-        }
-      } else if (entity.multiple && entity.fieldMode === 'parsed') {
-        // Parsed mode
-        initialValues[`additional_${entity.id}_parsed`] = '';
-        // Also initialize additional fields for parsed mode
-        const fieldsObj: Record<string, unknown> = {};
-        entityFields.forEach((field) => {
-          if (field.type === 'checkbox' || field.type === 'toggle') {
-            fieldsObj[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
-          } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
-            fieldsObj[field.name] = field.defaultValue || [];
-          } else if (field.type === 'datetime') {
-            fieldsObj[field.name] = field.defaultValue || new Date().toISOString();
-          } else {
-            fieldsObj[field.name] = field.defaultValue || '';
-          }
-        });
-        initialValues[`additional_${entity.id}_fields`] = fieldsObj;
-      } else if (entity.multiple && entity.fieldMode === 'multiple') {
-        // Multi mode
-        // Initialize with the minimum amount of field groups
-        const minAmount = entity.minAmount ?? 0;
-        const initialGroups: Record<string, unknown>[] = [];
-
-        for (let i = 0; i < minAmount; i += 1) {
-          const fieldGroup: Record<string, unknown> = {};
-          entityFields.forEach((field) => {
-            if (field.type === 'checkbox' || field.type === 'toggle') {
-              fieldGroup[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
-            } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
-              fieldGroup[field.name] = field.defaultValue || [];
-            } else if (field.type === 'datetime') {
-              fieldGroup[field.name] = field.defaultValue || new Date().toISOString();
-            } else {
-              fieldGroup[field.name] = field.defaultValue || '';
-            }
-          });
-          initialGroups.push(fieldGroup);
-        }
-
-        initialValues[`additional_${entity.id}_groups`] = initialGroups;
-      } else if (!entity.required) {
-        // Single entity mode - optional entities
-        // For optional entities, only initialize if there are default values
-        // Don't initialize empty values for optional entities
-        const entityValues: Record<string, unknown> = {};
-        let hasDefaultValues = false;
-
-        entityFields.forEach((field) => {
-          // Only initialize if field has a default value
-          if (field.defaultValue !== undefined && field.defaultValue !== null && field.defaultValue !== '') {
-            hasDefaultValues = true;
-            entityValues[field.name] = field.defaultValue;
-          }
-        });
-
-        // Only set initial values if there are actual default values
-        if (hasDefaultValues) {
-          initialValues[`additional_${entity.id}`] = entityValues;
-        }
-      } else {
-        // For required entities, initialize all fields as before
-        const entityValues: Record<string, unknown> = {};
-        entityFields.forEach((field) => {
-          if (field.type === 'checkbox' || field.type === 'toggle') {
-            entityValues[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
-          } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
-            entityValues[field.name] = field.defaultValue || [];
-          } else if (field.type === 'datetime') {
-            entityValues[field.name] = field.defaultValue || new Date().toISOString();
-          } else {
-            entityValues[field.name] = field.defaultValue || '';
-          }
-        });
-        initialValues[`additional_${entity.id}`] = entityValues;
-      }
-    });
-  }
+    if (isDraft && schema.draftDefaults?.description?.enabled && schema.draftDefaults?.description?.isEditable && schema.draftDefaults?.description?.isRequired) {
+      extraShapes.draftDescription = Yup.string().trim().required(t_i18n('This field is required'));
+    }
+    if (isDraft && schema.draftDefaults?.objectAssignee?.enabled && schema.draftDefaults?.objectAssignee?.isEditable && schema.draftDefaults?.objectAssignee?.isRequired) {
+      extraShapes.draftObjectAssignee = Yup.array().min(1, t_i18n('This field is required'));
+    }
+    if (isDraft && schema.draftDefaults?.objectParticipant?.enabled && schema.draftDefaults?.objectParticipant?.isEditable && schema.draftDefaults?.objectParticipant?.isRequired) {
+      extraShapes.draftObjectParticipant = Yup.array().min(1, t_i18n('This field is required'));
+    }
+    // main_entity_author: empty is always valid (backend inherits from main entity)
+    const authorRequiresExplicitValue = schema.draftDefaults?.author?.type !== 'main_entity_author';
+    if (isDraft && schema.draftDefaults?.author?.isEditable && schema.draftDefaults?.author?.isRequired && authorRequiresExplicitValue) {
+      extraShapes.draftAuthor = Yup.object()
+        .nullable()
+        .required(t_i18n('This field is required'));
+    }
+    if (isDraft && schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults?.authorizedMembers?.isRequired) {
+      extraShapes.draftAuthorizedMembers = Yup.array()
+        .min(1, t_i18n('This field is required'));
+    }
+    if (Object.keys(extraShapes).length > 0) {
+      baseSchema = baseSchema.shape(extraShapes);
+    }
+    return baseSchema;
+  }, [schema, isDraft, t_i18n]);
 
   // Poll for entity existence with timeout
   useEffect(() => {
@@ -858,7 +933,71 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     </>
                   );
                 })()}
-
+                {isDraft && schema.draftDefaults?.name?.enabled && schema.draftDefaults?.name?.isEditable && (
+                  <div style={{ marginTop: 20 }}>
+                    <Field
+                      component={TextField}
+                      name="draftName"
+                      label={t_i18n('Draft name')}
+                      required={schema.draftDefaults?.name?.isRequired}
+                      fullWidth
+                    />
+                  </div>
+                )}
+                {isDraft && schema.draftDefaults?.description?.enabled && schema.draftDefaults?.description?.isEditable && (
+                  <div style={{ marginTop: 20 }}>
+                    <Field
+                      component={MarkdownField}
+                      name="draftDescription"
+                      label={t_i18n('Draft description')}
+                      required={schema.draftDefaults?.description?.isRequired}
+                      fullWidth={true}
+                      multiline={true}
+                      rows="4"
+                    />
+                  </div>
+                )}
+                {isDraft && schema.draftDefaults?.objectAssignee?.enabled && schema.draftDefaults?.objectAssignee?.isEditable && (
+                  <div style={{ marginTop: 20 }}>
+                    <ObjectAssigneeField
+                      name="draftObjectAssignee"
+                      required={schema.draftDefaults?.objectAssignee?.isRequired}
+                      style={{ width: '100%', marginBottom: 20 }}
+                    />
+                  </div>
+                )}
+                {isDraft && schema.draftDefaults?.objectParticipant?.enabled && schema.draftDefaults?.objectParticipant?.isEditable && (
+                  <div style={{ marginTop: 20 }}>
+                    <ObjectParticipantField
+                      name="draftObjectParticipant"
+                      required={schema.draftDefaults?.objectParticipant?.isRequired}
+                      style={{ width: '100%', marginBottom: 20 }}
+                    />
+                  </div>
+                )}
+                {isDraft && schema.draftDefaults?.author?.isEditable && (
+                  <div style={{ marginTop: 20 }}>
+                    <CreatorField
+                      name="draftAuthor"
+                      label={t_i18n('Draft author')}
+                      containerStyle={{ width: '100%', marginBottom: 20 }}
+                      required={schema.draftDefaults?.author?.isRequired && schema.draftDefaults.author.type !== 'main_entity_author'}
+                      clearable={schema.draftDefaults.author.type === 'main_entity_author'}
+                      helpertext={schema.draftDefaults.author.type === 'main_entity_author' ? t_i18n('Default: Reuse main entity author (leave empty to inherit)') : undefined}
+                    />
+                  </div>
+                )}
+                {isDraft && schema.draftDefaults?.authorizedMembers?.enabled && (
+                  <div style={{ marginTop: 20, marginBottom: 20 }}>
+                    <Field
+                      component={AuthorizedMembersField}
+                      name="draftAuthorizedMembers"
+                      label={t_i18n('Authorized Members')}
+                      dynamicKeysForPlaybooks={true}
+                      disabled={!isBypass}
+                    />
+                  </div>
+                )}
                 <FormControlLabel
                   className={classes.draftCheckbox}
                   control={(

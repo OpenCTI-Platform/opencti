@@ -66,6 +66,7 @@ export interface FormFieldDefinition {
   };
   defaultValue?: any;
   options?: Array<{ label: string; value: string }>; // For select fields
+  isReadOnly?: boolean; // Whether this field is read-only (not editable by user)
   relationship?: FormFieldRelationship; // Relationship configuration
   validation?: {
     minLength?: number;
@@ -93,6 +94,42 @@ export interface FormSchemaDefinition {
   includeInContainer?: boolean; // Whether to include entities in container (only for container types)
   isDraftByDefault?: boolean; // Whether forms should be created as draft by default
   allowDraftOverride?: boolean; // Whether users can override the draft setting
+  draftDefaults?: {
+    name?: {
+      enabled: boolean;
+      isEditable: boolean;
+      isRequired: boolean;
+      defaultValue?: string;
+    };
+    description?: {
+      enabled: boolean;
+      isEditable: boolean;
+      isRequired: boolean;
+      defaultValue?: string;
+    };
+    objectAssignee?: {
+      enabled: boolean;
+      isEditable: boolean;
+      isRequired: boolean;
+      defaults: Array<any>;
+    };
+    objectParticipant?: {
+      enabled: boolean;
+      isEditable: boolean;
+      isRequired: boolean;
+      defaults: Array<any>;
+    };
+    author?: {
+      type: 'none' | 'current_user' | 'main_entity_author';
+      isEditable: boolean;
+      isRequired: boolean;
+    };
+    authorizedMembers?: {
+      enabled: boolean;
+      isRequired: boolean;
+      defaults: Array<any>;
+    };
+  };
   mainEntityMultiple?: boolean; // Whether main entity allows multiple instances
   mainEntityLookup?: boolean; // Whether main entity is an entity lookup (select existing)
   mainEntityDisableCreation?: boolean; // Whether to disable creation of new main entities (only allow lookup)
@@ -170,6 +207,87 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
     includeInContainer: { type: 'boolean' },
     isDraftByDefault: { type: 'boolean' },
     allowDraftOverride: { type: 'boolean' },
+    draftDefaults: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'object',
+          properties: {
+            enabled: { type: 'boolean' },
+            isEditable: { type: 'boolean' },
+            isRequired: { type: 'boolean' },
+            defaultValue: { type: 'string' },
+          },
+          required: ['enabled'],
+        },
+        description: {
+          type: 'object',
+          properties: {
+            enabled: { type: 'boolean' },
+            isEditable: { type: 'boolean' },
+            isRequired: { type: 'boolean' },
+            defaultValue: { type: 'string' },
+          },
+          required: ['enabled'],
+        },
+        objectAssignee: {
+          type: 'object',
+          properties: {
+            enabled: { type: 'boolean' },
+            isEditable: { type: 'boolean' },
+            isRequired: { type: 'boolean' },
+            defaults: {
+              type: 'array',
+              items: {
+                type: 'object',
+                additionalProperties: true,
+              },
+            },
+          },
+          required: ['enabled'],
+        },
+        objectParticipant: {
+          type: 'object',
+          properties: {
+            enabled: { type: 'boolean' },
+            isEditable: { type: 'boolean' },
+            isRequired: { type: 'boolean' },
+            defaults: {
+              type: 'array',
+              items: {
+                type: 'object',
+                additionalProperties: true,
+              },
+            },
+          },
+          required: ['enabled'],
+        },
+        author: {
+          type: 'object',
+          properties: {
+            type: { type: 'string', enum: ['none', 'current_user', 'main_entity_author'] },
+            isEditable: { type: 'boolean' },
+            isRequired: { type: 'boolean' },
+          },
+          required: ['type', 'isEditable', 'isRequired'],
+        },
+        authorizedMembers: {
+          type: 'object',
+          properties: {
+            enabled: { type: 'boolean' },
+            isRequired: { type: 'boolean' },
+            defaults: {
+              type: 'array',
+              items: {
+                type: 'object',
+                additionalProperties: true,
+              },
+            },
+          },
+          required: ['enabled'],
+        },
+      },
+    },
     additionalEntities: {
       type: 'array',
       items: {

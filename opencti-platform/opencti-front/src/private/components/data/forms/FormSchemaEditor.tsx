@@ -1,7 +1,28 @@
-import React, { FunctionComponent, useState, useMemo, useCallback, useEffect } from 'react';
+import React, { FunctionComponent, useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { Add, DeleteOutlined, AddCircleOutlined, ArrowUpward, ArrowDownward } from '@mui/icons-material';
-import { Box, IconButton, MenuItem, Tab, Tabs, Typography, TextField, Alert, Select, FormControl, InputLabel, Switch, FormControlLabel } from '@mui/material';
+import { Add, DeleteOutlined, AddCircleOutlined, ArrowUpward, ArrowDownward, ExpandMore } from '@mui/icons-material';
+import {
+  Box,
+  IconButton,
+  MenuItem,
+  Tab,
+  Tabs,
+  Typography,
+  TextField,
+  Alert,
+  Select,
+  FormControl,
+  InputLabel,
+  Switch,
+  FormControlLabel,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+} from '@mui/material';
+import { Formik, Field, useFormikContext } from 'formik';
+import AuthorizedMembersField from '../../common/form/AuthorizedMembersField';
+import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
+import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -14,6 +35,7 @@ import {
   getAttributesForEntityType as getAttributesUtil,
   getAvailableFieldTypes,
   getInitialMandatoryFields,
+  normalizeDraftAuthorizedMembersDefaults,
   CONTAINER_TYPES,
   FIELD_TYPES,
 } from './FormUtils';
@@ -21,6 +43,82 @@ import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
 import type { FormFieldAttribute, AdditionalEntity, EntityRelationship, FormBuilderData, RelationshipTypeOption } from './Form.d';
 import useAuth from '../../../../utils/hooks/useAuth';
+import type { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
+import { FieldOption } from '../../../../utils/field';
+
+type DraftAdvancedDefaultsValues = {
+  objectAssignee: FieldOption[];
+  objectParticipant: FieldOption[];
+};
+
+const DraftAdvancedDefaultsSync = ({ onChange }: { onChange: (vals: DraftAdvancedDefaultsValues) => void }) => {
+  const { values } = useFormikContext<DraftAdvancedDefaultsValues>();
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  useEffect(() => {
+    onChangeRef.current(values);
+  }, [values]);
+  return null;
+};
+
+type AuthorizedMembersDefaultsValues = { authorized_members: AuthorizedMemberOption[] };
+
+const AuthorizedMembersSync = ({ onChange }: { onChange: (vals: AuthorizedMemberOption[]) => void }) => {
+  const { values } = useFormikContext<AuthorizedMembersDefaultsValues>();
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  useEffect(() => {
+    onChangeRef.current(values.authorized_members);
+  }, [values.authorized_members]);
+  return null;
+};
+
+const normalizeFieldOption = (option: FieldOption) => {
+  return {
+    value: option.value,
+    label: option.label,
+  };
+};
+
+const areFieldOptionsEqual = (left: FieldOption[], right: FieldOption[]) => {
+  if (left.length !== right.length) {
+    return false;
+  }
+  return left.every((leftOption, index) => {
+    const normalizedLeft = normalizeFieldOption(leftOption);
+    const normalizedRight = normalizeFieldOption(right[index]);
+    return normalizedLeft.value === normalizedRight.value && normalizedLeft.label === normalizedRight.label;
+  });
+};
+
+const normalizeAuthorizedMember = (member: AuthorizedMemberOption) => {
+  return {
+    value: member.value,
+    label: member.label,
+    type: member.type,
+    accessRight: member.accessRight,
+    groupsRestriction: (member.groupsRestriction || [])
+      .map(normalizeFieldOption)
+      .sort((a, b) => `${a.value}`.localeCompare(`${b.value}`)),
+  };
+};
+
+const areAuthorizedMembersEqual = (left: AuthorizedMemberOption[], right: AuthorizedMemberOption[]) => {
+  if (left.length !== right.length) {
+    return false;
+  }
+  return left.every((leftMember, index) => {
+    const normalizedLeft = normalizeAuthorizedMember(leftMember);
+    const normalizedRight = normalizeAuthorizedMember(right[index]);
+    return (
+      normalizedLeft.value === normalizedRight.value
+      && normalizedLeft.label === normalizedRight.label
+      && normalizedLeft.type === normalizedRight.type
+      && normalizedLeft.accessRight === normalizedRight.accessRight
+      && areFieldOptionsEqual(normalizedLeft.groupsRestriction, normalizedRight.groupsRestriction)
+    );
+  });
+};
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -155,26 +253,28 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     }
   }, [entityTypes, formData.mainEntityType, formData.fields.length, t_i18n, initialValues]);
 
-  // Call onChange only when component mounts to ensure parent has the initial data
+  // Notify parent after formData changes (never call parent setState inside a state updater)
+  const isFirstRender = useRef(true);
   useEffect(() => {
-    if (onChange && !initialValues) {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      if (!initialValues && onChange) {
+        onChange(formData);
+      }
+      return;
+    }
+    if (onChange) {
       onChange(formData);
     }
-  }, []);
+    if (onSchemaChange) {
+      const formSchema = convertFormBuilderDataToSchema(formData);
+      onSchemaChange(JSON.stringify(formSchema, null, 2));
+    }
+  }, [formData]);
 
   const updateFormData = useCallback((updater: (prev: FormBuilderData) => FormBuilderData) => {
-    setFormData((prev) => {
-      const newData = updater(prev);
-      if (onChange) {
-        onChange(newData);
-      }
-      if (onSchemaChange) {
-        const formSchema = convertFormBuilderDataToSchema(newData);
-        onSchemaChange(JSON.stringify(formSchema, null, 2));
-      }
-      return newData;
-    });
-  }, [onChange, onSchemaChange]);
+    setFormData((prev) => updater(prev));
+  }, []);
 
   const mainEntityInfo = entityTypes.find((e) => e.value === formData.mainEntityType);
   const isContainer = mainEntityInfo?.isContainer || false;
@@ -210,7 +310,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     });
   };
 
-  const handleFieldChange = (path: string, value: string | number | boolean | string[] | Date | null | Array<{ label: string; value: string }>) => {
+  const handleFieldChange = (path: string, value: unknown) => {
     updateFormData((prev) => {
       const keys = path.split('.');
       // Prevent prototype pollution by blocking dangerous property names
@@ -229,6 +329,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           current[key] = [...current[key]];
         } else if (typeof current[key] === 'object' && current[key] !== null) {
           current[key] = { ...current[key] };
+        } else if (current[key] === undefined) {
+          current[key] = {};
         }
         current = current[key] as Record<string, unknown>;
       }
@@ -991,6 +1093,17 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         <FormControlLabel
           control={(
             <Switch
+              checked={field.isReadOnly || false}
+              onChange={(e) => handleFieldChange(`fields.${fieldIndex}.isReadOnly`, e.target.checked)}
+            />
+          )}
+          label={t_i18n('Not editable by user')}
+          style={{ marginTop: 20, display: 'block' }}
+        />
+
+        <FormControlLabel
+          control={(
+            <Switch
               checked={field.required}
               onChange={(e) => handleFieldChange(`fields.${fieldIndex}.required`, e.target.checked)}
               disabled={field.isMandatory && !isInParsedMode}
@@ -1569,6 +1682,286 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               style={{ marginTop: 20, display: 'block' }}
             />
           )}
+
+          <Accordion variant="outlined" style={{ marginTop: 20 }}>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography>{t_i18n('Advanced Draft Settings')}</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              {/* Draft Name Section */}
+              <Typography variant="h6" gutterBottom>{t_i18n('Draft Name')}</Typography>
+              <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                <FormControlLabel
+                  control={(
+                    <Switch
+                      checked={formData.draftDefaults?.name?.isEditable || false}
+                      onChange={(e) => handleFieldChange('draftDefaults.name.isEditable', e.target.checked)}
+                    />
+                  )}
+                  label={t_i18n('Editable by end user')}
+                  style={{ display: 'block' }}
+                />
+                {formData.draftDefaults?.name?.isEditable && (
+                  <FormControlLabel
+                    control={(
+                      <Switch
+                        checked={formData.draftDefaults?.name?.isRequired || false}
+                        onChange={(e) => handleFieldChange('draftDefaults.name.isRequired', e.target.checked)}
+                      />
+                    )}
+                    label={t_i18n('Required')}
+                    style={{ display: 'block' }}
+                  />
+                )}
+                <TextField
+                  fullWidth
+                  variant="standard"
+                  label={t_i18n('Default name')}
+                  value={formData.draftDefaults?.name?.defaultValue || ''}
+                  onChange={(e) => handleFieldChange('draftDefaults.name.defaultValue', e.target.value)}
+                  style={{ marginBottom: 20 }}
+                />
+              </Box>
+
+              {/* Draft Description Section */}
+              <Typography variant="h6" gutterBottom>{t_i18n('Draft Description')}</Typography>
+              <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                <FormControlLabel
+                  control={(
+                    <Switch
+                      checked={formData.draftDefaults?.description?.isEditable || false}
+                      onChange={(e) => handleFieldChange('draftDefaults.description.isEditable', e.target.checked)}
+                    />
+                  )}
+                  label={t_i18n('Editable by end user')}
+                  style={{ display: 'block' }}
+                />
+                {formData.draftDefaults?.description?.isEditable && (
+                  <FormControlLabel
+                    control={(
+                      <Switch
+                        checked={formData.draftDefaults?.description?.isRequired || false}
+                        onChange={(e) => handleFieldChange('draftDefaults.description.isRequired', e.target.checked)}
+                      />
+                    )}
+                    label={t_i18n('Required')}
+                    style={{ display: 'block' }}
+                  />
+                )}
+                <TextField
+                  fullWidth
+                  variant="standard"
+                  label={t_i18n('Default description')}
+                  multiline
+                  rows={3}
+                  value={formData.draftDefaults?.description?.defaultValue || ''}
+                  onChange={(e) => handleFieldChange('draftDefaults.description.defaultValue', e.target.value)}
+                  style={{ marginBottom: 20 }}
+                />
+              </Box>
+
+              <Formik
+                initialValues={{
+                  objectAssignee: formData.draftDefaults?.objectAssignee?.defaults || [],
+                  objectParticipant: formData.draftDefaults?.objectParticipant?.defaults || [],
+                }}
+                onSubmit={() => {}}
+                enableReinitialize
+              >
+                {() => (
+                  <>
+                    {/* Draft Assignees Section */}
+                    <Typography variant="h6" gutterBottom>{t_i18n('Draft Assignees')}</Typography>
+                    <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                      <FormControlLabel
+                        control={(
+                          <Switch
+                            checked={formData.draftDefaults?.objectAssignee?.isEditable || false}
+                            onChange={(e) => handleFieldChange('draftDefaults.objectAssignee.isEditable', e.target.checked)}
+                          />
+                        )}
+                        label={t_i18n('Editable by end user')}
+                        style={{ display: 'block' }}
+                      />
+                      {formData.draftDefaults?.objectAssignee?.isEditable && (
+                        <FormControlLabel
+                          control={(
+                            <Switch
+                              checked={formData.draftDefaults?.objectAssignee?.isRequired || false}
+                              onChange={(e) => handleFieldChange('draftDefaults.objectAssignee.isRequired', e.target.checked)}
+                            />
+                          )}
+                          label={t_i18n('Required')}
+                          style={{ display: 'block' }}
+                        />
+                      )}
+                      <ObjectAssigneeField
+                        name="objectAssignee"
+                        style={{ marginBottom: 20 }}
+                      />
+                    </Box>
+
+                    {/* Draft Participants Section */}
+                    <Typography variant="h6" gutterBottom>{t_i18n('Draft Participants')}</Typography>
+                    <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                      <FormControlLabel
+                        control={(
+                          <Switch
+                            checked={formData.draftDefaults?.objectParticipant?.isEditable || false}
+                            onChange={(e) => handleFieldChange('draftDefaults.objectParticipant.isEditable', e.target.checked)}
+                          />
+                        )}
+                        label={t_i18n('Editable by end user')}
+                        style={{ display: 'block' }}
+                      />
+                      {formData.draftDefaults?.objectParticipant?.isEditable && (
+                        <FormControlLabel
+                          control={(
+                            <Switch
+                              checked={formData.draftDefaults?.objectParticipant?.isRequired || false}
+                              onChange={(e) => handleFieldChange('draftDefaults.objectParticipant.isRequired', e.target.checked)}
+                            />
+                          )}
+                          label={t_i18n('Required')}
+                          style={{ display: 'block' }}
+                        />
+                      )}
+                      <ObjectParticipantField
+                        name="objectParticipant"
+                        style={{ marginBottom: 20 }}
+                      />
+                    </Box>
+
+                    {/* Draft Author Section */}
+                    <Typography variant="h6" gutterBottom>{t_i18n('Draft Author')}</Typography>
+                    <FormControl fullWidth variant="standard" style={{ marginBottom: 20 }}>
+                      <InputLabel>{t_i18n('Author Source')}</InputLabel>
+                      <Select
+                        value={formData.draftDefaults?.author?.type || 'none'}
+                        onChange={(e) => {
+                          const currentAuthorDefaults = formData.draftDefaults?.author;
+                          handleFieldChange('draftDefaults.author', {
+                            type: e.target.value,
+                            isEditable: currentAuthorDefaults?.isEditable ?? false,
+                            isRequired: currentAuthorDefaults?.isRequired ?? false,
+                          });
+                        }}
+                        label={t_i18n('Author Source')}
+                      >
+                        <MenuItem value="none">{t_i18n('None (Default)')}</MenuItem>
+                        <MenuItem value="current_user">{t_i18n('Current User')}</MenuItem>
+                        <MenuItem value="main_entity_author">{t_i18n('Reuse Main Entity Author')}</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <FormControlLabel
+                      control={(
+                        <Switch
+                          checked={formData.draftDefaults?.author?.isEditable || false}
+                          onChange={(e) => handleFieldChange('draftDefaults.author.isEditable', e.target.checked)}
+                        />
+                      )}
+                      label={t_i18n('Editable by end user')}
+                      style={{ display: 'block' }}
+                    />
+                    {formData.draftDefaults?.author?.isEditable && (
+                      <FormControlLabel
+                        control={(
+                          <Switch
+                            checked={formData.draftDefaults?.author?.isRequired || false}
+                            onChange={(e) => handleFieldChange('draftDefaults.author.isRequired', e.target.checked)}
+                          />
+                        )}
+                        label={t_i18n('Required')}
+                        style={{ display: 'block', marginBottom: 20 }}
+                      />
+                    )}
+
+                    {/* Authorized Members Section */}
+                    <Typography variant="h6" gutterBottom style={{ marginTop: 20 }}>{t_i18n('Authorized Members')}</Typography>
+                    <FormControlLabel
+                      control={(
+                        <Switch
+                          checked={formData.draftDefaults?.authorizedMembers?.enabled || false}
+                          onChange={(e) => {
+                            const enabled = e.target.checked;
+                            handleFieldChange('draftDefaults.authorizedMembers.enabled', enabled);
+                            if (enabled && (!formData.draftDefaults?.authorizedMembers?.defaults || formData.draftDefaults?.authorizedMembers?.defaults.length === 0)) {
+                              handleFieldChange('draftDefaults.authorizedMembers.defaults', [{
+                                label: t_i18n('Creators'),
+                                value: 'CREATORS',
+                                type: t_i18n('Dynamic options'),
+                                accessRight: 'admin',
+                                groupsRestriction: [],
+                              }]);
+                            }
+                          }}
+                        />
+                      )}
+                      label={t_i18n('Activate access restriction')}
+                      style={{ display: 'block' }}
+                    />
+
+                    {formData.draftDefaults?.authorizedMembers?.enabled && (
+                      <Box style={{ paddingLeft: 20, paddingTop: 10 }}>
+                        <FormControlLabel
+                          control={(
+                            <Switch
+                              checked={formData.draftDefaults?.authorizedMembers?.isRequired || false}
+                              onChange={(e) => handleFieldChange('draftDefaults.authorizedMembers.isRequired', e.target.checked)}
+                            />
+                          )}
+                          label={t_i18n('Required (Users cannot remove default members)')}
+                          style={{ display: 'block', marginBottom: 15 }}
+                        />
+                        <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>{t_i18n('Member Rules')}</Typography>
+                        <Formik
+                          initialValues={{
+                            authorized_members: normalizeDraftAuthorizedMembersDefaults(
+                              formData.draftDefaults?.authorizedMembers?.defaults || [],
+                              {
+                                creatorsLabel: t_i18n('Creators'),
+                                authorOrgLabel: t_i18n('Author (organization)'),
+                                dynamicOptionsLabel: t_i18n('Dynamic options'),
+                              },
+                            ),
+                          }}
+                          onSubmit={() => {}}
+                        >
+                          {() => (
+                            <>
+                              <Field
+                                name="authorized_members"
+                                component={AuthorizedMembersField}
+                                dynamicKeysForPlaybooks={true}
+                              />
+                              <AuthorizedMembersSync
+                                onChange={(vals) => {
+                                  if (!areAuthorizedMembersEqual(formData.draftDefaults?.authorizedMembers?.defaults || [], vals)) {
+                                    handleFieldChange('draftDefaults.authorizedMembers.defaults', vals);
+                                  }
+                                }}
+                              />
+                            </>
+                          )}
+                        </Formik>
+                      </Box>
+                    )}
+
+                    <DraftAdvancedDefaultsSync
+                      onChange={(vals) => {
+                        if (!areFieldOptionsEqual(formData.draftDefaults?.objectAssignee?.defaults || [], vals.objectAssignee)) {
+                          handleFieldChange('draftDefaults.objectAssignee.defaults', vals.objectAssignee);
+                        }
+                        if (!areFieldOptionsEqual(formData.draftDefaults?.objectParticipant?.defaults || [], vals.objectParticipant)) {
+                          handleFieldChange('draftDefaults.objectParticipant.defaults', vals.objectParticipant);
+                        }
+                      }}
+                    />
+                  </>
+                )}
+              </Formik>
+            </AccordionDetails>
+          </Accordion>
 
           {formData.mainEntityMultiple && !formData.mainEntityLookup && (
             <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
