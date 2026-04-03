@@ -303,13 +303,14 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 <Label>
                   {t_i18n('Scope')}
                 </Label>
-                {connector.connector_scope?.map((scope) => (
-                  <Tag
-                    key={scope}
-                    label={scope}
-                    sx={{ mr: 1 }}
-                  />
-                ))}
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {connector.connector_scope?.map((scope) => (
+                    <Tag
+                      key={scope}
+                      label={scope}
+                    />
+                  ))}
+                </Box>
               </Grid>
               {connectorFiltersEnabled && (
                 <Grid item xs={6}>
