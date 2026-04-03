@@ -17664,8 +17664,12 @@ export type MutationCreateDraftAndAskJobImportArgs = {
   bypassValidation?: InputMaybe<Scalars['Boolean']['input']>;
   configuration?: InputMaybe<Scalars['String']['input']>;
   connectorId?: InputMaybe<Scalars['String']['input']>;
+  createdBy?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
   fileName: Scalars['ID']['input'];
   forceValidation?: InputMaybe<Scalars['Boolean']['input']>;
+  objectAssignee?: InputMaybe<Array<Scalars['String']['input']>>;
+  objectParticipant?: InputMaybe<Array<Scalars['String']['input']>>;
   validationMode?: InputMaybe<ValidationMode>;
 };
 

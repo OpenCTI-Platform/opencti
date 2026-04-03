@@ -86,11 +86,11 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
       objectAssignee: FieldOption[];
       objectParticipant: FieldOption[];
       createdBy: FieldOption | undefined;
-      authorizedMembers?: AuthorizedMembersFieldValue;
+      authorized_members?: AuthorizedMembersFieldValue;
     },
     { setSubmitting, resetForm }: { setSubmitting: (isSubmitting: boolean) => void; resetForm: () => void },
   ) => {
-    const { connector_id, configuration, objectMarking, validation_mode, authorizedMembers } = values;
+    const { connector_id, configuration, objectMarking, validation_mode, authorized_members } = values;
     let config = configuration;
 
     // Dynamically inject the markings chosen by the user into the csv mapper
@@ -115,9 +115,9 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
         objectAssignee: values.objectAssignee.map(({ value }) => value),
         objectParticipant: values.objectParticipant.map(({ value }) => value),
         createdBy: values.createdBy?.value,
-        authorized_members: !authorizedMembers
+        authorized_members: !authorized_members
           ? null
-          : authorizedMembers
+          : authorized_members
               .filter((v) => v.accessRight !== 'none')
               .map((member) => ({
                 id: member.value,
@@ -139,8 +139,41 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   };
 
   const importValidation = (configurations: boolean) => {
+    const isDraft = (value: string) => value === 'draft';
+    const requiredWhenDraftAndMandatory = (field: string, schema: Yup.StringSchema) => Yup.string().when('validation_mode', {
+      is: isDraft,
+      then: () => mandatoryAttributes.includes(field)
+        ? schema.required(t_i18n('This field is required'))
+        : schema,
+      otherwise: () => Yup.string().nullable(),
+    });
+
+    const draftShape = {
+      description: requiredWhenDraftAndMandatory('description', Yup.string()),
+      objectAssignee: Yup.array().when('validation_mode', {
+        is: isDraft,
+        then: (schema) => mandatoryAttributes.includes('objectAssignee')
+          ? schema.min(1, t_i18n('This field is required'))
+          : schema,
+      }),
+      objectParticipant: Yup.array().when('validation_mode', {
+        is: isDraft,
+        then: (schema) => mandatoryAttributes.includes('objectParticipant')
+          ? schema.min(1, t_i18n('This field is required'))
+          : schema,
+      }),
+      createdBy: Yup.object().when('validation_mode', {
+        is: isDraft,
+        then: (schema) => mandatoryAttributes.includes('createdBy')
+          ? schema.required(t_i18n('This field is required'))
+          : schema.nullable(),
+        otherwise: (schema) => schema.nullable(),
+      }),
+    };
+
     const shape = {
       connector_id: Yup.string().required(t_i18n('This field is required')),
+      ...draftShape,
     };
     if (configurations) {
       return Yup.object().shape({
@@ -154,8 +187,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
     && selectedConnector?.configurations?.length === 0;
 
-  const draftInitialValues = useDefaultValues<DraftAddInput>(DRAFTWORKSPACE_TYPE, {
-    name: '',
+  const draftInitialValues = useDefaultValues<Omit<DraftAddInput, 'name'>>(DRAFTWORKSPACE_TYPE, {
     description: '',
     objectAssignee: [],
     objectParticipant: [],
@@ -257,7 +289,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   </>
                 )}
                 <Field
-                  name="authorizedMembers"
+                  name="authorized_members"
                   component={AuthorizedMembersField}
                   owner={owner}
                   showAllMembersLine={showAllMembersLine}

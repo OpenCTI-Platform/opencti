@@ -1,4 +1,4 @@
-import { ImportFilesProvider, importFilesQuery, InitialValues, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
+import { ImportFilesProvider, InitialValues, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import ImportFilesOptions from '@components/common/files/import_files/ImportFilesOptions';
 import ImportFilesStepper from '@components/common/files/import_files/ImportFilesStepper';
 import ImportFilesUploadProgress from '@components/common/files/import_files/ImportFilesUploadProgress';
@@ -6,9 +6,9 @@ import ImportFilesToggleMode from '@components/common/files/import_files/ImportF
 import ImportFilesFormSelector from '@components/common/files/import_files/ImportFilesFormSelector';
 import ImportFilesFormView from '@components/common/files/import_files/ImportFilesFormView';
 import { DraftAddInput, draftCreationMutation, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
-import { DraftCreationMutation, DraftCreationMutation$data } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
+import { DraftCreationMutation } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
 import ImportFilesUploader from '@components/common/files/import_files/ImportFilesUploader';
-import { ImportFilesContextQuery } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
+import useImportFilesData from './useImportFilesData';
 import {
   ImportFilesDialogEntityMutation,
   ImportFilesDialogEntityMutation$variables,
@@ -22,8 +22,8 @@ import { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedM
 import { Box, DialogActions } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { FormikConfig, FormikErrors, useFormik } from 'formik';
-import { useCallback, useMemo, useState } from 'react';
-import { graphql, UseMutationConfig, usePreloadedQuery } from 'react-relay';
+import { useMemo, useState } from 'react';
+import { graphql, UseMutationConfig } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { Theme } from '../../../../../components/Theme';
 import { THEME_DARK_DIALOG_BACKGROUND } from '../../../../../components/ThemeDark';
@@ -44,6 +44,7 @@ import { hasCustomColor } from '../../../../../utils/theme';
 import { useIsMandatoryAttribute } from '../../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../../utils/hooks/useDefaultValues';
 import useSwitchDraft from '../../../drafts/useSwitchDraft';
+import useCreateDraft from './useCreateDraft';
 
 export const CSV_MAPPER_NAME = '[FILE] CSV Mapper import';
 
@@ -122,7 +123,7 @@ export type OptionsFormValues = {
   objectAssignee: FieldOption[];
   objectParticipant: FieldOption[];
   createdBy: FieldOption | undefined;
-  authorizedMembers?: AuthorizedMembersFieldValue;
+  authorized_members?: AuthorizedMembersFieldValue;
 };
 
 const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
@@ -148,10 +149,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   } = useImportFilesContext();
 
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string; status?: 'success' | 'error' }[]>([]);
-  const { stixCoreObject: entity, connectorsForImport } = usePreloadedQuery<ImportFilesContextQuery>(
-    importFilesQuery,
-    queryRef,
-  );
+  const { stixCoreObject: entity, connectorsForImport } = useImportFilesData(queryRef);
 
   const successMessage = t_i18n('Files successfully uploaded');
   const [commitGlobal] = useApiMutation<ImportFilesDialogGlobalMutation>(
@@ -190,48 +188,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     type: 'files',
   });
 
-  const createDraft = useCallback(async (name: string, selectedEntityId?: string, authorizedMembers?: AuthorizedMembersFieldValue) => {
-    try {
-      const { draftWorkspaceAdd } = await new Promise<DraftCreationMutation$data>((resolve, reject) => {
-        commitCreationMutation({
-          variables: {
-            input: {
-              name,
-              entity_id: selectedEntityId,
-              authorized_members: !authorizedMembers
-                ? null
-                : authorizedMembers
-                    .filter((v) => v.accessRight !== 'none')
-                    .map((member) => ({
-                      id: member.value,
-                      access_right: member.accessRight,
-                      groups_restriction_ids: member.groupsRestriction?.length > 0
-                        ? member.groupsRestriction.map((group) => group.value)
-                        : undefined,
-                    })),
-            },
-          },
-          onCompleted: (response, errors) => {
-            if (errors) {
-              reject(errors);
-            } else {
-              resolve(response);
-            }
-          },
-          onError: (error) => {
-            reject(error);
-          },
-        });
-      });
-
-      setDraftId(draftWorkspaceAdd?.id);
-      return draftWorkspaceAdd?.id;
-    } catch (error) {
-      const { errors } = (error as unknown as RelayError).res;
-      MESSAGING$.notifyError(errors.at(0)?.message);
-      return undefined;
-    }
-  }, [commitCreationMutation, enterDraft]);
+  const createDraft = useCreateDraft(commitCreationMutation, setDraftId);
 
   const setDraftContext = () => {
     if (draftId) {
@@ -325,12 +282,12 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     const selectedEntityId = entityId ?? (values.associatedEntity?.value || undefined);
     const fileMarkingIds = values.fileMarkings.map(({ value }) => value);
 
-    const { validationMode, name, authorizedMembers } = values;
+    const { validationMode } = values;
     if (validationMode === 'workbench') {
       setUploadStatus('uploading');
       importFiles({ selectedEntityId, fileMarkingIds, validationMode }, setErrors);
     } else if (validationMode === 'draft') {
-      const newDraftId = !draftId ? await createDraft(name, selectedEntityId, authorizedMembers) : draftId;
+      const newDraftId = !draftId ? await createDraft(values, selectedEntityId) : draftId;
       if (!newDraftId) {
         setActiveStep(1);
         setUploadStatus(undefined);
@@ -350,6 +307,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     objectAssignee: [],
     objectParticipant: [],
     createdBy: undefined,
+    authorized_members: undefined,
   });
 
   const optionsContext = useFormik<OptionsFormValues>({
@@ -404,9 +362,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
         importMode !== 'form' && (
         // Import button for file import mode
           <Button
-            onClick={() => {
-              optionsContext.submitForm();
-            }}
+            onClick={optionsContext.submitForm}
             color="secondary"
             disabled={!isValidImport}
           >
