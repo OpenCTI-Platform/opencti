@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useTheme } from '@mui/material';
 import { useFormatter } from '../../../components/i18n';
-import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import { useVocabularyCategoryAsQuery, VocabularyDefinition } from '../../../utils/hooks/useVocabularyCategory';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -68,7 +67,6 @@ const VocabularyCategories = () => {
 
   return (
     <div style={{ paddingRight: 200 }} data-testid="vocabularies-page">
-      <LabelsVocabulariesMenu />
       <Breadcrumbs
         elements={[
           { label: t_i18n('Settings') },

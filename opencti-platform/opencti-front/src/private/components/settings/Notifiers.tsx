@@ -11,7 +11,6 @@ import { NotifierLine_node$data } from './notifiers/__generated__/NotifierLine_n
 import { NotifierLineDummy } from './notifiers/NotifierLine';
 import NotifierCreation from './notifiers/NotifierCreation';
 import { useFormatter } from '../../../components/i18n';
-import CustomizationMenu from './CustomizationMenu';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -73,7 +72,6 @@ const Notifiers = () => {
   );
   return (
     <div className={classes.container} data-testid="notifiers-page">
-      <CustomizationMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Notifiers'), current: true }]} />
       <ListLines
         helpers={storageHelpers}

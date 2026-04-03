@@ -1,6 +1,5 @@
 import { graphql } from 'react-relay';
 import React from 'react';
-import CustomizationMenu from '@components/settings/CustomizationMenu';
 import {
   FintelDesignsLinesPaginationQuery,
   FintelDesignsLinesPaginationQuery$variables,
@@ -155,7 +154,6 @@ const FintelDesigns = () => {
 
   return (
     <div data-testid="fintel-designs-page">
-      <CustomizationMenu />
       <PageContainer withGap withRightMenu>
         <Breadcrumbs
           noMargin

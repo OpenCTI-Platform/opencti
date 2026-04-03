@@ -9,7 +9,6 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useVocabularyCategory_Vocabularynode$data } from '../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
 import { useFormatter } from '../../../components/i18n';
-import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import VocabularyCreation from './attributes/VocabularyCreation';
 import useVocabularyCategory, { vocabFragment } from '../../../utils/hooks/useVocabularyCategory';
 import { emptyFilterGroup, isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
@@ -167,7 +166,6 @@ const Vocabularies = () => {
 
   return (
     <div style={{ marginRight: 200 }}>
-      <LabelsVocabulariesMenu />
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Taxonomies') },

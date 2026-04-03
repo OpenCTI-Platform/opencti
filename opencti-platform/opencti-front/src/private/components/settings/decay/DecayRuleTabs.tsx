@@ -6,7 +6,6 @@ import { useFormatter } from 'src/components/i18n';
 import useConnectedDocumentModifier from 'src/utils/hooks/useConnectedDocumentModifier';
 import DecayRules from '@components/settings/decay/DecayRules';
 import Breadcrumbs from 'src/components/Breadcrumbs';
-import CustomizationMenu from '@components/settings/CustomizationMenu';
 import DecayExclusionRules from './DecayExclusionRules';
 import { useLocation } from 'react-router-dom';
 
@@ -33,7 +32,6 @@ const DecayRuleTabs = () => {
           { label: t_i18n('Decay rules'), current: true },
         ]}
       />
-      <CustomizationMenu />
       <Box>
         <Tabs
           value={currentTab}

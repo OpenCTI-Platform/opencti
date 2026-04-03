@@ -9,7 +9,6 @@ import ExclusionListPopover from './ExclusionListPopover';
 import ExclusionListsStatus, { exclusionListsStatusQuery } from './ExclusionListsStatus';
 import { ExclusionListsStatusQuery } from './__generated__/ExclusionListsStatusQuery.graphql';
 import ExclusionListCreation from './ExclusionListCreation';
-import CustomizationMenu from '../CustomizationMenu';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import Alert from '../../../../components/Alert';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -219,7 +218,6 @@ const ExclusionLists = () => {
 
   return (
     <div data-testid="exclusion-lists-page">
-      <CustomizationMenu />
       <PageContainer withGap withRightMenu>
         <Breadcrumbs
           noMargin
