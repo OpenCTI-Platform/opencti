@@ -7,24 +7,27 @@ interface SubTypeMenuProps {
   isFINTELTemplatesEnabled?: boolean;
   isAttributesConfigurationEnabled?: boolean;
   isWorkflowConfigurationEnabled?: boolean;
+  isCustomLayoutEnabled?: boolean;
 }
 
-const SubTypeMenu = ({ entityType, isFINTELTemplatesEnabled, isAttributesConfigurationEnabled, isWorkflowConfigurationEnabled }: SubTypeMenuProps) => {
+const SubTypeMenu = ({ entityType, isFINTELTemplatesEnabled, isAttributesConfigurationEnabled, isWorkflowConfigurationEnabled, isCustomLayoutEnabled }: SubTypeMenuProps) => {
   const { t_i18n } = useFormatter();
   const location = useLocation();
+
+  const hasAtLeastOneEnabledTab = Boolean(
+    isWorkflowConfigurationEnabled
+    || isAttributesConfigurationEnabled
+    || isFINTELTemplatesEnabled
+    || isCustomLayoutEnabled,
+  );
+
+  if (!hasAtLeastOneEnabledTab) return null;
 
   return (
     <Tabs
       value={location.pathname}
-      sx={{ paddingBottom: 3 }}
+      sx={{ paddingBottom: 2 }}
     >
-      <Tab
-        component={Link}
-        to={`/dashboard/settings/customization/entity_types/${entityType}`}
-        value={`/dashboard/settings/customization/entity_types/${entityType}`}
-        label={t_i18n('Overview')}
-      />
-
       {isWorkflowConfigurationEnabled && (
         <Tab
           component={Link}
@@ -51,6 +54,15 @@ const SubTypeMenu = ({ entityType, isFINTELTemplatesEnabled, isAttributesConfigu
           to={`/dashboard/settings/customization/entity_types/${entityType}/templates`}
           value={`/dashboard/settings/customization/entity_types/${entityType}/templates`}
           label={t_i18n('Templates')}
+        />
+      )}
+
+      {isCustomLayoutEnabled && (
+        <Tab
+          component={Link}
+          to={`/dashboard/settings/customization/entity_types/${entityType}/overview-layout`}
+          value={`/dashboard/settings/customization/entity_types/${entityType}/overview-layout`}
+          label={t_i18n('Overview Layout')}
         />
       )}
     </Tabs>

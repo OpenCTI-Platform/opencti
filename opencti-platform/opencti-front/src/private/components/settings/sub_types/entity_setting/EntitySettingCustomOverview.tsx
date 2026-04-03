@@ -1,7 +1,7 @@
 import React from 'react';
 import Paper from '@mui/material/Paper';
 import { RestartAlt } from '@mui/icons-material';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { useFragment } from 'react-relay';
@@ -18,24 +18,27 @@ import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import type { Theme } from '../../../../../components/Theme';
 import Card from '../../../../../components/common/card/Card';
 import { SubTypeQuery } from '../__generated__/SubTypeQuery.graphql';
+import { EntitySettingsOverviewLayoutCustomization_entitySetting$key } from './__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
 
 const EntitySettingCustomOverview = () => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-
   const { subType } = useOutletContext<{ subType: SubTypeQuery['response']['subType'] }>();
-  if (!subType?.settings) return <ErrorNotFound />;
 
   const entitySetting = useFragment(
     entitySettingsOverviewLayoutCustomizationFragment,
-    subType.settings,
+    (subType?.settings ?? null) as EntitySettingsOverviewLayoutCustomization_entitySetting$key | null,
   );
+
+  const [commitReset] = useApiMutation((entitySettingsOverviewLayoutCustomizationEdit));
+
+  if (!subType) return <ErrorNotFound />;
+  if (!subType.settings) return <ErrorNotFound />;
 
   if (!entitySetting) {
     return <ErrorNotFound />;
   }
 
-  const [commitReset] = useApiMutation((entitySettingsOverviewLayoutCustomizationEdit));
   const resetLayout = () => {
     commitReset({
       variables: {
@@ -50,9 +53,11 @@ const EntitySettingCustomOverview = () => {
 
   const layout = entitySetting.overview_layout_customization;
 
-  return layout ? (
-    <>
-      <Grid item xs={6}>
+  if (!layout) return null;
+
+  return (
+    <Grid container spacing={2}>
+      <Grid size={6}>
         <Card
           title={t_i18n('Overview layout customization')}
           action={(
@@ -73,11 +78,11 @@ const EntitySettingCustomOverview = () => {
           />
         </Card>
       </Grid>
-      <Grid item xs={6}>
+      <Grid size={6}>
         <Card title={t_i18n('Preview')}>
           <Grid container>
             {layout.map(({ key, width, label }) => (
-              <Grid item xs={width} key={key}>
+              <Grid size={width} key={key}>
                 <Paper
                   className="paper-for-grid"
                   style={{
@@ -100,8 +105,8 @@ const EntitySettingCustomOverview = () => {
           </Grid>
         </Card>
       </Grid>
-    </>
-  ) : null;
+    </Grid>
+  );
 };
 
 export default EntitySettingCustomOverview;
