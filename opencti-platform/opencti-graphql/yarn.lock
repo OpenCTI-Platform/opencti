@@ -1196,30 +1196,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@elastic/elasticsearch@npm:8.19.1":
-  version: 8.19.1
-  resolution: "@elastic/elasticsearch@npm:8.19.1"
+"@elastic/elasticsearch@npm:9.3.4":
+  version: 9.3.4
+  resolution: "@elastic/elasticsearch@npm:9.3.4"
   dependencies:
-    "@elastic/transport": "npm:^8.9.6"
+    "@elastic/transport": "npm:^9.3.5"
     apache-arrow: "npm:18.x - 21.x"
     tslib: "npm:^2.4.0"
-  checksum: 10c0/5ebee38df96dd8d0697be3bfdf36ecd1680bc9885982799436af1fa346bea7c574831933e4cccf7279ccc2553b7383f6192b586d5123d8ee1bf974cc190f1b44
+  checksum: 10c0/15ae5fa2f747dd75b4b8e16fbc7f9ae9053d0187fdf1d2294febcf8db5b0444bf21f982898a0433b48ade586c835fc2b5923d1ff43ec04025ae443838c74b12b
   languageName: node
   linkType: hard
 
-"@elastic/transport@npm:^8.9.6":
-  version: 8.10.1
-  resolution: "@elastic/transport@npm:8.10.1"
+"@elastic/transport@npm:^9.3.5":
+  version: 9.3.5
+  resolution: "@elastic/transport@npm:9.3.5"
   dependencies:
     "@opentelemetry/api": "npm:1.x"
     "@opentelemetry/core": "npm:2.x"
     debug: "npm:^4.4.1"
     hpagent: "npm:^1.2.0"
     ms: "npm:^2.1.3"
-    secure-json-parse: "npm:^3.0.1"
+    secure-json-parse: "npm:^4.0.0"
     tslib: "npm:^2.8.1"
-    undici: "npm:^6.21.1"
-  checksum: 10c0/4839e94822fa586b680cdfd5a938f25bdbb90fa4f5ae262b023e7cfb1969830650f838bba34e90e69b0cc5528f4e340f9a5d84768f49ea542175463a630e4ee2
+    undici: "npm:^7.19.1"
+  checksum: 10c0/809fb62bee43c2eff0772e1b93a81a1acc443632ca91385f6cf65e0c9bdd30d6a5117657e817d66ce61d58158770302ded81ff6f86e69c4b6e767bacd2fedac2
   languageName: node
   linkType: hard
 
@@ -10510,7 +10510,7 @@ __metadata:
     "@aws-sdk/credential-provider-node": "npm:3.972.26"
     "@aws-sdk/lib-storage": "npm:3.1018.0"
     "@datadog/pprof": "npm:5.14.1"
-    "@elastic/elasticsearch": "npm:8.19.1"
+    "@elastic/elasticsearch": "npm:9.3.4"
     "@escape.tech/graphql-armor": "npm:3.2.0"
     "@eslint/js": "npm:10.0.1"
     "@graphql-codegen/cli": "npm:6.2.1"
@@ -11728,10 +11728,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"secure-json-parse@npm:^3.0.1":
-  version: 3.0.2
-  resolution: "secure-json-parse@npm:3.0.2"
-  checksum: 10c0/4c9c005e7fdd8528df35fcdec41dc4e8e15820ce52de19f8102da808f9400a9ed8c0a28971e3efe24b001ee1e60296af553f12bbaab81a152f702dd00af2092d
+"secure-json-parse@npm:^4.0.0":
+  version: 4.1.0
+  resolution: "secure-json-parse@npm:4.1.0"
+  checksum: 10c0/52b3f8125ea974db1333a5b63e6a1df550c36c0d5f9a263911d6732812bd02e938b30be324dcbbb9da3ef9bf5a84849e0dd911f56544003d3c09e8eee12504de
   languageName: node
   linkType: hard
 
@@ -12862,10 +12862,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^6.21.1":
-  version: 6.24.1
-  resolution: "undici@npm:6.24.1"
-  checksum: 10c0/53fdbaa357139a2c12deed34f67d67fc6ad269630ba85a1507e7717f53ad2d3a02c95fbd17d3ab321e34c60b6f0a716cdc2f7e2eca1e07178702dc89cc3a73c4
+"undici@npm:^7.19.1":
+  version: 7.24.6
+  resolution: "undici@npm:7.24.6"
+  checksum: 10c0/0f5413ccb20bafe27637a3a02cada731c53ee75f1df79029099db3af1eaaed410488489d9f430c09bd30bf0b925cb75fc30c39dff0689f656fd6fb7d75ded95f
   languageName: node
   linkType: hard
 
