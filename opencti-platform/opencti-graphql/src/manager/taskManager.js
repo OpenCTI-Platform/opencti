@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import * as R from 'ramda';
@@ -241,7 +240,7 @@ const baseOperationBuilder = (actionType, operations, element) => {
   return baseOperationObject;
 };
 
-const sendResultToQueue = async (context, user, task, objects, opts = {}) => {
+const buildAndSendBundle = async (context, user, task, objects, opts) => {
   // Send actions to queue
   const stixBundle = JSON.stringify({ id: uuidv4(), type: 'bundle', objects });
   const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
@@ -257,6 +256,18 @@ const sendResultToQueue = async (context, user, task, objects, opts = {}) => {
     draft_id: task.draft_context ?? null,
     no_split: opts.forceNoSplit ?? false,
   });
+};
+
+export const sendResultToQueue = async (context, user, task, objects, opts = {}) => {
+  const { forceNoSplit } = opts;
+  if (forceNoSplit === true) {
+    await buildAndSendBundle(context, user, task, objects, opts);
+  } else {
+    for (let index = 0; index < objects.length; index += 1) {
+      const splitObject = objects[index];
+      await buildAndSendBundle(context, user, task, [splitObject], opts);
+    }
+  }
 };
 
 const buildBundleElement = (element, actionType, operations) => {
