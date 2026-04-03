@@ -53,8 +53,8 @@ const SubTypeOverview = () => {
   const { searchTerm } = viewStorage;
 
   // Remove on FINTEL_FOR_ENTITY feature flag removal
-  const { typesWithFintelTemplates } = useAttributes();
-  const hasTemplates = typesWithFintelTemplates.includes(subType.id) && subType.settings?.availableSettings.includes('templates');
+  // const { typesWithFintelTemplates } = useAttributes();
+  // const hasTemplates = typesWithFintelTemplates.includes(subType.id) && subType.settings?.availableSettings.includes('templates');
 
   const hasRequestAccessConfig = subType.settings?.requestAccessConfiguration && isEnterpriseEdition && subType.settings?.availableSettings.includes('request_access_workflow');
 
@@ -71,7 +71,7 @@ const SubTypeOverview = () => {
           </Card>
       )} */}
 
-      {hasTemplates && <FintelTemplatesManager />}
+      {/* {hasTemplates && <FintelTemplatesManager />} */}
 
       {!isDraftWorkspaceType && (
         <Grid item xs={12}>

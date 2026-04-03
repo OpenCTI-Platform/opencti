@@ -1,19 +1,22 @@
-import React from 'react';
-import { Tabs, Tab } from '@mui/material';
+import { Tab, Tabs } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 
 interface SubTypeMenuProps {
   entityType: string;
   isFINTELTemplatesEnabled?: boolean;
+  isAttributesConfigurationEnabled?: boolean;
 }
 
-const SubTypeMenu = ({ entityType, isFINTELTemplatesEnabled }: SubTypeMenuProps) => {
+const SubTypeMenu = ({ entityType, isFINTELTemplatesEnabled, isAttributesConfigurationEnabled }: SubTypeMenuProps) => {
   const { t_i18n } = useFormatter();
   const location = useLocation();
 
   return (
-    <Tabs value={location.pathname} sx={{ paddingBottom: 3 }}>
+    <Tabs
+      value={location.pathname}
+      sx={{ paddingBottom: 3 }}
+    >
       <Tab
         component={Link}
         to={`/dashboard/settings/customization/entity_types/${entityType}`}
@@ -26,6 +29,18 @@ const SubTypeMenu = ({ entityType, isFINTELTemplatesEnabled }: SubTypeMenuProps)
         value={`/dashboard/settings/customization/entity_types/${entityType}/workflow`}
         label={t_i18n('Workflow')}
       />
+
+      {
+        isAttributesConfigurationEnabled && (
+          <Tab
+            component={Link}
+            to={`/dashboard/settings/customization/entity_types/${entityType}/attributes`}
+            value={`/dashboard/settings/customization/entity_types/${entityType}/attributes`}
+            label={t_i18n('Attributes')}
+          />
+        )
+      }
+
       {isFINTELTemplatesEnabled && (
         <Tab
           component={Link}
