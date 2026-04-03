@@ -1,14 +1,12 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { MenuItem } from '@mui/material';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Stack from '@mui/material/Stack';
 import { getCurrentTab } from '../../../../utils/utils';
 import { useFormatter } from '../../../../components/i18n';
-import { CUSTOM_VIEW_TAB_VALUE, useCustomViews } from '../../custom_views/useCustomViews';
-import useTabWithDropDownMenu from '../../../../components/TabWithDropDownMenu';
+import CustomViewTabsWrapper from '@components/custom_views/CustomViewTabsWrapper';
 
 export type StixDomainObjectTabsBoxTab
   = | 'overview'
@@ -91,11 +89,6 @@ const CONTAINER_STYLE = {
   alignItems: 'center',
 };
 
-const MENU_ITEM_LINK_STYLE = {
-  padding: '10px',
-  color: 'inherit',
-};
-
 /**
  * Tabs container shared across all SDO pages.
  * Applies common logic to display (or not) the "Custom views" tab.
@@ -104,51 +97,35 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
   const { basePath, entityType, extraActions, tabs } = props;
   const { t_i18n } = useFormatter();
   const location = useLocation();
-  const { customViews, getCurrentCustomViewTab } = useCustomViews(entityType);
-  const currentTab = getCurrentCustomViewTab(location.pathname, basePath)
-    ?? getCurrentTab(location.pathname, basePath);
-
-  const shouldDisplayCustomViewTab = customViews.length === 1;
-  const shouldDisplayCustomViewTabWithDropDown = customViews.length > 1;
-  const { TabWithDropDown: CustomViewTabWithDropDown, DropDown: CustomViewsDropDown } = useTabWithDropDownMenu({
-    skip: !shouldDisplayCustomViewTabWithDropDown,
-    value: CUSTOM_VIEW_TAB_VALUE,
-    label: t_i18n('Custom view'),
-    renderMenuItems: () => customViews.map(({ id, name, path }) => {
-      const isSelected = getCurrentTab(location.pathname, basePath) === path;
-      return (
-        <MenuItem key={id} sx={{ p: 0, color: isSelected ? 'primary.main' : undefined }}>
-          <Link role="link" style={MENU_ITEM_LINK_STYLE} to={`${basePath}/${path}`}>{name}</Link>
-        </MenuItem>
-      );
-    }),
-  });
+  const currentTab = getCurrentTab(location.pathname, basePath);
   return (
     <Box sx={CONTAINER_STYLE}>
-      <Tabs value={currentTab}>
-        {
-          TABS_INFO.map(({ tab, path, label }) =>
-            tabs.includes(tab) && (
-              <Tab
-                key={tab}
-                component={Link}
-                to={path}
-                value={path}
-                label={t_i18n(label)}
-              />
-            ))
-        }
-        {shouldDisplayCustomViewTab ? (
-          <Tab
-            component={Link}
-            to={customViews[0].path}
-            value={CUSTOM_VIEW_TAB_VALUE}
-            label={customViews[0].name}
-          />
-        ) : null}
-        {shouldDisplayCustomViewTabWithDropDown ? CustomViewTabWithDropDown : null }
-      </Tabs>
-      {shouldDisplayCustomViewTabWithDropDown ? CustomViewsDropDown : null }
+      <CustomViewTabsWrapper
+        basePath={basePath}
+        entityType={entityType}
+        render={({ CustomViewsTab, CustomViewsDropDown, currentCustomViewTab }) => {
+          return (
+            <>
+              <Tabs value={currentCustomViewTab ?? currentTab}>
+                {
+                  TABS_INFO.map(({ tab, path, label }) =>
+                    tabs.includes(tab) && (
+                      <Tab
+                        key={tab}
+                        component={Link}
+                        to={path}
+                        value={path}
+                        label={t_i18n(label)}
+                      />
+                    ))
+                }
+                {CustomViewsTab}
+              </Tabs>
+              {CustomViewsDropDown}
+            </>
+          );
+        }}
+      />
       {extraActions ? (
         <Stack gap={2} direction="row" justifyContent="space-between" alignItems="center">
           {extraActions}
