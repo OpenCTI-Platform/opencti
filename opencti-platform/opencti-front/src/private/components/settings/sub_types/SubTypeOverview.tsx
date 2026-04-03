@@ -53,7 +53,6 @@ const SubTypeOverview = () => {
   );
   const { searchTerm } = viewStorage;
 
-  // Remove on FINTEL_FOR_ENTITY feature flag removal
   const { typesWithFintelTemplates } = useAttributes();
   const hasTemplates = typesWithFintelTemplates.includes(subType.id) && subType.settings?.availableSettings.includes('templates');
 
