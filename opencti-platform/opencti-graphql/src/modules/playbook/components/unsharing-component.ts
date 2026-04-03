@@ -1,6 +1,6 @@
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
-import { type PlaybookComponent } from '../playbook-types';
+import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { AUTOMATION_MANAGER_USER, executionContext, SYSTEM_USER } from '../../../utils/access';
 import { INPUT_GRANTED_REFS } from '../../../schema/general';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
@@ -8,11 +8,11 @@ import { internalFindByIds } from '../../../database/middleware-loader';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organization-types';
 import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
-import { applyOperationFieldPatch } from '../playbook-utils';
+import { applyOperationFieldPatch, isBundleElementInScope } from '../playbook-utils';
 
 export interface UnsharingConfiguration {
   organizations: string[] | { label: string; value: string }[];
-  all: boolean;
+  applyToElements: PlaybookBundleElementsToApply;
 }
 const PLAYBOOK_UNSHARING_COMPONENT_SCHEMA: JSONSchemaType<UnsharingConfiguration> = {
   type: 'object',
@@ -24,9 +24,18 @@ const PLAYBOOK_UNSHARING_COMPONENT_SCHEMA: JSONSchemaType<UnsharingConfiguration
       $ref: 'Target organizations',
       items: { type: 'string', oneOf: [] },
     },
-    all: { type: 'boolean', $ref: 'Unshare all elements included in the bundle', default: false },
+    applyToElements: {
+      type: 'string',
+      default: playbookBundleElementsToApply.onlyMain.value,
+      $ref: 'Apply to',
+      oneOf: [
+        { const: playbookBundleElementsToApply.onlyMain.value, title: playbookBundleElementsToApply.onlyMain.title },
+        { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
+        { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
+      ],
+    },
   },
-  required: ['organizations'],
+  required: ['organizations', 'applyToElements'],
 };
 export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfiguration> = {
   id: 'PLAYBOOK_UNSHARING_COMPONENT',
@@ -40,7 +49,7 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
   schema: async () => PLAYBOOK_UNSHARING_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components', AUTOMATION_MANAGER_USER);
-    const { organizations, all } = playbookNode.configuration;
+    const { organizations, applyToElements } = playbookNode.configuration;
     const organizationsValues = organizations.map((o) => (typeof o !== 'string' ? o.value : o));
     const organizationsByIds = await internalFindByIds<BasicStoreEntityOrganization>(context, SYSTEM_USER, organizationsValues, {
       type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
@@ -54,7 +63,7 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
     const patchOperations = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
-      if (all || element.id === dataInstanceId) {
+      if (isBundleElementInScope(element, applyToElements, dataInstanceId)) {
         const patchValue = {
           op: EditOperation.Remove,
           path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/granted_refs`,

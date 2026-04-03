@@ -1,6 +1,6 @@
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
-import { type PlaybookComponent } from '../playbook-types';
+import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { type AuthorizedMember, AUTOMATION_MANAGER_USER, executionContext } from '../../../utils/access';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_AUTHORIZED_MEMBERS, OPENCTI_ADMIN_UUID } from '../../../schema/general';
 import { generateInternalType } from '../../../schema/schemaUtils';
@@ -10,15 +10,35 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organizati
 import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, buildRestrictedMembers } from '../../../utils/authorizedMembers';
-import { applyOperationFieldPatch, extractBundleBaseElement } from '../playbook-utils';
+import { applyOperationFieldPatch, extractBundleBaseElement, isBundleElementInScope } from '../playbook-utils';
 
 export interface AccessRestrictionsConfiguration {
-  access_restrictions: { groupsRestriction: { label: string; value: string; type: string }[]; accessRight: string; label: string; type: string; value: string }[];
-  all: boolean;
+  applyToElements: PlaybookBundleElementsToApply;
+  access_restrictions: {
+    groupsRestriction: {
+      label: string;
+      value: string;
+      type: string;
+    }[];
+    accessRight: string;
+    label: string;
+    type: string;
+    value: string;
+  }[];
 }
 const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA: JSONSchemaType<AccessRestrictionsConfiguration> = {
   type: 'object',
   properties: {
+    applyToElements: {
+      type: 'string',
+      default: playbookBundleElementsToApply.onlyMain.value,
+      $ref: 'Apply to',
+      oneOf: [
+        { const: playbookBundleElementsToApply.onlyMain.value, title: playbookBundleElementsToApply.onlyMain.title },
+        { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
+        { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
+      ],
+    },
     access_restrictions: {
       type: 'array',
       uniqueItems: true,
@@ -32,9 +52,8 @@ const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA: JSONSchemaType<AccessRestri
       $ref: 'Access restrictions',
       items: { type: 'object', oneOf: [] },
     },
-    all: { type: 'boolean', $ref: 'Apply access restrictions on all elements included in the bundle', default: false },
   },
-  required: ['access_restrictions'],
+  required: ['access_restrictions', 'applyToElements'],
 };
 export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRestrictionsConfiguration> = {
   id: 'PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT',
@@ -48,7 +67,7 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
   schema: async () => PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
-    const { access_restrictions: accessRestrictions, all } = playbookNode.configuration;
+    const { access_restrictions: accessRestrictions, applyToElements } = playbookNode.configuration;
     // Resolve potential dynamic access rights
     const baseData = extractBundleBaseElement(dataInstanceId, bundle) as StixObject;
     const finalAccessRestrictions = [];
@@ -98,7 +117,7 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       const internalType = generateInternalType(element);
-      if (AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType) && (all || element.id === dataInstanceId)) {
+      if (AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType) && isBundleElementInScope(element, applyToElements, dataInstanceId)) {
         const args = {
           entityId: element.id,
           input,

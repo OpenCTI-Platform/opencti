@@ -196,7 +196,12 @@ If the playbook stops from time to time at this step, it might be because the ob
 
 Will add, replace, or remove compatible attributes of the entities contained in the received STIX 2.1 bundle and send out the modified bundle.
 
-By default, modification is applied to entities having triggered the playbook. You can toggle the corresponding option to apply it to all elements in the bundle (elements that might result from enrichment for example).
+By default, modification is applied to the entity triggering the playbook. You can change this behavior with the following options:
+
+- all elements in the bundle (elements that might result from enrichment for example)
+- all elements except the entity triggering the playbook
+
+![Enroll entity in playbook](assets/playbook_select_bundle_scope.png)
 
 **Specificities of the component**
 
@@ -210,8 +215,14 @@ These operations will only remove and & replace data that has been added in the 
 
 ### Container wrapper
 
-Will modify the received STIX 2.1 bundle to include the entities into an container of the type you configured. 
-By default, wrapping is applied to entities having triggered the playbook. You can toggle the corresponding option to apply it to all elements in the bundle (elements that might result from enrichment for example).
+Will modify the received STIX 2.1 bundle to include the entities into a container of the type you configured.
+
+By default, wrapping is applied to the entity triggering the playbook. You can change this behavior with the following options:
+
+- all elements in the bundle (elements that might result from enrichment for example)
+- all elements except the entity triggering the playbook
+
+![Enroll entity in playbook](assets/playbook_select_bundle_scope.png)
 
 **Specificities of the component**
 
@@ -232,26 +243,55 @@ When the primary entity you listen to is an incident & then use the "Container W
 - Marking
 - Severity (only if the severity value of the incident exists in the severity value of the case. Make sure it exists by editing your openVocab within the [taxonomy page](https://docs.opencti.io/6.7.X/reference/taxonomy/) )
 
+### Security coverage
+
+Will create a security coverage for the given elements when type is compatible.
+
+By default, creation is applied to the entity triggering the playbook. You can change this behavior with the following options:
+
+- all elements in the bundle (elements that might result from enrichment for example)
+- all elements except the entity triggering the playbook
+
+![Enroll entity in playbook](assets/playbook_select_bundle_scope.png)
+
 ### Share with organizations
 
 Will share every entity in the received STIX 2.1 bundle with Organizations you configured. Your platform needs to have declared a platform main organization in Settings/Parameters.
-You can decide to share only the main triggering element, or the whole bundle thanks to the toggle.
 
 Compared to other components, this component **makes direct call to the database**: this means that the query will be applied before the "send to ingestion" step. As a result, if, **within the same playbook**, you attempt to create a new entity (via the wrap in container step) and share the entity, the playbook will fail. Indeed, the entity will not yet be created, since it won't be sent to ingestion yet. You need to share the entity in another playbook to achieve this use case.
 
-More details on [organization segregation](https://docs.opencti.io/latest/administration/organization-segregation/) 
+More details on [organization segregation](https://docs.opencti.io/latest/administration/organization-segregation/)
+
+By default, modification is applied to the entity triggering the playbook. You can change this behavior with the following options:
+
+- all elements in the bundle (elements that might result from enrichment for example)
+- all elements except the entity triggering the playbook
+
+![Enroll entity in playbook](assets/playbook_select_bundle_scope.png)
 
 ### Unshare with organizations
 
 Will unshare every entity in the received STIX 2.1 bundle with Organizations you configured. Your platform needs to have declared a platform main organization in Settings/Parameters.
-You can decide to share only the main triggering element, or the whole bundle thanks to the toggle.
 
 Compared to other components, this component **makes a direct call to the database**: this means that the query will be applied before the "send to ingestion" step. As a result, if, **within the same playbook**, you attempt to create a new entity (via the wrap in container step) and unshare the entity, the playbook will fail. Indeed, the entity will not yet be created, since it won't be sent to ingestion yet. You need to unshare the entity in another playbook to achieve this use case.
+
+By default, modification is applied to the entity triggering the playbook. You can change this behavior with the following options:
+
+- all elements in the bundle (elements that might result from enrichment for example)
+- all elements except the entity triggering the playbook
+
+![Enroll entity in playbook](assets/playbook_select_bundle_scope.png)
 
 ### Manage Access Restriction
 
 Will apply authorized members on the bundle within the playbook. It is only compatible with entities supporting authorized members (Containers, Drafts, Organization).
-You can decide to only apply restrictions on the triggering element or the whole bundle by enabling the toggle.
+
+By default, creation is applied to the entity triggering the playbook. You can change this behavior with the following options:
+
+- all elements in the bundle (elements that might result from enrichment for example)
+- all elements except the entity triggering the playbook
+
+![Enroll entity in playbook](assets/playbook_select_bundle_scope.png)
 
 More details on [Authorize members](https://docs.opencti.io/latest/administration/authorized-members/?h=me)
 
@@ -277,7 +317,13 @@ Compared to other components, this component **makes direct call to the database
 Compared to other components, this component **makes direct call to the database**: this means that the query will be applied before the "send to ingestion" step. As a result, if, **within the same playbook**, you attempt to create a new entity (via the wrap in container step) and remove default authorized members, the playbook will fail. Indeed, the entity will not yet be created, since it won't be sent to ingestion yet. You need to remove the authorized members in another playbook to achieve this use case.
 
 Will remove authorized members on the bundle within the playbook. It is only compatible with entities supporting authorized members (Containers, Drafts).
-You can decide to only remove restriction on the triggering element or the whole bundle by enabling the toggle.
+
+By default, removal is applied to the entity triggering the playbook. You can change this behavior with the following options:
+
+- all elements in the bundle (elements that might result from enrichment for example)
+- all elements except the entity triggering the playbook
+
+![Enroll entity in playbook](assets/playbook_select_bundle_scope.png)
 
 **Specificities of the component**
 
@@ -356,7 +402,12 @@ You can also add all indicators and relationships generated by this component in
 
 Will extract observables based on indicators contained in the received STIX 2.1 bundle. 
 
-By default, it is applied to entities having triggered the playbook. You can toggle the corresponding option to apply it to all indicators in the bundle (e.g. indicators that might result from enrichment.
+By default, creation is applied to the entity triggering the playbook. You can change this behavior with the following options:
+
+- all elements in the bundle (elements that might result from enrichment for example)
+- all elements except the entity triggering the playbook
+
+![Enroll entity in playbook](assets/playbook_select_bundle_scope.png)
 
 You can also add all observables and relationships generated by this component in the entity having triggered the playbook, if this entity is a container.
 
