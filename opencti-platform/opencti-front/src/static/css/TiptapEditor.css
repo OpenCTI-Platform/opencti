@@ -17,6 +17,11 @@
   margin: 1em 0;
 }
 
+.rich-text-editor-wrapper .ProseMirror table p,
+.rich-text-content table p {
+  margin: 0.9em 0 !important;
+}
+
 
 
 .rich-text-editor-wrapper .ProseMirror blockquote {
@@ -169,10 +174,19 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
 }
 
 .rich-text-editor-wrapper .ProseMirror th,
-.rich-text-editor-wrapper .ProseMirror td {
+.rich-text-editor-wrapper .ProseMirror td,
+.rich-text-content th,
+.rich-text-content td {
   border: 1px solid #b2b2b2;
   padding: 0.4em;
   position: relative;
+}
+
+.rich-text-editor-wrapper .ProseMirror th p,
+.rich-text-editor-wrapper .ProseMirror td p,
+.rich-text-content th p,
+.rich-text-content td p {
+  margin: 1em 0 !important;
 }
 
 /* Header cells — distinct background */
@@ -227,7 +241,7 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror .selectedCell::af
 /* Nested tables: slightly smaller, with spacing */
 .rich-text-editor-wrapper .ProseMirror td table,
 .rich-text-editor-wrapper .ProseMirror th table {
-  margin: 4px 0;
+  margin: 0.9em 0;
 }
 
 .rich-text-editor-wrapper .ProseMirror td td,
@@ -349,14 +363,16 @@ body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
 .rich-text-editor-wrapper .ProseMirror mark.pen-green { background-color: transparent; color: hsl(120, 75%, 60%); }
 
 /* Legacy Editor image figure — kept for backward compatibility with stored content */
-.rich-text-content figure.image {
+.rich-text-content figure.image,
+.rich-text-content figure.image-figure {
   display: table;
   clear: both;
   text-align: center;
   margin: 0.9em auto;
   min-width: 50px;
 }
-.rich-text-content figure.image img {
+.rich-text-content figure.image img,
+.rich-text-content figure.image-figure img {
   display: block;
   max-width: 100%;
 }
@@ -438,7 +454,7 @@ body[data-theme="dark"] .rich-text-content th {
 /* Nested tables — display mode */
 .rich-text-content td table,
 .rich-text-content th table {
-  margin: 4px 0;
+  margin: 0;
 }
 
 .rich-text-content td td,

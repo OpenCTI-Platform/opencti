@@ -124,15 +124,12 @@ export const ImageWithOptions = Image.extend<ImageWithOptionsOptions>({
       imgAttrs['data-title'] = titleText;
     }
 
-    // Plain image: return default spec so DOMSerializer/renderSpec get a valid structure
-    if (!hasCaption && !hasLink) {
-      return ['img', imgAttrs];
-    }
-
+    // Always wrap in figure.image-figure for CKEditor compatibility (centering, margins)
     const imgTag: [string, Record<string, string>] = ['img', imgAttrs];
     const wrappedImg = hasLink
       ? ['a', { href: String(href).trim(), target: '_blank', rel: 'noopener noreferrer' }, imgTag]
       : imgTag;
+
     if (hasCaption) {
       return ['figure', { class: 'image-figure' }, wrappedImg, ['figcaption', {}, captionText]];
     }

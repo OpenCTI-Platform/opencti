@@ -16,8 +16,10 @@ import Typography from '@tiptap/extension-typography';
 import Mention from '@tiptap/extension-mention';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
-import { TableRow, TableCell, TableHeader } from '@tiptap/extension-table';
+import { TableRow } from '@tiptap/extension-table';
 import { Table } from './richTextEditor/extensions/Table';
+import { NestedTableCell } from './richTextEditor/extensions/TableCell';
+import { NestedTableHeader } from './richTextEditor/extensions/TableHeader';
 import Placeholder from '@tiptap/extension-placeholder';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTheme } from '@mui/styles';
@@ -39,14 +41,6 @@ import { FontSize } from './richTextEditor/extensions/FontSize';
 import { Paragraph } from './richTextEditor/extensions/Paragraph';
 import type { Theme } from './Theme';
 import '../static/css/TiptapEditor.css';
-
-/**
- * Extended TableCell that allows any block content including nested tables.
- * No nesting depth limit — the schema permits table > tableCell > table recursively.
- */
-const NestedTableCell = TableCell.extend({
-  content: 'block+',
-});
 
 export const TIPTAP_EDITOR_SELECTOR = '.tiptap-editor-content.ProseMirror';
 
@@ -239,7 +233,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       }),
       Table.configure({ resizable: true }),
       TableRow,
-      TableHeader,
+      NestedTableHeader,
       NestedTableCell,
       Placeholder.configure({ placeholder }),
       PageBreak,

@@ -1,6 +1,6 @@
 import { mergeAttributes } from '@tiptap/core';
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
-import { Table as TiptapTable, TableView, updateColumns } from '@tiptap/extension-table';
+import { Table as TiptapTable, TableView, updateColumns, TableOptions } from '@tiptap/extension-table';
 
 /**
  * Custom TableView that re-applies percentage-based column widths stored in
@@ -59,13 +59,13 @@ class CustomTableView extends TableView {
  * the colgroup, bypassing TipTap's px-based createColGroup utility.
  */
 export const Table = TiptapTable.extend({
-  addOptions() {
-    const parentOptions = this.parent?.() || {};
+  addOptions(): TableOptions & { View: any } {
+    const parentOptions = (this.parent?.() || {}) as TableOptions;
     return {
       ...parentOptions,
       HTMLAttributes: parentOptions.HTMLAttributes || {},
       View: CustomTableView,
-    };
+    } as any;
   },
 
   addAttributes() {
@@ -137,11 +137,18 @@ export const Table = TiptapTable.extend({
       ? `width: ${tableWidth}; table-layout: fixed`
       : colWidths?.length ? 'table-layout: fixed' : undefined;
 
-    return [
+    const tableNode = [
       'table',
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, styleAttr ? { style: styleAttr } : {}),
       colgroup,
       ['tbody', 0],
+    ];
+
+    // the legacy editor wraps tables in <figure class="table">
+    return [
+      'figure',
+      { class: 'table' },
+      tableNode,
     ];
   },
 });
