@@ -16,8 +16,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import EntitySettingAttributes from './entity_setting/EntitySettingAttributes';
-import EntitySettingSettings from './entity_setting/EntitySettingSettings';
-import FintelTemplatesGrid from './fintel_templates/FintelTemplatesGrid';
+import FintelTemplatesManager from './fintel_templates/FintelTemplatesManager';
 
 const entitySettingSubscription = graphql`
   subscription SubTypeOverviewEntitySettingSubscription($id: ID!) {
@@ -65,15 +64,14 @@ const SubTypeOverview = () => {
 
   return (
     <Grid container spacing={3}>
-      {!isDraftWorkspaceType && (
+      {/* {!isDraftWorkspaceType && (
         <Grid item xs={hasTemplates ? 6 : 12}>
           <Card title={t_i18n('Configuration')}>
             <EntitySettingSettings entitySettingsData={subType.settings} />
           </Card>
-        </Grid>
-      )}
+      )} */}
 
-      {hasTemplates && <FintelTemplatesGrid data={subType.settings} />}
+      {hasTemplates && <FintelTemplatesManager />}
 
       {!isDraftWorkspaceType && (
         <Grid item xs={12}>

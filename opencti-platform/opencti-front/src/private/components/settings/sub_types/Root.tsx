@@ -8,6 +8,7 @@ import FintelTemplate from './fintel_templates/FintelTemplate';
 import SubTypeOverview from './SubTypeOverview';
 import SubTypeWorkflow from './SubTypeWorkflow';
 import useHelper from '../../../../utils/hooks/useHelper';
+import FintelTemplatesManager from './fintel_templates/FintelTemplatesManager';
 
 const RootSubType = () => {
   const { subTypeId } = useParams<{ subTypeId?: string }>();
@@ -23,6 +24,10 @@ const RootSubType = () => {
         <Route path="/" element={<SubType />}>
           <Route index element={<SubTypeOverview />} />
           {isDraftWorkflowFeatureEnabled && <Route path="workflow" element={<SubTypeWorkflow />} />}
+          <Route path="workflow" element={<SubTypeOverview />} />
+          <Route path="templates" element={<FintelTemplatesManager />} />
+          <Route path="attributes" element={<SubTypeOverview />} />
+          <Route path="overview-layout" element={<SubTypeOverview />} />
         </Route>
         <Route
           path="/templates/:templateId"

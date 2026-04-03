@@ -107,6 +107,7 @@ const FintelTemplateForm = ({
             {!isEdition && (
               <FormButtonContainer>
                 <Button
+                  variant="secondary"
                   disabled={isSubmitting}
                   onClick={() => {
                     handleReset();

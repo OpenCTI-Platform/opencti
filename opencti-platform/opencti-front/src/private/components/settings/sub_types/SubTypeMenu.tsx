@@ -5,9 +5,10 @@ import { useFormatter } from '../../../../components/i18n';
 
 interface SubTypeMenuProps {
   entityType: string;
+  isFINTELTemplatesEnabled?: boolean;
 }
 
-const SubTypeMenu = ({ entityType }: SubTypeMenuProps) => {
+const SubTypeMenu = ({ entityType, isFINTELTemplatesEnabled }: SubTypeMenuProps) => {
   const { t_i18n } = useFormatter();
   const location = useLocation();
 
@@ -25,6 +26,14 @@ const SubTypeMenu = ({ entityType }: SubTypeMenuProps) => {
         value={`/dashboard/settings/customization/entity_types/${entityType}/workflow`}
         label={t_i18n('Workflow')}
       />
+      {isFINTELTemplatesEnabled && (
+        <Tab
+          component={Link}
+          to={`/dashboard/settings/customization/entity_types/${entityType}/templates`}
+          value={`/dashboard/settings/customization/entity_types/${entityType}/templates`}
+          label={t_i18n('Templates')}
+        />
+      )}
     </Tabs>
   );
 };
