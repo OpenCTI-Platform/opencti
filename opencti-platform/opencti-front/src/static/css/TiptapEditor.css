@@ -17,13 +17,6 @@
   margin: 1em 0;
 }
 
-.rich-text-editor-wrapper .ProseMirror table p,
-.rich-text-content table p {
-  margin: 0.9em 0 !important;
-}
-
-
-
 .rich-text-editor-wrapper .ProseMirror blockquote {
   overflow: hidden;
   padding-right: 1.5em;
@@ -191,13 +184,6 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
   border: 1px solid #b2b2b2;
   padding: 0.4em;
   position: relative;
-}
-
-.rich-text-editor-wrapper .ProseMirror th p,
-.rich-text-editor-wrapper .ProseMirror td p,
-.rich-text-content th p,
-.rich-text-content td p {
-  margin: 1em 0 !important;
 }
 
 /* Header cells — distinct background */
