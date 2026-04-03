@@ -1,5 +1,5 @@
 import { APIRequestContext } from '@playwright/test';
-import { graphqlQuery } from './query-utils';
+import { graphqlQuery } from '../utils/query-utils';
 
 interface AddRelationshipInput {
   relationship_type: string;
