@@ -71,7 +71,8 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
 
 /* Task list - no bullets, checkbox and text on same line */
 .rich-text-editor-wrapper .ProseMirror ul[data-type="taskList"],
-.rich-text-content ul[data-type="taskList"] {
+.rich-text-content ul[data-type="taskList"],
+.rich-text-content ul.todo-list {
   list-style: none !important;
   padding-left: 0;
 }
@@ -79,7 +80,8 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
 .rich-text-editor-wrapper .ProseMirror li.tiptap-task-item,
 .rich-text-editor-wrapper .ProseMirror li[data-type="taskItem"],
 .rich-text-content li.tiptap-task-item,
-.rich-text-content li[data-type="taskItem"] {
+.rich-text-content li[data-type="taskItem"],
+.rich-text-content ul.todo-list > li {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
@@ -92,7 +94,8 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
 .rich-text-editor-wrapper .ProseMirror li.tiptap-task-item > label,
 .rich-text-editor-wrapper .ProseMirror li[data-type="taskItem"] > label,
 .rich-text-content li.tiptap-task-item > label,
-.rich-text-content li[data-type="taskItem"] > label {
+.rich-text-content li[data-type="taskItem"] > label,
+.rich-text-content ul.todo-list > li > label {
   flex-shrink: 0;
   margin: 0;
   padding: 0;
@@ -102,12 +105,16 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
   cursor: pointer;
   line-height: 1;
 }
+.rich-text-content ul.todo-list > li > label.todo-list__label {
+  gap: 0.5rem
+}
 
 /* Task list checkbox - unchecked: transparent, checked: green with white check */
 .rich-text-editor-wrapper .ProseMirror li[data-type="taskItem"] input[type="checkbox"],
 .rich-text-editor-wrapper .ProseMirror li.tiptap-task-item input[type="checkbox"],
 .rich-text-content li[data-type="taskItem"] input[type="checkbox"],
-.rich-text-content li.tiptap-task-item input[type="checkbox"] {
+.rich-text-content li.tiptap-task-item input[type="checkbox"],
+.rich-text-content ul.todo-list > li input[type="checkbox"] {
   appearance: none !important;
   -webkit-appearance: none !important;
   width: 16px !important;
@@ -126,7 +133,8 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
 .rich-text-editor-wrapper .ProseMirror li[data-type="taskItem"] input[type="checkbox"]:checked,
 .rich-text-editor-wrapper .ProseMirror li.tiptap-task-item input[type="checkbox"]:checked,
 .rich-text-content li[data-type="taskItem"] input[type="checkbox"]:checked,
-.rich-text-content li.tiptap-task-item input[type="checkbox"]:checked {
+.rich-text-content li.tiptap-task-item input[type="checkbox"]:checked,
+.rich-text-content ul.todo-list > li input[type="checkbox"]:checked {
   background: #22c55e !important;
   background-color: #22c55e !important;
   border-color: #22c55e !important;
@@ -136,7 +144,8 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
 
 /* data-checked for readonly/display mode when :checked may not apply */
 .rich-text-editor-wrapper .ProseMirror li[data-type="taskItem"][data-checked="true"] input[type="checkbox"],
-.rich-text-content li[data-type="taskItem"][data-checked="true"] input[type="checkbox"] {
+.rich-text-content li[data-type="taskItem"][data-checked="true"] input[type="checkbox"],
+.rich-text-content ul.todo-list > li[data-checked="true"] input[type="checkbox"] {
   background: #22c55e !important;
   background-color: #22c55e !important;
   border-color: #22c55e !important;
@@ -148,7 +157,8 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
 .rich-text-editor-wrapper .ProseMirror li.tiptap-task-item > div,
 .rich-text-editor-wrapper .ProseMirror li[data-type="taskItem"] > div,
 .rich-text-content li.tiptap-task-item > div,
-.rich-text-content li[data-type="taskItem"] > div {
+.rich-text-content li[data-type="taskItem"] > div,
+.rich-text-content ul.todo-list > li > div {
   flex: 1;
   min-width: 0;
   margin: 0;
@@ -159,7 +169,8 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
 .rich-text-editor-wrapper .ProseMirror li.tiptap-task-item p,
 .rich-text-editor-wrapper .ProseMirror li[data-type="taskItem"] p,
 .rich-text-content li.tiptap-task-item p,
-.rich-text-content li[data-type="taskItem"] p {
+.rich-text-content li[data-type="taskItem"] p,
+.rich-text-content ul.todo-list > li p {
   margin: 0;
   flex: 1;
   min-width: 0;
