@@ -37532,14 +37532,6 @@ export enum WorkflowActionMode {
   Sync = 'sync'
 }
 
-export type WorkflowConditionConfig = {
-  __typename?: 'WorkflowConditionConfig';
-  field?: Maybe<Scalars['String']['output']>;
-  operator?: Maybe<Scalars['String']['output']>;
-  type?: Maybe<Scalars['String']['output']>;
-  value?: Maybe<Scalars['String']['output']>;
-};
-
 export type WorkflowInstance = {
   __typename?: 'WorkflowInstance';
   allowedTransitions: Array<WorkflowTransition>;
@@ -37567,7 +37559,7 @@ export type WorkflowSerializedState = {
 export type WorkflowSerializedTransition = {
   __typename?: 'WorkflowSerializedTransition';
   actions?: Maybe<Array<WorkflowActionConfig>>;
-  conditions?: Maybe<Array<WorkflowConditionConfig>>;
+  conditions: Scalars['JSON']['output'];
   event: Scalars['String']['output'];
   from: Scalars['String']['output'];
   to: Scalars['String']['output'];
@@ -39910,7 +39902,6 @@ export type ResolversTypes = ResolversObject<{
   WorkTracking: ResolverTypeWrapper<WorkTracking>;
   WorkflowActionConfig: ResolverTypeWrapper<WorkflowActionConfig>;
   WorkflowActionMode: WorkflowActionMode;
-  WorkflowConditionConfig: ResolverTypeWrapper<WorkflowConditionConfig>;
   WorkflowInstance: ResolverTypeWrapper<Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversTypes['Status']> }>;
   WorkflowSchema: ResolverTypeWrapper<WorkflowSchema>;
   WorkflowSerializedState: ResolverTypeWrapper<WorkflowSerializedState>;
@@ -40866,7 +40857,6 @@ export type ResolversParentTypes = ResolversObject<{
   WorkMessage: WorkMessage;
   WorkTracking: WorkTracking;
   WorkflowActionConfig: WorkflowActionConfig;
-  WorkflowConditionConfig: WorkflowConditionConfig;
   WorkflowInstance: Omit<WorkflowInstance, 'allowedTransitions' | 'currentStatus'> & { allowedTransitions: Array<ResolversParentTypes['WorkflowTransition']>, currentStatus?: Maybe<ResolversParentTypes['Status']> };
   WorkflowSchema: WorkflowSchema;
   WorkflowSerializedState: WorkflowSerializedState;
@@ -52070,13 +52060,6 @@ export type WorkflowActionConfigResolvers<ContextType = any, ParentType extends 
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
-export type WorkflowConditionConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowConditionConfig'] = ResolversParentTypes['WorkflowConditionConfig']> = ResolversObject<{
-  field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  operator?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-}>;
-
 export type WorkflowInstanceResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowInstance'] = ResolversParentTypes['WorkflowInstance']> = ResolversObject<{
   allowedTransitions?: Resolver<Array<ResolversTypes['WorkflowTransition']>, ParentType, ContextType>;
   currentState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -52100,7 +52083,7 @@ export type WorkflowSerializedStateResolvers<ContextType = any, ParentType exten
 
 export type WorkflowSerializedTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSerializedTransition'] = ResolversParentTypes['WorkflowSerializedTransition']> = ResolversObject<{
   actions?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
-  conditions?: Resolver<Maybe<Array<ResolversTypes['WorkflowConditionConfig']>>, ParentType, ContextType>;
+  conditions?: Resolver<ResolversTypes['JSON'], ParentType, ContextType>;
   event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   from?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   to?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -52927,7 +52910,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   WorkMessage?: WorkMessageResolvers<ContextType>;
   WorkTracking?: WorkTrackingResolvers<ContextType>;
   WorkflowActionConfig?: WorkflowActionConfigResolvers<ContextType>;
-  WorkflowConditionConfig?: WorkflowConditionConfigResolvers<ContextType>;
   WorkflowInstance?: WorkflowInstanceResolvers<ContextType>;
   WorkflowSchema?: WorkflowSchemaResolvers<ContextType>;
   WorkflowSerializedState?: WorkflowSerializedStateResolvers<ContextType>;

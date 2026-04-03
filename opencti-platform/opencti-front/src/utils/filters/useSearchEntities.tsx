@@ -638,6 +638,9 @@ const useSearchEntities = ({
       'members_user', // for audit TODO register in audit (not for now)
       'members_group', // for audit TODO register in audit (not for now)
       'members_organization', // for audit TODO register in audit (not for now)
+      'workflow_user', // for workflow
+      'workflow_group', // for workflow
+      'workflow_organization', // for workflow
       'id', // regardingOf subfilter
       'connectedToId', // id of the listened entities in an instance trigger
       'sightedBy', // sighting relationship TODO remove because already in regardingOf, and migrate the key)
@@ -682,6 +685,17 @@ const useSearchEntities = ({
           break;
         case 'members_organization':
           buildOptionsFromMembersSearchQuery(filterKey, ['Organization']);
+          break;
+        // endregion
+        // region workflow
+        case 'workflow_user':
+          buildOptionsFromMembersSearchQuery(filterKey, ['User']);
+          break;
+        case 'workflow_group':
+          buildOptionsFromGroupSearchQuery(filterKey);
+          break;
+        case 'workflow_organization':
+          buildOptionsFromIdentitySearchQuery(filterKey, ['Organization']);
           break;
         // endregion
         // region user usage (with caching)

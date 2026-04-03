@@ -5,7 +5,7 @@ import ActionMenuButton from './ActionMenuButton';
 import WorkflowFieldItem from './WorkflowFieldItem';
 import { WorkflowDataType } from './utils';
 import type { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
-import type { Action, Condition } from './utils';
+import type { Action } from './utils';
 
 interface WorkflowFieldListProps {
   title: string;
@@ -15,6 +15,8 @@ interface WorkflowFieldListProps {
 
 const WorkflowFieldList = ({ title, name, isActionMenu }: WorkflowFieldListProps) => {
   const { values, setFieldValue, status: { onAddObject } } = useFormikContext<WorkflowEditionFormValues>();
+
+  const isConditions = name === 'conditions';
 
   return (
     <div style={{ marginBottom: '20px' }}>
@@ -29,18 +31,21 @@ const WorkflowFieldList = ({ title, name, isActionMenu }: WorkflowFieldListProps
         )}
       </div>
       <FieldArray name={name}>
-        {(arrayHelpers) => (
-          <>
-            {(values[name] as (Action | Condition)[])?.map((_, idx: number) => (
-              <Field
-                key={`${name}-${idx}`}
-                component={WorkflowFieldItem}
-                name={`${name}[${idx}]`}
-                onDelete={() => arrayHelpers.remove(idx)}
-              />
-            ))}
-          </>
-        )}
+        {(arrayHelpers) => {
+          if (isConditions) {
+            return (
+              <Field key={name} name={name} component={WorkflowFieldItem} onDelete={() => arrayHelpers.remove(0)} />
+            );
+          }
+          return (values[name] as Action[])?.map((_, idx: number) => (
+            <Field
+              key={`${name}-${idx}`}
+              component={WorkflowFieldItem}
+              name={`${name}[${idx}]`}
+              onDelete={() => arrayHelpers.remove(idx)}
+            />
+          ));
+        }}
       </FieldArray>
     </div>
   );
