@@ -235,6 +235,20 @@ test('Dashboard CRUD', { tag: ['@ce'] }, async ({ page }) => {
   // ---------
   // endregion
 
+  // region Check breakdown widget
+  // -------------------------
+
+  await leftBarPage.clickOnMenu('Dashboards', 'Custom dashboards');
+  await dashboardPage.getItemFromList(updateDashboardName).click();
+  await widgetsPage.createHorizontalBreakdownOfMalwares();
+  await expect(page.getByText('Adware')).toBeVisible();
+  await expect(page.getByText('Backdoor')).toBeVisible();
+  await expect(page.getByText('Bootkit')).toBeVisible();
+  await expect(page.getByText('Dropper')).toBeVisible();
+
+  // ---------
+  // endregion
+
   // region Interact with start and end date CTA - change value in widgets
   // -------------------------
 
