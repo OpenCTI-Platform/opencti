@@ -42,6 +42,7 @@ const localStrategyFormQuery = graphql`
         enabled
       }
       platform_https_enabled
+      is_authentication_by_env
     }
   }
 `;
@@ -86,6 +87,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
   const theme = useTheme<Theme>();
   const data = useLazyLoadQuery<LocalStrategyFormQuery>(localStrategyFormQuery, {});
   const settings = data.settings;
+  const isConfigurationFromEnv = settings.is_authentication_by_env ?? false;
 
   const [commitMutation] = useApiMutation<LocalStrategyFormMutation>(
     localStrategyFormMutation,
@@ -159,8 +161,13 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
               type="checkbox"
               name="enabled"
               label={t_i18n('Enable local authentication')}
-              disabled={!canDisableLocal && initialValues.enabled}
+              disabled={isConfigurationFromEnv || (!canDisableLocal && initialValues.enabled)}
             />
+            {isConfigurationFromEnv && (
+              <Tooltip title={t_i18n('Local authentication cannot be changed when authentication is managed by environment configuration')}>
+                <InfoOutlined fontSize="small" color="primary" sx={{ ml: 1, cursor: 'default' }} />
+              </Tooltip>
+            )}
             {!canDisableLocal && initialValues.enabled && (
               <Tooltip title={t_i18n('Local authentication cannot be disabled when no other authentication provider is enabled')}>
                 <InfoOutlined fontSize="small" color="primary" sx={{ ml: 1, cursor: 'default' }} />

@@ -9,7 +9,13 @@ export const LOCAL_STRATEGY_IDENTIFIER = 'local';
 export const HEADERS_STRATEGY_IDENTIFIER = 'headers';
 export const CERT_STRATEGY_IDENTIFIER = 'cert';
 
-export const IS_AUTHENTICATION_FORCE_LOCAL = booleanConf('app:authentication:force_local', false);
+// Force adding local AuthStrategy whatever env or database configuration is
+const IS_AUTHENTICATION_FORCE_LOCAL = booleanConf('app:authentication:force_local', false);
+export const isLocalAuthForcedEnabledFromEnv = () => {
+  return IS_AUTHENTICATION_FORCE_LOCAL;
+};
+
+// Force usage of providers configuration from environment
 const IS_AUTHENTICATION_FORCE_FROM_ENV = booleanConf('app:authentication:force_env', false);
 export const isAuthenticationForcedFromEnv = () => {
   return IS_AUTHENTICATION_FORCE_FROM_ENV;
@@ -123,4 +129,9 @@ export const getConfigurationAdminToken = () => {
 const CONFIGURATION_ADMIN_EXT = booleanConf('app:admin:externally_managed', false);
 export const isAdminExternallyManaged = () => {
   return CONFIGURATION_ADMIN_EXT;
+};
+
+export const isLocalAuthEnabledInEnv = (envProviders: Record<string, any>): boolean => {
+  const local = envProviders['local'];
+  return local?.config?.disabled !== true;
 };

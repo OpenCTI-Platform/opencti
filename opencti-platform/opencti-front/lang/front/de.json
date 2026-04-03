@@ -2509,6 +2509,7 @@
   "Live trigger": "Live-Trigger",
   "Loading current message count...": "Laden der aktuellen Nachrichtenanzahl...",
   "Local": "Lokal",
+  "Local authentication cannot be changed when authentication is managed by environment configuration": "Die lokale Authentifizierung kann nicht geändert werden, wenn die Authentifizierung über die Umgebungskonfiguration verwaltet wird",
   "Local authentication cannot be disabled when no other authentication provider is enabled": "Die lokale Authentifizierung kann nicht deaktiviert werden, wenn kein anderer Authentifizierungsanbieter aktiviert ist",
   "Local password policies": "Lokale Kennwortrichtlinien",
   "Local settings": "Lokale Einstellungen",
