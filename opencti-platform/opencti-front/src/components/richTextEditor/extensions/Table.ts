@@ -59,13 +59,13 @@ class CustomTableView extends TableView {
  * the colgroup, bypassing TipTap's px-based createColGroup utility.
  */
 export const Table = TiptapTable.extend({
-  addOptions(): TableOptions & { View: any } {
+  addOptions(): TableOptions {
     const parentOptions = (this.parent?.() || {}) as TableOptions;
     return {
       ...parentOptions,
       HTMLAttributes: parentOptions.HTMLAttributes || {},
       View: CustomTableView,
-    } as any;
+    } as TableOptions;
   },
 
   addAttributes() {
