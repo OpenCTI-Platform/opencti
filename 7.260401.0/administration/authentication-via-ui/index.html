@@ -7380,28 +7380,54 @@ Custom fields are directly bound to the underlying authentication library we use
 <h2 id="organization-mapping">Organization mapping</h2>
 <p>For any authentication strategy (except Local), you can define the organization mapping, meaning to which organization in OpenCTI you want your users to belong when they will log in.</p>
 <p>Organization mapping allows you to automatically create the organizations you have mapped. <strong>This option is disabled by default</strong>.</p>
-<p>The behavior is similar to group mapping: you need to provide
-- the organization expression: identification of where to find the organization information 
-- the organization splitter: if the organization information contains multiple organizations,  this splitter character will be used to extract the individual organization names 
-- the organization mapping: the mapping between the value of the organization in your provider and the organizations that exist in the platform. Be sure to type the exact same organization name as it exists in the platform to avoid organization duplication. </p>
+<p>The behavior is similar to group mapping: you need to provide</p>
+<ul>
+<li>
+<p>the organization expression: identification of where to find the organization information </p>
+</li>
+<li>
+<p>the organization splitter: if the organization information contains multiple organizations,  this splitter character will be used to extract the individual organization names </p>
+</li>
+<li>
+<p>the organization mapping: the mapping between the value of the organization in your provider and the organizations that exist in the platform. Be sure to type the exact same organization name as it exists in the platform to avoid organization duplication. </p>
+</li>
+</ul>
 <h2 id="troubleshooting-an-authentication">Troubleshooting an authentication</h2>
 <h3 id="use-logs-provided-through-ui">Use logs provided through UI</h3>
 <p>When setting up an authentication, it might be difficult to have it right at first try.</p>
 <p>For each authentication except Local, the last 50 logs are available to help you troubleshoot any configurations (next to the edit button).
-Each log will have the following information:
-- Timestamp: when did the log occur
-- Level: Info, Success, Warning or Error.
-- Message: the message indicating the error
-- Details: you can view the full log by clicking on the button on the right-hand side.</p>
+Each log will have the following information:</p>
+<ul>
+<li>
+<p>Timestamp: when did the log occur</p>
+</li>
+<li>
+<p>Level: Info, Success, Warning or Error.</p>
+</li>
+<li>
+<p>Message: the message indicating the error</p>
+</li>
+<li>
+<p>Details: you can view the full log by clicking on the button on the right-hand side.</p>
+</li>
+</ul>
 <h3 id="in-case-you-are-locked-out">In case you are locked out</h3>
 <p>It is possible to lock yourself out of the platform.
 We have a few safeguards to avoid this situation, but it can still happen: for instance, local authentication <strong>cannot be disabled if you do not have any other authentication enabled</strong>.</p>
 <h4 id="failed-migration">Failed migration</h4>
 <p>In case your authentication used to work prior to the <a href="../../deployment/breaking-changes/7.260224.0-SSO-authentication-migration/">migration</a>, there is a solution: </p>
-<p>Steps to unblock yourself: 
-1. In your configuration file, add the variable <strong>app:authentication:force_env</strong>.
-2. Set the value to <strong>true</strong>.
-3. Restart your platform again.</p>
+<p>Steps to unblock yourself: </p>
+<ol>
+<li>
+<p>In your configuration file, add the variable <strong>app:authentication:force_env</strong>.</p>
+</li>
+<li>
+<p>Set the value to <strong>true</strong>.</p>
+</li>
+<li>
+<p>Restart your platform again.</p>
+</li>
+</ol>
 <p>This will allow you to use your configuration file to login instead of the configurations stored in database. </p>
 <p>However, you won't be able to edit any authentication in UI, given you have stated that you wish to use your variables to login.</p>
 <p>Enabling the <strong>app:authentication:force_env</strong> variable will remove any stored authentication in your database. When the platform is restarted without this configuration, <a href="../../deployment/breaking-changes/7.260224.0-SSO-authentication-migration/">all compatible</a> authentications will be migrated once more. </p>
@@ -7410,19 +7436,39 @@ We have a few safeguards to avoid this situation, but it can still happen: for i
 <p>This solution however relies on one of the following pre-requisites: 
 - a local account with the capability to <a href="../users/">Manage Authentication</a> exists, and you know its credentials.
 - you have access to the administrator credentials defined in your configuration file.</p>
-<p>Steps to unblock yourself:
-1. Go into your configuration file and add the variable <strong>app:authentication:force_local</strong>.
-2. Set the value to <strong>true</strong>.
-3. Restart your platform using this configuration.</p>
+<p>Steps to unblock yourself:</p>
+<ol>
+<li>
+<p>Go into your configuration file and add the variable <strong>app:authentication:force_local</strong>.</p>
+</li>
+<li>
+<p>Set the value to <strong>true</strong>.</p>
+</li>
+<li>
+<p>Restart your platform using this configuration.</p>
+</li>
+</ol>
 <p>You should be able to log in via username and password. Once logged in, enable local authentication again in the authentication menu, then remove this variable from your configuration file.</p>
 <h4 id="locked-out-of-the-platform-no-platform-administrator-or-local-account">Locked out of the platform, no platform administrator or local account</h4>
 <p>This is the exact same situation as above, but you do not have any local account and you have disabled the administrator defined in the configuration file.</p>
-<p>Steps to unblock yourself:
-1. Go into your configuration file and add the variable <strong>app:admin:externally_managed</strong>.
-2. Set the value to <strong>true</strong>.
-3. Add the variable <strong>app:authentication:force_local</strong>.
-4. Set the value to <strong>false</strong>.
-5. Restart your platform using this configuration.</p>
+<p>Steps to unblock yourself:</p>
+<ol>
+<li>
+<p>Go into your configuration file and add the variable <strong>app:admin:externally_managed</strong>.</p>
+</li>
+<li>
+<p>Set the value to <strong>true</strong>.</p>
+</li>
+<li>
+<p>Add the variable <strong>app:authentication:force_local</strong>.</p>
+</li>
+<li>
+<p>Set the value to <strong>false</strong>.</p>
+</li>
+<li>
+<p>Restart your platform using this configuration.</p>
+</li>
+</ol>
 <p>You should be able to log in via username and password. Once logged in, enable local authentication again in the authentication menu, then remove the added variables from your configuration file.</p>
 
 
@@ -7446,7 +7492,7 @@ We have a few safeguards to avoid this situation, but it can still happen: for i
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 24, 2026 18:30:45 UTC"><span class="timeago" datetime="2026-02-24T18:30:45+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 24, 2026 18:30:45 UTC">2026-02-24</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 3, 2026 08:55:24 UTC"><span class="timeago" datetime="2026-04-03T08:55:24+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 3, 2026 08:55:24 UTC">2026-04-03</span>
   </span>
 
     
