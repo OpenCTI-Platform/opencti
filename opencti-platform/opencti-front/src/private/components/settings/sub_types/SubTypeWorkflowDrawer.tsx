@@ -97,6 +97,7 @@ const SubTypeWorkflowDrawer: FunctionComponent<SubTypeWorkflowDrawer> = ({
         open={open}
         title={`${t_i18n('Workflow of')} ${t_i18n(`entity_${subType.label}`)}`}
         onClose={handleClose}
+        size="medium"
       >
         <>
           <List

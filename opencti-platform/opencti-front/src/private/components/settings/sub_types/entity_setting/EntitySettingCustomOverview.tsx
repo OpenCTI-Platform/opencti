@@ -6,6 +6,7 @@ import IconButton from '@common/button/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { useFragment } from 'react-relay';
 import { useTheme } from '@mui/styles';
+import { useOutletContext } from 'react-router-dom';
 import EntitySettingsOverviewLayoutCustomization, {
   EntitySettingsOverviewLayoutCustomizationData,
   entitySettingsOverviewLayoutCustomizationEdit,
@@ -13,22 +14,21 @@ import EntitySettingsOverviewLayoutCustomization, {
 } from './EntitySettingsOverviewLayoutCustomization';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
-import { EntitySettingsOverviewLayoutCustomization_entitySetting$key } from './__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import type { Theme } from '../../../../../components/Theme';
 import Card from '../../../../../components/common/card/Card';
+import { SubTypeQuery } from '../__generated__/SubTypeQuery.graphql';
 
-interface EntitySettingCustomOverviewProps {
-  entitySettingsData: EntitySettingsOverviewLayoutCustomization_entitySetting$key;
-}
-
-const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = ({ entitySettingsData }) => {
+const EntitySettingCustomOverview = () => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
+  const { subType } = useOutletContext<{ subType: SubTypeQuery['response']['subType'] }>();
+  if (!subType?.settings) return <ErrorNotFound />;
+
   const entitySetting = useFragment(
     entitySettingsOverviewLayoutCustomizationFragment,
-    entitySettingsData,
+    subType.settings,
   );
 
   if (!entitySetting) {

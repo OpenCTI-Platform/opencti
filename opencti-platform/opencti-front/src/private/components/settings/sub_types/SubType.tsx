@@ -58,6 +58,8 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const isDraftWorkflowFeatureEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const isDraftWorkspaceType = subType.label === 'DraftWorkspace' && isDraftWorkflowFeatureEnabled;
 
+  const isWorkflowConfigurationEnabled = subType.settings?.availableSettings.includes('workflow_configuration');
+
   const isFINTELTemplatesEnabled
     = typesWithFintelTemplates.includes(subType.id)
       && subType.settings?.availableSettings.includes('templates');
@@ -93,6 +95,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
         entityType={subType.label}
         isFINTELTemplatesEnabled={isFINTELTemplatesEnabled}
         isAttributesConfigurationEnabled={isAttributesConfigurationEnabled}
+        isWorkflowConfigurationEnabled={isWorkflowConfigurationEnabled}
       />
       {/* {isDraftWorkspaceType && (<SubTypeMenu entityType={subType.label} />)} */}
 
