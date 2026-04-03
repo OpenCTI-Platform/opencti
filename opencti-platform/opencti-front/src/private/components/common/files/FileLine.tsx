@@ -230,7 +230,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     if (isFail || isOutdated || isProgress) return;
     handleCloseDownload();
     handleClose();
-    if (event && (event.ctrlKey || event.metaKey)) {
+    if (event) {
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
       window.location.pathname = url;
