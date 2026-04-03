@@ -92,6 +92,28 @@ describe('Settings resolver standard behavior', () => {
     });
     expect(queryResult.data.settingsEdit.fieldPatch.platform_title).toEqual(PLATFORM_TITLE);
   });
+  it('should fail when updating filigran_chatbot_ai_cgu_status with an invalid value', async () => {
+    const UPDATE_QUERY = gql`
+      mutation SettingsEdit($id: ID!, $input: [EditInput]!) {
+        settingsEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+          }
+        }
+      }
+    `;
+    const settingsInternalId = await settingsId();
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: {
+        id: settingsInternalId,
+        input: { key: 'filigran_chatbot_ai_cgu_status', value: ['INVALID_STATUS'] },
+      },
+    });
+    expect(queryResult.errors).toBeDefined();
+    expect(queryResult.errors.length).toEqual(1);
+    expect(queryResult.errors[0].message).toContain('Invalid CGU status');
+  });
   it('should context patch settings', async () => {
     const CONTEXT_PATCH_QUERY = gql`
       mutation SettingsEdit($id: ID!, $input: EditContext) {
