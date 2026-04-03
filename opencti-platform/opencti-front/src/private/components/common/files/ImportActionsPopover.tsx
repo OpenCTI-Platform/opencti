@@ -12,7 +12,7 @@ import { ProgressUpload } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import ImportWorksDrawer from '@components/common/files/ImportWorksDrawer';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { MESSAGING$ } from '../../../../relay/environment';
+import { APP_BASE_PATH, MESSAGING$ } from '../../../../relay/environment';
 import stopEvent from '../../../../utils/domEvent';
 import { RelayError } from '../../../../relay/relayTypes';
 import { deleteNode } from '../../../../utils/store';
@@ -100,8 +100,9 @@ const ImportActionsPopover = ({
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem
-          onClick={(event: React.MouseEvent) => {
+          onClick={(event: UIEvent) => {
             stopEvent(event);
+            window.location.pathname = `${APP_BASE_PATH}/storage/get/${encodeURIComponent(file.id)}`;
           }}
           disabled={file.uploadStatus === 'progress'}
         >
