@@ -311,7 +311,8 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
 };
 
 const mergeUpsertOperations = (upsertKey, elementCurrentValue, upsertOperations) => {
-  let currentValueArray = elementCurrentValue ?? [];
+  const currentValue = elementCurrentValue ?? [];
+  const currentValueArray = Array.isArray(currentValue) ? currentValue : [currentValue];
   let mergedUpsertOperationValue = [...currentValueArray];
   let mergedUpsertOperationOperation;
   for (let i = 0; i < upsertOperations.length; i++) {
