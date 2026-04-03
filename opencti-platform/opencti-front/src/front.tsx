@@ -42,9 +42,11 @@ const container = document.getElementById('root');
 const root = createRoot(container!);
 
 root.render(
-  <RelayEnvironmentProvider environment={environment}>
-    <Suspense fallback={<Loading />}>
-      <App />
-    </Suspense>
-  </RelayEnvironmentProvider>,
+  <React.StrictMode>
+    <RelayEnvironmentProvider environment={environment}>
+      <Suspense fallback={<Loading />}>
+        <App />
+      </Suspense>
+    </RelayEnvironmentProvider>
+  </React.StrictMode>,
 );
