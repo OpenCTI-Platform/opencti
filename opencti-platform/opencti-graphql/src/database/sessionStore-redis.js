@@ -16,26 +16,20 @@ class RedisStore extends Store {
     this.prefix = options.prefix == null ? 'sess:' : options.prefix;
     this.scanCount = Number(options.scanCount) || 100;
     this.serializer = options.serializer || JSON;
-    this.cache = new LRUCache({ ttl: 2500, max: 1000 }); // Force refresh the session every 2.5 sec
     this.touchCache = new LRUCache({ ttl: 120000, max: 1000 }); // Touch the session every 2 minutes
     this.locker = new AsyncLock();
   }
 
   get(sid, cb = noop) {
     const key = this.prefix + sid;
-    const { cache } = this;
-    const sessionFetcher = (done) => {
-      const cachedSession = cache.get(`get-${key}`);
-      if (cachedSession) {
-        return done(null, cachedSession);
-      }
-      return getSession(key).then((data) => {
+    const sessionFetcher = async (done) => {
+      try {
+        let data = await getSession(key);
         if (!data) return done();
-        cache.set(`get-${key}`, data);
         return done(null, data);
-      }).catch((error) => {
+      } catch (error) {
         return done(error, null);
-      });
+      }
     };
     this.locker.acquire(key, sessionFetcher, (error, result) => {
       return cb(error, result);
@@ -44,12 +38,9 @@ class RedisStore extends Store {
 
   set(sid, sess, cb = noop) {
     const key = this.prefix + sid;
-    const { cache } = this;
-    const sessionSetter = (done) => {
-      return setSession(key, sess, this.ttl).then((data) => {
-        cache.set(`get-${key}`, data);
-        return done(null, data);
-      });
+    const sessionSetter = async (done) => {
+      const data = await setSession(key, sess, this.ttl);
+      return done(null, data);
     };
     return this.locker.acquire(key, sessionSetter, (error, result) => {
       return cb(error, result);
