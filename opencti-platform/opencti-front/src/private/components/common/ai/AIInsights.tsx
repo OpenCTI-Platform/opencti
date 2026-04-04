@@ -8,15 +8,18 @@ import AISummaryForecast from '@components/common/ai/AISummaryForecast';
 import AISummaryHistory from '@components/common/ai/AISummaryHistory';
 import EnterpriseEditionAgreement from '@components/common/entreprise_edition/EnterpriseEditionAgreement';
 import FiligranIcon from '@components/common/FiligranIcon';
+import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import DialogActions from '@mui/material/DialogActions';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import { createStyles } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import { LogoXtmOneIcon } from 'filigran-icon';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -26,6 +29,8 @@ import useAI from '../../../../utils/hooks/useAI';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
+import { useChatbot } from '../../chatbox/ChatbotContext';
+import { type AgentOption, fetchAgentsForIntent } from '../../../../utils/ai/agentApi';
 import Drawer from '../drawer/Drawer';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -50,7 +55,7 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
     alignItems: 'center',
   },
   container: {
-    padding: theme.spacing(2),
+    padding: `0 ${theme.spacing(2)} ${theme.spacing(2)}`,
     height: '100%',
     overflowY: 'auto',
   },
@@ -180,6 +185,46 @@ const AIInsights = ({
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
 
   const { fullyActive, enabled } = useAI();
+  const { xtmOneConfigured } = useChatbot();
+  const useXtmOne = xtmOneConfigured === true;
+
+  // ── Intent mapping per tab ──
+  const intentForTab: Record<string, string> = {
+    activity: 'cti.entity_activity',
+    containers: 'cti.container_summary',
+    forecast: 'cti.entity_forecast',
+    history: 'cti.entity_history',
+  };
+
+  // ── Agent state (per-tab agent selection) ──
+  const [agentOptions, setAgentOptions] = useState<AgentOption[]>([]);
+  const [selectedAgent, setSelectedAgent] = useState<AgentOption | undefined>(undefined);
+  const [loadingAgents, setLoadingAgents] = useState(true);
+
+  useEffect(() => {
+    if (!useXtmOne) {
+      setLoadingAgents(false);
+      return;
+    }
+    const intent = intentForTab[currentTab] ?? 'cti.container_summary';
+    setLoadingAgents(true);
+    fetchAgentsForIntent(intent).then((agents) => {
+      setAgentOptions(agents);
+      if (agents.length > 0) {
+        setSelectedAgent(agents[0]);
+      } else {
+        setSelectedAgent(undefined);
+      }
+      setLoadingAgents(false);
+    });
+  }, [useXtmOne, currentTab]);
+
+  const handleAgentChange = (_event: unknown, newValue: AgentOption | null) => {
+    if (newValue) {
+      setSelectedAgent(newValue);
+    }
+  };
+
   const handleClose = () => {
     setLoading(false);
     setDisplay(false);
@@ -208,7 +253,7 @@ const AIInsights = ({
     filterGroups: [],
   };
   // TODO make the filter "objects" readonly?
-  const [containersFilters, containersFiltersHelpers] = useFiltersState(initialContainersFilters);
+  const [containersFilters] = useFiltersState(initialContainersFilters);
   if (!enabled) return null;
   if (!isEnterpriseEdition && enabled) {
     return (
@@ -237,7 +282,7 @@ const AIInsights = ({
     );
   }
 
-  if (isEnterpriseEdition && !fullyActive) {
+  if (isEnterpriseEdition && !fullyActive && !useXtmOne) {
     return (
       <>
         <AiInsightButton
@@ -270,17 +315,37 @@ const AIInsights = ({
         open={display}
         onClose={handleClose}
         title={t_i18n('AI Insights')}
-        header={(
-          <>
-            <Button
-              color="ai"
-              variant="tertiary"
-              startIcon={<FiligranIcon icon={LogoXtmOneIcon} size="small" />}
-            >
-              {t_i18n('XTM AI')}
-            </Button>
-          </>
-        )}
+        header={useXtmOne ? (
+          <Autocomplete<AgentOption, false, true>
+            sx={{ width: 220 }}
+            size="small"
+            disableClearable
+            options={agentOptions}
+            getOptionLabel={(option) => option.name}
+            value={selectedAgent}
+            onChange={handleAgentChange}
+            loading={loadingAgents}
+            disabled={agentOptions.length === 0 || loading}
+            noOptionsText={t_i18n('No agent available')}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                size="small"
+                placeholder={agentOptions.length === 0 ? t_i18n('No agent available') : t_i18n('Select agent')}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <>
+                      {loadingAgents ? <CircularProgress color="inherit" size={16} /> : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+          />
+        ) : undefined}
       >
         <div className={classes.container}>
           <Box sx={{
@@ -308,6 +373,7 @@ const AIInsights = ({
               id={id}
               loading={loading}
               setLoading={setLoading}
+              selectedAgent={selectedAgent}
             />
           )}
           {currentTab === 'containers' && (
@@ -315,9 +381,9 @@ const AIInsights = ({
               busId={containersBusId}
               isContainer={isContainer}
               filters={containersFilters}
-              helpers={containersFiltersHelpers}
               loading={loading}
               setLoading={setLoading}
+              selectedAgent={selectedAgent}
             />
           )}
           {currentTab === 'forecast' && (
@@ -325,6 +391,7 @@ const AIInsights = ({
               id={id}
               loading={loading}
               setLoading={setLoading}
+              selectedAgent={selectedAgent}
             />
           )}
           {currentTab === 'history' && (
@@ -332,6 +399,7 @@ const AIInsights = ({
               id={id}
               loading={loading}
               setLoading={setLoading}
+              selectedAgent={selectedAgent}
             />
           )}
         </div>

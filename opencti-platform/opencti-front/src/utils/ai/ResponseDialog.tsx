@@ -27,16 +27,9 @@ import type { AgentAction } from '../../private/components/common/form/TextField
 // and in legacy mode ResponseDialog embeds TextFieldAskAI for follow-up actions.
 import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI';
 import useAI from '../hooks/useAI';
+import { type AgentOption, fetchAgentsForIntent, callAgent } from './agentApi';
 
 // region types
-
-interface AgentOption {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-}
-
 interface ResponseDialogProps {
   id: string;
   isOpen: boolean;
@@ -67,43 +60,6 @@ const subscription = graphql`
         }
     }
 `;
-
-// ── XTM One agent helpers ───────────────────────────────────────────────
-
-const fetchAgentsForIntent = async (intent: string): Promise<AgentOption[]> => {
-  try {
-    const response = await fetch(`/chatbot/agents?intent=${encodeURIComponent(intent)}`);
-    if (!response.ok) return [];
-    return await response.json();
-  } catch {
-    return [];
-  }
-};
-
-interface AgentResponse {
-  content: string;
-  status: 'success' | 'error';
-  error?: string;
-  code?: number;
-}
-
-const callAgent = async (agentSlug: string, content: string): Promise<AgentResponse> => {
-  const response = await fetch('/chatbot/agent', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ agent_slug: agentSlug, content }),
-  });
-  if (!response.ok) {
-    return { content: '', status: 'error', error: `Agent call failed: ${response.statusText}`, code: response.status };
-  }
-  const data = await response.json();
-  return {
-    content: data.content ?? '',
-    status: data.status ?? 'success',
-    error: data.error,
-    code: data.code,
-  };
-};
 
 const buildPrompt = (
   action: AgentAction,
