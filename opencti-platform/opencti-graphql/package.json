@@ -128,7 +128,7 @@
     "graphql-upload": "17.0.0",
     "graphql-ws": "6.0.8",
     "helmet": "8.1.0",
-    "http-proxy-agent": "8.0.0",
+    "http-proxy-agent": "9.0.0",
     "https-proxy-agent": "8.0.0",
     "ioredis": "5.8.2",
     "ipaddr.js": "2.3.0",
