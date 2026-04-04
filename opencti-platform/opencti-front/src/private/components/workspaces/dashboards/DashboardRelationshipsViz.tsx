@@ -1,4 +1,4 @@
-import React, { memo, ReactNode } from 'react';
+import { memo, ReactNode } from 'react';
 import { Box } from '@mui/material';
 import StixRelationshipsNumber from '@components/common/stix_relationships/StixRelationshipsNumber';
 import StixRelationshipsList from '@components/common/stix_relationships/StixRelationshipsList';
@@ -19,15 +19,12 @@ import StixRelationshipsWordCloud from '@components/common/stix_relationships/St
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../../utils/Time';
 import type { Widget, WidgetDataSelection } from '../../../../utils/widget/widget';
 import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import type { DashboardConfig } from '../../../../utils/dashboard';
 
 interface DashboardRelationshipsVizProps {
   widget: Widget;
   popover?: ReactNode;
-  config: {
-    relativeDate: string | undefined;
-    startDate: string;
-    endDate: string;
-  };
+  config: DashboardConfig;
 }
 
 const DashboardRelationshipsViz = ({

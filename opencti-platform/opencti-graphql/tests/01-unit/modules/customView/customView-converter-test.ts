@@ -7,8 +7,9 @@ describe('customView module STIX converter', () => {
   test('converts module-specific properties', () => {
     const customView = {
       entity_type: ENTITY_TYPE_CUSTOM_VIEW,
-      name: 'My Custom View',
+      name: 'My Great Custom View',
       description: 'My great custom view description',
+      slug: 'great-custom-view',
       manifest: toB64({
         widgets: [{
           id: 'widget-id',
@@ -24,6 +25,7 @@ describe('customView module STIX converter', () => {
     expect(stixCustomView).toMatchObject({
       name: customView.name,
       description: customView.description,
+      slug: 'great-custom-view',
       manifest: customView.manifest,
     });
   });

@@ -115,6 +115,7 @@ const RootTaskComponent = ({ queryRef, taskId }) => {
             enableEnrollPlaybook={true}
           />
           <StixDomainObjectMain
+            entityType="Task"
             basePath={basePath}
             pages={{
               overview: <CaseTask taskData={data} enableReferences={enableReferences} />,

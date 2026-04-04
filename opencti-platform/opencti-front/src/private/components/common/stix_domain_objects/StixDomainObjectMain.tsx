@@ -1,19 +1,30 @@
 import { ReactElement, ReactNode } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import StixDomainObjectTabsBox, { type StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
+import CustomViewRedirector from '@components/custom_views/CustomViewRedirector';
+import FeatureFlagged from '../../../../components/FeatureFlagged';
 
 interface StixDomainObjectMainProps {
+  entityType: string;
   basePath: string;
   pages: Partial<Record<StixDomainObjectTabsBoxTab, ReactNode>>;
   extraActions?: ReactNode;
   extraRoutes?: ReactElement<typeof Route> | ReactElement<typeof Route>[];
 }
 
-const StixDomainObjectMain = ({ basePath, extraActions, pages, extraRoutes }: StixDomainObjectMainProps) => {
+const StixDomainObjectMain = ({
+  entityType,
+  basePath,
+  extraActions,
+  pages,
+  extraRoutes,
+}: StixDomainObjectMainProps) => {
   const tabs = Object.keys(pages) as StixDomainObjectTabsBoxTab[];
   return (
     <>
       <StixDomainObjectTabsBox
+        entityType={entityType}
         basePath={basePath}
         tabs={tabs}
         extraActions={extraActions}
@@ -50,6 +61,21 @@ const StixDomainObjectMain = ({ basePath, extraActions, pages, extraRoutes }: St
           <Route path="/history" element={pages.history} />
         )}
         {extraRoutes}
+        <Route
+          path="*"
+          element={(
+            <FeatureFlagged
+              flags={['CUSTOM_VIEW']}
+              Enabled={(
+                <CustomViewRedirector
+                  entityType={entityType}
+                  Fallback={<ErrorNotFound />}
+                />
+              )}
+              Disabled={<ErrorNotFound />}
+            />
+          )}
+        />
       </Routes>
     </>
   );

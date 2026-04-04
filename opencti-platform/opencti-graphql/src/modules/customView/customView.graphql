@@ -6,9 +6,37 @@ type CustomView implements InternalObject & BasicObject {
     metrics:[Metric]
     created_at: DateTime!
     updated_at: DateTime!
-    # CustomView
+    # CustomView-specific fields
     name: String!
     description: String
+    slug: String!
     manifest: String
+    target_entity_type: String!
     authorizedMembers: [MemberAccess!]!
+}
+
+type CustomViewDisplay {
+    manifest: String
+}
+
+type CustomViewDisplayContext {
+    id: ID!
+    name: String!
+    path: String!
+}
+
+type CustomViewsDisplayContext {
+    entity_type: String!
+    custom_views_info: [CustomViewDisplayContext!]!
+}
+
+# Queries
+type Query {
+  ## Platform user use cases
+
+  # Provides context when browsing to know which custom views are
+  # available for which entity types
+  customViewsDisplayContext: [CustomViewsDisplayContext!] @auth @ff(flags: ["CUSTOM_VIEW"], softFail: true)
+  # Display a custom view
+  customViewDisplay(id: String!): CustomViewDisplay @auth @ff(flags: ["CUSTOM_VIEW"])
 }

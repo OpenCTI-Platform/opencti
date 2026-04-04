@@ -7,11 +7,11 @@ import Loader, { LoaderVariant } from '../../components/Loader';
 import { PublicDashboardQuery } from './__generated__/PublicDashboardQuery.graphql';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import { fromB64 } from '../../utils/String';
-import type { PublicManifest } from './dashboard/PublicManifest';
 import usePublicDashboardWidgets from './dashboard/usePublicDashboardWidgets';
 import PublicTopBar from './PublicTopBar';
 import PublicDashboardHeader from './dashboard/PublicDashboardHeader';
 import { useFormatter } from '../../components/i18n';
+import type { DashboardManifest } from '../../utils/dashboard';
 
 const publicDashboardQuery = graphql`
   query PublicDashboardQuery($uri_key: String!) {
@@ -38,7 +38,7 @@ const PublicDashboardComponent = ({
 
   const { publicDashboardByUriKey } = usePreloadedQuery(publicDashboardQuery, queryRef);
   const manifest = publicDashboardByUriKey?.public_manifest;
-  const parsedManifest: PublicManifest = JSON.parse(manifest ? fromB64(manifest) : '{}');
+  const parsedManifest: DashboardManifest = JSON.parse(manifest ? fromB64(manifest) : '{}');
   const { widgets, config } = parsedManifest;
 
   useEffect(() => {

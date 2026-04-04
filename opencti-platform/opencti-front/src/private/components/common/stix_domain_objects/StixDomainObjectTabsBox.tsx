@@ -1,11 +1,13 @@
-import React from 'react';
+import { ReactNode } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Stack from '@mui/material/Stack';
-import { Link, useLocation } from 'react-router-dom';
-import { useFormatter } from '../../../../components/i18n';
 import { getCurrentTab } from '../../../../utils/utils';
+import { useFormatter } from '../../../../components/i18n';
+import FeatureFlagged from '../../../../components/FeatureFlagged';
+import CustomViewTabsWrapper from '@components/custom_views/CustomViewTabsWrapper';
 
 export type StixDomainObjectTabsBoxTab
   = | 'overview'
@@ -21,8 +23,9 @@ export type StixDomainObjectTabsBoxTab
 
 interface StixDomainObjectTabsBoxProps {
   basePath: string;
+  entityType: string;
   tabs: StixDomainObjectTabsBoxTab[];
-  extraActions?: React.ReactNode;
+  extraActions?: ReactNode;
 }
 
 interface TabInfo {
@@ -78,34 +81,61 @@ const TABS_INFO: readonly TabInfo[] = [{
   label: 'History',
 }];
 
-const StixDomainObjectTabsBox = ({ basePath, extraActions, tabs }: StixDomainObjectTabsBoxProps) => {
+const CONTAINER_STYLE = {
+  borderBottom: 1,
+  borderColor: 'divider',
+  marginBottom: 3,
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+};
+
+/**
+ * Tabs container shared across all SDO pages.
+ * Applies common logic to display (or not) the "Custom views" tab.
+ */
+const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
+  const { basePath, entityType, extraActions, tabs } = props;
   const { t_i18n } = useFormatter();
   const location = useLocation();
+  const currentTab = getCurrentTab(location.pathname, basePath);
+  const StaticTabs = TABS_INFO.map(({ tab, path, label }) =>
+    tabs.includes(tab) && (
+      <Tab
+        key={tab}
+        component={Link}
+        to={path}
+        value={path}
+        label={t_i18n(label)}
+      />
+    ));
   return (
-    <Box
-      sx={{
-        borderBottom: 1,
-        borderColor: 'divider',
-        marginBottom: 3,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}
-    >
-      <Tabs value={getCurrentTab(location.pathname, basePath)}>
-        {
-          TABS_INFO.map(({ tab, path, label }) =>
-            tabs.includes(tab) && (
-              <Tab
-                key={tab}
-                component={Link}
-                to={path}
-                value={path}
-                label={t_i18n(label)}
-              />
-            ))
-        }
-      </Tabs>
+    <Box sx={CONTAINER_STYLE}>
+      <FeatureFlagged
+        flags={['CUSTOM_VIEW']}
+        Enabled={(
+          <CustomViewTabsWrapper
+            basePath={basePath}
+            entityType={entityType}
+            render={({ CustomViewsTab, CustomViewsDropDown, currentCustomViewTab }) => {
+              return (
+                <>
+                  <Tabs value={currentCustomViewTab ?? currentTab}>
+                    {StaticTabs}
+                    {CustomViewsTab}
+                  </Tabs>
+                  {CustomViewsDropDown}
+                </>
+              );
+            }}
+          />
+        )}
+        Disabled={(
+          <Tabs value={currentTab}>
+            {StaticTabs}
+          </Tabs>
+        )}
+      />
       {extraActions ? (
         <Stack gap={2} direction="row" justifyContent="space-between" alignItems="center">
           {extraActions}
