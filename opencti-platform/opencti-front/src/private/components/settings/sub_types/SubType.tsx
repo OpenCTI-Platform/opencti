@@ -20,6 +20,8 @@ export const subTypeQuery = graphql`
       workflowEnabled
       settings {
         id
+        custom_name
+        custom_name_plural
         availableSettings
         ...EntitySettingsOverviewLayoutCustomization_entitySetting
         ...EntitySettingSettings_entitySetting
@@ -52,13 +54,18 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { isFeatureEnable } = useHelper();
   const isDraftWorkflowFeatureEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const isDraftWorkspaceType = subType.label === 'DraftWorkspace' && isDraftWorkflowFeatureEnabled;
+
+  // Resolve display name: use custom name if set, otherwise fall back to i18n
+  const defaultLabel = t_i18n(`entity_${subType.label}`);
+  const displayLabel = subType.settings?.custom_name || defaultLabel;
+
   return (
     <div style={{ margin: 0, padding: '0 200px 50px 0' }}>
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Customization') },
         { label: t_i18n('Entity types'), link: '/dashboard/settings/customization/entity_types' },
-        { label: t_i18n(`entity_${subType.label}`), current: true },
+        { label: displayLabel, current: true },
       ]}
       />
 
@@ -66,8 +73,8 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
       {isDraftWorkspaceType && (<SubTypeMenu entityType={subType.label} />)}
 
-      <TitleMainEntity sx={{ mb: 3 }}>
-        {t_i18n(`entity_${subType.label}`)}
+      <TitleMainEntity sx={{ mb: 3 }} data-testid="entity-type-title">
+        {displayLabel}
       </TitleMainEntity>
 
       <Outlet context={{ subType }} />
