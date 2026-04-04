@@ -1,9 +1,6 @@
 import { getCurrentTab } from '../../../utils/utils';
 import useAuth from '../../../utils/hooks/useAuth';
-import useHelper from '../../../utils/hooks/useHelper';
-import { RootPrivateQuery$data } from '../../__generated__/RootPrivateQuery.graphql';
-
-type CustomViewsInfo = NonNullable<RootPrivateQuery$data['customViewsDisplayContext']>[number]['custom_views_info'];
+import type { CustomViewsInfo } from './types';
 
 export const CUSTOM_VIEW_TAB_VALUE = 'custom-view';
 
@@ -23,12 +20,7 @@ const NO_CUSTOM_VIEWS = {
 };
 
 export const useCustomViews = (entityType: string) => {
-  const { isFeatureEnable } = useHelper();
-  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
   const { customViews: customViewsContext } = useAuth();
-  if (!isCustomViewFeatureEnabled) {
-    return NO_CUSTOM_VIEWS;
-  }
   const customViewsContextForType = customViewsContext.find(({ entity_type }) => entity_type === entityType);
   if (!customViewsContextForType) {
     return NO_CUSTOM_VIEWS;
