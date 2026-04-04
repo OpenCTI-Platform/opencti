@@ -38,11 +38,11 @@ const DataTablePagination = ({
 
   const numberOfElements = unstoreNOE ?? storedNOE;
 
-  // if the number of elements object changes, it means we have changed the filter or search
+  // if the total number of elements changes, it means we have changed the filter or search
   // we reset to page 1 (we might be out-of-bound in this new context)
   useEffect(() => {
     setPage(1);
-  }, [numberOfElements]);
+  }, [numberOfElements.original]);
 
   const items = pageSize ? Number.parseInt(pageSize, 10) : 25;
   const firstItem = items * ((page ?? 1) - 1) + 1;
