@@ -2,7 +2,8 @@ import { ReactElement, ReactNode } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import StixDomainObjectTabsBox, { type StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import useCustomViewRoutes from '@components/custom_views/useCustomViewRoutes';
+import CustomViewRedirector from '@components/custom_views/CustomViewRedirector';
+import FeatureFlagged from '../../../../components/FeatureFlagged';
 
 interface StixDomainObjectMainProps {
   entityType: string;
@@ -20,7 +21,6 @@ const StixDomainObjectMain = ({
   extraRoutes,
 }: StixDomainObjectMainProps) => {
   const tabs = Object.keys(pages) as StixDomainObjectTabsBoxTab[];
-  const customViewRoutes = useCustomViewRoutes({ entityType });
   return (
     <>
       <StixDomainObjectTabsBox
@@ -60,9 +60,22 @@ const StixDomainObjectMain = ({
         {tabs.includes('history') && (
           <Route path="/history" element={pages.history} />
         )}
-        {...customViewRoutes}
         {extraRoutes}
-        <Route path="*" element={<ErrorNotFound />} />
+        <Route
+          path="*"
+          element={(
+            <FeatureFlagged
+              flags={['CUSTOM_VIEW']}
+              Enabled={(
+                <CustomViewRedirector
+                  entityType={entityType}
+                  Fallback={<ErrorNotFound />}
+                />
+              )}
+              Disabled={<ErrorNotFound />}
+            />
+          )}
+        />
       </Routes>
     </>
   );

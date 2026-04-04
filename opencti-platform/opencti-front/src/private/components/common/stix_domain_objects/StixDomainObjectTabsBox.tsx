@@ -6,6 +6,7 @@ import Tab from '@mui/material/Tab';
 import Stack from '@mui/material/Stack';
 import { getCurrentTab } from '../../../../utils/utils';
 import { useFormatter } from '../../../../components/i18n';
+import FeatureFlagged from '../../../../components/FeatureFlagged';
 import CustomViewTabsWrapper from '@components/custom_views/CustomViewTabsWrapper';
 
 export type StixDomainObjectTabsBoxTab
@@ -98,33 +99,42 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
   const { t_i18n } = useFormatter();
   const location = useLocation();
   const currentTab = getCurrentTab(location.pathname, basePath);
+  const StaticTabs = TABS_INFO.map(({ tab, path, label }) =>
+    tabs.includes(tab) && (
+      <Tab
+        key={tab}
+        component={Link}
+        to={path}
+        value={path}
+        label={t_i18n(label)}
+      />
+    ));
   return (
     <Box sx={CONTAINER_STYLE}>
-      <CustomViewTabsWrapper
-        basePath={basePath}
-        entityType={entityType}
-        render={({ CustomViewsTab, CustomViewsDropDown, currentCustomViewTab }) => {
-          return (
-            <>
-              <Tabs value={currentCustomViewTab ?? currentTab}>
-                {
-                  TABS_INFO.map(({ tab, path, label }) =>
-                    tabs.includes(tab) && (
-                      <Tab
-                        key={tab}
-                        component={Link}
-                        to={path}
-                        value={path}
-                        label={t_i18n(label)}
-                      />
-                    ))
-                }
-                {CustomViewsTab}
-              </Tabs>
-              {CustomViewsDropDown}
-            </>
-          );
-        }}
+      <FeatureFlagged
+        flags={['CUSTOM_VIEW']}
+        Enabled={(
+          <CustomViewTabsWrapper
+            basePath={basePath}
+            entityType={entityType}
+            render={({ CustomViewsTab, CustomViewsDropDown, currentCustomViewTab }) => {
+              return (
+                <>
+                  <Tabs value={currentCustomViewTab ?? currentTab}>
+                    {StaticTabs}
+                    {CustomViewsTab}
+                  </Tabs>
+                  {CustomViewsDropDown}
+                </>
+              );
+            }}
+          />
+        )}
+        Disabled={(
+          <Tabs value={currentTab}>
+            {StaticTabs}
+          </Tabs>
+        )}
       />
       {extraActions ? (
         <Stack gap={2} direction="row" justifyContent="space-between" alignItems="center">
