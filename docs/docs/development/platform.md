@@ -13,8 +13,8 @@ The devenv will contain data of 3 different repositories:
 Contains the platform OpenCTI project code base:
 
 - docker-compose (docker or podman) `~/opencti/opencti-platform/opencti-dev`
-- Web frontend (nodejs / react) `~/opencti/opencti-platform/opencti-graphql`
-- Backend (nodejs) `~/opencti/opencti-platform/opencti-frontend`
+- Web frontend (nodejs / react) `~/opencti/opencti-platform/opencti-front`
+- Backend (nodejs) `~/opencti/opencti-platform/opencti-graphql`
 - Worker (nodejs / python) `~/opencti/opencti-worker`
 - Client python (python) `~/opencti/client-python`
 
