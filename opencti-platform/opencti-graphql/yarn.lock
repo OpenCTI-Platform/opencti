@@ -10655,7 +10655,7 @@ __metadata:
     set-interval-async: "npm:3.0.3"
     source-map: "npm:0.7.6"
     tough-cookie: "npm:6.0.1"
-    turndown: "npm:7.2.2"
+    turndown: "npm:7.2.4"
     typescript: "npm:5.9.3"
     typescript-eslint: "npm:8.57.2"
     unzipper: "npm:0.12.3"
@@ -12666,12 +12666,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turndown@npm:7.2.2":
-  version: 7.2.2
-  resolution: "turndown@npm:7.2.2"
+"turndown@npm:7.2.4":
+  version: 7.2.4
+  resolution: "turndown@npm:7.2.4"
   dependencies:
     "@mixmark-io/domino": "npm:^2.2.0"
-  checksum: 10c0/ee09f7bd67c468505aad6c3a26b11269ca49ffce07eaa9c212926d068f242b11b4e955b31a58289f26674ff29f91209b29454907551dcaec7da712e524cc78c2
+  checksum: 10c0/8e66e24bc9d9cdcf720f0ee2655a61d9b9e60ebe2763e97a7a8c3f689e9154717bbea7ed48cc5e355651f34182da698c6bc5fef3028e5600c1cadb7e117376d5
   languageName: node
   linkType: hard
 
