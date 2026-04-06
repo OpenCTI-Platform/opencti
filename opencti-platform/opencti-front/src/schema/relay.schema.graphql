@@ -9816,6 +9816,7 @@ type Query {
   authLogHistoryById(id: String!): [AuthLogEntry!]!
   customViewsDisplayContext: [CustomViewsDisplayContext!]
   customViewDisplay(id: String!): CustomViewDisplay
+  customViewsSettings(entityType: String!): CustomViewsSettings!
   taxiiCollection(id: String!): TaxiiCollection
   taxiiCollections(first: Int, after: ID, orderBy: TaxiiCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): TaxiiCollectionConnection
   feed(id: String!): Feed
@@ -16190,6 +16191,19 @@ type CustomViewDisplayContext {
 type CustomViewsDisplayContext {
   entity_type: String!
   custom_views_info: [CustomViewDisplayContext!]!
+}
+
+type CustomViewInfoForSettings {
+  id: ID!
+  name: String!
+  description: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+
+type CustomViewsSettings {
+  canEntityTypeHaveCustomViews: Boolean!
+  customViews: [CustomViewInfoForSettings!]!
 }
 
 type TaxiiCollection {

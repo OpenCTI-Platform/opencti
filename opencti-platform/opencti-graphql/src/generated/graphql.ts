@@ -6461,10 +6461,25 @@ export type CustomViewDisplayContext = {
   path: Scalars['String']['output'];
 };
 
+export type CustomViewInfoForSettings = {
+  __typename?: 'CustomViewInfoForSettings';
+  created_at: Scalars['DateTime']['output'];
+  description: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  updated_at: Scalars['DateTime']['output'];
+};
+
 export type CustomViewsDisplayContext = {
   __typename?: 'CustomViewsDisplayContext';
   custom_views_info: Array<CustomViewDisplayContext>;
   entity_type: Scalars['String']['output'];
+};
+
+export type CustomViewsSettings = {
+  __typename?: 'CustomViewsSettings';
+  canEntityTypeHaveCustomViews: Scalars['Boolean']['output'];
+  customViews: Array<CustomViewInfoForSettings>;
 };
 
 export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
@@ -24067,6 +24082,7 @@ export type Query = {
   csvMappers?: Maybe<CsvMapperConnection>;
   customViewDisplay?: Maybe<CustomViewDisplay>;
   customViewsDisplayContext?: Maybe<Array<CustomViewsDisplayContext>>;
+  customViewsSettings: CustomViewsSettings;
   dataComponent?: Maybe<DataComponent>;
   dataComponents?: Maybe<DataComponentConnection>;
   dataSource?: Maybe<DataSource>;
@@ -24857,6 +24873,11 @@ export type QueryCsvMappersArgs = {
 
 export type QueryCustomViewDisplayArgs = {
   id: Scalars['String']['input'];
+};
+
+
+export type QueryCustomViewsSettingsArgs = {
+  entityType: Scalars['String']['input'];
 };
 
 
@@ -38944,7 +38965,9 @@ export type ResolversTypes = ResolversObject<{
   CustomView: ResolverTypeWrapper<BasicStoreEntityCustomView>;
   CustomViewDisplay: ResolverTypeWrapper<CustomViewDisplay>;
   CustomViewDisplayContext: ResolverTypeWrapper<CustomViewDisplayContext>;
+  CustomViewInfoForSettings: ResolverTypeWrapper<CustomViewInfoForSettings>;
   CustomViewsDisplayContext: ResolverTypeWrapper<CustomViewsDisplayContext>;
+  CustomViewsSettings: ResolverTypeWrapper<CustomViewsSettings>;
   DataComponent: ResolverTypeWrapper<BasicStoreEntityDataComponent>;
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: ResolverTypeWrapper<Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['DataComponentEdge']>>> }>;
@@ -40021,7 +40044,9 @@ export type ResolversParentTypes = ResolversObject<{
   CustomView: BasicStoreEntityCustomView;
   CustomViewDisplay: CustomViewDisplay;
   CustomViewDisplayContext: CustomViewDisplayContext;
+  CustomViewInfoForSettings: CustomViewInfoForSettings;
   CustomViewsDisplayContext: CustomViewsDisplayContext;
+  CustomViewsSettings: CustomViewsSettings;
   DataComponent: BasicStoreEntityDataComponent;
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['DataComponentEdge']>>> };
@@ -42893,9 +42918,22 @@ export type CustomViewDisplayContextResolvers<ContextType = any, ParentType exte
   path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type CustomViewInfoForSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomViewInfoForSettings'] = ResolversParentTypes['CustomViewInfoForSettings']> = ResolversObject<{
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+}>;
+
 export type CustomViewsDisplayContextResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomViewsDisplayContext'] = ResolversParentTypes['CustomViewsDisplayContext']> = ResolversObject<{
   custom_views_info?: Resolver<Array<ResolversTypes['CustomViewDisplayContext']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type CustomViewsSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomViewsSettings'] = ResolversParentTypes['CustomViewsSettings']> = ResolversObject<{
+  canEntityTypeHaveCustomViews?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  customViews?: Resolver<Array<ResolversTypes['CustomViewInfoForSettings']>, ParentType, ContextType>;
 }>;
 
 export type DataComponentResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataComponent'] = ResolversParentTypes['DataComponent']> = ResolversObject<{
@@ -48345,6 +48383,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   csvMappers?: Resolver<Maybe<ResolversTypes['CsvMapperConnection']>, ParentType, ContextType, Partial<QueryCsvMappersArgs>>;
   customViewDisplay?: Resolver<Maybe<ResolversTypes['CustomViewDisplay']>, ParentType, ContextType, RequireFields<QueryCustomViewDisplayArgs, 'id'>>;
   customViewsDisplayContext?: Resolver<Maybe<Array<ResolversTypes['CustomViewsDisplayContext']>>, ParentType, ContextType>;
+  customViewsSettings?: Resolver<ResolversTypes['CustomViewsSettings'], ParentType, ContextType, RequireFields<QueryCustomViewsSettingsArgs, 'entityType'>>;
   dataComponent?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<QueryDataComponentArgs, 'id'>>;
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType, Partial<QueryDataComponentsArgs>>;
   dataSource?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<QueryDataSourceArgs, 'id'>>;
@@ -52236,7 +52275,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CustomView?: CustomViewResolvers<ContextType>;
   CustomViewDisplay?: CustomViewDisplayResolvers<ContextType>;
   CustomViewDisplayContext?: CustomViewDisplayContextResolvers<ContextType>;
+  CustomViewInfoForSettings?: CustomViewInfoForSettingsResolvers<ContextType>;
   CustomViewsDisplayContext?: CustomViewsDisplayContextResolvers<ContextType>;
+  CustomViewsSettings?: CustomViewsSettingsResolvers<ContextType>;
   DataComponent?: DataComponentResolvers<ContextType>;
   DataComponentConnection?: DataComponentConnectionResolvers<ContextType>;
   DataComponentEdge?: DataComponentEdgeResolvers<ContextType>;
