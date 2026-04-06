@@ -6,30 +6,30 @@ __metadata:
   cacheKey: 10c0
 
 "@emnapi/core@npm:^1.1.0":
-  version: 1.9.1
-  resolution: "@emnapi/core@npm:1.9.1"
+  version: 1.9.2
+  resolution: "@emnapi/core@npm:1.9.2"
   dependencies:
-    "@emnapi/wasi-threads": "npm:1.2.0"
+    "@emnapi/wasi-threads": "npm:1.2.1"
     tslib: "npm:^2.4.0"
-  checksum: 10c0/00e7a99a2bc3ad908ca8272ba861a934da87dffa8797a41316c4a3b571a1e4d2743e2fa14b1a0f131fa4a3c2018ddb601cd2a8cb7f574fa940af696df3c2fe8d
+  checksum: 10c0/5500393f953951bad0768fafaa9191f2d938956b20c6d6a79e5ab696a613a25ce6ad23422bc18e86e6ce8deb147619d8d0d7d413a69f84adc01a6633cc353cd9
   languageName: node
   linkType: hard
 
 "@emnapi/runtime@npm:^1.1.0":
-  version: 1.9.1
-  resolution: "@emnapi/runtime@npm:1.9.1"
+  version: 1.9.2
+  resolution: "@emnapi/runtime@npm:1.9.2"
   dependencies:
     tslib: "npm:^2.4.0"
-  checksum: 10c0/750edca117e0363ab2de10622f8ee60e57d8690c2f29c49704813da5cd627c641798d7f3cb0d953c62fdc71688e02e333ddbf2c1204f38b47e3e40657332a6f5
+  checksum: 10c0/61c3a59e0c36784558b8d58eb02bd04815aa5fb0dbfbaf84d1b3050a78aa0cc63ea129ae806bd1e48062bfeb7fc36eb0e5431740d62f64ea51bdf426404b8caa
   languageName: node
   linkType: hard
 
-"@emnapi/wasi-threads@npm:1.2.0":
-  version: 1.2.0
-  resolution: "@emnapi/wasi-threads@npm:1.2.0"
+"@emnapi/wasi-threads@npm:1.2.1":
+  version: 1.2.1
+  resolution: "@emnapi/wasi-threads@npm:1.2.1"
   dependencies:
     tslib: "npm:^2.4.0"
-  checksum: 10c0/1e3724b5814b06c14782fda87eee9b9aa68af01576c81ffeaefdf621ddb74386e419d5b3b1027b6a8172397729d95a92f814fc4b8d3c224376428faa07a6a01a
+  checksum: 10c0/32fcfa81ab396533b2ec1f4082b1ff779a05d9c836bbbd3f4398405b0e6814c0d9503b7993130e37bc6941dbc1ded49f55e9700ae9ca4e803bab2b5bc5deb331
   languageName: node
   linkType: hard
 
@@ -145,9 +145,9 @@ __metadata:
   linkType: hard
 
 "@sinclair/typebox@npm:^0.34.0":
-  version: 0.34.48
-  resolution: "@sinclair/typebox@npm:0.34.48"
-  checksum: 10c0/e09f26d8ad471a07ee64004eea7c4ec185349a1f61c03e87e71ea33cbe98e97959940076c2e52968a955ffd4c215bf5ba7035e77079511aac7935f25e989e29d
+  version: 0.34.49
+  resolution: "@sinclair/typebox@npm:0.34.49"
+  checksum: 10c0/16b7d87f039a49b68c10bb4cdcae2ce5242b2472228851fd6483731616aba4ef977690aa517b230a8d20da8185bb416eb34e326f30568b3963c1cf26b05d1ad8
   languageName: node
   linkType: hard
 
