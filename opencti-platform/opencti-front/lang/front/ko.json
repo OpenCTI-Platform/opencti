@@ -949,6 +949,7 @@
   "Custom dashboards": "맞춤 대시보드",
   "Custom dashboards | Dashboards": "사용자 지정 대시보드 | 대시보드",
   "Custom view": "사용자 지정 보기",
+  "Custom Views": "사용자 지정 뷰",
   "Customization": "맞춤 설정",
   "Customize columns": "열 사용자 지정",
   "Customize provider identifier": "공급자 식별자 사용자 지정",
@@ -4879,3 +4880,4 @@
   "Zoom in": "확대",
   "Zoom out": "축소"
 }
+

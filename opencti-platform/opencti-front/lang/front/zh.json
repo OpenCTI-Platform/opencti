@@ -949,6 +949,7 @@
   "Custom dashboards": "自定义仪表盘",
   "Custom dashboards | Dashboards": "自定义仪表盘",
   "Custom view": "自定义视图",
+  "Custom Views": "自定义视图",
   "Customization": "定制化",
   "Customize columns": "自定义列",
   "Customize provider identifier": "自定义提供商标识符",
@@ -4879,3 +4880,4 @@
   "Zoom in": "放大",
   "Zoom out": "缩小"
 }
+

@@ -949,6 +949,7 @@
   "Custom dashboards": "Tableaux de bord personnalisés",
   "Custom dashboards | Dashboards": "Tableaux de bord personnalisés",
   "Custom view": "Vue personnalisée",
+  "Custom Views": "Vues personnalisées",
   "Customization": "Personnalisation",
   "Customize columns": "Personnaliser les colonnes",
   "Customize provider identifier": "Personnaliser l'identifiant du fournisseur",
@@ -4879,3 +4880,4 @@
   "Zoom in": "Zoomer",
   "Zoom out": "Zoom arrière"
 }
+
