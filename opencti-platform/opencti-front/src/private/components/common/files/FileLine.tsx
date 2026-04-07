@@ -230,7 +230,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     if (isFail || isOutdated || isProgress) return;
     handleCloseDownload();
     handleClose();
-    if (event) {
+    if (inNewWindow) {
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
       window.location.pathname = url;
@@ -318,7 +318,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                         if (isWarning) {
                           handleOpen(event);
                         } else {
-                          handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`, inNewWindow);
+                          handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`, event);
                         }
                       }}
                       aria-haspopup="true"
@@ -408,7 +408,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           rel="noopener noreferrer"
           onClick={
             onClick
-            || ((event: React.MouseEvent) => (isWarning ? setDisplayDownload(true) : handleLink(listUri, event)))
+            || ((inNewWindow?: React.MouseEvent) => (isWarning ? setDisplayDownload(true) : handleLink(listUri, inNewWindow)))
           }
         >
           <ListItemIcon>
