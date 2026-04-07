@@ -4,7 +4,7 @@ import { pageEntitiesConnection, storeLoadById } from '../../database/middleware
 import { delEditContext, notify, setEditContext } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
-import { isUserHasCapability, MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../../utils/access';
+import { isUserHasCapability, MEMBER_ACCESS_RIGHT_VIEW, SETTINGS_SET_ACCESSES, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
@@ -23,6 +23,9 @@ export const createStreamCollection = async (context: AuthContext, user: AuthUse
   // our stix matching is currently limited, we need to validate the input filters
   if (input.filters) {
     validateFilterGroupForStixMatch(JSON.parse(input.filters));
+  }
+  if (input.stream_public && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    throw FunctionalError('You must have the SETTINGS_SETACCESSES capability to create a public stream collection');
   }
   if (input.stream_public && !input.stream_public_user_id) {
     throw FunctionalError('A user must be configured when the stream collection is public');
@@ -69,6 +72,10 @@ export const streamCollectionEditField = async (context: AuthContext, user: Auth
   if (filtersItem?.value) {
     // our stix matching is currently limited, we need to validate the input filters
     validateFilterGroupForStixMatch(JSON.parse(filtersItem.value[0]));
+  }
+  const publicFields = ['stream_public', 'stream_public_user_id'];
+  if (input.some((item) => publicFields.includes(item.key)) && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    throw FunctionalError('You must have the SETTINGS_SETACCESSES capability to modify public stream collection settings');
   }
   const publicUserIdItem = input.find((item) => item.key === 'stream_public_user_id');
   if (publicUserIdItem?.value?.[0]) {

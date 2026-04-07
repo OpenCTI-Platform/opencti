@@ -11,7 +11,7 @@ import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { isStixDomainObject } from '../../schema/stixDomainObject';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { isUserHasCapability, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../../utils/access';
 import { TAXIIAPI } from '../../domain/user';
 import { validatePublicUserId } from './dataSharing-utils';
 
@@ -65,6 +65,9 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
 
 export const createFeed = async (context: AuthContext, user: AuthUser, input: FeedAddInput): Promise<BasicStoreEntityFeed> => {
   checkFeedIntegrity(input);
+  if (input.feed_public && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    throw FunctionalError('You must have the SETTINGS_SETACCESSES capability to create a public feed');
+  }
   if (input.feed_public && !input.feed_public_user_id) {
     throw FunctionalError('A user must be configured when the feed is public');
   }
@@ -93,6 +96,11 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
   const feed = await findById(context, user, id);
   if (!feed) {
     throw FunctionalError(`Feed ${id} cant be found`);
+  }
+  const publicFieldsChanged = input.feed_public !== feed.feed_public
+    || (input.feed_public_user_id ?? null) !== (feed.feed_public_user_id ?? null);
+  if (publicFieldsChanged && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    throw FunctionalError('You must have the SETTINGS_SETACCESSES capability to modify public feed settings');
   }
   if (input.feed_public && !input.feed_public_user_id) {
     throw FunctionalError('A user must be configured when the feed is public');
