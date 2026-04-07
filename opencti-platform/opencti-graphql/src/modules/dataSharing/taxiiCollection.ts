@@ -4,6 +4,7 @@ import { ENTITY_TYPE_TAXII_COLLECTION, type StoreEntityTaxiiCollection, type Sti
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { authorizedMembers } from '../../schema/attribute-definition';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 
 const TAXII_COLLECTION_DEFINITION: ModuleDefinition<StoreEntityTaxiiCollection, StixTaxiiCollection> = {
   type: {
@@ -22,6 +23,7 @@ const TAXII_COLLECTION_DEFINITION: ModuleDefinition<StoreEntityTaxiiCollection, 
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'filters', label: 'Filters', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'taxii_public', label: 'Public taxii', type: 'boolean', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
+    { name: 'taxii_public_user_id', label: 'Public taxii user id', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: false },
     { name: 'include_inferences', label: 'Include inferences', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: false },
     { name: 'score_to_confidence', label: 'Copy OpenCTI scores to confidence level for indicators', type: 'boolean', mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: false },
     authorizedMembers,
