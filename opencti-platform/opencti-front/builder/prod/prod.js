@@ -26,7 +26,7 @@ const buildPath = "./builder/prod/build";
       assetNames: keep ? "[dir]/[name]" : "[dir]/[name]-[hash]",
       entryNames: keep ? "static/[ext]/[name]" : "static/[ext]/[name]-[hash]",
       target: ["chrome58"],
-      minify: true,
+      minify: false,
       keepNames: true,
       sourcemap: keep,
       outdir: "builder/prod/build",
