@@ -62,7 +62,7 @@ const loadRawElement = async (context: AuthContext, user: AuthUser, internal_id:
 
 export enum InconsistencyOperation {
   REF_DUPLICATE_CLEAN = 'ref_duplicate_clean',
-  REF_MISSING_REPAIR = 'ref_missing_repair',
+  REF_MISSING_REPAIR = 'ref_missing_repair', // For future use, not implemented yet
 }
 const allOperations = [InconsistencyOperation.REF_DUPLICATE_CLEAN, InconsistencyOperation.REF_MISSING_REPAIR];
 export const cleanAllEntityInconsistencies = async (context: AuthContext, user: AuthUser, internal_id: string, operationsToApply: InconsistencyOperation[] = allOperations) => {
