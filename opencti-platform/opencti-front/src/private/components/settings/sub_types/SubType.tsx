@@ -1,4 +1,3 @@
-import Card from '@common/card/Card';
 import { SubTypeQuery } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
 import { Box, Stack } from '@mui/material';
 import React, { Suspense } from 'react';
@@ -92,7 +91,6 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
       {
         !isDraftWorkspaceType && (
-
           <EntitySettingSettings entitySettingsData={subType.settings} />
         )
       }

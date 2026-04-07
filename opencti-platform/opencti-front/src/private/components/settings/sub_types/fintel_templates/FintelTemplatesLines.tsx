@@ -1,14 +1,14 @@
 import React, { FunctionComponent } from 'react';
 import FintelTemplatePopover from './FintelTemplatePopover';
-import { FintelTemplatesGrid_templates$data } from './__generated__/FintelTemplatesGrid_templates.graphql';
 import ItemBoolean from '../../../../../components/ItemBoolean';
 import { resolveLink } from '../../../../../utils/Entity';
 import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTypes';
 import DataTableWithoutFragment from '../../../../../components/dataGrid/DataTableWithoutFragment';
 import { useFormatter } from '../../../../../components/i18n';
+import { FintelTemplatesManager_templates$data } from './__generated__/FintelTemplatesManager_templates.graphql';
 
-export type TemplateType = NonNullable<FintelTemplatesGrid_templates$data['fintelTemplates']>['edges'][0]['node'];
-type TemplateEdges = FintelTemplatesGrid_templates$data['fintelTemplates'];
+export type TemplateType = NonNullable<FintelTemplatesManager_templates$data['fintelTemplates']>['edges'][0]['node'];
+type TemplateEdges = FintelTemplatesManager_templates$data['fintelTemplates'];
 
 interface FintelTemplatesLinesProps {
   fintelTemplates: TemplateEdges;
