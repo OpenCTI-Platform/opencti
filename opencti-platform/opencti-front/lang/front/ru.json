@@ -2117,6 +2117,7 @@
   "ID": "ID",
   "ID of your public dashboard": "Идентификатор вашего публичного дашборда",
   "Identification": "Идентификация",
+  "Identifier ({label})": "Идентификатор ({label})",
   "Identifier format (NameID)": "Формат идентификатора (NameID)",
   "Identities": "Личности",
   "Identity": "Идентичность",

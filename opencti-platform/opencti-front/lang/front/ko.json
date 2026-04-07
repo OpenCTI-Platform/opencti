@@ -2117,6 +2117,7 @@
   "ID": "ID",
   "ID of your public dashboard": "공개 대시보드의 ID (URL에서 사용)",
   "Identification": "식별자",
+  "Identifier ({label})": "식별자 ({label})",
   "Identifier format (NameID)": "식별자 형식 (NameID)",
   "Identities": "정체성",
   "Identity": "정체성",

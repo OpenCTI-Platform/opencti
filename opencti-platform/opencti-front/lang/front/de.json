@@ -2117,6 +2117,7 @@
   "ID": "ID",
   "ID of your public dashboard": "ID Ihres öffentlichen Dashboards (wird in der URL verwendet)",
   "Identification": "Kennung",
+  "Identifier ({label})": "Kennung ({label})",
   "Identifier format (NameID)": "Bezeichnerformat (NameID)",
   "Identities": "Identitäten",
   "Identity": "Identität",

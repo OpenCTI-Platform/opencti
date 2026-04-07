@@ -2117,6 +2117,7 @@
   "ID": "ID",
   "ID of your public dashboard": "公共仪表板的 ID（在 URL 中使用）",
   "Identification": "标识",
+  "Identifier ({label})": "标识符 ({label})",
   "Identifier format (NameID)": "标识符格式 (NameID)",
   "Identities": "身份",
   "Identity": "身份",

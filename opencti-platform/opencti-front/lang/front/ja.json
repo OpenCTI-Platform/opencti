@@ -2117,6 +2117,7 @@
   "ID": "ID",
   "ID of your public dashboard": "公開ダッシュボードのID（URLで使用される）",
   "Identification": "識別名",
+  "Identifier ({label})": "識別子 ({label})",
   "Identifier format (NameID)": "識別子形式（NameID）",
   "Identities": "アイデンティティ",
   "Identity": "アイデンティティ",
