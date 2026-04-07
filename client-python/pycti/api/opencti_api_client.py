@@ -10,7 +10,7 @@ import shutil
 import signal
 import tempfile
 import threading
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import magic
 import requests
@@ -81,6 +81,7 @@ from pycti.entities.opencti_tool import Tool
 from pycti.entities.opencti_user import User
 from pycti.entities.opencti_vocabulary import Vocabulary
 from pycti.entities.opencti_vulnerability import Vulnerability
+from pycti.types import Entities, PaginatedResponse
 from pycti.utils.opencti_logger import logger
 from pycti.utils.opencti_stix2 import OpenCTIStix2
 from pycti.utils.opencti_stix2_utils import OpenCTIStix2Utils
@@ -752,6 +753,59 @@ class OpenCTIApiClient:
         else:
             raise ValueError(r.text)
 
+    def query_connection(
+        self,
+        query: str,
+        variables: Dict[str, Any] = None,
+        key: Callable[[dict], Union[Entities, PaginatedResponse]] = None,
+        with_pagination: bool = False,
+    ) -> List[Dict]:
+        """Query entity connection members.
+
+        Typically used for list-type queries, this runs the provided query and
+        can make subsequent queries based on the pagination data in the
+        response.
+
+        :param query: GraphQL query
+        :type query: str
+        :param variables: GraphQL query variables
+        :type variables: dict
+        :param key: function to apply to the response data that returns either
+            a dict containing `pageInfo` of pagination data and `nodes`
+            containing a list entities or just a list of entities.
+        :type key: Callable[[dict], PaginatedResponse]
+        :param with_pagination: whether to return pagination data
+        :type with_pagination: bool
+        :return: list of entities
+        :rtype: List[Dict]
+        """
+        try:
+            self.app_logger.debug("Run query", variables)
+            resp = self.query(query, variables=variables)
+            if key is not None:
+                resp = key(resp)
+        except Exception:
+            self.app_logger.error("Error searching")
+            raise
+
+        if variables.get("all", True):
+            data = []
+            data += self.process_multiple(resp)
+            while resp.get("pageInfo", {}).get("hasNextPage", False):
+                variables["after"] = resp["pageInfo"]["endCursor"]
+                self.app_logger.debug("Run query", variables)
+                try:
+                    resp = self.query(query, variables=variables)
+                    if key is not None:
+                        resp = key(resp)
+                except Exception:
+                    self.app_logger.error("Error running query")
+                    raise
+                data += self.process_multiple(resp)
+            return data
+        else:
+            return self.process_multiple(resp, with_pagination=with_pagination)
+
     def fetch_opencti_file(self, fetch_uri, binary=False, serialize=False):
         """Get file from the OpenCTI API.
 
@@ -801,13 +855,15 @@ class OpenCTIApiClient:
         """
         try:
             self.app_logger.info("Health check (platform version)...")
-            test = self.query("""
+            test = self.query(
+                """
                   query healthCheck {
                     about {
                       version
                     }
                   }
-                """)
+                """
+            )
             if test is not None:
                 return True
         except Exception as err:  # pylint: disable=broad-except

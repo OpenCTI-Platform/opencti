@@ -5,1279 +5,562 @@ import os
 
 import magic
 
+from pycti.entities.base import Entity
+from pycti.entities.mixins import ListFilesMixin
 
-class StixDomainObject:
+
+class StixDomainObject(ListFilesMixin, Entity):
     """Main StixDomainObject class for OpenCTI
 
     Manages STIX Domain Objects in the OpenCTI platform.
-
-    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the StixDomainObject instance.
-
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = """
+    PROPERTIES = """
+        id
+        standard_id
+        entity_type
+        parent_types
+        spec_version
+        created_at
+        updated_at
+        objectOrganization {
             id
             standard_id
-            entity_type
-            parent_types
-            spec_version
-            created_at
-            updated_at
-            objectOrganization {
-                id
-                standard_id
-                name
-            }
-            createdBy {
-                ... on Identity {
-                    id
-                    standard_id
-                    entity_type
-                    parent_types
-                    spec_version
-                    identity_class
-                    name
-                    description
-                    roles
-                    contact_information
-                    x_opencti_aliases
-                    created
-                    modified
-                    objectLabel {
-                        id
-                        value
-                        color
-                    }
-                }
-                ... on Organization {
-                    x_opencti_organization_type
-                    x_opencti_reliability
-                }
-                ... on Individual {
-                    x_opencti_firstname
-                    x_opencti_lastname
-                }
-            }
-            objectMarking {
+            name
+        }
+        createdBy {
+            ... on Identity {
                 id
                 standard_id
                 entity_type
-                definition_type
-                definition
+                parent_types
+                spec_version
+                identity_class
+                name
+                description
+                roles
+                contact_information
+                x_opencti_aliases
                 created
                 modified
-                x_opencti_order
-                x_opencti_color
-            }
-            objectLabel {
-                id
-                value
-                color
-            }
-            externalReferences {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
-                        created
-                        modified
-                    }
-                }
-            }
-            revoked
-            confidence
-            created
-            modified
-            ... on AttackPattern {
-                name
-                description
-                aliases
-                x_mitre_platforms
-                x_mitre_permissions_required
-                x_mitre_detection
-                x_mitre_id
-                killChainPhases {
-                  id
-                  standard_id
-                  entity_type
-                  kill_chain_name
-                  phase_name
-                  x_opencti_order
-                  created
-                  modified
-                }
-            }
-            ... on Campaign {
-                name
-                description
-                aliases
-                first_seen
-                last_seen
-                objective
-            }
-            ... on Note {
-                attribute_abstract
-                content
-                authors
-                note_types
-                likelihood
-                objects {
-                    edges {
-                        node {
-                            ... on BasicObject {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                            ... on BasicRelationship {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                        }
-                    }
-                }
-            }
-            ... on ObservedData {
-                first_observed
-                last_observed
-                number_observed
-                objects {
-                    edges {
-                        node {
-                            ... on BasicObject {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                            ... on BasicRelationship {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                        }
-                    }
-                }
-            }
-            ... on Opinion {
-                explanation
-                authors
-                opinion
-                objects {
-                    edges {
-                        node {
-                            ... on BasicObject {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                            ... on BasicRelationship {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                        }
-                    }
-                }
-            }
-            ... on Report {
-                name
-                description
-                report_types
-                published
-                objects {
-                    edges {
-                        node {
-                            ... on BasicObject {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                            ... on BasicRelationship {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                        }
-                    }
-                }
-            }
-            ... on Grouping {
-                name
-                description
-                context
-                objects {
-                    edges {
-                        node {
-                            ... on BasicObject {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                            ... on BasicRelationship {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                        }
-                    }
-                }
-            }
-            ... on CourseOfAction {
-                name
-                description
-                x_opencti_aliases
-            }
-            ... on DataComponent {
-                name
-                description
-                dataSource {
+                objectLabel {
                     id
-                    standard_id
-                    entity_type
-                    parent_types
-                    spec_version
-                    created_at
-                    updated_at
-                    revoked
-                    confidence
-                    created
-                    modified
-                    name
-                    description
-                    x_mitre_platforms
-                    collection_layers
+                    value
+                    color
                 }
-            }
-            ... on DataSource {
-                name
-                description
-                x_mitre_platforms
-                collection_layers
-            }
-            ... on Individual {
-                name
-                description
-                x_opencti_aliases
-                contact_information
-                x_opencti_firstname
-                x_opencti_lastname
             }
             ... on Organization {
-                name
-                description
-                x_opencti_aliases
-                contact_information
                 x_opencti_organization_type
                 x_opencti_reliability
             }
-            ... on Sector {
-                name
-                description
-                x_opencti_aliases
-                contact_information
+            ... on Individual {
+                x_opencti_firstname
+                x_opencti_lastname
             }
-            ... on System {
-                name
-                description
-                x_opencti_aliases
-            }
-            ... on Indicator {
-                pattern_type
-                pattern_version
-                pattern
-                name
-                description
-                indicator_types
-                valid_from
-                valid_until
-                x_opencti_score
-                x_opencti_detection
-                x_opencti_main_observable_type
-            }
-            ... on Infrastructure {
-                name
-                description
-                aliases
-                infrastructure_types
-                first_seen
-                last_seen
-            }
-            ... on IntrusionSet {
-                name
-                description
-                aliases
-                first_seen
-                last_seen
-                goals
-                resource_level
-                primary_motivation
-                secondary_motivations
-            }
-            ... on City {
-                name
-                description
-                latitude
-                longitude
-                precision
-                x_opencti_aliases
-            }
-            ... on Country {
-                name
-                description
-                latitude
-                longitude
-                precision
-                x_opencti_aliases
-            }
-            ... on Region {
-                name
-                description
-                latitude
-                longitude
-                precision
-                x_opencti_aliases
-            }
-            ... on Position {
-                name
-                description
-                latitude
-                longitude
-                precision
-                x_opencti_aliases
-                street_address
-                postal_code
-            }
-            ... on Malware {
-                name
-                description
-                aliases
-                malware_types
-                is_family
-                first_seen
-                last_seen
-                architecture_execution_envs
-                implementation_languages
-                capabilities
-                killChainPhases {
-                  id
-                  standard_id
-                  entity_type
-                  kill_chain_name
-                  phase_name
-                  x_opencti_order
-                  created
-                  modified
-                }
-            }
-            ... on MalwareAnalysis {
-                product
-                version
-                configuration_version
-                modules
-                analysis_engine_version
-                analysis_definition_version
-                submitted
-                analysis_started
-                analysis_ended
-                result_name
-                result
-            }
-            ... on ThreatActor {
-                name
-                description
-                aliases
-                threat_actor_types
-                first_seen
-                last_seen
-                roles
-                goals
-                sophistication
-                resource_level
-                primary_motivation
-                secondary_motivations
-                personal_motivations
-            }
-            ... on Tool {
-                name
-                description
-                aliases
-                tool_types
-                tool_version
-                killChainPhases {
-                  id
-                  standard_id
-                  entity_type
-                  kill_chain_name
-                  phase_name
-                  x_opencti_order
-                  created
-                  modified
-                }
-            }
-            ... on Event {
-                name
-                description
-                aliases
-                event_types
-            }
-            ... on Channel {
-                name
-                description
-                aliases
-                channel_types
-            }
-            ... on Narrative {
-                name
-                description
-                aliases
-                narrative_types
-            }
-            ... on DataComponent {
-                name
-                description
-            }
-            ... on DataSource {
-                name
-                description
-            }
-            ... on Case {
-                name
-                description
-                objects {
-                    edges {
-                        node {
-                            ... on BasicObject {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                            ... on BasicRelationship {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                        }
-                    }
-                }
-            }
-            ... on Vulnerability {
-                name
-                description
-                x_opencti_aliases
-                x_opencti_cvss_vector_string
-                x_opencti_cvss_base_score
-                x_opencti_cvss_base_severity
-                x_opencti_cvss_attack_vector
-                x_opencti_cvss_attack_complexity
-                x_opencti_cvss_privileges_required
-                x_opencti_cvss_user_interaction
-                x_opencti_cvss_scope
-                x_opencti_cvss_confidentiality_impact
-                x_opencti_cvss_integrity_impact
-                x_opencti_cvss_availability_impact
-                x_opencti_cvss_exploit_code_maturity
-                x_opencti_cvss_remediation_level
-                x_opencti_cvss_report_confidence
-                x_opencti_cvss_temporal_score
-                x_opencti_cvss_v2_vector_string
-                x_opencti_cvss_v2_base_score
-                x_opencti_cvss_v2_access_vector
-                x_opencti_cvss_v2_access_complexity
-                x_opencti_cvss_v2_authentication
-                x_opencti_cvss_v2_confidentiality_impact
-                x_opencti_cvss_v2_integrity_impact
-                x_opencti_cvss_v2_availability_impact
-                x_opencti_cvss_v2_exploitability
-                x_opencti_cvss_v2_remediation_level
-                x_opencti_cvss_v2_report_confidence
-                x_opencti_cvss_v2_temporal_score
-                x_opencti_cvss_v4_vector_string
-                x_opencti_cvss_v4_base_score
-                x_opencti_cvss_v4_base_severity
-                x_opencti_cvss_v4_attack_vector
-                x_opencti_cvss_v4_attack_complexity
-                x_opencti_cvss_v4_attack_requirements
-                x_opencti_cvss_v4_privileges_required
-                x_opencti_cvss_v4_user_interaction
-                x_opencti_cvss_v4_confidentiality_impact_v
-                x_opencti_cvss_v4_confidentiality_impact_s
-                x_opencti_cvss_v4_integrity_impact_v
-                x_opencti_cvss_v4_integrity_impact_s
-                x_opencti_cvss_v4_availability_impact_v
-                x_opencti_cvss_v4_availability_impact_s
-                x_opencti_cvss_v4_exploit_maturity
-                x_opencti_cwe
-                x_opencti_cisa_kev
-                x_opencti_epss_score
-                x_opencti_epss_percentile
-                x_opencti_score
-            }
-            ... on Incident {
-                name
-                description
-                aliases
-                first_seen
-                last_seen
-                objective
-            }
-        """
-        self.properties_with_files = """
+        }
+        objectMarking {
             id
             standard_id
             entity_type
-            parent_types
-            spec_version
-            created_at
-            updated_at
-            objectOrganization {
-                id
-                standard_id
-                name
-            }
-            createdBy {
-                ... on Identity {
-                    id
-                    standard_id
-                    entity_type
-                    parent_types
-                    spec_version
-                    identity_class
-                    name
-                    description
-                    roles
-                    contact_information
-                    x_opencti_aliases
-                    created
-                    modified
-                    objectLabel {
-                        id
-                        value
-                        color
-                    }
-                }
-                ... on Organization {
-                    x_opencti_organization_type
-                    x_opencti_reliability
-                }
-                ... on Individual {
-                    x_opencti_firstname
-                    x_opencti_lastname
-                }
-            }
-            objectMarking {
-                id
-                standard_id
-                entity_type
-                definition_type
-                definition
-                created
-                modified
-                x_opencti_order
-                x_opencti_color
-            }
-            objectLabel {
-                id
-                value
-                color
-            }
-            externalReferences {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
-                        created
-                        modified
-                        importFiles {
-                            edges {
-                                node {
-                                    id
-                                    name
-                                    size
-                                    metaData {
-                                        mimetype
-                                        version
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            revoked
-            confidence
+            definition_type
+            definition
             created
             modified
-            ... on AttackPattern {
-                name
-                description
-                aliases
-                x_mitre_platforms
-                x_mitre_permissions_required
-                x_mitre_detection
-                x_mitre_id
-                killChainPhases {
-                  id
-                  standard_id
-                  entity_type
-                  kill_chain_name
-                  phase_name
-                  x_opencti_order
-                  created
-                  modified
-                }
-            }
-            ... on Campaign {
-                name
-                description
-                aliases
-                first_seen
-                last_seen
-                objective
-            }
-            ... on Note {
-                attribute_abstract
-                content
-                authors
-                note_types
-                likelihood
-                objects {
-                    edges {
-                        node {
-                            ... on BasicObject {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                            ... on BasicRelationship {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                        }
-                    }
-                }
-            }
-            ... on ObservedData {
-                first_observed
-                last_observed
-                number_observed
-                objects {
-                    edges {
-                        node {
-                            ... on BasicObject {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                            ... on BasicRelationship {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                        }
-                    }
-                }
-            }
-            ... on Opinion {
-                explanation
-                authors
-                opinion
-                objects {
-                    edges {
-                        node {
-                            ... on BasicObject {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                            ... on BasicRelationship {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                        }
-                    }
-                }
-            }
-            ... on Report {
-                name
-                description
-                report_types
-                published
-                objects {
-                    edges {
-                        node {
-                            ... on BasicObject {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                            ... on BasicRelationship {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                        }
-                    }
-                }
-            }
-            ... on Grouping {
-                name
-                description
-                context
-                objects {
-                    edges {
-                        node {
-                            ... on BasicObject {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                            ... on BasicRelationship {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                        }
-                    }
-                }
-            }
-            ... on CourseOfAction {
-                name
-                description
-                x_opencti_aliases
-            }
-            ... on DataComponent {
-                name
-                description
-                dataSource {
+            x_opencti_order
+            x_opencti_color
+        }
+        objectLabel {
+            id
+            value
+            color
+        }
+        externalReferences {
+            edges {
+                node {
                     id
                     standard_id
                     entity_type
-                    parent_types
-                    spec_version
-                    created_at
-                    updated_at
-                    revoked
-                    confidence
+                    source_name
+                    description
+                    url
+                    hash
+                    external_id
                     created
                     modified
-                    name
-                    description
-                    x_mitre_platforms
-                    collection_layers
                 }
             }
-            ... on DataSource {
-                name
-                description
-                x_mitre_platforms
-                collection_layers
+        }
+        revoked
+        confidence
+        created
+        modified
+        ... on AttackPattern {
+            name
+            description
+            aliases
+            x_mitre_platforms
+            x_mitre_permissions_required
+            x_mitre_detection
+            x_mitre_id
+            killChainPhases {
+              id
+              standard_id
+              entity_type
+              kill_chain_name
+              phase_name
+              x_opencti_order
+              created
+              modified
             }
-            ... on Individual {
-                name
-                description
-                x_opencti_aliases
-                contact_information
-                x_opencti_firstname
-                x_opencti_lastname
-            }
-            ... on Organization {
-                name
-                description
-                x_opencti_aliases
-                contact_information
-                x_opencti_organization_type
-                x_opencti_reliability
-            }
-            ... on Sector {
-                name
-                description
-                x_opencti_aliases
-                contact_information
-            }
-            ... on System {
-                name
-                description
-                x_opencti_aliases
-            }
-            ... on Indicator {
-                pattern_type
-                pattern_version
-                pattern
-                name
-                description
-                indicator_types
-                valid_from
-                valid_until
-                x_opencti_score
-                x_opencti_detection
-                x_opencti_main_observable_type
-            }
-            ... on Infrastructure {
-                name
-                description
-                aliases
-                infrastructure_types
-                first_seen
-                last_seen
-            }
-            ... on IntrusionSet {
-                name
-                description
-                aliases
-                first_seen
-                last_seen
-                goals
-                resource_level
-                primary_motivation
-                secondary_motivations
-            }
-            ... on City {
-                name
-                description
-                latitude
-                longitude
-                precision
-                x_opencti_aliases
-            }
-            ... on Country {
-                name
-                description
-                latitude
-                longitude
-                precision
-                x_opencti_aliases
-            }
-            ... on Region {
-                name
-                description
-                latitude
-                longitude
-                precision
-                x_opencti_aliases
-            }
-            ... on Position {
-                name
-                description
-                latitude
-                longitude
-                precision
-                x_opencti_aliases
-                street_address
-                postal_code
-            }
-            ... on Malware {
-                name
-                description
-                aliases
-                malware_types
-                is_family
-                first_seen
-                last_seen
-                architecture_execution_envs
-                implementation_languages
-                capabilities
-                killChainPhases {
-                  id
-                  standard_id
-                  entity_type
-                  kill_chain_name
-                  phase_name
-                  x_opencti_order
-                  created
-                  modified
-                }
-            }
-            ... on MalwareAnalysis {
-                product
-                version
-                configuration_version
-                modules
-                analysis_engine_version
-                analysis_definition_version
-                submitted
-                analysis_started
-                analysis_ended
-                result_name
-                result
-            }
-            ... on ThreatActor {
-                name
-                description
-                aliases
-                threat_actor_types
-                first_seen
-                last_seen
-                roles
-                goals
-                sophistication
-                resource_level
-                primary_motivation
-                secondary_motivations
-                personal_motivations
-            }
-            ... on Tool {
-                name
-                description
-                aliases
-                tool_types
-                tool_version
-                killChainPhases {
-                  id
-                  standard_id
-                  entity_type
-                  kill_chain_name
-                  phase_name
-                  x_opencti_order
-                  created
-                  modified
-                }
-            }
-            ... on Event {
-                name
-                description
-                aliases
-                event_types
-            }
-            ... on Channel {
-                name
-                description
-                aliases
-                channel_types
-            }
-            ... on Narrative {
-                name
-                description
-                aliases
-                narrative_types
-            }
-            ... on DataComponent {
-                name
-                description
-            }
-            ... on DataSource {
-                name
-                description
-            }
-            ... on Case {
-                name
-                description
-                objects {
-                    edges {
-                        node {
-                            ... on BasicObject {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                            ... on BasicRelationship {
-                                id
-                                parent_types
-                                entity_type
-                                standard_id
-                            }
-                        }
-                    }
-                }
-            }
-            ... on Vulnerability {
-                name
-                description
-                x_opencti_aliases
-                x_opencti_cvss_vector_string
-                x_opencti_cvss_base_score
-                x_opencti_cvss_base_severity
-                x_opencti_cvss_attack_vector
-                x_opencti_cvss_attack_complexity
-                x_opencti_cvss_privileges_required
-                x_opencti_cvss_user_interaction
-                x_opencti_cvss_scope
-                x_opencti_cvss_confidentiality_impact
-                x_opencti_cvss_integrity_impact
-                x_opencti_cvss_availability_impact
-                x_opencti_cvss_exploit_code_maturity
-                x_opencti_cvss_remediation_level
-                x_opencti_cvss_report_confidence
-                x_opencti_cvss_temporal_score
-                x_opencti_cvss_v2_vector_string
-                x_opencti_cvss_v2_base_score
-                x_opencti_cvss_v2_access_vector
-                x_opencti_cvss_v2_access_complexity
-                x_opencti_cvss_v2_authentication
-                x_opencti_cvss_v2_confidentiality_impact
-                x_opencti_cvss_v2_integrity_impact
-                x_opencti_cvss_v2_availability_impact
-                x_opencti_cvss_v2_exploitability
-                x_opencti_cvss_v2_remediation_level
-                x_opencti_cvss_v2_report_confidence
-                x_opencti_cvss_v2_temporal_score
-                x_opencti_cvss_v4_vector_string
-                x_opencti_cvss_v4_base_score
-                x_opencti_cvss_v4_base_severity
-                x_opencti_cvss_v4_attack_vector
-                x_opencti_cvss_v4_attack_complexity
-                x_opencti_cvss_v4_attack_requirements
-                x_opencti_cvss_v4_privileges_required
-                x_opencti_cvss_v4_user_interaction
-                x_opencti_cvss_v4_confidentiality_impact_v
-                x_opencti_cvss_v4_confidentiality_impact_s
-                x_opencti_cvss_v4_integrity_impact_v
-                x_opencti_cvss_v4_integrity_impact_s
-                x_opencti_cvss_v4_availability_impact_v
-                x_opencti_cvss_v4_availability_impact_s
-                x_opencti_cvss_v4_exploit_maturity
-                x_opencti_cwe
-                x_opencti_cisa_kev
-                x_opencti_epss_score
-                x_opencti_epss_percentile
-                x_opencti_score
-            }
-            ... on Incident {
-                name
-                description
-                aliases
-                first_seen
-                last_seen
-                objective
-            }
-            importFiles {
+        }
+        ... on Campaign {
+            name
+            description
+            aliases
+            first_seen
+            last_seen
+            objective
+        }
+        ... on Note {
+            attribute_abstract
+            content
+            authors
+            note_types
+            likelihood
+            objects {
                 edges {
                     node {
-                        id
-                        name
-                        size
-                        metaData {
-                            mimetype
-                            version
-                        }
-                        objectMarking {
+                        ... on BasicObject {
                             id
-                            standard_id
+                            parent_types
                             entity_type
-                            definition_type
-                            definition
-                            created
-                            modified
-                            x_opencti_order
-                            x_opencti_color
+                            standard_id
+                        }
+                        ... on BasicRelationship {
+                            id
+                            parent_types
+                            entity_type
+                            standard_id
                         }
                     }
                 }
             }
-        """
-
-    def list(self, **kwargs):
-        """List Stix-Domain-Object objects.
-
-        :param types: the list of types
-        :type types: list
-        :param filters: the filters to apply
-        :type filters: dict
-        :param search: the search keyword
-        :type search: str
-        :param first: return the first n rows from the after ID (or the beginning if not set)
-        :type first: int
-        :param after: ID of the first row for pagination
-        :type after: str
-        :param orderBy: field to order results by
-        :type orderBy: str
-        :param orderMode: ordering mode (asc/desc)
-        :type orderMode: str
-        :param customAttributes: custom attributes to return
-        :type customAttributes: str
-        :param getAll: whether to retrieve all results
-        :type getAll: bool
-        :param withPagination: whether to include pagination info
-        :type withPagination: bool
-        :param withFiles: whether to include files
-        :type withFiles: bool
-        :return: List of Stix-Domain-Object objects
-        :rtype: list
-        """
-        types = kwargs.get("types", None)
-        filters = kwargs.get("filters", None)
-        search = kwargs.get("search", None)
-        first = kwargs.get("first", 100)
-        after = kwargs.get("after", None)
-        order_by = kwargs.get("orderBy", None)
-        order_mode = kwargs.get("orderMode", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        get_all = kwargs.get("getAll", False)
-        with_pagination = kwargs.get("withPagination", False)
-        with_files = kwargs.get("withFiles", False)
-
-        self.opencti.app_logger.info(
-            "Listing Stix-Domain-Objects with filters", {"filters": json.dumps(filters)}
-        )
-        query = (
-            """
-                query StixDomainObjects($types: [String], $filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: StixDomainObjectsOrdering, $orderMode: OrderingMode) {
-                    stixDomainObjects(types: $types, filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
-                        edges {
-                            node {
-                                """
-            + (
-                custom_attributes
-                if custom_attributes is not None
-                else (self.properties_with_files if with_files else self.properties)
-            )
-            + """
+        }
+        ... on ObservedData {
+            first_observed
+            last_observed
+            number_observed
+            objects {
+                edges {
+                    node {
+                        ... on BasicObject {
+                            id
+                            parent_types
+                            entity_type
+                            standard_id
                         }
-                    }
-                    pageInfo {
-                        startCursor
-                        endCursor
-                        hasNextPage
-                        hasPreviousPage
-                        globalCount
+                        ... on BasicRelationship {
+                            id
+                            parent_types
+                            entity_type
+                            standard_id
+                        }
                     }
                 }
             }
-        """
-        )
-        result = self.opencti.query(
-            query,
-            {
-                "types": types,
-                "filters": filters,
-                "search": search,
-                "first": first,
-                "after": after,
-                "orderBy": order_by,
-                "orderMode": order_mode,
-            },
-        )
-
-        if get_all:
-            final_data = []
-            data = self.opencti.process_multiple(result["data"]["stixDomainObjects"])
-            final_data = final_data + data
-            while result["data"]["stixDomainObjects"]["pageInfo"]["hasNextPage"]:
-                after = result["data"]["stixDomainObjects"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.debug(
-                    "Listing Stix-Domain-Objects", {"after": after}
-                )
-                result = self.opencti.query(
-                    query,
-                    {
-                        "types": types,
-                        "filters": filters,
-                        "search": search,
-                        "first": first,
-                        "after": after,
-                        "orderBy": order_by,
-                        "orderMode": order_mode,
-                    },
-                )
-                data = self.opencti.process_multiple(
-                    result["data"]["stixDomainObjects"]
-                )
-                final_data = final_data + data
-            return final_data
-        else:
-            return self.opencti.process_multiple(
-                result["data"]["stixDomainObjects"], with_pagination
-            )
-
-    def read(self, **kwargs):
-        """Read a Stix-Domain-Object object.
-
-        :param id: the id of the Stix-Domain-Object
-        :type id: str
-        :param types: list of Stix Domain Entity types
-        :type types: list
-        :param filters: the filters to apply if no id provided
-        :type filters: dict
-        :param customAttributes: custom attributes to return
-        :type customAttributes: str
-        :param withFiles: whether to include files
-        :type withFiles: bool
-        :return: Stix-Domain-Object object
-        :rtype: dict or None
-        """
-        id = kwargs.get("id", None)
-        types = kwargs.get("types", None)
-        filters = kwargs.get("filters", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        with_files = kwargs.get("withFiles", False)
-        if id is not None:
-            self.opencti.app_logger.info("Reading Stix-Domain-Object", {"id": id})
-            query = (
-                """
-                    query StixDomainObject($id: String!) {
-                        stixDomainObject(id: $id) {
-                            """
-                + (
-                    custom_attributes
-                    if custom_attributes is not None
-                    else (self.properties_with_files if with_files else self.properties)
-                )
-                + """
+        }
+        ... on Opinion {
+            explanation
+            authors
+            opinion
+            objects {
+                edges {
+                    node {
+                        ... on BasicObject {
+                            id
+                            parent_types
+                            entity_type
+                            standard_id
+                        }
+                        ... on BasicRelationship {
+                            id
+                            parent_types
+                            entity_type
+                            standard_id
+                        }
                     }
                 }
-             """
-            )
-            result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(
-                result["data"]["stixDomainObject"]
-            )
-        elif filters is not None:
-            result = self.list(
-                types=types, filters=filters, customAttributes=custom_attributes
-            )
-            if len(result) > 0:
-                return result[0]
-            else:
-                return None
-        else:
-            self.opencti.app_logger.error(
-                "[opencti_stix_domain_object] Missing parameters: id or filters"
-            )
-            return None
+            }
+        }
+        ... on Report {
+            name
+            description
+            report_types
+            published
+            objects {
+                edges {
+                    node {
+                        ... on BasicObject {
+                            id
+                            parent_types
+                            entity_type
+                            standard_id
+                        }
+                        ... on BasicRelationship {
+                            id
+                            parent_types
+                            entity_type
+                            standard_id
+                        }
+                    }
+                }
+            }
+        }
+        ... on Grouping {
+            name
+            description
+            context
+            objects {
+                edges {
+                    node {
+                        ... on BasicObject {
+                            id
+                            parent_types
+                            entity_type
+                            standard_id
+                        }
+                        ... on BasicRelationship {
+                            id
+                            parent_types
+                            entity_type
+                            standard_id
+                        }
+                    }
+                }
+            }
+        }
+        ... on CourseOfAction {
+            name
+            description
+            x_opencti_aliases
+        }
+        ... on DataComponent {
+            name
+            description
+            dataSource {
+                id
+                standard_id
+                entity_type
+                parent_types
+                spec_version
+                created_at
+                updated_at
+                revoked
+                confidence
+                created
+                modified
+                name
+                description
+                x_mitre_platforms
+                collection_layers
+            }
+        }
+        ... on DataSource {
+            name
+            description
+            x_mitre_platforms
+            collection_layers
+        }
+        ... on Individual {
+            name
+            description
+            x_opencti_aliases
+            contact_information
+            x_opencti_firstname
+            x_opencti_lastname
+        }
+        ... on Organization {
+            name
+            description
+            x_opencti_aliases
+            contact_information
+            x_opencti_organization_type
+            x_opencti_reliability
+        }
+        ... on Sector {
+            name
+            description
+            x_opencti_aliases
+            contact_information
+        }
+        ... on System {
+            name
+            description
+            x_opencti_aliases
+        }
+        ... on Indicator {
+            pattern_type
+            pattern_version
+            pattern
+            name
+            description
+            indicator_types
+            valid_from
+            valid_until
+            x_opencti_score
+            x_opencti_detection
+            x_opencti_main_observable_type
+        }
+        ... on Infrastructure {
+            name
+            description
+            aliases
+            infrastructure_types
+            first_seen
+            last_seen
+        }
+        ... on IntrusionSet {
+            name
+            description
+            aliases
+            first_seen
+            last_seen
+            goals
+            resource_level
+            primary_motivation
+            secondary_motivations
+        }
+        ... on City {
+            name
+            description
+            latitude
+            longitude
+            precision
+            x_opencti_aliases
+        }
+        ... on Country {
+            name
+            description
+            latitude
+            longitude
+            precision
+            x_opencti_aliases
+        }
+        ... on Region {
+            name
+            description
+            latitude
+            longitude
+            precision
+            x_opencti_aliases
+        }
+        ... on Position {
+            name
+            description
+            latitude
+            longitude
+            precision
+            x_opencti_aliases
+            street_address
+            postal_code
+        }
+        ... on Malware {
+            name
+            description
+            aliases
+            malware_types
+            is_family
+            first_seen
+            last_seen
+            architecture_execution_envs
+            implementation_languages
+            capabilities
+            killChainPhases {
+              id
+              standard_id
+              entity_type
+              kill_chain_name
+              phase_name
+              x_opencti_order
+              created
+              modified
+            }
+        }
+        ... on MalwareAnalysis {
+            product
+            version
+            configuration_version
+            modules
+            analysis_engine_version
+            analysis_definition_version
+            submitted
+            analysis_started
+            analysis_ended
+            result_name
+            result
+        }
+        ... on ThreatActor {
+            name
+            description
+            aliases
+            threat_actor_types
+            first_seen
+            last_seen
+            roles
+            goals
+            sophistication
+            resource_level
+            primary_motivation
+            secondary_motivations
+            personal_motivations
+        }
+        ... on Tool {
+            name
+            description
+            aliases
+            tool_types
+            tool_version
+            killChainPhases {
+              id
+              standard_id
+              entity_type
+              kill_chain_name
+              phase_name
+              x_opencti_order
+              created
+              modified
+            }
+        }
+        ... on Event {
+            name
+            description
+            aliases
+            event_types
+        }
+        ... on Channel {
+            name
+            description
+            aliases
+            channel_types
+        }
+        ... on Narrative {
+            name
+            description
+            aliases
+            narrative_types
+        }
+        ... on DataComponent {
+            name
+            description
+        }
+        ... on DataSource {
+            name
+            description
+        }
+        ... on Case {
+            name
+            description
+            objects {
+                edges {
+                    node {
+                        ... on BasicObject {
+                            id
+                            parent_types
+                            entity_type
+                            standard_id
+                        }
+                        ... on BasicRelationship {
+                            id
+                            parent_types
+                            entity_type
+                            standard_id
+                        }
+                    }
+                }
+            }
+        }
+        ... on Vulnerability {
+            name
+            description
+            x_opencti_aliases
+            x_opencti_cvss_vector_string
+            x_opencti_cvss_base_score
+            x_opencti_cvss_base_severity
+            x_opencti_cvss_attack_vector
+            x_opencti_cvss_attack_complexity
+            x_opencti_cvss_privileges_required
+            x_opencti_cvss_user_interaction
+            x_opencti_cvss_scope
+            x_opencti_cvss_confidentiality_impact
+            x_opencti_cvss_integrity_impact
+            x_opencti_cvss_availability_impact
+            x_opencti_cvss_exploit_code_maturity
+            x_opencti_cvss_remediation_level
+            x_opencti_cvss_report_confidence
+            x_opencti_cvss_temporal_score
+            x_opencti_cvss_v2_vector_string
+            x_opencti_cvss_v2_base_score
+            x_opencti_cvss_v2_access_vector
+            x_opencti_cvss_v2_access_complexity
+            x_opencti_cvss_v2_authentication
+            x_opencti_cvss_v2_confidentiality_impact
+            x_opencti_cvss_v2_integrity_impact
+            x_opencti_cvss_v2_availability_impact
+            x_opencti_cvss_v2_exploitability
+            x_opencti_cvss_v2_remediation_level
+            x_opencti_cvss_v2_report_confidence
+            x_opencti_cvss_v2_temporal_score
+            x_opencti_cvss_v4_vector_string
+            x_opencti_cvss_v4_base_score
+            x_opencti_cvss_v4_base_severity
+            x_opencti_cvss_v4_attack_vector
+            x_opencti_cvss_v4_attack_complexity
+            x_opencti_cvss_v4_attack_requirements
+            x_opencti_cvss_v4_privileges_required
+            x_opencti_cvss_v4_user_interaction
+            x_opencti_cvss_v4_confidentiality_impact_v
+            x_opencti_cvss_v4_confidentiality_impact_s
+            x_opencti_cvss_v4_integrity_impact_v
+            x_opencti_cvss_v4_integrity_impact_s
+            x_opencti_cvss_v4_availability_impact_v
+            x_opencti_cvss_v4_availability_impact_s
+            x_opencti_cvss_v4_exploit_maturity
+            x_opencti_cwe
+            x_opencti_cisa_kev
+            x_opencti_epss_score
+            x_opencti_epss_percentile
+            x_opencti_score
+        }
+        ... on Incident {
+            name
+            description
+            aliases
+            first_seen
+            last_seen
+            objective
+        }
+    """
+
+    FILES_PROPERTIES = """
+        id
+        name
+        size
+        metaData {
+            mimetype
+            version
+        }
+        objectMarking {
+            id
+            standard_id
+            entity_type
+            definition_type
+            definition
+            created
+            modified
+            x_opencti_order
+            x_opencti_color
+        }
+    """
 
     def get_by_stix_id_or_name(self, **kwargs):
         """Get a Stix-Domain-Object object by stix_id or name.
@@ -2425,3 +1708,67 @@ class StixDomainObject:
         else:
             self.opencti.app_logger.error("Missing parameters: id")
             return None
+
+
+StixDomainObject.read.__doc__ = """Read a Stix-Domain-Object object.
+
+:param id: the id of the Stix-Domain-Object
+:type id: str
+:param types: list of Stix Domain Entity types
+:type types: list
+:param filters: the filters to apply if no id provided; used in conjunction with a call to `list()`.
+:type filters: dict
+:param custom_attributes: custom attributes to return
+:type custom_attributes: list
+:param with_objects: whether to include files
+:type with_objects: bool
+:param custom_objects_attributes: custom attributes to return
+:type custom_objects_attributes: list
+:param with_files: whether to include files
+:type with_files: bool
+:param custom_files_attributes: custom attributes to return
+:type custom_files_attributes: list
+:param kwargs: snakecase variables passed in as camelcase will be translated to their snakecase counterparts.
+    the rest of the kwargs are passed, as is, into the potential call to `list()`.
+:type kwargs: dict
+:return: an entity object
+:rtype: dict or None
+"""
+
+StixDomainObject.list.__doc__ = """List Stix-Domain-Object objects.
+
+:param types: the list of types
+:type types: list
+:param filters: the filters to apply
+:type filters: dict
+:param search: the search keyword
+:type search: str
+:param first: return the first n rows from the after ID (or the beginning if not set)
+:type first: int
+:param after: ID of the first row for pagination
+:type after: str
+:param order_by: field to order results by
+:type order_by: str
+:param order_mode: ordering mode (asc/desc)
+:type order_mode: str
+:param get_all: whether to retrieve all results
+:type get_all: bool
+:param with_pagination: whether to include pagination info
+:type with_pagination: bool
+:param custom_attributes: custom attributes to return
+:type custom_attributes: str
+:param with_objects: whether to include entity objects
+:type with_objects: bool
+:param custom_objects_attributes: custom objects attributes to return
+:type custom_objects_attributes: str
+:param with_files: whether to include files
+:type with_files: bool
+:param custom_files_attributes: custom file attributes to return
+:type custom_files_attributes: str
+:param kwargs: snakecase variables passed in as camelcase will be translated to
+    snakecase. the rest of the kwargs are passed, as is, as variables to the
+    call to `query()`.
+:type kwargs: dict
+:return: List of entity objects
+:rtype: Entities
+"""

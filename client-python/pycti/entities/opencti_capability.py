@@ -1,7 +1,9 @@
 from typing import Dict, List
 
+from pycti.entities.base import Entity
 
-class Capability:
+
+class Capability(Entity):
     """Represents a role capability on the OpenCTI platform
 
     See the properties attribute to understand which properties are fetched by
@@ -11,24 +13,20 @@ class Capability:
     :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the Capability instance.
+    PROPERTIES = """
+        id
+        standard_id
+        entity_type
+        parent_types
+        name
+        description
+        attribute_order
+        created_at
+        updated_at
+    """
 
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            name
-            description
-            attribute_order
-            created_at
-            updated_at
-        """
+    def read(self, *args, **kwargs):
+        raise NotImplementedError("Reading a single capability is not supported.")
 
     def list(self, **kwargs) -> List[Dict]:
         """Lists all capabilities available on the platform

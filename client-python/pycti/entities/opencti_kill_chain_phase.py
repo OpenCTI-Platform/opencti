@@ -2,38 +2,29 @@
 
 import json
 
+from pycti.entities.base import Entity
 from pycti.utils.opencti_stix2_identifier import kill_chain_phase_generate_id
 
 
-class KillChainPhase:
+class KillChainPhase(Entity):
     """Main KillChainPhase class for OpenCTI
 
     Manages kill chain phases (ATT&CK tactics) in the OpenCTI platform.
-
-    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the KillChainPhase instance.
-
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            kill_chain_name
-            phase_name
-            x_opencti_order
-            created
-            modified
-            created_at
-            updated_at
-        """
+    PROPERTIES = """
+        id
+        standard_id
+        entity_type
+        parent_types
+        kill_chain_name
+        phase_name
+        x_opencti_order
+        created
+        modified
+        created_at
+        updated_at
+    """
 
     @staticmethod
     def generate_id(phase_name, kill_chain_name):
@@ -60,114 +51,6 @@ class KillChainPhase:
         :rtype: str
         """
         return KillChainPhase.generate_id(data["phase_name"], data["kill_chain_name"])
-
-    def list(self, **kwargs):
-        """List Kill-Chain-Phase objects.
-
-        :param filters: the filters to apply
-        :type filters: dict
-        :param first: return the first n rows from the after ID (or the beginning if not set)
-        :type first: int
-        :param after: ID of the first row for pagination
-        :type after: str
-        :param orderBy: field to order results by
-        :type orderBy: str
-        :param orderMode: ordering mode (asc/desc)
-        :type orderMode: str
-        :param customAttributes: custom attributes to return
-        :type customAttributes: list
-        :param withPagination: whether to include pagination info
-        :type withPagination: bool
-        :return: List of Kill-Chain-Phase objects
-        :rtype: list
-        """
-        filters = kwargs.get("filters", None)
-        first = kwargs.get("first", 500)
-        after = kwargs.get("after", None)
-        order_by = kwargs.get("orderBy", None)
-        order_mode = kwargs.get("orderMode", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        with_pagination = kwargs.get("withPagination", False)
-
-        self.opencti.app_logger.info(
-            "Listing Kill-Chain-Phase with filters", {"filters": json.dumps(filters)}
-        )
-        query = (
-            """
-            query KillChainPhases($filters: FilterGroup, $first: Int, $after: ID, $orderBy: KillChainPhasesOrdering, $orderMode: OrderingMode) {
-                killChainPhases(filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
-                    edges {
-                        node {
-                            """
-            + (custom_attributes if custom_attributes is not None else self.properties)
-            + """
-                        }
-                    }
-                    pageInfo {
-                        startCursor
-                        endCursor
-                        hasNextPage
-                        hasPreviousPage
-                        globalCount
-                    }
-                }
-            }
-        """
-        )
-        result = self.opencti.query(
-            query,
-            {
-                "filters": filters,
-                "first": first,
-                "after": after,
-                "orderBy": order_by,
-                "orderMode": order_mode,
-            },
-        )
-        return self.opencti.process_multiple(
-            result["data"]["killChainPhases"], with_pagination
-        )
-
-    def read(self, **kwargs):
-        """Read a Kill-Chain-Phase object.
-
-        :param id: the id of the Kill-Chain-Phase
-        :type id: str
-        :param filters: the filters to apply if no id provided
-        :type filters: dict
-        :return: Kill-Chain-Phase object
-        :rtype: dict or None
-        """
-        id = kwargs.get("id", None)
-        filters = kwargs.get("filters", None)
-        if id is not None:
-            self.opencti.app_logger.info("Reading Kill-Chain-Phase", {"id": id})
-            query = (
-                """
-                query KillChainPhase($id: String!) {
-                    killChainPhase(id: $id) {
-                        """
-                + self.properties
-                + """
-                    }
-                }
-            """
-            )
-            result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(
-                result["data"]["killChainPhase"]
-            )
-        elif filters is not None:
-            result = self.list(filters=filters)
-            if len(result) > 0:
-                return result[0]
-            else:
-                return None
-        else:
-            self.opencti.app_logger.error(
-                "[opencti_kill_chain_phase] Missing parameters: id or filters"
-            )
-            return None
 
     def create(self, **kwargs):
         """Create a Kill-Chain-Phase object.

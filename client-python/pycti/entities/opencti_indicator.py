@@ -1,34 +1,25 @@
 # coding: utf-8
 
-import json
 import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from .base import Entity
 from .indicator.opencti_indicator_properties import (
+    INDICATOR_FILES_PROPERTIES,
     INDICATOR_PROPERTIES,
-    INDICATOR_PROPERTIES_WITH_FILES,
 )
+from .mixins import ListObjectsMixin
 
 
-class Indicator:
+class Indicator(ListObjectsMixin, Entity):
     """Main Indicator class for OpenCTI
 
     Manages threat indicators and detection patterns in the OpenCTI platform.
-
-    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the Indicator instance.
-
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = INDICATOR_PROPERTIES
-        self.properties_with_files = INDICATOR_PROPERTIES_WITH_FILES
+    PROPERTIES = INDICATOR_PROPERTIES
+    FILES_PROPERTIES = INDICATOR_FILES_PROPERTIES
 
     @staticmethod
     def generate_id(pattern):
@@ -54,174 +45,6 @@ class Indicator:
         :rtype: str
         """
         return Indicator.generate_id(data["pattern"])
-
-    def list(self, **kwargs):
-        """List Indicator objects.
-
-        :param filters: (optional) the filters to apply
-        :type filters: dict
-        :param search: (optional) a search keyword to apply for the listing
-        :type search: str
-        :param first: (optional) return the first n rows from the `after` ID or the beginning if not set
-        :type first: int
-        :param after: (optional) OpenCTI object ID of the first row for pagination
-        :type after: str
-        :param orderBy: (optional) the field to order the response on
-        :type orderBy: str
-        :param orderMode: (optional) either "asc" or "desc"
-        :type orderMode: str
-        :param customAttributes: (optional) list of attributes keys to return
-        :type customAttributes: str
-        :param getAll: (optional) switch to return all entries (be careful to use this without any other filters)
-        :type getAll: bool
-        :param withPagination: (optional) switch to use pagination
-        :type withPagination: bool
-        :param withFiles: (optional) include files in response
-        :type withFiles: bool
-        :param toStix: (optional) get in STIX format
-        :type toStix: bool
-        :return: List of Indicators
-        :rtype: list
-        """
-
-        filters = kwargs.get("filters", None)
-        search = kwargs.get("search", None)
-        first = kwargs.get("first", 500)
-        after = kwargs.get("after", None)
-        order_by = kwargs.get("orderBy", None)
-        order_mode = kwargs.get("orderMode", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        get_all = kwargs.get("getAll", False)
-        with_pagination = kwargs.get("withPagination", False)
-        with_files = kwargs.get("withFiles", False)
-        to_stix = kwargs.get("toStix", False)
-
-        self.opencti.app_logger.info(
-            "Listing Indicators with filters", {"filters": json.dumps(filters)}
-        )
-        query = (
-            """
-                query Indicators($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: IndicatorsOrdering, $orderMode: OrderingMode, $toStix: Boolean) {
-                    indicators(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode, toStix: $toStix) {
-                        edges {
-                            node {
-                                """
-            + (
-                "toStix"
-                if to_stix
-                else (
-                    custom_attributes
-                    if custom_attributes is not None
-                    else (self.properties_with_files if with_files else self.properties)
-                )
-            )
-            + """
-                        }
-                    }
-                    pageInfo {
-                        startCursor
-                        endCursor
-                        hasNextPage
-                        hasPreviousPage
-                        globalCount
-                    }
-                }
-            }
-        """
-        )
-        result = self.opencti.query(
-            query,
-            {
-                "filters": filters,
-                "search": search,
-                "first": first,
-                "after": after,
-                "orderBy": order_by,
-                "orderMode": order_mode,
-                "toStix": to_stix,
-            },
-        )
-        if get_all:
-            final_data = []
-            data = self.opencti.process_multiple(result["data"]["indicators"])
-            final_data = final_data + data
-            while result["data"]["indicators"]["pageInfo"]["hasNextPage"]:
-                after = result["data"]["indicators"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.debug("Listing Indicators", {"after": after})
-                result = self.opencti.query(
-                    query,
-                    {
-                        "filters": filters,
-                        "search": search,
-                        "first": first,
-                        "after": after,
-                        "orderBy": order_by,
-                        "orderMode": order_mode,
-                        "toStix": to_stix,
-                    },
-                )
-                data = self.opencti.process_multiple(result["data"]["indicators"])
-                final_data = final_data + data
-            return final_data
-        else:
-            return self.opencti.process_multiple(
-                result["data"]["indicators"], with_pagination
-            )
-
-    def read(self, **kwargs):
-        """Read an Indicator object.
-
-        Read can be either used with a known OpenCTI entity `id` or by using a
-        valid filter to search and return a single Indicator entity or None.
-
-        Note: either `id` or `filters` is required.
-
-        :param id: the id of the Indicator
-        :type id: str
-        :param filters: the filters to apply if no id provided
-        :type filters: dict
-        :param customAttributes: custom attributes to return
-        :type customAttributes: str
-        :param withFiles: whether to include files
-        :type withFiles: bool
-        :return: Indicator object
-        :rtype: dict or None
-        """
-
-        id = kwargs.get("id", None)
-        filters = kwargs.get("filters", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        with_files = kwargs.get("withFiles", False)
-        if id is not None:
-            self.opencti.app_logger.info("Reading Indicator", {"id": id})
-            query = (
-                """
-                    query Indicator($id: String!) {
-                        indicator(id: $id) {
-                            """
-                + (
-                    custom_attributes
-                    if custom_attributes is not None
-                    else (self.properties_with_files if with_files else self.properties)
-                )
-                + """
-                    }
-                }
-             """
-            )
-            result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(result["data"]["indicator"])
-        elif filters is not None:
-            result = self.list(filters=filters, customAttributes=custom_attributes)
-            if len(result) > 0:
-                return result[0]
-            else:
-                return None
-        else:
-            self.opencti.app_logger.error(
-                "[opencti_indicator] Missing parameters: id or filters"
-            )
-            return None
 
     def create(self, **kwargs):
         """Create an Indicator object.
@@ -517,13 +340,13 @@ class Indicator:
         if stix_object is not None:
             # Search in extensions
             if "x_opencti_score" not in stix_object:
-                stix_object["x_opencti_score"] = (
-                    self.opencti.get_attribute_in_extension("score", stix_object)
-                )
+                stix_object[
+                    "x_opencti_score"
+                ] = self.opencti.get_attribute_in_extension("score", stix_object)
             if "x_opencti_detection" not in stix_object:
-                stix_object["x_opencti_detection"] = (
-                    self.opencti.get_attribute_in_extension("detection", stix_object)
-                )
+                stix_object[
+                    "x_opencti_detection"
+                ] = self.opencti.get_attribute_in_extension("detection", stix_object)
             if (
                 "x_opencti_main_observable_type" not in stix_object
                 and self.opencti.get_attribute_in_extension(
@@ -531,44 +354,44 @@ class Indicator:
                 )
                 is not None
             ):
-                stix_object["x_opencti_main_observable_type"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "main_observable_type", stix_object
-                    )
+                stix_object[
+                    "x_opencti_main_observable_type"
+                ] = self.opencti.get_attribute_in_extension(
+                    "main_observable_type", stix_object
                 )
             if "x_opencti_create_observables" not in stix_object:
-                stix_object["x_opencti_create_observables"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "create_observables", stix_object
-                    )
+                stix_object[
+                    "x_opencti_create_observables"
+                ] = self.opencti.get_attribute_in_extension(
+                    "create_observables", stix_object
                 )
             if "x_opencti_stix_ids" not in stix_object:
-                stix_object["x_opencti_stix_ids"] = (
-                    self.opencti.get_attribute_in_extension("stix_ids", stix_object)
-                )
+                stix_object[
+                    "x_opencti_stix_ids"
+                ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
             if "x_opencti_granted_refs" not in stix_object:
-                stix_object["x_opencti_granted_refs"] = (
-                    self.opencti.get_attribute_in_extension("granted_refs", stix_object)
-                )
+                stix_object[
+                    "x_opencti_granted_refs"
+                ] = self.opencti.get_attribute_in_extension("granted_refs", stix_object)
             if "x_opencti_workflow_id" not in stix_object:
-                stix_object["x_opencti_workflow_id"] = (
-                    self.opencti.get_attribute_in_extension("workflow_id", stix_object)
-                )
+                stix_object[
+                    "x_opencti_workflow_id"
+                ] = self.opencti.get_attribute_in_extension("workflow_id", stix_object)
             if "x_mitre_platforms" not in stix_object:
-                stix_object["x_mitre_platforms"] = (
-                    self.opencti.get_attribute_in_mitre_extension(
-                        "platforms", stix_object
-                    )
+                stix_object[
+                    "x_mitre_platforms"
+                ] = self.opencti.get_attribute_in_mitre_extension(
+                    "platforms", stix_object
                 )
             if "x_opencti_modified_at" not in stix_object:
-                stix_object["x_opencti_modified_at"] = (
-                    self.opencti.get_attribute_in_extension("modified_at", stix_object)
-                )
+                stix_object[
+                    "x_opencti_modified_at"
+                ] = self.opencti.get_attribute_in_extension("modified_at", stix_object)
             if "opencti_upsert_operations" not in stix_object:
-                stix_object["opencti_upsert_operations"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "opencti_upsert_operations", stix_object
-                    )
+                stix_object[
+                    "opencti_upsert_operations"
+                ] = self.opencti.get_attribute_in_extension(
+                    "opencti_upsert_operations", stix_object
                 )
 
             return self.create(

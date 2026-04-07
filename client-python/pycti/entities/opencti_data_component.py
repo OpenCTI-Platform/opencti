@@ -1,282 +1,150 @@
 # coding: utf-8
 
-import json
 import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.entities.base import Entity
+from pycti.entities.mixins import ListFilesMixin
 
-class DataComponent:
+
+class DataComponent(ListFilesMixin, Entity):
     """Main DataComponent class for OpenCTI
 
     Manages MITRE ATT&CK data components in the OpenCTI platform.
 
-    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the DataComponent instance.
+    PROPERTIES = """
+        id
+        standard_id
+        entity_type
+        parent_types
+        spec_version
+        created_at
+        updated_at
+        status {
+            id
+            template {
+              id
+              name
+              color
+            }
+        }
+        createdBy {
+            ... on Identity {
+                id
+                standard_id
+                entity_type
+                parent_types
+                spec_version
+                identity_class
+                name
+                description
+                roles
+                contact_information
+                x_opencti_aliases
+                created
+                modified
+                objectLabel {
+                    id
+                    value
+                    color
+                }
+            }
+            ... on Organization {
+                x_opencti_organization_type
+                x_opencti_reliability
+            }
+            ... on Individual {
+                x_opencti_firstname
+                x_opencti_lastname
+            }
+        }
+        objectOrganization {
+            id
+            standard_id
+            name
+        }
+        objectMarking {
+            id
+            standard_id
+            entity_type
+            definition_type
+            definition
+            created
+            modified
+            x_opencti_order
+            x_opencti_color
+        }
+        objectLabel {
+            id
+            value
+            color
+        }
+        externalReferences {
+            edges {
+                node {
+                    id
+                    standard_id
+                    entity_type
+                    source_name
+                    description
+                    url
+                    hash
+                    external_id
+                    created
+                    modified
+                }
+            }
+        }
+        revoked
+        confidence
+        created
+        modified
+        name
+        description
+        aliases
+        dataSource {
+            id
+            standard_id
+            entity_type
+            parent_types
+            spec_version
+            created_at
+            updated_at
+            revoked
+            confidence
+            created
+            modified
+            name
+            description
+            aliases
+            x_mitre_platforms
+            collection_layers
+        }
+    """
 
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = """
+    FILES_PROPERTIES = """
+        id
+        name
+        size
+        metaData {
+            mimetype
+            version
+        }
+        objectMarking {
             id
             standard_id
             entity_type
-            parent_types
-            spec_version
-            created_at
-            updated_at
-            status {
-                id
-                template {
-                  id
-                  name
-                  color
-                }
-            }
-            createdBy {
-                ... on Identity {
-                    id
-                    standard_id
-                    entity_type
-                    parent_types
-                    spec_version
-                    identity_class
-                    name
-                    description
-                    roles
-                    contact_information
-                    x_opencti_aliases
-                    created
-                    modified
-                    objectLabel {
-                        id
-                        value
-                        color
-                    }
-                }
-                ... on Organization {
-                    x_opencti_organization_type
-                    x_opencti_reliability
-                }
-                ... on Individual {
-                    x_opencti_firstname
-                    x_opencti_lastname
-                }
-            }
-            objectOrganization {
-                id
-                standard_id
-                name
-            }
-            objectMarking {
-                id
-                standard_id
-                entity_type
-                definition_type
-                definition
-                created
-                modified
-                x_opencti_order
-                x_opencti_color
-            }
-            objectLabel {
-                id
-                value
-                color
-            }
-            externalReferences {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
-                        created
-                        modified
-                    }
-                }
-            }
-            revoked
-            confidence
+            definition_type
+            definition
             created
             modified
-            name
-            description
-            aliases
-            dataSource {
-                id
-                standard_id
-                entity_type
-                parent_types
-                spec_version
-                created_at
-                updated_at
-                revoked
-                confidence
-                created
-                modified
-                name
-                description
-                aliases
-                x_mitre_platforms
-                collection_layers
-            }
-        """
-        self.properties_with_files = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            spec_version
-            created_at
-            updated_at
-            status {
-                id
-                template {
-                  id
-                  name
-                  color
-                }
-            }
-            createdBy {
-                ... on Identity {
-                    id
-                    standard_id
-                    entity_type
-                    parent_types
-                    spec_version
-                    identity_class
-                    name
-                    description
-                    roles
-                    contact_information
-                    x_opencti_aliases
-                    created
-                    modified
-                    objectLabel {
-                        id
-                        value
-                        color
-                    }
-                }
-                ... on Organization {
-                    x_opencti_organization_type
-                    x_opencti_reliability
-                }
-                ... on Individual {
-                    x_opencti_firstname
-                    x_opencti_lastname
-                }
-            }
-            objectOrganization {
-                id
-                standard_id
-                name
-            }
-            objectMarking {
-                id
-                standard_id
-                entity_type
-                definition_type
-                definition
-                created
-                modified
-                x_opencti_order
-                x_opencti_color
-            }
-            objectLabel {
-                id
-                value
-                color
-            }
-            externalReferences {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
-                        created
-                        modified
-                        importFiles {
-                            edges {
-                                node {
-                                    id
-                                    name
-                                    size
-                                    metaData {
-                                        mimetype
-                                        version
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            revoked
-            confidence
-            created
-            modified
-            name
-            description
-            aliases
-            importFiles {
-                edges {
-                    node {
-                        id
-                        name
-                        size
-                        metaData {
-                            mimetype
-                            version
-                        }
-                        objectMarking {
-                            id
-                            standard_id
-                            entity_type
-                            definition_type
-                            definition
-                            created
-                            modified
-                            x_opencti_order
-                            x_opencti_color
-                        }
-                    }
-                }
-            }
-            dataSource {
-                id
-                standard_id
-                entity_type
-                parent_types
-                spec_version
-                created_at
-                updated_at
-                revoked
-                confidence
-                created
-                modified
-                name
-                description
-                aliases
-                x_mitre_platforms
-                collection_layers
-            }
-        """
+            x_opencti_order
+            x_opencti_color
+        }
+    """
 
     @staticmethod
     def generate_id(name):
@@ -303,160 +171,6 @@ class DataComponent:
         :rtype: str
         """
         return DataComponent.generate_id(data["name"])
-
-    def list(self, **kwargs):
-        """List Data Component objects.
-
-        :param filters: the filters to apply
-        :type filters: dict
-        :param search: the search keyword
-        :type search: str
-        :param first: return the first n rows from the after ID (or the beginning if not set)
-        :type first: int
-        :param after: ID of the first row for pagination
-        :type after: str
-        :param orderBy: field to order results by
-        :type orderBy: str
-        :param orderMode: ordering mode (asc/desc)
-        :type orderMode: str
-        :param customAttributes: custom attributes to return
-        :type customAttributes: str
-        :param getAll: whether to retrieve all results
-        :type getAll: bool
-        :param withPagination: whether to include pagination info
-        :type withPagination: bool
-        :param withFiles: whether to include files
-        :type withFiles: bool
-        :return: List of Data Component objects
-        :rtype: list
-        """
-        filters = kwargs.get("filters", None)
-        search = kwargs.get("search", None)
-        first = kwargs.get("first", 500)
-        after = kwargs.get("after", None)
-        order_by = kwargs.get("orderBy", None)
-        order_mode = kwargs.get("orderMode", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        get_all = kwargs.get("getAll", False)
-        with_pagination = kwargs.get("withPagination", False)
-        with_files = kwargs.get("withFiles", False)
-
-        self.opencti.app_logger.info(
-            "Listing Data-Components with filters", {"filters": json.dumps(filters)}
-        )
-        query = (
-            """
-            query DataComponents($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: DataComponentsOrdering, $orderMode: OrderingMode) {
-                dataComponents(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
-                    edges {
-                        node {
-                            """
-            + (
-                custom_attributes
-                if custom_attributes is not None
-                else (self.properties_with_files if with_files else self.properties)
-            )
-            + """
-                        }
-                    }
-                    pageInfo {
-                        startCursor
-                        endCursor
-                        hasNextPage
-                        hasPreviousPage
-                        globalCount
-                    }
-                }
-            }
-        """
-        )
-        result = self.opencti.query(
-            query,
-            {
-                "filters": filters,
-                "search": search,
-                "first": first,
-                "after": after,
-                "orderBy": order_by,
-                "orderMode": order_mode,
-            },
-        )
-        if get_all:
-            final_data = []
-            data = self.opencti.process_multiple(result["data"]["dataComponents"])
-            final_data = final_data + data
-            while result["data"]["dataComponents"]["pageInfo"]["hasNextPage"]:
-                after = result["data"]["dataComponents"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info(
-                    "Listing Data-Components", {"after": after}
-                )
-                result = self.opencti.query(
-                    query,
-                    {
-                        "filters": filters,
-                        "search": search,
-                        "first": first,
-                        "after": after,
-                        "orderBy": order_by,
-                        "orderMode": order_mode,
-                    },
-                )
-                data = self.opencti.process_multiple(result["data"]["dataComponents"])
-                final_data = final_data + data
-            return final_data
-        else:
-            return self.opencti.process_multiple(
-                result["data"]["dataComponents"], with_pagination
-            )
-
-    def read(self, **kwargs):
-        """Read a Data Component object.
-
-        :param id: the id of the Data Component
-        :type id: str
-        :param filters: the filters to apply if no id provided
-        :type filters: dict
-        :param customAttributes: custom attributes to return
-        :type customAttributes: str
-        :param withFiles: whether to include files
-        :type withFiles: bool
-        :return: Data Component object
-        :rtype: dict or None
-        """
-        id = kwargs.get("id", None)
-        filters = kwargs.get("filters", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        with_files = kwargs.get("withFiles", False)
-        if id is not None:
-            self.opencti.app_logger.info("Reading Data-Component", {"id": id})
-            query = (
-                """
-                query DataComponent($id: String!) {
-                    dataComponent(id: $id) {
-                        """
-                + (
-                    custom_attributes
-                    if custom_attributes is not None
-                    else (self.properties_with_files if with_files else self.properties)
-                )
-                + """
-                    }
-                }
-             """
-            )
-            result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(result["data"]["dataComponent"])
-        elif filters is not None:
-            result = self.list(filters=filters)
-            if len(result) > 0:
-                return result[0]
-            else:
-                return None
-        else:
-            self.opencti.app_logger.error(
-                "[opencti_data_component] Missing parameters: id or filters"
-            )
-            return None
 
     def create(self, **kwargs):
         """Create a Data Component object.
@@ -610,26 +324,26 @@ class DataComponent:
 
             # Search in extensions
             if "x_opencti_stix_ids" not in stix_object:
-                stix_object["x_opencti_stix_ids"] = (
-                    self.opencti.get_attribute_in_extension("stix_ids", stix_object)
-                )
+                stix_object[
+                    "x_opencti_stix_ids"
+                ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
             if "x_opencti_granted_refs" not in stix_object:
-                stix_object["x_opencti_granted_refs"] = (
-                    self.opencti.get_attribute_in_extension("granted_refs", stix_object)
-                )
+                stix_object[
+                    "x_opencti_granted_refs"
+                ] = self.opencti.get_attribute_in_extension("granted_refs", stix_object)
             if "x_opencti_workflow_id" not in stix_object:
-                stix_object["x_opencti_workflow_id"] = (
-                    self.opencti.get_attribute_in_extension("workflow_id", stix_object)
-                )
+                stix_object[
+                    "x_opencti_workflow_id"
+                ] = self.opencti.get_attribute_in_extension("workflow_id", stix_object)
             if "x_opencti_modified_at" not in stix_object:
-                stix_object["x_opencti_modified_at"] = (
-                    self.opencti.get_attribute_in_extension("modified_at", stix_object)
-                )
+                stix_object[
+                    "x_opencti_modified_at"
+                ] = self.opencti.get_attribute_in_extension("modified_at", stix_object)
             if "opencti_upsert_operations" not in stix_object:
-                stix_object["opencti_upsert_operations"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "opencti_upsert_operations", stix_object
-                    )
+                stix_object[
+                    "opencti_upsert_operations"
+                ] = self.opencti.get_attribute_in_extension(
+                    "opencti_upsert_operations", stix_object
                 )
 
             return self.create(

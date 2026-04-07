@@ -1,78 +1,74 @@
-class StixNestedRefRelationship:
+from pycti.entities.base import Entity
+
+
+class StixNestedRefRelationship(Entity):
     """Main StixNestedRefRelationship class for OpenCTI
 
     Manages nested reference relationships in the OpenCTI platform.
-
-    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the StixNestedRefRelationship instance.
-
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = """
-            id
-            entity_type
-            parent_types
-            spec_version
-            created_at
-            updated_at
-            standard_id
-            relationship_type
-            start_time
-            stop_time
-            from {
-                ... on StixObject {
-                    id
-                    standard_id
-                    entity_type
-                    parent_types
-                }
-                ... on StixCoreRelationship {
-                    id
-                    standard_id
-                    entity_type
-                    parent_types
-                }
-                ... on StixSightingRelationship {
-                    id
-                    standard_id
-                    entity_type
-                    parent_types
-                }
-                ... on StixCyberObservable {
-                    observable_value
-                }
+    PROPERTIES = """
+        id
+        entity_type
+        parent_types
+        spec_version
+        created_at
+        updated_at
+        standard_id
+        relationship_type
+        start_time
+        stop_time
+        from {
+            ... on StixObject {
+                id
+                standard_id
+                entity_type
+                parent_types
             }
-            to {
-                ... on StixObject {
-                    id
-                    standard_id
-                    entity_type
-                    parent_types
-                }
-                ... on StixCoreRelationship {
-                    id
-                    standard_id
-                    entity_type
-                    parent_types
-                }
-                ... on StixSightingRelationship {
-                    id
-                    standard_id
-                    entity_type
-                    parent_types
-                }
-                ... on StixCyberObservable {
-                    observable_value
-                }
+            ... on StixCoreRelationship {
+                id
+                standard_id
+                entity_type
+                parent_types
             }
-        """
+            ... on StixSightingRelationship {
+                id
+                standard_id
+                entity_type
+                parent_types
+            }
+            ... on StixCyberObservable {
+                observable_value
+            }
+        }
+        to {
+            ... on StixObject {
+                id
+                standard_id
+                entity_type
+                parent_types
+            }
+            ... on StixCoreRelationship {
+                id
+                standard_id
+                entity_type
+                parent_types
+            }
+            ... on StixSightingRelationship {
+                id
+                standard_id
+                entity_type
+                parent_types
+            }
+            ... on StixCyberObservable {
+                observable_value
+            }
+        }
+    """
 
+    # todo: this could be removed in favor of the parent list() method
+    #  if `relationship_type` followed the same case pattern as every
+    #  other variable...
     def list(self, **kwargs):
         """List stix nested ref relationship objects.
 
@@ -176,6 +172,9 @@ class StixNestedRefRelationship:
             result["data"]["stixNestedRefRelationships"], with_pagination
         )
 
+    # todo: this could be removed in favor of the parent list() method
+    #  if `relationship_type` followed the same case pattern as every
+    #  other variable...
     def read(self, **kwargs):
         """Read a stix nested ref relationship object.
 

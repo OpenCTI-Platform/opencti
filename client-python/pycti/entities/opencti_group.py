@@ -1,7 +1,10 @@
 from typing import Dict, List, Optional
 
+from pycti.entities.base import Entity
+from pycti.types import FilterGroup
 
-class Group:
+
+class Group(Entity):
     """Representation of a Group in OpenCTI
 
     Groups have members and also have assigned roles. Roles attached to a group
@@ -19,75 +22,77 @@ class Group:
 
     See the properties attribute to understand what properties are fetched by
     default from GraphQL queries.
-
-    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the Group instance.
-
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = """
-            id
-            standard_id
-            name
-            description
+    PROPERTIES = """
+        id
+        standard_id
+        name
+        description
+        entity_type
+        parent_types
+        created_at
+        updated_at
+        default_assignation
+        no_creators
+        restrict_delete
+        default_hidden_types
+        auto_new_marking
+        allowed_marking {
+            id, standard_id, definition_type, definition
+        }
+        default_marking {
             entity_type
-            parent_types
-            created_at
-            updated_at
-            default_assignation
-            no_creators
-            restrict_delete
-            default_hidden_types
-            auto_new_marking
-            allowed_marking {
+            values {
                 id, standard_id, definition_type, definition
             }
-            default_marking {
+        }
+        not_shareable_marking_types
+        max_shareable_marking {
+            id, standard_id, definition_type, definition
+        }
+        group_confidence_level {
+            max_confidence
+            overrides {
                 entity_type
-                values {
-                    id, standard_id, definition_type, definition
-                }
-            }
-            not_shareable_marking_types
-            max_shareable_marking {
-                id, standard_id, definition_type, definition
-            }
-            group_confidence_level {
                 max_confidence
-                overrides {
-                    entity_type
-                    max_confidence
-                }
             }
-            roles {
-                edges {
-                    node {
+        }
+        roles {
+            edges {
+                node {
+                    id, name
+                    capabilities {
                         id, name
-                        capabilities {
-                            id, name
-                        }
-                        capabilitiesInDraft {
-                            id, name
-                        }
+                    }
+                    capabilitiesInDraft {
+                        id, name
                     }
                 }
             }
-            members {
-                edges {
-                    node {
-                        id, individual_id, user_email, name
-                    }
+        }
+        members {
+            edges {
+                node {
+                    id, individual_id, user_email, name
                 }
             }
-        """
+        }
+    """
 
-    def list(self, **kwargs) -> List[Dict]:
+    def list(
+        self,
+        first: int = 500,
+        after: str = None,
+        order_by: str = None,
+        order_mode: str = None,
+        search: str = None,
+        filters: FilterGroup = None,
+        custom_attributes: str = None,
+        get_all: bool = False,
+        with_pagination: bool = False,
+        **kwargs,
+    ) -> List[Dict]:
         """Lists groups based on a number of filters.
 
         :param first:  Retrieve this number of results. If 0
@@ -96,14 +101,14 @@ class Group:
         :param after:  ID of the group to fetch results
             after in the list of all results, defaults to None.
         :type after: str, optional
-        :param orderBy:  Field by which to order results.
+        :param order_by:  Field by which to order results.
             Must be one of name, default_assignation, no_creators,
             restrict_delete, auto_new_marking, created_at, updated_at,
             group_confidence_level, and _score, defaults to "name".
-        :type orderBy: str, optional
-        :param orderMode:  Direction of ordering. Must be
+        :type order_by: str, optional
+        :param order_by:  Direction of ordering. Must be
             one of "asc" or "desc", defaults to "asc".
-        :type orderMode: str, optional
+        :type order_mode: str, optional
         :param search:  String to search groups for, defaults to None.
         :type search: str, optional
         :param filters:  OpenCTI API FilterGroup object.
@@ -111,27 +116,23 @@ class Group:
             the FilterGroup object in the OpenCTI GraphQL Playground, defaults
             to {}.
         :type filters: dict, optional
-        :param customAttributes: Custom attributes to fetch from the GraphQL
+        :param custom_attributes: Custom attributes to fetch from the GraphQL
             query
-        :type customAttributes: str, optional
-        :param getAll: Defaults to False. Whether or not to get all results
+        :type custom_attributes: str, optional
+        :param get_all: Defaults to False. Whether or not to get all results
             from the search. If True then param first is ignored.
-        :type getAll: bool, optional
-        :param withPagination: Defaults to False. Whether to return pagination
+        :type get_all: bool, optional
+        :param with_pagination: Defaults to False. Whether to return pagination
             info with results.
-        :type withPagination: bool, optional
+        :type with_pagination: bool, optional
         :return: List of groups in dictionary representation.
         :rtype: list[dict]
         """
-        first = kwargs.get("first", 500)
-        after = kwargs.get("after", None)
-        order_by = kwargs.get("orderBy", None)
-        order_mode = kwargs.get("orderMode", None)
-        search = kwargs.get("search", None)
-        filters = kwargs.get("filters", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        get_all = kwargs.get("getAll", False)
-        with_pagination = kwargs.get("withPagination", False)
+        order_by = order_by or kwargs.get("orderBy", None)
+        order_mode = order_mode or kwargs.get("orderMode", None)
+        custom_attributes = custom_attributes or kwargs.get("customAttributes", None)
+        get_all = get_all or kwargs.get("getAll", False)
+        with_pagination = with_pagination or kwargs.get("withPagination", False)
 
         if get_all:
             first = 100
@@ -198,24 +199,30 @@ class Group:
                 result["data"]["groups"], with_pagination
             )
 
-    def read(self, **kwargs) -> Optional[Dict]:
+    def read(
+        self,
+        id: str = None,
+        search: str = None,
+        filters: FilterGroup = None,
+        custom_attributes: str = None,
+        **kwargs,
+    ) -> Optional[Dict]:
         """Fetch a given group from OpenCTI
 
         One of id or filters is required.
 
         :param id: ID of the group to fetch
         :type id: str, optional
+        :param search: Search term for a group, e.g. its name
+        :type search: str, optional
         :param filters: Filters to apply to find single group
         :type filters: dict, optional
-        :param customAttributes: Custom attributes to fetch for the group
-        :type customAttributes: str
+        :param custom_attributes: Custom attributes to fetch for the group
+        :type custom_attributes: str
         :return: Representation of a group.
         :rtype: Optional[Dict]
         """
-        id = kwargs.get("id", None)
-        filters = kwargs.get("filters", None)
-        search = kwargs.get("search", None)
-        custom_attributes = kwargs.get("customAttributes", None)
+        custom_attributes = custom_attributes or kwargs.get("customAttributes", None)
         if id is not None:
             self.opencti.admin_logger.info("Fetching group with ID", {"id": id})
             query = (
