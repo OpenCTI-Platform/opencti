@@ -226,7 +226,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     }
   };
 
-  const handleLink = (url: string, event?: React.MouseEvent) => {
+  const handleLink = (url: string, inNewWindow?: React.MouseEvent) => {
     if (isFail || isOutdated || isProgress) return;
     handleCloseDownload();
     handleClose();
@@ -318,7 +318,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                         if (isWarning) {
                           handleOpen(event);
                         } else {
-                          handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`, event);
+                          handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`, inNewWindow);
                         }
                       }}
                       aria-haspopup="true"
