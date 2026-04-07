@@ -8,6 +8,7 @@ interface SubTypeMenuProps {
   isAttributesConfigurationEnabled?: boolean;
   isWorkflowConfigurationEnabled?: boolean;
   isCustomOverviewLayoutEnabled?: boolean;
+  isCustomViewsEnabled?: boolean;
 }
 
 const SubTypeMenu = ({
@@ -16,6 +17,7 @@ const SubTypeMenu = ({
   isAttributesConfigurationEnabled,
   isWorkflowConfigurationEnabled,
   isCustomOverviewLayoutEnabled,
+  isCustomViewsEnabled,
 }: SubTypeMenuProps) => {
   const { t_i18n } = useFormatter();
   const location = useLocation();
@@ -69,6 +71,15 @@ const SubTypeMenu = ({
           to={`/dashboard/settings/customization/entity_types/${entityType}/overview-layout`}
           value={`/dashboard/settings/customization/entity_types/${entityType}/overview-layout`}
           label={t_i18n('Overview Layout')}
+        />
+      )}
+
+      {isCustomViewsEnabled && (
+        <Tab
+          component={Link}
+          to={`/dashboard/settings/customization/entity_types/${entityType}/custom-views`}
+          value={`/dashboard/settings/customization/entity_types/${entityType}/custom-views`}
+          label={t_i18n('Custom Views')}
         />
       )}
     </Tabs>

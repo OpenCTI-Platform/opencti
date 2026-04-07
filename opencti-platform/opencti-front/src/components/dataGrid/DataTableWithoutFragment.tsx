@@ -5,6 +5,7 @@ import type { DataTableProps } from './dataTableTypes';
 import DataTableComponent from './components/DataTableComponent';
 import type { Theme } from '../Theme';
 import { useDataTableContext } from './components/DataTableContext';
+import type { LocalStorage } from '../../utils/hooks/useLocalStorageModel';
 
 type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
   | 'storageKey'
@@ -15,6 +16,7 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
   | 'disableLineSelection'
   | 'disableToolBar'
   | 'disableColumnMenu'
+  | 'emptyStateMessage'
   | 'removeSelectAll'
   | 'selectOnLineClick'
   | 'filtersComponent'
@@ -28,6 +30,7 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
   | 'actionsColumnWidth'> & {
     data: unknown;
     globalCount: number;
+    initialValues?: LocalStorage;
   };
 
 interface DataTableWithoutFragmentInternalToolBarProps {
@@ -69,7 +72,7 @@ const DataTableWithoutFragmentInternalToolbar = ({ taskScope, dataIds }: DataTab
 const DataTableWithoutFragment = (props: OCTIDataTableProps & {
   taskScope?: string;
 }) => {
-  const { data, taskScope } = props;
+  const { data, taskScope, initialValues } = props;
 
   const extractDataIds = () => {
     if (!Array.isArray(data)) return [];
@@ -83,7 +86,7 @@ const DataTableWithoutFragment = (props: OCTIDataTableProps & {
       useLineData={(line) => line}
       dataQueryArgs={(line: never) => line}
       resolvePath={(a) => a}
-      initialValues={{}}
+      initialValues={initialValues ?? {}}
       disableLineSelection={!taskScope}
       dataTableToolBarComponent={taskScope
         ? (

@@ -39,6 +39,10 @@ export const subTypeQuery = graphql`
       ...GlobalWorkflowSettings_global
       ...RequestAccessSettings_requestAccess
     }
+    customViewsSettings(entityType: $id) {
+      canEntityTypeHaveCustomViews
+      ...CustomViewsSettings_customViews
+    }
   }
 `;
 
@@ -51,7 +55,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { typesWithFintelTemplates } = useAttributes();
   const { isFeatureEnable } = useHelper();
 
-  const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
+  const { subType, customViewsSettings } = usePreloadedQuery(subTypeQuery, queryRef);
 
   const entitySetting = useFragment(
     entitySettingsOverviewLayoutCustomizationFragment,
@@ -76,11 +80,14 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
   const isCustomOverviewLayoutEnabled = !!entitySetting?.overview_layout_customization;
 
+  const isCustomViewsEnabled = customViewsSettings.canEntityTypeHaveCustomViews;
+
   const tabs: SubTypeTabs = {
     workflow: isWorkflowConfigurationEnabled,
     attributes: isAttributesConfigurationEnabled,
     templates: isFINTELTemplatesEnabled,
     'overview-layout': isCustomOverviewLayoutEnabled,
+    'custom-views': isCustomViewsEnabled,
   };
 
   return (
@@ -112,6 +119,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
         isAttributesConfigurationEnabled={isAttributesConfigurationEnabled}
         isWorkflowConfigurationEnabled={isWorkflowConfigurationEnabled}
         isCustomOverviewLayoutEnabled={isCustomOverviewLayoutEnabled}
+        isCustomViewsEnabled={isCustomViewsEnabled}
       />
 
       {/** add a minHeight to prevent page jumps when switching tab
@@ -121,6 +129,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
           context={{
             subType,
             tabs,
+            customViewsSettings,
           }}
         />
       </Box>

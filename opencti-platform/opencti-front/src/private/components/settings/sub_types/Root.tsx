@@ -1,6 +1,6 @@
 import EEGuard from '@components/common/entreprise_edition/EEGuard';
 import { Suspense } from 'react';
-import { Navigate, Route, Routes, useOutletContext, useParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader from '../../../../components/Loader';
 import FintelTemplate from './fintel_templates/FintelTemplate';
@@ -9,11 +9,8 @@ import EntitySettingAttributesCard from './entity_setting/EntitySettingAttribute
 import EntitySettingCustomOverview from './entity_setting/EntitySettingCustomOverview';
 import FintelTemplatesManager from './fintel_templates/FintelTemplatesManager';
 import GlobalWorkflowSettingsCard from './workflow/GlobalWorkflowSettingsCard';
-import { SubTypeTabs } from './SubTypeOutletContext';
-
-interface SubTypeTabsContext {
-  tabs: SubTypeTabs;
-}
+import { useSubTypeOutletContext } from './SubTypeOutletContext';
+import CustomViewsSettings from './custom_views/CustomViewsSettings';
 
 const SubTypeIndexRedirect = () => {
   const {
@@ -22,23 +19,26 @@ const SubTypeIndexRedirect = () => {
       attributes: isAttributesConfigurationEnabled,
       templates: isFINTELTemplatesEnabled,
       'overview-layout': isCustomOverviewLayoutEnabled,
+      'custom-views': isCustomViewsEnabled,
     },
-  } = useOutletContext<SubTypeTabsContext>();
+  } = useSubTypeOutletContext();
 
   const hasAtLeastOneEnabledTab
     = isWorkflowConfigurationEnabled
       || isAttributesConfigurationEnabled
       || isFINTELTemplatesEnabled
-      || isCustomOverviewLayoutEnabled;
+      || isCustomOverviewLayoutEnabled
+      || isCustomViewsEnabled;
 
   if (!hasAtLeastOneEnabledTab) return null;
 
   // Redirect to the first enabled tab based on the priority order:
-  // workflow > attributes > templates > overview layout
+  // workflow > attributes > templates > overview layout > custom views
   if (isWorkflowConfigurationEnabled) return <Navigate to="workflow" replace />;
   if (isAttributesConfigurationEnabled) return <Navigate to="attributes" replace />;
   if (isFINTELTemplatesEnabled) return <Navigate to="templates" replace />;
   if (isCustomOverviewLayoutEnabled) return <Navigate to="overview-layout" replace />;
+  if (isCustomViewsEnabled) return <Navigate to="custom-views" replace />;
 
   return null;
 };
@@ -57,6 +57,7 @@ const RootSubType = () => {
           <Route path="templates" element={<FintelTemplatesManager />} />
           <Route path="attributes" element={<EntitySettingAttributesCard />} />
           <Route path="overview-layout" element={<EntitySettingCustomOverview />} />
+          <Route path="custom-views" element={<CustomViewsSettings />} />
         </Route>
         <Route
           path="/templates/:templateId"
@@ -66,6 +67,7 @@ const RootSubType = () => {
             </EEGuard>
           )}
         />
+        <Route path="*" element={<ErrorNotFound />} />
       </Routes>
     </Suspense>
   );
