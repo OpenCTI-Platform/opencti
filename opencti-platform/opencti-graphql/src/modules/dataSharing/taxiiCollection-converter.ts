@@ -11,6 +11,7 @@ const convertTaxiiCollectionToStix = (instance: StoreEntityTaxiiCollection): Sti
     description: instance.description,
     filters: instance.filters,
     taxii_public: instance.taxii_public,
+    taxii_public_user_id: instance.taxii_public_user_id,
     include_inferences: instance.include_inferences,
     score_to_confidence: instance.score_to_confidence,
     extensions: {
