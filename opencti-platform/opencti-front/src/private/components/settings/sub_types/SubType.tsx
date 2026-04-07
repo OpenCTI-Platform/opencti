@@ -3,6 +3,7 @@ import { Box, Stack } from '@mui/material';
 import React, { Suspense } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Outlet, useParams } from 'react-router-dom';
+import { ErrorBoundary } from '@components/Error';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader from '../../../../components/Loader';
@@ -125,13 +126,15 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
       {/** add a minHeight to prevent page jumps when switching tab
        * that have different content size with magic number */}
       <Box sx={{ minHeight: '240px' }}>
-        <Outlet
-          context={{
-            subType,
-            tabs,
-            customViewsSettings,
-          }}
-        />
+        <ErrorBoundary>
+          <Outlet
+            context={{
+              subType,
+              tabs,
+              customViewsSettings,
+            }}
+          />
+        </ErrorBoundary>
       </Box>
 
     </Stack>
