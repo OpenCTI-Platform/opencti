@@ -11,7 +11,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import { setCookieError } from './httpUtils';
 import { getDiscoveredIntentCatalog } from '../modules/xtm/one/xtm-one';
 import xtmOneClient from '../modules/xtm/one/xtm-one-client';
-import { issueAuthenticationJWT } from '../domain/user';
+import { issueXtmJwt } from '../domain/xtm-auth';
 
 const XTM_ONE_URL = nconf.get('xtm:xtm_one_url');
 export const XTM_ONE_CHATBOT_URL = `${XTM_ONE_URL}/chatbot`;
@@ -96,10 +96,10 @@ export const getChatbotAgents = async (req: Express.Request, res: Express.Respon
 export const postChatbotSession = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);
-    if (!context) return;
+    if (!context?.user) return;
 
     const url = `${XTM_ONE_URL}/api/v1/platform/chat/sessions`;
-    const jwt = await issueAuthenticationJWT(context.user);
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
     const response = await axios.post(url, req.body, {
       headers: {
         Authorization: `Bearer ${jwt}`,
@@ -128,7 +128,7 @@ export const postChatbotSession = async (req: Express.Request, res: Express.Resp
 export const postChatbotMessage = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);
-    if (!context) return;
+    if (!context?.user) return;
 
     if (!req.body) {
       res.status(400).json({ error: 'Request body is missing' });
@@ -137,7 +137,7 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
 
     const url = `${XTM_ONE_URL}/api/v1/platform/chat/messages`;
 
-    const jwt = await issueAuthenticationJWT(context.user);
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
     const response = await axios.post(url, req.body, {
       headers: {
         Authorization: `Bearer ${jwt}`,
@@ -232,7 +232,7 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
 export const postAgentMessage = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);
-    if (!context) return;
+    if (!context?.user) return;
 
     const { agent_slug, content } = req.body || {};
     if (!agent_slug || !content) {
@@ -241,7 +241,7 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
     }
 
     const url = `${XTM_ONE_URL}/api/v1/platform/chat/messages`;
-    const jwt = await issueAuthenticationJWT(context.user);
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
     const response = await axios.post(url, {
       agent_slug,
       content,
@@ -302,7 +302,7 @@ export const getLegacyChatbotProxy = async (req: Express.Request, res: Express.R
       return;
     }
 
-    const jwt = await issueAuthenticationJWT(context.user);
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
     const vars = {
       OPENCTI_URL: getChatbotUrl(req),
       OPENCTI_TOKEN: jwt,

@@ -104,10 +104,8 @@ import { safeRender } from '../utils/safeEjs.client';
 import { totp } from '../utils/totp';
 import { pushAll } from '../utils/arrayUtil';
 import { apiTokens } from '../modules/attributes/internalObject-registrationAttributes';
-import { decodeJwt, SignJWT } from 'jose';
-import { getPlatformCrypto } from '../utils/platformCrypto';
 import { addUserTokenByAdmin, generateTokenHmac } from '../modules/user/user-domain';
-import { memoize } from '../utils/memoize';
+import { verifyXtmJwt, isOwnIssuer } from './xtm-auth';
 import { getSettings } from './settings';
 import passport from 'passport';
 import {
@@ -121,7 +119,6 @@ import {
 } from '../modules/authenticationProvider/providers-configuration';
 import { addOrganization } from '../modules/organization/organization-domain';
 import validator from 'validator';
-import xtmOneClient from '../modules/xtm/one/xtm-one-client';
 import { logAuthInfo } from '../modules/authenticationProvider/providers-logger';
 
 const BEARER = 'Bearer ';
@@ -1772,46 +1769,36 @@ export const authenticateUserByBasicAuth = async (context, req, basicAuth) => {
   throw FunctionalError('Cannot identify user with basic auth');
 };
 
-const getJWTKeyPair = memoize(async () => {
-  const factory = await getPlatformCrypto();
-  return factory.deriveEd25519KeyPair(['authentication', 'xtm1'], 1);
-});
+export const authenticateUserByJWT = async (context, req, token) => {
+  const verified = await verifyXtmJwt(token);
+  const { iss, sub, email } = verified.payload;
 
-export const issueAuthenticationJWT = async (user, duration = '1h') => {
-  const xmt1DerivationKeyPair = await getJWTKeyPair();
-  const jwt = new SignJWT({ sub: user.id, name: user.name, email: user.user_email })
-    .setIssuer('opencti')
-    .setIssuedAt()
-    .setExpirationTime(duration);
-  return await xmt1DerivationKeyPair.signJwt(jwt);
+  // Own token: sub is the user id
+  if (isOwnIssuer(iss)) {
+    if (!sub) {
+      throw AuthenticationFailure('JWT missing sub claim');
+    }
+    return await authenticateUserByUserId(context, req, sub);
+  }
+
+  // External trusted issuer: resolve user through email claim
+  if (!email) {
+    throw AuthenticationFailure('Trusted issuer JWT missing email claim');
+  }
+  return await authenticateUserByEmail(context, req, email);
 };
 
-export const authenticateUserByJWT = async (context, req, token) => {
-  // Peek at the payload without signature verification to check the issuer
-  const unverifiedPayload = decodeJwt(token);
-  // This authentication shortcut is only for tokens issued by xtm-one,
-  // which are used in testing environments and are not signature-verified.
-  // For all other tokens, we require signature verification.
-  // Will be removed soon after introduction of xtm-one.
-  if (xtmOneClient.isConfigured() && unverifiedPayload.iss === 'filigran-copilot') {
-    // Copilot tokens are not signature-verified (testing purpose)
-    const email = unverifiedPayload.email;
-    if (!email) {
-      throw AuthenticationFailure('Copilot JWT missing email claim');
-    }
-    const user = await getUserByEmail(email);
-    if (!user) {
-      throw AuthenticationFailure('Copilot JWT email does not match any user');
-    }
-    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-    const cacheUser = platformUsers.get(user.id);
-    return internalAuthenticateUser(context, req, cacheUser);
+const authenticateUserByEmail = async (context, req, email) => {
+  const user = await getUserByEmail(email);
+  if (!user) {
+    throw AuthenticationFailure('JWT email does not match any user', { email });
   }
-  // Standard path: verify signature then authenticate by user id
-  const xmt1DerivationKeyPair = await getJWTKeyPair();
-  const verified = await xmt1DerivationKeyPair.verifyJwt(token);
-  const userId = verified.payload.sub;
-  return await authenticateUserByUserId(context, req, userId);
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const cacheUser = platformUsers.get(user.id);
+  if (!cacheUser) {
+    throw AuthenticationFailure('Cannot identify user with email', { email });
+  }
+  return internalAuthenticateUser(context, req, cacheUser);
 };
 
 export const authenticateUserByToken = async (context, req, token) => {

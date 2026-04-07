@@ -16,6 +16,7 @@ import contentDisposition from 'content-disposition';
 import { printSchema } from 'graphql';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
 import { sessionAuthenticateUser, userWithOrigin } from '../domain/user';
+import { getXtmJwks } from '../domain/xtm-auth';
 import { downloadFile, getFileContent, isStorageAlive } from '../database/raw-file-storage';
 import { loadFile } from '../database/file-storage';
 import { DEFAULT_INVALID_CONF_VALUE, executionContext, SYSTEM_USER } from '../utils/access';
@@ -181,6 +182,19 @@ const createApp = async (app, schema) => {
 
   // -- Init rolling feeds rest api
   initHttpRollingFeeds(app);
+
+  // -- Init XTM cross-platform auth api (JWKS endpoint, public, no authentication required)
+  app.get(`${basePath}/xtm/auth/jwks`, async (_req, res) => {
+    try {
+      const jwks = await getXtmJwks();
+      res.set('Content-Type', 'application/json');
+      res.set('Cache-Control', 'public, max-age=3600'); // 1 hour cache
+      res.json(jwks);
+    } catch (e) {
+      logApp.error('[XTM_AUTH] Error serving JWKS', { cause: e });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
 
   // -- Register the encryption module
   archiver.registerFormat('zip-encrypted', archiverZipEncrypted);
