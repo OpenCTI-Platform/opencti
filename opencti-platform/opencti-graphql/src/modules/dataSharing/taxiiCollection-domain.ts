@@ -11,7 +11,7 @@ import conf, { BUS_TOPICS } from '../../config/conf';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { convertFiltersToQueryOptions } from '../../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { isUserHasCapability, MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../../utils/access';
+import { isUserHasCapability, MEMBER_ACCESS_RIGHT_VIEW, SETTINGS_SET_ACCESSES, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../../utils/access';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../ingestion/ingestion-types';
 import { authorizedMembers } from '../../schema/attribute-definition';
@@ -29,6 +29,9 @@ const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
 
 // Taxii graphQL handlers
 export const createTaxiiCollection = async (context: AuthContext, user: AuthUser, input: TaxiiCollectionAddInput) => {
+  if (input.taxii_public && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    throw FunctionalError('You must have the SETTINGS_SETACCESSES capability to create a public Taxii collection');
+  }
   if (input.taxii_public && !input.taxii_public_user_id) {
     throw FunctionalError('A user must be configured when the Taxii collection is public');
   }
@@ -66,6 +69,10 @@ export const findTaxiiCollectionPaginated = (context: AuthContext, user: AuthUse
   return pageEntitiesConnection<BasicStoreEntityTaxiiCollection>(context, SYSTEM_USER, [ENTITY_TYPE_TAXII_COLLECTION], publicArgs);
 };
 export const taxiiCollectionEditField = async (context: AuthContext, user: AuthUser, collectionId: string, input: EditInput[]) => {
+  const publicFields = ['taxii_public', 'taxii_public_user_id'];
+  if (input.some((item) => publicFields.includes(item.key)) && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    throw FunctionalError('You must have the SETTINGS_SETACCESSES capability to modify public Taxii collection settings');
+  }
   const publicUserIdItem = input.find((item) => item.key === 'taxii_public_user_id');
   if (publicUserIdItem?.value?.[0]) {
     await validatePublicUserId(context, publicUserIdItem.value[0]);
