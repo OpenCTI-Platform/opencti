@@ -1,7 +1,7 @@
 import React from 'react';
 import { GraphiQL } from 'graphiql';
 import { createGraphiQLFetcher } from '@graphiql/toolkit';
-import 'graphiql/graphiql.css';
+import 'graphiql/style.css';
 import Box from '@mui/material/Box';
 import { APP_BASE_PATH } from '../../relay/environment';
 import { useFormatter } from '../../components/i18n';
