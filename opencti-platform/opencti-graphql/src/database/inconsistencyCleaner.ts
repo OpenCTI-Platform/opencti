@@ -35,10 +35,10 @@ const getLoadByInternalIdQuery = (internal_id: string) => {
     bool: {
       filter: [{
         term: {
-          [`${internalId.name}.keyword`]: internal_id
-        }
-      }]
-    }
+          [`${internalId.name}.keyword`]: internal_id,
+        },
+      }],
+    },
   };
 };
 
