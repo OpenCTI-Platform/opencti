@@ -13,6 +13,7 @@ import type { DomainFindById } from '../../domain/domainTypes';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isUserHasCapability, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../../utils/access';
 import { TAXIIAPI } from '../../domain/user';
+import { validatePublicUserId } from './dataSharing-utils';
 
 const VALID_MULTI_MATCH_STRATEGIES = ['first', 'list'];
 
@@ -64,6 +65,12 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
 
 export const createFeed = async (context: AuthContext, user: AuthUser, input: FeedAddInput): Promise<BasicStoreEntityFeed> => {
   checkFeedIntegrity(input);
+  if (input.feed_public && !input.feed_public_user_id) {
+    throw FunctionalError('A user must be configured when the feed is public');
+  }
+  if (input.feed_public_user_id) {
+    await validatePublicUserId(context, input.feed_public_user_id);
+  }
   const feedToCreate = { ...input, authorized_authorities: [TAXIIAPI_SETCOLLECTIONS] };
   const { element, isCreation } = await createEntity(context, user, feedToCreate, ENTITY_TYPE_FEED, { complete: true });
   if (isCreation) {
@@ -86,6 +93,12 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
   const feed = await findById(context, user, id);
   if (!feed) {
     throw FunctionalError(`Feed ${id} cant be found`);
+  }
+  if (input.feed_public && !input.feed_public_user_id) {
+    throw FunctionalError('A user must be configured when the feed is public');
+  }
+  if (input.feed_public_user_id) {
+    await validatePublicUserId(context, input.feed_public_user_id);
   }
   // authorized_members renaming
   let finalInput = { ...input };

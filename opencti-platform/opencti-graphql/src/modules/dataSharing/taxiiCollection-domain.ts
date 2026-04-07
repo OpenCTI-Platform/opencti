@@ -19,6 +19,7 @@ import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ABSTRACT_STIX_OBJECT } from '../../schema/general';
 import { TAXIIAPI } from '../../domain/user';
+import { validatePublicUserId } from './dataSharing-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditContext, EditInput, QueryTaxiiCollectionsArgs, TaxiiCollectionAddInput } from '../../generated/graphql';
 import type { BasicConnection, BasicStoreBase, BasicStoreEntity } from '../../types/store.d';
@@ -28,6 +29,12 @@ const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
 
 // Taxii graphQL handlers
 export const createTaxiiCollection = async (context: AuthContext, user: AuthUser, input: TaxiiCollectionAddInput) => {
+  if (input.taxii_public && !input.taxii_public_user_id) {
+    throw FunctionalError('A user must be configured when the Taxii collection is public');
+  }
+  if (input.taxii_public_user_id) {
+    await validatePublicUserId(context, input.taxii_public_user_id);
+  }
   const data = {
     authorized_authorities: [TAXIIAPI_SETCOLLECTIONS],
     ...input,
@@ -59,6 +66,10 @@ export const findTaxiiCollectionPaginated = (context: AuthContext, user: AuthUse
   return pageEntitiesConnection<BasicStoreEntityTaxiiCollection>(context, SYSTEM_USER, [ENTITY_TYPE_TAXII_COLLECTION], publicArgs);
 };
 export const taxiiCollectionEditField = async (context: AuthContext, user: AuthUser, collectionId: string, input: EditInput[]) => {
+  const publicUserIdItem = input.find((item) => item.key === 'taxii_public_user_id');
+  if (publicUserIdItem?.value?.[0]) {
+    await validatePublicUserId(context, publicUserIdItem.value[0]);
+  }
   const finalInput = input.map(({ key, value }) => {
     const item = { key, value };
     if (key === authorizedMembers.name) {

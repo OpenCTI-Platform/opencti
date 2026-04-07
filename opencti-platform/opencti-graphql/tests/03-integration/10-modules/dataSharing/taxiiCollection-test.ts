@@ -4,7 +4,7 @@ import type { TaxiiCollectionAddInput } from '../../../../src/generated/graphql'
 import { queryAsAdminWithSuccess, queryAsUser } from '../../../utils/testQueryHelper';
 import { logApp } from '../../../../src/config/conf';
 import { getGroupEntity } from '../../../utils/domainQueryHelper';
-import { AMBER_GROUP, USER_CONNECTOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { ADMIN_USER, AMBER_GROUP, USER_CONNECTOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { MEMBER_ACCESS_RIGHT_VIEW } from '../../../../src/utils/access';
 
 describe('Taxii collection resolver coverage', () => {
@@ -18,6 +18,7 @@ describe('Taxii collection resolver coverage', () => {
       description: 'Taxii collection for sharing public - description',
       authorized_members: [],
       taxii_public: true,
+      taxii_public_user_id: ADMIN_USER.id,
       include_inferences: true,
       score_to_confidence: false,
       filters: JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], operator: 'eq', values: ['Credential'], mode: 'or' }], filterGroups: [] }),
