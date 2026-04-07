@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdminWithSuccess, queryAsUser, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { type StreamCollectionAddInput } from '../../../../src/generated/graphql';
-import { logApp } from '../../../../src/config/conf';
+import { getBaseUrl, logApp } from '../../../../src/config/conf';
 import { getGroupEntity } from '../../../utils/domainQueryHelper';
-import { AMBER_GROUP, USER_CONNECTOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { ADMIN_USER, AMBER_GROUP, USER_CONNECTOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { MEMBER_ACCESS_RIGHT_VIEW } from '../../../../src/utils/access';
 
 describe('Stream resolver coverage', () => {
@@ -18,6 +18,8 @@ describe('Stream resolver coverage', () => {
       filters: JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], operator: 'eq', values: ['Domain-Name'], mode: 'or' }], filterGroups: [] }),
       name: 'Public stream for resolver tests',
       stream_public: true,
+      stream_public_user_id: ADMIN_USER.id,
+      stream_live: true,
     };
 
     const publicStreamResponse = await queryAsAdminWithSuccess({
@@ -231,6 +233,22 @@ describe('Stream resolver coverage', () => {
     // Public stream should be found
     expect(allStreamsResponse?.data?.streamCollections?.edges
       .filter((stream: any) => stream.node.name === 'Public stream for resolver tests').length).toBe(1);
+  });
+
+  it('should access public SSE stream without authentication (covers authenticateForPublic)', async () => {
+    const response = await fetch(`${getBaseUrl()}/stream/${publicStreamId}`, {
+      headers: { Accept: 'text/event-stream' },
+    });
+    await response.body?.cancel();
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('text/event-stream');
+  });
+
+  it('should reject unauthenticated access to restricted SSE stream', async () => {
+    const response = await fetch(`${getBaseUrl()}/stream/${restrictedStreamId}`, {
+      headers: { Accept: 'text/event-stream' },
+    });
+    expect(response.status).toBe(410);
   });
 
   it('Delete public stream collection', async () => {
