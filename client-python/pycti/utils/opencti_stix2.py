@@ -3,6 +3,7 @@ import datetime
 import json
 import os
 import random
+import re
 import time
 import traceback
 import uuid
@@ -158,7 +159,10 @@ class OpenCTIStix2:
         :rtype: str
         """
         if text is not None:
-            return text.replace("<code>", "`").replace("</code>", "`")
+            # (.*?) → lazy match captures the content between the tags (shortest possible, so nested/adjacent pairs don't bleed into each other)
+            # re.DOTALL → allows . to match newlines, so multi-line code content inside the tags still works
+            # \1 in the replacement → puts the captured content back between the backticks
+            return re.sub(r"<code>(.*?)</code>", r"`\1`", text, flags=re.DOTALL)
         else:
             return None
 
