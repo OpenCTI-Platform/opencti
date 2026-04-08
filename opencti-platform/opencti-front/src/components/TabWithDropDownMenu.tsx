@@ -1,40 +1,11 @@
 import { MouseEvent, ReactElement, useState } from 'react';
-import { Box, MenuItemProps, PopoverProps, MenuItem } from '@mui/material';
+import { Box, MenuItemProps, PopoverProps, MenuItem, SxProps } from '@mui/material';
 import Tab, { TabProps } from '@mui/material/Tab';
 import Menu from '@mui/material/Menu';
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 
-const TAB_STYLE = {
-  display: 'flex',
-  flexDirection: 'row',
-  gap: '4px',
-  alignItems: 'center',
-  // Compensate invalid vertical alignment of other tabs due to application
-  // of 'inline-block' & 'textTransform'. To be removed if/when we find a
-  // better way to capitalize first letters of all tabs.
-  paddingBottom: '14px',
-  paddingTop: '7px',
-  // Compensate horizontal space in ArrowDropUp/ArrowDropDown svg
-  paddingLeft: '19px',
-  paddingRight: '13px',
-  // Compensate application of the 'inherit' variant instead
-  // of the 'primary' variant to the tab. To be removed when possible.
-  opacity: 1,
-  // Use default text color
-  color: 'text.secondary',
-} as const;
-
-// Apply same CSS-driven case transform as applied to other tab labels
-const LABEL_STYLE = {
-  textTransform: 'lowercase',
-  display: 'inline-block',
-  '&::first-letter': {
-    textTransform: 'uppercase',
-  },
-} as const;
-
-const ARROW_STYLE = {
-  fontStyle: '20px',
+const arrowStyle: SxProps = {
+  fontSize: '20px',
 };
 
 type TabWithDropDownMenuProps = TabProps & {
@@ -68,15 +39,40 @@ const useTabWithDropDownMenu = ({ skip, renderMenuItems, label, ...tabProps }: T
           <Tab
             {...tabProps}
             component="div"
-            sx={TAB_STYLE}
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              gap: '4px',
+              alignItems: 'center',
+              // Compensate invalid vertical alignment of other tabs due to application
+              // of 'inline-block' & 'textTransform'. To be removed if/when we find a
+              // better way to capitalize first letters of all tabs.
+              paddingBottom: '14px',
+              paddingTop: '7px',
+              // Compensate horizontal space in ArrowDropUp/ArrowDropDown svg
+              paddingLeft: '19px',
+              paddingRight: '13px',
+              // Compensate application of the 'inherit' variant instead
+              // of the 'primary' variant to the tab. To be removed when possible.
+              opacity: 1,
+              // Use default text color
+              color: 'text.secondary',
+            }}
             label={(
               <>
-                <Box sx={LABEL_STYLE}>
+                <Box sx={{
+                  textTransform: 'lowercase',
+                  display: 'inline-block',
+                  '&::first-letter': {
+                    textTransform: 'uppercase',
+                  },
+                }}
+                >
                   {label}
                 </Box>
                 {anchorPopover
-                  ? <ArrowDropUp sx={ARROW_STYLE} />
-                  : <ArrowDropDown sx={ARROW_STYLE} />}
+                  ? <ArrowDropUp sx={arrowStyle} />
+                  : <ArrowDropDown sx={arrowStyle} />}
               </>
             )}
             onClick={onOpenPopover}

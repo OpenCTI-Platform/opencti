@@ -3,7 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import StixDomainObjectTabsBox, { type StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CustomViewRedirector from '@components/custom_views/CustomViewRedirector';
-import FeatureFlagged from '../../../../components/FeatureFlagged';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 interface StixDomainObjectMainProps {
   entityType: string;
@@ -21,6 +21,8 @@ const StixDomainObjectMain = ({
   extraRoutes,
 }: StixDomainObjectMainProps) => {
   const tabs = Object.keys(pages) as StixDomainObjectTabsBoxTab[];
+  const { isFeatureEnable } = useHelper();
+  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
   return (
     <>
       <StixDomainObjectTabsBox
@@ -63,18 +65,15 @@ const StixDomainObjectMain = ({
         {extraRoutes}
         <Route
           path="*"
-          element={(
-            <FeatureFlagged
-              flags={['CUSTOM_VIEW']}
-              Enabled={(
+          element={isCustomViewFeatureEnabled
+            ? (
                 <CustomViewRedirector
                   entityType={entityType}
                   Fallback={<ErrorNotFound />}
                 />
-              )}
-              Disabled={<ErrorNotFound />}
-            />
-          )}
+              )
+            : <ErrorNotFound />
+          }
         />
       </Routes>
     </>

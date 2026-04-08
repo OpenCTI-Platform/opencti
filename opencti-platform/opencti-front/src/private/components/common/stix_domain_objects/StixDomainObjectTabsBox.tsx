@@ -6,7 +6,7 @@ import Tab from '@mui/material/Tab';
 import Stack from '@mui/material/Stack';
 import { getCurrentTab } from '../../../../utils/utils';
 import { useFormatter } from '../../../../components/i18n';
-import FeatureFlagged from '../../../../components/FeatureFlagged';
+import useHelper from '../../../../utils/hooks/useHelper';
 import CustomViewTabsWrapper from '@components/custom_views/CustomViewTabsWrapper';
 
 export type StixDomainObjectTabsBoxTab
@@ -81,15 +81,6 @@ const TABS_INFO: readonly TabInfo[] = [{
   label: 'History',
 }];
 
-const CONTAINER_STYLE = {
-  borderBottom: 1,
-  borderColor: 'divider',
-  marginBottom: 3,
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-};
-
 /**
  * Tabs container shared across all SDO pages.
  * Applies common logic to display (or not) the "Custom views" tab.
@@ -98,6 +89,8 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
   const { basePath, entityType, extraActions, tabs } = props;
   const { t_i18n } = useFormatter();
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
   const currentTab = getCurrentTab(location.pathname, basePath);
   const StaticTabs = TABS_INFO.map(({ tab, path, label }) =>
     tabs.includes(tab) && (
@@ -110,32 +103,35 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
       />
     ));
   return (
-    <Box sx={CONTAINER_STYLE}>
-      <FeatureFlagged
-        flags={['CUSTOM_VIEW']}
-        Enabled={(
-          <CustomViewTabsWrapper
-            basePath={basePath}
-            entityType={entityType}
-            render={({ CustomViewsTab, CustomViewsDropDown, currentCustomViewTab }) => {
-              return (
-                <>
-                  <Tabs value={currentCustomViewTab ?? currentTab}>
-                    {StaticTabs}
-                    {CustomViewsTab}
-                  </Tabs>
-                  {CustomViewsDropDown}
-                </>
-              );
-            }}
-          />
-        )}
-        Disabled={(
-          <Tabs value={currentTab}>
-            {StaticTabs}
-          </Tabs>
-        )}
-      />
+    <Box sx={{
+      borderBottom: 1,
+      borderColor: 'divider',
+      marginBottom: 3,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    }}
+    >
+      {isCustomViewFeatureEnabled
+        ? (
+            <CustomViewTabsWrapper
+              basePath={basePath}
+              entityType={entityType}
+              render={({ CustomViewsTab, CustomViewsDropDown, currentCustomViewTab }) => {
+                return (
+                  <>
+                    <Tabs value={currentCustomViewTab ?? currentTab}>
+                      {StaticTabs}
+                      {CustomViewsTab}
+                    </Tabs>
+                    {CustomViewsDropDown}
+                  </>
+                );
+              }}
+            />
+          )
+        : <Tabs value={currentTab}> {StaticTabs} </Tabs>
+      }
       {extraActions ? (
         <Stack gap={2} direction="row" justifyContent="space-between" alignItems="center">
           {extraActions}

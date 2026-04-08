@@ -3,28 +3,25 @@ import { Box } from '@mui/material';
 import DashboardViz from '@components/workspaces/dashboards/DashboardViz';
 import useDashboard from '@components/widgets/useDashboard';
 
-const CONTAINER_STYLE = {
-  // Compensate gridConfig margins to avoid outer margins
-  margin: '0 -20px 0 -20px',
-  marginTop: '-20px',
-};
-
-const WIDGET_STYLE = {
-  display: 'relative',
-};
-
-interface CustomViewComponentProps {
+interface CustomViewProps {
   manifest: string;
 }
 
 /**
  * Displays a custom view from its serialized content
  */
-const CustomViewComponent = ({ manifest }: CustomViewComponentProps) => {
+const CustomView = ({ manifest }: CustomViewProps) => {
   const { width, containerRef } = useContainerWidth();
   const { config, widgetsArray, widgetsLayouts } = useDashboard(manifest);
   return (
-    <Box ref={containerRef} sx={CONTAINER_STYLE}>
+    <Box
+      ref={containerRef}
+      sx={{
+      // Compensate gridConfig margins to avoid outer margins
+        margin: '0 -20px 0 -20px',
+        marginTop: '-20px',
+      }}
+    >
       <ReactGridLayout
         className="layout"
         width={width}
@@ -35,7 +32,12 @@ const CustomViewComponent = ({ manifest }: CustomViewComponentProps) => {
         dropConfig={{ enabled: false }}
       >
         {widgetsArray.map((widget) => (
-          <div key={widget.id} style={WIDGET_STYLE}>
+          <div
+            key={widget.id}
+            style={{
+              display: 'relative',
+            }}
+          >
             <DashboardViz
               key={widget.id}
               widget={widget}
@@ -48,4 +50,4 @@ const CustomViewComponent = ({ manifest }: CustomViewComponentProps) => {
   );
 };
 
-export default CustomViewComponent;
+export default CustomView;
