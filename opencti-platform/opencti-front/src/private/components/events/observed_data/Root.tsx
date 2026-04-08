@@ -116,6 +116,7 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
           enableEnricher={false}
         />
         <StixDomainObjectMain
+          entityType="Observed-Data"
           basePath={basePath}
           pages={{
             overview:

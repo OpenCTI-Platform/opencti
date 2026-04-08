@@ -165,6 +165,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
+              entityType="Channel"
               basePath={basePath}
               pages={{
                 overview:

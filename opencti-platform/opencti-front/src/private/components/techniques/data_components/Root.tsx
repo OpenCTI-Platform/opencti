@@ -123,6 +123,7 @@ const RootDataComponent = () => {
                     enableEnrollPlaybook={true}
                   />
                   <StixDomainObjectMain
+                    entityType="Data-Component"
                     basePath={basePath}
                     pages={{
                       overview:
