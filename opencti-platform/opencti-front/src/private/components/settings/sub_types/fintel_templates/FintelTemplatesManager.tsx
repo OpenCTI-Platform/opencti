@@ -5,14 +5,13 @@ import { Add as AddIcon, CloudUploadOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import { BaseSyntheticEvent, useRef, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Card from '../../../../../components/common/card/Card';
-import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../../components/i18n';
 import { handleError, MESSAGING$ } from '../../../../../relay/environment';
 import { resolveLink } from '../../../../../utils/Entity';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
-import { SubTypeQuery } from '../__generated__/SubTypeQuery.graphql';
+import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import { FintelTemplatesManager_templates$key } from './__generated__/FintelTemplatesManager_templates.graphql';
 import { FintelTemplateFormInputs } from './FintelTemplateForm';
 import FintelTemplateFormDrawer from './FintelTemplateFormDrawer';
@@ -42,9 +41,7 @@ const fintelTemplatesFragment = graphql`
 `;
 
 const FintelTemplatesManager = () => {
-  const { subType } = useOutletContext<{ subType: SubTypeQuery['response']['subType'] }>();
-  if (!subType) return <ErrorNotFound />;
-  if (!subType.settings) return <ErrorNotFound />;
+  const { subType } = useSubTypeOutletContext();
 
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();

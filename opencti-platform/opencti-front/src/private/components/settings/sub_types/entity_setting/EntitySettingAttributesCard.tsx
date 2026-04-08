@@ -1,18 +1,15 @@
 import Card from '@common/card/Card';
 import { useFormatter } from '../../../../../components/i18n';
 import SearchInput from '../../../../../components/SearchInput';
-import EntitySettingAttributes from './EntitySettingAttributes';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
-import { useOutletContext } from 'react-router-dom';
-import { SubTypeQuery, SubTypeQuery$variables } from '../__generated__/SubTypeQuery.graphql';
-import ErrorNotFound from '../../../../../components/ErrorNotFound';
+import { SubTypeQuery$variables } from '../__generated__/SubTypeQuery.graphql';
+import { useSubTypeOutletContext } from '../SubTypeOutletContext';
+import EntitySettingAttributes from './EntitySettingAttributes';
 
 const EntitySettingAttributesCard = () => {
   const { t_i18n } = useFormatter();
-  const { subType } = useOutletContext<{ subType: SubTypeQuery['response']['subType'] }>();
 
-  if (!subType) return <ErrorNotFound />;
-  if (!subType.settings) return <ErrorNotFound />;
+  const { subType } = useSubTypeOutletContext();
 
   const LOCAL_STORAGE_KEY = `${subType.id}-attributes`;
   const { viewStorage, helpers } = usePaginationLocalStorage<SubTypeQuery$variables>(

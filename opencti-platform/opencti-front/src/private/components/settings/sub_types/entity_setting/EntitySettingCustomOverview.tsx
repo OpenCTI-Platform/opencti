@@ -1,29 +1,28 @@
-import React from 'react';
-import Paper from '@mui/material/Paper';
+import IconButton from '@common/button/IconButton';
 import { RestartAlt } from '@mui/icons-material';
 import Grid from '@mui/material/Grid2';
-import IconButton from '@common/button/IconButton';
+import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
-import { useFragment } from 'react-relay';
 import { useTheme } from '@mui/styles';
-import { useOutletContext } from 'react-router-dom';
+import { useFragment } from 'react-relay';
+import ErrorNotFound from '../../../../../components/ErrorNotFound';
+import type { Theme } from '../../../../../components/Theme';
+import Card from '../../../../../components/common/card/Card';
+import { useFormatter } from '../../../../../components/i18n';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import EntitySettingsOverviewLayoutCustomization, {
   EntitySettingsOverviewLayoutCustomizationData,
   entitySettingsOverviewLayoutCustomizationEdit,
   entitySettingsOverviewLayoutCustomizationFragment,
 } from './EntitySettingsOverviewLayoutCustomization';
-import { useFormatter } from '../../../../../components/i18n';
-import useApiMutation from '../../../../../utils/hooks/useApiMutation';
-import ErrorNotFound from '../../../../../components/ErrorNotFound';
-import type { Theme } from '../../../../../components/Theme';
-import Card from '../../../../../components/common/card/Card';
-import { SubTypeQuery } from '../__generated__/SubTypeQuery.graphql';
 import { EntitySettingsOverviewLayoutCustomization_entitySetting$key } from './__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
 
 const EntitySettingCustomOverview = () => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { subType } = useOutletContext<{ subType: SubTypeQuery['response']['subType'] }>();
+
+  const { subType } = useSubTypeOutletContext();
 
   const entitySetting = useFragment(
     entitySettingsOverviewLayoutCustomizationFragment,

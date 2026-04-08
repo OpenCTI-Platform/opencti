@@ -1,18 +1,14 @@
-import { Divider, Grid } from '@mui/material';
-import { useOutletContext } from 'react-router-dom';
-import ErrorNotFound from '../../../../../components/ErrorNotFound';
-import { useFormatter } from '../../../../../components/i18n';
-import { SubTypeQuery } from '../__generated__/SubTypeQuery.graphql';
 import Card from '@common/card/Card';
+import { Divider, Grid } from '@mui/material';
+import { useFormatter } from '../../../../../components/i18n';
+import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import GlobalWorkflowSettings from './GlobalWorkflowSettings';
 import RequestAccessSettings from './RequestAccessSettings';
 
 const GlobalWorkflowSettingsCard = () => {
   const { t_i18n } = useFormatter();
-  const { subType } = useOutletContext<{ subType: SubTypeQuery['response']['subType'] }>();
 
-  if (!subType) return <ErrorNotFound />;
-  if (!subType.settings) return <ErrorNotFound />;
+  const { subType } = useSubTypeOutletContext();
 
   const hasRequestAccessConfig = subType.settings.availableSettings.includes('request_access_configuration')
     && !!subType.settings.requestAccessConfiguration;

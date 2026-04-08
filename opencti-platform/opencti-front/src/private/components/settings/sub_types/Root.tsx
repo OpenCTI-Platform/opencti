@@ -9,35 +9,36 @@ import EntitySettingAttributesCard from './entity_setting/EntitySettingAttribute
 import EntitySettingCustomOverview from './entity_setting/EntitySettingCustomOverview';
 import FintelTemplatesManager from './fintel_templates/FintelTemplatesManager';
 import GlobalWorkflowSettingsCard from './workflow/GlobalWorkflowSettingsCard';
+import { SubTypeTabs } from './SubTypeOutletContext';
 
 interface SubTypeTabsContext {
-  isWorkflowConfigurationEnabled?: boolean;
-  isAttributesConfigurationEnabled?: boolean;
-  isFINTELTemplatesEnabled?: boolean;
-  isCustomLayoutEnabled?: boolean;
+  tabs: SubTypeTabs;
 }
 
 const SubTypeIndexRedirect = () => {
   const {
-    isWorkflowConfigurationEnabled,
-    isAttributesConfigurationEnabled,
-    isFINTELTemplatesEnabled,
-    isCustomLayoutEnabled,
+    tabs: {
+      workflow: isWorkflowConfigurationEnabled,
+      attributes: isAttributesConfigurationEnabled,
+      templates: isFINTELTemplatesEnabled,
+      'overview-layout': isCustomOverviewLayoutEnabled,
+    },
   } = useOutletContext<SubTypeTabsContext>();
 
-  const hasAtLeastOneEnabledTab = Boolean(
-    isWorkflowConfigurationEnabled
-    || isAttributesConfigurationEnabled
-    || isFINTELTemplatesEnabled
-    || isCustomLayoutEnabled,
-  );
+  const hasAtLeastOneEnabledTab
+    = isWorkflowConfigurationEnabled
+      || isAttributesConfigurationEnabled
+      || isFINTELTemplatesEnabled
+      || isCustomOverviewLayoutEnabled;
 
   if (!hasAtLeastOneEnabledTab) return null;
 
+  // Redirect to the first enabled tab based on the priority order:
+  // workflow > attributes > templates > overview layout
   if (isWorkflowConfigurationEnabled) return <Navigate to="workflow" replace />;
   if (isAttributesConfigurationEnabled) return <Navigate to="attributes" replace />;
   if (isFINTELTemplatesEnabled) return <Navigate to="templates" replace />;
-  if (isCustomLayoutEnabled) return <Navigate to="overview-layout" replace />;
+  if (isCustomOverviewLayoutEnabled) return <Navigate to="overview-layout" replace />;
 
   return null;
 };

@@ -16,6 +16,7 @@ import SubTypeMenu from './SubTypeMenu';
 import EntitySettingSettings from './entity_setting/EntitySettingSettings';
 import { entitySettingsOverviewLayoutCustomizationFragment } from './entity_setting/EntitySettingsOverviewLayoutCustomization';
 import { EntitySettingsOverviewLayoutCustomization_entitySetting$key } from './entity_setting/__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
+import { SubTypeTabs } from './SubTypeOutletContext';
 
 export const subTypeQuery = graphql`
   query SubTypeQuery($id: String!){
@@ -65,15 +66,22 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const isDraftWorkflowFeatureEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const isDraftWorkspaceType = subType.label === 'DraftWorkspace' && isDraftWorkflowFeatureEnabled;
 
-  const isWorkflowConfigurationEnabled = subType.settings?.availableSettings.includes('workflow_configuration');
+  const isWorkflowConfigurationEnabled = !!subType.settings?.availableSettings.includes('workflow_configuration');
 
   const isFINTELTemplatesEnabled
     = typesWithFintelTemplates.includes(subType.id)
-      && subType.settings?.availableSettings.includes('templates');
+      && !!subType.settings?.availableSettings.includes('templates');
 
-  const isAttributesConfigurationEnabled = subType.settings?.availableSettings.includes('attributes_configuration');
+  const isAttributesConfigurationEnabled = !!subType.settings?.availableSettings.includes('attributes_configuration');
 
-  const isCustomLayoutEnabled = !!entitySetting?.overview_layout_customization;
+  const isCustomOverviewLayoutEnabled = !!entitySetting?.overview_layout_customization;
+
+  const tabs: SubTypeTabs = {
+    workflow: isWorkflowConfigurationEnabled,
+    attributes: isAttributesConfigurationEnabled,
+    templates: isFINTELTemplatesEnabled,
+    'overview-layout': isCustomOverviewLayoutEnabled,
+  };
 
   return (
     <Stack sx={{ pr: '200px', pb: 4 }} gap={2}>
@@ -103,7 +111,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
         isFINTELTemplatesEnabled={isFINTELTemplatesEnabled}
         isAttributesConfigurationEnabled={isAttributesConfigurationEnabled}
         isWorkflowConfigurationEnabled={isWorkflowConfigurationEnabled}
-        isCustomLayoutEnabled={isCustomLayoutEnabled}
+        isCustomOverviewLayoutEnabled={isCustomOverviewLayoutEnabled}
       />
 
       {/** add a minHeight to prevent page jumps when switching tab
@@ -112,10 +120,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
         <Outlet
           context={{
             subType,
-            isWorkflowConfigurationEnabled,
-            isAttributesConfigurationEnabled,
-            isFINTELTemplatesEnabled,
-            isCustomLayoutEnabled,
+            tabs,
           }}
         />
       </Box>

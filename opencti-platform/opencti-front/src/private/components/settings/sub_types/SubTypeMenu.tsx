@@ -7,10 +7,16 @@ interface SubTypeMenuProps {
   isFINTELTemplatesEnabled?: boolean;
   isAttributesConfigurationEnabled?: boolean;
   isWorkflowConfigurationEnabled?: boolean;
-  isCustomLayoutEnabled?: boolean;
+  isCustomOverviewLayoutEnabled?: boolean;
 }
 
-const SubTypeMenu = ({ entityType, isFINTELTemplatesEnabled, isAttributesConfigurationEnabled, isWorkflowConfigurationEnabled, isCustomLayoutEnabled }: SubTypeMenuProps) => {
+const SubTypeMenu = ({
+  entityType,
+  isFINTELTemplatesEnabled,
+  isAttributesConfigurationEnabled,
+  isWorkflowConfigurationEnabled,
+  isCustomOverviewLayoutEnabled,
+}: SubTypeMenuProps) => {
   const { t_i18n } = useFormatter();
   const location = useLocation();
 
@@ -18,7 +24,7 @@ const SubTypeMenu = ({ entityType, isFINTELTemplatesEnabled, isAttributesConfigu
     isWorkflowConfigurationEnabled
     || isAttributesConfigurationEnabled
     || isFINTELTemplatesEnabled
-    || isCustomLayoutEnabled,
+    || isCustomOverviewLayoutEnabled,
   );
 
   if (!hasAtLeastOneEnabledTab) return null;
@@ -57,7 +63,7 @@ const SubTypeMenu = ({ entityType, isFINTELTemplatesEnabled, isAttributesConfigu
         />
       )}
 
-      {isCustomLayoutEnabled && (
+      {isCustomOverviewLayoutEnabled && (
         <Tab
           component={Link}
           to={`/dashboard/settings/customization/entity_types/${entityType}/overview-layout`}
