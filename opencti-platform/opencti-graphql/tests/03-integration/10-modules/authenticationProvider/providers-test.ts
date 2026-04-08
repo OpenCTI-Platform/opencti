@@ -1,18 +1,21 @@
 import { describe, it, vi, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import { initializeAuthenticationProviders } from '../../../../src/modules/authenticationProvider/providers';
-import { ADMIN_USER, testContext } from '../../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_EDITOR } from '../../../utils/testQuery';
 import type { BasicStoreSettings } from '../../../../src/types/settings';
 import * as mockProviderEnv from '../../../../src/modules/authenticationProvider/providers-configuration';
 import { getSettings, getSettingsFromDatabase } from '../../../../src/domain/settings';
 import { buildAvailableProviders, updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../../../../src/domain/setting-auth';
 import { type ProviderConfiguration, PROVIDERS } from '../../../../src/modules/authenticationProvider/providers-configuration';
-import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput } from '../../../../src/generated/graphql';
+import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput, UserLoginInput } from '../../../../src/generated/graphql';
 import { findAllAuthenticationProvider } from '../../../../src/modules/authenticationProvider/authenticationProvider-domain';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 import { elDeleteElements, elIndexElements } from '../../../../src/database/engine';
 import { patchAttribute } from '../../../../src/database/middleware';
 import { ENTITY_TYPE_SETTINGS } from '../../../../src/schema/internalObject';
 import type { BasicStoreEntityAuthenticationProvider } from '../../../../src/modules/authenticationProvider/authenticationProvider-types';
+import { sessionLogin } from '../../../../src/domain/user';
+import type { AuthContext } from '../../../../src/types/user';
+import type Express from 'express';
 
 const clearDbProvider = async () => {
   const authenticators = await findAllAuthenticationProvider(testContext, SYSTEM_USER);
@@ -23,6 +26,22 @@ const clearEnvProviderArray = () => {
   for (let i = 0; i < len; i++) {
     PROVIDERS.pop();
   }
+};
+
+const setLocalAuthToEnabled = async (enabled: boolean) => {
+  const settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+  const localUpdateInput: LocalAuthConfigInput = {
+    enabled,
+    password_policy_max_length: 0,
+    password_policy_min_length: 0,
+    password_policy_min_lowercase: 0,
+    password_policy_min_numbers: 0,
+    password_policy_min_symbols: 0,
+    password_policy_min_uppercase: 0,
+    password_policy_min_words: 0,
+  };
+  const result = await updateLocalAuth(testContext, ADMIN_USER, settings.id, localUpdateInput);
+  expect(result.local_auth.enabled).toBe(enabled);
 };
 
 describe('Provider coverage', () => {
@@ -522,6 +541,165 @@ describe('Provider coverage', () => {
           name_expr: 'header.name',
         },
       });
+    });
+  });
+
+  // Even if it's on user domain we put the test here to benefit from providers & settings reset.
+  describe('sessionLogin test coverage', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    const getMockAuthContextWithRequest = () => {
+      const request: Partial<Express.Request> = {
+        headers: { 'x-forwarded-for': '127.0.0.1' },
+        header: (_: string) => undefined,
+        session: {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore see user#sessionAuthenticateUser there is a session.save() there
+          save: () => {},
+        },
+      };
+
+      const reqContext: AuthContext = {
+        otp_mandatory: false,
+        req: request as Express.Request,
+        source: '',
+        tracing: undefined,
+        user: undefined,
+        user_inside_platform_organization: false,
+      };
+      return reqContext;
+    };
+
+    it('should admin from configuration work with force_env + local disabled', async () => {
+      const reqContext: AuthContext = getMockAuthContextWithRequest();
+
+      // GIVEN using force env + local disabled
+      await setLocalAuthToEnabled(false);
+      vi.spyOn(mockProviderEnv, 'isAuthenticationForcedFromEnv').mockReturnValue(true);
+      vi.spyOn(mockProviderEnv, 'getProvidersFromEnvironment').mockReturnValue({
+        local: {
+          strategy: 'LocalStrategy',
+          config: {
+            disabled: true,
+          },
+        },
+      });
+
+      // THEN admin from config should still work
+      const userInput: UserLoginInput = { email: 'admin@opencti.io', password: 'admin' }; // from test.json
+      await sessionLogin(reqContext, userInput);
+
+      // THEN any other user should not
+      const userInputEditor: UserLoginInput = { email: USER_EDITOR.email, password: USER_EDITOR.password }; // from testQueryHelper
+      await expect(async () => {
+        await sessionLogin(reqContext, userInputEditor);
+      }).rejects.toThrowError('Bad login or password');
+    });
+
+    it('should all local users work with force_env + local enabled', async () => {
+      const reqContext: AuthContext = getMockAuthContextWithRequest();
+
+      // GIVEN using force env + local enabled
+      await setLocalAuthToEnabled(true);
+      vi.spyOn(mockProviderEnv, 'isAuthenticationForcedFromEnv').mockReturnValue(true);
+      vi.spyOn(mockProviderEnv, 'getProvidersFromEnvironment').mockReturnValue({
+        local: {
+          strategy: 'LocalStrategy',
+          config: {
+            disabled: false,
+          },
+        },
+      });
+
+      // THEN admin from config should still work
+      const userInput: UserLoginInput = { email: 'admin@opencti.io', password: 'admin' }; // from test.json
+      await sessionLogin(reqContext, userInput);
+
+      // THEN any other user should also
+      const userInputEditor: UserLoginInput = { email: USER_EDITOR.email, password: USER_EDITOR.password }; // from testQueryHelper
+      await sessionLogin(reqContext, userInputEditor);
+    });
+
+    it('should admin from configuration work with database auth + local disabled', async () => {
+      const reqContext: AuthContext = getMockAuthContextWithRequest();
+
+      // GIVEN local disabled in database
+      await setLocalAuthToEnabled(false);
+      vi.spyOn(mockProviderEnv, 'isAuthenticationForcedFromEnv').mockReturnValue(false);
+
+      // THEN admin from config should still work
+      const userInput: UserLoginInput = { email: 'admin@opencti.io', password: 'admin' }; // from test.json
+      await sessionLogin(reqContext, userInput);
+
+      // THEN any other user should not
+      const userInputEditor: UserLoginInput = { email: USER_EDITOR.email, password: USER_EDITOR.password }; // from testQueryHelper
+      await expect(async () => {
+        await sessionLogin(reqContext, userInputEditor);
+      }).rejects.toThrowError('Bad login or password');
+    });
+
+    it('should all local users work database auth + local enabled', async () => {
+      const reqContext: AuthContext = getMockAuthContextWithRequest();
+
+      // GIVEN local enabled in database
+      await setLocalAuthToEnabled(true);
+      vi.spyOn(mockProviderEnv, 'isAuthenticationForcedFromEnv').mockReturnValue(false);
+
+      // THEN admin from config should still work
+      const userInput: UserLoginInput = { email: 'admin@opencti.io', password: 'admin' }; // from test.json
+      await sessionLogin(reqContext, userInput);
+
+      // THEN any other user should also
+      const userInputEditor: UserLoginInput = { email: USER_EDITOR.email, password: USER_EDITOR.password }; // from testQueryHelper
+      await sessionLogin(reqContext, userInputEditor);
+    });
+
+    it('should all local users work database auth + local disabled + local forced in env', async () => {
+      const reqContext: AuthContext = getMockAuthContextWithRequest();
+
+      // GIVEN local disabled in database, but local force from env
+      await setLocalAuthToEnabled(false);
+      vi.spyOn(mockProviderEnv, 'isAuthenticationForcedFromEnv').mockReturnValue(false);
+      vi.spyOn(mockProviderEnv, 'isLocalAuthForcedEnabledFromEnv').mockReturnValue(true);
+
+      // THEN admin from config should still work
+      const userInput: UserLoginInput = { email: 'admin@opencti.io', password: 'admin' }; // from test.json
+      await sessionLogin(reqContext, userInput);
+
+      // THEN any other user should also
+      const userInputEditor: UserLoginInput = { email: USER_EDITOR.email, password: USER_EDITOR.password }; // from testQueryHelper
+      await sessionLogin(reqContext, userInputEditor);
+    });
+
+    it('should all local users work with force_env + local disabled + force local in env', async () => {
+      const reqContext: AuthContext = getMockAuthContextWithRequest();
+
+      // GIVEN local disabled in env, but local force from env also
+      await setLocalAuthToEnabled(false);
+      vi.spyOn(mockProviderEnv, 'isLocalAuthForcedEnabledFromEnv').mockReturnValue(true);
+      vi.spyOn(mockProviderEnv, 'isAuthenticationForcedFromEnv').mockReturnValue(true);
+      vi.spyOn(mockProviderEnv, 'getProvidersFromEnvironment').mockReturnValue({
+        local: {
+          strategy: 'LocalStrategy',
+          config: {
+            disabled: true,
+          },
+        },
+      });
+
+      // THEN admin from config should still work
+      const userInput: UserLoginInput = { email: 'admin@opencti.io', password: 'admin' }; // from test.json
+      await sessionLogin(reqContext, userInput);
+
+      // THEN any other user should also
+      const userInputEditor: UserLoginInput = { email: USER_EDITOR.email, password: USER_EDITOR.password }; // from testQueryHelper
+      await sessionLogin(reqContext, userInputEditor);
     });
   });
 });

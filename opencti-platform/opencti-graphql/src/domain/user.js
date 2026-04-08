@@ -110,15 +110,18 @@ import { memoize } from '../utils/memoize';
 import { getSettings } from './settings';
 import passport from 'passport';
 import {
+  EnvStrategyType,
   getConfigurationAdminEmail,
   getConfigurationAdminPassword,
   getConfigurationAdminToken,
+  isLocalAuthForcedEnabledFromEnv,
   LOCAL_STRATEGY_IDENTIFIER,
   PROVIDERS,
 } from '../modules/authenticationProvider/providers-configuration';
 import { addOrganization } from '../modules/organization/organization-domain';
 import validator from 'validator';
 import xtmOneClient from '../modules/xtm/one/xtm-one-client';
+import { logAuthInfo } from '../modules/authenticationProvider/providers-logger';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -1520,7 +1523,8 @@ export const sessionLogin = async (context, input) => {
         resolve({ user: authUser, provider: LOCAL_STRATEGY_IDENTIFIER });
       })({ body });
     });
-    if (user && (settings.local_auth?.enabled || user.id === OPENCTI_ADMIN_UUID)) {
+    // Local auth can be force to be enabled in env with force_local, in which case any other configuration is bypass
+    if (user && (isLocalAuthForcedEnabledFromEnv() || settings.local_auth?.enabled || user.id === OPENCTI_ADMIN_UUID)) {
       loggedUser = await sessionAuthenticateUser(context, context.req, user, provider);
     }
   }
@@ -1539,6 +1543,7 @@ export const sessionLogin = async (context, input) => {
     context_data: { username: ENABLED_DEMO_MODE ? REDACTED_USER.name : input.email, provider: 'form' },
   });
   // User cannot be authenticated in any providers
+  logAuthInfo('User cannot be authenticated in any providers', EnvStrategyType.STRATEGY_LOCAL, { username: input.email });
   throw AuthenticationFailure();
 };
 

@@ -162,6 +162,12 @@ export const initDatabaseAuthenticationProviders = async (context: AuthContext, 
 export const initializeAuthenticationProviders = async (context: AuthContext) => {
   const settings = await getSettingsFromDatabase(context) as unknown as BasicStoreSettings;
 
+  // Local auth is always enabled, to allow config admin login
+  // The filter is done afterward in user#sessionLogin
+  await registerLocalStrategy();
+  await registerCertStrategy();
+  await registerHeadersStrategy(context);
+
   // In force env
   // Settings must be aligned on env definition
   // AuthenticationProviders must be deleted from the database
@@ -175,19 +181,11 @@ export const initializeAuthenticationProviders = async (context: AuthContext) =>
     // First manage local
     const confProviders = getProvidersFromEnvironment() ?? {};
 
-    // First Local singleton provider - updating settings with environment setup
+    // For Local singleton provider - updating settings with environment setup
     if (isLocalAuthEnabledInEnv(confProviders) || isLocalAuthForcedEnabledFromEnv()) {
-      await registerLocalStrategy();
       await updateLocalAuth(context, SYSTEM_USER, settings.id, { enabled: true });
     } else {
       await updateLocalAuth(context, SYSTEM_USER, settings.id, { enabled: false });
-    }
-    // Cert and Header are still persisted in setting, even with force env
-    if (settings.cert_auth?.enabled === true) {
-      await registerCertStrategy();
-    }
-    if (settings.headers_auth?.enabled === true) {
-      await registerHeadersStrategy(context);
     }
 
     // Init providers from env
@@ -198,9 +196,6 @@ export const initializeAuthenticationProviders = async (context: AuthContext) =>
     // In standard mode, init from providers in the database
 
     // Singleton initialization
-    if (settings.local_auth?.enabled === true || isLocalAuthForcedEnabledFromEnv()) {
-      await registerLocalStrategy();
-    }
     if (settings.cert_auth?.enabled === true) {
       await registerCertStrategy();
     }
