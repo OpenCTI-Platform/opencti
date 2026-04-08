@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { isEmptyField } from '../../database/utils';
-import { AUTOMATION_MANAGER_USER, executionContext, isInternalUser } from '../../utils/access';
+import { AUTOMATION_MANAGER_USER, executionContext, isInternalUser, SYSTEM_USER } from '../../utils/access';
 import { getEntitiesListFromCache } from '../../database/cache';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -12,7 +12,7 @@ import type { FilterGroup, PlaybookAddNodeInput } from '../../generated/graphql'
 import { PLAYBOOK_INTERNAL_DATA_CRON } from './playbook-components';
 import { elFindByIds } from '../../database/engine';
 import { checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
-import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
+import { isStixMatchFilterGroup, validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { playbookBundleElementsToApply, type ComponentDefinition, type LinkDefinition, type NodeDefinition, type PlaybookBundleElementsToApply } from './playbook-types';
 import { logApp } from '../../config/conf';
 import { pushAll } from '../../utils/arrayUtil';
@@ -32,6 +32,54 @@ export const isBundleElementInScope = (
   const onlyMain = applyToElements === playbookBundleElementsToApply.onlyMain.value && bundleElement.id === mainElementId;
   const exceptMain = applyToElements === playbookBundleElementsToApply.allExceptMain.value && bundleElement.id !== mainElementId;
   return all || onlyMain || exceptMain;
+};
+
+/**
+ * Check if a STIX element is matching filters.
+ * If no fitlers, return true.
+ *
+ * @param context
+ * @param bundleElement STIX element to verify.
+ * @param filters Filters to apply.
+ * @returns True if mathcing filters.
+ */
+export const isBundleElementMatchFilters = async (
+  context: AuthContext,
+  bundleElement: StixObject,
+  filters: string | undefined,
+) => {
+  if (!filters || isEmptyField(filters)) return true;
+  const jsonFilters = JSON.parse(filters);
+  return isStixMatchFilterGroup(
+    context,
+    SYSTEM_USER,
+    bundleElement,
+    jsonFilters,
+  );
+};
+
+/**
+ * Filter an array of STIX elements.
+ * Return the same array if no filters given.
+ *
+ * @param context
+ * @param bundleElements Array of STIX elements to filter.
+ * @param filters Filters to apply.
+ * @returns Array of matching elements.
+ */
+export const filterBundleElements = async (
+  context: AuthContext,
+  bundleElements: StixObject[],
+  filters: string | undefined,
+) => {
+  if (!filters || isEmptyField(filters)) return bundleElements;
+  const jsonFilters = JSON.parse(filters);
+  return bundleElements.filter((element) => isStixMatchFilterGroup(
+    context,
+    SYSTEM_USER,
+    element,
+    jsonFilters,
+  ));
 };
 
 /**

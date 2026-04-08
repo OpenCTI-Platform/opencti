@@ -86,6 +86,11 @@ const PlaybookFlowForm = ({
     : emptyFilterGroup,
   );
 
+  const elementsFiltersState = useFiltersState(currentConfig?.applyWithFilters
+    ? deserializeFilterGroupForFrontend(currentConfig.applyWithFilters)
+    : emptyFilterGroup,
+  );
+
   const selectedComponent = playbookComponents.find((c) => c?.id === componentId);
   const configurationSchema = selectedComponent?.configuration_schema
     ? JSON.parse(selectedComponent.configuration_schema) as PlaybookComponentConfigSchema
@@ -101,6 +106,10 @@ const PlaybookFlowForm = ({
     if (configurationSchema?.properties?.filters) {
       const jsonFilters = serializeFilterGroupForBackend(filtersState[0]);
       finalConfig = { ...finalConfig, filters: jsonFilters };
+    }
+    if (configurationSchema?.properties?.applyWithFilters) {
+      const jsonFilters = serializeFilterGroupForBackend(elementsFiltersState[0]);
+      finalConfig = { ...finalConfig, applyWithFilters: jsonFilters };
     }
     // Special work in case of CRON component,
     // (format trigger time to have correct format).
@@ -264,6 +273,16 @@ const PlaybookFlowForm = ({
                         key={propName}
                         componentId={componentId}
                         filtersState={filtersState}
+                      />
+                    );
+                  }
+                  if (propName === 'applyWithFilters') {
+                    return (
+                      <PlaybookFlowFieldFilters
+                        label={t_i18n('Apply when')}
+                        key={propName}
+                        componentId={componentId}
+                        filtersState={elementsFiltersState}
                       />
                     );
                   }
