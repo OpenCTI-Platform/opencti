@@ -1,11 +1,15 @@
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { INTERNAL_USERS, SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { DatabaseError, FunctionalError } from '../../config/errors';
-import { logApp } from '../../config/conf';
+import { FunctionalError } from '../../config/errors';
+import { BUS_TOPICS, logApp } from '../../config/conf';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { elRawUpdateByQuery } from '../../database/engine';
-import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { fullEntitiesList } from '../../database/middleware-loader';
+import { patchAttribute } from '../../database/middleware';
+import { notify } from '../../database/redis';
+import { publishUserAction } from '../../listener/UserActionListener';
+import { FilterMode } from '../../generated/graphql';
+import type { BasicStoreEntity } from '../../types/store';
 import { ENTITY_TYPE_FEED } from './feed-types';
 import { ENTITY_TYPE_TAXII_COLLECTION } from './taxiiCollection-types';
 import { ENTITY_TYPE_STREAM_COLLECTION } from './streamCollection-types';
@@ -51,43 +55,63 @@ type SharingConfig = {
   publicField: string;
   userIdField: string;
   liveField?: string;
+  label: string;
 };
 
 const PUBLIC_SHARING_CONFIGS: SharingConfig[] = [
-  { entityType: ENTITY_TYPE_FEED, publicField: 'feed_public', userIdField: 'feed_public_user_id' },
-  { entityType: ENTITY_TYPE_TAXII_COLLECTION, publicField: 'taxii_public', userIdField: 'taxii_public_user_id' },
-  { entityType: ENTITY_TYPE_STREAM_COLLECTION, publicField: 'stream_public', userIdField: 'stream_public_user_id', liveField: 'stream_live' },
+  { entityType: ENTITY_TYPE_FEED, publicField: 'feed_public', userIdField: 'feed_public_user_id', label: 'csv feed' },
+  { entityType: ENTITY_TYPE_TAXII_COLLECTION, publicField: 'taxii_public', userIdField: 'taxii_public_user_id', label: 'Taxii collection' },
+  { entityType: ENTITY_TYPE_STREAM_COLLECTION, publicField: 'stream_public', userIdField: 'stream_public_user_id', liveField: 'stream_live', label: 'live stream' },
 ];
 
 /**
  * When a user is deleted, disables all public sharing entities (CSV feed, TAXII collection, live stream)
  * that referenced that user as their public impersonation user.
  * The public flag is set to false, stream_live is set to false for streams, and the user id field is cleared.
+ * The cache is invalidated via notify for each updated entity.
  */
 export const disablePublicSharingForDeletedUser = async (context: AuthContext, userId: string): Promise<void> => {
   await Promise.all(
-    PUBLIC_SHARING_CONFIGS.map(({ entityType, publicField, userIdField, liveField }) => {
-      const liveScript = liveField ? ` ctx._source.${liveField} = false;` : '';
-      return elRawUpdateByQuery({
-        index: READ_INDEX_INTERNAL_OBJECTS,
-        refresh: true,
-        body: {
-          script: {
-            source: `ctx._source.${publicField} = false;${liveScript} ctx._source.remove('${userIdField}');`,
-            lang: 'painless',
-          },
-          query: {
-            bool: {
-              must: [
-                { term: { 'entity_type.keyword': { value: entityType } } },
-                { term: { [`${userIdField}.keyword`]: { value: userId } } },
-              ],
-            },
-          },
-        },
-      }).catch((err: Error) => {
-        throw DatabaseError(`[DATA_SHARING] Error disabling public sharing for deleted user on ${entityType}`, { cause: err, userId });
-      });
+    PUBLIC_SHARING_CONFIGS.map(async ({ entityType, publicField, userIdField, liveField, label }) => {
+      const filters = {
+        mode: FilterMode.And,
+        filterGroups: [],
+        filters: [{ key: [userIdField], values: [userId] }],
+      };
+      const entities = await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [entityType], { filters });
+      if (entities.length === 0) return;
+
+      await Promise.all(
+        entities.map(async (entity) => {
+          // Log 1 (streams only): stop the live stream
+          if (liveField) {
+            const { element: liveElement } = await patchAttribute(context, SYSTEM_USER, entity.id, entityType, { [liveField]: false });
+            await publishUserAction({
+              user: SYSTEM_USER,
+              event_type: 'mutation',
+              event_scope: 'update',
+              event_access: 'administration',
+              message: `updates \`${liveField}\` for ${label} \`${entity.name}\``,
+              context_data: { id: entity.id, entity_type: entityType, input: [{ key: liveField, value: ['false'] }] },
+            });
+            await notify((BUS_TOPICS as Record<string, { EDIT_TOPIC: string }>)[entityType].EDIT_TOPIC, liveElement, SYSTEM_USER);
+          }
+
+          // Log 2: make it private and clear the user id
+          const publicPatch: Record<string, string | boolean | null> = { [publicField]: false, [userIdField]: null };
+          const operations: Record<string, 'replace' | 'remove'> = { [userIdField]: 'remove' };
+          const { element } = await patchAttribute(context, SYSTEM_USER, entity.id, entityType, publicPatch, { operations });
+          await publishUserAction({
+            user: SYSTEM_USER,
+            event_type: 'mutation',
+            event_scope: 'update',
+            event_access: 'administration',
+            message: `updates \`${publicField}\` for ${label} \`${entity.name}\``,
+            context_data: { id: entity.id, entity_type: entityType, input: [{ key: publicField, value: ['false'] }] },
+          });
+          await notify((BUS_TOPICS as Record<string, { EDIT_TOPIC: string }>)[entityType].EDIT_TOPIC, element, SYSTEM_USER);
+        }),
+      );
     }),
   );
   logApp.info('[DATA_SHARING] Disabled public sharing for all entities referencing deleted user', { userId });
