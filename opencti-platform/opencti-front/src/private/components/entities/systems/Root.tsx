@@ -192,6 +192,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
+              entityType="System"
               basePath={basePath}
               pages={{
                 overview: (

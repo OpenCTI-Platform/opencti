@@ -166,6 +166,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
+              entityType="Sector"
               basePath={basePath}
               pages={{
                 overview:

@@ -175,6 +175,7 @@ const RootIncidentComponent = ({ queryRef }) => {
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
+              entityType="Incident"
               basePath={basePath}
               pages={{
                 overview: <Incident incidentData={incident} />,

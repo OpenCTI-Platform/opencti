@@ -136,6 +136,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
             redirectToContent={true}
           />
           <StixDomainObjectMain
+            entityType="Indicator"
             basePath={basePath}
             pages={{
               overview: <Indicator indicatorData={indicator} />,
