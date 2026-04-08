@@ -238,7 +238,7 @@ describe('resolveUserForFeed helper', () => {
   it('calls resolvePublicUser when context.user is null (public feed)', async () => {
     vi.mocked(resolvePublicUser).mockResolvedValue({ id: 'public-user' } as any);
     const context = { user: null } as any;
-    const feed = { feed_public_user_id: 'public-id' } as any;
+    const feed = { feed_public: true, feed_public_user_id: 'public-id' } as any;
 
     const result = await resolveUserForFeed(context, feed);
 
