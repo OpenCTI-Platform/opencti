@@ -263,7 +263,7 @@ const CUSTOM_VIEW_ENTITY_INVALID: BasicStoreEntityCustomViewForTests = {
   description: 'Just to test the filtering',
   slug: 'invalid-custom-view',
   manifest: DASHBOARD_MANIFEST,
-  target_entity_type: 'Region', // Can't have custom views on Region entity_type
+  target_entity_type: 'Feedback', // Can't have custom views on Feedback entity_type
 };
 
 describe('CustomView resolvers for display use cases', () => {
