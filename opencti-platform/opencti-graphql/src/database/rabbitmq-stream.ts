@@ -152,7 +152,8 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
   const handleStreamConsume = async (startEventId = 'live') => {
     let streamOffsetArg: string | { '!': string; value: number } = 'next';
     if (startEventId !== 'live') {
-      let streamOffsetTime = '';
+      let streamOffsetTime;
+      // eslint-disable-next-line prefer-const
       [streamOffsetTime] = startEventId.split('-');
       startStreamOffsetTime = Number(streamOffsetTime);
       const offsetInSeconds = streamOffsetTime.slice(0, -3);
