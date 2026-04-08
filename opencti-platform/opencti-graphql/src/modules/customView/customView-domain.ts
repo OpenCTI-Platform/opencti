@@ -41,10 +41,6 @@ function isCustomViewsAvailableForEntityType(entityType: string) {
     ABSTRACT_STIX_CYBER_OBSERVABLE,
     ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ];
-
-  // if (isFeatureEnabled('DRAFT_WORKFLOW')) {
-  //   customTypes.push(ENTITY_TYPE_DRAFT_WORKSPACE);
-  // }
   return candidateTypes.includes(entityType)
     && !ENTITY_TYPES_WITHOUT_CUSTOM_VIEWS.includes(entityType);
 }
