@@ -94,7 +94,7 @@ export const disablePublicSharingForDeletedUser = async (context: AuthContext, u
               message: `updates \`${liveField}\` for ${entityLabel} \`${entity.name}\``,
               context_data: { id: entity.id, entity_type: entityType, input: [{ key: liveField, value: ['false'] }] },
             });
-            await notify((BUS_TOPICS as Record<string, { EDIT_TOPIC: string }>)[entityType].EDIT_TOPIC, liveElement, SYSTEM_USER);
+            await notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, liveElement, SYSTEM_USER);
           }
 
           // Log 2: make it private and clear the user id
@@ -109,7 +109,10 @@ export const disablePublicSharingForDeletedUser = async (context: AuthContext, u
             message: `updates \`${publicField}\` for ${entityLabel} \`${entity.name}\``,
             context_data: { id: entity.id, entity_type: entityType, input: [{ key: publicField, value: ['false'] }] },
           });
-          await notify((BUS_TOPICS as Record<string, { EDIT_TOPIC: string }>)[entityType].EDIT_TOPIC, element, SYSTEM_USER);
+          const busTopic = (BUS_TOPICS as Record<string, { EDIT_TOPIC?: string } | undefined>)[entityType];
+          if (busTopic?.EDIT_TOPIC) {
+            await notify(busTopic.EDIT_TOPIC, element, SYSTEM_USER);
+          }
         }),
       );
     }),

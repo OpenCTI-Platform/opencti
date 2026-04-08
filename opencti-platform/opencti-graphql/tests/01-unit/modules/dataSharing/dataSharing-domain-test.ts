@@ -202,6 +202,20 @@ describe('streamCollectionEditField validation', () => {
     expect(Middleware.updateAttribute).toHaveBeenCalled();
     expect(Cache.getEntitiesMapFromCache).not.toHaveBeenCalled();
   });
+
+  it('should throw when setting stream_public to true but no user ID in input and no user ID on existing collection', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'S', stream_public_user_id: undefined } as any);
+    const input = [{ key: 'stream_public', value: ['true'] }];
+    await expect(streamCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the stream collection is public');
+  });
+
+  it('should proceed when setting stream_public to true and existing collection already has a user ID', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'S', stream_public_user_id: VALID_USER_ID } as any);
+    vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: { name: 'S', id: 'col-id' } } as any);
+    const input = [{ key: 'stream_public', value: ['true'] }];
+    await streamCollectionEditField(mockContext, mockUser, 'col-id', input);
+    expect(Middleware.updateAttribute).toHaveBeenCalled();
+  });
 });
 
 // ---------- TaxiiCollection ----------
@@ -265,5 +279,19 @@ describe('taxiiCollectionEditField validation', () => {
     await taxiiCollectionEditField(mockContext, mockUser, 'col-id', input);
     expect(Middleware.updateAttribute).toHaveBeenCalled();
     expect(Cache.getEntitiesMapFromCache).not.toHaveBeenCalled();
+  });
+
+  it('should throw when setting taxii_public to true but no user ID in input and no user ID on existing collection', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'T', taxii_public_user_id: undefined } as any);
+    const input = [{ key: 'taxii_public', value: ['true'] }];
+    await expect(taxiiCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the Taxii collection is public');
+  });
+
+  it('should proceed when setting taxii_public to true and existing collection already has a user ID', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'T', taxii_public_user_id: VALID_USER_ID } as any);
+    vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: { name: 'T', id: 'col-id' } } as any);
+    const input = [{ key: 'taxii_public', value: ['true'] }];
+    await taxiiCollectionEditField(mockContext, mockUser, 'col-id', input);
+    expect(Middleware.updateAttribute).toHaveBeenCalled();
   });
 });
