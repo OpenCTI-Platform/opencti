@@ -1161,6 +1161,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_IPV4_ADDR}_${ENTITY_IPV4_ADDR}`]: [
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN },
+    { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED },
   ],
   // endregion
   // region IPV6_ADDR
