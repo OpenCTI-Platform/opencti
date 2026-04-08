@@ -99,7 +99,7 @@ describe('disablePublicSharingForDeletedUser', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(Middleware.patchAttribute).mockResolvedValue({ element: { id: 'entity-id', name: 'Entity' } } as any);
-    vi.mocked(UserActionListener.publishUserAction).mockResolvedValue(undefined);
+    vi.mocked(UserActionListener.publishUserAction).mockResolvedValue([]);
     vi.mocked(Redis.notify).mockResolvedValue(undefined as any);
   });
 
@@ -116,7 +116,7 @@ describe('disablePublicSharingForDeletedUser', () => {
   it('should disable a public feed referencing the deleted user (no liveField)', async () => {
     const mockFeed = { id: 'feed-1', name: 'My CSV Feed', _index: 'feeds' };
     vi.mocked(MiddlewareLoader.fullEntitiesList).mockImplementation(async (_ctx, _user, types) => {
-      if (types[0] === 'Feed') return [mockFeed] as any;
+      if (types?.[0] === 'Feed') return [mockFeed] as any;
       return [];
     });
 
@@ -140,7 +140,7 @@ describe('disablePublicSharingForDeletedUser', () => {
   it('should disable a public taxii collection referencing the deleted user (no liveField)', async () => {
     const mockTaxii = { id: 'taxii-1', name: 'My Taxii', _index: 'taxii' };
     vi.mocked(MiddlewareLoader.fullEntitiesList).mockImplementation(async (_ctx, _user, types) => {
-      if (types[0] === 'TaxiiCollection') return [mockTaxii] as any;
+      if (types?.[0] === 'TaxiiCollection') return [mockTaxii] as any;
       return [];
     });
 
@@ -162,7 +162,7 @@ describe('disablePublicSharingForDeletedUser', () => {
   it('should disable a public stream collection and stop the live stream (with liveField)', async () => {
     const mockStream = { id: 'stream-1', name: 'My Live Stream', _index: 'streams' };
     vi.mocked(MiddlewareLoader.fullEntitiesList).mockImplementation(async (_ctx, _user, types) => {
-      if (types[0] === 'StreamCollection') return [mockStream] as any;
+      if (types?.[0] === 'StreamCollection') return [mockStream] as any;
       return [];
     });
 
@@ -196,9 +196,9 @@ describe('disablePublicSharingForDeletedUser', () => {
     const mockTaxii = { id: 'taxii-1', name: 'Taxii 1', _index: 'taxii' };
     const mockStream = { id: 'stream-1', name: 'Stream 1', _index: 'streams' };
     vi.mocked(MiddlewareLoader.fullEntitiesList).mockImplementation(async (_ctx, _user, types) => {
-      if (types[0] === 'Feed') return [mockFeed] as any;
-      if (types[0] === 'TaxiiCollection') return [mockTaxii] as any;
-      if (types[0] === 'StreamCollection') return [mockStream] as any;
+      if (types?.[0] === 'Feed') return [mockFeed] as any;
+      if (types?.[0] === 'TaxiiCollection') return [mockTaxii] as any;
+      if (types?.[0] === 'StreamCollection') return [mockStream] as any;
       return [];
     });
 
