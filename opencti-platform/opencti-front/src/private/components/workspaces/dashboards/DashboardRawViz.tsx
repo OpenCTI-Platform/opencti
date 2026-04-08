@@ -1,4 +1,4 @@
-import React, { memo, ReactNode } from 'react';
+import { memo, ReactNode } from 'react';
 import WidgetText from '../../../../components/dashboard/WidgetText';
 import type { Widget } from '../../../../utils/widget/widget';
 

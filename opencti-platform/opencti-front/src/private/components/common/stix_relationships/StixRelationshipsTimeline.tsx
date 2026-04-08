@@ -973,8 +973,8 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
 interface StixRelationshipsTimelineProps {
   variant?: string;
   height?: number;
-  startDate: string | null;
-  endDate: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   popover?: ReactNode;

@@ -1,17 +1,16 @@
 import Typography from '@mui/material/Typography';
-import React from 'react';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useFormatter } from '../../../components/i18n';
-import type { PublicManifestConfig } from './PublicManifest';
+import type { DashboardConfig } from '../../../utils/dashboard';
 import { buildDate } from '../../../utils/Time';
 
 interface PublicDashboardHeaderProps {
   title: string;
-  manifestConfig: PublicManifestConfig;
+  manifestConfig: DashboardConfig;
   onChangeRelativeDate: (value: string) => void;
   onChangeStartDate: (value: string | null) => void;
   onChangeEndDate: (value: string | null) => void;

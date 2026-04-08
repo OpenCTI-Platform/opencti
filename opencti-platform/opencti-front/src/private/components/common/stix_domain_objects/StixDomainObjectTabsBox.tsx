@@ -1,11 +1,16 @@
-import React from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Stack from '@mui/material/Stack';
-import { Link, useLocation } from 'react-router-dom';
-import { useFormatter } from '../../../../components/i18n';
 import { getCurrentTab } from '../../../../utils/utils';
+import { useFormatter } from '../../../../components/i18n';
+import useHelper from '../../../../utils/hooks/useHelper';
+import useCustomViewTabs from '@components/custom_views/useCustomViewTabs';
+import CustomViewTab from '@components/custom_views/CustomViewTab';
+import CustomViewTabDropDownMenu from '@components/custom_views/CustomViewTabDropDownMenu';
+import { CUSTOM_VIEW_TAB_VALUE } from '@components/custom_views/useCustomViews';
 
 export type StixDomainObjectTabsBoxTab
   = | 'overview'
@@ -21,8 +26,9 @@ export type StixDomainObjectTabsBoxTab
 
 interface StixDomainObjectTabsBoxProps {
   basePath: string;
+  entityType: string;
   tabs: StixDomainObjectTabsBoxTab[];
-  extraActions?: React.ReactNode;
+  extraActions?: ReactNode;
 }
 
 interface TabInfo {
@@ -78,34 +84,92 @@ const TABS_INFO: readonly TabInfo[] = [{
   label: 'History',
 }];
 
-const StixDomainObjectTabsBox = ({ basePath, extraActions, tabs }: StixDomainObjectTabsBoxProps) => {
+type TabsWithCustomViewsProps = PropsWithChildren<{
+  basePath: string;
+  entityType: string;
+  currentTab: string;
+}>;
+
+const TabsWithCustomViews = ({
+  children,
+  basePath,
+  entityType,
+  currentTab,
+}: TabsWithCustomViewsProps) => {
+  const {
+    customViews,
+    displayMode,
+    dropDownMenuState,
+    currentCustomViewTab,
+    currentCustomViewMenuItem,
+  } = useCustomViewTabs({ basePath, entityType });
+
+  return (
+    <>
+      <Tabs value={currentCustomViewTab ?? currentTab}>
+        {children}
+        <CustomViewTab
+          value={CUSTOM_VIEW_TAB_VALUE}
+          displayMode={displayMode}
+          customViews={customViews}
+          dropDownMenuState={dropDownMenuState}
+        />
+      </Tabs>
+      <CustomViewTabDropDownMenu
+        currentCustomViewMenuItem={currentCustomViewMenuItem}
+        customViews={customViews}
+        displayMode={displayMode}
+        dropDownMenuState={dropDownMenuState}
+      />
+    </>
+  );
+};
+
+/**
+ * Tabs container shared across all SDO pages.
+ * Applies common logic to display (or not) the "Custom views" tab.
+ */
+const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
+  const { basePath, entityType, extraActions, tabs } = props;
   const { t_i18n } = useFormatter();
   const location = useLocation();
+  const { isFeatureEnable } = useHelper();
+  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
+  const currentTab = getCurrentTab(location.pathname, basePath);
+
+  const staticTabs = TABS_INFO.map(({ tab, path, label }) =>
+    tabs.includes(tab) && (
+      <Tab
+        key={tab}
+        component={Link}
+        to={path}
+        value={path}
+        label={t_i18n(label)}
+      />
+    ));
+
   return (
-    <Box
-      sx={{
-        borderBottom: 1,
-        borderColor: 'divider',
-        marginBottom: 3,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}
+    <Box sx={{
+      borderBottom: 1,
+      borderColor: 'divider',
+      marginBottom: 3,
+      display: 'flex',
+      justifyContent: 'space-between',
+    }}
     >
-      <Tabs value={getCurrentTab(location.pathname, basePath)}>
-        {
-          TABS_INFO.map(({ tab, path, label }) =>
-            tabs.includes(tab) && (
-              <Tab
-                key={tab}
-                component={Link}
-                to={path}
-                value={path}
-                label={t_i18n(label)}
-              />
-            ))
-        }
-      </Tabs>
+      {isCustomViewFeatureEnabled ? (
+        <TabsWithCustomViews
+          basePath={basePath}
+          entityType={entityType}
+          currentTab={currentTab}
+        >
+          {staticTabs}
+        </TabsWithCustomViews>
+      ) : (
+        <Tabs value={currentTab}>
+          {staticTabs}
+        </Tabs>
+      )}
       {extraActions ? (
         <Stack gap={2} direction="row" justifyContent="space-between" alignItems="center">
           {extraActions}
