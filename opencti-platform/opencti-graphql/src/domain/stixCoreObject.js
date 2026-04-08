@@ -233,8 +233,8 @@ export const findStixCoreObjectRestrictedPaginated = async (context, user, args)
   return pageEntitiesConnection(context, user, types, finalArgs);
 };
 
-export const cleanInconsistency = async (context, user, stixCoreObjectId) => {
-  return cleanAllEntityInconsistencies(context, user, stixCoreObjectId);
+export const cleanInconsistency = async (context, user, stixCoreObjectId, cleaningTypes) => {
+  return cleanAllEntityInconsistencies(context, user, stixCoreObjectId, cleaningTypes);
 };
 
 export const findById = async (context, user, stixCoreObjectId) => {

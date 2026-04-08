@@ -67,7 +67,6 @@ const stixCoreObjectResolvers = {
   Query: {
     globalSearch: (_, args, context) => globalSearchPaginated(context, context.user, args),
     unknownStixCoreObjects: (_, args, context) => findUnknownStixCoreObjects(context, context.user, args),
-    stixCoreObjectCleanInconsistency: (_, { id }, context) => cleanInconsistency(context, context.user, id),
     stixCoreObject: (_, { id }, context) => findById(context, context.user, id),
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
     stixCoreObjects: (_, args, context) => findStixCoreObjectPaginated(context, context.user, args),
@@ -186,7 +185,7 @@ const stixCoreObjectResolvers = {
       exportAsk: ({ input }) => stixCoreObjectExportAsk(context, context.user, id, input),
       exportPush: (args) => stixCoreObjectExportPush(context, context.user, id, args),
       removeFromDraft: () => stixCoreObjectRemoveFromDraft(context, context.user, id),
-      cleanInconsistency: () => cleanInconsistency(context, context.user, id),
+      cleanInconsistency: ({ cleaningTypes }) => cleanInconsistency(context, context.user, id, cleaningTypes),
     }),
     stixCoreObjectsExportAsk: (_, { input }, context) => stixCoreObjectsExportAsk(context, context.user, input),
     stixCoreObjectsExportPush: (_, { entity_id, entity_type, file, file_markings, listFilters }, context) => {

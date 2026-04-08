@@ -9450,7 +9450,6 @@ type Query {
   externalReferences(first: Int, after: ID, orderBy: ExternalReferencesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ExternalReferenceConnection
   killChainPhase(id: String!): KillChainPhase
   killChainPhases(first: Int, after: ID, orderBy: KillChainPhasesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): KillChainPhaseConnection
-  stixCoreObjectCleanInconsistency(id: String!): String
   stixCoreObjectRaw(id: String!): String
   stixCoreObject(id: String!): StixCoreObject
   stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis
@@ -9927,6 +9926,12 @@ type MappedEntity {
   isEntityInContainer: Boolean!
 }
 
+enum InconsistencyCleaningType {
+  ALL
+  REF_DUPLICATE_CLEAN
+  REF_MISSING_REPAIR
+}
+
 type StixCoreObjectEditMutations {
   delete: ID
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
@@ -9945,7 +9950,7 @@ type StixCoreObjectEditMutations {
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!): Boolean
   removeFromDraft: ID
-  cleanInconsistency: Boolean
+  cleanInconsistency(cleaningTypes: [InconsistencyCleaningType!]!): Boolean
 }
 
 input StixDomainObjectFileEditInput {

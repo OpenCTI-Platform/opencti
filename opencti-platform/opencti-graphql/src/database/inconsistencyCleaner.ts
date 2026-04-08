@@ -7,6 +7,7 @@ import { DatabaseError } from '../config/errors';
 import { REL_INDEX_PREFIX } from '../schema/general';
 import { isSingleRelationsRef } from '../schema/stixEmbeddedRelationship';
 import { isStixRefUnidirectionalRelationship } from '../schema/stixRefRelationship';
+import { InconsistencyCleaningType } from '../generated/graphql';
 
 const checkForRefsDuplicates = (entityDocument: any): string[] => {
   const refsWithDuplicates: string[] = [];
@@ -60,12 +61,34 @@ const loadRawElement = async (context: AuthContext, user: AuthUser, internal_id:
   return rawDocument.hits.hits[0];
 };
 
-export enum InconsistencyOperation {
-  REF_DUPLICATE_CLEAN = 'ref_duplicate_clean',
-  REF_MISSING_REPAIR = 'ref_missing_repair', // For future use, not implemented yet
-}
-const allOperations = [InconsistencyOperation.REF_DUPLICATE_CLEAN, InconsistencyOperation.REF_MISSING_REPAIR];
-export const cleanAllEntityInconsistencies = async (context: AuthContext, user: AuthUser, internal_id: string, operationsToApply: InconsistencyOperation[] = allOperations) => {
+type CleaningResult = { shouldUpdate: boolean; params?: Record<string, any>; source?: string };
+const cleanDuplicatedRefs = async (
+  operationsToApply: InconsistencyCleaningType[],
+  elemntDocument: Record<string, any>,
+): Promise<CleaningResult> => {
+  const result: CleaningResult = { shouldUpdate: false };
+  if (operationsToApply.includes(InconsistencyCleaningType.All) || operationsToApply.includes(InconsistencyCleaningType.RefDuplicateClean)) {
+    const refDuplicatesKeys = checkForRefsDuplicates(elemntDocument);
+    if (refDuplicatesKeys) {
+      result.params = { duplicatedKeys: refDuplicatesKeys };
+      result.source = `
+          for (String keyName : params['duplicatedKeys']) {
+            ctx._source[keyName]=ctx._source[keyName].stream().distinct().sorted().collect(Collectors.toList())
+          }
+        `;
+      result.shouldUpdate = true;
+    }
+  }
+
+  return result;
+};
+
+export const cleanAllEntityInconsistencies = async (
+  context: AuthContext,
+  user: AuthUser,
+  internal_id: string,
+  operationsToApply: InconsistencyCleaningType[] = [InconsistencyCleaningType.All],
+) => {
   if (!isBypassUser(user)) {
     return;
   }
@@ -73,20 +96,16 @@ export const cleanAllEntityInconsistencies = async (context: AuthContext, user: 
   if (!elementDocument) {
     return;
   }
+
   let source = '';
   let shouldUpdate = false;
-  const params: { duplicatedKeys?: string[] } = {};
-  if (operationsToApply.includes(InconsistencyOperation.REF_DUPLICATE_CLEAN)) {
-    const refDuplicatesKeys = checkForRefsDuplicates(elementDocument);
-    if (refDuplicatesKeys) {
-      params.duplicatedKeys = refDuplicatesKeys;
-      source += `
-          for (String keyName : params['duplicatedKeys']) {
-            ctx._source[keyName]=ctx._source[keyName].stream().distinct().sorted().collect(Collectors.toList())
-          }
-        `;
-      shouldUpdate = true;
-    }
+  const params: Record<string, any> = {};
+
+  const refDuplicatedCleanResult = await cleanDuplicatedRefs(operationsToApply, elementDocument);
+  if (refDuplicatedCleanResult.shouldUpdate) {
+    params.duplicatedKeys = refDuplicatedCleanResult.params?.duplicatedKeys;
+    source += refDuplicatedCleanResult?.source;
+    shouldUpdate = true;
   }
 
   if (shouldUpdate) {
