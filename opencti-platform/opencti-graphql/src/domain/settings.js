@@ -20,10 +20,7 @@ import { getClusterInformation } from '../database/cluster-module';
 import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
 import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 import { findById as findThemeById } from '../modules/theme/theme-domain';
-import { LOCAL_PROVIDER } from '../modules/authenticationProvider/provider-local';
-import { AuthType, EnvStrategyType, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
-import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
-import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
+import { buildAvailableProviders } from './setting-auth';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -104,37 +101,12 @@ export const getProtectedSensitiveConfig = async (context, user) => {
   };
 };
 
-export const buildAvailableProviders = async (platformSettings) => {
-  const availableProviders = [...PROVIDERS];
-  if (platformSettings.local_auth?.enabled) {
-    availableProviders.push({
-      name: platformSettings.local_auth?.button_label_override || 'local',
-      type: AuthType.AUTH_FORM,
-      strategy: EnvStrategyType.STRATEGY_LOCAL,
-      provider: LOCAL_PROVIDER.provider,
-    });
-  }
-  if (platformSettings.cert_auth?.enabled) {
-    availableProviders.push({
-      name: platformSettings.cert_auth?.button_label_override || 'cert',
-      type: AuthType.AUTH_SSO,
-      strategy: EnvStrategyType.STRATEGY_CERT,
-      provider: CERT_PROVIDER.provider,
-    });
-  }
-  if (platformSettings.headers_auth?.enabled) {
-    availableProviders.push({
-      name: platformSettings.headers_auth?.button_label_override || 'headers',
-      type: AuthType.AUTH_SSO,
-      strategy: EnvStrategyType.STRATEGY_HEADER,
-      provider: HEADERS_PROVIDER.provider,
-    });
-  }
-  return availableProviders;
+export const getSettingsFromDatabase = async (context) => {
+  return await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
 };
 
 export const getSettings = async (context) => {
-  const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
+  const platformSettings = await getSettingsFromDatabase(context);
   const clusterInfo = await getClusterInformation();
   const eeInfo = getEnterpriseEditionInfo(platformSettings);
   const platformTheme = await findThemeById(context, SYSTEM_USER, platformSettings.platform_theme);
@@ -307,61 +279,6 @@ export const settingDeleteMessage = async (context, user, settingsId, messageId)
   }
   const patch = { platform_messages: JSON.stringify(messages) };
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
-  return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
-};
-
-// -- Built-in authentication strategy settings --
-// These mutations update the Settings entity AND trigger live re-registration
-// of the corresponding authentication provider.
-
-export const updateLocalAuth = async (context, user, settingsId, input) => {
-  const patch = {
-    local_auth: { enabled: input.enabled },
-    ...(input.password_policy_min_length !== undefined && { password_policy_min_length: input.password_policy_min_length }),
-    ...(input.password_policy_max_length !== undefined && { password_policy_max_length: input.password_policy_max_length }),
-    ...(input.password_policy_min_symbols !== undefined && { password_policy_min_symbols: input.password_policy_min_symbols }),
-    ...(input.password_policy_min_numbers !== undefined && { password_policy_min_numbers: input.password_policy_min_numbers }),
-    ...(input.password_policy_min_words !== undefined && { password_policy_min_words: input.password_policy_min_words }),
-    ...(input.password_policy_min_lowercase !== undefined && { password_policy_min_lowercase: input.password_policy_min_lowercase }),
-    ...(input.password_policy_min_uppercase !== undefined && { password_policy_min_uppercase: input.password_policy_min_uppercase }),
-  };
-  const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: 'updates `local authentication settings` for `platform settings`',
-    context_data: { id: settingsId, entity_type: ENTITY_TYPE_SETTINGS, input: patch },
-  });
-  return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
-};
-
-export const updateCertAuth = async (context, user, settingsId, input) => {
-  const patch = { cert_auth: input };
-  const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: 'updates `cert authentication settings` for `platform settings`',
-    context_data: { id: settingsId, entity_type: ENTITY_TYPE_SETTINGS, input: patch },
-  });
-  return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
-};
-
-export const updateHeaderAuth = async (context, user, settingsId, input) => {
-  const patch = { headers_auth: input };
-  const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: 'updates `header authentication settings` for `platform settings`',
-    context_data: { id: settingsId, entity_type: ENTITY_TYPE_SETTINGS, input: patch },
-  });
   return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
 };
 
