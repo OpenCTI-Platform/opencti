@@ -3812,7 +3812,7 @@
   "Share": "共有する",
   "Share all elements included in the bundle": "バンドルに含まれるすべての要素を共有する",
   "Share as public dashboard": "公開ダッシュボードとして共有",
-  "Share data corresponding to the right associated with this user": "このユーザーに関連する権利に対応するデータを共有する",
+  "Share data corresponding to permissions associated with this user": "このユーザーに関連する権利に対応するデータを共有する",
   "Share with an organization": "組織と共有する",
   "Share with organizations": "組織と共有する",
   "Share with organizations within the platform": "プラットフォーム内の組織と共有する",

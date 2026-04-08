@@ -190,7 +190,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
             {initialValues.taxii_public && (
               <CreatorField
                 name="taxii_public_user_id"
-                label={t_i18n('Share data corresponding to the right associated with this user')}
+                label={t_i18n('Share data corresponding to permissions associated with this user')}
                 containerStyle={fieldSpacingContainerStyle}
                 disabled={!isGrantedToSetAccesses}
                 onChange={(_, value) => handleSubmitField('taxii_public_user_id', (value as FieldOption)?.value ?? '')}
