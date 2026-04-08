@@ -571,6 +571,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_TECHNOLOGY_TO, type: REL_EXTENDED },
     { name: RELATION_TECHNOLOGY_FROM, type: REL_EXTENDED },
   ],
+  [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED },
+  ],
   [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
     { name: RELATION_DETECTS, type: REL_NEW },
   ],

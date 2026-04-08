@@ -297,6 +297,19 @@ const OrganizationKnowledgeComponent = ({
             />
           )}
         />
+        <Route
+          path="/infrastructures"
+          element={(
+            <EntityStixCoreRelationships
+              key={location.pathname}
+              entityId={organization.id}
+              relationshipTypes={['belongs-to']}
+              stixCoreObjectTypes={['Infrastructure']}
+              entityLink={link}
+              isRelationReversed={true}
+            />
+          )}
+        />
         <Route index element={<Navigate replace={true} to="overview" />} />
       </Routes>
     </div>

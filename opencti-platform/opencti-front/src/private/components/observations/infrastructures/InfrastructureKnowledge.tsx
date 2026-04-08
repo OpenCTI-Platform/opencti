@@ -52,6 +52,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
           'tools',
           'vulnerabilities',
           'infrastructures',
+          'organizations',
           'indicators',
           'observables',
           'observed_data',
@@ -340,6 +341,21 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               isRelationReversed={true}
               defaultStartTime={infrastructureData.first_seen}
               defaultStopTime={infrastructureData.last_seen}
+            />
+          )}
+        />
+        <Route
+          path="/organizations"
+          element={(
+            <EntityStixCoreRelationships
+              key={location.pathname}
+              entityId={infrastructureData.id}
+              relationshipTypes={['belongs-to']}
+              stixCoreObjectTypes={['Organization']}
+              entityLink={link}
+              defaultStartTime={infrastructureData.first_seen}
+              defaultStopTime={infrastructureData.last_seen}
+              isRelationReversed={false}
             />
           )}
         />

@@ -164,6 +164,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
                     'attack_patterns',
                     'tools',
                     'vulnerabilities',
+                    'infrastructures',
                     'observables',
                   ]}
                   data={organization}
