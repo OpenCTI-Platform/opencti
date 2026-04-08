@@ -20,6 +20,15 @@ const CustomViewTab = ({ customViews, displayMode, dropDownMenuState }: CustomVi
         to={customViews[0].path}
         value={CUSTOM_VIEW_TAB_VALUE}
         label={customViews[0].name}
+        sx={{
+        // Override the theme/global rule set to have all
+        // tabs in first-letter-capitalized case, to display
+        // exactly what customers want.
+          textTransform: 'none',
+          '&::first-letter': {
+            textTransform: 'none',
+          },
+        }}
       />
     );
   }
