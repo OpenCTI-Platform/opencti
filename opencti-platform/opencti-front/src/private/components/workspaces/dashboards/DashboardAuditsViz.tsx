@@ -1,4 +1,4 @@
-import React, { memo, ReactNode } from 'react';
+import { memo, ReactNode } from 'react';
 import AuditsNumber from '@components/common/audits/AuditsNumber';
 import AuditsList from '@components/common/audits/AuditsList';
 import AuditsDistributionList from '@components/common/audits/AuditsDistributionList';
@@ -15,15 +15,12 @@ import AuditsWordCloud from '@components/common/audits/AuditsWordCloud';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../../utils/Time';
 import type { Widget } from '../../../../utils/widget/widget';
 import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import type { DashboardConfig } from '../../../../utils/dashboard';
 
 interface DashboardAuditsVizProps {
   widget: Widget;
   popover?: ReactNode;
-  config: {
-    relativeDate: string | undefined;
-    startDate: string;
-    endDate: string;
-  };
+  config: DashboardConfig;
 }
 
 const DashboardAuditsViz = ({
