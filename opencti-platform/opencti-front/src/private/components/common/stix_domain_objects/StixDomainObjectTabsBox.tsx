@@ -1,7 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
-import MenuItem from '@mui/material/MenuItem';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Stack from '@mui/material/Stack';
@@ -9,8 +8,8 @@ import { getCurrentTab } from '../../../../utils/utils';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
 import useCustomViewTabs from '@components/custom_views/useCustomViewTabs';
-import { CUSTOM_VIEW_TAB_VALUE } from '@components/custom_views/useCustomViews';
-import { DropDownMenu, TabWithDropDownMenu } from '../../../../components/TabWithDropDownMenu';
+import CustomViewTab from '@components/custom_views/CustomViewTab';
+import CustomViewTabDropDownMenu from '@components/custom_views/CustomViewTabDropDownMenu';
 
 export type StixDomainObjectTabsBoxTab
   = | 'overview'
@@ -92,69 +91,29 @@ interface CustomViewTabsProps {
 }
 
 const CustomViewTabs = ({ basePath, entityType, staticTabs, currentTab }: CustomViewTabsProps) => {
-  const { t_i18n } = useFormatter();
   const {
     customViews,
     displayMode,
-    dropDownMenuState: { anchorEl, onOpen, onClose, isOpen },
+    dropDownMenuState,
     currentCustomViewTab,
   } = useCustomViewTabs({ basePath, entityType });
-
-  const renderMenuItems = () => customViews.map(({ id, name, path }) => {
-    const isSelected = currentTab === path;
-    return (
-      <MenuItem
-        key={id}
-        role="link"
-        component={Link}
-        to={`${basePath}/${path}`}
-        selected={isSelected}
-      >
-        {name}
-      </MenuItem>
-    );
-  });
-
-  const renderCustomViewTab = () => {
-    if (displayMode === 'single') {
-      return (
-        <Tab
-          component={Link}
-          to={customViews[0].path}
-          value={CUSTOM_VIEW_TAB_VALUE}
-          label={customViews[0].name}
-        />
-      );
-    }
-
-    if (displayMode === 'dropdown') {
-      return (
-        <TabWithDropDownMenu
-          value={CUSTOM_VIEW_TAB_VALUE}
-          label={t_i18n('Custom view')}
-          isOpen={isOpen}
-          onOpen={onOpen}
-        />
-      );
-    }
-
-    return null;
-  };
 
   return (
     <>
       <Tabs value={currentCustomViewTab ?? currentTab}>
         {staticTabs}
-        {renderCustomViewTab()}
-      </Tabs>
-      {displayMode === 'dropdown' && (
-        <DropDownMenu
-          anchorEl={anchorEl}
-          isOpen={isOpen}
-          onClose={onClose}
-          renderMenuItems={renderMenuItems}
+        <CustomViewTab
+          displayMode={displayMode}
+          customViews={customViews}
+          dropDownMenuState={dropDownMenuState}
         />
-      )}
+      </Tabs>
+      <CustomViewTabDropDownMenu
+        currentCustomViewTab={currentCustomViewTab}
+        customViews={customViews}
+        displayMode={displayMode}
+        dropDownMenuState={dropDownMenuState}
+      />
     </>
   );
 };

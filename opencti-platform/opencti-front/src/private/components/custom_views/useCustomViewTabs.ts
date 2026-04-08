@@ -9,7 +9,7 @@ interface UseCustomViewTabsParams {
   basePath: string;
 }
 
-type CustomViewDisplayMode = 'none' | 'single' | 'dropdown';
+export type CustomViewDisplayMode = 'none' | 'single' | 'dropdown';
 
 interface UseCustomViewTabsResult {
   customViews: ReturnType<typeof useCustomViews>['customViews'];
