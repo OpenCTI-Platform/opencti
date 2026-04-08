@@ -43,7 +43,19 @@ if (AI_ENABLED && AI_TOKEN) {
         } */
       });
 
-      if (mistralEndpoint.includes(MISTRAL_OFFICIAL_ENDPOINT)) {
+      const isOfficialMistralEndpoint = (() => {
+        try {
+          const official = new URL(MISTRAL_OFFICIAL_ENDPOINT);
+          const endpointUrl = new URL(mistralEndpoint);
+          return endpointUrl.protocol === official.protocol
+            && endpointUrl.hostname === official.hostname
+            && endpointUrl.port === official.port;
+        } catch {
+          return false;
+        }
+      })();
+
+      if (isOfficialMistralEndpoint) {
         // Official MistralAI API
         nlqChat = new ChatMistralAI({
           model: AI_MODEL,
