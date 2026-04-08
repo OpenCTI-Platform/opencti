@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import { useDropDownMenuState } from '../../../components/TabWithDropDownMenu';
+import { getCurrentTab } from '../../../utils/utils';
 import { useCustomViews } from './useCustomViews';
 
 interface UseCustomViewTabsParams {
@@ -16,12 +17,14 @@ interface UseCustomViewTabsResult {
   displayMode: CustomViewDisplayMode;
   dropDownMenuState: ReturnType<typeof useDropDownMenuState>;
   currentCustomViewTab: string | undefined;
+  currentCustomViewMenuItem: string | undefined;
 }
 
 const useCustomViewTabs = ({ basePath, entityType }: UseCustomViewTabsParams): UseCustomViewTabsResult => {
   const location = useLocation();
   const { customViews, getCurrentCustomViewTab } = useCustomViews(entityType);
   const currentCustomViewTab = getCurrentCustomViewTab(location.pathname, basePath);
+  const currentCustomViewMenuItem = getCurrentTab(location.pathname, basePath);
   const dropDownMenuState = useDropDownMenuState();
 
   let displayMode: CustomViewDisplayMode = 'none';
@@ -33,6 +36,7 @@ const useCustomViewTabs = ({ basePath, entityType }: UseCustomViewTabsParams): U
     displayMode,
     dropDownMenuState,
     currentCustomViewTab,
+    currentCustomViewMenuItem,
   };
 };
 

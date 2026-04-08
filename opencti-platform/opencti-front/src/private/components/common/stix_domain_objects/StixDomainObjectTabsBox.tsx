@@ -10,6 +10,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import useCustomViewTabs from '@components/custom_views/useCustomViewTabs';
 import CustomViewTab from '@components/custom_views/CustomViewTab';
 import CustomViewTabDropDownMenu from '@components/custom_views/CustomViewTabDropDownMenu';
+import { CUSTOM_VIEW_TAB_VALUE } from '@components/custom_views/useCustomViews';
 
 export type StixDomainObjectTabsBoxTab
   = | 'overview'
@@ -100,6 +101,7 @@ const TabsWithCustomViews = ({
     displayMode,
     dropDownMenuState,
     currentCustomViewTab,
+    currentCustomViewMenuItem,
   } = useCustomViewTabs({ basePath, entityType });
 
   return (
@@ -107,13 +109,14 @@ const TabsWithCustomViews = ({
       <Tabs value={currentCustomViewTab ?? currentTab}>
         {children}
         <CustomViewTab
+          value={CUSTOM_VIEW_TAB_VALUE}
           displayMode={displayMode}
           customViews={customViews}
           dropDownMenuState={dropDownMenuState}
         />
       </Tabs>
       <CustomViewTabDropDownMenu
-        currentCustomViewTab={currentCustomViewTab}
+        currentCustomViewMenuItem={currentCustomViewMenuItem}
         customViews={customViews}
         displayMode={displayMode}
         dropDownMenuState={dropDownMenuState}
@@ -150,6 +153,8 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
       borderBottom: 1,
       borderColor: 'divider',
       marginBottom: 3,
+      display: 'flex',
+      justifyContent: 'space-between',
     }}
     >
       {isCustomViewFeatureEnabled ? (

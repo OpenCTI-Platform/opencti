@@ -8,10 +8,10 @@ interface CustomViewTabDropDownMenuProps {
   displayMode: CustomViewDisplayMode;
   customViews: ReturnType<typeof useCustomViews>['customViews'];
   dropDownMenuState: ReturnType<typeof useDropDownMenuState>;
-  currentCustomViewTab?: string;
+  currentCustomViewMenuItem?: string;
 }
 
-const CustomViewTabDropDownMenu = ({ displayMode, customViews, dropDownMenuState, currentCustomViewTab }: CustomViewTabDropDownMenuProps) => {
+const CustomViewTabDropDownMenu = ({ displayMode, customViews, dropDownMenuState, currentCustomViewMenuItem }: CustomViewTabDropDownMenuProps) => {
   const { anchorEl, isOpen, onClose } = dropDownMenuState;
   if (displayMode !== 'dropdown') {
     return null;
@@ -22,14 +22,26 @@ const CustomViewTabDropDownMenu = ({ displayMode, customViews, dropDownMenuState
       isOpen={isOpen}
       onClose={onClose}
       renderMenuItems={() => customViews.map(({ id, name, path }) => {
-        const isSelected = currentCustomViewTab === path;
+        const isSelected = currentCustomViewMenuItem === path;
         return (
           <MenuItem
             key={id}
+            selected={isSelected}
             role="link"
             component={Link}
             to={path}
-            selected={isSelected}
+            sx={{
+              '&.Mui-selected': {
+                boxShadow: 'none',
+                background: 'none',
+                color: 'primary.main',
+              },
+              '&.Mui-selected:hover': {
+                boxShadow: 'none',
+                background: 'none',
+                color: 'primary.main',
+              },
+            }}
           >
             {name}
           </MenuItem>
