@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import { Route, Routes } from 'react-router-dom';
 import testRender from '../utils/tests/test-render';
-import NotionLikeRedirector from './NotionLikeRedirector';
+import SlugRedirectHandler from './SlugRedirectHandler';
 
 describe('NotionLikeRedirector', () => {
   it('matches on exact path', () => {
@@ -11,7 +11,7 @@ describe('NotionLikeRedirector', () => {
         <Route
           path="*"
           element={(
-            <NotionLikeRedirector
+            <SlugRedirectHandler
               pagesInfo={{
                 '6e007ff3e3df41c6bfa016862be6cd4d': {
                   path: 'some-path-6e007ff3e3df41c6bfa016862be6cd4d',
@@ -36,7 +36,7 @@ describe('NotionLikeRedirector', () => {
         <Route
           path="*"
           element={(
-            <NotionLikeRedirector
+            <SlugRedirectHandler
               pagesInfo={{
                 '6e007ff3e3df41c6bfa016862be6cd4d': {
                   path: 'some-path-6e007ff3e3df41c6bfa016862be6cd4d',
@@ -61,7 +61,7 @@ describe('NotionLikeRedirector', () => {
         <Route
           path="*"
           element={(
-            <NotionLikeRedirector
+            <SlugRedirectHandler
               pagesInfo={{
                 '6e007ff3e3df41c6bfa016862be6cd4d': {
                   path: 'some-path-6e007ff3e3df41c6bfa016862be6cd4d',

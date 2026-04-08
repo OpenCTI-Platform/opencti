@@ -2,14 +2,14 @@ import { ReactNode, useMemo } from 'react';
 import RootCustomView from './Root';
 import { useCustomViews } from './useCustomViews';
 import { CustomViewsInfo } from './types';
-import NotionLikeRedirector, { type NotionLikePageInfo } from '../../../components/NotionLikeRedirector';
+import SlugRedirectHandler, { type SlugRedirectHandlerPageInfo } from '../../../components/SlugRedirectHandler';
 
 interface CustomViewRedirectorProps {
   entityType: string;
   Fallback: ReactNode;
 }
 
-const renderMatch = (info: NotionLikePageInfo) =>
+const renderMatch = (info: SlugRedirectHandlerPageInfo) =>
   <RootCustomView customViewId={(info as CustomViewsInfo[number]).id} />;
 
 const CustomViewRedirector = ({ entityType, Fallback }: CustomViewRedirectorProps) => {
@@ -21,7 +21,7 @@ const CustomViewRedirector = ({ entityType, Fallback }: CustomViewRedirectorProp
     }), {} as Record<string, CustomViewsInfo[number]>,
   ), [customViews]);
   return (
-    <NotionLikeRedirector
+    <SlugRedirectHandler
       renderMatch={renderMatch}
       NoMatch={Fallback}
       pagesInfo={pagesInfo}

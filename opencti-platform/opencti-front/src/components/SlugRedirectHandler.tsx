@@ -1,20 +1,20 @@
 import { ReactNode } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 
-export interface NotionLikePageInfo {
+export interface SlugRedirectHandlerPageInfo {
   path: string;
 }
 
-interface NotionLikeRedirectorProps {
+interface SlugRedirectHandlerProps {
   /** Render prop triggered when a page matches current splat value **/
-  renderMatch: (pageInfo: NotionLikePageInfo) => ReactNode;
+  renderMatch: (pageInfo: SlugRedirectHandlerPageInfo) => ReactNode;
   /** Component to render when no page matches **/
   NoMatch: ReactNode;
   /**
-   * An object mapping pages' `id`s to a `NotionLikePageInfo`
+   * An object mapping pages' `id`s to a `SlugRedirectHandlerPageInfo`
    * that is passed back in the render prop upon match.
    */
-  pagesInfo: Record<string, NotionLikePageInfo>;
+  pagesInfo: Record<string, SlugRedirectHandlerPageInfo>;
 }
 
 /**
@@ -33,7 +33,7 @@ interface NotionLikeRedirectorProps {
  * ```
  * <Routes>
  *  <Route path='*' element={
- *    <NotionLikeRedirector
+ *    <SlugRedirectHandler
  *      renderMatch={({ path }) => `Matched on ${path}`}
  *      NoMatch="No match :("
  *      pagesInfo={{
@@ -48,7 +48,7 @@ interface NotionLikeRedirectorProps {
  * </Routes>
  * ```
  */
-const NotionLikeRedirector = ({ renderMatch, NoMatch, pagesInfo }: NotionLikeRedirectorProps) => {
+const SlugRedirectHandler = ({ renderMatch, NoMatch, pagesInfo }: SlugRedirectHandlerProps) => {
   const { '*': splat } = useParams();
   if (!splat) {
     return NoMatch;
@@ -71,4 +71,4 @@ const NotionLikeRedirector = ({ renderMatch, NoMatch, pagesInfo }: NotionLikeRed
   return renderMatch(pageInfo);
 };
 
-export default NotionLikeRedirector;
+export default SlugRedirectHandler;
