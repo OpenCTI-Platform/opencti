@@ -13330,7 +13330,7 @@ __metadata:
     react-rectangle-selection: "npm:1.0.4"
     react-relay: "npm:20.1.1"
     react-relay-network-modern: "npm:6.2.2"
-    react-router: "npm:7.9.4"
+    react-router: "npm:7.14.0"
     react-syntax-highlighter: "npm:16.1.1"
     react-transition-group: "npm:4.4.5"
     react-virtualized: "npm:9.22.6"
@@ -14658,9 +14658,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:7.9.4":
-  version: 7.9.4
-  resolution: "react-router@npm:7.9.4"
+"react-router@npm:7.14.0":
+  version: 7.14.0
+  resolution: "react-router@npm:7.14.0"
   dependencies:
     cookie: "npm:^1.0.1"
     set-cookie-parser: "npm:^2.6.0"
@@ -14670,7 +14670,7 @@ __metadata:
   peerDependenciesMeta:
     react-dom:
       optional: true
-  checksum: 10c0/c7556b752fa88d2bff600ce3533c962dcbe9ca9bf71f9c4b8e8a21f904856990bcb284844d53eb1dd486adaa7567c7ecf0deb3e518262269ea1ea89bea246be4
+  checksum: 10c0/a496489973cd5e87dcc5c1c7312f4cc99463eb5e0a0f97b3f298467531b754a3227562a83e0c9019b9d2452fd0681d05882ee061af2e0cafb0818f857578b805
   languageName: node
   linkType: hard
 
