@@ -9,10 +9,6 @@ import {
   ENTITY_TYPE_COURSE_OF_ACTION,
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
-  ENTITY_TYPE_LOCATION_CITY,
-  ENTITY_TYPE_LOCATION_COUNTRY,
-  ENTITY_TYPE_LOCATION_POSITION,
-  ENTITY_TYPE_LOCATION_REGION,
 } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../task/task-types';
@@ -20,7 +16,6 @@ import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types'
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../schema/stixCyberObservable';
-import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../administrativeArea/administrativeArea-types';
 
 /**
  * Exclusion list: entity types not capable of
@@ -35,11 +30,6 @@ const ENTITY_TYPES_WITHOUT_CUSTOM_VIEWS = [
   ENTITY_TYPE_COURSE_OF_ACTION,
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
-  ENTITY_TYPE_LOCATION_CITY,
-  ENTITY_TYPE_LOCATION_COUNTRY,
-  ENTITY_TYPE_LOCATION_REGION,
-  ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA,
-  ENTITY_TYPE_LOCATION_POSITION,
   ENTITY_TYPE_SECURITY_COVERAGE,
 ];
 
