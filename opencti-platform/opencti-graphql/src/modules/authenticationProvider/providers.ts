@@ -194,14 +194,6 @@ export const initializeAuthenticationProviders = async (context: AuthContext) =>
     // Migration first (already created will be not replayed)
     await runAuthenticationProviderMigration(context, SYSTEM_USER);
     // In standard mode, init from providers in the database
-
-    // Singleton initialization
-    if (settings.cert_auth?.enabled === true) {
-      await registerCertStrategy();
-    }
-    if (settings.headers_auth?.enabled === true) {
-      await registerHeadersStrategy(context);
-    }
     await initDatabaseAuthenticationProviders(context, SYSTEM_USER);
   }
   // Safety net: force local_auth enabled when no other provider is available
