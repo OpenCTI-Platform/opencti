@@ -15,6 +15,8 @@ const convertEntitySettingToStix = (instance: StoreEntityEntitySetting): StixEnt
     available_settings: instance.availableSettings,
     workflow_configuration: instance.workflow_configuration,
     request_access_workflow: instance.request_access_workflow,
+    custom_name: instance.custom_name,
+    custom_name_plural: instance.custom_name_plural,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],
