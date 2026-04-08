@@ -1,5 +1,5 @@
 import { MouseEvent, ReactElement, useState } from 'react';
-import { Box, MenuItemProps, PopoverProps, MenuItem, SxProps } from '@mui/material';
+import { Box, type MenuItemProps, type PopoverProps, MenuItem, type SxProps } from '@mui/material';
 import Tab, { TabProps } from '@mui/material/Tab';
 import Menu from '@mui/material/Menu';
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';

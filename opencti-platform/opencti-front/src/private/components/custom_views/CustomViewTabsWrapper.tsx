@@ -7,11 +7,6 @@ import { useFormatter } from '../../../components/i18n';
 import useTabWithDropDownMenu from '../../../components/TabWithDropDownMenu';
 import { CUSTOM_VIEW_TAB_VALUE, useCustomViews } from './useCustomViews';
 
-const MENU_ITEM_LINK_STYLE = {
-  padding: '10px',
-  color: 'inherit',
-};
-
 interface CustomViewTabsWrapperProps {
   /** Entity type being visited **/
   entityType: string;
@@ -45,7 +40,7 @@ const CustomViewTabsWrapper = ({ basePath, entityType, render }: CustomViewTabsW
       const isSelected = getCurrentTab(location.pathname, basePath) === path;
       return (
         <MenuItem key={id} sx={{ p: 0, color: isSelected ? 'primary.main' : undefined }}>
-          <Link role="link" style={MENU_ITEM_LINK_STYLE} to={`${basePath}/${path}`}>{name}</Link>
+          <Link role="link" style={{ padding: '6px 16px', color: 'inherit', width: '100%' }} to={path}>{name}</Link>
         </MenuItem>
       );
     }),
