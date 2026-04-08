@@ -468,7 +468,7 @@ const FeedEditionContainer = (props) => {
                       {values.feed_public && (
                         <CreatorField
                           name="feed_public_user_id"
-                          label={t_i18n('Share data corresponding to the right associated with this user')}
+                          label={t_i18n('Share data corresponding to permissions associated with this user')}
                           containerStyle={fieldSpacingContainerStyle}
                           disabled={!isGrantedToSetAccesses}
                           onChange={(name, value) => setFieldValue(name, value)}
