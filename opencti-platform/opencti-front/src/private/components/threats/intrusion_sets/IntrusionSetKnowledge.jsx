@@ -279,6 +279,21 @@ const IntrusionSetKnowledgeComponent = ({
           )}
         />
         <Route
+          path="/intrusion_sets"
+          element={(
+            <EntityStixCoreRelationships
+              key={location.pathname}
+              entityId={intrusionSet.id}
+              relationshipTypes={['part-of', 'derived-from']}
+              stixCoreObjectTypes={['Intrusion-Set']}
+              entityLink={link}
+              defaultStartTime={intrusionSet.first_seen}
+              defaultStopTime={intrusionSet.last_seen}
+              allDirections
+            />
+          )}
+        />
+        <Route
           path="/sightings"
           element={(
             <EntityStixSightingRelationships
