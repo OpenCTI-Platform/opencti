@@ -119,6 +119,7 @@ class RootArtifact extends Component {
                       )}
                     />
                     <StixDomainObjectMain
+                      entityType="Artifact"
                       basePath={basePath}
                       pages={{
                         overview: (

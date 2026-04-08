@@ -109,8 +109,8 @@ interface StixRelationshipsDonutProps {
   variant?: string;
   height?: number;
   field?: string;
-  startDate: string | null;
-  endDate: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   popover?: ReactNode;

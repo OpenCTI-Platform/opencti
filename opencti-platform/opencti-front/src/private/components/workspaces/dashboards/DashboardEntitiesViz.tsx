@@ -1,4 +1,4 @@
-import React, { memo, ReactNode } from 'react';
+import { memo, ReactNode } from 'react';
 import StixDomainObjectBookmarksList from '@components/common/stix_domain_objects/StixDomainObjectBookmarksList';
 import StixCoreObjectsNumber from '@components/common/stix_core_objects/StixCoreObjectsNumber';
 import StixCoreObjectsList from '@components/common/stix_core_objects/StixCoreObjectsList';
@@ -18,15 +18,12 @@ import StixCoreObjectsWordCloud from '@components/common/stix_core_objects/StixC
 import type { Widget } from '../../../../utils/widget/widget';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../../utils/Time';
 import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
+import type { DashboardConfig } from '../../../../utils/dashboard';
 
 interface DashboardEntitiesVizProps {
   widget: Widget;
   popover?: ReactNode;
-  config: {
-    relativeDate: string | undefined;
-    startDate: string;
-    endDate: string;
-  };
+  config: DashboardConfig;
 }
 
 const DashboardEntitiesViz = ({

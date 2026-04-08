@@ -1,19 +1,32 @@
 import { ReactElement, ReactNode } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import StixDomainObjectTabsBox, { type StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
+import CustomViewRedirector from '@components/custom_views/CustomViewRedirector';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 interface StixDomainObjectMainProps {
+  entityType: string;
   basePath: string;
   pages: Partial<Record<StixDomainObjectTabsBoxTab, ReactNode>>;
   extraActions?: ReactNode;
   extraRoutes?: ReactElement<typeof Route> | ReactElement<typeof Route>[];
 }
 
-const StixDomainObjectMain = ({ basePath, extraActions, pages, extraRoutes }: StixDomainObjectMainProps) => {
+const StixDomainObjectMain = ({
+  entityType,
+  basePath,
+  extraActions,
+  pages,
+  extraRoutes,
+}: StixDomainObjectMainProps) => {
   const tabs = Object.keys(pages) as StixDomainObjectTabsBoxTab[];
+  const { isFeatureEnable } = useHelper();
+  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
   return (
     <>
       <StixDomainObjectTabsBox
+        entityType={entityType}
         basePath={basePath}
         tabs={tabs}
         extraActions={extraActions}
@@ -50,6 +63,18 @@ const StixDomainObjectMain = ({ basePath, extraActions, pages, extraRoutes }: St
           <Route path="/history" element={pages.history} />
         )}
         {extraRoutes}
+        <Route
+          path="*"
+          element={isCustomViewFeatureEnabled
+            ? (
+                <CustomViewRedirector
+                  entityType={entityType}
+                  Fallback={<ErrorNotFound />}
+                />
+              )
+            : <ErrorNotFound />
+          }
+        />
       </Routes>
     </>
   );

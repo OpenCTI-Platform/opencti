@@ -143,6 +143,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
         enableEnricher={true}
       />
       <StixDomainObjectMain
+        entityType="Case-Incident"
         basePath={basePath}
         pages={{
           overview: <CaseIncident caseIncidentData={caseData} enableReferences={enableReferences} />,

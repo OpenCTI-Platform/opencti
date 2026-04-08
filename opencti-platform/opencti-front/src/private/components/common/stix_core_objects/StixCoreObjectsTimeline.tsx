@@ -67,8 +67,8 @@ const stixCoreObjectsTimelineQuery = graphql`
 interface StixCoreObjectsTimelineProps {
   variant?: string;
   height?: number;
-  startDate: string | null;
-  endDate: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   popover?: ReactNode;

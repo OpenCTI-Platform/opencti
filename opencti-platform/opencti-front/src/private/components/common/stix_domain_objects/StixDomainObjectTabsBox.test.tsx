@@ -19,6 +19,7 @@ describe('StixDomainObjectTabsBox', () => {
   it.each(TABS_TEST_DATA)('renders a %s link when %s prop is passed targeting %s', (tabName, prop, subroute) => {
     testRender(
       <StixDomainObjectTabsBox
+        entityType="Intrusion-Set"
         tabs={[prop]}
         basePath=""
       />,
@@ -34,6 +35,7 @@ describe('StixDomainObjectTabsBox', () => {
   it('renders components passed as extraActions', () => {
     testRender(
       <StixDomainObjectTabsBox
+        entityType="Intrusion-Set"
         tabs={[]}
         basePath=""
         extraActions={<>Some Extra Action</>}

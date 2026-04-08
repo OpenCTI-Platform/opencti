@@ -11,6 +11,7 @@ import { isEmptyField, uniqueArray } from '../utils';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 import { dateFiltersValueForDisplay } from '../Time';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../widget/widgetUtils';
+import type { DashboardManifest } from '../dashboard';
 
 // ----------------------------------------------------------------------------------------------------------------------
 
@@ -616,13 +617,19 @@ export const serializeDashboardManifestForBackend = (
 
 export const deserializeDashboardManifestForFrontend = (
   manifestStr: string,
-): AnyForDashboardManifest => {
+): DashboardManifest => {
+  const widgets: Record<string, AnyForDashboardManifest> = {};
+  if (!manifestStr) {
+    return {
+      widgets,
+      config: {},
+    };
+  }
   const manifest = JSON.parse(manifestStr);
-  const newWidgets: Record<string, AnyForDashboardManifest> = {};
   const widgetIds = manifest.widgets ? Object.keys(manifest.widgets) : [];
   widgetIds.forEach((id) => {
     const widget = manifest.widgets[id];
-    newWidgets[id] = {
+    widgets[id] = {
       ...widget,
       dataSelection: widget.dataSelection.map(
         (selection: AnyForDashboardManifest) => ({
@@ -642,8 +649,9 @@ export const deserializeDashboardManifestForFrontend = (
   });
 
   return {
+    config: {},
     ...manifest,
-    widgets: newWidgets,
+    widgets,
   };
 };
 

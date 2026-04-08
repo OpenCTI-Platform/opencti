@@ -185,6 +185,7 @@ const RootThreatActorIndividualComponent = ({
               enableEnrollPlaybook={true}
             />
             <StixDomainObjectMain
+              entityType="Threat-Actor-Individual"
               basePath={basePath}
               pages={{
                 overview:

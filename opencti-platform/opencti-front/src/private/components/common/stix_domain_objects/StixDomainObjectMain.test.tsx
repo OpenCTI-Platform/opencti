@@ -22,9 +22,13 @@ describe('StixDomainObjectMain', () => {
     const pageContent = `${tabName} page content !`;
     const { user } = testRender(
       <StixDomainObjectMain
+        entityType="Intrusion-Set"
         pages={{ [tab]: <span>{pageContent}</span> }}
         basePath=""
       />,
+      {
+        route: '/',
+      },
     );
     await user.click(screen.getByRole('tab', { name: new RegExp(tabName, 'i') }));
     expect(screen.getByText(pageContent)).toBeInTheDocument();
@@ -35,6 +39,7 @@ describe('StixDomainObjectMain', () => {
     const extraRoute = '/somewhere';
     testRender(
       <StixDomainObjectMain
+        entityType="Intrusion-Set"
         pages={{}}
         basePath=""
         extraRoutes={<Route path={extraRoute} element={pageContent} />}
@@ -44,5 +49,20 @@ describe('StixDomainObjectMain', () => {
       },
     );
     expect(screen.getByText(pageContent)).toBeInTheDocument();
+  });
+
+  it('renders 404 error for unknown route', () => {
+    const nowhereRoute = '/nowhere';
+    testRender(
+      <StixDomainObjectMain
+        entityType="Intrusion-Set"
+        pages={{}}
+        basePath=""
+      />,
+      {
+        route: nowhereRoute,
+      },
+    );
+    expect(screen.getByText(/This page is not found/i)).toBeInTheDocument();
   });
 });
