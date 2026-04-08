@@ -9,9 +9,10 @@ const GlobalWorkflowSettingsCard = () => {
   const { t_i18n } = useFormatter();
 
   const { subType } = useSubTypeOutletContext();
+  const requestAccessConfiguration = subType.settings.requestAccessConfiguration;
 
   const hasRequestAccessConfig = subType.settings.availableSettings.includes('request_access_configuration')
-    && !!subType.settings.requestAccessConfiguration;
+    && !!requestAccessConfiguration;
 
   return (
     <Card title={t_i18n('Workflow')}>
@@ -23,7 +24,7 @@ const GlobalWorkflowSettingsCard = () => {
             )
           }
         </Grid>
-        {hasRequestAccessConfig && (
+        {hasRequestAccessConfig && requestAccessConfiguration && (
           <>
             <Grid item>
               <Divider
@@ -37,7 +38,7 @@ const GlobalWorkflowSettingsCard = () => {
               />
             </Grid>
             <Grid item xs={6}>
-              <RequestAccessSettings data={subType} subTypeId={subType.id} dataConfiguration={subType.settings.requestAccessConfiguration} />
+              <RequestAccessSettings data={subType} subTypeId={subType.id} dataConfiguration={requestAccessConfiguration} />
             </Grid>
           </>
         )}
