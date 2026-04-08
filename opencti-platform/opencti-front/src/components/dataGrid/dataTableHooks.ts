@@ -7,6 +7,7 @@ import { useFormatter } from '../i18n';
 import useEntityToggle from '../../utils/hooks/useEntityToggle';
 import useLocalStorage, { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useComputeLink } from '../../utils/hooks/useAppData';
+import useDataTableLocalSortHelper from './useDataTableLocalSort';
 
 export const useLineData = (lineFragment: GraphQLTaggedNode) => (row: KeyType) => useFragment(lineFragment, row);
 
@@ -31,3 +32,5 @@ export const useDataTableLocalStorage = useLocalStorage;
 export const useDataTablePaginationLocalStorage = usePaginationLocalStorage;
 
 export const useDataTableFormatter = useFormatter;
+
+export const useDataTableLocalSort = useDataTableLocalSortHelper;
