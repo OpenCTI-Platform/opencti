@@ -277,7 +277,9 @@ export const buildCsvLines = (elements: any[], feed: BasicStoreEntityFeed, neigh
 };
 
 export const resolveUserForFeed = async (context: AuthContext, feed: BasicStoreEntityFeed): Promise<AuthUser> => {
-  return context.user ?? resolvePublicUser(context, feed.feed_public_user_id);
+  if (context.user) return context.user;
+  if (feed.feed_public) return resolvePublicUser(context, feed.feed_public_user_id);
+  throw ForbiddenAccess();
 };
 
 const initHttpRollingFeeds = (app: Express.Application) => {
