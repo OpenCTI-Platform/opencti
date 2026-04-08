@@ -55,13 +55,13 @@ type SharingConfig = {
   publicField: string;
   userIdField: string;
   liveField?: string;
-  label: string;
+  entityLabel: string;
 };
 
 const PUBLIC_SHARING_CONFIGS: SharingConfig[] = [
-  { entityType: ENTITY_TYPE_FEED, publicField: 'feed_public', userIdField: 'feed_public_user_id', label: 'csv feed' },
-  { entityType: ENTITY_TYPE_TAXII_COLLECTION, publicField: 'taxii_public', userIdField: 'taxii_public_user_id', label: 'Taxii collection' },
-  { entityType: ENTITY_TYPE_STREAM_COLLECTION, publicField: 'stream_public', userIdField: 'stream_public_user_id', liveField: 'stream_live', label: 'live stream' },
+  { entityType: ENTITY_TYPE_FEED, publicField: 'feed_public', userIdField: 'feed_public_user_id', entityLabel: 'csv feed' },
+  { entityType: ENTITY_TYPE_TAXII_COLLECTION, publicField: 'taxii_public', userIdField: 'taxii_public_user_id', entityLabel: 'Taxii collection' },
+  { entityType: ENTITY_TYPE_STREAM_COLLECTION, publicField: 'stream_public', userIdField: 'stream_public_user_id', liveField: 'stream_live', entityLabel: 'live stream' },
 ];
 
 /**
@@ -72,7 +72,7 @@ const PUBLIC_SHARING_CONFIGS: SharingConfig[] = [
  */
 export const disablePublicSharingForDeletedUser = async (context: AuthContext, userId: string): Promise<void> => {
   await Promise.all(
-    PUBLIC_SHARING_CONFIGS.map(async ({ entityType, publicField, userIdField, liveField, label }) => {
+    PUBLIC_SHARING_CONFIGS.map(async ({ entityType, publicField, userIdField, liveField, entityLabel }) => {
       const filters = {
         mode: FilterMode.And,
         filterGroups: [],
@@ -91,7 +91,7 @@ export const disablePublicSharingForDeletedUser = async (context: AuthContext, u
               event_type: 'mutation',
               event_scope: 'update',
               event_access: 'administration',
-              message: `updates \`${liveField}\` for ${label} \`${entity.name}\``,
+              message: `updates \`${liveField}\` for ${entityLabel} \`${entity.name}\``,
               context_data: { id: entity.id, entity_type: entityType, input: [{ key: liveField, value: ['false'] }] },
             });
             await notify((BUS_TOPICS as Record<string, { EDIT_TOPIC: string }>)[entityType].EDIT_TOPIC, liveElement, SYSTEM_USER);
@@ -106,7 +106,7 @@ export const disablePublicSharingForDeletedUser = async (context: AuthContext, u
             event_type: 'mutation',
             event_scope: 'update',
             event_access: 'administration',
-            message: `updates \`${publicField}\` for ${label} \`${entity.name}\``,
+            message: `updates \`${publicField}\` for ${entityLabel} \`${entity.name}\``,
             context_data: { id: entity.id, entity_type: entityType, input: [{ key: publicField, value: ['false'] }] },
           });
           await notify((BUS_TOPICS as Record<string, { EDIT_TOPIC: string }>)[entityType].EDIT_TOPIC, element, SYSTEM_USER);
