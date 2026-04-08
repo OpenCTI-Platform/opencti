@@ -1,99 +1,89 @@
 import { MouseEvent, ReactElement, useState } from 'react';
-import { Box, type MenuItemProps, type PopoverProps, MenuItem, type SxProps } from '@mui/material';
+import { Box, type MenuItemProps, type PopoverProps, MenuItem } from '@mui/material';
 import Tab, { TabProps } from '@mui/material/Tab';
 import Menu from '@mui/material/Menu';
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 
-const arrowStyle: SxProps = {
-  fontSize: '20px',
+export const useDropDownMenuState = () => {
+  const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
+
+  const onOpen = (event: MouseEvent) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+
+  const onClose = (event: MouseEvent) => {
+    event.stopPropagation();
+    setAnchorEl(null);
+  };
+
+  return { anchorEl, onOpen, onClose, isOpen: Boolean(anchorEl) };
 };
 
-type TabWithDropDownMenuProps = TabProps & {
-  /** The Menu elements to show in the menu **/
+type TabWithDropDownMenuProps = Omit<TabProps, 'onClick'> & {
+  isOpen: boolean;
+  onOpen: (event: MouseEvent) => void;
+};
+
+/** A Tab that shows an arrow indicator and triggers a drop-down menu on click. */
+export const TabWithDropDownMenu = ({ isOpen, onOpen, label, ...tabProps }: TabWithDropDownMenuProps) => (
+  <Tab
+    {...tabProps}
+    component="div"
+    sx={{
+      display: 'flex',
+      flexDirection: 'row',
+      gap: '4px',
+      alignItems: 'center',
+      // Compensate invalid vertical alignment of other tabs due to application
+      // of 'inline-block' & 'textTransform'. To be removed if/when we find a
+      // better way to capitalize first letters of all tabs.
+      paddingBottom: '14px',
+      paddingTop: '7px',
+      // Compensate horizontal space in ArrowDropUp/ArrowDropDown svg
+      paddingLeft: '19px',
+      paddingRight: '13px',
+      // Compensate application of the 'inherit' variant instead
+      // of the 'primary' variant to the tab. To be removed when possible.
+      opacity: 1,
+      // Use default text color
+      color: 'text.secondary',
+    }}
+    label={(
+      <>
+        <Box
+          sx={{
+            textTransform: 'lowercase',
+            display: 'inline-block',
+            '&::first-letter': {
+              textTransform: 'uppercase',
+            },
+          }}
+        >
+          {label}
+        </Box>
+        {isOpen ? <ArrowDropUp sx={{ fontSize: '20px' }} /> : <ArrowDropDown sx={{ fontSize: '20px' }} />}
+      </>
+    )}
+    onClick={onOpen}
+  />
+);
+
+type DropDownMenuProps = {
+  anchorEl: PopoverProps['anchorEl'];
+  isOpen: boolean;
+  onClose: (event: MouseEvent) => void;
   renderMenuItems: () => ReactElement<MenuItemProps, typeof MenuItem>[];
-  /** Should skip creating Tab and Menu components **/
-  skip?: boolean;
 };
 
-/**
- * A special type of Tab that displays a drop-down menu on click.
- * Unorthodoxly this functionality is exposed as a hook as we want to provide
- * two distinct components given the <Menu> component cannot
- */
-const useTabWithDropDownMenu = ({ skip, renderMenuItems, label, ...tabProps }: TabWithDropDownMenuProps) => {
-  const [anchorPopover, setAnchorPopover] = useState<PopoverProps['anchorEl']>(null);
-
-  const onOpenPopover = (event: MouseEvent) => {
-    event.stopPropagation();
-    setAnchorPopover(event.currentTarget);
-  };
-
-  const onClosePopover = (event: MouseEvent) => {
-    event.stopPropagation();
-    setAnchorPopover(null);
-  };
-  return {
-    TabWithDropDown: (skip
-      ? null
-      : (
-          <Tab
-            {...tabProps}
-            component="div"
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              gap: '4px',
-              alignItems: 'center',
-              // Compensate invalid vertical alignment of other tabs due to application
-              // of 'inline-block' & 'textTransform'. To be removed if/when we find a
-              // better way to capitalize first letters of all tabs.
-              paddingBottom: '14px',
-              paddingTop: '7px',
-              // Compensate horizontal space in ArrowDropUp/ArrowDropDown svg
-              paddingLeft: '19px',
-              paddingRight: '13px',
-              // Compensate application of the 'inherit' variant instead
-              // of the 'primary' variant to the tab. To be removed when possible.
-              opacity: 1,
-              // Use default text color
-              color: 'text.secondary',
-            }}
-            label={(
-              <>
-                <Box sx={{
-                  textTransform: 'lowercase',
-                  display: 'inline-block',
-                  '&::first-letter': {
-                    textTransform: 'uppercase',
-                  },
-                }}
-                >
-                  {label}
-                </Box>
-                {anchorPopover
-                  ? <ArrowDropUp sx={arrowStyle} />
-                  : <ArrowDropDown sx={arrowStyle} />}
-              </>
-            )}
-            onClick={onOpenPopover}
-          />
-        )
-    ),
-    DropDown: (skip
-      ? null
-      : (
-          <Menu
-            anchorEl={anchorPopover}
-            open={Boolean(anchorPopover)}
-            onClose={onClosePopover}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-          >
-            {renderMenuItems()}
-          </Menu>
-        )
-    ),
-  };
-};
-
-export default useTabWithDropDownMenu;
+export const DropDownMenu = ({ anchorEl, isOpen, onClose, renderMenuItems }: DropDownMenuProps) => (
+  <Menu
+    anchorEl={anchorEl}
+    open={isOpen}
+    onClose={onClose}
+    anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+    transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+  >
+    {renderMenuItems()}
+  </Menu>
+);

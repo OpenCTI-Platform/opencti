@@ -1,28 +1,90 @@
 import { describe, expect, it } from 'vitest';
+import { Link } from 'react-router-dom';
+import MenuItem from '@mui/material/MenuItem';
 import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import { screen } from '@testing-library/react';
 import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
-import CustomViewTabsWrapper from './CustomViewTabsWrapper';
+import useCustomViewTabs from './useCustomViewTabs';
+import { CUSTOM_VIEW_TAB_VALUE } from './useCustomViews';
+import { DropDownMenu, TabWithDropDownMenu } from '../../../components/TabWithDropDownMenu';
 
-describe('CustomViewTabsWrapper', () => {
+interface TestWrapperProps {
+  entityType: string;
+  basePath: string;
+}
+
+const TestWrapper = ({ entityType, basePath }: TestWrapperProps) => {
+  const {
+    customViews,
+    displayMode,
+    dropDownMenuState,
+    currentCustomViewTab,
+  } = useCustomViewTabs({ entityType, basePath });
+
+  const { anchorEl, onOpen, onClose, isOpen } = dropDownMenuState;
+
+  const renderMenuItems = () => customViews.map(({ id, name, path }) => (
+    <MenuItem
+      key={id}
+      role="link"
+      component={Link}
+      to={`${basePath}/${path}`}
+      selected={currentCustomViewTab === path}
+    >
+      {name}
+    </MenuItem>
+  ));
+
+  const renderCustomViewTab = () => {
+    if (displayMode === 'single') {
+      return (
+        <Tab
+          component={Link}
+          to={customViews[0].path}
+          value={CUSTOM_VIEW_TAB_VALUE}
+          label={customViews[0].name}
+        />
+      );
+    }
+
+    if (displayMode === 'dropdown') {
+      return (
+        <TabWithDropDownMenu
+          value={CUSTOM_VIEW_TAB_VALUE}
+          label="Custom view"
+          isOpen={isOpen}
+          onOpen={onOpen}
+        />
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <>
+      <Tabs value={currentCustomViewTab}>
+        {renderCustomViewTab()}
+      </Tabs>
+      {displayMode === 'dropdown' && (
+        <DropDownMenu
+          anchorEl={anchorEl}
+          isOpen={isOpen}
+          onClose={onClose}
+          renderMenuItems={renderMenuItems}
+        />
+      )}
+    </>
+  );
+};
+
+describe('useCustomViewTabs', () => {
   it('renders another tab when custom view available', () => {
     const customViewDisplayName = 'My custom view';
     const customViewPath = 'some-path';
     testRender(
-      <CustomViewTabsWrapper
-        entityType="Intrusion-Set"
-        basePath=""
-        render={({ CustomViewsTab, CustomViewsDropDown, currentCustomViewTab }) => {
-          return (
-            <>
-              <Tabs value={currentCustomViewTab}>
-                {CustomViewsTab}
-              </Tabs>
-              {CustomViewsDropDown}
-            </>
-          );
-        }}
-      />,
+      <TestWrapper entityType="Intrusion-Set" basePath="" />,
       {
         userContext: createMockUserContext({
           settings: {
@@ -52,20 +114,7 @@ describe('CustomViewTabsWrapper', () => {
 
   it('renders a "Custom view" tab when multiple custom views available', async () => {
     const { user } = testRender(
-      <CustomViewTabsWrapper
-        entityType="Intrusion-Set"
-        basePath=""
-        render={({ CustomViewsTab, CustomViewsDropDown, currentCustomViewTab }) => {
-          return (
-            <>
-              <Tabs value={currentCustomViewTab}>
-                {CustomViewsTab}
-              </Tabs>
-              {CustomViewsDropDown}
-            </>
-          );
-        }}
-      />,
+      <TestWrapper entityType="Intrusion-Set" basePath="" />,
       {
         userContext: createMockUserContext({
           settings: {
@@ -108,20 +157,7 @@ describe('CustomViewTabsWrapper', () => {
     const customViewDisplayName = 'My custom view';
     const customViewPath = 'some-path';
     testRender(
-      <CustomViewTabsWrapper
-        entityType="Case-Rft"
-        basePath=""
-        render={({ CustomViewsTab, CustomViewsDropDown, currentCustomViewTab }) => {
-          return (
-            <>
-              <Tabs value={currentCustomViewTab}>
-                {CustomViewsTab}
-              </Tabs>
-              {CustomViewsDropDown}
-            </>
-          );
-        }}
-      />,
+      <TestWrapper entityType="Case-Rft" basePath="" />,
       {
         userContext: createMockUserContext({
           settings: {

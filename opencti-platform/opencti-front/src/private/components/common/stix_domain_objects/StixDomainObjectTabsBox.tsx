@@ -1,13 +1,16 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
+import MenuItem from '@mui/material/MenuItem';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Stack from '@mui/material/Stack';
 import { getCurrentTab } from '../../../../utils/utils';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
-import CustomViewTabsWrapper from '@components/custom_views/CustomViewTabsWrapper';
+import useCustomViewTabs from '@components/custom_views/useCustomViewTabs';
+import { CUSTOM_VIEW_TAB_VALUE } from '@components/custom_views/useCustomViews';
+import { DropDownMenu, TabWithDropDownMenu } from '../../../../components/TabWithDropDownMenu';
 
 export type StixDomainObjectTabsBoxTab
   = | 'overview'
@@ -81,6 +84,81 @@ const TABS_INFO: readonly TabInfo[] = [{
   label: 'History',
 }];
 
+interface CustomViewTabsProps {
+  basePath: string;
+  entityType: string;
+  staticTabs: ReactNode;
+  currentTab: string;
+}
+
+const CustomViewTabs = ({ basePath, entityType, staticTabs, currentTab }: CustomViewTabsProps) => {
+  const { t_i18n } = useFormatter();
+  const {
+    customViews,
+    displayMode,
+    dropDownMenuState: { anchorEl, onOpen, onClose, isOpen },
+    currentCustomViewTab,
+  } = useCustomViewTabs({ basePath, entityType });
+
+  const renderMenuItems = () => customViews.map(({ id, name, path }) => {
+    const isSelected = currentTab === path;
+    return (
+      <MenuItem
+        key={id}
+        role="link"
+        component={Link}
+        to={`${basePath}/${path}`}
+        selected={isSelected}
+      >
+        {name}
+      </MenuItem>
+    );
+  });
+
+  const renderCustomViewTab = () => {
+    if (displayMode === 'single') {
+      return (
+        <Tab
+          component={Link}
+          to={customViews[0].path}
+          value={CUSTOM_VIEW_TAB_VALUE}
+          label={customViews[0].name}
+        />
+      );
+    }
+
+    if (displayMode === 'dropdown') {
+      return (
+        <TabWithDropDownMenu
+          value={CUSTOM_VIEW_TAB_VALUE}
+          label={t_i18n('Custom view')}
+          isOpen={isOpen}
+          onOpen={onOpen}
+        />
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <>
+      <Tabs value={currentCustomViewTab ?? currentTab}>
+        {staticTabs}
+        {renderCustomViewTab()}
+      </Tabs>
+      {displayMode === 'dropdown' && (
+        <DropDownMenu
+          anchorEl={anchorEl}
+          isOpen={isOpen}
+          onClose={onClose}
+          renderMenuItems={renderMenuItems}
+        />
+      )}
+    </>
+  );
+};
+
 /**
  * Tabs container shared across all SDO pages.
  * Applies common logic to display (or not) the "Custom views" tab.
@@ -92,7 +170,8 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
   const { isFeatureEnable } = useHelper();
   const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
   const currentTab = getCurrentTab(location.pathname, basePath);
-  const StaticTabs = TABS_INFO.map(({ tab, path, label }) =>
+
+  const staticTabs = TABS_INFO.map(({ tab, path, label }) =>
     tabs.includes(tab) && (
       <Tab
         key={tab}
@@ -102,36 +181,26 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
         label={t_i18n(label)}
       />
     ));
+
   return (
     <Box sx={{
       borderBottom: 1,
       borderColor: 'divider',
       marginBottom: 3,
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
     }}
     >
-      {isCustomViewFeatureEnabled
-        ? (
-            <CustomViewTabsWrapper
-              basePath={basePath}
-              entityType={entityType}
-              render={({ CustomViewsTab, CustomViewsDropDown, currentCustomViewTab }) => {
-                return (
-                  <>
-                    <Tabs value={currentCustomViewTab ?? currentTab}>
-                      {StaticTabs}
-                      {CustomViewsTab}
-                    </Tabs>
-                    {CustomViewsDropDown}
-                  </>
-                );
-              }}
-            />
-          )
-        : <Tabs value={currentTab}> {StaticTabs} </Tabs>
-      }
+      {isCustomViewFeatureEnabled ? (
+        <CustomViewTabs
+          basePath={basePath}
+          entityType={entityType}
+          staticTabs={staticTabs}
+          currentTab={currentTab}
+        />
+      ) : (
+        <Tabs value={currentTab}>
+          {staticTabs}
+        </Tabs>
+      )}
       {extraActions ? (
         <Stack gap={2} direction="row" justifyContent="space-between" alignItems="center">
           {extraActions}
