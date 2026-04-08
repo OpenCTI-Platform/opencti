@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -83,14 +83,18 @@ const TABS_INFO: readonly TabInfo[] = [{
   label: 'History',
 }];
 
-interface CustomViewTabsProps {
+type TabsWithCustomViewsProps = PropsWithChildren<{
   basePath: string;
   entityType: string;
-  staticTabs: ReactNode;
   currentTab: string;
-}
+}>;
 
-const CustomViewTabs = ({ basePath, entityType, staticTabs, currentTab }: CustomViewTabsProps) => {
+const TabsWithCustomViews = ({
+  children,
+  basePath,
+  entityType,
+  currentTab,
+}: TabsWithCustomViewsProps) => {
   const {
     customViews,
     displayMode,
@@ -101,7 +105,7 @@ const CustomViewTabs = ({ basePath, entityType, staticTabs, currentTab }: Custom
   return (
     <>
       <Tabs value={currentCustomViewTab ?? currentTab}>
-        {staticTabs}
+        {children}
         <CustomViewTab
           displayMode={displayMode}
           customViews={customViews}
@@ -149,12 +153,13 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
     }}
     >
       {isCustomViewFeatureEnabled ? (
-        <CustomViewTabs
+        <TabsWithCustomViews
           basePath={basePath}
           entityType={entityType}
-          staticTabs={staticTabs}
           currentTab={currentTab}
-        />
+        >
+          {staticTabs}
+        </TabsWithCustomViews>
       ) : (
         <Tabs value={currentTab}>
           {staticTabs}
