@@ -133,7 +133,9 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
             authorized_members: [],
             taxii_public: false,
             include_inferences: true,
-            score_to_confidence: false, taxii_public_user_id: null }}
+            score_to_confidence: false,
+            taxii_public_user_id: null,
+          }}
           validationSchema={taxiiCollectionCreationValidation(t_i18n('This field is required'))}
           onSubmit={onSubmit}
           onReset={onClose}
