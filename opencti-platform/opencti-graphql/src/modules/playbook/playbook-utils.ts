@@ -36,12 +36,12 @@ export const isBundleElementInScope = (
 
 /**
  * Check if a STIX element is matching filters.
- * If no fitlers, return true.
+ * If no filters, return true.
  *
  * @param context
  * @param bundleElement STIX element to verify.
  * @param filters Filters to apply.
- * @returns True if mathcing filters.
+ * @returns True if matching filters.
  */
 export const isBundleElementMatchFilters = async (
   context: AuthContext,
