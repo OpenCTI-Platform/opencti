@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useMemo } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
@@ -114,13 +114,42 @@ const stixDomainObjectAuthorKnowledgeStixDomainObjectsTimeSeriesQuery = graphql`
   }
 `;
 
-class StixDomainObjectAuthorKnowledge extends Component {
-  render() {
-    const { t, fsd, n, classes, stixDomainObjectId, theme } = this.props;
-    return (
-      <div>
-        <Grid container={true} spacing={3}>
-          <Grid item xs={4}>
+const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectId, theme }) => {
+  const fallbackDates = useMemo(() => ({
+    monthAgo: monthsAgo(1),
+    yearAgo: yearsAgo(1),
+    end: now(),
+  }), []);
+
+  const reportsNumberVariables = useMemo(() => ({
+    authorId: stixDomainObjectId,
+    endDate: fallbackDates.monthAgo,
+  }), [stixDomainObjectId, fallbackDates]);
+
+  const stixCoreRelationshipsObservablesVariables = useMemo(() => ({
+    authorId: stixDomainObjectId,
+    toTypes: ['Stix-Cyber-Observable'],
+    endDate: fallbackDates.monthAgo,
+  }), [stixDomainObjectId, fallbackDates]);
+
+  const stixCoreRelationshipsRelationsVariables = useMemo(() => ({
+    authorId: stixDomainObjectId,
+    endDate: fallbackDates.monthAgo,
+  }), [stixDomainObjectId, fallbackDates]);
+
+  const timeSeriesVariables = useMemo(() => ({
+    authorId: stixDomainObjectId,
+    field: 'created_at',
+    operation: 'count',
+    startDate: fallbackDates.yearAgo,
+    endDate: fallbackDates.end,
+    interval: 'month',
+  }), [stixDomainObjectId, fallbackDates]);
+
+  return (
+    <div>
+      <Grid container={true} spacing={3}>
+        <Grid item xs={4}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -128,10 +157,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
             >
               <QueryRenderer
                 query={stixDomainObjectAuthorKnowledgeReportsNumberQuery}
-                variables={{
-                  authorId: stixDomainObjectId,
-                  endDate: monthsAgo(1),
-                }}
+                variables={reportsNumberVariables}
                 render={({ props }) => {
                   if (props && props.reportsNumber) {
                     const { total } = props.reportsNumber;
@@ -171,11 +197,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
                 query={
                   stixDomainObjectAuthorKnowledgeStixCoreRelationshipsNumberQuery
                 }
-                variables={{
-                  authorId: stixDomainObjectId,
-                  toTypes: ['Stix-Cyber-Observable'],
-                  endDate: monthsAgo(1),
-                }}
+                variables={stixCoreRelationshipsObservablesVariables}
                 render={({ props }) => {
                   if (props && props.stixCoreRelationshipsNumber) {
                     const { total } = props.stixCoreRelationshipsNumber;
@@ -215,10 +237,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
                 query={
                   stixDomainObjectAuthorKnowledgeStixCoreRelationshipsNumberQuery
                 }
-                variables={{
-                  authorId: stixDomainObjectId,
-                  endDate: monthsAgo(1),
-                }}
+                variables={stixCoreRelationshipsRelationsVariables}
                 render={({ props }) => {
                   if (props && props.stixCoreRelationshipsNumber) {
                     const { total } = props.stixCoreRelationshipsNumber;
@@ -260,14 +279,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
                 query={
                   stixDomainObjectAuthorKnowledgeStixDomainObjectsTimeSeriesQuery
                 }
-                variables={{
-                  authorId: stixDomainObjectId,
-                  field: 'created_at',
-                  operation: 'count',
-                  startDate: yearsAgo(1),
-                  endDate: now(),
-                  interval: 'month',
-                }}
+                variables={timeSeriesVariables}
                 render={({ props }) => {
                   if (props && props.stixDomainObjectsTimeSeries) {
                     const chartData = props.stixDomainObjectsTimeSeries.map(
@@ -304,9 +316,8 @@ class StixDomainObjectAuthorKnowledge extends Component {
           </Grid>
         </Grid>
       </div>
-    );
-  }
-}
+  );
+};
 
 StixDomainObjectAuthorKnowledge.propTypes = {
   stixDomainObjectId: PropTypes.string,
