@@ -93,7 +93,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
   const ICON_MAP: Record<string, (size: number) => React.ReactElement> = {
     DETECTION: (size) => <TrackChangesOutlined style={{ fontSize: size }} />,
     PREVENTION: (size) => <ShieldOutlined style={{ fontSize: size }} />,
-    VULNERABILITY: (size) => <BugReportOutlined style={{ fontSize: size }} />,
+    VULNERABILITIES: (size) => <BugReportOutlined style={{ fontSize: size }} />,
     MANUAL: (size) => <Person style={{ fontSize: size }} />,
   };
 
