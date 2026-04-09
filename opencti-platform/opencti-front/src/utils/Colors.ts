@@ -253,6 +253,11 @@ export const itemColor = (
 ): string => {
   const family = type ? ENTITY_TYPE_TO_FAMILY[type] : null;
 
+  // SCO colors are generated based on their type to differentiate them
+  if (type && family === 'observables') {
+    return stringToColour(type);
+  }
+
   if (family) {
     return COLOR_FAMILIES[family];
   }
