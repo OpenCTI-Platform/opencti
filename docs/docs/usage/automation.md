@@ -206,6 +206,9 @@ By default, modification is applied to the entity triggering the playbook. You c
 
 **Specificities of the component**
 
+**Operations filtering:**
+You have the possibility to add filters at the component level. The elements in the bundle will be filtered so only matching elements will be concerned by the operations of the component. This filtering has no impact on the output of the component, the bundle elements remain the same, they are only filtered to determine if the operations should be applied or not.
+
 **Remove & replace operations:**
 These operations will only remove and & replace data that has been added in the context of this playbook. This step cannot be used to modify attributes of an entity (or observable) that has already been written in your platform. For instance, if an entity is ingested with a TLP:RED marking and a specific label, and your playbook listens to any entity created with this specific label, if you have a step to remove TLP:RED marking within your playbook, this step will not be executed because the TLP:RED marking would already be written in your platform.
 
