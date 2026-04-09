@@ -65,22 +65,29 @@ const StixCoreObjectsExportCreation = ({
 
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState([]);
   const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value));
+  const visibleColumnExportEnabledFormats = ['text/csv'];
   const onSubmit = (selectedIds, values, { setSubmitting, resetForm }) => {
     const { orderBy, filters, orderMode, search } = paginationOptions;
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
+
+    let updatedExportContext = { ...exportContext };
+    if (values.columns === 'all') {
+      updatedExportContext.visible_columns = undefined;
+    }
+
     commitMutation({
       mutation: StixCoreObjectsExportCreationMutation,
       variables: {
         input: {
-          exportContext,
+          updatedExportContext,
           format: values.format,
           exportType: exportType ?? 'full',
           selectedIds,
           orderBy,
           filters,
           orderMode,
-          contentMaxMarkings,
+          exportContext: contentMaxMarkings,
           fileMarkings,
           search,
         },
@@ -105,13 +112,14 @@ const StixCoreObjectsExportCreation = ({
               format: '',
               contentMaxMarkings: [],
               fileMarkings: [],
+              columns: 'all',
             }}
             validationSchema={exportValidation(t_i18n)}
             onSubmit={(values, { setSubmitting, resetForm }) => onSubmit(selectedIds, values, { setSubmitting, resetForm })
             }
             onReset={() => setOpen(false)}
           >
-            {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
+            {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue, values }) => (
               <Form>
                 <Dialog
                   open={open}
@@ -170,6 +178,24 @@ const StixCoreObjectsExportCreation = ({
                               style={fieldSpacingContainerStyle}
                               setFieldValue={setFieldValue}
                             />
+                            {visibleColumnExportEnabledFormats.includes(values.format)
+                              ? (
+                                  <Field
+                                    component={SelectField}
+                                    variant="standard"
+                                    name="columns"
+                                    label={t_i18n('Choose column to export')}
+                                    fullWidth={true}
+                                    containerstyle={fieldSpacingContainerStyle}
+                                  >
+                                    <MenuItem value="all">
+                                      {t_i18n('All attributes')}
+                                    </MenuItem>
+                                    <MenuItem value="view">
+                                      {t_i18n('Current view')}
+                                    </MenuItem>
+                                  </Field>
+                                ) : undefined}
                           </>
                         );
                       }

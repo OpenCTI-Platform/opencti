@@ -25,6 +25,8 @@ const DataTablePagination = ({
   const { t_i18n } = useFormatter();
 
   const {
+    columns,
+    setColumns,
     resetColumns,
     useDataTablePaginationLocalStorage: {
       viewStorage: {
@@ -59,6 +61,36 @@ const DataTablePagination = ({
     }
   }, [page, pageSize]);
 
+  const handleToggleVisibility = (columnId: string) => {
+    const newColumns = [...columns];
+    const currentColumn = newColumns.find(({ id }) => id === columnId);
+    if (!currentColumn) {
+      return;
+    }
+    currentColumn.visible = !currentColumn.visible;
+    setColumns(newColumns);
+  };
+
+  const computeDataColumnOptions = () => {
+    const options = [];
+    if (columns) {
+      for (const column of columns.filter(({ id }) => !['select', 'navigate', 'icon'].includes(id))) {
+        options.push(
+          {
+            value: column.id,
+            label: t_i18n(column.label ?? column.id),
+            selected: column.visible,
+            onClick: () => handleToggleVisibility(column.id),
+            menuLevel: 1,
+            keepMenuOpen: true,
+          },
+        );
+      }
+    }
+
+    return options;
+  };
+
   const resetTable = () => {
     resetColumns();
     helpers.handleAddProperty('pageSize', '25');
@@ -70,6 +102,14 @@ const DataTablePagination = ({
       onClick: () => resetTable(),
       menuLevel: 0,
     },
+    ...(columns.length > 0
+      ? [
+          {
+            value: 'menu-columns',
+            label: t_i18n('Columns'),
+            menuLevel: 0,
+            nestedOptions: computeDataColumnOptions(),
+          }] : []),
     {
       value: 'menu-rows-per-page',
       label: t_i18n('Rows per page'),

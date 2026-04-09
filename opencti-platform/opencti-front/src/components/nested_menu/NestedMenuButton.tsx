@@ -41,6 +41,7 @@ type Option = {
   onClick?: () => void; // individual click handler
   selected?: boolean;
   nestedOptions?: Option[];
+  keepMenuOpen?: boolean;
 };
 
 type NestedMenuProps = {
@@ -66,6 +67,8 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
     options: new Array(menuLevels).fill(null),
   });
 
+  const [visibleMenuValue, setVisibleMenuValue] = React.useState<string | null>();
+
   const mouseEntered = React.useRef<Record<string, boolean>>({});
   const mouseLeftCoordinates = React.useRef<Array<number>>([]);
   const buttonRef = React.useRef(null);
@@ -75,9 +78,13 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
     event: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
     level = 0,
     nestedOptions = options,
+    menuValue?: string,
   ) => {
     const target = event.target as HTMLElement;
 
+    if (menuValue) {
+      setVisibleMenuValue(menuValue);
+    }
     setAnchors((prevAnchors) => ({
       elements: prevAnchors.elements.map((element, index) => (index === level ? target : element)),
       options: prevAnchors.options.map((element, index) => (index === level ? nestedOptions : element)),
@@ -91,26 +98,46 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
     }));
   };
 
+  const updateAnchorOptions = () => {
+    if (visibleMenuValue) {
+      const option = options.filter((o) => o.value === visibleMenuValue);
+      if (option.length === 1 && option[0].nestedOptions && options) {
+        const selectedMenuOptions = option[0].nestedOptions;
+        setAnchors((prevAnchors) => ({
+          ...prevAnchors,
+          options: [options, selectedMenuOptions],
+        }));
+      }
+    }
+  };
+
   const handleClickAway = (event: MouseEvent | TouchEvent) => {
     if (event.target === buttonRef.current) {
       handleClose(0);
       return;
     }
-
+    if (event.defaultPrevented) {
+      // Need to update options in place since it wont be reopened
+      updateAnchorOptions();
+      return;
+    }
     const optionWithoutSubMenu = anchors.elements.every(
       (element) => !element || !event.composedPath().includes(element),
     );
-
     if (optionWithoutSubMenu) {
       handleClose(0);
     }
   };
 
-  const handleClickOption = (option: Option) => {
-    if (!option.nestedOptions) {
+  const handleClickOption = (event: React.MouseEvent<MouseEvent>, option: Option) => {
+    if (option.keepMenuOpen) {
+      // Prevent default of closing the menu on click
+      event.preventDefault();
+    }
+    if (option.nestedOptions && !option.keepMenuOpen) {
+      return;
+    } else if (!option.keepMenuOpen) {
       handleClose(0);
-    } else {
-      return; // no handler on submenu's parent
     }
     option.onClick?.();
     onClick?.(option);
@@ -143,9 +170,9 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
           )
         ) {
           handleClose(option.menuLevel + 1);
-          handleOpen(event, option.menuLevel + 1, option.nestedOptions);
+          handleOpen(event, option.menuLevel + 1, option.nestedOptions, option.value);
         } else {
-          handleOpen(event, option.menuLevel + 1, option.nestedOptions);
+          handleOpen(event, option.menuLevel + 1, option.nestedOptions, option.value);
         }
       }
     };
@@ -205,7 +232,7 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
   ) => {
     if (option.nestedOptions) {
       if (event.key === 'ArrowRight' || event.key === 'Enter') {
-        handleOpen(event, option.menuLevel + 1, option.nestedOptions);
+        handleOpen(event, option.menuLevel + 1, option.nestedOptions, option.value);
       }
     }
     if (event.key === 'ArrowLeft' && option.menuLevel > 0) {
@@ -266,7 +293,7 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
                               )
                             : undefined
                         }
-                        onClick={() => handleClickOption(option)}
+                        onClick={(event: MouseEvent) => handleClickOption(event, option)}
                         onMouseMove={(event) => handleMouseMove(event, option, optIndex)}
                         onMouseLeave={(event) => handleMouseLeave(event, option, optIndex)}
                         onKeyDown={(event) => handleKeyDown(event, option)}
