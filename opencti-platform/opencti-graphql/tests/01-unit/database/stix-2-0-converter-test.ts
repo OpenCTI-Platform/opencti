@@ -43,8 +43,17 @@ import {
   convertIncidentToStix,
   convertSightingToStix,
   convertIdentityToStix,
+  convertLocationToStix,
 } from '../../../src/database/stix-2-0-converter';
-import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../../src/schema/stixDomainObject';
+import {
+  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_IDENTITY_SECTOR,
+  ENTITY_TYPE_IDENTITY_SYSTEM,
+  ENTITY_TYPE_LOCATION_REGION,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_LOCATION_CITY,
+  ENTITY_TYPE_LOCATION_POSITION,
+} from '../../../src/schema/stixDomainObject';
 import { CAMPAIGN_INSTANCE, EXPECTED_CAMPAIGN } from './instances-stix-2-0-converter/SDOs/campaign';
 import { EXPECTED_INCIDENT, INCIDENT_INSTANCE } from './instances-stix-2-0-converter/SDOs/incident';
 import { EXPECTED_INTRUSION_SET, INTRUSION_SET_INSTANCE } from './instances-stix-2-0-converter/SDOs/intrusion-set';
@@ -63,6 +72,12 @@ import { ORGANIZATION_INSTANCE, EXPECTED_ORGANIZATION } from './instances-stix-2
 import { SECURITY_PLATFORM_INSTANCE, EXPECTED_SECURITY_PLATFORM } from './instances-stix-2-0-converter/identities/security-platform';
 import { EVENT_INSTANCE, EXPECTED_EVENT } from './instances-stix-2-0-converter/event';
 import { convertEventToStix_2_0 } from '../../../src/modules/event/event-converter';
+import { REGION_INSTANCE, EXPECTED_REGION } from './instances-stix-2-0-converter/locations/region';
+import { COUNTRY_INSTANCE, EXPECTED_COUNTRY } from './instances-stix-2-0-converter/locations/country';
+import { CITY_INSTANCE, EXPECTED_CITY } from './instances-stix-2-0-converter/locations/city';
+import { POSITION_INSTANCE, EXPECTED_POSITION } from './instances-stix-2-0-converter/locations/position';
+import { ADMINISTRATIVE_AREA_INSTANCE, EXPECTED_ADMINISTRATIVE_AREA } from './instances-stix-2-0-converter/locations/administrative-area';
+import { convertAdministrativeAreaToStix_2_0 } from '../../../src/modules/administrativeArea/administrativeArea-converter';
 
 describe('Stix 2.0 opencti converter', () => {
   // SDOs
@@ -194,5 +209,26 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Event', async () => {
     const result = convertEventToStix_2_0(EVENT_INSTANCE);
     expect(result).toEqual(EXPECTED_EVENT);
+  });
+  // Locations
+  it('should convert Region', async () => {
+    const result = convertLocationToStix(REGION_INSTANCE, ENTITY_TYPE_LOCATION_REGION);
+    expect(result).toEqual(EXPECTED_REGION);
+  });
+  it('should convert Country', async () => {
+    const result = convertLocationToStix(COUNTRY_INSTANCE, ENTITY_TYPE_LOCATION_COUNTRY);
+    expect(result).toEqual(EXPECTED_COUNTRY);
+  });
+  it('should convert City', async () => {
+    const result = convertLocationToStix(CITY_INSTANCE, ENTITY_TYPE_LOCATION_CITY);
+    expect(result).toEqual(EXPECTED_CITY);
+  });
+  it('should convert Position', async () => {
+    const result = convertLocationToStix(POSITION_INSTANCE, ENTITY_TYPE_LOCATION_POSITION);
+    expect(result).toEqual(EXPECTED_POSITION);
+  });
+  it('should convert Administrative Area', async () => {
+    const result = convertAdministrativeAreaToStix_2_0(ADMINISTRATIVE_AREA_INSTANCE);
+    expect(result).toEqual(EXPECTED_ADMINISTRATIVE_AREA);
   });
 });

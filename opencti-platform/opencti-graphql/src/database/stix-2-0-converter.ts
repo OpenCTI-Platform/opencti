@@ -16,6 +16,9 @@ import {
   ENTITY_TYPE_DATA_SOURCE,
   ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_LOCATION_CITY,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_LOCATION_REGION,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   isStixDomainObject,
@@ -158,6 +161,28 @@ export const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDo
 const buildStixRelationship = (instance: StoreRelation): S.StixRelationshipObject => {
   // As 14/03/2022, relationship share same common information with domain
   return buildStixDomain(instance);
+};
+
+export const convertLocationToStix = (instance: StoreEntity, type: string): SDO.StixLocation => {
+  if (!isStixDomainObjectLocation(type)) {
+    throw UnsupportedError('Type not compatible with location', { entity_type: type });
+  }
+  const location = buildStixDomain(instance);
+  return {
+    ...location,
+    name: instance.name,
+    description: instance.description,
+    latitude: instance.latitude ? parseFloat(instance.latitude) : undefined,
+    longitude: instance.longitude ? parseFloat(instance.longitude) : undefined,
+    precision: instance.precision,
+    region: instance.entity_type === ENTITY_TYPE_LOCATION_REGION ? instance.name : undefined,
+    country: instance.entity_type === ENTITY_TYPE_LOCATION_COUNTRY ? instance.name : undefined,
+    city: instance.entity_type === ENTITY_TYPE_LOCATION_CITY ? instance.name : undefined,
+    street_address: instance.street_address,
+    postal_code: instance.postal_code,
+    x_opencti_location_type: instance.entity_type,
+    x_opencti_aliases: instance.x_opencti_aliases ?? [],
+  };
 };
 
 export const convertIdentityToStix = (instance: StoreEntity, type: string): SDO.StixIdentity => {
@@ -441,7 +466,7 @@ const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
       }
       return externalConverter(basic);
     }
-    // TODO add Location, Identity, all SDOs
+    // TODO add Identity, all SDOs
     if (ENTITY_TYPE_INCIDENT === type) {
       return convertIncidentToStix(basic);
     }
@@ -465,6 +490,9 @@ const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
     }
     if (isStixDomainObjectIdentity(type)) {
       return convertIdentityToStix(basic, type);
+    }
+    if (isStixDomainObjectLocation(type)) {
+      return convertLocationToStix(basic, type);
     }
     if (ENTITY_TYPE_TOOL === type) {
       return convertToolToStix(basic);

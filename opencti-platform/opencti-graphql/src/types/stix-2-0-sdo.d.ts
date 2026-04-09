@@ -143,6 +143,23 @@ export interface StixVulnerability extends StixDomainObject {
   x_opencti_epss_percentile: number;
 }
 
+// Location Specific Properties
+// name, description, latitude, longitude, precision, region, country, city, street_address, postal_code
+export interface StixLocation extends StixDomainObject {
+  name: string; // optional
+  description: string; // optional
+  latitude: number | undefined; // optional
+  longitude: number | undefined; // optional
+  precision: number | undefined; // optional
+  region: string | undefined; // optional
+  country: string | undefined; // optional
+  city: string | undefined; // optional
+  street_address: string; // optional
+  postal_code: string; // optional
+  x_opencti_location_type: string;
+  x_opencti_aliases: Array<string>;
+}
+
 // Identity Specific Properties
 // name, description, roles, identity_class, sectors, contact_information
 export interface StixIdentity extends StixDomainObject {
