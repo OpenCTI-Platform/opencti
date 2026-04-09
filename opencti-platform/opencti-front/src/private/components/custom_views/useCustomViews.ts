@@ -1,6 +1,6 @@
 import { getCurrentTab } from '../../../utils/utils';
 import useAuth from '../../../utils/hooks/useAuth';
-import type { CustomViewsInfo } from './types';
+import type { CustomViewsInfo } from './CustomViews-types';
 
 export const CUSTOM_VIEW_TAB_VALUE = 'custom-view';
 
