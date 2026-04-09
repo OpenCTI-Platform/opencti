@@ -66,6 +66,7 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
       { name: 'cti.entity_activity', description: 'Analyse activity trends of an OpenCTI entity' },
       { name: 'cti.entity_forecast', description: 'Forecast future activity of an OpenCTI entity' },
       { name: 'cti.entity_history', description: 'Summarize internal history of an OpenCTI entity' },
+      { name: 'cti.nlq_search', description: 'Translate a natural-language request into OpenCTI search filters' },
     ],
   });
 
