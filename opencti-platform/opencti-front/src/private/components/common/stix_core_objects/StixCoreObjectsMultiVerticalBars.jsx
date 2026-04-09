@@ -55,7 +55,6 @@ const StixCoreObjectsMultiVerticalBars = ({
         filters,
       };
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataSelection]);
 
   const fallbackDates = useMemo(() => ({

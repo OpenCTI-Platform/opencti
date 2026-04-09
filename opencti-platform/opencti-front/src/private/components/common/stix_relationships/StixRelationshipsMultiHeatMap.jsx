@@ -57,7 +57,6 @@ const StixRelationshipsMultiHeatMap = ({
         dynamicTo: selection.dynamicTo,
       };
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataSelection]);
 
   const fallbackDates = useMemo(() => ({

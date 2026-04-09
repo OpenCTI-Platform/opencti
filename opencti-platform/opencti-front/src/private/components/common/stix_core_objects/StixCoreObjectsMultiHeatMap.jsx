@@ -53,7 +53,6 @@ const StixCoreObjectsMultiHeatMap = ({
         filters: removeEntityTypeAllFromFilterGroup(selection.filters),
       };
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataSelection]);
 
   const fallbackDates = useMemo(() => ({

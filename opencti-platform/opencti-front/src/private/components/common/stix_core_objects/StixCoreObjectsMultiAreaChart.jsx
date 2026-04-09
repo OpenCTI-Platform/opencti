@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -42,8 +42,8 @@ const StixCoreObjectsMultiAreaChart = ({
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
 
-  const renderContent = () => {
-    const timeSeriesParameters = dataSelection.map((selection) => {
+  const timeSeriesParameters = useMemo(() => {
+    return dataSelection.map((selection) => {
       const dataSelectionTypes = ['Stix-Core-Object'];
       const { filters } = buildFiltersAndOptionsForWidgets(selection.filters);
       return {
@@ -55,16 +55,27 @@ const StixCoreObjectsMultiAreaChart = ({
         filters,
       };
     });
+  }, [dataSelection]);
 
+  // Compute fallback dates once per component mount to prevent now() recalculations
+  // from busting the variables memoization on every render.
+  const fallbackDates = useMemo(() => ({
+    start: monthsAgo(12),
+    end: now(),
+  }), []);
+
+  const variables = useMemo(() => ({
+    startDate: startDate ?? fallbackDates.start,
+    endDate: endDate ?? fallbackDates.end,
+    interval: parameters.interval ?? 'day',
+    timeSeriesParameters,
+  }), [startDate, endDate, fallbackDates, parameters.interval, timeSeriesParameters]);
+
+  const renderContent = () => {
     return (
       <QueryRenderer
         query={stixCoreObjectsMultiAreaChartTimeSeriesQuery}
-        variables={{
-          startDate: startDate ?? monthsAgo(12),
-          endDate: endDate ?? now(),
-          interval: parameters.interval ?? 'day',
-          timeSeriesParameters,
-        }}
+        variables={variables}
         render={({ props }) => {
           if (props && props.stixCoreObjectsMultiTimeSeries) {
             return (
