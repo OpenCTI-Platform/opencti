@@ -14,6 +14,7 @@ import { ENTITY_TYPE_FORM } from '../modules/form/form-types';
 import { ENTITY_TYPE_FEED } from '../modules/dataSharing/feed-types';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../modules/dataSharing/taxiiCollection-types';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../modules/dataSharing/streamCollection-types';
+import { ENTITY_TYPE_RETENTION_RULE } from '../modules/retentionRules/retentionRules-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { ENTITY_TYPE_CUSTOM_VIEW } from '../modules/customView/customView-types';
 
