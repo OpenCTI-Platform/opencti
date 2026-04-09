@@ -29,7 +29,7 @@ import { getParentTypes } from '../../../schema/schemaUtils';
 import * as jsonpatch from 'fast-json-patch';
 import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
-import { applyOperationFieldPatch, isBundleElementInScope } from '../playbook-utils';
+import { applyOperationFieldPatch, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 import { pushAll } from '../../../utils/arrayUtil';
 
 const attributePathMapping: any = {
@@ -89,6 +89,7 @@ const attributePathMapping: any = {
 export interface ManipulateConfiguration {
   actions: { op: 'add' | 'replace' | 'remove'; attribute: string; value: UpdateValueConfiguration[] }[];
   applyToElements: PlaybookBundleElementsToApply;
+  applyWithFilters?: string;
 }
 const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<ManipulateConfiguration> = {
   type: 'object',
@@ -102,6 +103,11 @@ const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<ManipulateC
         { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
         { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
       ],
+    },
+    applyWithFilters: {
+      type: 'string',
+      nullable: true,
+      default: '',
     },
     actions: {
       type: 'array',
@@ -150,7 +156,8 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
     const cacheIds = await getEntitiesMapFromCache(context, AUTOMATION_MANAGER_USER, ENTITY_TYPE_MARKING_DEFINITION);
-    const { actions, applyToElements } = playbookNode.configuration;
+    const { actions, applyToElements, applyWithFilters } = playbookNode.configuration;
+
     // Compute if the attribute is defined as multiple in schema definition
     const isAttributeMultiple = (entityType: string, attribute: string) => {
       const baseAttribute = schemaAttributesDefinition.getAttribute(entityType, attribute);
@@ -185,7 +192,9 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
     const patchOperations: jsonpatch.Operation[] = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
-      if (isBundleElementInScope(element, applyToElements, dataInstanceId)) {
+      const isMatchingScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
+      const isMatchingFilters = await isBundleElementMatchFilters(context, element, applyWithFilters);
+      if (isMatchingScope && isMatchingFilters) {
         const { type, id } = element.extensions[STIX_EXT_OCTI];
         const elementOperations = actions
           .map((action) => {
