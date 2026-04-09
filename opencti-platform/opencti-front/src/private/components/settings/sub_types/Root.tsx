@@ -1,50 +1,48 @@
 import EEGuard from '@components/common/entreprise_edition/EEGuard';
 import { Suspense } from 'react';
-import { Navigate, Route, Routes, useOutletContext, useParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader from '../../../../components/Loader';
+import useHelper from '../../../../utils/hooks/useHelper';
 import FintelTemplate from './fintel_templates/FintelTemplate';
-import SubType from './SubType';
 import EntitySettingAttributesCard from './entity_setting/EntitySettingAttributesCard';
 import EntitySettingCustomOverview from './entity_setting/EntitySettingCustomOverview';
 import FintelTemplatesManager from './fintel_templates/FintelTemplatesManager';
 import GlobalWorkflowSettingsCard from './workflow/GlobalWorkflowSettingsCard';
-import { SubTypeTabs } from './SubTypeOutletContext';
-
-interface SubTypeTabsContext {
-  tabs: SubTypeTabs;
-}
+import CustomViewsSettings from './custom_views/CustomViewsSettings';
+import {
+  SUBTYPE_TAB_ATTRIBUTES,
+  SUBTYPE_TAB_CUSTOM_VIEWS,
+  SUBTYPE_TAB_OVERVIEW_LAYOUT,
+  SUBTYPE_TAB_TEMPLATES,
+  SUBTYPE_TAB_WORKFLOW,
+  SUBTYPE_TABS,
+  useSubTypeOutletContext,
+} from './SubTypeOutletContext';
+import SubType from './SubType';
 
 const SubTypeIndexRedirect = () => {
-  const {
-    tabs: {
-      workflow: isWorkflowConfigurationEnabled,
-      attributes: isAttributesConfigurationEnabled,
-      templates: isFINTELTemplatesEnabled,
-      'overview-layout': isCustomOverviewLayoutEnabled,
-    },
-  } = useOutletContext<SubTypeTabsContext>();
+  const { tabs } = useSubTypeOutletContext();
 
-  const hasAtLeastOneEnabledTab
-    = isWorkflowConfigurationEnabled
-      || isAttributesConfigurationEnabled
-      || isFINTELTemplatesEnabled
-      || isCustomOverviewLayoutEnabled;
+  const hasAtLeastOneEnabledTab = Object.values(tabs).some(Boolean);
 
   if (!hasAtLeastOneEnabledTab) return null;
 
   // Redirect to the first enabled tab based on the priority order:
-  // workflow > attributes > templates > overview layout
-  if (isWorkflowConfigurationEnabled) return <Navigate to="workflow" replace />;
-  if (isAttributesConfigurationEnabled) return <Navigate to="attributes" replace />;
-  if (isFINTELTemplatesEnabled) return <Navigate to="templates" replace />;
-  if (isCustomOverviewLayoutEnabled) return <Navigate to="overview-layout" replace />;
+  // workflow > attributes > templates > overview layout > custom views
+  const redirect = SUBTYPE_TABS.find((tab) => tabs[tab]);
+
+  if (redirect) {
+    return <Navigate to={redirect} replace />;
+  }
 
   return null;
 };
 
 const RootSubType = () => {
   const { subTypeId } = useParams<{ subTypeId?: string }>();
+  const { isFeatureEnable } = useHelper();
+  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
 
   if (!subTypeId) return <ErrorNotFound />;
 
@@ -53,10 +51,11 @@ const RootSubType = () => {
       <Routes>
         <Route path="/" element={<SubType />}>
           <Route index element={<SubTypeIndexRedirect />} />
-          <Route path="workflow" element={<GlobalWorkflowSettingsCard />} />
-          <Route path="templates" element={<FintelTemplatesManager />} />
-          <Route path="attributes" element={<EntitySettingAttributesCard />} />
-          <Route path="overview-layout" element={<EntitySettingCustomOverview />} />
+          <Route path={SUBTYPE_TAB_WORKFLOW} element={<GlobalWorkflowSettingsCard />} />
+          <Route path={SUBTYPE_TAB_TEMPLATES} element={<FintelTemplatesManager />} />
+          <Route path={SUBTYPE_TAB_ATTRIBUTES} element={<EntitySettingAttributesCard />} />
+          <Route path={SUBTYPE_TAB_OVERVIEW_LAYOUT} element={<EntitySettingCustomOverview />} />
+          {isCustomViewFeatureEnabled ? <Route path={SUBTYPE_TAB_CUSTOM_VIEWS} element={<CustomViewsSettings />} /> : null}
         </Route>
         <Route
           path="/templates/:templateId"
@@ -66,6 +65,7 @@ const RootSubType = () => {
             </EEGuard>
           )}
         />
+        <Route path="*" element={<ErrorNotFound />} />
       </Routes>
     </Suspense>
   );

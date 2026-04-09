@@ -951,6 +951,7 @@
   "Custom dashboards": "自定义仪表盘",
   "Custom dashboards | Dashboards": "自定义仪表盘",
   "Custom view": "自定义视图",
+  "Custom Views": "自定义视图",
   "Customization": "定制化",
   "Customize columns": "自定义列",
   "Customize provider identifier": "自定义提供商标识符",
@@ -2841,6 +2842,7 @@
   "No enrichment connectors on this platform": "此平台上没有富化连接器",
   "No entities added in this context.": "此上下文中未添加任何实体。",
   "No entities were found for this search.": "未找到此搜索的实体。",
+  "No entries yet": "尚无参赛作品",
   "No executable tests are currently set for this entity, these can be set in OpenAEV": "目前未为该实体设置可执行测试，这些测试可在 OpenAEV 中设置",
   "No export connector available to generate an export": "没有可以用于生成导出的导出连接器",
   "No external secrets configured": "未配置外部机密",
@@ -4886,3 +4888,4 @@
   "Zoom in": "放大",
   "Zoom out": "缩小"
 }
+
