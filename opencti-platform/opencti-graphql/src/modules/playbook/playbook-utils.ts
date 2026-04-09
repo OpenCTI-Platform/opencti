@@ -74,12 +74,15 @@ export const filterBundleElements = async (
 ) => {
   if (!filters || isEmptyField(filters)) return bundleElements;
   const jsonFilters = JSON.parse(filters);
-  return bundleElements.filter((element) => isStixMatchFilterGroup(
-    context,
-    SYSTEM_USER,
-    element,
-    jsonFilters,
-  ));
+  const filterResults = await Promise.all(
+    bundleElements.map((element) => isStixMatchFilterGroup(
+      context,
+      SYSTEM_USER,
+      element,
+      jsonFilters,
+    )),
+  );
+  return bundleElements.filter((_, i) => filterResults[i]);
 };
 
 /**
