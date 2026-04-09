@@ -120,8 +120,6 @@ const depsToOptimize = [
   "@rjsf/mui",
   "@rjsf/utils",
   "analytics",
-  "axios",
-  "buffer",
   "ckeditor5",
   "ckeditor5/translations/de.js",
   "ckeditor5/translations/en.js",

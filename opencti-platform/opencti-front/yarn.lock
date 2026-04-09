@@ -13865,7 +13865,6 @@ __metadata:
     "@vitest/coverage-v8": "npm:4.1.8"
     analytics: "npm:0.8.19"
     apexcharts: "npm:4.4.0"
-    axios: "npm:1.17.0"
     babel-plugin-relay: "npm:21.0.1"
     chokidar: "npm:5.0.0"
     ckeditor5: "npm:48.2.0"

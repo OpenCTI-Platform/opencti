@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import Axios from 'axios';
 import { createRefetchContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
@@ -262,37 +261,36 @@ class StixCoreObjectContentComponent extends Component {
     );
   }
 
-  loadFileContent() {
+  async loadFileContent() {
     const { stixCoreObject } = this.props;
     const files = [
       ...getFiles(stixCoreObject),
       ...getExportFiles(stixCoreObject),
       ...getFilesFromTemplate(stixCoreObject),
     ];
-    this.setState({ isLoading: true }, () => {
-      const { currentFileId } = this.state;
-      if (!currentFileId) {
-        return this.setState({ isLoading: false });
-      }
-      const currentFile = files.find((f) => f.id === currentFileId);
-      const currentFileType = currentFile && currentFile.metaData.mimetype;
-      if (currentFileType === 'application/pdf') {
-        this.props.setEditorHeaderDisabled(true);
-        return this.setState({ isLoading: false });
-      }
-      this.props.setEditorHeaderDisabled(false);
+    this.setState({ isLoading: true });
+    const { currentFileId } = this.state;
+    if (!currentFileId) {
+      return this.setState({ isLoading: false });
+    }
+    const currentFile = files.find((f) => f.id === currentFileId);
+    const currentFileType = currentFile && currentFile.metaData.mimetype;
+    if (currentFileType === 'application/pdf') {
+      this.props.setEditorHeaderDisabled(true);
+      return this.setState({ isLoading: false });
+    }
+    this.props.setEditorHeaderDisabled(false);
 
-      const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
-        currentFileId,
-      )}`;
-      return Axios.get(url).then((res) => {
-        const content = res.data;
-        return this.setState({
-          initialContent: content,
-          currentContent: content,
-          isLoading: false,
-        });
-      });
+    const url = `${APP_BASE_PATH}/storage/view/${encodeURIComponent(
+      currentFileId,
+    )}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed to fetch file content: ${res.status}`);
+    const content = await res.text();
+    return this.setState({
+      initialContent: content,
+      currentContent: content,
+      isLoading: false,
     });
   }
 
