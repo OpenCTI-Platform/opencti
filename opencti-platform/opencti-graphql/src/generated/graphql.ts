@@ -50,8 +50,7 @@ import type { BasicStoreEntityAuthenticationProvider } from '../modules/authenti
 import type { BasicStoreEntityCustomView } from '../modules/customView/customView-types';
 import type { BasicStoreEntityTaxiiCollection } from '../modules/dataSharing/taxiiCollection-types';
 import type { BasicStoreEntityStreamCollection } from '../modules/dataSharing/streamCollection-types';
-import type { BasicStoreEntityRetentionRules } from '../modules/retentionRules/retentionRules-types';
-import type { BasicStoreEntityRetentionExclusionRules } from '../modules/retentionRules/exclusions/retentionExclusionRules-types';
+import type { BasicStoreEntityRetentionRule } from '../modules/retentionRules/retentionRules-types';
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };

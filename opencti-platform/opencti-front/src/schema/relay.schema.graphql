@@ -1158,66 +1158,6 @@ input QueryTaskAddInput {
   scope: BackgroundTaskScope!
 }
 
-input RetentionRuleAddInput {
-  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
-  name: String!
-  filters: String
-
-  "*Constraints:*\n* Minimal value: `1`\n"
-  max_retention: Int!
-  retention_unit: RetentionUnit
-  scope: RetentionRuleScope!
-}
-
-enum RetentionRuleOrdering {
-  name
-  scope
-  remaining_count
-  last_execution_date
-  max_retention
-  _score
-}
-
-enum RetentionRuleScope {
-  knowledge
-  file
-  workbench
-}
-
-enum RetentionUnit {
-  minutes
-  hours
-  days
-}
-
-type RetentionRule {
-  id: ID!
-  standard_id: String!
-  name: String!
-  filters: String!
-  max_retention: Int!
-  retention_unit: RetentionUnit!
-  last_execution_date: DateTime
-  last_deleted_count: Int
-  remaining_count: Int
-  scope: RetentionRuleScope!
-}
-
-type RetentionRuleConnection {
-  pageInfo: PageInfo!
-  edges: [RetentionRuleEdge]
-}
-
-type RetentionRuleEdge {
-  cursor: String!
-  node: RetentionRule!
-}
-
-type RetentionRuleEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!): RetentionRule
-}
-
 interface BasicObject {
   id: ID!
   standard_id: String!
@@ -9486,8 +9426,6 @@ type Query {
   runtimeAttributes(first: Int, search: String, orderMode: OrderingMode, attributeName: String!): AttributeConnection
   schemaAttributeNames(elementType: [String]!): AttributeConnection
   schemaAttributes: [AttributesMap]
-  retentionRule(id: String!): RetentionRule
-  retentionRules(first: Int, after: ID, search: String, orderBy: RetentionRuleOrdering, orderMode: OrderingMode): RetentionRuleConnection
   statusTemplate(id: String!): StatusTemplate
   statusTemplates(first: Int, after: ID, orderBy: StatusTemplateOrdering, orderMode: OrderingMode, search: String): StatusTemplateConnection
   statusTemplatesByStatusScope(search: String, scope: StatusScope): [StatusTemplate]
@@ -9821,6 +9759,8 @@ type Query {
   streamCollection(id: String!): StreamCollection
   streamCollections(first: Int, after: ID, orderBy: StreamCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): StreamCollectionConnection!
   redisStreamInfo: RedisStreamInfo
+  retentionRule(id: String!): RetentionRule
+  retentionRules(first: Int, after: ID, search: String, orderBy: RetentionRuleOrdering, orderMode: OrderingMode): RetentionRuleConnection
 }
 
 type Subscription {
@@ -10324,9 +10264,6 @@ type Mutation {
   deleteBackgroundTask(id: ID!): ID!
   listTaskAdd(input: ListTaskAddInput!): BackgroundTask!
   queryTaskAdd(input: QueryTaskAddInput!): BackgroundTask!
-  retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule!
-  retentionRuleCheck(input: RetentionRuleAddInput): Int!
-  retentionRuleEdit(id: ID!): RetentionRuleEditMutations
   ruleSetActivation(id: ID!, enable: Boolean!): Rule!
   ruleManagerClean(eventId: ID): RuleManager!
   ruleApply(elementId: ID!, ruleId: ID!): Boolean
@@ -10763,6 +10700,9 @@ type Mutation {
   feedEdit(id: ID!, input: FeedAddInput!): Feed!
   streamCollectionAdd(input: StreamCollectionAddInput!): StreamCollection
   streamCollectionEdit(id: ID!): StreamCollectionEditMutations
+  retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule!
+  retentionRuleCheck(input: RetentionRuleAddInput): Int!
+  retentionRuleEdit(id: ID!): RetentionRuleEditMutations
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -16390,4 +16330,64 @@ type RedisStreamInfo {
   firstEventDate: String!
   lastEventDate: String!
   streamSize: Int!
+}
+
+input RetentionRuleAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  filters: String
+
+  "*Constraints:*\n* Minimal value: `1`\n"
+  max_retention: Int!
+  retention_unit: RetentionUnit
+  scope: RetentionRuleScope!
+}
+
+enum RetentionRuleOrdering {
+  name
+  scope
+  remaining_count
+  last_execution_date
+  max_retention
+  _score
+}
+
+enum RetentionRuleScope {
+  knowledge
+  file
+  workbench
+}
+
+enum RetentionUnit {
+  minutes
+  hours
+  days
+}
+
+type RetentionRule {
+  id: ID!
+  standard_id: String!
+  name: String!
+  filters: String!
+  max_retention: Int!
+  retention_unit: RetentionUnit!
+  last_execution_date: DateTime
+  last_deleted_count: Int
+  remaining_count: Int
+  scope: RetentionRuleScope!
+}
+
+type RetentionRuleConnection {
+  pageInfo: PageInfo!
+  edges: [RetentionRuleEdge]
+}
+
+type RetentionRuleEdge {
+  cursor: String!
+  node: RetentionRule!
+}
+
+type RetentionRuleEditMutations {
+  delete: ID
+  fieldPatch(input: [EditInput]!): RetentionRule
 }
