@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -42,8 +42,8 @@ const StixCoreObjectsMultiHeatMap = ({
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
 
-  const renderContent = () => {
-    const timeSeriesParameters = dataSelection.map((selection) => {
+  const timeSeriesParameters = useMemo(() => {
+    return dataSelection.map((selection) => {
       return {
         field:
           selection.date_attribute && selection.date_attribute.length > 0
@@ -53,15 +53,26 @@ const StixCoreObjectsMultiHeatMap = ({
         filters: removeEntityTypeAllFromFilterGroup(selection.filters),
       };
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataSelection]);
+
+  const fallbackDates = useMemo(() => ({
+    start: monthsAgo(12),
+    end: now(),
+  }), []);
+
+  const variables = useMemo(() => ({
+    startDate: startDate ?? fallbackDates.start,
+    endDate: endDate ?? fallbackDates.end,
+    interval: parameters.interval ?? 'day',
+    timeSeriesParameters,
+  }), [startDate, endDate, fallbackDates, parameters.interval, timeSeriesParameters]);
+
+  const renderContent = () => {
     return (
       <QueryRenderer
         query={stixCoreObjectsMultiHeatMapTimeSeriesQuery}
-        variables={{
-          startDate: startDate ?? monthsAgo(12),
-          endDate: endDate ?? now(),
-          interval: parameters.interval ?? 'day',
-          timeSeriesParameters,
-        }}
+        variables={variables}
         render={({ props }) => {
           if (props && props.stixCoreObjectsMultiTimeSeries) {
             const chartData = dataSelection

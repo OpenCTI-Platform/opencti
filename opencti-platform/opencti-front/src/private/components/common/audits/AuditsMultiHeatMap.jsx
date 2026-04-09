@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
@@ -63,6 +63,33 @@ const AuditsMultiHeatMap = ({
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
 
+  const timeSeriesParameters = useMemo(() => {
+    return dataSelection.map((selection) => {
+      return {
+        field:
+          selection.date_attribute && selection.date_attribute.length > 0
+            ? selection.date_attribute
+            : 'timestamp',
+        types: ['History', 'Activity'],
+        filters: removeEntityTypeAllFromFilterGroup(selection.filters),
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataSelection]);
+
+  const fallbackDates = useMemo(() => ({
+    start: monthsAgo(12),
+    end: now(),
+  }), []);
+
+  const variables = useMemo(() => ({
+    operation: 'count',
+    startDate: startDate ?? fallbackDates.start,
+    endDate: endDate ?? fallbackDates.end,
+    interval: parameters.interval ?? 'day',
+    timeSeriesParameters,
+  }), [startDate, endDate, fallbackDates, parameters.interval, timeSeriesParameters]);
+
   const renderContent = () => {
     if (!isGrantedToSettings || !isEnterpriseEdition) {
       return (
@@ -83,26 +110,10 @@ const AuditsMultiHeatMap = ({
         </div>
       );
     }
-    const timeSeriesParameters = dataSelection.map((selection) => {
-      return {
-        field:
-          selection.date_attribute && selection.date_attribute.length > 0
-            ? selection.date_attribute
-            : 'timestamp',
-        types: ['History', 'Activity'],
-        filters: removeEntityTypeAllFromFilterGroup(selection.filters),
-      };
-    });
     return (
       <QueryRenderer
         query={auditsMultiHeatMapTimeSeriesQuery}
-        variables={{
-          operation: 'count',
-          startDate: startDate ?? monthsAgo(12),
-          endDate: endDate ?? now(),
-          interval: parameters.interval ?? 'day',
-          timeSeriesParameters,
-        }}
+        variables={variables}
         render={({ props }) => {
           if (props && props.auditsMultiTimeSeries) {
             const chartData = dataSelection

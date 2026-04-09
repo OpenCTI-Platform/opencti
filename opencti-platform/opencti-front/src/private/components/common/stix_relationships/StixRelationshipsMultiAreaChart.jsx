@@ -7,7 +7,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 const stixRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
   query StixRelationshipsMultiAreaChartTimeSeriesQuery(
@@ -48,8 +48,8 @@ const StixRelationshipsMultiAreaChart = ({
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState();
 
-  const renderContent = () => {
-    const timeSeriesParameters = dataSelection.map((selection) => {
+  const timeSeriesParameters = useMemo(() => {
+    return dataSelection.map((selection) => {
       const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';
@@ -61,18 +61,28 @@ const StixRelationshipsMultiAreaChart = ({
         dynamicTo: selection.dynamicTo,
       };
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataSelection]);
 
+  const fallbackDates = useMemo(() => ({
+    start: monthsAgo(12),
+    end: now(),
+  }), []);
+
+  const variables = useMemo(() => ({
+    operation: 'count',
+    startDate: startDate ?? fallbackDates.start,
+    endDate: endDate ?? fallbackDates.end,
+    interval: parameters.interval ?? 'day',
+    relationship_type: relationshipTypes,
+    timeSeriesParameters,
+  }), [startDate, endDate, fallbackDates, parameters.interval, relationshipTypes, timeSeriesParameters]);
+
+  const renderContent = () => {
     return (
       <QueryRenderer
         query={stixRelationshipsMultiAreaChartTimeSeriesQuery}
-        variables={{
-          operation: 'count',
-          startDate: startDate ?? monthsAgo(12),
-          endDate: endDate ?? now(),
-          interval: parameters.interval ?? 'day',
-          relationship_type: relationshipTypes,
-          timeSeriesParameters,
-        }}
+        variables={variables}
         render={({ props }) => {
           if (props && props.stixRelationshipsMultiTimeSeries) {
             return (
