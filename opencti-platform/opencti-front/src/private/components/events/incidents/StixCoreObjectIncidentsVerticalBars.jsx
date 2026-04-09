@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useMemo } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
@@ -53,30 +53,36 @@ const stixCoreObjectReporstVerticalBarsTimeSeriesQuery = graphql`
   }
 `;
 
-class IncidentsVerticalBars extends Component {
-  renderContent() {
-    const {
-      t,
-      fsd,
-      incidentType,
-      startDate,
-      endDate,
-      stixCoreObjectId,
-      theme,
-    } = this.props;
-    const interval = 'day';
-    const finalStartDate = startDate || monthsAgo(12);
-    const finalEndDate = endDate || now();
-    const incidentsTimeSeriesVariables = {
-      authorId: null,
-      objectId: stixCoreObjectId,
-      incidentType: incidentType || null,
-      field: 'created_at',
-      operation: 'count',
-      startDate: finalStartDate,
-      endDate: finalEndDate,
-      interval,
-    };
+const IncidentsVerticalBars = ({
+  t,
+  fsd,
+  incidentType,
+  startDate,
+  endDate,
+  stixCoreObjectId,
+  theme,
+  classes,
+  title,
+  variant,
+  height,
+}) => {
+  const fallbackDates = useMemo(() => ({
+    start: monthsAgo(12),
+    end: now(),
+  }), []);
+
+  const incidentsTimeSeriesVariables = useMemo(() => ({
+    authorId: null,
+    objectId: stixCoreObjectId,
+    incidentType: incidentType || null,
+    field: 'created_at',
+    operation: 'count',
+    startDate: startDate || fallbackDates.start,
+    endDate: endDate || fallbackDates.end,
+    interval: 'day',
+  }), [startDate, endDate, fallbackDates, stixCoreObjectId, incidentType]);
+
+  const renderContent = () => {
     return (
       <QueryRenderer
         query={stixCoreObjectReporstVerticalBarsTimeSeriesQuery}
@@ -139,32 +145,29 @@ class IncidentsVerticalBars extends Component {
         }}
       />
     );
-  }
+  };
 
-  render() {
-    const { t, classes, title, variant, height } = this.props;
-    return (
-      <div style={{ height: height || '100%' }}>
-        <Typography
-          variant="h4"
-          gutterBottom={true}
-          style={{
-            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
-          }}
-        >
-          {title || t('Incidents history')}
-        </Typography>
-        {variant !== 'inLine' ? (
-          <Paper classes={{ root: classes.paper }} variant="outlined">
-            {this.renderContent()}
-          </Paper>
-        ) : (
-          this.renderContent()
-        )}
-      </div>
-    );
-  }
-}
+  return (
+    <div style={{ height: height || '100%' }}>
+      <Typography
+        variant="h4"
+        gutterBottom={true}
+        style={{
+          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+        }}
+      >
+        {title || t('Incidents history')}
+      </Typography>
+      {variant !== 'inLine' ? (
+        <Paper classes={{ root: classes.paper }} variant="outlined">
+          {renderContent()}
+        </Paper>
+      ) : (
+        renderContent()
+      )}
+    </div>
+  );
+};
 
 IncidentsVerticalBars.propTypes = {
   classes: PropTypes.object,
