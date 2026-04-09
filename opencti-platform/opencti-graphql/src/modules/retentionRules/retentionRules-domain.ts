@@ -1,3 +1,4 @@
+<<<<<<<< HEAD:opencti-platform/opencti-graphql/src/modules/retentionRules/retentionRules-domain.ts
 import { deleteElementById, updateAttribute } from '../../database/middleware';
 import { topEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_RETENTION_RULE, type BasicStoreEntityRetentionRule } from './retentionRules-types';
@@ -122,3 +123,15 @@ export const findRetentionRulePaginated = (context: AuthContext, user: AuthUser,
 export const listRules = (context: AuthContext, user: AuthUser, args?: any) => {
   return topEntitiesList<BasicStoreEntityRetentionRule>(context, user, [ENTITY_TYPE_RETENTION_RULE], args);
 };
+========
+// Re-export from the new module location for backward compatibility
+export {
+  checkRetentionRule,
+  createRetentionRule,
+  retentionRuleEditField,
+  deleteRetentionRule,
+  findById,
+  findRetentionRulePaginated,
+  listRules,
+} from '../modules/retentionRules/retentionRules-domain';
+>>>>>>>> 5a196a4a44 ([backend] rebase):opencti-platform/opencti-graphql/src/domain/retentionRule.js
