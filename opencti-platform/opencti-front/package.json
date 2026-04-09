@@ -174,7 +174,7 @@
     "relay-test-utils": "20.1.1",
     "typescript": "5.9.3",
     "typescript-eslint": "8.58.0",
-    "vite": "8.0.3",
+    "vite": "8.0.5",
     "vite-plugin-relay": "2.1.0",
     "vite-plugin-static-copy": "4.0.0",
     "vitest": "4.1.2"
