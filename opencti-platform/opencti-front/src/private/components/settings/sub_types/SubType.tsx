@@ -114,14 +114,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
       {/** right menu drawer permanent */}
       <CustomizationMenu />
 
-      <SubTypeMenu
-        entityType={subType.label}
-        isFINTELTemplatesEnabled={isFINTELTemplatesEnabled}
-        isAttributesConfigurationEnabled={isAttributesConfigurationEnabled}
-        isWorkflowConfigurationEnabled={isWorkflowConfigurationEnabled}
-        isCustomOverviewLayoutEnabled={isCustomOverviewLayoutEnabled}
-        isCustomViewsEnabled={isCustomViewsEnabled}
-      />
+      <SubTypeMenu entityType={subType.label} tabs={tabs} />
 
       {/** add a minHeight to prevent page jumps when switching tab
        * that have different content size with magic number */}

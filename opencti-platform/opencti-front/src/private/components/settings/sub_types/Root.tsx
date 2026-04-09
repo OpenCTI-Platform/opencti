@@ -9,36 +9,31 @@ import EntitySettingAttributesCard from './entity_setting/EntitySettingAttribute
 import EntitySettingCustomOverview from './entity_setting/EntitySettingCustomOverview';
 import FintelTemplatesManager from './fintel_templates/FintelTemplatesManager';
 import GlobalWorkflowSettingsCard from './workflow/GlobalWorkflowSettingsCard';
-import { useSubTypeOutletContext } from './SubTypeOutletContext';
+import { SubTypeTabs, useSubTypeOutletContext } from './SubTypeOutletContext';
 import CustomViewsSettings from './custom_views/CustomViewsSettings';
 
-const SubTypeIndexRedirect = () => {
-  const {
-    tabs: {
-      workflow: isWorkflowConfigurationEnabled,
-      attributes: isAttributesConfigurationEnabled,
-      templates: isFINTELTemplatesEnabled,
-      'overview-layout': isCustomOverviewLayoutEnabled,
-      'custom-views': isCustomViewsEnabled,
-    },
-  } = useSubTypeOutletContext();
+const ORDERED_TABS = [
+  'workflow',
+  'attributes',
+  'templates',
+  'overview-layout',
+  'custom-views',
+] as const satisfies Array<keyof SubTypeTabs>;
 
-  const hasAtLeastOneEnabledTab
-    = isWorkflowConfigurationEnabled
-      || isAttributesConfigurationEnabled
-      || isFINTELTemplatesEnabled
-      || isCustomOverviewLayoutEnabled
-      || isCustomViewsEnabled;
+const SubTypeIndexRedirect = () => {
+  const { tabs } = useSubTypeOutletContext();
+
+  const hasAtLeastOneEnabledTab = Object.values(tabs).some(Boolean);
 
   if (!hasAtLeastOneEnabledTab) return null;
 
   // Redirect to the first enabled tab based on the priority order:
   // workflow > attributes > templates > overview layout > custom views
-  if (isWorkflowConfigurationEnabled) return <Navigate to="workflow" replace />;
-  if (isAttributesConfigurationEnabled) return <Navigate to="attributes" replace />;
-  if (isFINTELTemplatesEnabled) return <Navigate to="templates" replace />;
-  if (isCustomOverviewLayoutEnabled) return <Navigate to="overview-layout" replace />;
-  if (isCustomViewsEnabled) return <Navigate to="custom-views" replace />;
+  const redirect = ORDERED_TABS.find((tab) => tabs[tab]);
+
+  if (redirect) {
+    return <Navigate to={redirect} replace />;
+  }
 
   return null;
 };

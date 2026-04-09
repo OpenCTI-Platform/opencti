@@ -1,33 +1,18 @@
 import { Tab, Tabs } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
+import type { SubTypeTabs } from './SubTypeOutletContext';
 
 interface SubTypeMenuProps {
   entityType: string;
-  isFINTELTemplatesEnabled?: boolean;
-  isAttributesConfigurationEnabled?: boolean;
-  isWorkflowConfigurationEnabled?: boolean;
-  isCustomOverviewLayoutEnabled?: boolean;
-  isCustomViewsEnabled?: boolean;
+  tabs: SubTypeTabs;
 }
 
-const SubTypeMenu = ({
-  entityType,
-  isFINTELTemplatesEnabled,
-  isAttributesConfigurationEnabled,
-  isWorkflowConfigurationEnabled,
-  isCustomOverviewLayoutEnabled,
-  isCustomViewsEnabled,
-}: SubTypeMenuProps) => {
+const SubTypeMenu = ({ entityType, tabs }: SubTypeMenuProps) => {
   const { t_i18n } = useFormatter();
   const location = useLocation();
 
-  const hasAtLeastOneEnabledTab = Boolean(
-    isWorkflowConfigurationEnabled
-    || isAttributesConfigurationEnabled
-    || isFINTELTemplatesEnabled
-    || isCustomOverviewLayoutEnabled,
-  );
+  const hasAtLeastOneEnabledTab = Object.values(tabs).some(Boolean);
 
   if (!hasAtLeastOneEnabledTab) return null;
 
@@ -36,7 +21,7 @@ const SubTypeMenu = ({
       value={location.pathname}
       sx={{ paddingBottom: 2 }}
     >
-      {isWorkflowConfigurationEnabled && (
+      {tabs.workflow && (
         <Tab
           component={Link}
           to={`/dashboard/settings/customization/entity_types/${entityType}/workflow`}
@@ -46,7 +31,7 @@ const SubTypeMenu = ({
       )}
 
       {
-        isAttributesConfigurationEnabled && (
+        tabs.attributes && (
           <Tab
             component={Link}
             to={`/dashboard/settings/customization/entity_types/${entityType}/attributes`}
@@ -56,7 +41,7 @@ const SubTypeMenu = ({
         )
       }
 
-      {isFINTELTemplatesEnabled && (
+      {tabs.templates && (
         <Tab
           component={Link}
           to={`/dashboard/settings/customization/entity_types/${entityType}/templates`}
@@ -65,7 +50,7 @@ const SubTypeMenu = ({
         />
       )}
 
-      {isCustomOverviewLayoutEnabled && (
+      {tabs['overview-layout'] && (
         <Tab
           component={Link}
           to={`/dashboard/settings/customization/entity_types/${entityType}/overview-layout`}
@@ -74,7 +59,7 @@ const SubTypeMenu = ({
         />
       )}
 
-      {isCustomViewsEnabled && (
+      {tabs['custom-views'] && (
         <Tab
           component={Link}
           to={`/dashboard/settings/customization/entity_types/${entityType}/custom-views`}
