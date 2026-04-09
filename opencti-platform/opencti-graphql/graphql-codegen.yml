@@ -73,8 +73,7 @@ generates:
         CustomView: ../modules/customView/customView-types#BasicStoreEntityCustomView
         TaxiiCollection: ../modules/dataSharing/taxiiCollection-types#BasicStoreEntityTaxiiCollection
         StreamCollection: ../modules/dataSharing/streamCollection-types#BasicStoreEntityStreamCollection
-        RetentionRules: ../modules/retentionRules/retentionRules-types#BasicStoreEntityRetentionRules
-        RetentionExclusionRules: ../modules/retentionRules/exclusions/retentionExclusionRules-types#BasicStoreEntityRetentionExclusionRules
+        RetentionRule: ../modules/retentionRules/retentionRules-types#BasicStoreEntityRetentionRule
 
 
   ./graphql.schema.json:
