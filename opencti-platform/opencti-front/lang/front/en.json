@@ -951,6 +951,7 @@
   "Custom dashboards": "Custom dashboards",
   "Custom dashboards | Dashboards": "Custom dashboards | dashboards",
   "Custom view": "Custom view",
+  "Custom Views": "Custom Views",
   "Customization": "Customization",
   "Customize columns": "Customize columns",
   "Customize provider identifier": "Customize provider identifier",
@@ -2841,6 +2842,7 @@
   "No enrichment connectors on this platform": "No enrichment connectors on this platform",
   "No entities added in this context.": "No entities added in this context.",
   "No entities were found for this search.": "No entities were found for this search.",
+  "No entries yet": "No entries yet",
   "No executable tests are currently set for this entity, these can be set in OpenAEV": "No executable tests are currently set for this entity, these can be set in OpenAEV",
   "No export connector available to generate an export": "No export connector available to generate an export",
   "No external secrets configured": "No external secrets configured",
@@ -4886,3 +4888,4 @@
   "Zoom in": "Zoom in",
   "Zoom out": "Zoom out"
 }
+

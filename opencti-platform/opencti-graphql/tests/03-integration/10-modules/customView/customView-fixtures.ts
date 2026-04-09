@@ -1,32 +1,22 @@
-import { describe, expect, it } from 'vitest';
-import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQuery';
-import { createEntity } from '../../../../src/database/middleware';
 import { toB64 } from '../../../../src/utils/base64';
-import { queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import type { BasicStoreEntityCustomView } from '../../../../src/modules/customView/customView-types';
-import type { CustomViewsDisplayContext } from '../../../../src/generated/graphql';
+import { utcDate } from '../../../../src/utils/format';
 
-const READ_CONTEXT_QUERY = gql`
-  query CustomViewsDisplayContextTest {
-    customViewsDisplayContext {
-      entity_type
-      custom_views_info {
-        id
-        name
-        path
-      }
-    }
-  }
-`;
+type BasicStoreEntityCustomViewForTestsKeys = Extract<
+  keyof BasicStoreEntityCustomView,
+  | 'name'
+  | 'description'
+  | 'slug'
+  | 'manifest'
+  | 'target_entity_type'
+  | 'created_at'
+  | 'updated_at'
+>;
 
-const READ_CUSTOM_VIEW_FOR_DISPLAY_QUERY = gql`
-  query CustomViewDisplayTest($id: String!) {
-    customViewDisplay(id: $id) {
-      manifest
-    }
-  }
-`;
+type BasicStoreEntityCustomViewForTests = Record<
+  BasicStoreEntityCustomViewForTestsKeys,
+  any
+>;
 
 const DASHBOARD_MANIFEST = toB64({
   widgets: {
@@ -237,103 +227,32 @@ const DASHBOARD_MANIFEST = toB64({
   },
 })!;
 
-type BasicStoreEntityCustomViewForTests = Pick<
-  BasicStoreEntityCustomView,
-  'name' | 'description' | 'slug' | 'manifest' | 'target_entity_type'
->;
-
-const CUSTOM_VIEW_ENTITY_1: BasicStoreEntityCustomViewForTests = {
+export const CUSTOM_VIEW_ENTITY_1: BasicStoreEntityCustomViewForTests = {
   name: 'My first custom view',
   description: 'A custom view used for tests',
   slug: 'first-custom-view',
   manifest: DASHBOARD_MANIFEST,
   target_entity_type: 'Intrusion-Set',
+  created_at: utcDate('1986-09-22T02:22:00.000Z').toISOString(),
+  updated_at: utcDate('2026-09-22T02:22:00.000Z').toISOString(),
 };
 
-const CUSTOM_VIEW_ENTITY_2: BasicStoreEntityCustomViewForTests = {
+export const CUSTOM_VIEW_ENTITY_2: BasicStoreEntityCustomViewForTests = {
   name: 'My second custom view',
   description: 'Another custom view used for tests',
   slug: 'second-custom-view',
   manifest: DASHBOARD_MANIFEST,
   target_entity_type: 'Case-Rft',
+  created_at: utcDate('1986-09-22T02:22:00.000Z').toISOString(),
+  updated_at: utcDate('2026-09-22T02:22:00.000Z').toISOString(),
 };
 
-const CUSTOM_VIEW_ENTITY_INVALID: BasicStoreEntityCustomViewForTests = {
+export const CUSTOM_VIEW_ENTITY_INVALID: BasicStoreEntityCustomViewForTests = {
   name: 'An invalid custom view',
   description: 'Just to test the filtering',
   slug: 'invalid-custom-view',
   manifest: DASHBOARD_MANIFEST,
   target_entity_type: 'Feedback', // Can't have custom views on Feedback entity_type
+  created_at: utcDate('1986-09-22T02:22:00.000Z').toISOString(),
+  updated_at: utcDate('2026-09-22T02:22:00.000Z').toISOString(),
 };
-
-describe('CustomView resolvers for display use cases', () => {
-  let customViewId1: string;
-  describe('customViewsDisplayContext', () => {
-    it('should retrieve custom views display context', async () => {
-      const { id } = await createEntity(
-        testContext,
-        ADMIN_USER,
-        CUSTOM_VIEW_ENTITY_1,
-        'CustomView',
-      );
-      customViewId1 = id;
-      const { id: customViewId2 } = await createEntity(
-        testContext,
-        ADMIN_USER,
-        CUSTOM_VIEW_ENTITY_2,
-        'CustomView',
-      );
-
-      const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
-        query: READ_CONTEXT_QUERY,
-        variables: {},
-      });
-      expect(result.data.customViewsDisplayContext).toContainEqual({
-        entity_type: CUSTOM_VIEW_ENTITY_1.target_entity_type,
-        custom_views_info: [{
-          id: customViewId1,
-          name: CUSTOM_VIEW_ENTITY_1.name,
-          path: `${CUSTOM_VIEW_ENTITY_1.slug}-${customViewId1.replaceAll('-', '')}`,
-        }],
-      });
-      expect(result.data.customViewsDisplayContext).toContainEqual({
-        entity_type: CUSTOM_VIEW_ENTITY_2.target_entity_type,
-        custom_views_info: [{
-          id: customViewId2,
-          name: CUSTOM_VIEW_ENTITY_2.name,
-          path: `${CUSTOM_VIEW_ENTITY_2.slug}-${customViewId2.replaceAll('-', '')}`,
-        }],
-      });
-    });
-
-    it('should not include excluded entity types in display context', async () => {
-      await createEntity(
-        testContext,
-        ADMIN_USER,
-        CUSTOM_VIEW_ENTITY_INVALID,
-        'CustomView',
-      );
-
-      const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
-        query: READ_CONTEXT_QUERY,
-        variables: {},
-      });
-      expect(result.data.customViewsDisplayContext).not.toSatisfy(
-        (contexts: CustomViewsDisplayContext[]) => contexts.some((c) => {
-          return c.entity_type === CUSTOM_VIEW_ENTITY_INVALID.target_entity_type;
-        }));
-    });
-  });
-
-  describe('customViewDisplay', () => {
-    it('should retrieve serialized dashboard manifest', async () => {
-      const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
-        query: READ_CUSTOM_VIEW_FOR_DISPLAY_QUERY,
-        variables: {
-          id: customViewId1,
-        },
-      });
-      expect(result.data.customViewDisplay.manifest).toBe(CUSTOM_VIEW_ENTITY_1.manifest);
-    });
-  });
-});
