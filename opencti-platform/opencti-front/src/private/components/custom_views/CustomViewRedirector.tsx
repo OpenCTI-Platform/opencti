@@ -1,7 +1,7 @@
 import { ReactNode, useMemo } from 'react';
 import RootCustomView from './RootCustomView';
 import { useCustomViews } from './useCustomViews';
-import { CustomViewsInfo } from './types';
+import type { CustomViewsInfo } from './CustomViews-types';
 import SlugRedirectHandler, { type SlugRedirectHandlerPageInfo } from '../../../components/SlugRedirectHandler';
 
 interface CustomViewRedirectorProps {

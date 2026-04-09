@@ -1,7 +1,7 @@
 import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView } from './customView-types';
-import { type CustomViewsDisplayContext, type CustomViewDisplayContext } from '../../generated/graphql';
+import { type CustomViewsDisplayContext, type CustomViewDisplayContext, FilterMode } from '../../generated/graphql';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -86,4 +86,45 @@ export const getCustomViewsDisplayContext = async (context: AuthContext, user: A
     });
     return acc;
   }, [] as CustomViewsDisplayContext[]);
+};
+
+// Settings Use Cases (admin users)
+
+export const getCustomViewsSettings = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+) => {
+  if (!isCustomViewsAvailableForEntityType(entityType)) {
+    return {
+      canEntityTypeHaveCustomViews: false,
+      customViews: [],
+    };
+  }
+  const customViewEntities = await fullEntitiesList<BasicStoreEntityCustomView>(
+    context,
+    user,
+    [ENTITY_TYPE_CUSTOM_VIEW],
+    {
+      filters: {
+        filters: [{
+          key: ['target_entity_type'],
+          values: [entityType],
+        }],
+        filterGroups: [],
+        mode: FilterMode.And,
+      },
+    },
+  );
+  return {
+    canEntityTypeHaveCustomViews: true,
+    customViews: customViewEntities.map(
+      ({ id, name, description, created_at, updated_at }) => ({
+        id,
+        name,
+        description,
+        updated_at,
+        created_at,
+      })),
+  };
 };

@@ -3,6 +3,7 @@ import { Box, Stack } from '@mui/material';
 import React, { Suspense } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Outlet, useParams } from 'react-router-dom';
+import { ErrorBoundary } from '@components/Error';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader from '../../../../components/Loader';
@@ -38,6 +39,10 @@ export const subTypeQuery = graphql`
       ...GlobalWorkflowSettings_global
       ...RequestAccessSettings_requestAccess
     }
+    customViewsSettings(entityType: $id) {
+      canEntityTypeHaveCustomViews
+      ...CustomViewsSettings_customViews
+    }
   }
 `;
 
@@ -50,7 +55,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { typesWithFintelTemplates } = useAttributes();
   const { isFeatureEnable } = useHelper();
 
-  const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
+  const { subType, customViewsSettings } = usePreloadedQuery(subTypeQuery, queryRef);
 
   const entitySetting = useFragment(
     entitySettingsOverviewLayoutCustomizationFragment,
@@ -75,11 +80,16 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
   const isCustomOverviewLayoutEnabled = !!entitySetting?.overview_layout_customization;
 
+  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
+  const isCustomViewsEnabled = customViewsSettings.canEntityTypeHaveCustomViews
+    && isCustomViewFeatureEnabled;
+
   const tabs: SubTypeTabs = {
     workflow: isWorkflowConfigurationEnabled,
     attributes: isAttributesConfigurationEnabled,
     templates: isFINTELTemplatesEnabled,
     'overview-layout': isCustomOverviewLayoutEnabled,
+    'custom-views': isCustomViewsEnabled,
   };
 
   return (
@@ -102,23 +112,20 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
         )
       }
 
-      <SubTypeMenu
-        entityType={subType.label}
-        isFINTELTemplatesEnabled={isFINTELTemplatesEnabled}
-        isAttributesConfigurationEnabled={isAttributesConfigurationEnabled}
-        isWorkflowConfigurationEnabled={isWorkflowConfigurationEnabled}
-        isCustomOverviewLayoutEnabled={isCustomOverviewLayoutEnabled}
-      />
+      <SubTypeMenu entityType={subType.label} tabs={tabs} />
 
       {/** add a minHeight to prevent page jumps when switching tab
        * that have different content size with magic number */}
       <Box sx={{ minHeight: '240px' }}>
-        <Outlet
-          context={{
-            subType,
-            tabs,
-          }}
-        />
+        <ErrorBoundary>
+          <Outlet
+            context={{
+              subType,
+              tabs,
+              customViewsSettings,
+            }}
+          />
+        </ErrorBoundary>
       </Box>
 
     </Stack>

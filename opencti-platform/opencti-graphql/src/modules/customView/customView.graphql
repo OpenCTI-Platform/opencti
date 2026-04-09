@@ -30,13 +30,35 @@ type CustomViewsDisplayContext {
     custom_views_info: [CustomViewDisplayContext!]!
 }
 
+type CustomViewInfoForSettings {
+    id: ID!
+    name: String!
+    description: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type CustomViewsSettings {
+    canEntityTypeHaveCustomViews: Boolean!
+    customViews: [CustomViewInfoForSettings!]!
+}
+
 # Queries
 type Query {
-  ## Platform user use cases
+    ## Platform user use cases
+    
+    # Provides context when browsing to know which custom views are
+    # available for which entity types
+    customViewsDisplayContext: [CustomViewsDisplayContext!] @auth @ff(flags: ["CUSTOM_VIEW"], softFail: true)
+    # Display a custom view
+    customViewDisplay(id: String!): CustomViewDisplay @auth @ff(flags: ["CUSTOM_VIEW"])
 
-  # Provides context when browsing to know which custom views are
-  # available for which entity types
-  customViewsDisplayContext: [CustomViewsDisplayContext!] @auth @ff(flags: ["CUSTOM_VIEW"], softFail: true)
-  # Display a custom view
-  customViewDisplay(id: String!): CustomViewDisplay @auth @ff(flags: ["CUSTOM_VIEW"])
+    ## Administration use cases
+
+    # For a given entity type provides whether it is eligible to having custom
+    # views, along with the list of current custom views.
+    # Optionally allows passing pagination/sorting/filtering options.
+    customViewsSettings(
+        entityType: String!
+    ): CustomViewsSettings! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
 }
