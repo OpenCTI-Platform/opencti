@@ -30,8 +30,10 @@ import useGranted, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hoo
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { decodeSearchKeyword, handleSearchByFilter, handleSearchByKeyword } from '../../../utils/SearchUtils';
 import Security from '../../../utils/Security';
+import { callAgent, fetchAgentsForIntent } from '../../../utils/ai/agentApi';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import AskArianeButton from '../chatbox/AskArianeButton';
+import { useChatbot } from '../chatbox/ChatbotContext';
 import { CGUStatus } from '../settings/Experience';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
@@ -80,6 +82,93 @@ const topBarAskAINLQMutation = graphql`
   }
 `;
 
+const NLQ_INTENT = 'cti.nlq_search';
+
+interface ParsedNlqResponse {
+  filters?: string;
+  notResolvedValues: string[];
+  error?: string;
+}
+
+const isFilterGroupLike = (value: unknown): boolean => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  const objectValue = value as { mode?: unknown; filters?: unknown; filterGroups?: unknown };
+  return typeof objectValue.mode === 'string'
+    && Array.isArray(objectValue.filters)
+    && Array.isArray(objectValue.filterGroups);
+};
+
+const extractJsonContent = (content: string): string => {
+  const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (codeBlockMatch?.[1]) {
+    return codeBlockMatch[1].trim();
+  }
+  return content.trim();
+};
+
+const parseNlqAgentResponse = (content: string): ParsedNlqResponse | null => {
+  try {
+    const jsonContent = extractJsonContent(content);
+    const parsed = JSON.parse(jsonContent);
+
+    // Accept either the legacy shape { filters, notResolvedValues }
+    // or directly a filter group object.
+    if (parsed && typeof parsed === 'object') {
+      const parsedError = typeof parsed.error === 'string' && parsed.error.length > 0
+        ? parsed.error
+        : undefined;
+      const notResolvedValues = Array.isArray(parsed.notResolvedValues)
+        ? parsed.notResolvedValues.filter((value: unknown): value is string => typeof value === 'string')
+        : [];
+
+      if ('filters' in parsed) {
+        if (!parsedError && typeof parsed.filters !== 'string' && !isFilterGroupLike(parsed.filters)) {
+          return null;
+        }
+        const filters = typeof parsed.filters === 'string'
+          ? parsed.filters
+          : isFilterGroupLike(parsed.filters)
+            ? JSON.stringify(parsed.filters)
+            : undefined;
+        return { filters, notResolvedValues, error: parsedError };
+      }
+
+      if (parsedError) {
+        return { notResolvedValues, error: parsedError };
+      }
+
+      if (!isFilterGroupLike(parsed)) {
+        return null;
+      }
+
+      return {
+        filters: JSON.stringify(parsed),
+        notResolvedValues,
+        error: parsedError,
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+const toValidSerializedFilterGroup = (filters?: string): string | null => {
+  if (!filters) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(filters);
+    return isFilterGroupLike(parsed) ? JSON.stringify(parsed) : null;
+  } catch {
+    return null;
+  }
+};
+
+const buildNlqPrompt = (searchKeyword: string): string => searchKeyword;
+
 const TopBarComponent: FunctionComponent<TopBarProps> = ({
   queryRef,
 }) => {
@@ -88,6 +177,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const location = useLocation();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
+  const { xtmOneConfigured } = useChatbot();
   const {
     bannerSettings: { bannerHeightNumber },
     settings: {
@@ -145,6 +235,80 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   }>({ open: false, anchorEl: null });
   const [openDrawer, setOpenDrawer] = useState(false);
 
+  const finalizeNlqSearch = (searchKeyword: string, filters?: string, notResolvedValues: readonly string[] = []) => {
+    let hasNonEmptyFilters = false;
+    if (filters) {
+      try {
+        hasNonEmptyFilters = isFilterGroupNotEmpty(JSON.parse(filters));
+      } catch {
+        hasNonEmptyFilters = false;
+      }
+    }
+
+    if (notResolvedValues.length > 0) {
+      MESSAGING$.notifyNLQ(`${t_i18n('Some entities you mentioned have not been found in the platform')}: ${notResolvedValues}`);
+    } else if (!hasNonEmptyFilters) {
+      MESSAGING$.notifyNLQ(t_i18n('The NLQ model didn\'t find filters corresponding to your question'));
+    }
+    handleSearchByFilter(searchKeyword, 'nlq', navigate, filters);
+  };
+
+  const runLegacyNlq = (searchKeyword: string) => {
+    commitMutationNLQ({
+      variables: {
+        search: searchKeyword,
+      },
+      onCompleted: (response: TopBarAskAINLQMutation$data) => {
+        setIsNLQLoading(false);
+        finalizeNlqSearch(searchKeyword, response.aiNLQ?.filters, response.aiNLQ?.notResolvedValues ?? []);
+      },
+      onError: (error: Error) => {
+        setIsNLQLoading(false);
+        const { errors } = (error as unknown as RelayError).res;
+        MESSAGING$.notifyError(errors.at(0)?.message);
+      },
+    });
+  };
+
+  const runXtmOneNlq = async (searchKeyword: string): Promise<void> => {
+    const agents = await fetchAgentsForIntent(NLQ_INTENT);
+    if (agents.length === 0) {
+      setIsNLQLoading(false);
+      MESSAGING$.notifyError(t_i18n('No NLQ agent is available'));
+      return;
+    }
+
+    const response = await callAgent(agents[0].slug, buildNlqPrompt(searchKeyword));
+    if (response.status === 'error') {
+      setIsNLQLoading(false);
+      MESSAGING$.notifyError(response.error ?? t_i18n('NLQ agent call failed'));
+      return;
+    }
+
+    const parsedResponse = parseNlqAgentResponse(response.content);
+    if (!parsedResponse) {
+      setIsNLQLoading(false);
+      MESSAGING$.notifyError(t_i18n('NLQ agent returned an unreadable response'));
+      return;
+    }
+
+    if (parsedResponse.error) {
+      setIsNLQLoading(false);
+      MESSAGING$.notifyError(parsedResponse.error);
+      return;
+    }
+
+    const safeSerializedFilters = toValidSerializedFilterGroup(parsedResponse.filters);
+    if (!safeSerializedFilters) {
+      setIsNLQLoading(false);
+      MESSAGING$.notifyError(t_i18n('NLQ agent returned invalid filters'));
+      return;
+    }
+
+    setIsNLQLoading(false);
+    finalizeNlqSearch(searchKeyword, safeSerializedFilters, parsedResponse.notResolvedValues);
+  };
+
   const handleOpenMenu = (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ) => {
@@ -158,27 +322,14 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const handleSearch = (searchKeyword: string, askAI = false) => {
     if (askAI && isEnterpriseEdition) {
       setIsNLQLoading(true);
-      commitMutationNLQ({
-        variables: {
-          search: searchKeyword,
-        },
-        onCompleted: (response: TopBarAskAINLQMutation$data) => {
+      if (xtmOneConfigured === true) {
+        runXtmOneNlq(searchKeyword).catch(() => {
           setIsNLQLoading(false);
-          const notResolvedValues = response.aiNLQ?.notResolvedValues ?? [];
-          const filters = response.aiNLQ?.filters;
-          if (notResolvedValues.length > 0) {
-            MESSAGING$.notifyNLQ(`${t_i18n('Some entities you mentioned have not been found in the platform')}: ${notResolvedValues}`);
-          } else if (!filters || !isFilterGroupNotEmpty(JSON.parse(filters))) {
-            MESSAGING$.notifyNLQ(t_i18n('The NLQ model didn\'t find filters corresponding to your question'));
-          }
-          handleSearchByFilter(searchKeyword, 'nlq', navigate, response.aiNLQ?.filters);
-        },
-        onError: (error: Error) => {
-          setIsNLQLoading(false);
-          const { errors } = (error as unknown as RelayError).res;
-          MESSAGING$.notifyError(errors.at(0)?.message);
-        },
-      });
+          MESSAGING$.notifyError(t_i18n('NLQ call failed'));
+        });
+      } else {
+        runLegacyNlq(searchKeyword);
+      }
     } else {
       handleSearchByKeyword(searchKeyword, 'knowledge', navigate);
     }
