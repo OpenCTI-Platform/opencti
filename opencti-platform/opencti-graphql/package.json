@@ -213,7 +213,7 @@
     "globals": "17.6.0",
     "graphql-tag": "2.12.6",
     "license-checker-rseidelsohn": "5.0.1",
-    "typescript": "5.9.3",
+    "typescript": "6.0.3",
     "typescript-eslint": "8.60.1",
     "vitest": "4.1.8"
   },
