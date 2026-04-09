@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader from '../../../../components/Loader';
+import useHelper from '../../../../utils/hooks/useHelper';
 import FintelTemplate from './fintel_templates/FintelTemplate';
 import SubType from './SubType';
 import EntitySettingAttributesCard from './entity_setting/EntitySettingAttributesCard';
@@ -40,6 +41,8 @@ const SubTypeIndexRedirect = () => {
 
 const RootSubType = () => {
   const { subTypeId } = useParams<{ subTypeId?: string }>();
+  const { isFeatureEnable } = useHelper();
+  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
 
   if (!subTypeId) return <ErrorNotFound />;
 
@@ -52,7 +55,7 @@ const RootSubType = () => {
           <Route path="templates" element={<FintelTemplatesManager />} />
           <Route path="attributes" element={<EntitySettingAttributesCard />} />
           <Route path="overview-layout" element={<EntitySettingCustomOverview />} />
-          <Route path="custom-views" element={<CustomViewsSettings />} />
+          {isCustomViewFeatureEnabled ? <Route path="custom-views" element={<CustomViewsSettings />} /> : null}
         </Route>
         <Route
           path="/templates/:templateId"

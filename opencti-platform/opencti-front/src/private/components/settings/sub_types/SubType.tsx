@@ -81,7 +81,9 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
   const isCustomOverviewLayoutEnabled = !!entitySetting?.overview_layout_customization;
 
-  const isCustomViewsEnabled = customViewsSettings.canEntityTypeHaveCustomViews;
+  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
+  const isCustomViewsEnabled = customViewsSettings.canEntityTypeHaveCustomViews
+    && isCustomViewFeatureEnabled;
 
   const tabs: SubTypeTabs = {
     workflow: isWorkflowConfigurationEnabled,
