@@ -10,7 +10,7 @@ import { ENTITY_TYPE_GROUP, ENTITY_TYPE_RETENTION_RULE } from '../../../src/sche
 import { addReport } from '../../../src/domain/report';
 import { utcDate } from '../../../src/utils/format';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_CONTAINER } from '../../../src/schema/general';
-import { createRetentionRule } from '../../../src/domain/retentionRule';
+import { createRetentionRule } from '../../../src/modules/retentionRules/retentionRules-domain';
 
 describe('Delete functional errors behaviors', async () => {
   it('should not be able to delete organization that has members', async () => {

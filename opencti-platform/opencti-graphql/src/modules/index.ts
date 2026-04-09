@@ -80,6 +80,7 @@ import './form/form';
 import './securityCoverage/securityCoverage';
 import './authenticationProvider/authenticationProvider';
 import './customView/customView';
+import './retentionRules/retentionRules';
 
 // incomplete modules
 import './report/report';
@@ -160,4 +161,5 @@ import './customView/customView-graphql';
 import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
+import './retentionRules/retentionRules-graphql';
 // endregion

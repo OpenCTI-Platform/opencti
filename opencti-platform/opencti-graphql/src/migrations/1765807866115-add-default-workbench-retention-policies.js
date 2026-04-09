@@ -1,6 +1,6 @@
 import { logMigration } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { createRetentionRule, listRules } from '../domain/retentionRule';
+import { createRetentionRule, listRules } from '../modules/retentionRules/retentionRules-domain';
 import { elUpdateByQueryForMigration } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 

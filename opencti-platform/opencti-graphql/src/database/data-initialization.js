@@ -25,7 +25,7 @@ import { ConfigurationError } from '../config/errors';
 import { initDefaultTheme } from '../modules/theme/theme-domain';
 import { addEmailTemplate } from '../modules/emailTemplate/emailTemplate-domain';
 import { DEFAULT_EMAIL_TEMPLATE_INPUT } from './default-email-template-input';
-import { createRetentionRule } from '../domain/retentionRule';
+import { createRetentionRule } from '../modules/retentionRules/retentionRules-domain';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
