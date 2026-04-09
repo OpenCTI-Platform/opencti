@@ -165,37 +165,37 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
     expect(updatedActor.object_marking_refs).toEqual(['pap-green-id']);
   });
 
-  describe('Bundle scope', () => {
-    const MALWARE_ID = 'malware--09bd862a-f030-55f2-920a-900c4913d9ff';
-    const CAMPAIGN_ID = 'campaign--6bcf59ca-70c8-55ae-ac7d-a6f9b107a35b';
+  const MALWARE_ID = 'malware--09bd862a-f030-55f2-920a-900c4913d9ff';
+  const CAMPAIGN_ID = 'campaign--6bcf59ca-70c8-55ae-ac7d-a6f9b107a35b';
 
-    const BUNDLE_OBJECTS = () => [
-      testBundleObject({
-        id: MALWARE_ID,
-        type: 'Malware',
-      }),
-      testBundleObject({
-        id: CAMPAIGN_ID,
-        type: 'Campaign',
-      }),
-    ];
+  const BUNDLE_OBJECTS = () => [
+    testBundleObject({
+      id: MALWARE_ID,
+      type: 'Malware',
+    }),
+    testBundleObject({
+      id: CAMPAIGN_ID,
+      type: 'Campaign',
+    }),
+  ];
 
-    const componentConfig = (config?: Partial<ManipulateConfiguration>) => {
-      return {
-        applyToElements: 'only-main' as const,
-        actions: [{
-          op: 'add' as const,
-          attribute: 'objectLabel',
-          value: [{
-            label: 'Duck',
-            value: 'duck-id',
-            patch_value: 'duck',
-          }],
+  const componentConfig = (config?: Partial<ManipulateConfiguration>) => {
+    return {
+      applyToElements: 'only-main' as const,
+      actions: [{
+        op: 'add' as const,
+        attribute: 'objectLabel',
+        value: [{
+          label: 'Duck',
+          value: 'duck-id',
+          patch_value: 'duck',
         }],
-        ...config,
-      };
+      }],
+      ...config,
     };
+  };
 
+  describe('Bundle scope', () => {
     it('should add label only on main element', async () => {
       const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
         mainId: MALWARE_ID,
@@ -231,6 +231,169 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
         mainId: MALWARE_ID,
         bundleObjects: BUNDLE_OBJECTS(),
         configuration: componentConfig({ applyToElements: 'all-except-main' }),
+      }));
+
+      const malwareResult = result.bundle.objects.find((o) => o.id === MALWARE_ID);
+      const malwareExtensions = malwareResult?.extensions[STIX_EXT_OCTI];
+      const campaignResult = result.bundle.objects.find((o) => o.id === CAMPAIGN_ID);
+      const campaignExtensions = campaignResult?.extensions[STIX_EXT_OCTI];
+      expect(malwareExtensions?.opencti_upsert_operations).toBeUndefined();
+      expect(campaignExtensions?.opencti_upsert_operations?.length).toEqual(1);
+    });
+  });
+
+  describe('Filter elements manipulated', () => {
+    const filterGrounping = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Grouping"],"mode":"or"}],"filterGroups":[]}';
+    const filterCampaign = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Campaign"],"mode":"or"}],"filterGroups":[]}';
+    const filterMalware = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Malware"],"mode":"or"}],"filterGroups":[]}';
+    const filterMalwareCampaign = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Malware","Campaign"],"mode":"or"}],"filterGroups":[]}';
+
+    it('should manipulate nothing if no match (only-main)', async () => {
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({ applyWithFilters: filterGrounping }),
+      }));
+
+      const malwareResult = result.bundle.objects.find((o) => o.id === MALWARE_ID);
+      const malwareExtensions = malwareResult?.extensions[STIX_EXT_OCTI];
+      const campaignResult = result.bundle.objects.find((o) => o.id === CAMPAIGN_ID);
+      const campaignExtensions = campaignResult?.extensions[STIX_EXT_OCTI];
+      expect(malwareExtensions?.opencti_upsert_operations).toBeUndefined();
+      expect(campaignExtensions?.opencti_upsert_operations).toBeUndefined();
+    });
+
+    it('should manipulate only main if match (only-main)', async () => {
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({ applyWithFilters: filterMalwareCampaign }),
+      }));
+
+      const malwareResult = result.bundle.objects.find((o) => o.id === MALWARE_ID);
+      const malwareExtensions = malwareResult?.extensions[STIX_EXT_OCTI];
+      const campaignResult = result.bundle.objects.find((o) => o.id === CAMPAIGN_ID);
+      const campaignExtensions = campaignResult?.extensions[STIX_EXT_OCTI];
+      expect(malwareExtensions?.opencti_upsert_operations?.length).toEqual(1);
+      expect(campaignExtensions?.opencti_upsert_operations).toBeUndefined();
+    });
+
+    it('should manipulate nothing if no match (all-elements)', async () => {
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyToElements: 'all-elements',
+          applyWithFilters: filterGrounping,
+        }),
+      }));
+
+      const malwareResult = result.bundle.objects.find((o) => o.id === MALWARE_ID);
+      const malwareExtensions = malwareResult?.extensions[STIX_EXT_OCTI];
+      const campaignResult = result.bundle.objects.find((o) => o.id === CAMPAIGN_ID);
+      const campaignExtensions = campaignResult?.extensions[STIX_EXT_OCTI];
+      expect(malwareExtensions?.opencti_upsert_operations).toBeUndefined();
+      expect(campaignExtensions?.opencti_upsert_operations).toBeUndefined();
+    });
+
+    it('should manipulate only campaign if partial match (all-elements)', async () => {
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyToElements: 'all-elements',
+          applyWithFilters: filterCampaign,
+        }),
+      }));
+
+      const malwareResult = result.bundle.objects.find((o) => o.id === MALWARE_ID);
+      const malwareExtensions = malwareResult?.extensions[STIX_EXT_OCTI];
+      const campaignResult = result.bundle.objects.find((o) => o.id === CAMPAIGN_ID);
+      const campaignExtensions = campaignResult?.extensions[STIX_EXT_OCTI];
+      expect(malwareExtensions?.opencti_upsert_operations).toBeUndefined();
+      expect(campaignExtensions?.opencti_upsert_operations?.length).toEqual(1);
+    });
+
+    it('should manipulate all elements if full match (all-elements)', async () => {
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyToElements: 'all-elements',
+          applyWithFilters: filterMalwareCampaign,
+        }),
+      }));
+
+      const malwareResult = result.bundle.objects.find((o) => o.id === MALWARE_ID);
+      const malwareExtensions = malwareResult?.extensions[STIX_EXT_OCTI];
+      const campaignResult = result.bundle.objects.find((o) => o.id === CAMPAIGN_ID);
+      const campaignExtensions = campaignResult?.extensions[STIX_EXT_OCTI];
+      expect(malwareExtensions?.opencti_upsert_operations?.length).toEqual(1);
+      expect(campaignExtensions?.opencti_upsert_operations?.length).toEqual(1);
+    });
+
+    it('should manipulate nothing if no match (all-except-main)', async () => {
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyToElements: 'all-except-main',
+          applyWithFilters: filterGrounping,
+        }),
+      }));
+
+      const malwareResult = result.bundle.objects.find((o) => o.id === MALWARE_ID);
+      const malwareExtensions = malwareResult?.extensions[STIX_EXT_OCTI];
+      const campaignResult = result.bundle.objects.find((o) => o.id === CAMPAIGN_ID);
+      const campaignExtensions = campaignResult?.extensions[STIX_EXT_OCTI];
+      expect(malwareExtensions?.opencti_upsert_operations).toBeUndefined();
+      expect(campaignExtensions?.opencti_upsert_operations).toBeUndefined();
+    });
+
+    it('should manipulate nothing if match only main (all-except-main)', async () => {
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyToElements: 'all-except-main',
+          applyWithFilters: filterMalware,
+        }),
+      }));
+
+      const malwareResult = result.bundle.objects.find((o) => o.id === MALWARE_ID);
+      const malwareExtensions = malwareResult?.extensions[STIX_EXT_OCTI];
+      const campaignResult = result.bundle.objects.find((o) => o.id === CAMPAIGN_ID);
+      const campaignExtensions = campaignResult?.extensions[STIX_EXT_OCTI];
+      expect(malwareExtensions?.opencti_upsert_operations).toBeUndefined();
+      expect(campaignExtensions?.opencti_upsert_operations).toBeUndefined();
+    });
+
+    it('should manipulate only campaign if partial match (all-except-main)', async () => {
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyToElements: 'all-except-main',
+          applyWithFilters: filterCampaign,
+        }),
+      }));
+
+      const malwareResult = result.bundle.objects.find((o) => o.id === MALWARE_ID);
+      const malwareExtensions = malwareResult?.extensions[STIX_EXT_OCTI];
+      const campaignResult = result.bundle.objects.find((o) => o.id === CAMPAIGN_ID);
+      const campaignExtensions = campaignResult?.extensions[STIX_EXT_OCTI];
+      expect(malwareExtensions?.opencti_upsert_operations).toBeUndefined();
+      expect(campaignExtensions?.opencti_upsert_operations?.length).toEqual(1);
+    });
+
+    it('should manipulate all elements except main if full match (all-except-main)', async () => {
+      const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyToElements: 'all-except-main',
+          applyWithFilters: filterMalwareCampaign,
+        }),
       }));
 
       const malwareResult = result.bundle.objects.find((o) => o.id === MALWARE_ID);
