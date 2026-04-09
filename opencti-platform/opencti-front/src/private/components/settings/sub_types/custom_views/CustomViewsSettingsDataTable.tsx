@@ -2,7 +2,9 @@ import DataTableWithoutFragment from '../../../../../components/dataGrid/DataTab
 import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTypes';
 import { useDataTableLocalSort } from '../../../../../components/dataGrid/dataTableHooks';
 import { useFormatter } from '../../../../../components/i18n';
-import type { CustomViewsSettingsEntry } from './types';
+import type { CustomViewsSettings_customViews$data } from './__generated__/CustomViewsSettings_customViews.graphql';
+
+type CustomViewsSettingsEntry = CustomViewsSettings_customViews$data['customViews'][number];
 
 interface CustomViewsSettingsDataTableProps {
   customViews: Readonly<CustomViewsSettingsEntry[]>;

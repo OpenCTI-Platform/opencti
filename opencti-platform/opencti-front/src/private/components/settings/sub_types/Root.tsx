@@ -5,21 +5,21 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader from '../../../../components/Loader';
 import useHelper from '../../../../utils/hooks/useHelper';
 import FintelTemplate from './fintel_templates/FintelTemplate';
-import SubType from './SubType';
 import EntitySettingAttributesCard from './entity_setting/EntitySettingAttributesCard';
 import EntitySettingCustomOverview from './entity_setting/EntitySettingCustomOverview';
 import FintelTemplatesManager from './fintel_templates/FintelTemplatesManager';
 import GlobalWorkflowSettingsCard from './workflow/GlobalWorkflowSettingsCard';
-import { SubTypeTabs, useSubTypeOutletContext } from './SubTypeOutletContext';
 import CustomViewsSettings from './custom_views/CustomViewsSettings';
-
-const ORDERED_TABS = [
-  'workflow',
-  'attributes',
-  'templates',
-  'overview-layout',
-  'custom-views',
-] as const satisfies Array<keyof SubTypeTabs>;
+import {
+  SUBTYPE_TAB_ATTRIBUTES,
+  SUBTYPE_TAB_CUSTOM_VIEWS,
+  SUBTYPE_TAB_OVERVIEW_LAYOUT,
+  SUBTYPE_TAB_TEMPLATES,
+  SUBTYPE_TAB_WORKFLOW,
+  SUBTYPE_TABS,
+  useSubTypeOutletContext,
+} from './SubTypeOutletContext';
+import SubType from './SubType';
 
 const SubTypeIndexRedirect = () => {
   const { tabs } = useSubTypeOutletContext();
@@ -30,7 +30,7 @@ const SubTypeIndexRedirect = () => {
 
   // Redirect to the first enabled tab based on the priority order:
   // workflow > attributes > templates > overview layout > custom views
-  const redirect = ORDERED_TABS.find((tab) => tabs[tab]);
+  const redirect = SUBTYPE_TABS.find((tab) => tabs[tab]);
 
   if (redirect) {
     return <Navigate to={redirect} replace />;
@@ -51,11 +51,11 @@ const RootSubType = () => {
       <Routes>
         <Route path="/" element={<SubType />}>
           <Route index element={<SubTypeIndexRedirect />} />
-          <Route path="workflow" element={<GlobalWorkflowSettingsCard />} />
-          <Route path="templates" element={<FintelTemplatesManager />} />
-          <Route path="attributes" element={<EntitySettingAttributesCard />} />
-          <Route path="overview-layout" element={<EntitySettingCustomOverview />} />
-          {isCustomViewFeatureEnabled ? <Route path="custom-views" element={<CustomViewsSettings />} /> : null}
+          <Route path={SUBTYPE_TAB_WORKFLOW} element={<GlobalWorkflowSettingsCard />} />
+          <Route path={SUBTYPE_TAB_TEMPLATES} element={<FintelTemplatesManager />} />
+          <Route path={SUBTYPE_TAB_ATTRIBUTES} element={<EntitySettingAttributesCard />} />
+          <Route path={SUBTYPE_TAB_OVERVIEW_LAYOUT} element={<EntitySettingCustomOverview />} />
+          {isCustomViewFeatureEnabled ? <Route path={SUBTYPE_TAB_CUSTOM_VIEWS} element={<CustomViewsSettings />} /> : null}
         </Route>
         <Route
           path="/templates/:templateId"

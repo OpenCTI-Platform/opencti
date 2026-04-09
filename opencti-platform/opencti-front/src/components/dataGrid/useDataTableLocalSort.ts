@@ -21,13 +21,16 @@ export const sort = (data: SortableData, sortBy: string, orderAsc: boolean) =>
     return 0;
   });
 
-interface UseClientSideDataTableSortProps {
+interface UseDataTableLocalSortProps {
   data: SortableData;
   storageKey: string;
   initialValues: Required<Pick<LocalStorage, 'orderAsc' | 'sortBy'>>;
 }
 
-const useDataTableLocalSort = ({ data, storageKey, initialValues }: UseClientSideDataTableSortProps) => {
+/**
+ * Allow client-side sorting on a data table
+ */
+const useDataTableLocalSort = ({ data, storageKey, initialValues }: UseDataTableLocalSortProps) => {
   const { viewStorage } = useDataTablePaginationLocalStorage(
     storageKey,
     initialValues,
@@ -40,7 +43,7 @@ const useDataTableLocalSort = ({ data, storageKey, initialValues }: UseClientSid
       data,
       sortBy ?? initialValues.sortBy,
       orderAsc ?? initialValues.orderAsc,
-    ), [data, sortBy, orderAsc],
+    ), [data, sortBy, orderAsc, initialValues.sortBy, initialValues.orderAsc],
   );
   return { sortedData };
 };
