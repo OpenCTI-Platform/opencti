@@ -1,7 +1,7 @@
 import Grid from '@mui/material/Grid';
 import { makeStyles } from '@mui/styles';
 import { assoc, head, last, map, pluck } from 'ramda';
-import React, { Suspense } from 'react';
+import React, { Suspense, useMemo } from 'react';
 import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
 import { PLATFORM_DASHBOARD } from './DashboardSettings';
 import StixRelationshipsDistributionList from './common/stix_relationships/StixRelationshipsDistributionList';
@@ -525,7 +525,8 @@ const LOCAL_STORAGE_KEY = 'dashboard';
 const DashboardComponent = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { me: currentMe, ...context } = useAuth();
+  const authContext = useAuth();
+  const currentMe = authContext.me;
   const data = usePreloadedQuery(dashboardQuery, queryRef);
   const me = useFragment(dashboardMeFragment, data.me);
   const { default_dashboards: dashboards } = currentMe;
@@ -544,9 +545,13 @@ const DashboardComponent = ({ queryRef }) => {
     // Handle old conf
     defaultDashboard = dashboard;
   }
+  const dashboardContextValue = useMemo(
+    () => ({ ...authContext, me: { ...currentMe, ...me } }),
+    [authContext, currentMe, me],
+  );
 
   return (
-    <UserContext.Provider value={{ me: { ...currentMe, ...me }, ...context }}>
+    <UserContext.Provider value={dashboardContextValue}>
       <div className={classes.root} data-testid="dashboard-page">
         {defaultDashboard !== PLATFORM_DASHBOARD ? (
           <CustomDashboard

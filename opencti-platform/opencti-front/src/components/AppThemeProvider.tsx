@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { ThemeOptions } from '@mui/material/styles/createTheme';
@@ -13,6 +13,7 @@ import themeDark, {
 import themeLight from './ThemeLight';
 import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
+import { useExportTheme } from '../utils/ExportThemeContext';
 
 interface AppThemeProviderProps {
   children: React.ReactNode;
@@ -94,25 +95,28 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
 }) => {
   useDocumentFaviconModifier(settings?.platform_favicon);
 
-  const themeToUse = activeTheme || settings.platform_theme;
+  const { exportTheme } = useExportTheme();
+  const themeToUse = exportTheme ?? activeTheme ?? settings.platform_theme;
 
-  const appTheme: AppThemeType = {
-    name: themeToUse?.name ?? defaultTheme.name,
-    theme_accent: themeToUse?.theme_accent ?? defaultTheme.theme_accent,
-    theme_background: themeToUse?.theme_background ?? defaultTheme.theme_background,
-    theme_logo: themeToUse?.theme_logo ?? defaultTheme.theme_logo,
-    theme_logo_collapsed: themeToUse?.theme_logo_collapsed ?? defaultTheme.theme_logo_collapsed,
-    theme_logo_login: themeToUse?.theme_logo_login ?? defaultTheme.theme_logo_login,
-    theme_nav: themeToUse?.theme_nav ?? defaultTheme.theme_nav,
-    theme_paper: themeToUse?.theme_paper ?? defaultTheme.theme_paper,
-    theme_primary: themeToUse?.theme_primary ?? defaultTheme.theme_primary,
-    theme_secondary: themeToUse?.theme_secondary ?? defaultTheme.theme_secondary,
-    theme_text_color: themeToUse?.theme_text_color ?? defaultTheme.theme_text_color,
-  };
 
-  const themeComponent = themeBuilder(appTheme);
-  const muiTheme = createTheme(themeComponent as ThemeOptions);
-  useDocumentThemeModifier(appTheme.name);
+  const muiTheme = useMemo(() => {
+    const appTheme: AppThemeType = {
+      name: themeToUse?.name ?? defaultTheme.name,
+      theme_accent: themeToUse?.theme_accent ?? defaultTheme.theme_accent,
+      theme_background: themeToUse?.theme_background ?? defaultTheme.theme_background,
+      theme_logo: themeToUse?.theme_logo ?? defaultTheme.theme_logo,
+      theme_logo_collapsed: themeToUse?.theme_logo_collapsed ?? defaultTheme.theme_logo_collapsed,
+      theme_logo_login: themeToUse?.theme_logo_login ?? defaultTheme.theme_logo_login,
+      theme_nav: themeToUse?.theme_nav ?? defaultTheme.theme_nav,
+      theme_paper: themeToUse?.theme_paper ?? defaultTheme.theme_paper,
+      theme_primary: themeToUse?.theme_primary ?? defaultTheme.theme_primary,
+      theme_secondary: themeToUse?.theme_secondary ?? defaultTheme.theme_secondary,
+      theme_text_color: themeToUse?.theme_text_color ?? defaultTheme.theme_text_color,
+    };
+    return createTheme(themeBuilder(appTheme) as ThemeOptions);
+  }, [themeToUse?.id]);
+
+  useDocumentThemeModifier(themeToUse?.name ?? defaultTheme.name);
 
   return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;
 };

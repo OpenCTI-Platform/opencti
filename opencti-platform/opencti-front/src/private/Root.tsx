@@ -22,6 +22,7 @@ import useNetworkCheck from '../utils/hooks/useCheckNetwork';
 import { useBaseHrefAbsolute } from '../utils/hooks/useDocumentModifier';
 import useActiveTheme from '../utils/hooks/useActiveTheme';
 import { AppDataProvider } from '../utils/hooks/useAppData';
+import { ExportThemeProvider } from '../utils/ExportThemeContext';
 import { TOP_BANNER_HEIGHT } from '../components/TopBanner';
 import defaultBrowserLang, { LANGUAGES } from '../utils/BrowserLanguage';
 
@@ -448,7 +449,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   );
   useSubscription(subConfig);
 
-  const schema = {
+  const schema = useMemo(() => ({
     scos: schemaSCOs.edges.map((sco) => sco.node),
     sdos: schemaSDOs.edges.map((sco) => sco.node),
     smos: schemaSMOs.edges.map((smo) => smo.node),
@@ -459,13 +460,14 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
       const filtersSchema = new Map(n.filters_schema.map((o) => [o.filterKey, o.filterDefinition as FilterDefinition]));
       return [n.entity_type, filtersSchema];
     })),
-  };
+  }), [schemaSCOs, schemaSDOs, schemaSMOs, schemaSCRs, schemaRelationsTypesMapping,
+    schemaRelationsRefTypesMapping, filterKeysSchema]);
 
   // TODO : Use the hook useHelper when all project is pure function //
-  const bannerSettings = computeBannerSettings(settings);
-  const platformModuleHelpers = platformModuleHelper(settings);
-  const platformAnalyticsConfiguration = generateAnalyticsConfig(settings);
-  const metricsDefinition = Array.from(settings.metrics_definition || []);
+  const bannerSettings = useMemo(() => computeBannerSettings(settings), [settings]);
+  const platformModuleHelpers = useMemo(() => platformModuleHelper(settings), [settings]);
+  const platformAnalyticsConfiguration = useMemo(() => generateAnalyticsConfig(settings), [settings]);
+  const metricsDefinition = useMemo(() => Array.from(settings.metrics_definition || []), [settings.metrics_definition]);
 
   const { isReachable } = useNetworkCheck(`${settings?.platform_xtmhub_url}/health`);
   useBaseHrefAbsolute();
@@ -480,29 +482,32 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   if (unitSystem === 'auto' || unitSystem === '%future added value') {
     unitSystem = selectedLocale === LANGUAGES.ENGLISH ? 'Imperial' : 'Metric';
   }
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  const contextValue = useMemo(() => ({
+    me,
+    settings,
+    bannerSettings,
+    entitySettings,
+    platformModuleHelpers,
+    schema,
+    isXTMHubAccessible: isReachable,
+    about,
+    themes,
+    unitSystem,
+    locale: selectedLocale,
+    tz,
+  }), [me, settings, bannerSettings, entitySettings, platformModuleHelpers,
+    schema, isReachable, about, themes, unitSystem, selectedLocale, tz]);
 
   return (
-    <UserContext.Provider
-      value={{
-        me,
-        settings,
-        bannerSettings,
-        entitySettings,
-        platformModuleHelpers,
-        schema,
-        isXTMHubAccessible: isReachable,
-        about,
-        themes,
-        unitSystem,
-        locale: selectedLocale,
-        tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      }}
-    >
-      <StyledEngineProvider injectFirst={true}>
-        <ConnectedThemeProvider
-          settings={settings}
-          activeTheme={activeTheme}
-        >
+    <UserContext.Provider value={contextValue}>
+      <ExportThemeProvider>
+        <StyledEngineProvider injectFirst={true}>
+          <ConnectedThemeProvider
+            settings={settings}
+            activeTheme={activeTheme}
+          >
           <ConnectedIntlProvider settings={settings}>
             <AppDataProvider
               isPublicRoute={false}
@@ -513,8 +518,9 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
               </AnalyticsProvider>
             </AppDataProvider>
           </ConnectedIntlProvider>
-        </ConnectedThemeProvider>
-      </StyledEngineProvider>
+          </ConnectedThemeProvider>
+        </StyledEngineProvider>
+      </ExportThemeProvider>
     </UserContext.Provider>
   );
 };
