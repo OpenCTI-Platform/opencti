@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
-import { AxiosError } from 'axios';
+import { HttpClientError } from '../utils/http-client';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/errors';
@@ -173,9 +173,9 @@ export const rssHttpClientOptions = (ingestion: BasicStoreEntityIngestionRss) =>
 
 const rssHttpGetter = (ingestion: BasicStoreEntityIngestionRss): Getter => {
   const httpClient = getHttpClient(rssHttpClientOptions(ingestion));
-  return async (uri: string) => {
+  return async (uri: string): Promise<object> => {
     const { data } = await httpClient.get(uri);
-    return data;
+    return data as object;
   };
 };
 
@@ -277,9 +277,9 @@ export const rssExecutor = async (context: AuthContext, turndownService: Turndow
         const ingestionPromise = rssDataHandler(context, httpGet, turndownService, ingestion)
           .catch((e) => {
             logApp.warn('[OPENCTI-MODULE] INGESTION - RSS ingestion execution', { cause: e, name: ingestion.name });
-            if (e instanceof AxiosError) {
-              if (e?.response?.headers) {
-                if (e.response.headers['cf-mitigated']) {
+            if (e instanceof HttpClientError) {
+              if (e.headers) {
+                if (e.headers['cf-mitigated']) {
                   logApp.warn(`[OPENCTI-MODULE] INGESTION Rss - Cloudflare challenge fail for ${ingestion.uri}`);
                 }
               }
@@ -364,17 +364,18 @@ const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<
     },
   });
   const { data, headers, status } = await httpClient.get(url, { params });
+  const taxiiData = data as TaxiiResponseData['data'];
   logApp.info('[OPENCTI-MODULE] Taxii HTTP Get done.', {
     ingestion: ingestion.name,
     response: {
       addedLastHeader: headers['x-taxii-date-added-last'],
       addedFirstHeader: headers['x-taxii-date-added-first'],
-      more: data.more,
-      next: data.next,
+      more: taxiiData.more,
+      next: taxiiData.next,
       status,
     },
   });
-  return { data, addedLastHeader: headers['x-taxii-date-added-last'] };
+  return { data: taxiiData, addedLastHeader: headers['x-taxii-date-added-last'] };
 };
 
 type TaxiiHandlerFn = (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii) => Promise<void>;

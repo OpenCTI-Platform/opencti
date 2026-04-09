@@ -1,35 +1,52 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import axios, { type AxiosInstance } from 'axios';
 import { handleWebhookNotification } from '../../../src/manager/publisherManager';
 
 describe('handleWebhookNotification', () => {
-  const mockedAxiosInstance = vi.fn();
-  
+  const mockFetch = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(axios, 'create').mockReturnValue(mockedAxiosInstance as unknown as AxiosInstance);
-  });
-  
-  afterEach(() => {
-    vi.restoreAllMocks();
+    vi.stubGlobal('fetch', mockFetch);
   });
 
-  it('should intercept the axios.create call and use a mock instance', async () => {
-    const configurationString = JSON.stringify({ 
-      url: 'https://my-webhook-endpoint.com/test', 
-      verb: 'POST', 
-      template: '{}' 
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  // Helper to extract the call args from mocked fetch
+  const getFetchCallArgs = () => {
+    const [url, init] = mockFetch.mock.calls[0];
+    const body = init?.body ? JSON.parse(init.body) : undefined;
+    return { url, method: init?.method, headers: init?.headers, body };
+  };
+
+  // Helper to extract URL and params separately
+  const getFetchUrlAndParams = () => {
+    const [rawUrl] = mockFetch.mock.calls[0];
+    const urlObj = new URL(rawUrl);
+    const params: Record<string, string> = {};
+    urlObj.searchParams.forEach((v, k) => {
+      params[k] = v;
     });
-    mockedAxiosInstance.mockResolvedValue({ status: 200, data: 'success from spy' });
-    
+    return { url: `${urlObj.origin}${urlObj.pathname}`, params };
+  };
+
+  it('should call fetch with the correct URL, method and body', async () => {
+    const configurationString = JSON.stringify({
+      url: 'https://my-webhook-endpoint.com/test',
+      verb: 'POST',
+      template: '{}',
+    });
+    mockFetch.mockResolvedValue(new Response(JSON.stringify({ status: 'ok' }), { status: 200 }));
+
     await handleWebhookNotification(configurationString, {});
-    
-    expect(axios.create).toHaveBeenCalledTimes(1);
-    expect(mockedAxiosInstance).toHaveBeenCalledOnce();
-    const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
-    expect(axiosCallArgs.url).toBe('https://my-webhook-endpoint.com/test');
-    expect(axiosCallArgs.method).toBe('POST');
-    expect(axiosCallArgs.data).toEqual({});
+
+    expect(mockFetch).toHaveBeenCalledOnce();
+    const { url, method, body } = getFetchCallArgs();
+    expect(url).toContain('https://my-webhook-endpoint.com/test');
+    expect(method).toBe('POST');
+    expect(body).toEqual({});
   });
 
   it('should call webhook with correct POST payload, headers, and params', async () => {
@@ -55,35 +72,33 @@ describe('handleWebhookNotification', () => {
       settings: {},
       data: [],
     };
-    
-    mockedAxiosInstance.mockResolvedValue({ status: 200, data: 'OK' });
-    
+
+    mockFetch.mockResolvedValue(new Response(JSON.stringify({ status: 'ok' }), { status: 200 }));
+
     await handleWebhookNotification(configurationString, templateData);
-    
-    expect(axios.create).toHaveBeenCalledTimes(1);
-    expect(axios.create).toHaveBeenCalledWith(expect.objectContaining({
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': 'filigran-secret-key-123',
-        Accept: 'application/json',
-      },
-    }));
-    expect(mockedAxiosInstance).toHaveBeenCalledTimes(1);
-    
-    const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
-    expect(axiosCallArgs.url).toBe(webhookConfiguration.url);
-    expect(axiosCallArgs.method).toBe('POST');
-    expect(axiosCallArgs.params).toEqual({
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+
+    const { headers } = getFetchCallArgs();
+    expect(headers).toMatchObject({
+      'Content-Type': 'application/json',
+      'X-API-Key': 'filigran-secret-key-123',
+      Accept: 'application/json',
+    });
+
+    const { url, params } = getFetchUrlAndParams();
+    expect(url).toBe('https://api.filigran.io/v1/ingest');
+    expect(params).toEqual({
       source: 'opencti-platform',
       type: 'notification',
     });
-    
-    // Verify that the template has been rendered with expected data
-    const expectedData = { 
-      message: 'Update on Stix-Object-Cyber-Tigrou by test-admin', 
-      source_id: 'trigger-id-abcde' 
+
+    const { body } = getFetchCallArgs();
+    const expectedData = {
+      message: 'Update on Stix-Object-Cyber-Tigrou by test-admin',
+      source_id: 'trigger-id-abcde',
     };
-    expect(axiosCallArgs.data).toEqual(expectedData);
+    expect(body).toEqual(expectedData);
   });
 
   it('should correctly escape newline characters in template data', async () => {
@@ -94,21 +109,20 @@ describe('handleWebhookNotification', () => {
     };
     const configurationString = JSON.stringify(webhookConfiguration);
     const templateDataWithNewline = {
-      description: 'Line 1\nLine 2'
+      description: 'Line 1\nLine 2',
     };
-    
-    mockedAxiosInstance.mockResolvedValue({ status: 200 });
-    
+
+    mockFetch.mockResolvedValue(new Response(JSON.stringify({ status: 'ok' }), { status: 200 }));
+
     await handleWebhookNotification(configurationString, templateDataWithNewline);
-    
-    expect(mockedAxiosInstance).toHaveBeenCalledOnce();
-    
-    const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
-    // Ensure the template rendering produce valid JSON
-    expect(axiosCallArgs.data).toHaveProperty('description');
-    expect(typeof axiosCallArgs.data.description).toBe('string');
-    expect(axiosCallArgs.data.description).toContain('Line 1');
-    expect(axiosCallArgs.data.description).toContain('Line 2');
+
+    expect(mockFetch).toHaveBeenCalledOnce();
+
+    const { body } = getFetchCallArgs();
+    expect(body).toHaveProperty('description');
+    expect(typeof body.description).toBe('string');
+    expect(body.description).toContain('Line 1');
+    expect(body.description).toContain('Line 2');
   });
 
   it('should escape line breaks in nested objects and arrays', async () => {
@@ -123,35 +137,33 @@ describe('handleWebhookNotification', () => {
         title: 'Quarterly\nReport',
         author: {
           name: 'John Doe',
-          bio: 'Cybersecurity expert.\nAuthor of several publications.'
+          bio: 'Cybersecurity expert.\nAuthor of several publications.',
         },
         events: [
           { id: 'evt-1', message: 'First alert:\nsuspicious connection.' },
-          { id: 'evt-2', message: 'Second alert, no line break.' }
+          { id: 'evt-2', message: 'Second alert, no line break.' },
         ],
         tags: ['urgent', 'review\nneeded'],
         is_published: true,
         version: 2,
-      }
+      },
     };
-    
-    mockedAxiosInstance.mockResolvedValue({ status: 200 });
-    
+
+    mockFetch.mockResolvedValue(new Response(JSON.stringify({ status: 'ok' }), { status: 200 }));
+
     await handleWebhookNotification(configurationString, templateDataWithNesting);
-    
-    expect(mockedAxiosInstance).toHaveBeenCalledOnce();
-    
-    const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
-    // Check imbricated properties are correctly rendered
-    expect(axiosCallArgs.data).toHaveProperty('title');
-    expect(axiosCallArgs.data).toHaveProperty('author_bio');
-    expect(axiosCallArgs.data).toHaveProperty('first_event_message');
-    
-    // Ensure new lines are correctly rendered
-    expect(axiosCallArgs.data.title).toContain('Quarterly');
-    expect(axiosCallArgs.data.title).toContain('Report');
-    expect(axiosCallArgs.data.author_bio).toContain('Cybersecurity expert');
-    expect(axiosCallArgs.data.first_event_message).toContain('First alert');
+
+    expect(mockFetch).toHaveBeenCalledOnce();
+
+    const { body } = getFetchCallArgs();
+    expect(body).toHaveProperty('title');
+    expect(body).toHaveProperty('author_bio');
+    expect(body).toHaveProperty('first_event_message');
+
+    expect(body.title).toContain('Quarterly');
+    expect(body.title).toContain('Report');
+    expect(body.author_bio).toContain('Cybersecurity expert');
+    expect(body.first_event_message).toContain('First alert');
   });
 
   it('should correctly handle forward slashes in template data', async () => {
@@ -162,17 +174,17 @@ describe('handleWebhookNotification', () => {
     };
     const configurationString = JSON.stringify(webhookConfiguration);
     const templateDataWithSlash = {
-      description: 'This is a path: /home/user/file.txt'
+      description: 'This is a path: /home/user/file.txt',
     };
-    
-    mockedAxiosInstance.mockResolvedValue({ status: 200 });
-    
+
+    mockFetch.mockResolvedValue(new Response(JSON.stringify({ status: 'ok' }), { status: 200 }));
+
     await handleWebhookNotification(configurationString, templateDataWithSlash);
-    
-    expect(mockedAxiosInstance).toHaveBeenCalledOnce();
-    
-    const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
-    expect(axiosCallArgs.data).toHaveProperty('description');
-    expect(axiosCallArgs.data.description).toBe('This is a path: /home/user/file.txt');
+
+    expect(mockFetch).toHaveBeenCalledOnce();
+
+    const { body } = getFetchCallArgs();
+    expect(body).toHaveProperty('description');
+    expect(body.description).toBe('This is a path: /home/user/file.txt');
   });
 });
