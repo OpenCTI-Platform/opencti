@@ -3,6 +3,7 @@ import convertRetentionRuleToStix from './retentionRules-converter';
 import { ENTITY_TYPE_RETENTION_RULE, type StixRetentionRule, type StoreEntityRetentionRule } from './retentionRules-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import { RETENTION_SCOPE_VALUES, RETENTION_UNIT_VALUES } from '../../manager/retentionManager';
 
 const RETENTION_RULE_DEFINITION: ModuleDefinition<StoreEntityRetentionRule, StixRetentionRule> = {
   type: {
@@ -23,7 +24,7 @@ const RETENTION_RULE_DEFINITION: ModuleDefinition<StoreEntityRetentionRule, Stix
       type: 'string',
       format: 'short',
       mandatoryType: 'external',
-      editDefault: false,
+      editDefault: true,
       multiple: false,
       upsert: false,
       isFilterable: true,
@@ -33,30 +34,31 @@ const RETENTION_RULE_DEFINITION: ModuleDefinition<StoreEntityRetentionRule, Stix
       label: 'Filters',
       type: 'string',
       format: 'text',
-      mandatoryType: 'no',
-      editDefault: false,
+      mandatoryType: 'external',
+      editDefault: true,
       multiple: false,
       upsert: false,
       isFilterable: false,
     },
     {
       name: 'max_retention',
-      label: 'Max retention',
+      label: 'Maximum retention',
       type: 'numeric',
       precision: 'integer',
       mandatoryType: 'external',
-      editDefault: false,
+      editDefault: true,
       multiple: false,
       upsert: false,
       isFilterable: true,
     },
     {
       name: 'retention_unit',
-      label: 'Retention unit',
+      label: 'Maximum retention unit',
       type: 'string',
-      format: 'short',
+      format: 'enum',
+      values: RETENTION_UNIT_VALUES,
       mandatoryType: 'no',
-      editDefault: false,
+      editDefault: true,
       multiple: false,
       upsert: false,
       isFilterable: true,
@@ -65,7 +67,8 @@ const RETENTION_RULE_DEFINITION: ModuleDefinition<StoreEntityRetentionRule, Stix
       name: 'scope',
       label: 'Scope',
       type: 'string',
-      format: 'short',
+      format: 'enum',
+      values: RETENTION_SCOPE_VALUES,
       mandatoryType: 'external',
       editDefault: false,
       multiple: false,
@@ -91,7 +94,7 @@ const RETENTION_RULE_DEFINITION: ModuleDefinition<StoreEntityRetentionRule, Stix
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: false,
+      isFilterable: true,
     },
     {
       name: 'remaining_count',
@@ -102,7 +105,7 @@ const RETENTION_RULE_DEFINITION: ModuleDefinition<StoreEntityRetentionRule, Stix
       editDefault: false,
       multiple: false,
       upsert: false,
-      isFilterable: false,
+      isFilterable: true,
     },
   ],
   relations: [],
