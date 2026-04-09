@@ -99,6 +99,10 @@ class StixCyberObservablesExportCreationComponent extends Component {
     const { orderBy, orderMode, filters, search } = paginationOptions;
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
+    let updatedExportContext = { ...exportContext };
+    if (values.columns === 'all') {
+      updatedExportContext.visible_columns = undefined;
+    }
 
     commitMutation({
       mutation: StixCyberObservablesExportCreationMutation,
@@ -108,7 +112,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
           exportType: values.type,
           fileMarkings,
           contentMaxMarkings,
-          exportContext,
+          exportContext: updatedExportContext,
           filters,
           orderBy,
           orderMode,
@@ -135,6 +139,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
     const exportConnsPerFormat = scopesConn(connectorsExport);
     const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
     const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
+    const visibleColumnExportEnabledFormats = ['text/csv'];
     return (
       <ExportContext.Consumer>
         {({ selectedIds }) => {
@@ -166,12 +171,13 @@ class StixCyberObservablesExportCreationComponent extends Component {
                   type: 'simple',
                   contentMaxMarkings: [],
                   fileMarkings: [],
+                  columns: 'all',
                 }}
                 validationSchema={exportValidation(t)}
                 onSubmit={this.onSubmit.bind(this, selectedIds)}
                 onReset={this.handleClose.bind(this)}
               >
-                {({ submitForm, handleReset, isSubmitting, resetForm }) => (
+                {({ submitForm, handleReset, isSubmitting, resetForm, values }) => (
                   <Form>
                     <Dialog
                       open={this.state.open}
@@ -245,6 +251,24 @@ class StixCyberObservablesExportCreationComponent extends Component {
                                   filterTargetIds={this.state.selectedContentMaxMarkingsIds}
                                   style={fieldSpacingContainerStyle}
                                 />
+                                {visibleColumnExportEnabledFormats.includes(values.format)
+                                  ? (
+                                      <Field
+                                        component={SelectField}
+                                        variant="standard"
+                                        name="columns"
+                                        label={t('Choose column to export')}
+                                        fullWidth={true}
+                                        containerstyle={fieldSpacingContainerStyle}
+                                      >
+                                        <MenuItem value="all">
+                                          {t('All attributes')}
+                                        </MenuItem>
+                                        <MenuItem value="view">
+                                          {t('Current view')}
+                                        </MenuItem>
+                                      </Field>
+                                    ) : undefined}
                               </>
                             );
                           }
