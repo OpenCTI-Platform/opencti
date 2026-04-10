@@ -10849,12 +10849,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"marked@npm:17.0.6":
-  version: 17.0.6
-  resolution: "marked@npm:17.0.6"
+"marked@npm:18.0.0":
+  version: 18.0.0
+  resolution: "marked@npm:18.0.0"
   bin:
     marked: bin/marked.js
-  checksum: 10c0/77961fbb360511d6638491e097cb15b1ef5e643f27c25b9cd52aa3cd92e216fc3cda7dbfc6a10adb7922d1b38df132510df65de4afe6c53c7280772c9d4221bd
+  checksum: 10c0/4a2ce60b9fd96a3092405e10c616a5cdf5375d031da1d44d3aa9d790971851fbca20628efd28db28cc91e84e18b9f5b95ec1e6fd1124a85d94abb1b6f6b409ae
   languageName: node
   linkType: hard
 
@@ -12223,7 +12223,7 @@ __metadata:
     leaflet: "npm:1.9.4"
     license-checker-rseidelsohn: "npm:4.4.2"
     markdown-to-jsx: "npm:9.7.13"
-    marked: "npm:17.0.6"
+    marked: "npm:18.0.0"
     mdi-material-ui: "npm:7.9.4"
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.6.1"
