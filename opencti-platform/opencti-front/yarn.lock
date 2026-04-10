@@ -6123,34 +6123,25 @@ __metadata:
   linkType: hard
 
 "brace-expansion@npm:^1.1.7":
-  version: 1.1.12
-  resolution: "brace-expansion@npm:1.1.12"
+  version: 1.1.13
+  resolution: "brace-expansion@npm:1.1.13"
   dependencies:
     balanced-match: "npm:^1.0.0"
     concat-map: "npm:0.0.1"
-  checksum: 10c0/975fecac2bb7758c062c20d0b3b6288c7cc895219ee25f0a64a9de662dbac981ff0b6e89909c3897c1f84fa353113a721923afdec5f8b2350255b097f12b1f73
+  checksum: 10c0/384c61bb329b6adfdcc0cbbdd108dc19fb5f3e84ae15a02a74f94c6c791b5a9b035aae73b2a51929a8a478e2f0f212a771eb6a8b5b514cccfb8d0c9f2ce8cbd8
   languageName: node
   linkType: hard
 
 "brace-expansion@npm:^2.0.2":
-  version: 2.0.2
-  resolution: "brace-expansion@npm:2.0.2"
+  version: 2.0.3
+  resolution: "brace-expansion@npm:2.0.3"
   dependencies:
     balanced-match: "npm:^1.0.0"
-  checksum: 10c0/6d117a4c793488af86b83172deb6af143e94c17bc53b0b3cec259733923b4ca84679d506ac261f4ba3c7ed37c46018e2ff442f9ce453af8643ecd64f4a54e6cf
+  checksum: 10c0/468436c9b2fa6f9e64d0cff8784b21300677571a7196e258593e95e7c3db9973a80fbafdb0f01404d5d298a04dc666eae1fc3c9052e2edbb9f2510541deeddfe
   languageName: node
   linkType: hard
 
-"brace-expansion@npm:^5.0.2":
-  version: 5.0.4
-  resolution: "brace-expansion@npm:5.0.4"
-  dependencies:
-    balanced-match: "npm:^4.0.2"
-  checksum: 10c0/359cbcfa80b2eb914ca1f3440e92313fbfe7919ee6b274c35db55bec555aded69dac5ee78f102cec90c35f98c20fa43d10936d0cd9978158823c249257e1643a
-  languageName: node
-  linkType: hard
-
-"brace-expansion@npm:^5.0.5":
+"brace-expansion@npm:^5.0.2, brace-expansion@npm:^5.0.5":
   version: 5.0.5
   resolution: "brace-expansion@npm:5.0.5"
   dependencies:
@@ -10705,10 +10696,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.17.23, lodash@npm:^4.0.1, lodash@npm:^4.17.15, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.17.4":
+"lodash@npm:4.17.23":
   version: 4.17.23
   resolution: "lodash@npm:4.17.23"
   checksum: 10c0/1264a90469f5bb95d4739c43eb6277d15b6d9e186df4ac68c3620443160fc669e2f14c11e7d8b2ccf078b81d06147c01a8ccced9aab9f9f63d50dcf8cace6bf6
+  languageName: node
+  linkType: hard
+
+"lodash@npm:^4.0.1, lodash@npm:^4.17.15, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.17.4":
+  version: 4.18.1
+  resolution: "lodash@npm:4.18.1"
+  checksum: 10c0/757228fc68805c59789e82185135cf85f05d0b2d3d54631d680ca79ec21944ec8314d4533639a14b8bcfbd97a517e78960933041a5af17ecb693ec6eecb99a27
   languageName: node
   linkType: hard
 
@@ -12619,16 +12617,16 @@ __metadata:
   linkType: hard
 
 "picomatch@npm:^2.0.4, picomatch@npm:^2.2.1, picomatch@npm:^2.3.1":
-  version: 2.3.1
-  resolution: "picomatch@npm:2.3.1"
-  checksum: 10c0/26c02b8d06f03206fc2ab8d16f19960f2ff9e81a658f831ecb656d8f17d9edc799e8364b1f4a7873e89d9702dff96204be0fa26fe4181f6843f040f819dac4be
+  version: 2.3.2
+  resolution: "picomatch@npm:2.3.2"
+  checksum: 10c0/a554d1709e59be97d1acb9eaedbbc700a5c03dbd4579807baed95100b00420bc729335440ef15004ae2378984e2487a7c1cebd743cfdb72b6fa9ab69223c0d61
   languageName: node
   linkType: hard
 
 "picomatch@npm:^4.0.3":
-  version: 4.0.3
-  resolution: "picomatch@npm:4.0.3"
-  checksum: 10c0/9582c951e95eebee5434f59e426cddd228a7b97a0161a375aed4be244bd3fe8e3a31b846808ea14ef2c8a2527a6eeab7b3946a67d5979e81694654f939473ae2
+  version: 4.0.4
+  resolution: "picomatch@npm:4.0.4"
+  checksum: 10c0/e2c6023372cc7b5764719a5ffb9da0f8e781212fa7ca4bd0562db929df8e117460f00dff3cb7509dacfc06b86de924b247f504d0ce1806a37fac4633081466b0
   languageName: node
   linkType: hard
 
