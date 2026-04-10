@@ -108,9 +108,11 @@ describe('authenticateForPublic middleware', () => {
   });
 
   it('calls next() and sets req.user for a public stream with no auth user', async () => {
-    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+    const mockContext: any = { user: null, user_inside_platform_organization: false };
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(mockContext);
     vi.mocked(getEntitiesListFromCache).mockResolvedValue([MOCK_STREAM_COLLECTION] as any);
     vi.mocked(resolvePublicUser).mockResolvedValue(MOCK_PUBLIC_USER as any);
+    vi.mocked(getEntityFromCache).mockResolvedValue({ platform_organization: null } as any);
 
     const req = makeMockReq({ id: 'stream-1' });
     const res = makeMockRes();
@@ -122,6 +124,31 @@ describe('authenticateForPublic middleware', () => {
     expect(req.user).toBe(MOCK_PUBLIC_USER);
     expect(req.userId).toBe('public-user-id');
     expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it('recomputes user_inside_platform_organization for the resolved public user even when an admin is authenticated', async () => {
+    // Simulates an admin (bypass, inside platform org) accessing a public stream URL.
+    // user_inside_platform_organization must be overridden to reflect the *public user*, not the admin.
+    const adminUser = { id: 'admin-id', user_email: 'admin@test.com', capabilities: [], allowed_marking: [], organizations: [] };
+    const mockContext: any = { user: adminUser, user_inside_platform_organization: true };
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(mockContext);
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([MOCK_STREAM_COLLECTION] as any);
+    vi.mocked(resolvePublicUser).mockResolvedValue({ ...MOCK_PUBLIC_USER, organizations: [{ internal_id: 'filigran-org' }] } as any);
+    vi.mocked(getEntityFromCache).mockResolvedValue({ platform_organization: 'bae-org-id' } as any);
+    // isUserInPlatformOrganization returns false: public user (Filigran) is NOT in the platform org (BAE)
+    const { isUserInPlatformOrganization } = await import('../../../../src/utils/access');
+    vi.mocked(isUserInPlatformOrganization).mockReturnValue(false);
+
+    const req = makeMockReq({ id: 'stream-1' });
+    const res = makeMockRes();
+    const next = vi.fn();
+
+    await authenticateForPublic(req, res, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(req.user).not.toBe(adminUser);
+    // Context must now reflect the public user's org membership, NOT the admin's
+    expect(mockContext.user_inside_platform_organization).toBe(false);
   });
 
   it('returns 401 when stream does not exist and user is unauthenticated', async () => {
