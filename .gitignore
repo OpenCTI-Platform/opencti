@@ -28,3 +28,6 @@ venv
 
 # Copilot
 thoughts/
+
+# Snyk
+.snyk-reports
