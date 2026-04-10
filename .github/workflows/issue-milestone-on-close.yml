@@ -77,7 +77,14 @@ jobs:
               return;
             }
 
-            // ── 3. Assign the milestone ──────────────────────────────────────────
+            // ── 3. Assign the milestone (skip if one is already set) ─────────────
+            if (issue.milestone) {
+              console.log(
+                `Issue #${issue.number} already has milestone "${issue.milestone.title}" — skipping.`
+              );
+              return;
+            }
+
             await github.rest.issues.update({
               owner,
               repo,
