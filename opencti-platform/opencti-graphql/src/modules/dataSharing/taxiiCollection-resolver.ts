@@ -18,7 +18,7 @@ const taxiiCollectionResolvers: Resolvers = {
   },
   TaxiiCollection: {
     authorized_members: (taxii, _, context) => getAuthorizedMembers(context, context.user, taxii),
-    taxii_public_user: (taxii, _, context) => loadCreator(context, context.user, taxii.taxii_public_user_id ?? undefined),
+    taxii_public_user: (taxii, _, context) => taxii.taxii_public_user_id ? loadCreator(context, context.user, taxii.taxii_public_user_id) : null,
   },
   Mutation: {
     taxiiCollectionAdd: (_, { input }, context) => createTaxiiCollection(context, context.user, input),
