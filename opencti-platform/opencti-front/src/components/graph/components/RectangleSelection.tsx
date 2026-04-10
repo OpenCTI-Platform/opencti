@@ -40,14 +40,18 @@ const RectangleSelection = ({
       const graphCanvas = document.querySelector(`#${graphId} canvas`);
       if (graphCanvas) {
         const { left, top } = graphCanvas.getBoundingClientRect();
+        // The library provides page coordinates (pageX/pageY) but
+        // getBoundingClientRect() is viewport-relative; account for scroll.
+        const offsetLeft = left + window.scrollX;
+        const offsetTop = top + window.scrollY;
         setCoords({
           origin: [
-            Math.min(selectionCoords.origin[0], selectionCoords.target[0]) - left,
-            Math.min(selectionCoords.origin[1], selectionCoords.target[1]) - top,
+            Math.min(selectionCoords.origin[0], selectionCoords.target[0]) - offsetLeft,
+            Math.min(selectionCoords.origin[1], selectionCoords.target[1]) - offsetTop,
           ],
           target: [
-            Math.max(selectionCoords.origin[0], selectionCoords.target[0]) - left,
-            Math.max(selectionCoords.origin[1], selectionCoords.target[1]) - top,
+            Math.max(selectionCoords.origin[0], selectionCoords.target[0]) - offsetLeft,
+            Math.max(selectionCoords.origin[1], selectionCoords.target[1]) - offsetTop,
           ],
         });
       }
@@ -59,17 +63,42 @@ const RectangleSelection = ({
     setCoords(null);
   };
 
+  const overlayColor = theme.palette.background?.accent
+    ? hexToRGB(theme.palette.background.accent, 0.3)
+    : theme.palette.warn.main;
+  const borderColor = theme.palette.warn.main;
+
   return (
     <RectangleSelectionLib
       style={{
-        backgroundColor: theme.palette.background?.accent ? hexToRGB(theme.palette.background.accent, 0.3) : theme.palette.warn.main,
-        borderColor: theme.palette.warn.main,
+        // Hide the library's built-in selection box: it uses pageX/pageY as
+        // CSS left/top which is incorrect when the graph is not at the
+        // document origin (e.g. behind a side-nav or top-bar).
+        display: 'none',
       }}
       disabled={disabled}
       onMouseUp={sendState}
       onSelect={updateStateOnSelect}
     >
-      {children}
+      <div style={{ position: 'relative', height: 'inherit', width: 'inherit' }}>
+        {/* Render our own overlay positioned relative to the graph container */}
+        {coords && (
+          <div
+            style={{
+              position: 'absolute',
+              left: coords.origin[0],
+              top: coords.origin[1],
+              width: coords.target[0] - coords.origin[0],
+              height: coords.target[1] - coords.origin[1],
+              backgroundColor: overlayColor,
+              border: `1px dashed ${borderColor}`,
+              pointerEvents: 'none',
+              zIndex: 10,
+            }}
+          />
+        )}
+        {children}
+      </div>
     </RectangleSelectionLib>
   );
 };
