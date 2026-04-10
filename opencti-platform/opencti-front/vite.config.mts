@@ -205,6 +205,10 @@ export default defineConfig({
 
   optimizeDeps: {
     include: depsToOptimize,
+    // Also scan the Monaco worker wrappers so their node_modules deps
+    // (monaco-editor, monaco-graphql) are discovered in the first pass
+    // instead of on-the-fly when the Playground page is visited.
+    entries: ['index.html', 'src/public/workers/*.worker.js'],
     exclude: ['@filigran/chatbot', '@filigran/chatbot-legacy']
   },
 
