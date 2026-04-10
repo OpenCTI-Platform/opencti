@@ -54,6 +54,13 @@ install_deps() {
   pip install -r requirements.txt
 }
 
+check_snyk_auth() {
+  log "Checking Snyk authentication..."
+  if ! yarn dlx snyk whoami &>/dev/null; then
+    err "Snyk is not authenticated. Please run 'snyk auth' first and try again."
+  fi
+}
+
 run_snyk() {
   log "Running Snyk scan..."
   cd "$REPO_ROOT"
@@ -81,6 +88,7 @@ REPORT_FILE="${REPO_ROOT}/.snyk-reports/snyk-${BRANCH//\//-}-$(git rev-parse --s
 
 [ "$SKIP_INSTALL" = true ] && log "Skipping dependency installation (--skip-install)" || install_deps
 
+check_snyk_auth
 run_snyk
 
 [ "$STASHED" = true ] && { log "Restoring stashed changes..."; git stash pop; }
