@@ -78,6 +78,57 @@ import { CITY_INSTANCE, EXPECTED_CITY } from './instances-stix-2-0-converter/loc
 import { POSITION_INSTANCE, EXPECTED_POSITION } from './instances-stix-2-0-converter/locations/position';
 import { ADMINISTRATIVE_AREA_INSTANCE, EXPECTED_ADMINISTRATIVE_AREA } from './instances-stix-2-0-converter/locations/administrative-area';
 import { convertAdministrativeAreaToStix_2_0 } from '../../../src/modules/administrativeArea/administrativeArea-converter';
+import { IPV4_INSTANCE, EXPECTED_IPV4 } from './instances-stix-2-0-converter/observables/ipv4-addr';
+import { DOMAIN_NAME_INSTANCE, EXPECTED_DOMAIN_NAME } from './instances-stix-2-0-converter/observables/domain-name';
+import { URL_INSTANCE, EXPECTED_URL } from './instances-stix-2-0-converter/observables/url';
+import { EMAIL_ADDR_INSTANCE, EXPECTED_EMAIL_ADDR } from './instances-stix-2-0-converter/observables/email-addr';
+import { FILE_INSTANCE, EXPECTED_FILE } from './instances-stix-2-0-converter/observables/file';
+import { AUTONOMOUS_SYSTEM_INSTANCE, EXPECTED_AUTONOMOUS_SYSTEM } from './instances-stix-2-0-converter/observables/autonomous-system';
+import {
+  convertIPv4AddressToStix,
+  convertDomainNameToStix,
+  convertURLToStix,
+  convertEmailAddressToStix,
+  convertFileToStix,
+  convertAutonomousSystemToStix,
+  convertIPv6AddressToStix,
+  convertMacAddressToStix,
+  convertMutexToStix,
+  convertDirectoryToStix,
+  convertSoftwareToStix,
+  convertUserAccountToStix,
+  convertNetworkTrafficToStix,
+  convertProcessToStix,
+  convertArtifactToStix,
+  convertX509CertificateToStix,
+  convertHostnameToStix,
+  convertCryptocurrencyWalletToStix,
+  convertBankAccountToStix,
+  convertPhoneNumberToStix,
+  convertPersonaToStix,
+} from '../../../src/database/stix-2-0-converter';
+import { IPV6_INSTANCE, EXPECTED_IPV6 } from './instances-stix-2-0-converter/observables/ipv6-addr';
+import { MAC_ADDR_INSTANCE, EXPECTED_MAC_ADDR } from './instances-stix-2-0-converter/observables/mac-addr';
+import { MUTEX_INSTANCE, EXPECTED_MUTEX } from './instances-stix-2-0-converter/observables/mutex';
+import { DIRECTORY_INSTANCE, EXPECTED_DIRECTORY } from './instances-stix-2-0-converter/observables/directory';
+import { SOFTWARE_INSTANCE, EXPECTED_SOFTWARE } from './instances-stix-2-0-converter/observables/software';
+import { USER_ACCOUNT_INSTANCE, EXPECTED_USER_ACCOUNT } from './instances-stix-2-0-converter/observables/user-account';
+import { NETWORK_TRAFFIC_INSTANCE, EXPECTED_NETWORK_TRAFFIC } from './instances-stix-2-0-converter/observables/network-traffic';
+import { PROCESS_INSTANCE, EXPECTED_PROCESS } from './instances-stix-2-0-converter/observables/process';
+import { ARTIFACT_INSTANCE, EXPECTED_ARTIFACT } from './instances-stix-2-0-converter/observables/artifact';
+import { X509_INSTANCE, EXPECTED_X509 } from './instances-stix-2-0-converter/observables/x509-certificate';
+import {
+  HOSTNAME_INSTANCE,
+  EXPECTED_HOSTNAME,
+  CRYPTOCURRENCY_WALLET_INSTANCE,
+  EXPECTED_CRYPTOCURRENCY_WALLET,
+  BANK_ACCOUNT_INSTANCE,
+  EXPECTED_BANK_ACCOUNT,
+  PHONE_NUMBER_INSTANCE,
+  EXPECTED_PHONE_NUMBER,
+  PERSONA_INSTANCE,
+  EXPECTED_PERSONA,
+} from './instances-stix-2-0-converter/observables/custom-observables';
 
 describe('Stix 2.0 opencti converter', () => {
   // SDOs
@@ -209,6 +260,91 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Event', async () => {
     const result = convertEventToStix_2_0(EVENT_INSTANCE);
     expect(result).toEqual(EXPECTED_EVENT);
+  });
+  // SCOs (Observables)
+  it('should convert IPv4 Address', async () => {
+    const result = convertIPv4AddressToStix(IPV4_INSTANCE);
+    expect(result).toEqual(EXPECTED_IPV4);
+  });
+  it('should convert Domain Name', async () => {
+    const result = convertDomainNameToStix(DOMAIN_NAME_INSTANCE);
+    expect(result).toEqual(EXPECTED_DOMAIN_NAME);
+  });
+  it('should convert URL', async () => {
+    const result = convertURLToStix(URL_INSTANCE);
+    expect(result).toEqual(EXPECTED_URL);
+  });
+  it('should convert Email Address', async () => {
+    const result = convertEmailAddressToStix(EMAIL_ADDR_INSTANCE);
+    expect(result).toEqual(EXPECTED_EMAIL_ADDR);
+  });
+  it('should convert File', async () => {
+    const result = convertFileToStix(FILE_INSTANCE);
+    expect(result).toEqual(EXPECTED_FILE);
+  });
+  it('should convert Autonomous System', async () => {
+    const result = convertAutonomousSystemToStix(AUTONOMOUS_SYSTEM_INSTANCE);
+    expect(result).toEqual(EXPECTED_AUTONOMOUS_SYSTEM);
+  });
+  it('should convert IPv6 Address', async () => {
+    const result = convertIPv6AddressToStix(IPV6_INSTANCE);
+    expect(result).toEqual(EXPECTED_IPV6);
+  });
+  it('should convert Mac Address', async () => {
+    const result = convertMacAddressToStix(MAC_ADDR_INSTANCE);
+    expect(result).toEqual(EXPECTED_MAC_ADDR);
+  });
+  it('should convert Mutex', async () => {
+    const result = convertMutexToStix(MUTEX_INSTANCE);
+    expect(result).toEqual(EXPECTED_MUTEX);
+  });
+  it('should convert Directory', async () => {
+    const result = convertDirectoryToStix(DIRECTORY_INSTANCE);
+    expect(result).toEqual(EXPECTED_DIRECTORY);
+  });
+  it('should convert Software', async () => {
+    const result = convertSoftwareToStix(SOFTWARE_INSTANCE);
+    expect(result).toEqual(EXPECTED_SOFTWARE);
+  });
+  it('should convert User Account', async () => {
+    const result = convertUserAccountToStix(USER_ACCOUNT_INSTANCE);
+    expect(result).toEqual(EXPECTED_USER_ACCOUNT);
+  });
+  it('should convert Network Traffic', async () => {
+    const result = convertNetworkTrafficToStix(NETWORK_TRAFFIC_INSTANCE);
+    expect(result).toEqual(EXPECTED_NETWORK_TRAFFIC);
+  });
+  it('should convert Process', async () => {
+    const result = convertProcessToStix(PROCESS_INSTANCE);
+    expect(result).toEqual(EXPECTED_PROCESS);
+  });
+  it('should convert Artifact', async () => {
+    const result = convertArtifactToStix(ARTIFACT_INSTANCE);
+    expect(result).toEqual(EXPECTED_ARTIFACT);
+  });
+  it('should convert X509 Certificate', async () => {
+    const result = convertX509CertificateToStix(X509_INSTANCE);
+    expect(result).toEqual(EXPECTED_X509);
+  });
+  it('should convert Hostname', async () => {
+    const result = convertHostnameToStix(HOSTNAME_INSTANCE);
+    expect(result).toEqual(EXPECTED_HOSTNAME);
+  });
+  it('should convert Cryptocurrency Wallet', async () => {
+    const result = convertCryptocurrencyWalletToStix(CRYPTOCURRENCY_WALLET_INSTANCE);
+    expect(result).toEqual(EXPECTED_CRYPTOCURRENCY_WALLET);
+  });
+  it('should convert Bank Account', async () => {
+    const result = convertBankAccountToStix(BANK_ACCOUNT_INSTANCE);
+    expect(result).toEqual(EXPECTED_BANK_ACCOUNT);
+  });
+  it('should convert Phone Number', async () => {
+    const result = convertPhoneNumberToStix(PHONE_NUMBER_INSTANCE);
+    expect(result).toEqual(EXPECTED_PHONE_NUMBER);
+  });
+  it('should convert Persona', async () => {
+    const result = convertPersonaToStix(PERSONA_INSTANCE);
+    expect(result).toEqual(EXPECTED_PERSONA);
   });
   // Locations
   it('should convert Region', async () => {

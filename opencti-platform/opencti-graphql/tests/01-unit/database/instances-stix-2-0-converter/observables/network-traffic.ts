@@ -1,0 +1,45 @@
+import type { StoreCyberObservable } from '../../../../../src/types/store';
+
+export const NETWORK_TRAFFIC_INSTANCE = {
+  id: '10000000-0000-4000-8000-000000000036',
+  standard_id: 'network-traffic--20000000-0000-4000-8000-000000000036',
+  entity_type: 'Network-Traffic',
+  defanged: false,
+  start: '2026-01-01T00:00:00.000Z',
+  end: '2026-01-01T01:00:00.000Z',
+  is_active: false,
+  src_port: 44123,
+  dst_port: 443,
+  protocols: ['tcp', 'https'],
+  src_byte_count: 1024,
+  dst_byte_count: 4096,
+  networkSrc: { standard_id: 'ipv4-addr--aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa' },
+  networkDst: { standard_id: 'ipv4-addr--bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb' },
+  objectMarking: [],
+} as unknown as StoreCyberObservable;
+
+export const EXPECTED_NETWORK_TRAFFIC = {
+  id: 'network-traffic--20000000-0000-4000-8000-000000000036',
+  type: 'network-traffic',
+  spec_version: '2.0',
+  x_opencti_id: '10000000-0000-4000-8000-000000000036',
+  x_opencti_type: 'Network-Traffic',
+  x_opencti_granted_refs: [],
+  x_opencti_files: [],
+  defanged: false,
+  object_marking_refs: [],
+  x_opencti_labels: [],
+  x_opencti_external_references: [],
+  start: '2026-01-01T00:00:00.000Z',
+  end: '2026-01-01T01:00:00.000Z',
+  is_active: false,
+  src_ref: 'ipv4-addr--aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  dst_ref: 'ipv4-addr--bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+  src_port: 44123,
+  dst_port: 443,
+  protocols: ['tcp', 'https'],
+  src_byte_count: 1024,
+  dst_byte_count: 4096,
+  encapsulates_refs: [],
+};
+
