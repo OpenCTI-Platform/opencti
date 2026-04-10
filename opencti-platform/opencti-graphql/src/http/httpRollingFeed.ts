@@ -8,6 +8,7 @@ import { isUserHasCapability, isUserInPlatformOrganization, SYSTEM_USER } from '
 import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import type { BasicStoreSettings } from '../types/settings';
 import { findById as findFeed } from '../modules/dataSharing/feed-domain';
 import { fullEntitiesOrRelationsList } from '../database/middleware';
 import { minutesAgo } from '../utils/format';
@@ -312,7 +313,7 @@ const initHttpRollingFeeds = (app: Express.Application) => {
       // User is available or feed is public
       const user = await resolveUserForFeed(context, feed);
       if (feed.feed_public) {
-        const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+        const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
         context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
       }
       const filters = feed.filters ? JSON.parse(feed.filters) : undefined;
