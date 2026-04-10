@@ -6,6 +6,7 @@ vi.mock('../../../../src/http/httpAuthenticatedContext', () => ({
 }));
 vi.mock('../../../../src/database/cache', () => ({
   getEntitiesListFromCache: vi.fn(),
+  getEntityFromCache: vi.fn(),
 }));
 vi.mock('../../../../src/modules/dataSharing/dataSharing-utils', () => ({
   resolvePublicUser: vi.fn(),
@@ -18,8 +19,9 @@ vi.mock('../../../../src/utils/access', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../../src/utils/access')>();
   return {
     ...actual,
-    executionContext: vi.fn(() => ({ user: null })),
+    executionContext: vi.fn(() => ({ user: null, user_inside_platform_organization: false })),
     isUserHasCapability: vi.fn(() => true),
+    isUserInPlatformOrganization: vi.fn(() => false),
   };
 });
 vi.mock('../../../../src/config/conf', async () => {
@@ -41,7 +43,7 @@ vi.mock('../../../../src/schema/identifier', async (importOriginal) => {
 });
 
 import { createAuthenticatedContext } from '../../../../src/http/httpAuthenticatedContext';
-import { getEntitiesListFromCache } from '../../../../src/database/cache';
+import { getEntitiesListFromCache, getEntityFromCache } from '../../../../src/database/cache';
 import { resolvePublicUser } from '../../../../src/modules/dataSharing/dataSharing-utils';
 import { findById as findTaxiiCollection } from '../../../../src/modules/dataSharing/taxiiCollection-domain';
 import { authenticateForPublic } from '../../../../src/graphql/sseMiddleware.js';
@@ -194,15 +196,17 @@ describe('extractUserAndCollection middleware helper (TAXII)', () => {
     vi.clearAllMocks();
   });
 
-  it('returns public user and collection for a public taxii collection', async () => {
+  it('returns context, public user and collection for a public taxii collection', async () => {
     vi.mocked(findTaxiiCollection).mockResolvedValue(MOCK_TAXII_COLLECTION as any);
     vi.mocked(resolvePublicUser).mockResolvedValue(MOCK_PUBLIC_USER as any);
+    vi.mocked(getEntityFromCache).mockResolvedValue({ platform_organization: null } as any);
 
     const req = makeMockReq();
     const res = makeMockRes();
 
     const result = await extractUserAndCollection(req, res, 'taxii-1');
 
+    expect(result.context).toBeDefined();
     expect(result.user).toBe(MOCK_PUBLIC_USER);
     expect(result.collection).toBe(MOCK_TAXII_COLLECTION);
   });
