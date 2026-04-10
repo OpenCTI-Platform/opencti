@@ -5,24 +5,29 @@
  * features (autocompletion, validation, hover). Monaco must know how to
  * instantiate these workers via `globalThis.MonacoEnvironment.getWorker`.
  *
- * The wrapper `.js` files live in project source (not node_modules) so that
- * Vite's `?worker` plugin can fully control bundling and module resolution,
- * avoiding the esbuild `optimizeDeps` issue with `?worker` suffixes.
+ * Uses the `new Worker(new URL(...))` pattern which Vite handles natively
+ * in both dev and production, without the `?worker` suffix that trips up
+ * esbuild's dependency scanner.
  *
  * This module MUST be imported before any GraphiQL / Monaco code runs.
  */
-import EditorWorker from './editor.worker.js?worker';
-import JsonWorker from './json.worker.js?worker';
-import GraphQLWorker from './graphql.worker.js?worker';
-
 window.MonacoEnvironment = {
   getWorker(_workerId: string, label: string) {
     if (label === 'json') {
-      return new JsonWorker();
+      return new Worker(
+        new URL('./json.worker.js', import.meta.url),
+        { type: 'module' },
+      );
     }
     if (label === 'graphql') {
-      return new GraphQLWorker();
+      return new Worker(
+        new URL('./graphql.worker.js', import.meta.url),
+        { type: 'module' },
+      );
     }
-    return new EditorWorker();
+    return new Worker(
+      new URL('./editor.worker.js', import.meta.url),
+      { type: 'module' },
+    );
   },
 };
