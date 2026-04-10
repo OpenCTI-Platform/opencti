@@ -255,10 +255,10 @@ describe('resolveUserForFeed helper', () => {
     vi.clearAllMocks();
   });
 
-  it('returns authenticated user when context.user is set', async () => {
+  it('returns authenticated user when context.user is set and feed is private', async () => {
     const mockUser = { id: 'auth-user', user_email: 'auth@test.com' } as any;
     const context = { user: mockUser } as any;
-    const feed = { feed_public_user_id: 'public-id' } as any;
+    const feed = { feed_public: false, feed_public_user_id: undefined } as any;
 
     const result = await resolveUserForFeed(context, feed);
 
@@ -266,7 +266,21 @@ describe('resolveUserForFeed helper', () => {
     expect(resolvePublicUser).not.toHaveBeenCalled();
   });
 
-  it('calls resolvePublicUser when context.user is null (public feed)', async () => {
+  it('calls resolvePublicUser for a public feed even when an authenticated user is in context (admin session)', async () => {
+    // Admin is authenticated but the feed is public — the public user must always win.
+    const adminUser = { id: 'admin-id', user_email: 'admin@test.com' } as any;
+    vi.mocked(resolvePublicUser).mockResolvedValue({ id: 'public-user' } as any);
+    const context = { user: adminUser } as any;
+    const feed = { feed_public: true, feed_public_user_id: 'public-id' } as any;
+
+    const result = await resolveUserForFeed(context, feed);
+
+    expect(resolvePublicUser).toHaveBeenCalledWith(context, 'public-id');
+    expect(result).toEqual({ id: 'public-user' });
+    expect(result).not.toBe(adminUser);
+  });
+
+  it('calls resolvePublicUser when context.user is null (public feed, no session)', async () => {
     vi.mocked(resolvePublicUser).mockResolvedValue({ id: 'public-user' } as any);
     const context = { user: null } as any;
     const feed = { feed_public: true, feed_public_user_id: 'public-id' } as any;
