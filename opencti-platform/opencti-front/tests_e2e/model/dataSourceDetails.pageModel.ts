@@ -2,9 +2,11 @@ import { Page } from '@playwright/test';
 import SDOTabs from './SDOTabs.pageModel';
 
 export default class DataSourceDetailsPage {
-  tabs = new SDOTabs(this.page);
+  tabs: SDOTabs;
 
-  constructor(private page: Page) {}
+  constructor(private page: Page) {
+    this.tabs = new SDOTabs(this.page);
+  }
 
   getPage() {
     return this.page.getByTestId('data-source-details-page');
