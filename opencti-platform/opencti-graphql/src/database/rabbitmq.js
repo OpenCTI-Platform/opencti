@@ -475,8 +475,8 @@ export const send = async (exchangeName, routingKey, message) => {
 export const metrics = async (context, user) => {
   const metricApi = async () => {
     const httpClient = await amqpHttpClient();
-    const overview = await httpClient.get('/api/overview').then((response) => response.data);
-    const queues = await httpClient.get(`/api/queues${VHOST_PATH}`).then((response) => response.data);
+    const overview = await httpClient.get('/api/overview', { timeout: 5000 }).then((response) => response.data);
+    const queues = await httpClient.get(`/api/queues${VHOST_PATH}`, { timeout: 5000 }).then((response) => response.data);
     // Compute number of push queues
     const platformQueues = queues.filter((q) => q.name.startsWith(RABBIT_QUEUE_PREFIX));
     const pushQueues = platformQueues.filter((q) => q.name.startsWith(`${RABBIT_QUEUE_PREFIX}push_`) && q.consumers > 0);
