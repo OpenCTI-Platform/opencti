@@ -508,16 +508,16 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
             settings={settings}
             activeTheme={activeTheme}
           >
-          <ConnectedIntlProvider settings={settings}>
-            <AppDataProvider
-              isPublicRoute={false}
-              metricsDefinition={metricsDefinition}
-            >
-              <AnalyticsProvider instance={Analytics(platformAnalyticsConfiguration)}>
-                <Index settings={settings} />
-              </AnalyticsProvider>
-            </AppDataProvider>
-          </ConnectedIntlProvider>
+            <ConnectedIntlProvider settings={settings}>
+              <AppDataProvider
+                isPublicRoute={false}
+                metricsDefinition={metricsDefinition}
+              >
+                <AnalyticsProvider instance={Analytics(platformAnalyticsConfiguration)}>
+                  <Index settings={settings} />
+                </AnalyticsProvider>
+              </AppDataProvider>
+            </ConnectedIntlProvider>
           </ConnectedThemeProvider>
         </StyledEngineProvider>
       </ExportThemeProvider>

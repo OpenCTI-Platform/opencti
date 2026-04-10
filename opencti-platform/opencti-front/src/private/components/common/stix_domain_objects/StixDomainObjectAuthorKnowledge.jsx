@@ -150,172 +150,172 @@ const StixDomainObjectAuthorKnowledge = ({ t, fsd, n, classes, stixDomainObjectI
     <div>
       <Grid container={true} spacing={3}>
         <Grid item xs={4}>
-            <Card
-              variant="outlined"
-              classes={{ root: classes.card }}
-              style={{ height: 120 }}
-            >
-              <QueryRenderer
-                query={stixDomainObjectAuthorKnowledgeReportsNumberQuery}
-                variables={reportsNumberVariables}
-                render={({ props }) => {
-                  if (props && props.reportsNumber) {
-                    const { total } = props.reportsNumber;
-                    const difference = total - props.reportsNumber.count;
-                    return (
-                      <CardContent>
-                        <div className={classes.title}>
-                          {t('Total reports')}
-                        </div>
-                        <div className={classes.number}>{n(total)}</div>
-                        <ItemNumberDifference difference={difference} />
-                        <div className={classes.icon}>
-                          <DescriptionOutlined
-                            color="inherit"
-                            fontSize="large"
-                          />
-                        </div>
-                      </CardContent>
-                    );
-                  }
+          <Card
+            variant="outlined"
+            classes={{ root: classes.card }}
+            style={{ height: 120 }}
+          >
+            <QueryRenderer
+              query={stixDomainObjectAuthorKnowledgeReportsNumberQuery}
+              variables={reportsNumberVariables}
+              render={({ props }) => {
+                if (props && props.reportsNumber) {
+                  const { total } = props.reportsNumber;
+                  const difference = total - props.reportsNumber.count;
                   return (
-                    <div style={{ textAlign: 'center', paddingTop: 35 }}>
-                      <CircularProgress size={40} thickness={2} />
-                    </div>
+                    <CardContent>
+                      <div className={classes.title}>
+                        {t('Total reports')}
+                      </div>
+                      <div className={classes.number}>{n(total)}</div>
+                      <ItemNumberDifference difference={difference} />
+                      <div className={classes.icon}>
+                        <DescriptionOutlined
+                          color="inherit"
+                          fontSize="large"
+                        />
+                      </div>
+                    </CardContent>
                   );
-                }}
-              />
-            </Card>
-          </Grid>
-          <Grid item xs={4}>
-            <Card
-              variant="outlined"
-              classes={{ root: classes.card }}
-              style={{ height: 120 }}
-            >
-              <QueryRenderer
-                query={
-                  stixDomainObjectAuthorKnowledgeStixCoreRelationshipsNumberQuery
                 }
-                variables={stixCoreRelationshipsObservablesVariables}
-                render={({ props }) => {
-                  if (props && props.stixCoreRelationshipsNumber) {
-                    const { total } = props.stixCoreRelationshipsNumber;
-                    const difference = total - props.stixCoreRelationshipsNumber.count;
-                    return (
-                      <CardContent>
-                        <div className={classes.title}>
-                          {t('Total observables')}
-                        </div>
-                        <div className={classes.number}>{n(total)}</div>
-                        <ItemNumberDifference difference={difference} />
-                        <div className={classes.icon}>
-                          <HexagonMultipleOutline
-                            color="inherit"
-                            fontSize="large"
-                          />
-                        </div>
-                      </CardContent>
-                    );
-                  }
-                  return (
-                    <div style={{ textAlign: 'center', paddingTop: 35 }}>
-                      <CircularProgress size={40} thickness={2} />
-                    </div>
-                  );
-                }}
-              />
-            </Card>
-          </Grid>
-          <Grid item xs={4}>
-            <Card
-              variant="outlined"
-              classes={{ root: classes.card }}
-              style={{ height: 120 }}
-            >
-              <QueryRenderer
-                query={
-                  stixDomainObjectAuthorKnowledgeStixCoreRelationshipsNumberQuery
-                }
-                variables={stixCoreRelationshipsRelationsVariables}
-                render={({ props }) => {
-                  if (props && props.stixCoreRelationshipsNumber) {
-                    const { total } = props.stixCoreRelationshipsNumber;
-                    const difference = total - props.stixCoreRelationshipsNumber.count;
-                    return (
-                      <CardContent>
-                        <div className={classes.title}>
-                          {t('Total relations')}
-                        </div>
-                        <div className={classes.number}>{n(total)}</div>
-                        <ItemNumberDifference difference={difference} />
-                        <div className={classes.icon}>
-                          <DeviceHubOutlined color="inherit" fontSize="large" />
-                        </div>
-                      </CardContent>
-                    );
-                  }
-                  return (
-                    <div style={{ textAlign: 'center', paddingTop: 35 }}>
-                      <CircularProgress size={40} thickness={2} />
-                    </div>
-                  );
-                }}
-              />
-            </Card>
-          </Grid>
+                return (
+                  <div style={{ textAlign: 'center', paddingTop: 35 }}>
+                    <CircularProgress size={40} thickness={2} />
+                  </div>
+                );
+              }}
+            />
+          </Card>
         </Grid>
-        <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-          <Grid item xs={12}>
-            <Typography variant="h4" gutterBottom={true}>
-              {t('Created entities')}
-            </Typography>
-            <Paper
-              classes={{ root: classes.paper }}
-              variant="outlined"
-              style={{ height: 300 }}
-            >
-              <QueryRenderer
-                query={
-                  stixDomainObjectAuthorKnowledgeStixDomainObjectsTimeSeriesQuery
+        <Grid item xs={4}>
+          <Card
+            variant="outlined"
+            classes={{ root: classes.card }}
+            style={{ height: 120 }}
+          >
+            <QueryRenderer
+              query={
+                stixDomainObjectAuthorKnowledgeStixCoreRelationshipsNumberQuery
+              }
+              variables={stixCoreRelationshipsObservablesVariables}
+              render={({ props }) => {
+                if (props && props.stixCoreRelationshipsNumber) {
+                  const { total } = props.stixCoreRelationshipsNumber;
+                  const difference = total - props.stixCoreRelationshipsNumber.count;
+                  return (
+                    <CardContent>
+                      <div className={classes.title}>
+                        {t('Total observables')}
+                      </div>
+                      <div className={classes.number}>{n(total)}</div>
+                      <ItemNumberDifference difference={difference} />
+                      <div className={classes.icon}>
+                        <HexagonMultipleOutline
+                          color="inherit"
+                          fontSize="large"
+                        />
+                      </div>
+                    </CardContent>
+                  );
                 }
-                variables={timeSeriesVariables}
-                render={({ props }) => {
-                  if (props && props.stixDomainObjectsTimeSeries) {
-                    const chartData = props.stixDomainObjectsTimeSeries.map(
-                      (entry) => ({
-                        x: new Date(entry.date),
-                        y: entry.value,
-                      }),
-                    );
-                    return (
-                      <Chart
-                        options={areaChartOptions(
-                          theme,
-                          true,
-                          fsd,
-                          simpleNumberFormat,
-                          undefined,
-                        )}
-                        series={[
-                          {
-                            name: t('Number of reports'),
-                            data: chartData,
-                          },
-                        ]}
-                        type="area"
-                        width="100%"
-                        height="100%"
-                      />
-                    );
-                  }
-                  return <Loader variant="inElement" />;
-                }}
-              />
-            </Paper>
-          </Grid>
+                return (
+                  <div style={{ textAlign: 'center', paddingTop: 35 }}>
+                    <CircularProgress size={40} thickness={2} />
+                  </div>
+                );
+              }}
+            />
+          </Card>
         </Grid>
-      </div>
+        <Grid item xs={4}>
+          <Card
+            variant="outlined"
+            classes={{ root: classes.card }}
+            style={{ height: 120 }}
+          >
+            <QueryRenderer
+              query={
+                stixDomainObjectAuthorKnowledgeStixCoreRelationshipsNumberQuery
+              }
+              variables={stixCoreRelationshipsRelationsVariables}
+              render={({ props }) => {
+                if (props && props.stixCoreRelationshipsNumber) {
+                  const { total } = props.stixCoreRelationshipsNumber;
+                  const difference = total - props.stixCoreRelationshipsNumber.count;
+                  return (
+                    <CardContent>
+                      <div className={classes.title}>
+                        {t('Total relations')}
+                      </div>
+                      <div className={classes.number}>{n(total)}</div>
+                      <ItemNumberDifference difference={difference} />
+                      <div className={classes.icon}>
+                        <DeviceHubOutlined color="inherit" fontSize="large" />
+                      </div>
+                    </CardContent>
+                  );
+                }
+                return (
+                  <div style={{ textAlign: 'center', paddingTop: 35 }}>
+                    <CircularProgress size={40} thickness={2} />
+                  </div>
+                );
+              }}
+            />
+          </Card>
+        </Grid>
+      </Grid>
+      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+        <Grid item xs={12}>
+          <Typography variant="h4" gutterBottom={true}>
+            {t('Created entities')}
+          </Typography>
+          <Paper
+            classes={{ root: classes.paper }}
+            variant="outlined"
+            style={{ height: 300 }}
+          >
+            <QueryRenderer
+              query={
+                stixDomainObjectAuthorKnowledgeStixDomainObjectsTimeSeriesQuery
+              }
+              variables={timeSeriesVariables}
+              render={({ props }) => {
+                if (props && props.stixDomainObjectsTimeSeries) {
+                  const chartData = props.stixDomainObjectsTimeSeries.map(
+                    (entry) => ({
+                      x: new Date(entry.date),
+                      y: entry.value,
+                    }),
+                  );
+                  return (
+                    <Chart
+                      options={areaChartOptions(
+                        theme,
+                        true,
+                        fsd,
+                        simpleNumberFormat,
+                        undefined,
+                      )}
+                      series={[
+                        {
+                          name: t('Number of reports'),
+                          data: chartData,
+                        },
+                      ]}
+                      type="area"
+                      width="100%"
+                      height="100%"
+                    />
+                  );
+                }
+                return <Loader variant="inElement" />;
+              }}
+            />
+          </Paper>
+        </Grid>
+      </Grid>
+    </div>
   );
 };
 

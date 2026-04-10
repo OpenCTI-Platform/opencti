@@ -98,7 +98,6 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
   const { exportTheme } = useExportTheme();
   const themeToUse = exportTheme ?? activeTheme ?? settings.platform_theme;
 
-
   const muiTheme = useMemo(() => {
     const appTheme: AppThemeType = {
       name: themeToUse?.name ?? defaultTheme.name,
@@ -114,7 +113,7 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
       theme_text_color: themeToUse?.theme_text_color ?? defaultTheme.theme_text_color,
     };
     return createTheme(themeBuilder(appTheme) as ThemeOptions);
-  }, [themeToUse?.id]);
+  }, [themeToUse]);
 
   useDocumentThemeModifier(themeToUse?.name ?? defaultTheme.name);
 
