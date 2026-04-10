@@ -1240,4 +1240,3 @@ export const convertIMSIToStix = (instance: StoreCyberObservable): SCO.StixIMSI 
     external_references: buildExternalReferences(instance),
   };
 };
-
