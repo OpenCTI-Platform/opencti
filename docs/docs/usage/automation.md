@@ -453,6 +453,22 @@ It will allow you to continue only if some specific conditions are met.
 - No-match: if none of the entity/observable contained in the bundle passes the matching condition, then the STIX bundle will follow the **no-match** route.
 - Out: if at least one of the entity/observable contained in the bundle passes the matching condition, then the STIX bundle will follow the **out** route.
 
+### Security coverage
+
+Will create a new security coverage for the entities (with compatible types) contained in the received STIX 2.1 bundle and send out the modified bundle. The bundle will contain the initial entities plus the created security coverages.
+
+By default, creation is applied for the entity triggering the playbook. You can change this behavior with the following options:
+
+- all elements in the bundle (elements that might result from enrichment for example)
+- all elements except the entity triggering the playbook
+
+![Enroll entity in playbook](assets/playbook_select_bundle_scope.png)
+
+**Specificities of the component**
+
+**Operations filtering:**
+You have the possibility to add filters at the component level. The elements in the bundle will be filtered so only matching elements will be concerned by the operations of the component. This filtering has no impact on the output of the component, the bundle elements remain the same, they are only filtered to determine if the operations should be applied or not.
+
 ## Enroll manually an entity into a playbook
 
 You can enroll individual entities in playbooks by using the action "Enroll in playbook" from the entity details view.
