@@ -93,7 +93,7 @@ export const PLAYBOOK_SECURITY_COVERAGE_COMPONENT: PlaybookComponent<SecurityCov
     } = playbookNode.configuration;
 
     const inScopeElements = bundle.objects.filter((object) => isBundleElementInScope(object, applyToElements, dataInstanceId));
-    const elementsToApply = (await filterBundleElements(context, inScopeElements, applyWithFilters));
+    const elementsToApply = await filterBundleElements(context, inScopeElements, applyWithFilters);
 
     for (let index = 0; index < elementsToApply.length; index += 1) {
       const element = elementsToApply[index] as StixDomainObject;
