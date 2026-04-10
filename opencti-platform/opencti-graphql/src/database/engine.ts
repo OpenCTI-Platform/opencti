@@ -987,34 +987,44 @@ const elCreateLifecyclePolicy = async () => {
       throw DatabaseError('Creating lifecycle policy fail', { cause: e });
     });
   } else {
-    await engine.transport.request({
-      method: 'PUT',
-      path: `_plugins/_ism/policies/${ES_INDEX_PREFIX}-ism-policy`,
-      body: {
-        policy: {
-          description: 'OpenCTI ISM Policy',
-          default_state: 'hot',
-          states: [
-            {
-              name: 'hot',
-              actions: [
-                {
-                  rollover: {
-                    min_primary_shard_size: ES_PRIMARY_SHARD_SIZE,
-                    min_doc_count: ES_MAX_DOCS,
-                  },
-                }],
-              transitions: [],
-            }],
-          ism_template: {
-            index_patterns: [`${ES_INDEX_PREFIX}*`],
-            priority: 100,
-          },
+    const policyPath = `_plugins/_ism/policies/${ES_INDEX_PREFIX}-ism-policy`;
+    const policyBody = {
+      policy: {
+        description: 'OpenCTI ISM Policy',
+        default_state: 'hot',
+        states: [
+          {
+            name: 'hot',
+            actions: [
+              {
+                rollover: {
+                  min_primary_shard_size: ES_PRIMARY_SHARD_SIZE,
+                  min_doc_count: ES_MAX_DOCS,
+                },
+              }],
+            transitions: [],
+          }],
+        ism_template: {
+          index_patterns: [`${ES_INDEX_PREFIX}*`],
+          priority: 100,
         },
       },
-    }).catch((e) => {
-      throw DatabaseError('Creating lifecycle policy fail', { cause: e });
-    });
+    };
+    // Check if the ISM policy already exists before creating it
+    const existingPolicy = await engine.transport.request({
+      method: 'GET',
+      path: policyPath,
+    }).then((response) => oebp(response)).catch(() => null);
+    if (!existingPolicy) {
+      // Policy does not exist: create it
+      await engine.transport.request({
+        method: 'PUT',
+        path: policyPath,
+        body: policyBody,
+      }).catch((e) => {
+        throw DatabaseError('Creating lifecycle policy fail', { cause: e });
+      });
+    }
   }
 };
 const updateCoreSettings = async (): Promise<void> => {
