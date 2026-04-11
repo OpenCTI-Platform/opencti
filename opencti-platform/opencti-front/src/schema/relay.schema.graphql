@@ -10258,7 +10258,7 @@ type Mutation {
   synchronizerStart(id: ID!): Synchronizer
   synchronizerStop(id: ID!): Synchronizer
   synchronizerTest(input: SynchronizerAddInput): String
-  workAdd(connectorId: String!, friendlyName: String): Work!
+  workAdd(connectorId: String!, friendlyName: String, isMultiPartWork: Boolean = false): Work!
   workEdit(id: ID!): WorkEditMutations
   workDelete(connectorId: String!): Boolean
   deleteBackgroundTask(id: ID!): ID!

@@ -211,7 +211,13 @@ export const deleteWorkForSource = async (sourceId) => {
 
 export const createWork = async (context, user, connector, friendlyName, sourceId, args = {}) => {
   // Create the new work
-  const { receivedTime = null, background_task_id, fileMarkings = [], draftContext } = args;
+  const {
+    receivedTime = null,
+    background_task_id,
+    fileMarkings = [],
+    draftContext,
+  } = args;
+  const isMultiPartWork = args.isMultiPartWork === true;
   // Create the work and an initial job
   const { id: workId, timestamp } = generateWorkId(connector.internal_id);
   const work = {
@@ -234,6 +240,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     processed_time: null,
     completed_time: null,
     completed_number: 0,
+    is_multipart: isMultiPartWork,
     messages: [],
     errors: [],
     [buildRefRelationKey(RELATION_OBJECT_MARKING)]: [...fileMarkings],
@@ -245,7 +252,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
   const createdWork = await loadWorkById(context, user, workId);
   // If work was created, initialize work on redis
   if (createdWork) {
-    await redisInitializeWork(createdWork.id);
+    await redisInitializeWork(createdWork.id, isMultiPartWork);
   }
   return createdWork;
 };
@@ -271,8 +278,8 @@ const isWorkFinished = (expected, total) => total >= expected;
 export const reportExpectation = async (context, user, workId, errorData) => {
   const timestamp = now();
   await redisUpdateWorkFigures(workId);
-  const { expected, total, isProcessed } = await redisGetWorkCompletionState(workId);
-  const isComplete = isProcessed && isWorkFinished(expected, total);
+  const { expected, total, isProcessed, isMultiPartWork } = await redisGetWorkCompletionState(workId);
+  const isComplete = (!isMultiPartWork || isProcessed) && isWorkFinished(expected, total);
   // Ensure that work hasn't been deleted in the meantime
   const workAlive = await isWorkAlive(context, user, workId);
   if (!workAlive) {

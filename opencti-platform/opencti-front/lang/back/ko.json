@@ -448,6 +448,7 @@
   "Include inferences": "추론 포함",
   "Included IDs": "포함된 ID",
   "Index date": "인덱스 날짜",
+  "Indicates whether multiple calls to add_expectations are expected for this work": "이 작업에 대해 추가_기대치에 대한 여러 호출이 예상되는지 여부를 나타냅니다",
   "Indicator decay manager": "지표 감쇠 관리자",
   "Indicator filters": "표시기 필터",
   "Indicator observable types": "지표 관찰 가능 유형",
@@ -1073,3 +1074,4 @@
   "XTM One registration manager": "XTM One 등록 관리자",
   "XTM1 CGU acceptance status": "XTM1 CGU 승인 상태"
 }
+

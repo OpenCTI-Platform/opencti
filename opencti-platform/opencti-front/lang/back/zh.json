@@ -448,6 +448,7 @@
   "Include inferences": "包含推论",
   "Included IDs": "包含的 ID",
   "Index date": "索引日期",
+  "Indicates whether multiple calls to add_expectations are expected for this work": "表示该工作是否需要多次调用 add_expectations",
   "Indicator decay manager": "指标衰减管理器",
   "Indicator filters": "指标筛选器",
   "Indicator observable types": "指标观察物类型",
@@ -1073,3 +1074,4 @@
   "XTM One registration manager": "XTM One 注册管理器",
   "XTM1 CGU acceptance status": "XTM1 CGU 验收状态"
 }
+

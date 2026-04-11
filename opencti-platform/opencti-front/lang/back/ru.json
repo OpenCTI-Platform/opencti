@@ -448,6 +448,7 @@
   "Include inferences": "Включите умозаключения",
   "Included IDs": "Включенные идентификаторы",
   "Index date": "Дата индекса",
+  "Indicates whether multiple calls to add_expectations are expected for this work": "Указывает, ожидается ли несколько вызовов add_expectations для этой работы",
   "Indicator decay manager": "Менеджер по распаду индикаторов",
   "Indicator filters": "Индикаторные фильтры",
   "Indicator observable types": "Наблюдаемые типы индикаторов",
@@ -1073,3 +1074,4 @@
   "XTM One registration manager": "Менеджер регистрации XTM One",
   "XTM1 CGU acceptance status": "Статус принятия XTM1 CGU"
 }
+

@@ -497,11 +497,13 @@ export const redisGetWorkCompletionState = async (workId: string) => {
     import_processed_number: pn,
     import_expected_number: en,
     is_processed,
+    is_multipart,
   } = await redisGetWork(workId);
   const total = parseInt(pn, 10);
   const expected = parseInt(en, 10);
   const isProcessed = is_processed === 'true';
-  return { total, expected, isProcessed };
+  const isMultiPartWork = is_multipart === 'true';
+  return { total, expected, isProcessed, isMultiPartWork };
 };
 export const redisUpdateWorkFigures = async (workId: string) => {
   const timestamp = now();
@@ -524,9 +526,12 @@ export const redisUpdateActionExpectation = async (user: AuthUser, workId: strin
   });
   return workId;
 };
-export const redisInitializeWork = async (workId: string) => {
+export const redisInitializeWork = async (workId: string, isMultiPartWork: boolean) => {
   await redisTx(getClientBase(), async (tx) => {
-    await updateObjectRaw(tx, workId, { is_initialized: true });
+    await updateObjectRaw(tx, workId, {
+      is_initialized: true,
+      is_multipart: isMultiPartWork,
+    });
   });
 };
 // endregion

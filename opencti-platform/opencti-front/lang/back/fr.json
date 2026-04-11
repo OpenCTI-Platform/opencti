@@ -448,6 +448,7 @@
   "Include inferences": "Inclure les inférences",
   "Included IDs": "ID inclus",
   "Index date": "Date d'indexation",
+  "Indicates whether multiple calls to add_expectations are expected for this work": "Indique si plusieurs appels à add_expectations sont prévus pour ce travail",
   "Indicator decay manager": "Gestionnaire de la décroissance de l'indicateur",
   "Indicator filters": "Filtres indicateurs",
   "Indicator observable types": "Types d'indicateurs observables",
@@ -1073,3 +1074,4 @@
   "XTM One registration manager": "Gestionnaire d'enregistrement XTM One",
   "XTM1 CGU acceptance status": "XTM1 Statut d'acceptation des CGU"
 }
+

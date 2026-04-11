@@ -448,6 +448,7 @@
   "Include inferences": "推論を含む",
   "Included IDs": "含まれるID",
   "Index date": "添付ファイル",
+  "Indicates whether multiple calls to add_expectations are expected for this work": "この作品に複数のadd_expectationsの呼び出しが予想されるかどうかを示す。",
   "Indicator decay manager": "インジケーター・ディケイ・マネージャー",
   "Indicator filters": "インジケーターフィルター",
   "Indicator observable types": "インジケータの観測可能なタイプ",
@@ -1073,3 +1074,4 @@
   "XTM One registration manager": "XTM One登録マネージャー",
   "XTM1 CGU acceptance status": "XTM1 CGU受入状況"
 }
+
