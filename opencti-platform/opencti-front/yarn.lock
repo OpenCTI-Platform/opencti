@@ -9176,13 +9176,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-dom-parser@npm:7.0.0":
-  version: 7.0.0
-  resolution: "html-dom-parser@npm:7.0.0"
+"html-dom-parser@npm:7.0.1":
+  version: 7.0.1
+  resolution: "html-dom-parser@npm:7.0.1"
   dependencies:
     domhandler: "npm:6.0.1"
     htmlparser2: "npm:12.0.0"
-  checksum: 10c0/10db53ebd07a8488182c465f8fc121a8f6d696b47652c6c6814672a61e8e5078098d47766103de78469323b2c3f134d08c1d883c3794e6151b9f1fbc0df3ed87
+  checksum: 10c0/54e6af1fe7f6db49b1cac794489a0e219fccaac5e9927d7a771c3d3618f7c41c155cbb7cea3d0a8101b88e49180814fa0e98d47ecb8d4299ba1ddd56cc7554b2
   languageName: node
   linkType: hard
 
@@ -9209,12 +9209,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-react-parser@npm:6.0.0":
-  version: 6.0.0
-  resolution: "html-react-parser@npm:6.0.0"
+"html-react-parser@npm:6.0.1":
+  version: 6.0.1
+  resolution: "html-react-parser@npm:6.0.1"
   dependencies:
     domhandler: "npm:6.0.1"
-    html-dom-parser: "npm:7.0.0"
+    html-dom-parser: "npm:7.0.1"
     react-property: "npm:2.0.2"
     style-to-js: "npm:1.1.21"
   peerDependencies:
@@ -9223,7 +9223,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10c0/9a75142e3f84ade740212dab33a472e00ea47e07ba098f0310c3478179e1177832a20e8c9e9415e6c337d86b2be8d433f64ce3466673dddb9903d2509f7800b4
+  checksum: 10c0/4899ec0fd39da4a0a5d8564cd1c8d4b1cdf9bd3c3c87f7e09dacfe43f5f9d674f455ce86fd6f0548a26f04dc22eafe5a192f2942a4ec72a1d260b80ffe8c1ab8
   languageName: node
   linkType: hard
 
@@ -12209,7 +12209,7 @@ __metadata:
     graphiql: "npm:5.2.2"
     graphql: "npm:16.13.2"
     graphql-ws: "npm:6.0.8"
-    html-react-parser: "npm:6.0.0"
+    html-react-parser: "npm:6.0.1"
     html-to-image: "npm:1.11.13"
     html-to-pdfmake: "npm:2.5.33"
     http-proxy-middleware: "npm:3.0.5"
