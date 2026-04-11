@@ -384,9 +384,9 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
   await redisMarkWorkAsProcessed(workId);
   const params = { processed_time: now(), message };
   const { expected, total } = await redisGetWorkCompletionState(workId);
-  const isComplete = isWorkFinished(expected, total);
+  const isComplete = currentWork.import_expected_number === 0 || isWorkFinished(expected, total);
   let source = 'ctx._source["processed_time"] = params.processed_time;';
-  if (currentWork.import_expected_number === 0 || isComplete) {
+  if (isComplete) {
     params.completed_number = total && !Number.isNaN(total) ? total : 1;
     source += `ctx._source['status'] = "complete";
                ctx._source['import_expected_number'] = params.completed_number;
