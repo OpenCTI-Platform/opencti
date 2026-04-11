@@ -59,18 +59,29 @@
       "continuous": true,
       "options": {
         "cwd": "opencti-platform/opencti-graphql",
+        "command": "yarn start"
+      },
+      "metadata": {
+        "description": "Run the OpenCTI GraphQL server in development mode"
+      }
+    },
+    "dev:watch": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "cwd": "opencti-platform/opencti-graphql",
         "command": "yarn dev"
       },
       "metadata": {
         "description": "Run the OpenCTI GraphQL server with hot-reloading"
       }
     },
-    "dev:graphql": {
+    "dev:watch-with-graphql": {
       "executor": "nx:run-commands",
       "continuous": true,
       "options": {
         "cwd": "opencti-platform/opencti-graphql",
-        "command": "yarn dev:graphql"
+        "command": "yarn dev:watch-with-graphql"
       },
       "metadata": {
         "description": "Run the GraphQL server with schema hot-reloading"

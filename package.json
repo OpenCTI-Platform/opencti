@@ -7,8 +7,9 @@
   "scripts": {
     "deps": "nx run-many --tuiAutoExit --target install",
     "dev": "nx run-many --target dev",
-    "dev:graphql": "nx run-many --tuiAutoExit --target dev:graphql",
-    "dev:graphql:venv": "yarn with-python-venv yarn dev:graphql",
+    "dev:watch": "nx run-many --target dev:watch",
+    "dev:watch-with-graphql": "nx run-many --tuiAutoExit --target dev:watch-with-graphql",
+    "dev:watch-with-graphql:venv": "yarn with-python-venv yarn dev:watch-with-graphql",
     "build": "nx run-many --tuiAutoExit --target build",
     "test": "nx run-many --tuiAutoExit --target test,e2e",
     "lint": "nx run-many --tuiAutoExit --target lint",
