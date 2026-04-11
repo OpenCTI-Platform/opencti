@@ -66,8 +66,9 @@ const platformInit = async (withMarkings = true) => {
   let lock;
   try {
     const isDevelopmentMode = environment === 'development' || environment === 'dev';
+    const isHotReloadWatch = process.env.HOT_RELOAD_WATCH === 'true';
     const lockOptions = isDevelopmentMode ? {
-      retryCount: 50, // Some retries in dev mode for edge cases after force-clear
+      retryCount: isHotReloadWatch ? 300 : 50, // tolerate short overlap during watch restarts
     } : {};
     lock = await lockResources([PLATFORM_LOCK_ID], lockOptions);
     const context = executionContext('platform_initialization');

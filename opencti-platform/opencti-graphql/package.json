@@ -206,6 +206,8 @@
     "@types/xml2js": "0.4.14",
     "@vitest/coverage-v8": "4.1.9",
     "chalk": "4.1.2",
+    "chokidar": "5.0.0",
+    "esbuild": "0.28.0",
     "esbuild-plugin-copy": "2.1.1",
     "esbuild-plugin-import-glob": "0.1.1",
     "eslint": "10.5.0",
@@ -215,7 +217,6 @@
     "globals": "17.6.0",
     "graphql-tag": "2.12.7",
     "license-checker-rseidelsohn": "5.0.1",
-    "nodemon": "3.1.7",
     "typescript": "6.0.3",
     "typescript-eslint": "8.61.1",
     "vitest": "4.1.9"

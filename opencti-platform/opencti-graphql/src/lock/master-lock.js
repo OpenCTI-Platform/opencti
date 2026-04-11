@@ -12,6 +12,17 @@ const lockProcess = {
   callbacks: new Map(), // [op, { lock: fn, unlock: fn }]
 };
 
+const extractMessageKey = (msg) => {
+  if (!msg || typeof msg !== 'object') {
+    return undefined;
+  }
+  const { operation, type } = msg;
+  if (typeof operation !== 'string' || operation.length === 0 || typeof type !== 'string' || type.length === 0) {
+    return undefined;
+  }
+  return `${operation}-${type}`;
+};
+
 // -- Start the control lock manager
 export const initLockFork = () => {
   if (!USE_CHILD_LOCK) {
@@ -22,7 +33,10 @@ export const initLockFork = () => {
       execArgv: [`--max-old-space-size=${CHILD_PROCESS_MEMORY}`],
     }, { detached: false });
     lockProcess.forked.on('message', (msg) => {
-      const messageKey = `${msg.operation}-${msg.type}`;
+      const messageKey = extractMessageKey(msg);
+      if (!messageKey) {
+        return;
+      }
       if (lockProcess.callbacks.has(messageKey)) {
         lockProcess.callbacks.get(messageKey)(msg);
       } else {

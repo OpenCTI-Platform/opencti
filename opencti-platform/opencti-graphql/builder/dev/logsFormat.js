@@ -14,7 +14,7 @@ const CATEGORY_COLORS = {
   MIGRATION: chalk.yellowBright,
   SUPPORT: chalk.blueBright,
   TELEMETRY: chalk.grayBright,
-  UNKNOWN: chalk.violet,
+  UNKNOWN: chalk.hex('#EE82EE'),
 };
 
 // Format a timestamp to HH:MM:SS
@@ -35,16 +35,18 @@ function formatCategory(category) {
 
 function formatExtraFields(log) {
   const standardFields = ['category', 'environment', 'level', 'message', 'source', 'timestamp', 'version'];
-  const extraFields = Object.keys(log).filter(key => !standardFields.includes(key));
-  
+  const extraFields = Object.keys(log).filter((key) => !standardFields.includes(key));
+
   if (extraFields.length === 0) {
     return '';
   }
-  
-  const extras = extraFields.map(key => {
-    return chalk.dim(`${key}: ${JSON.stringify(log[key], null, 2)}`);
-  }).join('\n');
-  
+
+  const extras = extraFields
+    .map((key) => {
+      return chalk.dim(`${key}: ${JSON.stringify(log[key], null, 2)}`);
+    })
+    .join('\n');
+
   return `\n${extras}`;
 }
 
@@ -55,18 +57,18 @@ function formatExtraFields(log) {
 function tryFormatJsonLog(line) {
   try {
     const log = JSON.parse(line);
-    
+
     // Check if it looks like an OpenCTI log
     if (!log.timestamp || !log.message) {
       return null;
     }
-    
+
     const time = formatTime(log.timestamp);
     const level = formatLevel(log.level || 'info');
     const category = log.category ? formatCategory(log.category) : '     ';
     const message = chalk.white(log.message);
     const extras = formatExtraFields(log);
-    
+
     return `${time} ${level} ${category} ${message}${extras}`;
   } catch {
     return null;
@@ -82,7 +84,7 @@ function formatLogLine(line) {
   if (formattedJson) {
     return formattedJson;
   }
-  
+
   // Not JSON, return with basic formatting, we can add new patterns if needed
   if (line.includes('DeprecationWarning')) {
     return chalk.yellow(line);
@@ -102,8 +104,8 @@ function formatOutput(data) {
   const lines = text.split('\n');
 
   return lines
-    .filter(line => line.trim().length > 0)
-    .map(line => formatLogLine(line))
+    .filter((line) => line.trim().length > 0)
+    .map((line) => formatLogLine(line))
     .join('\n');
 }
 

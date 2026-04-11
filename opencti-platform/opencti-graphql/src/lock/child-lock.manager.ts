@@ -89,8 +89,8 @@ initializeOnlyRedisLockClient().then(() => {
     });
   } else {
     // In production, ignore signals since we're attached to parent
-  process.on('SIGTERM', () => {});
-  process.on('SIGINT', () => {});
+    process.on('SIGTERM', () => {});
+    process.on('SIGINT', () => {});
   }
 
   // Check with standard interval if the parent process is no longer running

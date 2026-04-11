@@ -5,214 +5,171 @@ const { formatOutput } = require('./logsFormat');
 const CONFIG = {
   graphql: process.argv.includes('--graphql'),
   projectRoot: path.resolve(__dirname, '..', '..'),
-  shutdownTimeout: 35000,
-  shutdownDelay: 100,
-  restartDelay: 500,
 };
 
 let initialBuildDone = false;
-let nodemonProcess = null;
+let shuttingDown = false;
+let appProcess = null;
 let esbuildProcess = null;
+let graphQLWatchProcess = null;
 
-function displayStartupMessage() {
-  console.log('\n🚀 Starting dev OpenCTI...');
-
-  if (CONFIG.graphql) {
-    console.log('• with GraphQL hot reload');
-  } else {
-    console.log('• without GraphQL hot reload');
-  }
-  console.log('');
-}
-
-function setupNodemonOutputHandlers(process) {
-  let platformShutdownResolve = null;
-  let lastOutputTime = Date.now();
-  
-  const handleOutput = (data) => {
-    const rawOutput = data.toString();
-    const formattedOutput = formatOutput(data);
-    if (formattedOutput) {
-      console.log(formattedOutput);
-    }
-    lastOutputTime = Date.now();
-
-    if (platformShutdownResolve && rawOutput.includes('Platform stopped')) {
-      setTimeout(() => platformShutdownResolve(), 500);
-    }
-  };
-  
-  process.stdout.on('data', handleOutput);
-  process.stderr.on('data', handleOutput);
-  
-  process.waitForShutdown = () => new Promise((resolve) => {
-    platformShutdownResolve = resolve;
-  });
-  
-  process.getLastOutputTime = () => lastOutputTime;
-  
-  process.on('exit', (code) => {
-    if (code !== 0 && code !== null) {
-      console.log(`\n[nodemon] exited with code ${code}`);
-    }
-  });
-}
-
-let schemaGenTimeout = null;
-let isSchemaGenerating = false;
-
-function runGraphQLBuild() {
-  // Skip if already generating
-  if (isSchemaGenerating) {
-    console.log('[WATCH] Schema generation already in progress, skipping...');
+function pipeFormattedOutput(stream, outputStream) {
+  if (!stream) {
     return;
   }
-  
-  // Debounce to avoid multiple rapid runs
-  if (schemaGenTimeout) {
-    clearTimeout(schemaGenTimeout);
-  }
-  
-  schemaGenTimeout = setTimeout(() => {
-    console.log('[WATCH] Running GraphQL schema build...');
-    isSchemaGenerating = true;
-    
-    try {
-      const schemaProcess = spawn('yarn', ['build:schema'], {
-        cwd: CONFIG.projectRoot,
-        stdio: ['inherit', 'inherit', 'inherit'],
-        shell: false,
-        env: { ...process.env }
-      });
-      
-      schemaProcess.on('exit', () => {
-        isSchemaGenerating = false;
-        console.log('[WATCH] GraphQL schema build completed');
-      });
-      
-      schemaProcess.on('error', (err) => {
-        isSchemaGenerating = false;
-        console.error('[WATCH] GraphQL build failed:', err);
-      });
-    } catch (err) {
-      isSchemaGenerating = false;
-      console.error('[WATCH] GraphQL build failed:', err);
+
+  let buffer = '';
+  stream.on('data', (chunk) => {
+    const text = `${buffer}${chunk.toString()}`;
+    const lines = text.split('\n');
+    buffer = lines.pop() || '';
+
+    if (lines.length > 0) {
+      const formatted = formatOutput(lines.join('\n'));
+      if (formatted) {
+        outputStream.write(`${formatted}\n`);
+      }
     }
-  }, 500); // Wait 500ms to batch changes
+  });
+
+  stream.on('end', () => {
+    if (buffer.trim().length > 0) {
+      const formatted = formatOutput(buffer);
+      if (formatted) {
+        outputStream.write(`${formatted}\n`);
+      }
+    }
+  });
 }
 
-function startNodemon() {
-  console.log('Starting nodemon...\n');
+function startAppWatch() {
+  if (appProcess) {
+    return;
+  }
 
-  const configPath = path.join(CONFIG.projectRoot, 'nodemon.json');
-
-  const nodemonArgs = ['--config', configPath];
-  
-  nodemonProcess = spawn('nodemon', nodemonArgs, {
+  console.log('[WATCH] Starting backend with node --watch...');
+  appProcess = spawn('node', [
+    '--watch',
+    '--watch-path=build/back.js',
+    '--watch-kill-signal=SIGTERM',
+    '--watch-preserve-output',
+    '--enable-source-maps',
+    'build/back.js',
+  ], {
     cwd: CONFIG.projectRoot,
     stdio: ['inherit', 'pipe', 'pipe'],
     shell: false,
-    detached: false
+    env: { ...process.env, NODE_ENV: 'development', HOT_RELOAD_WATCH: 'true' },
   });
-  
-  setupNodemonOutputHandlers(nodemonProcess);
-  
-  nodemonProcess.on('error', (err) => {
-    console.error('[WATCH] Failed to start nodemon:', err);
+
+  pipeFormattedOutput(appProcess.stdout, process.stdout);
+  pipeFormattedOutput(appProcess.stderr, process.stderr);
+
+  appProcess.on('exit', (code) => {
+    appProcess = null;
+    if (!shuttingDown && code !== 0 && code !== null) {
+      console.error(`[WATCH] backend process exited with code ${code}`);
+      shutdown(1);
+    }
+  });
+
+  appProcess.on('error', (err) => {
+    console.error('[WATCH] Failed to start backend process:', err);
+    shutdown(1);
   });
 }
 
 function handleEsbuildOutput(data) {
   const output = data.toString();
   process.stdout.write(output);
-  
+
   if (!initialBuildDone && output.includes('✅ Initial build complete')) {
     initialBuildDone = true;
-    startNodemon();
-  }
-  if (CONFIG.graphql) {
-    runGraphQLBuild();
+    startAppWatch();
+    startGraphQLSchemaWatch();
   }
 }
 
-function startEsbuild() {
-  esbuildProcess = spawn('node', ['builder/dev/dev.js', '--watch'], {
+function startGraphQLSchemaWatch() {
+  if (!CONFIG.graphql || graphQLWatchProcess) {
+    return;
+  }
+
+  console.log('[WATCH] Starting GraphQL schema watch...');
+
+  graphQLWatchProcess = spawn('node', ['builder/dev/graphqlSchemaWatch.js'], {
     cwd: CONFIG.projectRoot,
-    stdio: 'pipe',
+    stdio: ['inherit', 'inherit', 'inherit'],
     shell: false,
-    env: { ...process.env }
+    env: { ...process.env, NODE_ENV: 'development' },
   });
-  
-  esbuildProcess.stdout.on('data', handleEsbuildOutput);
-  esbuildProcess.stderr.on('data', (data) => process.stderr.write(data));
-  
-  esbuildProcess.on('exit', (code) => {
-    if (code !== 0 && code !== null) {
-      console.log(`\n[esbuild] exited with code ${code}`);
-      cleanup('esbuild exit');
+
+  graphQLWatchProcess.on('exit', (code) => {
+    graphQLWatchProcess = null;
+    if (!shuttingDown && code !== 0 && code !== null) {
+      console.error(`[WATCH] GraphQL schema watcher exited with code ${code}`);
+      shutdown(1);
     }
   });
-}
 
-function stopEsbuild() {
-  if (esbuildProcess && !esbuildProcess.killed) {
-    console.log('[WATCH] Stopping esbuild...');
-    esbuildProcess.kill('SIGTERM');
-  }
-}
-
-async function waitForNodemonShutdown() {
-  const shutdownPromise = nodemonProcess.waitForShutdown();
-  
-  const exitPromise = new Promise((resolve) => {
-    nodemonProcess.once('exit', async () => {
-      await new Promise(r => setTimeout(r, CONFIG.shutdownDelay));
-      resolve();
-    });
+  graphQLWatchProcess.on('error', (err) => {
+    console.error('[WATCH] Failed to start GraphQL schema watcher:', err);
+    shutdown(1);
   });
-  
-  // Always use SIGTERM - in dev mode, child lock manager exits immediately
-  nodemonProcess.kill('SIGTERM');
-  await Promise.race([shutdownPromise, exitPromise]);
 }
 
-function displayShutdownMessage() {
-  console.log('[WATCH] OpenCTI stopped successfully.');
+function startEsbuildWatch() {
+  esbuildProcess = spawn('node', ['builder/dev/dev.js', '--watch'], {
+    cwd: CONFIG.projectRoot,
+    stdio: ['pipe', 'pipe', 'pipe'],
+    shell: false,
+    env: { ...process.env, NODE_ENV: 'development' },
+  });
+
+  esbuildProcess.stdout.on('data', handleEsbuildOutput);
+  esbuildProcess.stderr.on('data', (data) => process.stderr.write(data));
+
+  esbuildProcess.on('exit', (code) => {
+    esbuildProcess = null;
+    if (!shuttingDown && code !== 0 && code !== null) {
+      console.error(`[WATCH] esbuild watcher exited with code ${code}`);
+      shutdown(1);
+    }
+  });
+
+  esbuildProcess.on('error', (err) => {
+    console.error('[WATCH] Failed to start esbuild watcher:', err);
+    shutdown(1);
+  });
 }
 
-async function cleanup(signal) {
-  console.log(`\n[WATCH] Received ${signal}, shutting down gracefully...`);
-  
-  stopEsbuild();
-  
-  if (nodemonProcess && !nodemonProcess.killed) {
-    console.log('[WATCH] waiting for OpenCTI shutdown...');
-    
-    let shutdownCompleted = false;
-    const shutdownTimeout = setTimeout(() => {
-      if (!shutdownCompleted) {
-        console.log('[WATCH] Shutdown timeout reached, forcing exit');
-        process.exit(1);
-      }
-    }, CONFIG.shutdownTimeout);
-    
-    await waitForNodemonShutdown();
-    
-    shutdownCompleted = true;
-    clearTimeout(shutdownTimeout);
-    
-    displayShutdownMessage();
+function stopProcess(proc) {
+  if (!proc || proc.killed) {
+    return;
   }
-  
-  process.exit(0);
+  proc.kill('SIGTERM');
+}
+
+function shutdown(code = 0) {
+  if (shuttingDown) {
+    return;
+  }
+  shuttingDown = true;
+
+  stopProcess(esbuildProcess);
+  stopProcess(appProcess);
+  stopProcess(graphQLWatchProcess);
+  process.exit(code);
 }
 
 function main() {
-  displayStartupMessage();
-  startEsbuild();
+  console.log('\n🚀 Starting dev OpenCTI...');
+  console.log(CONFIG.graphql ? '• with GraphQL hot reload\n' : '• without GraphQL hot reload\n');
 
-  process.on('SIGINT', () => cleanup('SIGINT'));
-  process.on('SIGTERM', () => cleanup('SIGTERM'));
+  startEsbuildWatch();
+
+  process.on('SIGINT', () => shutdown(0));
+  process.on('SIGTERM', () => shutdown(0));
 }
 
 main();
