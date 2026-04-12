@@ -96,7 +96,7 @@
     "archiver-zip-encrypted": "2.0.0",
     "async-lock": "1.4.1",
     "aws-sdk-v3-proxy": "2.2.0",
-    "axios": "1.14.0",
+    "axios": "1.15.0",
     "axios-cookiejar-support": "6.0.5",
     "bcryptjs": "3.0.3",
     "bluebird": "3.7.2",
@@ -218,7 +218,7 @@
     "vitest": "3.2.4"
   },
   "resolutions": {
-    "axios": "1.14.0",
+    "axios": "1.15.0",
     "chokidar": "5.0.0",
     "cookie": "1.1.1",
     "cross-fetch": "4.1.0",

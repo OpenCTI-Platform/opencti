@@ -55,7 +55,7 @@
     "@rjsf/validator-ajv8": "6.4.2",
     "analytics": "0.8.19",
     "apexcharts": "4.4.0",
-    "axios": "1.14.0",
+    "axios": "1.15.0",
     "buffer": "6.0.3",
     "ckeditor5": "43.3.1",
     "classnames": "2.5.1",
