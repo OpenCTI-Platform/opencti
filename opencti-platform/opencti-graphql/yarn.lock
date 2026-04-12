@@ -6139,12 +6139,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"canonicalize@npm:2.1.0":
-  version: 2.1.0
-  resolution: "canonicalize@npm:2.1.0"
+"canonicalize@npm:3.0.0":
+  version: 3.0.0
+  resolution: "canonicalize@npm:3.0.0"
   bin:
     canonicalize: bin/canonicalize.js
-  checksum: 10c0/3b1ec612765851e71eeff2868f5ccbf0a06ffd8db8deef36efda89167527f96803b555c4ca8b5f5230f0a13badeeac5541c9244c8996fea97d00cee8dca2bf35
+  checksum: 10c0/d197ce019d12f41f9d81a79e04015b8e8ca5fda78d0d67c3d1f309dd09f32a039d4654c5a2563d884385ae151c6f56a79f38e900020e2921f7dbe093f29dc4ac
   languageName: node
   linkType: hard
 
@@ -10604,7 +10604,7 @@ __metadata:
     bcryptjs: "npm:3.0.3"
     bluebird: "npm:3.7.2"
     body-parser: "npm:2.2.2"
-    canonicalize: "npm:2.1.0"
+    canonicalize: "npm:3.0.0"
     compression: "npm:1.8.1"
     content-disposition: "npm:1.1.0"
     content-type: "npm:1.0.5"
