@@ -2201,7 +2201,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/merge@npm:9.1.7, @graphql-tools/merge@npm:^9.0.0, @graphql-tools/merge@npm:^9.0.6, @graphql-tools/merge@npm:^9.1.7":
+"@graphql-tools/merge@npm:9.1.8, @graphql-tools/merge@npm:^9.1.8":
+  version: 9.1.8
+  resolution: "@graphql-tools/merge@npm:9.1.8"
+  dependencies:
+    "@graphql-tools/utils": "npm:^11.0.1"
+    tslib: "npm:^2.4.0"
+  peerDependencies:
+    graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
+  checksum: 10c0/a72005eeb38ccb17ec108cf0631c745a1f044520b6a3556c6a5cf73bdd9e57c6d6491a92668abc0e2f8639fac7610729c8834ae4ae3143aaaa42f882524a8f0c
+  languageName: node
+  linkType: hard
+
+"@graphql-tools/merge@npm:^9.0.0, @graphql-tools/merge@npm:^9.0.6, @graphql-tools/merge@npm:^9.1.7":
   version: 9.1.7
   resolution: "@graphql-tools/merge@npm:9.1.7"
   dependencies:
@@ -2237,7 +2249,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/schema@npm:10.0.31, @graphql-tools/schema@npm:^10.0.0, @graphql-tools/schema@npm:^10.0.29, @graphql-tools/schema@npm:^10.0.31":
+"@graphql-tools/schema@npm:10.0.32":
+  version: 10.0.32
+  resolution: "@graphql-tools/schema@npm:10.0.32"
+  dependencies:
+    "@graphql-tools/merge": "npm:^9.1.8"
+    "@graphql-tools/utils": "npm:^11.0.1"
+    tslib: "npm:^2.4.0"
+  peerDependencies:
+    graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
+  checksum: 10c0/24c4f78a4004d54bfc38291de5f9df2327917e6403c8e0cdde1d2b801531939e8fed5fd4f5c6d95610a728953714cef760e5e5b0118d25403076f6d64fca849c
+  languageName: node
+  linkType: hard
+
+"@graphql-tools/schema@npm:^10.0.0, @graphql-tools/schema@npm:^10.0.29, @graphql-tools/schema@npm:^10.0.31":
   version: 10.0.31
   resolution: "@graphql-tools/schema@npm:10.0.31"
   dependencies:
@@ -2272,9 +2297,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/utils@npm:11.0.0, @graphql-tools/utils@npm:^11.0.0":
-  version: 11.0.0
-  resolution: "@graphql-tools/utils@npm:11.0.0"
+"@graphql-tools/utils@npm:11.0.1, @graphql-tools/utils@npm:^11.0.1":
+  version: 11.0.1
+  resolution: "@graphql-tools/utils@npm:11.0.1"
   dependencies:
     "@graphql-typed-document-node/core": "npm:^3.1.1"
     "@whatwg-node/promise-helpers": "npm:^1.0.0"
@@ -2282,7 +2307,7 @@ __metadata:
     tslib: "npm:^2.4.0"
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-  checksum: 10c0/008f7d033b900bab7daf073c34d2b5502f52005a3dfa9761dfd550d64734c7cd47c2cc92f130f24c5911ceed91315494b54e6849ed345004e59e84377ab1f6c7
+  checksum: 10c0/4f22229b3f36a9b8c5c94c503671cb839c322d6c56cb0bbd9a9b68d6e68eacfef7baed890ee1652fb9c8b8a8f749a678f88bbfd262ba6fca2bd00ac0d0b24103
   languageName: node
   linkType: hard
 
@@ -2297,6 +2322,20 @@ __metadata:
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
   checksum: 10c0/73459332c199d8f3aa698bdee4ac6ce802274dba95cc7eff1f0219b6fe6e3a8f314d2e824168e296df8f5ce18f6dbd23ca14406b71890a41ce80b7548e8ccd6d
+  languageName: node
+  linkType: hard
+
+"@graphql-tools/utils@npm:^11.0.0":
+  version: 11.0.0
+  resolution: "@graphql-tools/utils@npm:11.0.0"
+  dependencies:
+    "@graphql-typed-document-node/core": "npm:^3.1.1"
+    "@whatwg-node/promise-helpers": "npm:^1.0.0"
+    cross-inspect: "npm:1.0.1"
+    tslib: "npm:^2.4.0"
+  peerDependencies:
+    graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
+  checksum: 10c0/008f7d033b900bab7daf073c34d2b5502f52005a3dfa9761dfd550d64734c7cd47c2cc92f130f24c5911ceed91315494b54e6849ed345004e59e84377ab1f6c7
   languageName: node
   linkType: hard
 
@@ -10541,9 +10580,9 @@ __metadata:
     "@graphql-codegen/cli": "npm:6.2.1"
     "@graphql-codegen/introspection": "npm:5.0.1"
     "@graphql-codegen/typescript-resolvers": "npm:5.1.7"
-    "@graphql-tools/merge": "npm:9.1.7"
-    "@graphql-tools/schema": "npm:10.0.31"
-    "@graphql-tools/utils": "npm:11.0.0"
+    "@graphql-tools/merge": "npm:9.1.8"
+    "@graphql-tools/schema": "npm:10.0.32"
+    "@graphql-tools/utils": "npm:11.0.1"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
     "@langchain/core": "npm:1.1.39"
     "@langchain/mistralai": "npm:1.0.7"
