@@ -3,7 +3,15 @@ import * as R from 'ramda';
 import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
 import { generateWorkId } from '../schema/identifier';
 import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
-import { isWorkCompleted, redisDeleteWorks, redisGetWork, redisInitializeWork, redisUpdateActionExpectation, redisUpdateWorkFigures } from '../database/redis';
+import {
+  redisDeleteWorks,
+  redisGetWork,
+  redisGetWorkCompletionState,
+  redisInitializeWork,
+  redisMarkWorkAsProcessed,
+  redisUpdateActionExpectation,
+  redisUpdateWorkFigures,
+} from '../database/redis';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
@@ -258,9 +266,13 @@ const updateWorkTaskToComplete = async (context, user, work) => {
   }
 };
 
+const isWorkFinished = (expected, total) => total >= expected;
+
 export const reportExpectation = async (context, user, workId, errorData) => {
   const timestamp = now();
-  const { isComplete, total } = await redisUpdateWorkFigures(workId);
+  await redisUpdateWorkFigures(workId);
+  const { expected, total, isProcessed } = await redisGetWorkCompletionState(workId);
+  const isComplete = isProcessed && isWorkFinished(expected, total);
   // Ensure that work hasn't been deleted in the meantime
   const workAlive = await isWorkAlive(context, user, workId);
   if (!workAlive) {
@@ -369,9 +381,11 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
     logApp.warn('The work cannot be found in database, processed time cannot be updated.', { workId });
     return workId;
   }
+  await redisMarkWorkAsProcessed(workId);
   const params = { processed_time: now(), message };
+  const { expected, total } = await redisGetWorkCompletionState(workId);
+  const isComplete = isWorkFinished(expected, total);
   let source = 'ctx._source["processed_time"] = params.processed_time;';
-  const { isComplete, total } = await isWorkCompleted(workId);
   if (currentWork.import_expected_number === 0 || isComplete) {
     params.completed_number = total && !Number.isNaN(total) ? total : 1;
     source += `ctx._source['status'] = "complete";

@@ -486,11 +486,22 @@ export const redisDeleteWorks = async (internalIds: Array<string>) => {
 export const redisGetWork = async (internalId: string) => {
   return getClientBase().hgetall(internalId);
 };
-export const isWorkCompleted = async (workId: string) => {
-  const { import_processed_number: pn, import_expected_number: en } = await redisGetWork(workId);
+export const redisMarkWorkAsProcessed = async (workId: string) => {
+  const clientBase = getClientBase();
+  await redisTx(clientBase, async (tx) => {
+    await updateObjectRaw(tx, workId, { is_processed: true });
+  });
+};
+export const redisGetWorkCompletionState = async (workId: string) => {
+  const {
+    import_processed_number: pn,
+    import_expected_number: en,
+    is_processed,
+  } = await redisGetWork(workId);
   const total = parseInt(pn, 10);
   const expected = parseInt(en, 10);
-  return { isComplete: total === expected, total, expected };
+  const isProcessed = is_processed === 'true';
+  return { total, expected, isProcessed };
 };
 export const redisUpdateWorkFigures = async (workId: string) => {
   const timestamp = now();
@@ -503,7 +514,6 @@ export const redisUpdateWorkFigures = async (workId: string) => {
     await updateObjectCounterRaw(tx, workId, 'import_processed_number', 1);
     await updateObjectRaw(tx, workId, { import_last_processed: timestamp });
   });
-  return isWorkCompleted(workId);
 };
 export const redisGetConnectorStatus = async (connectorId: string) => {
   return getClientBase().get(`work:${connectorId}`);
