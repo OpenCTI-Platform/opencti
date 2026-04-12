@@ -51,6 +51,7 @@ const READ_WORK_QUERY = gql`
       id
       name
       status
+      completed_number
     }
   }
 `;
@@ -59,6 +60,22 @@ const UPDATE_WORK_QUERY = gql`
   mutation workToProcessed($id: ID!, $message: String, $inError: Boolean) {
     workEdit(id: $id) {
       toProcessed(message: $message, inError: $inError)
+    }
+  }
+`;
+
+const UPDATE_WORK_ADD_EXPECTATIONS_QUERY = gql`
+  mutation workAddExpectations($id: ID!, $expectations: Int) {
+    workEdit(id: $id) {
+      addExpectations(expectations: $expectations)
+    }
+  }
+`;
+
+const UPDATE_WORK_REPORT_EXPECTATION_QUERY = gql`
+  mutation workReportExpectation($id: ID!, $error: WorkErrorInput) {
+    workEdit(id: $id) {
+      reportExpectation(error: $error)
     }
   }
 `;
@@ -300,6 +317,130 @@ describe('Connector resolver standard behaviour', () => {
     expect(queryResult.data.pingConnector.connector_info.queue_threshold).toBe(490.2);
     expect(queryResult.data.pingConnector.connector_info.next_run_datetime.toISOString()).toBe(datetimeNextRun.toISOString());
     expect(queryResult.data.pingConnector.connector_info.last_run_datetime.toISOString()).toBe(datetimeLastRun.toISOString());
+  });
+});
+
+describe('Connector sending multiple bundles during the same work', () => {
+  describe('when worker finishes all work items before connector', () => {
+    it('should mark work as completed when connector calls to_processed', async () => {
+      let queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, {
+        query: CREATE_WORK_QUERY,
+        variables: {
+          connectorId: TEST_CN_ID,
+          friendlyName: 'TestConnectorMultipleBundlesFastWorker',
+        },
+      });
+      const workId = queryResult.data.workAdd.id;
+      queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_WORK_QUERY, variables: { id: workId } });
+      expect(queryResult.data.work.status).toEqual('progress');
+
+      // Connector sends bundle #1: increase expectation count
+      await queryAsAdminWithSuccess({
+        query: UPDATE_WORK_ADD_EXPECTATIONS_QUERY,
+        variables: { id: workId, expectations: 3 },
+      });
+
+      // Worker treats all 3 work items
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: UPDATE_WORK_REPORT_EXPECTATION_QUERY, variables: { id: workId } });
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: UPDATE_WORK_REPORT_EXPECTATION_QUERY, variables: {
+        id: workId,
+        error: {
+          error: 'woups',
+          source: 'code',
+        },
+      } });
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: UPDATE_WORK_REPORT_EXPECTATION_QUERY, variables: { id: workId } });
+
+      // Status should still be `progress`
+      queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_WORK_QUERY, variables: { id: workId } });
+      expect(queryResult.data.work.status).toEqual('progress');
+
+      // Connector sends bundle #2: increase expectation count
+      await queryAsAdminWithSuccess({
+        query: UPDATE_WORK_ADD_EXPECTATIONS_QUERY,
+        variables: { id: workId, expectations: 2 },
+      });
+
+      // Worker treats all 2 work items
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: UPDATE_WORK_REPORT_EXPECTATION_QUERY, variables: { id: workId } });
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: UPDATE_WORK_REPORT_EXPECTATION_QUERY, variables: { id: workId } });
+
+      // Status should still be `progress`
+      queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_WORK_QUERY, variables: { id: workId } });
+      expect(queryResult.data.work.status).toEqual('progress');
+
+      // Connector notifies backend it processed all bundles
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: UPDATE_WORK_QUERY, variables: {
+        id: workId,
+        message: 'Done',
+      } });
+
+      // Status should have changed to `complete`
+      queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_WORK_QUERY, variables: { id: workId } });
+      expect(queryResult.data.work.status).toEqual('complete');
+      expect(queryResult.data.work.completed_number).toEqual(5);
+    });
+  });
+
+  describe('when connector notifies to_processed before worker finished items', () => {
+    it('should mark work as completed after worker finished last item', async () => {
+      let queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, {
+        query: CREATE_WORK_QUERY,
+        variables: {
+          connectorId: TEST_CN_ID,
+          friendlyName: 'TestConnectorMultipleBundles',
+        },
+      });
+      const workId = queryResult.data.workAdd.id;
+      queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_WORK_QUERY, variables: { id: workId } });
+      expect(queryResult.data.work.status).toEqual('progress');
+
+      // Connector sends bundle #1: increase expectation count
+      await queryAsAdminWithSuccess({
+        query: UPDATE_WORK_ADD_EXPECTATIONS_QUERY,
+        variables: { id: workId, expectations: 3 },
+      });
+
+      // Worker treats all 3 work items
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: UPDATE_WORK_REPORT_EXPECTATION_QUERY, variables: { id: workId } });
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: UPDATE_WORK_REPORT_EXPECTATION_QUERY, variables: {
+        id: workId,
+        error: {
+          error: 'woups',
+          source: 'code',
+        },
+      } });
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: UPDATE_WORK_REPORT_EXPECTATION_QUERY, variables: { id: workId } });
+
+      // Status should still be `progress`
+      queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_WORK_QUERY, variables: { id: workId } });
+      expect(queryResult.data.work.status).toEqual('progress');
+
+      // Connector sends bundle #2: increase expectation count
+      await queryAsAdminWithSuccess({
+        query: UPDATE_WORK_ADD_EXPECTATIONS_QUERY,
+        variables: { id: workId, expectations: 2 },
+      });
+
+      // Connector notifies backend it processed all bundles
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: UPDATE_WORK_QUERY, variables: {
+        id: workId,
+        message: 'Done',
+      } });
+
+      // Status should still be `progress`
+      queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_WORK_QUERY, variables: { id: workId } });
+      expect(queryResult.data.work.status).toEqual('progress');
+
+      // Worker treats all remaining items
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: UPDATE_WORK_REPORT_EXPECTATION_QUERY, variables: { id: workId } });
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: UPDATE_WORK_REPORT_EXPECTATION_QUERY, variables: { id: workId } });
+
+      // Status should have changed to `complete`
+      queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, { query: READ_WORK_QUERY, variables: { id: workId } });
+      expect(queryResult.data.work.status).toEqual('complete');
+      expect(queryResult.data.work.completed_number).toEqual(5);
+    });
   });
 });
 
