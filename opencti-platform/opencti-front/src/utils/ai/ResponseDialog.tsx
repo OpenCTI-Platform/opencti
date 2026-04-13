@@ -28,8 +28,9 @@ import type { AgentAction } from '../../private/components/common/form/TextField
 // and in legacy mode ResponseDialog embeds TextFieldAskAI for follow-up actions.
 import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI';
 import useAI from '../hooks/useAI';
-import { type AgentOption, fetchAgentsForIntent, callAgent } from './agentApi';
+import { type AgentOption, fetchAgentsForIntent } from './agentApi';
 import useHelper from '../hooks/useHelper';
+import useAgentStream from './useAgentStream';
 
 // region types
 interface ResponseDialogProps {
@@ -114,9 +115,13 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const [agentOptions, setAgentOptions] = useState<AgentOption[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<AgentOption | null>(null);
   const [loadingAgents, setLoadingAgents] = useState(false);
-  const [agentLoading, setAgentLoading] = useState(false);
+  // Agent streaming hook
+  const { content: streamContent, loading: agentLoading, error: agentError, execute: executeStream, abort: abortStream } = useAgentStream();
+
+  // Sync streamed content to parent's setContent
+  useEffect(() => { if (streamContent) setContent(streamContent); }, [streamContent, setContent]);
+
   const [agentExecuted, setAgentExecuted] = useState(false);
-  const [agentError, setAgentError] = useState<string | null>(null);
 
   // Tone selector (for change tone action in agent mode)
   const [tone, setTone] = useState<string>('tactical');
@@ -125,7 +130,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   useEffect(() => {
     if (isOpen && agentMode) {
       setAgentExecuted(false);
-      setAgentLoading(false);
+      abortStream();
       setLoadingAgents(true);
       setSelectedAgent(null);
       setAgentOptions([]);
@@ -139,7 +144,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     }
     if (!isOpen) {
       setAgentExecuted(false);
-      setAgentLoading(false);
+      abortStream();
     }
   }, [isOpen, agentMode?.intent, agentMode?.action]);
 
@@ -161,26 +166,9 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
 
   const executeAgentCall = () => {
     if (!selectedAgent || !agentMode) return;
-    setAgentLoading(true);
     setAgentExecuted(true);
-    setAgentError(null);
-
     const prompt = buildPrompt(agentMode.action, agentMode.inputContent, agentMode.format, tone);
-    callAgent(selectedAgent.slug, prompt)
-      .then((result) => {
-        if (result.status === 'error') {
-          setAgentError(result.error ?? t_i18n('An unknown error occurred'));
-          setContent('');
-        } else {
-          setContent(result.content);
-        }
-        setAgentLoading(false);
-      })
-      .catch((error: Error) => {
-        setAgentError(error.toString());
-        setContent('');
-        setAgentLoading(false);
-      });
+    executeStream(selectedAgent.slug, prompt);
   };
 
   const handleRefresh = () => {
@@ -415,7 +403,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
             <>
               {renderRefreshButton()}
 
-              {(agentLoading || loadingAgents) && (
+              {((agentLoading && !content) || loadingAgents) && (
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                   <CircularProgress size={40} />
                 </Box>
@@ -437,7 +425,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
                 </Box>
               )}
 
-              {!agentLoading && !loadingAgents && !noAgents && !agentError && renderContentEditors()}
+              {(!agentLoading || content) && !loadingAgents && !noAgents && !agentError && renderContentEditors()}
             </>
           )}
 
