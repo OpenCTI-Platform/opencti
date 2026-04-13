@@ -529,7 +529,18 @@ const resolveAuthorizedMembersForDraft = (
 
     const { value, accessRight, groupsRestrictionIds } = normalizedRule;
     if (value === 'CREATORS') {
-      authorizedMembersMap.set(user.id, { id: user.id, access_right: accessRight });
+      const existing = authorizedMembersMap.get(user.id)
+        || { id: user.id, access_right: accessRight };
+      const currentGroupRestrictions = existing.groups_restriction_ids ?? [];
+      const mergedGroupRestrictions = groupsRestrictionIds
+        ? Array.from(new Set([...currentGroupRestrictions, ...groupsRestrictionIds]))
+        : existing.groups_restriction_ids;
+
+      authorizedMembersMap.set(user.id, {
+        ...existing,
+        access_right: existing.access_right || accessRight,
+        groups_restriction_ids: mergedGroupRestrictions,
+      });
       return;
     }
 

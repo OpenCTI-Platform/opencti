@@ -226,6 +226,46 @@ describe('formSubmit', () => {
     );
   });
 
+  it('should resolve dynamic authorized members logic (CREATORS) with groups restriction', async () => {
+    const input = {
+      formId: 'form-1',
+      values: JSON.stringify({ name: 'Test Individual' }),
+    };
+
+    const form = { ...mockForm };
+    form.form_schema = JSON.stringify({
+      fields: [
+        { name: 'name', label: 'Name', type: 'text', attributeMapping: { entity: 'main_entity', attributeName: 'name' } },
+      ],
+      mainEntityType: 'Individual',
+      draftDefaults: {
+        authorizedMembers: {
+          enabled: true,
+          defaults: [
+            { value: 'CREATORS', accessRight: 'edit', groupsRestriction: [{ value: 'group-creators' }] },
+          ],
+        },
+      },
+    });
+    mockStoreLoadById.mockResolvedValue(form);
+
+    await formSubmit(mockContext, mockUser, input, true);
+
+    expect(draftWorkspaceDomain.addDraftWorkspace).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({
+        authorized_members: expect.arrayContaining([
+          expect.objectContaining({
+            id: mockUser.id,
+            access_right: 'edit',
+            groups_restriction_ids: ['group-creators'],
+          }),
+        ]),
+      }),
+    );
+  });
+
   it('should resolve groupsRestriction from id entries in schema defaults', async () => {
     const orgId = 'org-1';
     const userWithOrg = {

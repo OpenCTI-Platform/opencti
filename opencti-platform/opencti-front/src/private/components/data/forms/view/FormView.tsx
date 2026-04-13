@@ -937,7 +937,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     </>
                   );
                 })()}
-                {isDraft && schema.draftDefaults?.name?.enabled && schema.draftDefaults?.name?.isEditable && (
+                {isDraft && schema.draftDefaults?.name?.enabled && (schema.draftDefaults?.name?.isEditable || isBypass) && (
                   <div style={{ marginTop: 20 }}>
                     <Field
                       component={TextField}
@@ -948,7 +948,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     />
                   </div>
                 )}
-                {isDraft && schema.draftDefaults?.description?.enabled && schema.draftDefaults?.description?.isEditable && (
+                {isDraft && schema.draftDefaults?.description?.enabled && (schema.draftDefaults?.description?.isEditable || isBypass) && (
                   <div style={{ marginTop: 20 }}>
                     <Field
                       component={MarkdownField}
@@ -961,7 +961,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     />
                   </div>
                 )}
-                {isDraft && schema.draftDefaults?.objectAssignee?.enabled && schema.draftDefaults?.objectAssignee?.isEditable && (
+                {isDraft && schema.draftDefaults?.objectAssignee?.enabled && (schema.draftDefaults?.objectAssignee?.isEditable || isBypass) && (
                   <div style={{ marginTop: 20 }}>
                     <ObjectAssigneeField
                       name="draftObjectAssignee"
@@ -970,7 +970,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     />
                   </div>
                 )}
-                {isDraft && schema.draftDefaults?.objectParticipant?.enabled && schema.draftDefaults?.objectParticipant?.isEditable && (
+                {isDraft && schema.draftDefaults?.objectParticipant?.enabled && (schema.draftDefaults?.objectParticipant?.isEditable || isBypass) && (
                   <div style={{ marginTop: 20 }}>
                     <ObjectParticipantField
                       name="draftObjectParticipant"
@@ -979,7 +979,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     />
                   </div>
                 )}
-                {isDraft && schema.draftDefaults?.author?.isEditable && (
+                {isDraft && (schema.draftDefaults?.author?.isEditable || isBypass) && (
                   <div style={{ marginTop: 20 }}>
                     <CreatedByField
                       name="draftAuthor"
