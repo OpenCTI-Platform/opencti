@@ -85,9 +85,12 @@ export interface FormBuilderData {
       defaults: FieldOption[];
     };
     author?: {
-      type: 'none' | 'current_user' | 'main_entity_author';
+      type: 'none' | 'main_entity_author' | 'static';
       isEditable: boolean;
       isRequired: boolean;
+      defaultValue?: string;
+      defaultValueLabel?: string;
+      defaultValueType?: string;
     };
     authorizedMembers?: {
       enabled: boolean;
@@ -160,9 +163,12 @@ export interface FormSchemaDefinition {
       defaults: FieldOption[];
     };
     author?: {
-      type: 'none' | 'current_user' | 'main_entity_author';
+      type: 'none' | 'main_entity_author' | 'static';
       isEditable: boolean;
       isRequired: boolean;
+      defaultValue?: string;
+      defaultValueLabel?: string;
+      defaultValueType?: string;
     };
     authorizedMembers?: {
       enabled: boolean;

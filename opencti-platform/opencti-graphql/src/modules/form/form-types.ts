@@ -120,9 +120,12 @@ export interface FormSchemaDefinition {
       defaults: Array<any>;
     };
     author?: {
-      type: 'none' | 'current_user' | 'main_entity_author';
+      type: 'none' | 'main_entity_author' | 'static';
       isEditable: boolean;
       isRequired: boolean;
+      defaultValue?: string;      // for static: identity id
+      defaultValueLabel?: string; // for static: identity display name
+      defaultValueType?: string;  // for static: identity entity_type
     };
     authorizedMembers?: {
       enabled: boolean;
@@ -265,9 +268,12 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
         author: {
           type: 'object',
           properties: {
-            type: { type: 'string', enum: ['none', 'current_user', 'main_entity_author'] },
+            type: { type: 'string', enum: ['none', 'main_entity_author', 'static'] },
             isEditable: { type: 'boolean' },
             isRequired: { type: 'boolean' },
+            defaultValue: { type: 'string' },
+            defaultValueLabel: { type: 'string' },
+            defaultValueType: { type: 'string' },
           },
           required: ['type', 'isEditable', 'isRequired'],
         },

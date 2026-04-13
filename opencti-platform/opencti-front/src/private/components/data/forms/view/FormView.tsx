@@ -1,43 +1,43 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { fetchQuery, graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import Typography from '@mui/material/Typography';
 import Button from '@common/button/Button';
-import Alert from '@mui/material/Alert';
-import CircularProgress from '@mui/material/CircularProgress';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import makeStyles from '@mui/styles/makeStyles';
-import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
 import IconButton from '@common/button/IconButton';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import Alert from '@mui/material/Alert';
+import Checkbox from '@mui/material/Checkbox';
+import CircularProgress from '@mui/material/CircularProgress';
 import Divider from '@mui/material/Divider';
-import TextField from '../../../../../components/TextField';
-import MarkdownField from '../../../../../components/fields/MarkdownField';
-import { useFormatter } from '../../../../../components/i18n';
-import { FormViewQuery } from './__generated__/FormViewQuery.graphql';
-import Loader, { LoaderVariant } from '../../../../../components/Loader';
-import { FormFieldRendererProps } from './FormFieldRenderer';
-import { FormSchemaDefinition } from '../Form.d';
-import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
+import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
+import React, { FunctionComponent, useEffect, useState } from 'react';
+import { fetchQuery, graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import { useNavigate, useParams } from 'react-router-dom';
 import * as Yup from 'yup';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
+import Loader, { LoaderVariant } from '../../../../../components/Loader';
+import TextField from '../../../../../components/TextField';
 import type { Theme } from '../../../../../components/Theme';
-import useEntitySettings from '../../../../../utils/hooks/useEntitySettings';
-import { convertFormSchemaToYupSchema, formatFormDataForSubmission } from './FormViewUtils';
+import Card from '../../../../../components/common/card/Card';
+import MarkdownField from '../../../../../components/fields/MarkdownField';
+import { useFormatter } from '../../../../../components/i18n';
 import { environment } from '../../../../../relay/environment';
-import StixCoreObjectsField from '../../../common/form/StixCoreObjectsField';
-import CreatorField from '../../../common/form/CreatorField';
+import { FieldOption } from '../../../../../utils/field';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import useAuth from '../../../../../utils/hooks/useAuth';
+import useEntitySettings from '../../../../../utils/hooks/useEntitySettings';
+import useGranted, { BYPASS, INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
+import useImportAccess from '../../../../../utils/hooks/useImportAccess';
 import AuthorizedMembersField from '../../../common/form/AuthorizedMembersField';
+import CreatedByField from '../../../common/form/CreatedByField';
 import ObjectAssigneeField from '../../../common/form/ObjectAssigneeField';
 import ObjectParticipantField from '../../../common/form/ObjectParticipantField';
-import { FieldOption } from '../../../../../utils/field';
-import useGranted, { BYPASS, INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
-import useAuth from '../../../../../utils/hooks/useAuth';
-import useImportAccess from '../../../../../utils/hooks/useImportAccess';
-import Card from '../../../../../components/common/card/Card';
+import StixCoreObjectsField from '../../../common/form/StixCoreObjectsField';
+import { FormSchemaDefinition } from '../Form.d';
+import { FormFieldRendererProps } from './FormFieldRenderer';
 import FormFields from './FormFields';
+import { convertFormSchemaToYupSchema, formatFormDataForSubmission } from './FormViewUtils';
+import { FormViewQuery } from './__generated__/FormViewQuery.graphql';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -143,7 +143,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const { me } = useAuth();
+  const { me: _me } = useAuth();
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [pollingEntityId, setPollingEntityId] = useState<string | null>(null);
@@ -202,8 +202,12 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     }
 
     if (parsedSchema.draftDefaults?.author?.isEditable) {
-      if (parsedSchema.draftDefaults?.author?.type === 'current_user' && me) {
-        inits.draftAuthor = { value: me.individual_id || me.id, label: me.name };
+      if (parsedSchema.draftDefaults?.author?.type === 'static' && parsedSchema.draftDefaults.author.defaultValue) {
+        inits.draftAuthor = {
+          value: parsedSchema.draftDefaults.author.defaultValue,
+          label: parsedSchema.draftDefaults.author.defaultValueLabel || parsedSchema.draftDefaults.author.defaultValue,
+          type: parsedSchema.draftDefaults.author.defaultValueType,
+        };
       } else {
         inits.draftAuthor = null;
       }
@@ -381,7 +385,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     }
 
     return { schema: parsedSchema, initialValues: inits, mainEntityFields: mFields };
-  }, [form_schema, me]);
+  }, [form_schema]);
 
   // Initialize isDraft based on schema settings or import context override
   const [isDraft, setIsDraft] = useState(isForcedImportToDraft || schema.isDraftByDefault || false);
@@ -977,13 +981,14 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                 )}
                 {isDraft && schema.draftDefaults?.author?.isEditable && (
                   <div style={{ marginTop: 20 }}>
-                    <CreatorField
+                    <CreatedByField
                       name="draftAuthor"
                       label={t_i18n('Draft author')}
-                      containerStyle={{ width: '100%', marginBottom: 20 }}
-                      required={schema.draftDefaults?.author?.isRequired && schema.draftDefaults.author.type !== 'main_entity_author'}
-                      clearable={schema.draftDefaults.author.type === 'main_entity_author'}
-                      helpertext={schema.draftDefaults.author.type === 'main_entity_author' ? t_i18n('Default: Reuse main entity author (leave empty to inherit)') : undefined}
+                      style={{ width: '100%', marginBottom: 20 }}
+                      setFieldValue={setFieldValue}
+                      required={schema.draftDefaults?.author?.isRequired && schema.draftDefaults?.author?.type !== 'main_entity_author'}
+                      clearable={schema.draftDefaults?.author?.type === 'main_entity_author'}
+                      helpertext={schema.draftDefaults?.author?.type === 'main_entity_author' ? t_i18n('Default: Reuse main entity author (leave empty to inherit)') : undefined}
                     />
                   </div>
                 )}

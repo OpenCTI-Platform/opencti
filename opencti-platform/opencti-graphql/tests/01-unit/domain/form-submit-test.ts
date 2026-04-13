@@ -58,7 +58,7 @@ const mockForm: any = {
     ],
     mainEntityType: 'Individual',
     draftDefaults: {
-      author: { type: 'current_user', isEditable: false },
+      author: { type: 'none', isEditable: false },
       authorizedMembers: { enabled: true, defaults: [] },
     },
   }),
@@ -73,7 +73,7 @@ describe('formSubmit', () => {
     vi.spyOn(draftWorkspaceDomain, 'addDraftWorkspace').mockResolvedValue({ id: 'draft-1' } as any);
   });
 
-  it('should use current user as createdBy when configured in schema', async () => {
+  it('should use static identity as createdBy when configured in schema', async () => {
     const input = {
       formId: 'form-1',
       values: JSON.stringify({ name: 'Test Individual' }),
@@ -87,7 +87,7 @@ describe('formSubmit', () => {
       ],
       mainEntityType: 'Individual',
       draftDefaults: {
-        author: { type: 'current_user', isEditable: false },
+        author: { type: 'static', isEditable: false, defaultValue: 'identity-42' },
       },
     });
     mockStoreLoadById.mockResolvedValue(form);
@@ -98,7 +98,7 @@ describe('formSubmit', () => {
       expect.anything(),
       expect.anything(),
       expect.objectContaining({
-        createdBy: 'individual-1',
+        createdBy: 'identity-42',
       }),
     );
   });

@@ -1,34 +1,43 @@
-import React, { FunctionComponent, useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
-import { Add, DeleteOutlined, AddCircleOutlined, ArrowUpward, ArrowDownward, ExpandMore } from '@mui/icons-material';
+import Button from '@common/button/Button';
+import { Add, AddCircleOutlined, ArrowDownward, ArrowUpward, DeleteOutlined, ExpandMore } from '@mui/icons-material';
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Alert,
   Box,
+  FormControl,
+  FormControlLabel,
   IconButton,
+  InputLabel,
   MenuItem,
+  Select,
+  Switch,
   Tab,
   Tabs,
-  Typography,
   TextField,
-  Alert,
-  Select,
-  FormControl,
-  InputLabel,
-  Switch,
-  FormControlLabel,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
+  Typography,
 } from '@mui/material';
-import { Formik, Field, useFormikContext } from 'formik';
-import AuthorizedMembersField from '../../common/form/AuthorizedMembersField';
-import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-import ObjectParticipantField from '../../common/form/ObjectParticipantField';
-import Button from '@common/button/Button';
+import makeStyles from '@mui/styles/makeStyles';
+import { Field, Formik, useFormikContext } from 'formik';
+import { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
+import type { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
+import { FieldOption } from '../../../../utils/field';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { resolveRelationsTypes } from '../../../../utils/Relation';
+import { getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
+import AuthorizedMembersField from '../../common/form/AuthorizedMembersField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
+import ObjectParticipantField from '../../common/form/ObjectParticipantField';
+import type { AdditionalEntity, EntityRelationship, FormBuilderData, FormFieldAttribute, RelationshipTypeOption } from './Form.d';
 import {
   buildEntityTypes,
+  CONTAINER_TYPES,
   convertFormBuilderDataToSchema,
+  FIELD_TYPES,
   generateEntityId,
   generateFieldId,
   generateRelationshipId,
@@ -36,19 +45,12 @@ import {
   getAvailableFieldTypes,
   getInitialMandatoryFields,
   normalizeDraftAuthorizedMembersDefaults,
-  CONTAINER_TYPES,
-  FIELD_TYPES,
 } from './FormUtils';
-import { resolveRelationsTypes } from '../../../../utils/Relation';
-import { getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
-import type { FormFieldAttribute, AdditionalEntity, EntityRelationship, FormBuilderData, RelationshipTypeOption } from './Form.d';
-import useAuth from '../../../../utils/hooks/useAuth';
-import type { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
-import { FieldOption } from '../../../../utils/field';
 
 type DraftAdvancedDefaultsValues = {
   objectAssignee: FieldOption[];
   objectParticipant: FieldOption[];
+  authorDefaultIdentity: FieldOption | null;
 };
 
 const DraftAdvancedDefaultsSync = ({ onChange }: { onChange: (vals: DraftAdvancedDefaultsValues) => void }) => {
@@ -1764,6 +1766,13 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 initialValues={{
                   objectAssignee: formData.draftDefaults?.objectAssignee?.defaults || [],
                   objectParticipant: formData.draftDefaults?.objectParticipant?.defaults || [],
+                  authorDefaultIdentity: (formData.draftDefaults?.author?.type === 'static' && formData.draftDefaults.author.defaultValue)
+                    ? {
+                        value: formData.draftDefaults.author.defaultValue,
+                        label: formData.draftDefaults.author.defaultValueLabel || formData.draftDefaults.author.defaultValue,
+                        type: formData.draftDefaults.author.defaultValueType,
+                      }
+                    : null,
                 }}
                 onSubmit={() => {}}
                 enableReinitialize
@@ -1849,10 +1858,20 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                         label={t_i18n('Author Source')}
                       >
                         <MenuItem value="none">{t_i18n('None (Default)')}</MenuItem>
-                        <MenuItem value="current_user">{t_i18n('Current User')}</MenuItem>
                         <MenuItem value="main_entity_author">{t_i18n('Reuse Main Entity Author')}</MenuItem>
+                        <MenuItem value="static">{t_i18n('Specific Identity')}</MenuItem>
                       </Select>
                     </FormControl>
+                    {formData.draftDefaults?.author?.type === 'static' && (
+                      <Box style={{ paddingLeft: 20, paddingBottom: 10 }}>
+                        <CreatedByField
+                          name="authorDefaultIdentity"
+                          label={t_i18n('Default author identity')}
+                          style={{ width: '100%', marginBottom: 20 }}
+                          setFieldValue={() => {}}
+                        />
+                      </Box>
+                    )}
                     <FormControlLabel
                       control={(
                         <Switch
@@ -1954,6 +1973,17 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                         }
                         if (!areFieldOptionsEqual(formData.draftDefaults?.objectParticipant?.defaults || [], vals.objectParticipant)) {
                           handleFieldChange('draftDefaults.objectParticipant.defaults', vals.objectParticipant);
+                        }
+                        if (formData.draftDefaults?.author?.type === 'static') {
+                          const newValue = vals.authorDefaultIdentity?.value;
+                          if (formData.draftDefaults?.author?.defaultValue !== newValue) {
+                            handleFieldChange('draftDefaults.author', {
+                              ...formData.draftDefaults.author,
+                              defaultValue: newValue || undefined,
+                              defaultValueLabel: vals.authorDefaultIdentity?.label || undefined,
+                              defaultValueType: vals.authorDefaultIdentity?.type || undefined,
+                            });
+                          }
                         }
                       }}
                     />

@@ -1141,8 +1141,8 @@ export const formSubmit = async (
       if (values.draftAuthor) {
         createdBy = normalizeOptionId(values.draftAuthor) || null;
       } else if (schema.draftDefaults?.author) {
-        if (schema.draftDefaults.author.type === 'current_user') {
-          createdBy = user.individual_id || null;
+        if (schema.draftDefaults.author.type === 'static') {
+          createdBy = schema.draftDefaults.author.defaultValue || null;
         } else if (schema.draftDefaults.author.type === 'main_entity_author') {
           const possibleAuthor = values.createdBy
             || values.mainEntityFields?.createdBy
