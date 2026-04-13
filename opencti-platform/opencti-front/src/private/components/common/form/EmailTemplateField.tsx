@@ -103,8 +103,6 @@ type EmailTemplateFieldProps = Omit<EmailTemplateFieldComponentProps, 'queryRef'
 const EmailTemplateField = ({ ...props }: EmailTemplateFieldProps) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-
-  const queryRef = useQueryLoading<EmailTemplateFieldQuery>(emailTemplateFieldQuery);
   const { name, label } = props;
 
   if (!isEnterpriseEdition) {
@@ -128,6 +126,7 @@ const EmailTemplateField = ({ ...props }: EmailTemplateFieldProps) => {
     );
   }
 
+  const queryRef = useQueryLoading<EmailTemplateFieldQuery>(emailTemplateFieldQuery);
   return queryRef ? (
     <React.Suspense fallback={(
       <Field
