@@ -32,7 +32,7 @@ export const THREAT_ACTOR_INDIVIDUAL_INSTANCE = {
   goals: ['disruption'],
   sophistication: 'intermediate',
   resource_level: 'team',
-  primary_motivations: 'ideology',
+  primary_motivation: 'ideology',
   secondary_motivations: ['notoriety'],
   personal_motivations: ['personal-gain'],
   date_of_birth: '1990-01-01T00:00:00.000Z',
