@@ -281,7 +281,7 @@ export const convertIntrusionSetToStix = (instance: StoreEntity): SDO.StixIntrus
   };
 };
 
-export const convertThreatActorGroupToStix = (instance: StoreEntity): SDO.StixThreatActor & { threat_actor_group: string } => {
+export const convertThreatActorGroupToStix = (instance: StoreEntity): SDO.StixThreatActorGroup & { threat_actor_group: string } => {
   assertType(ENTITY_TYPE_THREAT_ACTOR_GROUP, instance.entity_type);
   return {
     ...buildStixDomain(instance),

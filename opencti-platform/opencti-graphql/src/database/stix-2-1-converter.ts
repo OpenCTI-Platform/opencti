@@ -500,7 +500,7 @@ const convertVulnerabilityToStix = (instance: StoreEntity, type: string): SDO.St
     },
   };
 };
-const convertThreatActorGroupToStix = (instance: StoreEntity, type: string): SDO.StixThreatActor => {
+const convertThreatActorGroupToStix = (instance: StoreEntity, type: string): SDO.StixThreatActorGroup => {
   assertType(ENTITY_TYPE_THREAT_ACTOR_GROUP, type);
   return {
     ...buildStixDomain(instance),

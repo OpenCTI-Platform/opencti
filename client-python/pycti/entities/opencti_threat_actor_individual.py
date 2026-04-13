@@ -423,7 +423,9 @@ class ThreatActorIndividual:
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
         aliases = kwargs.get("aliases", None)
-        threat_actor_individual_types = kwargs.get("threat_actor_individual_types", None)
+        threat_actor_individual_types = kwargs.get(
+            "threat_actor_individual_types", None
+        )
         first_seen = kwargs.get("first_seen", None)
         last_seen = kwargs.get("last_seen", None)
         roles = kwargs.get("roles", None)

@@ -61,6 +61,10 @@ export interface StixThreatActor extends StixDomainObject {
   personal_motivations: Array<string>;
 }
 
+export interface StixThreatActorGroup extends StixThreatActor {
+  threat_actor_group_types: Array<string>;
+}
+
 export interface StixMalware extends StixDomainObject {
   name: string; // optional
   description: string; // optional
