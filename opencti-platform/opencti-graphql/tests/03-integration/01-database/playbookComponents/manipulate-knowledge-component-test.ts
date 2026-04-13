@@ -243,7 +243,7 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
   });
 
   describe('Filter elements manipulated', () => {
-    const filterGrounping = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Grouping"],"mode":"or"}],"filterGroups":[]}';
+    const filterGrouping = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Grouping"],"mode":"or"}],"filterGroups":[]}';
     const filterCampaign = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Campaign"],"mode":"or"}],"filterGroups":[]}';
     const filterMalware = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Malware"],"mode":"or"}],"filterGroups":[]}';
     const filterMalwareCampaign = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Malware","Campaign"],"mode":"or"}],"filterGroups":[]}';
@@ -252,7 +252,7 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
       const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
         mainId: MALWARE_ID,
         bundleObjects: BUNDLE_OBJECTS(),
-        configuration: componentConfig({ applyWithFilters: filterGrounping }),
+        configuration: componentConfig({ applyWithFilters: filterGrouping }),
       }));
 
       const malwareResult = result.bundle.objects.find((o) => o.id === MALWARE_ID);
@@ -284,7 +284,7 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
         bundleObjects: BUNDLE_OBJECTS(),
         configuration: componentConfig({
           applyToElements: 'all-elements',
-          applyWithFilters: filterGrounping,
+          applyWithFilters: filterGrouping,
         }),
       }));
 
@@ -338,7 +338,7 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
         bundleObjects: BUNDLE_OBJECTS(),
         configuration: componentConfig({
           applyToElements: 'all-except-main',
-          applyWithFilters: filterGrounping,
+          applyWithFilters: filterGrouping,
         }),
       }));
 
