@@ -6,6 +6,7 @@ vi.mock('../../../../src/http/httpAuthenticatedContext', () => ({
 }));
 vi.mock('../../../../src/database/cache', () => ({
   getEntitiesListFromCache: vi.fn(),
+  getEntityFromCache: vi.fn(),
 }));
 vi.mock('../../../../src/modules/dataSharing/dataSharing-utils', () => ({
   resolvePublicUser: vi.fn(),
@@ -18,8 +19,9 @@ vi.mock('../../../../src/utils/access', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../../src/utils/access')>();
   return {
     ...actual,
-    executionContext: vi.fn(() => ({ user: null })),
+    executionContext: vi.fn(() => ({ user: null, user_inside_platform_organization: false })),
     isUserHasCapability: vi.fn(() => true),
+    isUserInPlatformOrganization: vi.fn(() => false),
   };
 });
 vi.mock('../../../../src/config/conf', async () => {
@@ -41,7 +43,7 @@ vi.mock('../../../../src/schema/identifier', async (importOriginal) => {
 });
 
 import { createAuthenticatedContext } from '../../../../src/http/httpAuthenticatedContext';
-import { getEntitiesListFromCache } from '../../../../src/database/cache';
+import { getEntitiesListFromCache, getEntityFromCache } from '../../../../src/database/cache';
 import { resolvePublicUser } from '../../../../src/modules/dataSharing/dataSharing-utils';
 import { findById as findTaxiiCollection } from '../../../../src/modules/dataSharing/taxiiCollection-domain';
 import { authenticateForPublic } from '../../../../src/graphql/sseMiddleware.js';
@@ -106,9 +108,11 @@ describe('authenticateForPublic middleware', () => {
   });
 
   it('calls next() and sets req.user for a public stream with no auth user', async () => {
-    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+    const mockContext: any = { user: null, user_inside_platform_organization: false };
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(mockContext);
     vi.mocked(getEntitiesListFromCache).mockResolvedValue([MOCK_STREAM_COLLECTION] as any);
     vi.mocked(resolvePublicUser).mockResolvedValue(MOCK_PUBLIC_USER as any);
+    vi.mocked(getEntityFromCache).mockResolvedValue({ platform_organization: null } as any);
 
     const req = makeMockReq({ id: 'stream-1' });
     const res = makeMockRes();
@@ -120,6 +124,31 @@ describe('authenticateForPublic middleware', () => {
     expect(req.user).toBe(MOCK_PUBLIC_USER);
     expect(req.userId).toBe('public-user-id');
     expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it('recomputes user_inside_platform_organization for the resolved public user even when an admin is authenticated', async () => {
+    // Simulates an admin (bypass, inside platform org) accessing a public stream URL.
+    // user_inside_platform_organization must be overridden to reflect the *public user*, not the admin.
+    const adminUser = { id: 'admin-id', user_email: 'admin@test.com', capabilities: [], allowed_marking: [], organizations: [] };
+    const mockContext: any = { user: adminUser, user_inside_platform_organization: true };
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(mockContext);
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([MOCK_STREAM_COLLECTION] as any);
+    vi.mocked(resolvePublicUser).mockResolvedValue({ ...MOCK_PUBLIC_USER, organizations: [{ internal_id: 'filigran-org' }] } as any);
+    vi.mocked(getEntityFromCache).mockResolvedValue({ platform_organization: 'bae-org-id' } as any);
+    // isUserInPlatformOrganization returns false: public user (Filigran) is NOT in the platform org (BAE)
+    const { isUserInPlatformOrganization } = await import('../../../../src/utils/access');
+    vi.mocked(isUserInPlatformOrganization).mockReturnValue(false);
+
+    const req = makeMockReq({ id: 'stream-1' });
+    const res = makeMockRes();
+    const next = vi.fn();
+
+    await authenticateForPublic(req, res, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(req.user).not.toBe(adminUser);
+    // Context must now reflect the public user's org membership, NOT the admin's
+    expect(mockContext.user_inside_platform_organization).toBe(false);
   });
 
   it('returns 401 when stream does not exist and user is unauthenticated', async () => {
@@ -194,15 +223,17 @@ describe('extractUserAndCollection middleware helper (TAXII)', () => {
     vi.clearAllMocks();
   });
 
-  it('returns public user and collection for a public taxii collection', async () => {
+  it('returns context, public user and collection for a public taxii collection', async () => {
     vi.mocked(findTaxiiCollection).mockResolvedValue(MOCK_TAXII_COLLECTION as any);
     vi.mocked(resolvePublicUser).mockResolvedValue(MOCK_PUBLIC_USER as any);
+    vi.mocked(getEntityFromCache).mockResolvedValue({ platform_organization: null } as any);
 
     const req = makeMockReq();
     const res = makeMockRes();
 
     const result = await extractUserAndCollection(req, res, 'taxii-1');
 
+    expect(result.context).toBeDefined();
     expect(result.user).toBe(MOCK_PUBLIC_USER);
     expect(result.collection).toBe(MOCK_TAXII_COLLECTION);
   });
@@ -224,10 +255,10 @@ describe('resolveUserForFeed helper', () => {
     vi.clearAllMocks();
   });
 
-  it('returns authenticated user when context.user is set', async () => {
+  it('returns authenticated user when context.user is set and feed is private', async () => {
     const mockUser = { id: 'auth-user', user_email: 'auth@test.com' } as any;
     const context = { user: mockUser } as any;
-    const feed = { feed_public_user_id: 'public-id' } as any;
+    const feed = { feed_public: false, feed_public_user_id: undefined } as any;
 
     const result = await resolveUserForFeed(context, feed);
 
@@ -235,7 +266,21 @@ describe('resolveUserForFeed helper', () => {
     expect(resolvePublicUser).not.toHaveBeenCalled();
   });
 
-  it('calls resolvePublicUser when context.user is null (public feed)', async () => {
+  it('calls resolvePublicUser for a public feed even when an authenticated user is in context (admin session)', async () => {
+    // Admin is authenticated but the feed is public — the public user must always win.
+    const adminUser = { id: 'admin-id', user_email: 'admin@test.com' } as any;
+    vi.mocked(resolvePublicUser).mockResolvedValue({ id: 'public-user' } as any);
+    const context = { user: adminUser } as any;
+    const feed = { feed_public: true, feed_public_user_id: 'public-id' } as any;
+
+    const result = await resolveUserForFeed(context, feed);
+
+    expect(resolvePublicUser).toHaveBeenCalledWith(context, 'public-id');
+    expect(result).toEqual({ id: 'public-user' });
+    expect(result).not.toBe(adminUser);
+  });
+
+  it('calls resolvePublicUser when context.user is null (public feed, no session)', async () => {
     vi.mocked(resolvePublicUser).mockResolvedValue({ id: 'public-user' } as any);
     const context = { user: null } as any;
     const feed = { feed_public: true, feed_public_user_id: 'public-id' } as any;

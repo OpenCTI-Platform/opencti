@@ -10,8 +10,10 @@ import { basePath, getBaseUrl, logApp } from '../config/conf';
 import { AuthRequired, error, ForbiddenAccess, UNSUPPORTED_ERROR, UnsupportedError } from '../config/errors';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { findById, restAllCollections, restBuildCollection, restCollectionManifest, restCollectionStix } from '../modules/dataSharing/taxiiCollection-domain';
-import { executionContext, isUserHasCapability, SYSTEM_USER } from '../utils/access';
+import { executionContext, isUserHasCapability, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
+import { getEntityFromCache } from '../database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { findById as findTaxiiCollection } from '../modules/ingestion/ingestion-taxii-collection-domain';
 import { handleConfidenceToScoreTransformation, pushBundleToConnectorQueue } from '../manager/ingestionManager';
 import { now } from '../utils/format';
@@ -64,13 +66,16 @@ const getUpdatedAt = (obj) => {
 };
 
 export const extractUserAndCollection = async (req, res, id) => {
-  const findCollection = await findById(executionContext('taxii'), SYSTEM_USER, id);
+  const taxiiContext = executionContext('taxii');
+  const findCollection = await findById(taxiiContext, SYSTEM_USER, id);
   if (!findCollection) {
     throw ForbiddenAccess();
   }
   if (findCollection.taxii_public) {
-    const publicUser = await resolvePublicUser(executionContext('taxii'), findCollection.taxii_public_user_id);
-    return { user: publicUser, collection: findCollection };
+    const publicUser = await resolvePublicUser(taxiiContext, findCollection.taxii_public_user_id);
+    const settings = await getEntityFromCache(taxiiContext, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    taxiiContext.user_inside_platform_organization = isUserInPlatformOrganization(publicUser, settings);
+    return { context: taxiiContext, user: publicUser, collection: findCollection };
   }
   const context = await checkAuthenticationFromRequest(req, res);
   const userCollection = await findById(context, context.user, id);

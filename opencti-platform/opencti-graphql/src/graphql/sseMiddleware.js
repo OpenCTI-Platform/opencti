@@ -24,7 +24,15 @@ import {
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_STIX_INDICES,
 } from '../database/utils';
-import { BYPASS, computeUserMemberAccessIds, isUserCanAccessStixElement, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SYSTEM_USER } from '../utils/access';
+import {
+  BYPASS,
+  computeUserMemberAccessIds,
+  isUserCanAccessStixElement,
+  isUserHasCapability,
+  isUserInPlatformOrganization,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
+  SYSTEM_USER,
+} from '../utils/access';
 import { FROM_START_STR, streamEventId, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, buildRefRelationKey, ENTITY_TYPE_CONTAINER, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
@@ -36,8 +44,9 @@ import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { fullRelationsList } from '../database/middleware-loader';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
-import { getEntitiesListFromCache } from '../database/cache';
+import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../modules/dataSharing/streamCollection-types';
+import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { generateCreateMessage } from '../database/data-changes';
@@ -168,7 +177,6 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
 
 export const authenticateForPublic = async (req, res, next) => {
   const context = await createAuthenticatedContext(req, res, 'stream_authenticate');
-  req.context = context;
   req.expirationTime = utcDate().add(1, 'days').toDate();
   const { error, collection, streamFilters } = await computeUserAndCollection(req, res, {
     context,
@@ -187,11 +195,16 @@ export const authenticateForPublic = async (req, res, next) => {
       req.userId = user.id;
       req.capabilities = user.capabilities;
       req.allowed_marking = user.allowed_marking;
+      if (collection?.stream_public) {
+        const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+        context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
+      }
     } catch (e) {
       res.statusMessage = e.message ?? 'Public stream configuration error';
       sendErrorStatus(req, res, 500);
       return;
     }
+    req.context = context;
     req.collection = collection;
     req.streamFilters = streamFilters;
     next();
