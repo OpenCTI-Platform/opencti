@@ -22,7 +22,7 @@ describe('PLAYBOOK_CONTAINER_WRAPPER_COMPONENT', () => {
   const CAMPAIGN_ID = 'campaign--6bcf59ca-70c8-55ae-ac7d-a6f9b107a35b';
   const REL_ID = 'relationship--08e64f51-e890-5bec-be34-3344746f1b0c';
 
-  const BUNDLE_OBJECTS = [
+  const BUNDLE_OBJECTS = () => [
     testBundleObject({
       id: MALWARE_ID,
       type: 'Malware',
@@ -33,7 +33,7 @@ describe('PLAYBOOK_CONTAINER_WRAPPER_COMPONENT', () => {
     }),
     testBundleObject<StixRelation>({
       id: REL_ID,
-      type: 'Relationship',
+      type: 'stix-relationship',
       relationship_type: 'related-to',
       source_ref: MALWARE_ID,
       target_ref: CAMPAIGN_ID,
@@ -43,7 +43,7 @@ describe('PLAYBOOK_CONTAINER_WRAPPER_COMPONENT', () => {
   it('should wrap only main element in Container', async () => {
     const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor(testExecutor({
       mainId: MALWARE_ID,
-      bundleObjects: BUNDLE_OBJECTS,
+      bundleObjects: BUNDLE_OBJECTS(),
       configuration: componentConfig({
         applyToElements: playbookBundleElementsToApply.onlyMain.value,
       }),
@@ -57,7 +57,7 @@ describe('PLAYBOOK_CONTAINER_WRAPPER_COMPONENT', () => {
   it('should wrap all elements in Container', async () => {
     const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor(testExecutor({
       mainId: MALWARE_ID,
-      bundleObjects: BUNDLE_OBJECTS,
+      bundleObjects: BUNDLE_OBJECTS(),
       configuration: componentConfig({
         applyToElements: playbookBundleElementsToApply.allElements.value,
       }),
@@ -71,7 +71,7 @@ describe('PLAYBOOK_CONTAINER_WRAPPER_COMPONENT', () => {
   it('should wrap all elements in Container except main element', async () => {
     const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor(testExecutor({
       mainId: MALWARE_ID,
-      bundleObjects: BUNDLE_OBJECTS,
+      bundleObjects: BUNDLE_OBJECTS(),
       configuration: componentConfig({
         applyToElements: playbookBundleElementsToApply.allExceptMain.value,
       }),
@@ -115,5 +115,147 @@ describe('PLAYBOOK_CONTAINER_WRAPPER_COMPONENT', () => {
     expect(result.bundle.objects.length).toEqual(2);
     expect(result.bundle.objects[1].extensions[STIX_EXT_OCTI].type).toEqual('Case-Incident');
     expect(result.bundle.objects[1].object_refs).toContain(INCIDENT_ID);
+  });
+
+  describe('Filter elements manipulated', () => {
+    const filterGrouping = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Grouping"],"mode":"or"}],"filterGroups":[]}';
+    const filterCampaign = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Campaign"],"mode":"or"}],"filterGroups":[]}';
+    const filterMalware = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Malware"],"mode":"or"}],"filterGroups":[]}';
+    const filterMalwareCampaign = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Malware","Campaign"],"mode":"or"}],"filterGroups":[]}';
+
+    it('should add nothing if no match (only-main)', async () => {
+      const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+          applyWithFilters: filterGrouping,
+        }),
+      }));
+
+      const reportResult = result.bundle.objects
+        .find((element) => element.type === 'report') as StixContainer;
+      expect(reportResult.object_refs).toEqual([]);
+    });
+
+    it('should add only main if match (only-main)', async () => {
+      const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+          applyWithFilters: filterMalwareCampaign,
+        }),
+      }));
+
+      const reportResult = result.bundle.objects
+        .find((element) => element.type === 'report') as StixContainer;
+      expect(reportResult.object_refs).toEqual([MALWARE_ID]);
+    });
+
+    it('should add nothing if no match (all-elements)', async () => {
+      const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyToElements: playbookBundleElementsToApply.allElements.value,
+          applyWithFilters: filterGrouping,
+        }),
+      }));
+
+      const reportResult = result.bundle.objects
+        .find((element) => element.type === 'report') as StixContainer;
+      expect(reportResult.object_refs).toEqual([]);
+    });
+
+    it('should add only campaign if partial match (all-elements)', async () => {
+      const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyToElements: playbookBundleElementsToApply.allElements.value,
+          applyWithFilters: filterCampaign,
+        }),
+      }));
+
+      const reportResult = result.bundle.objects
+        .find((element) => element.type === 'report') as StixContainer;
+      expect(reportResult.object_refs).toEqual([CAMPAIGN_ID]);
+    });
+
+    it('should add all elements if full match (all-elements)', async () => {
+      const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyToElements: playbookBundleElementsToApply.allElements.value,
+          applyWithFilters: filterMalwareCampaign,
+        }),
+      }));
+
+      const reportResult = result.bundle.objects
+        .find((element) => element.type === 'report') as StixContainer;
+      expect(reportResult.object_refs).toEqual([MALWARE_ID, CAMPAIGN_ID]);
+    });
+
+    it('should add nothing if no match (all-except-main)', async () => {
+      const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyToElements: playbookBundleElementsToApply.allExceptMain.value,
+          applyWithFilters: filterGrouping,
+        }),
+      }));
+
+      const reportResult = result.bundle.objects
+        .find((element) => element.type === 'report') as StixContainer;
+      expect(reportResult.object_refs).toEqual([]);
+    });
+
+    it('should addd nothing if match only main (all-except-main)', async () => {
+      const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyToElements: playbookBundleElementsToApply.allExceptMain.value,
+          applyWithFilters: filterMalware,
+        }),
+      }));
+
+      const reportResult = result.bundle.objects
+        .find((element) => element.type === 'report') as StixContainer;
+      expect(reportResult.object_refs).toEqual([]);
+    });
+
+    it('should add only campaign if partial match (all-except-main)', async () => {
+      const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyToElements: playbookBundleElementsToApply.allExceptMain.value,
+          applyWithFilters: filterCampaign,
+        }),
+      }));
+
+      const reportResult = result.bundle.objects
+        .find((element) => element.type === 'report') as StixContainer;
+      expect(reportResult.object_refs).toEqual([CAMPAIGN_ID]);
+    });
+
+    it('should add all elements except main if full match (all-except-main)', async () => {
+      const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor(testExecutor({
+        mainId: MALWARE_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyToElements: playbookBundleElementsToApply.allExceptMain.value,
+          applyWithFilters: filterMalwareCampaign,
+        }),
+      }));
+
+      const reportResult = result.bundle.objects
+        .find((element) => element.type === 'report') as StixContainer;
+      expect(reportResult.object_refs).toEqual([CAMPAIGN_ID]);
+    });
   });
 });
