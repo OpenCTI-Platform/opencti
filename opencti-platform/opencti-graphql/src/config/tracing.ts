@@ -1,7 +1,6 @@
 import { SEMATTRS_ENDUSER_ID } from '@opentelemetry/semantic-conventions';
-import { MeterProvider, MetricReader, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
-import { ValueType } from '@opentelemetry/api-metrics';
-import type { Counter, Histogram } from '@opentelemetry/api-metrics/build/src/types/Metric';
+import { MeterProvider, type IMetricReader, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { type Counter, type Histogram, ValueType } from '@opentelemetry/api';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import nodeMetrics from 'opentelemetry-node-metrics';
@@ -91,7 +90,7 @@ class MeterManager {
 }
 
 // ------- Metrics
-const metricReaders: MetricReader[] = [];
+const metricReaders: IMetricReader[] = [];
 if (ENABLED_METRICS) {
   // OTLP - JAEGER ...
   const exporterOtlp = nconf.get('app:telemetry:metrics:exporter_otlp');

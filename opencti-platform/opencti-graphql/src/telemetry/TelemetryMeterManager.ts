@@ -1,5 +1,5 @@
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
-import type { ObservableResult } from '@opentelemetry/api-metrics';
+import type { ObservableResult } from '@opentelemetry/api';
 import { ValueType } from '@opentelemetry/api';
 
 export const TELEMETRY_SERVICE_NAME = 'opencti-telemetry';
