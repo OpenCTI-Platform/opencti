@@ -50,7 +50,7 @@ interface AuthorizedMembersFieldProps
   enableAccesses?: boolean;
   hideInfo?: boolean;
   adminDefault?: boolean;
-  dynamicKeysForPlaybooks?: boolean;
+  withDynamicKeys?: boolean;
   isCanUseEnable?: boolean;
   customInfoMessage?: string;
   style?: CSSProperties;
@@ -92,7 +92,7 @@ const AuthorizedMembersField = ({
   enableAccesses = false,
   hideInfo = false,
   adminDefault = false,
-  dynamicKeysForPlaybooks = false,
+  withDynamicKeys = false,
   isCanUseEnable = false,
   customInfoMessage,
   style,
@@ -407,7 +407,7 @@ const AuthorizedMembersField = ({
                     <ObjectMembersField
                       name="newAccessMember"
                       disabled={!values.applyAccesses}
-                      dynamicKeysForPlaybooks={dynamicKeysForPlaybooks}
+                      withDynamicKeys={withDynamicKeys}
                     />
                     {value?.find(
                       (a) => a.value === values.newAccessMember?.value,

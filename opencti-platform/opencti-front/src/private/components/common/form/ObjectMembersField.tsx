@@ -58,7 +58,7 @@ interface ObjectMembersFieldProps {
   disabled?: boolean;
   required?: boolean;
   entityTypes?: MemberType[];
-  dynamicKeysForPlaybooks?: boolean;
+  withDynamicKeys?: boolean;
 }
 const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   name,
@@ -70,33 +70,33 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
   disabled = false,
   required = false,
   entityTypes,
-  dynamicKeysForPlaybooks,
+  withDynamicKeys,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [members, setMembers] = useState<OptionMember[]>(dynamicKeysForPlaybooks ? [
+  const [members, setMembers] = useState<OptionMember[]>(withDynamicKeys ? [
     {
-      type: t_i18n('Dynamic from the main entity triggering the playbook'),
+      type: t_i18n('Dynamic from context'),
       value: 'AUTHOR',
       label: t_i18n('Author (organization)'),
     },
     {
-      type: t_i18n('Dynamic from the main entity triggering the playbook'),
+      type: t_i18n('Dynamic from context'),
       value: 'CREATORS',
       label: t_i18n('Creators'),
     },
     {
-      type: t_i18n('Dynamic from the main entity triggering the playbook'),
+      type: t_i18n('Dynamic from context'),
       value: 'ASSIGNEES',
       label: t_i18n('Assignees'),
     },
     {
-      type: t_i18n('Dynamic from the main entity triggering the playbook'),
+      type: t_i18n('Dynamic from context'),
       value: 'PARTICIPANTS',
       label: t_i18n('Participants'),
     },
     {
-      type: t_i18n('Dynamic from the objects in the bundle of the playbook'),
+      type: t_i18n('Dynamic from bundle'),
       value: 'BUNDLE_ORGANIZATIONS',
       label: t_i18n('Organizations'),
     },

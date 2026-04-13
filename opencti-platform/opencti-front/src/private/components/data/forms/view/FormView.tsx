@@ -993,7 +993,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                       component={AuthorizedMembersField}
                       name="draftAuthorizedMembers"
                       label={t_i18n('Authorized Members')}
-                      dynamicKeysForPlaybooks={true}
+                      withDynamicKeys={true}
                       disabled={!isBypass}
                     />
                   </div>

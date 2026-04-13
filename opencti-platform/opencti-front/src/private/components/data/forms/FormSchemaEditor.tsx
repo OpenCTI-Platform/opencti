@@ -1932,7 +1932,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                               <Field
                                 name="authorized_members"
                                 component={AuthorizedMembersField}
-                                dynamicKeysForPlaybooks={true}
+                                withDynamicKeys={true}
                               />
                               <AuthorizedMembersSync
                                 onChange={(vals) => {
