@@ -225,7 +225,7 @@ class ThreatActorGroup:
         )
         query = (
             """
-            query ThreatActorsGroup($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: ThreatActorsOrdering, $orderMode: OrderingMode) {
+            query ThreatActorsGroup($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: ThreatActorsGroupOrdering, $orderMode: OrderingMode) {
                 threatActorsGroup(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
