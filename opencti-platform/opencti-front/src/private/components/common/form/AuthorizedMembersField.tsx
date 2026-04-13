@@ -376,159 +376,159 @@ const AuthorizedMembersField = ({
 
           return (
             <>
-            {(!hideInfo && !!accessInfoMessage) && (
-              <Alert severity="info" variant="outlined">{accessInfoMessage}</Alert>
-            )}
-            {isDisabledInDraft && (
-              <Alert style={{ marginTop: 15 }} severity="warning">
-                {t_i18n('Not available in draft')}
-              </Alert>
-            )}
-            {canDeactivate && (
-              <Field
-                component={SwitchField}
-                containerstyle={{
-                  display: 'inline-block',
-                  marginTop: 15,
-                  paddingLeft: 10,
-                }}
-                type="checkbox"
-                name="applyAccesses"
-                label={t_i18n('Activate access restriction')}
-                disabled={isDisabledInDraft || disabled}
-                onChange={(_: string, val: string) => {
-                  changeApplyAccesses(val === 'true', resetForm, setField);
-                }}
-              />
-            )}
-            {applyAccesses && !disabled && (
-              <Alert
-                sx={{
-                  mt: '16px',
-                  width: '100%',
-                  paddingBottom: '16px',
-                  '.MuiAlert-message': { width: '100%' },
-                }}
-                severity="info"
-                icon={false}
-                variant="outlined"
-              >
-                <AlertTitle>{t_i18n('Add new specific access')}</AlertTitle>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: 16,
+              {(!hideInfo && !!accessInfoMessage) && (
+                <Alert severity="info" variant="outlined">{accessInfoMessage}</Alert>
+              )}
+              {isDisabledInDraft && (
+                <Alert style={{ marginTop: 15 }} severity="warning">
+                  {t_i18n('Not available in draft')}
+                </Alert>
+              )}
+              {canDeactivate && (
+                <Field
+                  component={SwitchField}
+                  containerstyle={{
+                    display: 'inline-block',
+                    marginTop: 15,
+                    paddingLeft: 10,
                   }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <ObjectMembersField
-                      name="newAccessMember"
-                      disabled={!values.applyAccesses}
-                      withDynamicKeys={withDynamicKeys}
-                    />
-                    {value?.find(
-                      (a) => a.value === values.newAccessMember?.value,
-                    ) && (
-                      <FormHelperText style={{ position: 'absolute' }}>
-                        {t_i18n('Access already granted')}
-                      </FormHelperText>
-                    )}
-                  </div>
-                  <Field
-                    name="newAccessRight"
-                    component={SelectField}
-                    label={t_i18n('Access right')}
-                    style={{ m: 1, minWidth: 120 }}
-                    size="small"
-                    disabled={!values.applyAccesses}
-                  >
-                    {accessRights.map((accessRight) => (
-                      <MenuItem
-                        value={accessRight.value}
-                        key={accessRight.value}
-                      >
-                        {accessRight.label}
-                      </MenuItem>
-                    ))}
-                  </Field>
-                  <Button
-                    aria-label="More"
-                    onClick={() => handleSubmit()}
-                    disabled={
-                      !dirty
-                      || !isValid
-                      || doesNewMemberAlreadyExist(values)
-                      || !values.applyAccesses
-                    }
-                    style={{ marginTop: 10 }}
-                  >
-                    {t_i18n('Add')}
-                  </Button>
-                </div>
-                {shouldShowGroupsRestriction && (
-                  <div style={fieldSpacingContainerStyle}>
-                    <Accordion>
-                      <AccordionSummary id="accordion-panel">
-                        <Typography>{t_i18n('Advanced options')}</Typography>
-                      </AccordionSummary>
-                      <AccordionDetails style={{ padding: 0 }}>
-                        <Alert severity="info" style={{ fontSize: 11 }}>
-                          {t_i18n('Restrict access by selecting groups to intersect with the selected member\'s access rights')}
-                        </Alert>
-                        <div style={{ padding: '8px 16px 16px 16px' }}>
-                          <ObjectMembersField
-                            name="groupsRestriction"
-                            label={t_i18n('Groups restriction')}
-                            disabled={!values.applyAccesses}
-                            entityTypes={['Group']}
-                            multiple
-                          />
-                        </div>
-                      </AccordionDetails>
-                    </Accordion>
-                  </div>
-                )}
-              </Alert>
-            )}
-            {applyAccesses && (
-              <>
-                <Typography
-                  variant="h3"
+                  type="checkbox"
+                  name="applyAccesses"
+                  label={t_i18n('Activate access restriction')}
+                  disabled={isDisabledInDraft || disabled}
+                  onChange={(_: string, val: string) => {
+                    changeApplyAccesses(val === 'true', resetForm, setField);
+                  }}
+                />
+              )}
+              {applyAccesses && !disabled && (
+                <Alert
                   sx={{
-                    fontSize: 14,
-                    fontWeight: 500,
                     mt: '16px',
-                    mb: 0,
+                    width: '100%',
+                    paddingBottom: '16px',
+                    '.MuiAlert-message': { width: '100%' },
                   }}
+                  severity="info"
+                  icon={false}
+                  variant="outlined"
                 >
-                  {t_i18n('Current specific accesses')}
-                </Typography>
+                  <AlertTitle>{t_i18n('Add new specific access')}</AlertTitle>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 16,
+                    }}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <ObjectMembersField
+                        name="newAccessMember"
+                        disabled={!values.applyAccesses}
+                        withDynamicKeys={withDynamicKeys}
+                      />
+                      {value?.find(
+                        (a) => a.value === values.newAccessMember?.value,
+                      ) && (
+                        <FormHelperText style={{ position: 'absolute' }}>
+                          {t_i18n('Access already granted')}
+                        </FormHelperText>
+                      )}
+                    </div>
+                    <Field
+                      name="newAccessRight"
+                      component={SelectField}
+                      label={t_i18n('Access right')}
+                      style={{ m: 1, minWidth: 120 }}
+                      size="small"
+                      disabled={!values.applyAccesses}
+                    >
+                      {accessRights.map((accessRight) => (
+                        <MenuItem
+                          value={accessRight.value}
+                          key={accessRight.value}
+                        >
+                          {accessRight.label}
+                        </MenuItem>
+                      ))}
+                    </Field>
+                    <Button
+                      aria-label="More"
+                      onClick={() => handleSubmit()}
+                      disabled={
+                        !dirty
+                        || !isValid
+                        || doesNewMemberAlreadyExist(values)
+                        || !values.applyAccesses
+                      }
+                      style={{ marginTop: 10 }}
+                    >
+                      {t_i18n('Add')}
+                    </Button>
+                  </div>
+                  {shouldShowGroupsRestriction && (
+                    <div style={fieldSpacingContainerStyle}>
+                      <Accordion>
+                        <AccordionSummary id="accordion-panel">
+                          <Typography>{t_i18n('Advanced options')}</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails style={{ padding: 0 }}>
+                          <Alert severity="info" style={{ fontSize: 11 }}>
+                            {t_i18n('Restrict access by selecting groups to intersect with the selected member\'s access rights')}
+                          </Alert>
+                          <div style={{ padding: '8px 16px 16px 16px' }}>
+                            <ObjectMembersField
+                              name="groupsRestriction"
+                              label={t_i18n('Groups restriction')}
+                              disabled={!values.applyAccesses}
+                              entityTypes={['Group']}
+                              multiple
+                            />
+                          </div>
+                        </AccordionDetails>
+                      </Accordion>
+                    </div>
+                  )}
+                </Alert>
+              )}
+              {applyAccesses && (
+                <>
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      fontSize: 14,
+                      fontWeight: 500,
+                      mt: '16px',
+                      mb: 0,
+                    }}
+                  >
+                    {t_i18n('Current specific accesses')}
+                  </Typography>
 
-                <List sx={{ pb: 0 }}>
-                  {showAllMembersLine && (
-                    <AuthorizedMembersFieldListItem
-                      authorizedMember={allMembersOption}
-                      name="allAccessRight"
-                      accessRights={accessRights}
-                      ownerId={owner?.id}
-                      onChange={changeAllMembersAccess}
-                      disabled={disabled}
-                    />
-                  )}
-                  {showCreatorLine && (
-                    <AuthorizedMembersFieldListItem
-                      authorizedMember={creatorOption}
-                      name="creatorAccessRight"
-                      accessRights={accessRights}
-                      ownerId={owner?.id}
-                      onChange={changeCreatorAccess}
-                      disabled={disabled}
-                    />
-                  )}
-                </List>
-              </>
-            )}
+                  <List sx={{ pb: 0 }}>
+                    {showAllMembersLine && (
+                      <AuthorizedMembersFieldListItem
+                        authorizedMember={allMembersOption}
+                        name="allAccessRight"
+                        accessRights={accessRights}
+                        ownerId={owner?.id}
+                        onChange={changeAllMembersAccess}
+                        disabled={disabled}
+                      />
+                    )}
+                    {showCreatorLine && (
+                      <AuthorizedMembersFieldListItem
+                        authorizedMember={creatorOption}
+                        name="creatorAccessRight"
+                        accessRights={accessRights}
+                        ownerId={owner?.id}
+                        onChange={changeCreatorAccess}
+                        disabled={disabled}
+                      />
+                    )}
+                  </List>
+                </>
+              )}
             </>
           );
         }}

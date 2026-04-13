@@ -123,9 +123,9 @@ export interface FormSchemaDefinition {
       type: 'none' | 'main_entity_author' | 'static';
       isEditable: boolean;
       isRequired: boolean;
-      defaultValue?: string;      // for static: identity id
+      defaultValue?: string; // for static: identity id
       defaultValueLabel?: string; // for static: identity display name
-      defaultValueType?: string;  // for static: identity entity_type
+      defaultValueType?: string; // for static: identity entity_type
     };
     authorizedMembers?: {
       enabled: boolean;
