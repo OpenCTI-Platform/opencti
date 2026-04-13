@@ -14,7 +14,7 @@ import * as Yup from 'yup';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import SliderField from '../../../../components/fields/SliderField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';

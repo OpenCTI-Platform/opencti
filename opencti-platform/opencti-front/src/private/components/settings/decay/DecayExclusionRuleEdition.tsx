@@ -15,7 +15,7 @@ import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import Button from '@common/button/Button';
 import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { enabledFilters } from './DecayExclusionRuleCreationForm';
 import { useTheme } from '@mui/material/styles';

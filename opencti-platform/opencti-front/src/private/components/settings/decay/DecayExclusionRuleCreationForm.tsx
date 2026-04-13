@@ -11,7 +11,7 @@ import Filters from '@components/common/lists/Filters';
 import FilterIconButton from 'src/components/FilterIconButton';
 import Box from '@mui/material/Box';
 import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';

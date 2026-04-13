@@ -10,7 +10,7 @@ import { ContainerMappingContent_container$data } from '@components/common/conta
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { createStyles } from '@mui/styles';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import RichTextField from '../../../../components/fields/RichTextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';

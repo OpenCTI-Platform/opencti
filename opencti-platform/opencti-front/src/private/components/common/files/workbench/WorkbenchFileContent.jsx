@@ -30,7 +30,7 @@ import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import TitleMainEntity from '../../../../../components/common/typography/TitleMainEntity';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import DeleteDialog from '../../../../../components/DeleteDialog';
-import MarkdownField from '../../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
 import RichTextField from '../../../../../components/fields/RichTextField';
 import SelectField from '../../../../../components/fields/SelectField';
 import SwitchField from '../../../../../components/fields/SwitchField';

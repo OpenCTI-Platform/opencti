@@ -3,7 +3,7 @@ import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
-import MarkdownField from '../../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
 import SelectField from '../../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';

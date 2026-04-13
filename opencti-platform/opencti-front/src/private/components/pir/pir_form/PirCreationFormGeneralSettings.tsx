@@ -20,7 +20,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { PirCreationFormData } from '@components/pir/pir_form/pir-form-utils';
 import Alert from '@mui/material/Alert';
 import { AlertTitle } from '@mui/material';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';

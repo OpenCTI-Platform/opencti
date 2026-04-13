@@ -20,7 +20,7 @@ import { commitMutation, defaultCommitMutation } from '../../../../relay/environ
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useAuth from '../../../../utils/hooks/useAuth';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';

@@ -8,7 +8,7 @@ import * as R from 'ramda';
 import { FunctionComponent, SyntheticEvent, useState } from 'react';
 import { graphql } from 'react-relay';
 import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';

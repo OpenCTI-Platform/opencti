@@ -4,7 +4,7 @@ import DialogActions from '@mui/material/DialogActions';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field } from 'formik';
 import { FunctionComponent, useState } from 'react';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/useGranted';

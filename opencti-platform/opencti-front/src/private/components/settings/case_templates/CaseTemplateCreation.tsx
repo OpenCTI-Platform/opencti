@@ -7,7 +7,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
