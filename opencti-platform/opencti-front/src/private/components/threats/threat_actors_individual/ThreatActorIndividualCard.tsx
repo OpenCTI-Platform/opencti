@@ -17,7 +17,7 @@ export const ThreatActorIndividualCardFragment = graphql`
     created
     modified
     entity_type
-    threat_actor_types
+    threat_actor_individual_types
     sophistication
     resource_level
     draftVersion {

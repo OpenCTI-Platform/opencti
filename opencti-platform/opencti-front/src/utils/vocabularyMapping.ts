@@ -14,7 +14,8 @@ export const OPENVOCAB_FIELD_MAPPINGS: VocabularyMapping[] = [
   { attribute: 'x_mitre_permissions_required', vocabularyType: 'permissions-ov', label: 'Required permissions', multiple: true },
 
   // Threat Actor attributes
-  { attribute: 'threat_actor_types', vocabularyType: 'threat-actor-group-type-ov', label: 'Threat actor types', multiple: true },
+  { attribute: 'threat_actor_group_types', vocabularyType: 'threat-actor-group-type-ov', label: 'Threat actor group types', multiple: true },
+  { attribute: 'threat_actor_individual_types', vocabularyType: 'threat-actor-individual-type-ov', label: 'Threat actor individual types', multiple: true },
   { attribute: 'sophistication', vocabularyType: 'threat-actor-group-sophistication-ov', label: 'Sophistication', multiple: false },
   { attribute: 'resource_level', vocabularyType: 'attack-resource-level-ov', label: 'Resource level', multiple: false },
   { attribute: 'primary_motivation', vocabularyType: 'attack-motivation-ov', label: 'Primary motivation', multiple: false },

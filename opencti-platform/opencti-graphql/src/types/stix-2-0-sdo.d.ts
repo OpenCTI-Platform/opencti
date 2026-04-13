@@ -49,7 +49,6 @@ export interface StixIntrusionSet extends StixDomainObject {
 export interface StixThreatActor extends StixDomainObject {
   name: string;
   description: string;
-  threat_actor_types: Array<string>;
   aliases: Array<string>;
   first_seen: StixDate;
   last_seen: StixDate;

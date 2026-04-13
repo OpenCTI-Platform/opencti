@@ -17,7 +17,7 @@ export const threatActorsGroupCardsQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: ThreatActorsOrdering
+    $orderBy: ThreatActorsGroupOrdering
     $orderMode: OrderingMode
     $filters: FilterGroup
   ) {
@@ -39,7 +39,7 @@ export const ThreatActorsGroupCardsFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-    orderBy: { type: "ThreatActorsOrdering", defaultValue: name }
+    orderBy: { type: "ThreatActorsGroupOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
   )

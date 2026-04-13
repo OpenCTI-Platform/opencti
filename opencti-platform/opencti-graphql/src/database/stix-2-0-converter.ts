@@ -287,7 +287,7 @@ export const convertThreatActorGroupToStix = (instance: StoreEntity): SDO.StixTh
     ...buildStixDomain(instance),
     name: instance.name,
     description: instance.description,
-    threat_actor_types: instance.threat_actor_types,
+    threat_actor_group_types: instance.threat_actor_group_types,
     aliases: instance.aliases ?? instance.x_opencti_aliases ?? [],
     first_seen: convertToStixDate(instance.first_seen),
     last_seen: convertToStixDate(instance.last_seen),

@@ -27230,7 +27230,7 @@ export type QueryThreatActorsGroupArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<ThreatActorsOrdering>;
+  orderBy?: InputMaybe<ThreatActorsGroupOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
@@ -33909,7 +33909,6 @@ export type ThreatActor = {
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  threat_actor_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -34157,7 +34156,7 @@ export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject &
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  threat_actor_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  threat_actor_group_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -34360,7 +34359,7 @@ export type ThreatActorGroupAddInput = {
   secondary_motivations?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   sophistication?: InputMaybe<Scalars['String']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
-  threat_actor_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  threat_actor_group_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   upsertOperations?: InputMaybe<Array<EditInput>>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
@@ -34488,7 +34487,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  threat_actor_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  threat_actor_individual_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
   weight?: Maybe<Array<Measure>>;
@@ -34701,7 +34700,7 @@ export type ThreatActorIndividualAddInput = {
   secondary_motivations?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   sophistication?: InputMaybe<Scalars['String']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
-  threat_actor_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  threat_actor_individual_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   upsertOperations?: InputMaybe<Array<EditInput>>;
   weight?: InputMaybe<Array<MeasureInput>>;
@@ -34722,6 +34721,21 @@ export type ThreatActorIndividualEdge = {
   node: ThreatActorIndividual;
 };
 
+export enum ThreatActorsGroupOrdering {
+  Score = '_score',
+  Confidence = 'confidence',
+  Created = 'created',
+  CreatedAt = 'created_at',
+  Modified = 'modified',
+  Name = 'name',
+  ObjectMarking = 'objectMarking',
+  ResourceLevel = 'resource_level',
+  Sophistication = 'sophistication',
+  ThreatActorGroupTypes = 'threat_actor_group_types',
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
+}
+
 export enum ThreatActorsIndividualOrdering {
   Score = '_score',
   Confidence = 'confidence',
@@ -34732,7 +34746,7 @@ export enum ThreatActorsIndividualOrdering {
   ObjectMarking = 'objectMarking',
   ResourceLevel = 'resource_level',
   Sophistication = 'sophistication',
-  ThreatActorTypes = 'threat_actor_types',
+  ThreatActorIndividualTypes = 'threat_actor_individual_types',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -34747,7 +34761,6 @@ export enum ThreatActorsOrdering {
   ObjectMarking = 'objectMarking',
   ResourceLevel = 'resource_level',
   Sophistication = 'sophistication',
-  ThreatActorTypes = 'threat_actor_types',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -39708,6 +39721,7 @@ export type ResolversTypes = ResolversObject<{
   ThreatActorIndividualAddInput: ThreatActorIndividualAddInput;
   ThreatActorIndividualConnection: ResolverTypeWrapper<Omit<ThreatActorIndividualConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ThreatActorIndividualEdge']>>> }>;
   ThreatActorIndividualEdge: ResolverTypeWrapper<Omit<ThreatActorIndividualEdge, 'node'> & { node: ResolversTypes['ThreatActorIndividual'] }>;
+  ThreatActorsGroupOrdering: ThreatActorsGroupOrdering;
   ThreatActorsIndividualOrdering: ThreatActorsIndividualOrdering;
   ThreatActorsOrdering: ThreatActorsOrdering;
   TimeSeries: ResolverTypeWrapper<TimeSeries>;
@@ -50864,7 +50878,6 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ThreatActorStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ThreatActorStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ThreatActorStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  threat_actor_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<ThreatActorToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -50948,7 +50961,7 @@ export type ThreatActorGroupResolvers<ContextType = any, ParentType extends Reso
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ThreatActorGroupStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ThreatActorGroupStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ThreatActorGroupStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  threat_actor_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  threat_actor_group_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<ThreatActorGroupToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -51052,7 +51065,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ThreatActorIndividualStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ThreatActorIndividualStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  threat_actor_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  threat_actor_individual_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<ThreatActorIndividualToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   weight?: Resolver<Maybe<Array<ResolversTypes['Measure']>>, ParentType, ContextType>;

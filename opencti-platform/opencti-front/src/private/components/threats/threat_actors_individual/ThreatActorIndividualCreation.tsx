@@ -85,7 +85,7 @@ const THREAT_ACTOR_INDIVIDUAL_TYPE = 'Threat-Actor-Individual';
 
 interface ThreatActorIndividualAddInput {
   name: string;
-  threat_actor_types: string[];
+  threat_actor_individual_types: string[];
   confidence: number | null;
   description: string;
   createdBy: FieldOption | null;
@@ -148,7 +148,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
   const { mandatoryAttributes } = useIsMandatoryAttribute(THREAT_ACTOR_INDIVIDUAL_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string(),
-    threat_actor_types: Yup.array().nullable(),
+    threat_actor_individual_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
     objectMarking: Yup.array().nullable(),
@@ -240,7 +240,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
       input: {
         name,
         description: values?.description,
-        threat_actor_types: values?.threat_actor_types,
+        threat_actor_individual_types: values?.threat_actor_individual_types,
         confidence: parseInt(String(values?.confidence), 10),
         createdBy: values?.createdBy?.value,
         objectMarking: values?.objectMarking.map((v) => v.value),
@@ -292,7 +292,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
 
   const initialValues = useDefaultValues(THREAT_ACTOR_INDIVIDUAL_TYPE, {
     name: inputValue ?? '',
-    threat_actor_types: [],
+    threat_actor_individual_types: [],
     confidence: defaultConfidence ?? null,
     description: '',
     createdBy: defaultCreatedBy ?? null,
@@ -403,9 +403,9 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                 />
                 <OpenVocabField
                   type="threat-actor-individual-type-ov"
-                  name="threat_actor_types"
+                  name="threat_actor_individual_types"
                   label={t_i18n('Threat actor types')}
-                  required={(mandatoryAttributes.includes('threat_actor_types'))}
+                  required={(mandatoryAttributes.includes('threat_actor_individual_types'))}
                   multiple={true}
                   containerStyle={{ width: '100%', marginTop: 20 }}
                   onChange={setFieldValue}

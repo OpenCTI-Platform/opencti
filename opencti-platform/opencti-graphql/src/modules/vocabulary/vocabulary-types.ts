@@ -392,7 +392,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     description: 'Threat actor type is an open vocabulary used to describe what type of threat actor group is. For example, some threat actors groups are competitors who try to steal information, while others are activists who act in support of a social or political cause. Actor types are not mutually exclusive: a threat actor group can be both a disgruntled insider and a spy. [Casey 2007])',
     entity_types: [ENTITY_TYPE_THREAT_ACTOR_GROUP],
     fields: [{
-      key: 'threat_actor_types',
+      key: 'threat_actor_group_types',
       required: false,
       multiple: true,
     }],
@@ -420,7 +420,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     description: 'Threat actor individual type is an open vocabulary used to describe what type of threat actor the individual is. For example, some threat actors individuals are competitors who try to steal information, while others are activists who act in support of a social or political cause. Actor types are not mutually exclusive: a threat actor individual can be both a disgruntled insider and a spy. [Casey 2007])',
     entity_types: [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL],
     fields: [{
-      key: 'threat_actor_types',
+      key: 'threat_actor_individual_types',
       required: false,
       multiple: true,
     }],

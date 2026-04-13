@@ -34,12 +34,12 @@ class ThreatActorGroupDetailsComponent extends Component {
               )}
               <Grid item xs={hasImages ? 8 : 12}>
                 <Label>
-                  {t('Threat actor types')}
+                  {t('Threat actor group types')}
                 </Label>
-                <FieldOrEmpty source={threatActorGroup.threat_actor_types}>
+                <FieldOrEmpty source={threatActorGroup.threat_actor_group_types}>
                   <Stack direction="row" flexWrap="wrap" gap={1}>
-                    {threatActorGroup.threat_actor_types
-                      && threatActorGroup.threat_actor_types.map(
+                    {threatActorGroup.threat_actor_group_types
+                      && threatActorGroup.threat_actor_group_types.map(
                         (threatActorGroupType) => (
                           <Tag
                             key={threatActorGroupType}
@@ -162,7 +162,7 @@ const ThreatActorGroupDetails = createFragmentContainer(
         first_seen
         last_seen
         description
-        threat_actor_types
+        threat_actor_group_types
         sophistication
         resource_level
         primary_motivation

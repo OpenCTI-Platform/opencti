@@ -93,7 +93,7 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
   const { mandatoryAttributes } = useIsMandatoryAttribute(THREAT_ACTOR_GROUP_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
-    threat_actor_types: Yup.array().nullable(),
+    threat_actor_group_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
@@ -169,15 +169,15 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
     R.assoc('x_opencti_workflow_id', convertStatus(t_i18n, threatActorGroup)),
     R.assoc('references', []),
     R.assoc(
-      'threat_actor_types',
-      threatActorGroup.threat_actor_types
-        ? threatActorGroup.threat_actor_types
+      'threat_actor_group_types',
+      threatActorGroup.threat_actor_group_types
+        ? threatActorGroup.threat_actor_group_types
         : [],
     ),
     R.pick([
       'name',
       'references',
-      'threat_actor_types',
+      'threat_actor_group_types',
       'confidence',
       'description',
       'createdBy',
@@ -221,9 +221,9 @@ const ThreatActorGroupEditionOverviewComponent = (props) => {
           <OpenVocabField
             variant="edit"
             type="threat-actor-group-type-ov"
-            name="threat_actor_types"
+            name="threat_actor_group_types"
             label={t_i18n('Threat actor types')}
-            required={(mandatoryAttributes.includes('threat_actor_types'))}
+            required={(mandatoryAttributes.includes('threat_actor_group_types'))}
             containerStyle={{ width: '100%', marginTop: 20 }}
             multiple={true}
             onFocus={editor.changeFocus}
@@ -314,7 +314,7 @@ export default createFragmentContainer(
       fragment ThreatActorGroupEditionOverview_ThreatActorGroup on ThreatActorGroup {
         id
         name
-        threat_actor_types
+        threat_actor_group_types
         confidence
         entity_type
         description

@@ -1,6 +1,6 @@
-import type { StixDate, StixOpenctiExtension } from '../../types/stix-2-1-common';
+import type { StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import type { StixContainer } from '../../types/stix-2-1-sdo';
+import type { StixThreatActor } from '../../types/stix-2-1-sdo';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { Country, Measure } from '../../generated/graphql';
 import type { RELATION_BORN_IN, RELATION_ETHNICITY } from '../../schema/stixRefRelationship';
@@ -11,7 +11,7 @@ export interface BasicStoreEntityThreatActorIndividual extends BasicStoreEntity 
   name: string;
   description: string;
   aliases: string[];
-  threat_actor_types: string[];
+  threat_actor_individual_types: string[];
   first_seen: Date;
   last_seen: Date;
   roles: string[];
@@ -37,7 +37,7 @@ export interface StoreEntityThreatActorIndividual extends StoreEntity {
   name: string;
   description: string;
   aliases: string[];
-  threat_actor_types: string[];
+  threat_actor_individual_types: string[];
   first_seen: Date;
   last_seen: Date;
   roles: string[];
@@ -72,21 +72,9 @@ export interface StixThreatActorIndividualExtension extends StixOpenctiExtension
   ethnicity_ref: string;
 }
 
-export interface StixThreatActorIndividual extends StixContainer {
-  name: string;
-  description: string;
-  aliases: string[];
-  threat_actor_types: string[];
-  first_seen: StixDate;
-  last_seen: StixDate;
-  roles: string[];
-  goals: string[];
-  sophistication: string;
-  resource_level: string;
-  primary_motivations: string;
-  secondary_motivations: string[];
-  personal_motivations: string[];
+export interface StixThreatActorIndividual extends StixThreatActor {
   extensions: {
     [STIX_EXT_OCTI]: StixThreatActorIndividualExtension;
   };
+  threat_acotor_individual_types: string[];
 }

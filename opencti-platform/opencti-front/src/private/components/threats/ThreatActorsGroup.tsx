@@ -140,7 +140,7 @@ const ThreatActorsGroup = () => {
       name: {
         percentWidth: 15,
       },
-      threat_actor_types: {
+      threat_actor_group_types: {
         label: 'Type',
         percentWidth: 13,
       },

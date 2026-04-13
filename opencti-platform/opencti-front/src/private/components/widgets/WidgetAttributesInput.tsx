@@ -101,12 +101,12 @@ const attributesByEntityType: Map<string, { attribute: string; label: string }[]
     { attribute: 'due_date', label: 'Due date' },
   ]],
   ['Threat-Actor-Group', [
-    { attribute: 'threat_actor_types', label: 'Threat actor types' },
+    { attribute: 'threat_actor_group_types', label: 'Threat actor group types' },
     { attribute: 'first_seen', label: 'First seen' },
     { attribute: 'last_seen', label: 'Last seen' },
   ]],
   ['Threat-Actor-Individual', [
-    { attribute: 'threat_actor_types', label: 'Threat actor types' },
+    { attribute: 'threat_actor_individual_types', label: 'Threat actor individual types' },
     { attribute: 'first_seen', label: 'First seen' },
     { attribute: 'last_seen', label: 'Last seen' },
     { attribute: 'secondary_motivations', label: 'Secondary motivations' },

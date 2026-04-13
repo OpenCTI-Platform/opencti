@@ -243,7 +243,7 @@ export const REPORT_INSTANCE = {
       aliases: [
         'Equipo del Discoteca',
       ],
-      threat_actor_types: [
+      threat_actor_group_types: [
         'crime-syndicate',
       ],
       first_seen: '1970-01-01T00:00:00.000Z',

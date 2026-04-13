@@ -190,7 +190,7 @@
       "modified": "2024-05-20T14:00:00.000Z",
       "name": "E2E dashboard - Threat actor - now",
       "description": "Threat actor for e2e testing purposes (random data).",
-      "threat_actor_types": ["crime-syndicate"],
+      "threat_actor_individual_types": ["crime-syndicate"],
       "resource_level": "individual"
     },
     {
@@ -204,7 +204,7 @@
       "modified": "2024-05-13T14:00:00.000Z",
       "name": "E2E dashboard - Threat actor - week ago",
       "description": "Threat actor for e2e testing purposes (random data).",
-      "threat_actor_types": ["crime-syndicate"],
+      "threat_actor_individual_types": ["crime-syndicate"],
       "resource_level": "individual"
     },
     {
@@ -218,7 +218,7 @@
       "modified": "2024-04-18T14:00:00.000Z",
       "name": "E2E dashboard - Threat actor - month ago",
       "description": "Threat actor for e2e testing purposes (random data).",
-      "threat_actor_types": ["crime-syndicate"],
+      "threat_actor_individual_types": ["crime-syndicate"],
       "resource_level": "individual"
     },
     {
@@ -232,7 +232,7 @@
       "modified": "2023-12-18T14:00:00.000Z",
       "name": "E2E dashboard - Threat actor - 6 months ago",
       "description": "Threat actor for e2e testing purposes (random data).",
-      "threat_actor_types": ["crime-syndicate"],
+      "threat_actor_individual_types": ["crime-syndicate"],
       "resource_level": "individual"
     },
 
