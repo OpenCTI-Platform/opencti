@@ -27,7 +27,7 @@ export interface SerializedTransition {
   to: string; // ID of the destination StatusTemplate
   event: string;
   actions?: ActionConfig[];
-  conditions?: FilterGroup;
+  conditions?: { filters: FilterGroup };
 }
 
 /**

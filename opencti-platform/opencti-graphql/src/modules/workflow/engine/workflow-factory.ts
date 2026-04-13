@@ -1,5 +1,4 @@
 import { ActionRegistry } from '../registry/workflow-actions';
-import { ConditionRegistry } from '../registry/workflow-conditions';
 import type { ActionConfig, WorkflowSchema } from './workflow-schema';
 import type { ConditionValidator, Context, SideEffect } from '../types/workflow-types';
 import { WorkflowDefinition } from './workflow-definition';
@@ -11,20 +10,31 @@ import { FilterMode, FilterOperator, type Filter, type FilterGroup } from '../..
  * Handles the mapping between JSON configuration (schemas) and executable logic.
  */
 export class WorkflowFactory {
-  // Helper to access nested properties: "user.role" -> ctx.user.role
-  private static getNestedValue(obj: any, path: string): any {
-    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+  // Helper to access nested properties: "workflow_role" -> ctx.user.role
+  private static getNestedValue(ctx: any, key: string): string | string[] {
+    if (key === 'workflow_group') {
+      return ((ctx as any)?.user?.groups || []).map((g: any) => g.id);
+    } else if (key === 'workflow_organization') {
+      return ((ctx as any)?.user?.organizations || []).map((o: any) => o.id);
+    } else if (key === 'workflow_role') {
+      return ((ctx as any)?.user?.roles || []).map((r: any) => r.name);
+    } else if (key === 'name') {
+      return ctx.entity.name;
+    } else {
+      return key.split('.').reduce((acc, part) => acc && acc[part], ctx);
+    }
   }
 
   /**
    * Translates a list of condition configurations into executable validator functions.
    */
-  public static createConditions<TContext extends Context>(configs?: FilterGroup): ConditionValidator<TContext>[] {
-    if (!configs) return [];
+  public static createConditions<TContext extends Context>(configs?: { filters: FilterGroup }): ConditionValidator<TContext>[] {
+    const { filters } = configs || {};
+    if (!filters) return [];
 
     // We return a single validator that evaluates the entire recursive tree
     const rootValidator = async (ctx: TContext): Promise<boolean> => {
-      return this.evaluateFilterGroup(ctx, configs);
+      return this.evaluateFilterGroup(ctx, filters);
     };
 
     return [rootValidator];
@@ -50,20 +60,27 @@ export class WorkflowFactory {
 
   private static evaluateFilter<TContext extends Context>(ctx: TContext, filter: Filter): boolean {
     const { key, operator, values } = filter;
-
     // OpenCTI filters usually use the first element of the key array as the field path
-    const fieldPath = key[0];
-    if (!fieldPath || !operator) return true;
+    if (!key || !operator) return true;
 
-    const actualValue = this.getNestedValue(ctx, fieldPath);
+    const actualValue: string | string[] = Array.isArray(key)
+      ? key.flatMap((k) => this.getNestedValue(ctx, k))
+      : this.getNestedValue(ctx, key);
 
     // In the new format, 'values' is an array.
     // Standard behavior: if any value in the filter matches, the filter is TRUE (OR logic within the filter)
     return values.some((expectedValue) => {
       switch (operator) {
         case FilterOperator.Eq:
+          // If actualValue is an array, check if any element matches
+          if (Array.isArray(actualValue)) {
+            return actualValue.includes(expectedValue);
+          }
           return actualValue == expectedValue;
         case FilterOperator.NotEq:
+          if (Array.isArray(actualValue)) {
+            return !actualValue.includes(expectedValue);
+          }
           return actualValue != expectedValue;
         case FilterOperator.Gt:
           return actualValue > expectedValue;
