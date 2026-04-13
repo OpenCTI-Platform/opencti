@@ -51,12 +51,15 @@ interface AuthorizedMembersFieldProps
   hideInfo?: boolean;
   adminDefault?: boolean;
   withDynamicKeys?: boolean;
+  allowDynamicGroupsRestriction?: boolean;
   isCanUseEnable?: boolean;
   customInfoMessage?: string;
   style?: CSSProperties;
   isDraftEntity?: boolean;
   disabled?: boolean;
 }
+
+const DYNAMIC_GROUPS_RESTRICTION_SUPPORTED = ['AUTHOR', 'CREATORS'];
 
 // Type of data for internal form, not exposed to others.
 interface AuthorizedMembersFieldInternalValue {
@@ -93,6 +96,7 @@ const AuthorizedMembersField = ({
   hideInfo = false,
   adminDefault = false,
   withDynamicKeys = false,
+  allowDynamicGroupsRestriction = false,
   isCanUseEnable = false,
   customInfoMessage,
   style,
@@ -356,8 +360,22 @@ const AuthorizedMembersField = ({
           dirty,
           resetForm,
           setFieldValue: setField,
-        }) => (
-          <>
+        }) => {
+          const shouldShowGroupsRestriction = (() => {
+            if (!values.newAccessMember) {
+              return false;
+            }
+            if (values.newAccessMember.type === 'Organization') {
+              return true;
+            }
+            if (!allowDynamicGroupsRestriction) {
+              return false;
+            }
+            return DYNAMIC_GROUPS_RESTRICTION_SUPPORTED.includes(values.newAccessMember.value);
+          })();
+
+          return (
+            <>
             {(!hideInfo && !!accessInfoMessage) && (
               <Alert severity="info" variant="outlined">{accessInfoMessage}</Alert>
             )}
@@ -448,7 +466,7 @@ const AuthorizedMembersField = ({
                     {t_i18n('Add')}
                   </Button>
                 </div>
-                {values.newAccessMember && values.newAccessMember.type === 'Organization' && (
+                {shouldShowGroupsRestriction && (
                   <div style={fieldSpacingContainerStyle}>
                     <Accordion>
                       <AccordionSummary id="accordion-panel">
@@ -456,7 +474,7 @@ const AuthorizedMembersField = ({
                       </AccordionSummary>
                       <AccordionDetails style={{ padding: 0 }}>
                         <Alert severity="info" style={{ fontSize: 11 }}>
-                          {t_i18n('Restrict access by selecting groups to intersect with the organization\'s access rights')}
+                          {t_i18n('Restrict access by selecting groups to intersect with the selected member\'s access rights')}
                         </Alert>
                         <div style={{ padding: '8px 16px 16px 16px' }}>
                           <ObjectMembersField
@@ -511,8 +529,9 @@ const AuthorizedMembersField = ({
                 </List>
               </>
             )}
-          </>
-        )}
+            </>
+          );
+        }}
       </Formik>
       {applyAccesses && (
         <FieldArray
