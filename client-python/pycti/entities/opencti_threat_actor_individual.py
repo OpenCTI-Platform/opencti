@@ -126,7 +126,7 @@ class ThreatActorIndividual:
             name
             description
             aliases
-            threat_actor_types
+            threat_actor_individual_types
             first_seen
             last_seen
             roles
@@ -380,8 +380,8 @@ class ThreatActorIndividual:
         :type description: str
         :param aliases: (optional) list of alias names for the Threat-Actor-Individual
         :type aliases: list
-        :param threat_actor_types: (optional) list of threat actor types
-        :type threat_actor_types: list
+        :param threat_actor_individual_types: (optional) list of threat actor individual types
+        :type threat_actor_individual_types: list
         :param first_seen: (optional) date in OpenCTI date format
         :type first_seen: str
         :param last_seen: (optional) date in OpenCTI date format
@@ -423,7 +423,7 @@ class ThreatActorIndividual:
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
         aliases = kwargs.get("aliases", None)
-        threat_actor_types = kwargs.get("threat_actor_types", None)
+        threat_actor_individual_types = kwargs.get("threat_actor_individual_types", None)
         first_seen = kwargs.get("first_seen", None)
         last_seen = kwargs.get("last_seen", None)
         roles = kwargs.get("roles", None)
@@ -476,7 +476,7 @@ class ThreatActorIndividual:
                         "name": name,
                         "description": description,
                         "aliases": aliases,
-                        "threat_actor_types": threat_actor_types,
+                        "threat_actor_individual_types": threat_actor_individual_types,
                         "first_seen": first_seen,
                         "last_seen": last_seen,
                         "roles": roles,
@@ -575,9 +575,9 @@ class ThreatActorIndividual:
                     else None
                 ),
                 aliases=self.opencti.stix2.pick_aliases(stix_object),
-                threat_actor_types=(
-                    stix_object["threat_actor_types"]
-                    if "threat_actor_types" in stix_object
+                threat_actor_individual_types=(
+                    stix_object["threat_actor_individual_types"]
+                    if "threat_actor_individual_types" in stix_object
                     else None
                 ),
                 first_seen=(

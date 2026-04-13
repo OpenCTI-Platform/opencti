@@ -124,7 +124,6 @@ class ThreatActor:
             name
             description
             aliases
-            threat_actor_types
             first_seen
             last_seen
             roles
