@@ -251,14 +251,19 @@ When the primary entity you listen to is an incident & then use the "Container W
 
 ### Security coverage
 
-Will create a security coverage for the given elements when type is compatible.
+Will create a new security coverage for the entities (with compatible types) contained in the received STIX 2.1 bundle and send out the modified bundle. The bundle will contain the initial entities plus the created security coverages.
 
-By default, creation is applied to the entity triggering the playbook. You can change this behavior with the following options:
+By default, creation is applied for the entity triggering the playbook. You can change this behavior with the following options:
 
 - all elements in the bundle (elements that might result from enrichment for example)
 - all elements except the entity triggering the playbook
 
 ![Enroll entity in playbook](assets/playbook_select_bundle_scope.png)
+
+**Specificities of the component**
+
+**Operations filtering:**
+You have the possibility to add filters at the component level. The elements in the bundle will be filtered so only matching elements will be concerned by the operations of the component. This filtering has no impact on the output of the component, the bundle elements remain the same, they are only filtered to determine if the operations should be applied or not.
 
 ### Share with organizations
 

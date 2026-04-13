@@ -10,10 +10,12 @@ import type { StixDomainObject } from '../../../types/stix-2-1-common';
 import { extractStixRepresentative } from '../../../database/stix-representative';
 import { convertStoreToStix_2_1 } from '../../../database/stix-2-1-converter';
 import { ENTITY_TYPE_SECURITY_COVERAGE, INPUT_COVERED, type StixSecurityCoverage, type StoreEntitySecurityCoverage } from '../../securityCoverage/securityCoverage-types';
-import { isBundleElementInScope } from '../playbook-utils';
+import { filterBundleElements, isBundleElementInScope } from '../playbook-utils';
+import { executionContext } from '../../../utils/access';
 
 export interface SecurityCoverageConfiguration {
   applyToElements: PlaybookBundleElementsToApply;
+  applyWithFilters?: string;
   auto_enrichment_disable: boolean;
   periodicity: string;
   duration: string;
@@ -33,6 +35,11 @@ const PLAYBOOK_SECURITY_COVERAGE_COMPONENT_SCHEMA: JSONSchemaType<SecurityCovera
         { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
         { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
       ],
+    },
+    applyWithFilters: {
+      type: 'string',
+      nullable: true,
+      default: '',
     },
     auto_enrichment_disable: { type: 'boolean', $ref: 'Force manual coverage (prevent enrichment connectors from running)', default: false },
     periodicity: { type: 'string', $ref: 'Coverage recurrence (every x)', default: 'P1D' },
@@ -74,9 +81,19 @@ export const PLAYBOOK_SECURITY_COVERAGE_COMPONENT: PlaybookComponent<SecurityCov
   configuration_schema: PLAYBOOK_SECURITY_COVERAGE_COMPONENT_SCHEMA,
   schema: async () => PLAYBOOK_SECURITY_COVERAGE_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
-    const { applyToElements, auto_enrichment_disable, periodicity, duration, type_affinity, platforms_affinity } = playbookNode.configuration;
+    const context = executionContext('playbook_components');
+    const {
+      applyToElements,
+      applyWithFilters,
+      auto_enrichment_disable,
+      periodicity,
+      duration,
+      type_affinity,
+      platforms_affinity,
+    } = playbookNode.configuration;
 
-    const elementsToApply = bundle.objects.filter((object) => isBundleElementInScope(object, applyToElements, dataInstanceId));
+    const inScopeElements = bundle.objects.filter((object) => isBundleElementInScope(object, applyToElements, dataInstanceId));
+    const elementsToApply = await filterBundleElements(context, inScopeElements, applyWithFilters);
 
     for (let index = 0; index < elementsToApply.length; index += 1) {
       const element = elementsToApply[index] as StixDomainObject;
