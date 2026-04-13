@@ -9,7 +9,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../../case/case-rft/case-rft-typ
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT, type StixCaseIncident } from '../../case/case-incident/case-incident-types';
 import { FunctionalError } from '../../../config/errors';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../../task/task-types';
-import { extractBundleBaseElement, isBundleElementInScope } from '../playbook-utils';
+import { extractBundleBaseElement, filterBundleElements, isBundleElementInScope } from '../playbook-utils';
 import { now } from '../../../utils/format';
 import { extractStixRepresentative } from '../../../database/stix-representative';
 import { generateStandardId, generateInternalId } from '../../../schema/identifier';
@@ -78,6 +78,7 @@ export interface ContainerWrapperConfiguration {
   container_type: string;
   caseTemplates: { label: string; value: string }[];
   applyToElements: PlaybookBundleElementsToApply;
+  applyWithFilters?: string;
   copyFiles: boolean;
   newContainer: boolean;
 }
@@ -103,6 +104,11 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA: JSONSchemaType<Contain
         { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
       ],
     },
+    applyWithFilters: {
+      type: 'string',
+      nullable: true,
+      default: '',
+    },
     copyFiles: { type: 'boolean', $ref: 'Copy files from main element to the container', default: false },
     newContainer: { type: 'boolean', $ref: 'Create a new container at each run', default: false },
   },
@@ -124,7 +130,8 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
     return R.mergeDeepRight<JSONSchemaType<ContainerWrapperConfiguration>, any>(PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_SCHEMA, schemaElement);
   },
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
-    const { container_type, applyToElements, copyFiles, newContainer, caseTemplates } = playbookNode.configuration;
+    const context = executionContext('playbook_components');
+    const { container_type, applyToElements, copyFiles, newContainer, caseTemplates, applyWithFilters } = playbookNode.configuration;
     if (!PLAYBOOK_CONTAINER_WRAPPER_COMPONENT_AVAILABLE_CONTAINERS.includes(container_type)) {
       throw FunctionalError('this container type is incompatible with the Container Wrapper playbook component', { container_type });
     }
@@ -157,8 +164,9 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
       } as StoreCommon;
       const container = convertStoreToStix_2_1(storeContainer) as StixReport | StixCaseIncident;
 
-      container.object_refs = bundle.objects
-        .filter((object) => isBundleElementInScope(object, applyToElements, dataInstanceId))
+      const inScopeElements = bundle.objects
+        .filter((object) => isBundleElementInScope(object, applyToElements, dataInstanceId));
+      container.object_refs = (await filterBundleElements(context, inScopeElements, applyWithFilters))
         .map((object) => object.id);
 
       // Specific remapping of some attributes, waiting for a complete binding solution in the UI
