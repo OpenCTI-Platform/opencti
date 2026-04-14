@@ -38,6 +38,8 @@ const CREATE_PLAYBOOK = gql`
     playbookAdd(input: $input){
       id
       name
+      created_at
+      updated_at
     }
   }
 `;
@@ -50,6 +52,8 @@ const READ_PLAYBOOK = gql`
       description
       playbook_running
       playbook_definition
+      created_at
+      updated_at
     }
   }
 `;
@@ -59,6 +63,7 @@ const UPDATE_PLAYBOOK = gql`
     playbookFieldPatch(id: $id, input: $input) {
       id
       name
+      updated_at
     }
   }
 `;
@@ -113,12 +118,12 @@ const EMPTY_STRING_FILTERS = JSON.stringify({
 
 // -- Helpers to build playbook state --
 
-const createPlaybook = async (name: string): Promise<string> => {
+const createPlaybook = async (name: string) => {
   const result = await queryAsUserWithSuccess(USER_SECURITY, {
     query: CREATE_PLAYBOOK,
     variables: { input: { name } },
   });
-  return result.data?.playbookAdd.id;
+  return result.data?.playbookAdd;
 };
 
 const deletePlaybook = async (id: string) => {
@@ -194,12 +199,17 @@ const clearPlaybook = async (playbookId: string) => {
 
 describe('Playbook resolver standard behavior', () => {
   let playbookId = '';
+  let playbookCreatedAt = '';
+  let playbookUpdatedAt = '';
   let entryNodeId = '';
   let matchingNodeId = '';
   let linkId = '';
 
   beforeAll(async () => {
-    playbookId = await createPlaybook('Playbook1');
+    const playbook = await createPlaybook('Playbook1');
+    playbookId = playbook.id;
+    playbookCreatedAt = playbook.created_at;
+    playbookUpdatedAt = playbook.updated_at;
   });
 
   afterAll(async () => {
@@ -208,6 +218,14 @@ describe('Playbook resolver standard behavior', () => {
   });
 
   describe('playbook CRUD', () => {
+    it('should have created_at and updated_at set on creation', () => {
+      expect(playbookCreatedAt).toBeDefined();
+      expect(playbookUpdatedAt).toBeDefined();
+      // Both timestamps should be valid ISO date strings
+      expect(new Date(playbookCreatedAt).getTime()).not.toBeNaN();
+      expect(new Date(playbookUpdatedAt).getTime()).not.toBeNaN();
+    });
+
     it('should list playbooks', async () => {
       const queryResult = await queryAsAdminWithSuccess({ query: LIST_PLAYBOOKS, variables: { first: 10 } });
       expect(queryResult.data?.playbooks.edges.length).toEqual(1);
@@ -222,8 +240,12 @@ describe('Playbook resolver standard behavior', () => {
 
     it('should read playbook', async () => {
       const queryResult = await queryAsAdminWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
-      expect(queryResult.data?.playbook.name).toEqual('Playbook1');
-      expect(queryResult.data?.playbook.playbook_running).toEqual(false);
+      const playbook = queryResult.data?.playbook;
+      expect(playbook?.name).toEqual('Playbook1');
+      expect(playbook?.playbook_running).toEqual(false);
+      expect(playbook?.created_at).toBeDefined();
+      expect(playbook?.updated_at).toBeDefined();
+      expect(playbook?.created_at).toEqual(playbookCreatedAt);
     });
 
     it('should not update playbook if no Manage Playbooks capability', async () => {
@@ -245,6 +267,16 @@ describe('Playbook resolver standard behavior', () => {
         },
       });
       expect(queryResult.data?.playbookFieldPatch.name).toEqual('Playbook1 - updated');
+    });
+
+    it('should have updated_at changed after update', async () => {
+      const queryResult = await queryAsAdminWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
+      const newUpdatedAt = queryResult.data?.playbook.updated_at;
+      expect(newUpdatedAt).toBeDefined();
+      // updated_at should be > the original value after an update
+      expect(new Date(newUpdatedAt).getTime()).toBeGreaterThan(new Date(playbookUpdatedAt).getTime());
+      // created_at should remain unchanged
+      expect(queryResult.data?.playbook.created_at).toEqual(playbookCreatedAt);
     });
   });
 
