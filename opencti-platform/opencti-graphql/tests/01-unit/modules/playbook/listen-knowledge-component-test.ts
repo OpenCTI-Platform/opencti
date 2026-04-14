@@ -42,7 +42,7 @@ describe('findPlaybooksForEntity', () => {
     expect(cache.getEntitiesListFromCache).not.toHaveBeenCalled;
   });
 
-  // -- playbook_definition --
+  // -- Playbook Definition --
 
   it('should skip playbook when playbook_definition is missing', async () => {
     vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
@@ -54,9 +54,9 @@ describe('findPlaybooksForEntity', () => {
     expect(stixFiltering.isStixMatchFilterGroup).not.toHaveBeenCalled();
   });
 
-  // -- component_id --
+  // -- Component ID --
 
-  it('should skip playbook when component_id is not PLAYBOOK_INTERNAL_DATA_STREAM or PLAYBOOK_INTERNAL_MANUAL_TRIGGER', async () => {
+  it('should skip playbook when component id is not PLAYBOOK_INTERNAL_DATA_STREAM or PLAYBOOK_INTERNAL_MANUAL_TRIGGER', async () => {
     vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
     vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_OTHER_COMPONENT', {})]);
     vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
@@ -84,7 +84,7 @@ describe('findPlaybooksForEntity', () => {
     expect(result).toHaveLength(1);
   });
 
-  // -- enrollInPlaybook --
+  // -- EnrollInPlaybook --
 
   it('should exclude playbook when enrollInPlaybook is false', async () => {
     vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
@@ -105,7 +105,7 @@ describe('findPlaybooksForEntity', () => {
     expect(result).toHaveLength(1);
   });
 
-  // -- filters --
+  // -- Filters --
 
   it('should exclude playbook when filters do not match', async () => {
     vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
@@ -127,7 +127,7 @@ describe('findPlaybooksForEntity', () => {
     );
   });
 
-  // -- multiple playbooks --
+  // -- Multiple Playbooks --
 
   it('should handle multiple playbooks and return only matching ones', async () => {
     vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
