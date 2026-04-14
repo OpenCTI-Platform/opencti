@@ -15,18 +15,18 @@ window.MonacoEnvironment = {
   getWorker(_workerId: string, label: string) {
     if (label === 'json') {
       return new Worker(
-        new URL('./json.worker.js', import.meta.url),
+        new URL('./json.worker.ts', import.meta.url),
         { type: 'module' },
       );
     }
     if (label === 'graphql') {
       return new Worker(
-        new URL('./graphql.worker.js', import.meta.url),
+        new URL('./graphql.worker.ts', import.meta.url),
         { type: 'module' },
       );
     }
     return new Worker(
-      new URL('./editor.worker.js', import.meta.url),
+      new URL('./editor.worker.ts', import.meta.url),
       { type: 'module' },
     );
   },
