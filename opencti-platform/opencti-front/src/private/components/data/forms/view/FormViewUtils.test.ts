@@ -74,4 +74,32 @@ describe('formatFormDataForSubmission', () => {
 
     expect(formatted.draftAuthorizedMembers).toEqual(values.draftAuthorizedMembers);
   });
+
+  it('should normalize draftObjectAssignee to an ID array', () => {
+    const values = {
+      name: 'My report',
+      draftObjectAssignee: [
+        { value: 'assignee-1', label: 'Assignee 1' },
+        { id: 'assignee-2', label: 'Assignee 2' },
+      ],
+    };
+
+    const formatted = formatFormDataForSubmission(values as SubmissionValues, baseSchema);
+
+    expect(formatted.draftObjectAssignee).toEqual(['assignee-1', 'assignee-2']);
+  });
+
+  it('should normalize draftObjectParticipant to an ID array', () => {
+    const values = {
+      name: 'My report',
+      draftObjectParticipant: [
+        { value: 'participant-1', label: 'Participant 1' },
+        { id: 'participant-2', label: 'Participant 2' },
+      ],
+    };
+
+    const formatted = formatFormDataForSubmission(values as SubmissionValues, baseSchema);
+
+    expect(formatted.draftObjectParticipant).toEqual(['participant-1', 'participant-2']);
+  });
 });

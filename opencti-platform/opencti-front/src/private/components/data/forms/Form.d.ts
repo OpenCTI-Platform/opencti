@@ -3,6 +3,7 @@
  */
 
 import { FieldOption } from '../../../../utils/field';
+import { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
 
 // Field type definitions
 export interface FormFieldAttribute {
@@ -113,9 +114,6 @@ export interface FormBuilderData {
   relationships: EntityRelationship[];
   active: boolean;
 }
-
-import { AuthorizedMemberOption } from '../../../../utils/authorizedMembers';
-
 export interface FormAddInput {
   name: string;
   description?: string;

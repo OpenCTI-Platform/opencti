@@ -668,6 +668,21 @@ export const formatFormDataForSubmission = (
   }
 
   // Handle draft fields
+  const normalizeDraftSelectionIds = (entries: unknown[]): string[] => {
+    return entries
+      .map((entry) => {
+        if (typeof entry === 'string') {
+          return entry;
+        }
+        if (typeof entry === 'object' && entry !== null) {
+          const option = entry as { value?: string; id?: string };
+          return option.value || option.id || '';
+        }
+        return '';
+      })
+      .filter((id) => typeof id === 'string' && id.length > 0);
+  };
+
   if (Object.hasOwn(values, 'draftName') && typeof values.draftName === 'string') {
     formattedData.draftName = values.draftName.trim();
   }
@@ -677,13 +692,13 @@ export const formatFormDataForSubmission = (
   }
 
   if (Object.hasOwn(values, 'draftObjectAssignee') && Array.isArray(values.draftObjectAssignee)) {
-    const draftObjectAssignee = values.draftObjectAssignee as { value: string }[];
-    formattedData.draftObjectAssignee = draftObjectAssignee;
+    const draftObjectAssignee = values.draftObjectAssignee as unknown[];
+    formattedData.draftObjectAssignee = normalizeDraftSelectionIds(draftObjectAssignee);
   }
 
   if (Object.hasOwn(values, 'draftObjectParticipant') && Array.isArray(values.draftObjectParticipant)) {
-    const draftObjectParticipant = values.draftObjectParticipant as { value: string }[];
-    formattedData.draftObjectParticipant = draftObjectParticipant;
+    const draftObjectParticipant = values.draftObjectParticipant as unknown[];
+    formattedData.draftObjectParticipant = normalizeDraftSelectionIds(draftObjectParticipant);
   }
 
   if (values.draftAuthor) {

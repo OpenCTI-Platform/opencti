@@ -389,19 +389,20 @@ export const completeEntity = (entityType: string, entity: StoreEntity) => {
   return finalEntity;
 };
 
+const normalizeOptionId = (option: unknown): string | undefined => {
+  if (typeof option === 'object' && option !== null) {
+    const optionValue = (option as { value?: string; id?: string }).value || (option as { value?: string; id?: string }).id;
+    return typeof optionValue === 'string' && optionValue.length > 0 ? optionValue : undefined;
+  }
+  return typeof option === 'string' && option.length > 0 ? option : undefined;
+};
+
 export const resolveDraftFieldDefaults = (
   formName: string,
-  values: Record<string, any>,
+  values: Record<string, unknown>,
   draftDefaults: FormSchemaDefinition['draftDefaults'] | undefined,
   isBypass: boolean = false,
 ) => {
-  const normalizeOptionId = (option: any) => {
-    if (typeof option === 'object' && option !== null) {
-      return option.value || option.id;
-    }
-    return option;
-  };
-
   const isDefaultEnabled = (defaultConfig: { enabled?: boolean } | undefined, hasContent: boolean) => {
     if (!defaultConfig) return false;
     if (defaultConfig.enabled === false) return false;
@@ -428,11 +429,11 @@ export const resolveDraftFieldDefaults = (
 
   const hasExplicitDraftAssignees = Object.hasOwn(values, 'draftObjectAssignee');
   const explicitDraftAssignees = Array.isArray(values.draftObjectAssignee)
-    ? values.draftObjectAssignee.map(normalizeOptionId).filter((id) => !!id)
+    ? values.draftObjectAssignee.map(normalizeOptionId).filter((id): id is string => !!id)
     : [];
   const draftAssigneeDefaults = (draftDefaults?.objectAssignee?.defaults ?? [])
     .map(normalizeOptionId)
-    .filter((id: any) => !!id);
+    .filter((id): id is string => !!id);
   const defaultDraftAssignees = isDefaultEnabled(draftDefaults?.objectAssignee, draftAssigneeDefaults.length > 0)
     ? draftAssigneeDefaults
     : [];
@@ -441,11 +442,11 @@ export const resolveDraftFieldDefaults = (
 
   const hasExplicitDraftParticipants = Object.hasOwn(values, 'draftObjectParticipant');
   const explicitDraftParticipants = Array.isArray(values.draftObjectParticipant)
-    ? values.draftObjectParticipant.map(normalizeOptionId).filter((id) => !!id)
+    ? values.draftObjectParticipant.map(normalizeOptionId).filter((id): id is string => !!id)
     : [];
   const draftParticipantDefaults = (draftDefaults?.objectParticipant?.defaults ?? [])
     .map(normalizeOptionId)
-    .filter((id: any) => !!id);
+    .filter((id): id is string => !!id);
   const defaultDraftParticipants = isDefaultEnabled(draftDefaults?.objectParticipant, draftParticipantDefaults.length > 0)
     ? draftParticipantDefaults
     : [];
@@ -458,14 +459,6 @@ export const resolveDraftFieldDefaults = (
     finalDraftAssignees,
     finalDraftParticipants,
   };
-};
-
-const normalizeOptionId = (option: unknown): string | undefined => {
-  if (typeof option === 'object' && option !== null) {
-    const optionValue = (option as { value?: string; id?: string }).value || (option as { value?: string; id?: string }).id;
-    return typeof optionValue === 'string' && optionValue.length > 0 ? optionValue : undefined;
-  }
-  return typeof option === 'string' && option.length > 0 ? option : undefined;
 };
 
 const normalizeGroupsRestrictionIds = (groupsRestriction: unknown): string[] | undefined => {
