@@ -559,6 +559,9 @@ export const convertFormBuilderDataToSchema = (
               type: values.draftDefaults.author.type,
               isEditable: values.draftDefaults.author.isEditable ?? false,
               isRequired: values.draftDefaults.author.isRequired ?? false,
+              defaultValue: values.draftDefaults.author.defaultValue,
+              defaultValueLabel: values.draftDefaults.author.defaultValueLabel,
+              defaultValueType: values.draftDefaults.author.defaultValueType,
             }
           : undefined,
         authorizedMembers: values.draftDefaults.authorizedMembers
