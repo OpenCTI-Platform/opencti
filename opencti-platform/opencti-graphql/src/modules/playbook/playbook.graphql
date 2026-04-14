@@ -27,6 +27,7 @@ type Playbook implements InternalObject & BasicObject {
     description: String
     created_at: DateTime
     updated_at: DateTime
+    creators: [Creator!]
     playbook_running: Boolean
     playbook_definition: String
     last_executions: [PlayBookExecution!]
