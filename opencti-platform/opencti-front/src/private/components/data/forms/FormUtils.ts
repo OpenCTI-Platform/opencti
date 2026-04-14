@@ -602,6 +602,7 @@ export const convertFormBuilderDataToSchema = (
       options: field.options,
       attributeMapping: field.attributeMapping,
       defaultValue: field.defaultValue,
+      isReadOnly: field.isReadOnly,
     })),
     relationships: values.relationships,
   };
