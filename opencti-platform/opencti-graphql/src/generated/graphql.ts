@@ -23216,6 +23216,7 @@ export type PlayBookExecutionStep = {
 
 export type Playbook = BasicObject & InternalObject & {
   __typename?: 'Playbook';
+  created_at?: Maybe<Scalars['DateTime']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -23228,6 +23229,7 @@ export type Playbook = BasicObject & InternalObject & {
   queue_messages: Scalars['Int']['output'];
   standard_id: Scalars['String']['output'];
   toConfigurationExport: Scalars['String']['output'];
+  updated_at?: Maybe<Scalars['DateTime']['output']>;
 };
 
 export type PlaybookAddInput = {
@@ -47939,6 +47941,7 @@ export type PlayBookExecutionStepResolvers<ContextType = any, ParentType extends
 }>;
 
 export type PlaybookResolvers<ContextType = any, ParentType extends ResolversParentTypes['Playbook'] = ResolversParentTypes['Playbook']> = ResolversObject<{
+  created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -47951,6 +47954,7 @@ export type PlaybookResolvers<ContextType = any, ParentType extends ResolversPar
   queue_messages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

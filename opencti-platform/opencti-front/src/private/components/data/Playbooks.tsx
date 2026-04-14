@@ -156,20 +156,26 @@ const Playbooks: FunctionComponent = () => {
     },
     description: {
       label: 'Description',
-      percentWidth: 30,
+      percentWidth: 25,
       isSortable: false,
+    },
+    created_at: {
+      percentWidth: 15,
+    },
+    updated_at: {
+      percentWidth: 15,
     },
     messages: {
       id: 'messages',
       label: 'Messages',
-      percentWidth: 20,
+      percentWidth: 10,
       isSortable: false,
       render: ({ queue_messages }) => n(queue_messages),
     },
     playbook_running: {
       id: 'playbook_running',
       label: 'Playbook running',
-      percentWidth: 25,
+      percentWidth: 10,
       isSortable: true,
       render: ({ playbook_running }) => (
         <ItemBoolean
