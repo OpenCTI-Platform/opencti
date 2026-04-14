@@ -354,29 +354,90 @@ By implementing the work registration, they will show up as shown in this screen
 
 ```python
 def run() -> None:
-		# Anounce upcoming work
-		timestamp = int(time.time())
-		now = datetime.utcfromtimestamp(timestamp)
-    friendly_name = "Template run @ " + now.strftime("%Y-%m-%d %H:%M:%S")
-    work_id = self.helper.api.work.initiate_work(
-				self.helper.connect_id, friendly_name
-		)
+    work_id = None
+    message = ""
+    in_error = False
+    try:
+        # Announce upcoming work
+        timestamp = int(time.time())
+        now = datetime.utcfromtimestamp(timestamp)
+        friendly_name = "Template run @ " + now.strftime("%Y-%m-%d %H:%M:%S")
+        work_id = self.helper.api.work.initiate_work(
+            self.helper.connect_id, friendly_name
+        )
 
-		[...]
-		# Send Stix bundle
-		self.helper.send_stix2_bundle(
-				bundle,
-				entities_types=self.helper.connect_scope,
-				update=True,
-				work_id=work_id,
-		)
-		# Finish the work
-		self.helper.log_info(
-			f"Connector successfully run, storing last_run as {str(timestamp)}"
-    )              
-		message = "Last_run stored, next run in: {str(round(self.get_interval() / 60 / 60 / 24, 2))} days"
-		self.helper.api.work.to_processed(work_id, message)
+        # [...]
+
+        # Send Stix bundle
+        self.helper.send_stix2_bundle(
+            bundle,
+            entities_types=self.helper.connect_scope,
+            update=True,
+            work_id=work_id,
+        )
+        # Finish the work
+        self.helper.log_info(
+            f"Connector successfully run, storing last_run as {str(timestamp)}"
+        )              
+        message = f"Last_run stored, next run in: {str(round(self.get_interval() / 60 / 60 / 24, 2))} days"
+    except Exception as ex:
+        in_error = True
+        message = f"Failed: {str(ex)}"
+    finally:
+        if work_id is not None:
+            self.helper.api.work.to_processed(work_id, message, in_error=in_error)
 ```
+
+Connectors sending multiple bundles during a single `work` need to pass the
+`is_multipart=True` option when initiating the work:
+
+```python
+def run() -> None:
+    work_id = None
+    message = ""
+    in_error = False
+    try:
+        # Announce upcoming work
+        timestamp = int(time.time())
+        now = datetime.utcfromtimestamp(timestamp)
+        friendly_name = "Template run @ " + now.strftime("%Y-%m-%d %H:%M:%S")
+        work_id = self.helper.api.work.initiate_work(
+            self.helper.connect_id,
+            friendly_name,
+            is_multipart=True,
+        )
+
+        # [...]
+
+        # Send the bundles (could be in a loop)
+        # Send first Stix bundle
+        self.helper.send_stix2_bundle(
+            bundleOne,
+            entities_types=self.helper.connect_scope,
+            update=True,
+            work_id=work_id,
+        )
+        # Send second Stix bundle
+        self.helper.send_stix2_bundle(
+            bundleTwo,
+            entities_types=self.helper.connect_scope,
+            update=True,
+            work_id=work_id,
+        )
+
+        # Finish the work
+        self.helper.log_info(
+            f"Connector successfully run, storing last_run as {str(timestamp)}"
+        )              
+        message = f"Last_run stored, next run in: {str(round(self.get_interval() / 60 / 60 / 24, 2))} days"
+    except Exception as ex:
+        in_error = True
+        message = f"Failed {str(ex)}"
+    finally:
+        if work_id is not None:
+            self.helper.api.work.to_processed(work_id, message, in_error=in_error)
+```
+
 
 #### Interval handling
 
