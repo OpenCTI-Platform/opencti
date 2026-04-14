@@ -40,7 +40,7 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { getUserAccessRight, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, SYSTEM_USER } from '../../utils/access';
-import { editAuthorizedMembers } from '../../utils/authorizedMembers';
+import { containsValidAdmin, editAuthorizedMembers, sanitizeAuthorizedMembers } from '../../utils/authorizedMembers';
 import { getDraftContext } from '../../utils/draftContext';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { now } from '../../utils/format';
@@ -219,7 +219,22 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
     created_at: now(),
     draft_status: DRAFT_STATUS_OPEN,
   };
-  const draftWorkspaceInput = { ...input, ...defaultOps };
+  let authorizedMembers = input.authorized_members;
+  if (authorizedMembers) {
+    const filteredInput = sanitizeAuthorizedMembers(authorizedMembers);
+    const hasValidAdmin = await containsValidAdmin(context, filteredInput, [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
+    if (!hasValidAdmin) {
+      throw FunctionalError('It should have at least one valid member with admin access');
+    }
+    authorizedMembers = filteredInput.map(({ id, access_right, groups_restriction_ids }) => {
+      const member = { id, access_right, groups_restriction_ids };
+      if (!groups_restriction_ids || groups_restriction_ids.length === 0) {
+        delete member.groups_restriction_ids;
+      }
+      return member;
+    });
+  }
+  const draftWorkspaceInput = { ...input, authorized_members: authorizedMembers, ...defaultOps };
   const createdDraftWorkspace = await createEntity(context, user, draftWorkspaceInput, ENTITY_TYPE_DRAFT_WORKSPACE);
   if (createdDraftWorkspace && input.entity_id) {
     const contextInDraft = { ...context, draft_context: createdDraftWorkspace.id };
