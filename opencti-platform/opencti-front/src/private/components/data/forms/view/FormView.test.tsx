@@ -32,7 +32,7 @@ const formSchema = {
   mainEntityType: 'Report',
   isDraftByDefault: true,
   draftDefaults: {
-    author: { type: 'current_user', isEditable: false },
+    author: { type: 'none', isEditable: false },
     authorizedMembers: { enabled: true, defaults: [] },
   },
 };

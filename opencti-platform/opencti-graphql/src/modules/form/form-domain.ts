@@ -393,6 +393,7 @@ export const resolveDraftFieldDefaults = (
   formName: string,
   values: Record<string, any>,
   draftDefaults: FormSchemaDefinition['draftDefaults'] | undefined,
+  isBypass: boolean = false,
 ) => {
   const normalizeOptionId = (option: any) => {
     if (typeof option === 'object' && option !== null) {
@@ -413,7 +414,8 @@ export const resolveDraftFieldDefaults = (
   const defaultDraftName = isDefaultEnabled(draftDefaults?.name, draftNameDefaultValue.length > 0)
     ? draftNameDefaultValue
     : '';
-  const finalDraftName = explicitDraftName || defaultDraftName || `${formName} - ${nowTime()}`;
+  const canOverrideDraftName = isBypass || (draftDefaults?.name?.isEditable !== false);
+  const finalDraftName = (canOverrideDraftName ? explicitDraftName : '') || defaultDraftName || `${formName} - ${nowTime()}`;
 
   const hasExplicitDraftDescription = Object.hasOwn(values, 'draftDescription');
   const explicitDraftDescription = typeof values.draftDescription === 'string' ? values.draftDescription.trim() : '';
@@ -421,7 +423,8 @@ export const resolveDraftFieldDefaults = (
   const defaultDraftDescription = isDefaultEnabled(draftDefaults?.description, draftDescriptionDefaultValue.length > 0)
     ? draftDescriptionDefaultValue
     : '';
-  const finalDraftDescription = hasExplicitDraftDescription ? explicitDraftDescription : defaultDraftDescription;
+  const canOverrideDraftDescription = isBypass || (draftDefaults?.description?.isEditable !== false);
+  const finalDraftDescription = (canOverrideDraftDescription && hasExplicitDraftDescription) ? explicitDraftDescription : defaultDraftDescription;
 
   const hasExplicitDraftAssignees = Object.hasOwn(values, 'draftObjectAssignee');
   const explicitDraftAssignees = Array.isArray(values.draftObjectAssignee)
@@ -433,7 +436,8 @@ export const resolveDraftFieldDefaults = (
   const defaultDraftAssignees = isDefaultEnabled(draftDefaults?.objectAssignee, draftAssigneeDefaults.length > 0)
     ? draftAssigneeDefaults
     : [];
-  const finalDraftAssignees = hasExplicitDraftAssignees ? explicitDraftAssignees : defaultDraftAssignees;
+  const canOverrideDraftAssignees = isBypass || (draftDefaults?.objectAssignee?.isEditable !== false);
+  const finalDraftAssignees = (canOverrideDraftAssignees && hasExplicitDraftAssignees) ? explicitDraftAssignees : defaultDraftAssignees;
 
   const hasExplicitDraftParticipants = Object.hasOwn(values, 'draftObjectParticipant');
   const explicitDraftParticipants = Array.isArray(values.draftObjectParticipant)
@@ -445,7 +449,8 @@ export const resolveDraftFieldDefaults = (
   const defaultDraftParticipants = isDefaultEnabled(draftDefaults?.objectParticipant, draftParticipantDefaults.length > 0)
     ? draftParticipantDefaults
     : [];
-  const finalDraftParticipants = hasExplicitDraftParticipants ? explicitDraftParticipants : defaultDraftParticipants;
+  const canOverrideDraftParticipants = isBypass || (draftDefaults?.objectParticipant?.isEditable !== false);
+  const finalDraftParticipants = (canOverrideDraftParticipants && hasExplicitDraftParticipants) ? explicitDraftParticipants : defaultDraftParticipants;
 
   return {
     finalDraftName,
@@ -603,6 +608,9 @@ export const formSubmit = async (
     }
   }
 
+  // Determine if the user has BYPASS capability.
+  const isBypass = isUserHasCapability(user, BYPASS);
+
   // Validation
   // Main entity
   if (schema.mainEntityLookup && isEmptyField(values.mainEntityLookup)) {
@@ -610,7 +618,7 @@ export const formSubmit = async (
   }
   if (!schema.mainEntityLookup && schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') {
     schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity').forEach((field) => {
-      if (field.isMandatory || field.required) {
+      if ((field.isMandatory || field.required) && !(field.isReadOnly && !isBypass)) {
         if (isEmptyField(values.mainEntityGroups)) {
           errors.push('Required field "mainEntityGroups" is missing');
         } else {
@@ -631,7 +639,7 @@ export const formSubmit = async (
     // Validate additional fields in parsed mode
     if (values.mainEntityFields) {
       schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity').forEach((field) => {
-        if (field.isMandatory || field.required) {
+        if ((field.isMandatory || field.required) && !(field.isReadOnly && !isBypass)) {
           const fieldValue = values.mainEntityFields[field.attributeMapping.attributeName];
           if (isEmptyField(fieldValue)) {
             errors.push(`Required field "${field.label || field.name}" is missing`);
@@ -642,7 +650,7 @@ export const formSubmit = async (
   }
   if (!schema.mainEntityLookup && !schema.mainEntityMultiple) {
     schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity').forEach((field) => {
-      if (field.isMandatory || field.required) {
+      if ((field.isMandatory || field.required) && !(field.isReadOnly && !isBypass)) {
         const fieldValue = values[field.name];
         if (isEmptyField(fieldValue)) {
           errors.push(`Required field "${field.label || field.name}" is missing`);
@@ -660,7 +668,7 @@ export const formSubmit = async (
       }
       if (!additionalEntity.lookup && additionalEntity.multiple && additionalEntity.fieldMode === 'multiple') {
         schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id).forEach((field) => {
-          if (field.isMandatory || field.required) {
+          if ((field.isMandatory || field.required) && !(field.isReadOnly && !isBypass)) {
             if (!values[`additional_${additionalEntity.id}_groups`]) {
               errors.push(`Required field "additional_${additionalEntity.id}_groups" is missing`);
             } else {
@@ -681,7 +689,7 @@ export const formSubmit = async (
         // Validate additional fields in parsed mode
         if (values[`additional_${additionalEntity.id}_fields`]) {
           schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id).forEach((field) => {
-            if (field.isMandatory || field.required) {
+            if ((field.isMandatory || field.required) && !(field.isReadOnly && !isBypass)) {
               const fieldValue = values[`additional_${additionalEntity.id}_fields`][field.attributeMapping.attributeName];
               if (isEmptyField(fieldValue)) {
                 errors.push(`Required field "${field.label || field.name}" is missing`);
@@ -706,7 +714,7 @@ export const formSubmit = async (
 
         if (additionalEntity.required || hasAnyFieldFilled) {
           entityFields.forEach((field) => {
-            if (field.isMandatory || field.required) {
+            if ((field.isMandatory || field.required) && !(field.isReadOnly && !isBypass)) {
               const fieldValue = entityData ? entityData[field.name] : undefined;
               if (isEmptyField(fieldValue)) {
                 errors.push(`Required field "${field.label || field.name}" is missing`);
@@ -750,6 +758,7 @@ export const formSubmit = async (
         let mainEntity = { entity_type: mainEntityType } as StoreEntity;
         for (let i = 0; i < mainEntityFields.length; i += 1) {
           const field = mainEntityFields[i];
+          if (field.isReadOnly && !isBypass) continue;
           const fieldValue = values.mainEntityGroups[index][field.name];
           // Convert the field value to the correct type
           const convertedValue = convertFieldType(fieldValue, field);
@@ -795,6 +804,7 @@ export const formSubmit = async (
           const additionalMainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
           for (let i = 0; i < additionalMainEntityFields.length; i += 1) {
             const field = additionalMainEntityFields[i];
+            if (field.isReadOnly && !isBypass) continue;
             const fieldValue = values.mainEntityFields[field.attributeMapping.attributeName];
             if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
               // Convert the field value to the correct type
@@ -831,6 +841,7 @@ export const formSubmit = async (
       let mainEntity = { entity_type: mainEntityType } as StoreEntity;
       for (let i = 0; i < mainEntityFields.length; i += 1) {
         const field = mainEntityFields[i];
+        if (field.isReadOnly && !isBypass) continue;
         const fieldValue = values[field.name];
         // Convert the field value to the correct type
         const convertedValue = convertFieldType(fieldValue, field);
@@ -885,6 +896,7 @@ export const formSubmit = async (
               let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
               for (let i = 0; i < additionalEntityFields.length; i += 1) {
                 const field = additionalEntityFields[i];
+                if (field.isReadOnly && !isBypass) continue;
                 const fieldValue = values[`additional_${additionalEntity.id}_groups`][index2][field.name];
                 // Convert the field value to the correct type
                 const convertedValue = convertFieldType(fieldValue, field);
@@ -936,6 +948,7 @@ export const formSubmit = async (
               if (values[`additional_${additionalEntity.id}_fields`]) {
                 for (let i = 0; i < additionalEntityFields.length; i += 1) {
                   const field = additionalEntityFields[i];
+                  if (field.isReadOnly && !isBypass) continue;
                   const fieldValue = values[`additional_${additionalEntity.id}_fields`][field.attributeMapping.attributeName];
                   if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
                     // Convert the field value to the correct type
@@ -990,6 +1003,7 @@ export const formSubmit = async (
               let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
               for (let i = 0; i < additionalEntityFields.length; i += 1) {
                 const field = additionalEntityFields[i];
+                if (field.isReadOnly && !isBypass) continue;
                 const fieldValue = entityData[field.name];
 
                 if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
@@ -1146,10 +1160,11 @@ export const formSubmit = async (
         finalDraftDescription,
         finalDraftAssignees,
         finalDraftParticipants,
-      } = resolveDraftFieldDefaults(form.name, values, schema.draftDefaults);
+      } = resolveDraftFieldDefaults(form.name, values, schema.draftDefaults, isBypass);
 
       // Apply draft defaults for author
-      if (values.draftAuthor) {
+      const canOverrideDraftAuthor = isBypass || (schema.draftDefaults?.author?.isEditable !== false);
+      if (canOverrideDraftAuthor && values.draftAuthor) {
         createdBy = normalizeOptionId(values.draftAuthor) || null;
       } else if (schema.draftDefaults?.author) {
         if (schema.draftDefaults.author.type === 'static') {
@@ -1166,7 +1181,6 @@ export const formSubmit = async (
 
       // Apply explicit authorized members from form submission
       // Only users with BYPASS capability can override authorized members
-      const isBypass = isUserHasCapability(user, BYPASS);
       let authorized_members: MemberAccessInput[] = [];
       if (isBypass && Array.isArray(values.draftAuthorizedMembers)) {
         authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers);
