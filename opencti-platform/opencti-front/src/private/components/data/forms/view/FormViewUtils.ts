@@ -52,8 +52,10 @@ const getYupValidationForField = (
       validation = Yup.string();
   }
 
-  // Add required validation if field is mandatory
-  if (field.isMandatory) {
+  // Add required validation if field is mandatory and not read-only.
+  // Read-only fields are hidden for non-bypass users and pre-populated by the form schema,
+  // so client-side required validation must not block submission.
+  if (field.isMandatory && !field.isReadOnly) {
     if (field.type === 'multiselect' || field.type === 'objectMarking'
       || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
       validation = (validation as Yup.ArraySchema<unknown[], Yup.AnyObject>).min(1, t_i18n('This field is required'));
