@@ -304,6 +304,9 @@ By default, creation is applied to the entity triggering the playbook. You can c
 
 ![Enroll entity in playbook](assets/playbook_select_bundle_scope.png)
 
+**Operations filtering:**
+You have the possibility to add filters at the component level. The elements in the bundle will be filtered so only matching elements will be concerned by the operations of the component. This filtering has no impact on the output of the component, the bundle elements remain the same, they are only filtered to determine if the operations should be applied or not.
+
 More details on [Authorize members](https://docs.opencti.io/latest/administration/authorized-members/?h=me)
 
 **Specificities of the component**
