@@ -15,6 +15,8 @@ import { useBuildFilterKeysMapFromEntityType, getDefaultFilterObject, getFilterD
 import SavedFilters from '../../../../components/saved_filters/SavedFilters';
 import SavedFilterButton from '../../../../components/saved_filters/SavedFilterButton';
 
+const WORKFLOW_FILTER_KEYS = ['workflow_user', 'workflow_group', 'workflow_organization'];
+
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
@@ -116,22 +118,51 @@ const ListFilters = ({
   const isNotUniqEntityTypes = (entityTypes.length === 1 && ['Stix-Core-Object', 'Stix-Domain-Object', 'Stix-Cyber-Observable', 'Container'].includes(entityTypes[0]))
     || (entityTypes.length > 1);
 
+  const isFilterKeyForAllTypes = (subEntityTypes: string[]): boolean => {
+    return (entityTypes.length === 1 && subEntityTypes.some((subType) => entityTypes.includes(subType)))
+      || (entityTypes.length > 1 && entityTypes.every((subType) => subEntityTypes.includes(subType)));
+  };
+
+  const getGroupLabel = (key: string, filterDefinition: ReturnType<typeof getFilterDefinitionFromFilterKeysMap>): string => {
+    const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
+    if (key === 'workflow_id' || (key === 'name' && filterDefinition?.label === 'Draft name')) {
+      return t_i18n('Draft filters');
+    }
+    if (WORKFLOW_FILTER_KEYS.includes(key)) {
+      return t_i18n('Workflow filters');
+    }
+    if (isFilterKeyForAllTypes(subEntityTypes)) {
+      return t_i18n('Most used filters');
+    }
+    return t_i18n('All other filters');
+  };
+
+  const getGroupOrder = (key: string, filterDefinition: ReturnType<typeof getFilterDefinitionFromFilterKeysMap>): number => {
+    const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
+    if (WORKFLOW_FILTER_KEYS.includes(key)) {
+      return 1;
+    }
+    if (key === 'workflow_id' || (key === 'name' && filterDefinition?.label === 'Draft name')) {
+      return 2;
+    }
+    if (isFilterKeyForAllTypes(subEntityTypes)) {
+      return 3;
+    }
+    return 0;
+  };
+
   const options = isNotUniqEntityTypes
     ? availableFilterKeys
         .map((key) => {
           const filterDefinition = getFilterDefinitionFromFilterKeysMap(key, filterKeysMap);
           const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
-          const isFilterKeyForAllTypes = (entityTypes.length === 1 && subEntityTypes.some((subType) => entityTypes.includes(subType)))
-            || (entityTypes.length > 1 && entityTypes.every((subType) => subEntityTypes.includes(subType)));
+
           return {
             value: key,
             label: t_i18n(filterDefinition?.label ?? key),
             numberOfOccurences: subEntityTypes.length,
-
-            groupLabel: isFilterKeyForAllTypes
-              ? t_i18n('Most used filters')
-              : t_i18n('All other filters'),
-            groupOrder: isFilterKeyForAllTypes ? 1 : 0,
+            groupLabel: getGroupLabel(key, filterDefinition),
+            groupOrder: getGroupOrder(key, filterDefinition),
           };
         })
         .sort((a, b) => a.label.localeCompare(b.label))
