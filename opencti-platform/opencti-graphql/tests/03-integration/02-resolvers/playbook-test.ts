@@ -4,7 +4,7 @@ import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedFo
 import type { PlaybookAddLinkInput, PlaybookAddNodeInput } from '../../../src/generated/graphql';
 import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
 import { UNSUPPORTED_ERROR } from '../../../src/config/errors';
-import { USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
+import { ADMIN_USER, USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
 
 const LIST_PLAYBOOKS = gql`
   query playbooks(
@@ -54,6 +54,10 @@ const READ_PLAYBOOK = gql`
       playbook_definition
       created_at
       updated_at
+      creators {
+        id
+        name
+      }
     }
   }
 `;
@@ -243,9 +247,14 @@ describe('Playbook resolver standard behavior', () => {
       const playbook = queryResult.data?.playbook;
       expect(playbook?.name).toEqual('Playbook1');
       expect(playbook?.playbook_running).toEqual(false);
+      // created_at and updated_at should be returned and should match the original values
       expect(playbook?.created_at).toBeDefined();
       expect(playbook?.updated_at).toBeDefined();
       expect(playbook?.created_at).toEqual(playbookCreatedAt);
+      // creators should be returned and contain the admin user who created the playbook
+      expect(playbook?.creators.length).toEqual(0);
+      expect(playbook?.creators[0].id).toEqual(ADMIN_USER.id);
+      expect(playbook?.creators[0].name).toEqual(ADMIN_USER.name);
     });
 
     it('should not update playbook if no Manage Playbooks capability', async () => {
