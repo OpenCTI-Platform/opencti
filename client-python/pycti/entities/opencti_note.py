@@ -480,13 +480,15 @@ class Note:
         """
 
     @staticmethod
-    def generate_id(created, content):
+    def generate_id(created, content, abstract=None):
         """Generate a STIX ID for a Note.
 
         :param created: The creation date of the note
         :type created: datetime or str or None
         :param content: The content of the note (required)
         :type content: str
+        :param abstract: A brief summary of the note content
+        :type abstract: str or None
         :return: STIX ID for the note
         :rtype: str
         :raises ValueError: If content is None
@@ -499,6 +501,8 @@ class Note:
             data = {"content": content.strip(), "created": created}
         else:
             data = {"content": content.strip()}
+        if abstract is not None and abstract.strip():
+            data["attribute_abstract"] = abstract.strip()
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "note--" + id
@@ -507,12 +511,17 @@ class Note:
     def generate_id_from_data(data):
         """Generate a STIX ID from note data.
 
-        :param data: Dictionary containing 'content' and optionally 'created' keys
+        :param data: Dictionary containing 'content' and optionally 'created'
+            and 'attribute_abstract' keys
         :type data: dict
         :return: STIX ID for the note
         :rtype: str
         """
-        return Note.generate_id(data.get("created"), data["content"])
+        return Note.generate_id(
+            data.get("created"),
+            data["content"],
+            abstract=data.get("attribute_abstract"),
+        )
 
     def list(self, **kwargs):
         """List Note objects.

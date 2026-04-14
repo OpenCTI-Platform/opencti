@@ -197,7 +197,7 @@ const stixBaseEntityContribution = {
     // Entities
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
     [D.ENTITY_TYPE_CAMPAIGN]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_CONTAINER_NOTE]: [{ src: 'content' }, { src: 'created', dependencies: ['content'] }],
+    [D.ENTITY_TYPE_CONTAINER_NOTE]: [{ src: 'content' }, { src: 'created', dependencies: ['content'] }, { src: 'attribute_abstract', dependencies: ['content'] }],
     [D.ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [{ src: 'objects' }],
     [D.ENTITY_TYPE_CONTAINER_OPINION]: [{ src: 'opinion' }, { src: 'created', dependencies: ['opinion'] }],
     [D.ENTITY_TYPE_CONTAINER_REPORT]: [{ src: NAME_FIELD }, { src: 'published' }],

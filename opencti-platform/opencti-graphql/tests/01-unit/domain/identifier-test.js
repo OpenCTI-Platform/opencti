@@ -69,6 +69,8 @@ describe('identifier', () => {
     // note
     expect(generateStandardId(ENTITY_TYPE_CONTAINER_NOTE, { content: 'My note content!' })).toEqual('note--2b4ab5af-2307-58e1-8862-a6a269aae798');
     expect(generateStandardId(ENTITY_TYPE_CONTAINER_NOTE, { content: 'My note content!', created: '2022-11-25T19:00:05.000Z' })).toEqual('note--10861e5c-049e-54f6-9736-81c106e39a0b');
+    expect(generateStandardId(ENTITY_TYPE_CONTAINER_NOTE, { content: 'My note content!', attribute_abstract: 'Summary' })).toEqual('note--f0dc3eac-1c64-53dd-a5e2-a3d7b5480245');
+    expect(generateStandardId(ENTITY_TYPE_CONTAINER_NOTE, { content: 'My note content!', created: '2022-11-25T19:00:05.000Z', attribute_abstract: 'Summary' })).toEqual('note--4f87e4e4-8ac8-59a5-a026-6909c86e03a8');
     // observed-data
     expect(generateStandardId(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, { objects: [{ standard_id: 'id' }] })).toEqual('observed-data--4765c523-81bc-54c8-b1af-ee81d961dad1');
     // opinion
