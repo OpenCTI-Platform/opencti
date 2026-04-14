@@ -6,8 +6,9 @@ import * as middleware from '../../../../src/database/middleware';
 import * as stixFiltering from '../../../../src/utils/filtering/filtering-stix/stix-filtering';
 import * as ee from '../../../../src/enterprise-edition/ee';
 import { testContext } from '../../../utils/testQuery';
+import { SYSTEM_USER } from '../../../../src/utils/access';
 
-describe('Listen knowledge component', () => {
+describe('findPlaybooksForEntity', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
@@ -17,32 +18,35 @@ describe('Listen knowledge component', () => {
   type StixLoadReturn = Awaited<ReturnType<typeof middleware.stixLoadById>>;
   const mockStixEntity = { id: 'malware--id' } as unknown as StixLoadReturn;
 
-  const buildPlaybook = (configuration: object, playbookStart = 'node-1') => ({
+  const buildPlaybook = (componentId: string, configuration: object, playbookStart = 'node-1') => ({
     playbook_start: playbookStart,
     playbook_definition: JSON.stringify({
       nodes: [{
         id: playbookStart,
-        component_id: 'PLAYBOOK_INTERNAL_DATA_STREAM',
+        component_id: componentId,
         configuration: JSON.stringify(configuration),
       }],
     }),
   } as unknown as BasicStoreEntityPlaybook);
 
-  it('should return playbook when enrollInPlaybook is true and filters match', async () => {
-    const playbook = buildPlaybook({ enrollInPlaybook: true });
-    vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
-    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([playbook]);
-    vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
+  // -- Enterprise Edition --
+
+  it('should return empty array when not EE', async () => {
+    vi.spyOn(ee, 'isEnterpriseEdition').mockResolvedValue(false);
 
     const result = await findPlaybooksForEntity(testContext, {} as any, 'entity-id');
-    expect(result).toHaveLength(1);
-    expect(stixFiltering.isStixMatchFilterGroup).toHaveBeenCalled();
+    expect(result).toHaveLength(0);
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    expect(middleware.stixLoadById).not.toHaveBeenCalled;
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    expect(cache.getEntitiesListFromCache).not.toHaveBeenCalled;
   });
 
-  it('should exclude playbook when enrollInPlaybook is false', async () => {
-    const playbook = buildPlaybook({ enrollInPlaybook: false });
+  // -- playbook_definition --
+
+  it('should skip playbook when playbook_definition is missing', async () => {
     vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
-    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([playbook]);
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([{ playbook_start: 'node-1', playbook_definition: null } as unknown as BasicStoreEntityPlaybook]);
     vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
 
     const result = await findPlaybooksForEntity(testContext, {} as any, 'entity-id');
@@ -50,23 +54,91 @@ describe('Listen knowledge component', () => {
     expect(stixFiltering.isStixMatchFilterGroup).not.toHaveBeenCalled();
   });
 
-  it('should include playbook when enrollInPlaybook is undefined (legacy)', async () => {
-    const playbook = buildPlaybook({});
+  // -- component_id --
+
+  it('should skip playbook when component_id is not PLAYBOOK_INTERNAL_DATA_STREAM or PLAYBOOK_INTERNAL_MANUAL_TRIGGER', async () => {
     vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
-    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([playbook]);
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_OTHER_COMPONENT', {})]);
+    vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
+
+    const result = await findPlaybooksForEntity(testContext, {} as any, 'entity-id');
+    expect(result).toHaveLength(0);
+    expect(stixFiltering.isStixMatchFilterGroup).not.toHaveBeenCalled();
+  });
+
+  it('should include playbook with component PLAYBOOK_INTERNAL_DATA_STREAM when filters match', async () => {
+    vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { enrollInPlaybook: true })]);
     vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
 
     const result = await findPlaybooksForEntity(testContext, {} as any, 'entity-id');
     expect(result).toHaveLength(1);
   });
 
-  it('should exclude playbook when filters do not match', async () => {
-    const playbook = buildPlaybook({ enrollInPlaybook: true });
+  it('should include playbook with component PLAYBOOK_INTERNAL_MANUAL_TRIGGER when filters match', async () => {
     vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
-    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([playbook]);
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_INTERNAL_MANUAL_TRIGGER', { enrollInPlaybook: true })]);
+    vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
+
+    const result = await findPlaybooksForEntity(testContext, {} as any, 'entity-id');
+    expect(result).toHaveLength(1);
+  });
+
+  // -- enrollInPlaybook --
+
+  it('should exclude playbook when enrollInPlaybook is false', async () => {
+    vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { enrollInPlaybook: false })]);
+    vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
+
+    const result = await findPlaybooksForEntity(testContext, {} as any, 'entity-id');
+    expect(result).toHaveLength(0);
+    expect(stixFiltering.isStixMatchFilterGroup).not.toHaveBeenCalled();
+  });
+
+  it('should include playbook when enrollInPlaybook is undefined', async () => {
+    vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', {})]);
+    vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
+
+    const result = await findPlaybooksForEntity(testContext, {} as any, 'entity-id');
+    expect(result).toHaveLength(1);
+  });
+
+  // -- filters --
+
+  it('should exclude playbook when filters do not match', async () => {
+    vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { enrollInPlaybook: true })]);
     vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(false);
 
     const result = await findPlaybooksForEntity(testContext, {} as any, 'entity-id');
     expect(result).toHaveLength(0);
+  });
+
+  it('should call isStixMatchFilterGroup with null when no filters are set', async () => {
+    vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { enrollInPlaybook: true })]);
+    vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
+
+    await findPlaybooksForEntity(testContext, {} as any, 'entity-id');
+    expect(stixFiltering.isStixMatchFilterGroup).toHaveBeenCalledWith(
+      testContext, SYSTEM_USER, mockStixEntity, null,
+    );
+  });
+
+  // -- multiple playbooks --
+
+  it('should handle multiple playbooks and return only matching ones', async () => {
+    vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([
+      buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { enrollInPlaybook: true }),
+      buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { enrollInPlaybook: false }),
+      buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { enrollInPlaybook: true }),
+    ]);
+    vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
+
+    const result = await findPlaybooksForEntity(testContext, {} as any, 'entity-id');
+    expect(result).toHaveLength(2);
   });
 });
