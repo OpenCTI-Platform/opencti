@@ -11,4 +11,9 @@ declare module '*?worker' {
   export default workerConstructor;
 }
 
-
+// Monaco Editor environment (used by setupMonacoWorkers.ts)
+interface Window {
+  MonacoEnvironment?: {
+    getWorker(workerId: string, label: string): Worker;
+  };
+}
