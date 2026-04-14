@@ -45,6 +45,8 @@ const playbookFragment = graphql`
     description
     playbook_running
     queue_messages
+    created_at
+    updated_at
   }
 `;
 
