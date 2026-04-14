@@ -23289,8 +23289,10 @@ export type PlaybookInsertResult = {
 
 export enum PlaybooksOrdering {
   Score = '_score',
+  CreatedAt = 'created_at',
   Name = 'name',
-  PlaybookRunning = 'playbook_running'
+  PlaybookRunning = 'playbook_running',
+  UpdatedAt = 'updated_at'
 }
 
 export type Position = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {

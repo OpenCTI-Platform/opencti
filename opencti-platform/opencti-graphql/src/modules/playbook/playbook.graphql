@@ -58,6 +58,8 @@ type PlaybookInsertResult {
 enum PlaybooksOrdering {
     name
     playbook_running
+    created_at
+    updated_at
     _score
 }
 
