@@ -70,7 +70,7 @@ import { hexToRGB } from '../../../utils/Colors';
 import Security from '../../../utils/Security';
 import { EMPTY_VALUE, truncate } from '../../../utils/String';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
-import { getEntityTypeTwoFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
+import { getEntityTypeThreeFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import {
   BYPASS,
@@ -494,7 +494,7 @@ class DataTableToolBar extends Component {
   handleOpenEnrichment(stixCyberObservableSubTypes, stixDomainObjectSubTypes) {
     // Get enrich type
     let enrichType;
-    const entityTypeFilterValues = getEntityTypeTwoFirstLevelsFilterValues(this.props.filters, stixCyberObservableSubTypes, stixDomainObjectSubTypes);
+    const entityTypeFilterValues = getEntityTypeThreeFirstLevelsFilterValues(this.props.filters, stixCyberObservableSubTypes, stixDomainObjectSubTypes);
     if (this.props.selectAll) {
       enrichType = this.props.type ?? R.head(entityTypeFilterValues);
     } else {
@@ -2097,7 +2097,7 @@ class DataTableToolBar extends Component {
   }
 
   getSelectedTypes(observableTypes, domainObjectTypes) {
-    const entityTypeFilterValues = getEntityTypeTwoFirstLevelsFilterValues(this.props.filters, observableTypes, domainObjectTypes);
+    const entityTypeFilterValues = getEntityTypeThreeFirstLevelsFilterValues(this.props.filters, observableTypes, domainObjectTypes);
     const selectedElementsList = Object.values(this.props.selectedElements || {});
     const selectedTypes = R.uniq([...selectedElementsList.map((o) => o.entity_type), ...entityTypeFilterValues]
       .filter((entity_type) => entity_type !== undefined));
