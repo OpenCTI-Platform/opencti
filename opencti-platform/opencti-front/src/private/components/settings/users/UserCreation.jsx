@@ -155,7 +155,6 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
           <Alert severity="info">
             {t_i18n('Unless you prevent the default groups assignation, the user will be created with the specified groups and the default groups.')}
           </Alert>
-          <br />
           <Formik
             initialValues={initialValues}
             validationSchema={userValidation(t_i18n)}
