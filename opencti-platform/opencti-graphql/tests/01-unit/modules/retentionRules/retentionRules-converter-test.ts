@@ -129,4 +129,3 @@ describe('retentionRules converter - convertRetentionRuleToStix', () => {
     expect(parsed.filters).toHaveLength(2);
   });
 });
-
