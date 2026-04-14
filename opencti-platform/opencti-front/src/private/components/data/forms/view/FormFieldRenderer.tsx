@@ -518,9 +518,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
           label={t_i18n('Read-Only')}
           style={{ position: 'absolute', top: -10, right: 0, zIndex: 1, backgroundColor: 'white' }}
         />
-        <div style={{ opacity: 0.7, pointerEvents: 'none' }}>
-          {fieldContent}
-        </div>
+        {fieldContent}
       </div>,
     );
   }
