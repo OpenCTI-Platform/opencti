@@ -8,7 +8,7 @@ const buildPlaybook = (configuration: object, playbookStart = 'node-1') => ({
   }),
 });
 
-describe('PLAYBOOK_INTERNAL_DATA_STREAM - enrollInPlaybook', () => {
+describe('PLAYBOOK_INTERNAL_DATA_STREAM - Listen Knowledge Component', () => {
   it('should be available for enrollment when enrollInPlaybook is true', () => {
     const playbook = buildPlaybook({ enrollInPlaybook: true });
     const def = JSON.parse(playbook.playbook_definition);
