@@ -415,7 +415,7 @@ export const resolveDraftFieldDefaults = (
     : '';
   const finalDraftName = explicitDraftName || defaultDraftName || `${formName} - ${nowTime()}`;
 
-  const hasExplicitDraftDescription = Object.prototype.hasOwnProperty.call(values, 'draftDescription');
+  const hasExplicitDraftDescription = Object.hasOwn(values, 'draftDescription');
   const explicitDraftDescription = typeof values.draftDescription === 'string' ? values.draftDescription.trim() : '';
   const draftDescriptionDefaultValue = (draftDefaults?.description?.defaultValue ?? '').trim();
   const defaultDraftDescription = isDefaultEnabled(draftDefaults?.description, draftDescriptionDefaultValue.length > 0)
@@ -423,7 +423,7 @@ export const resolveDraftFieldDefaults = (
     : '';
   const finalDraftDescription = hasExplicitDraftDescription ? explicitDraftDescription : defaultDraftDescription;
 
-  const hasExplicitDraftAssignees = Object.prototype.hasOwnProperty.call(values, 'draftObjectAssignee');
+  const hasExplicitDraftAssignees = Object.hasOwn(values, 'draftObjectAssignee');
   const explicitDraftAssignees = Array.isArray(values.draftObjectAssignee)
     ? values.draftObjectAssignee.map(normalizeOptionId).filter((id) => !!id)
     : [];
@@ -435,7 +435,7 @@ export const resolveDraftFieldDefaults = (
     : [];
   const finalDraftAssignees = hasExplicitDraftAssignees ? explicitDraftAssignees : defaultDraftAssignees;
 
-  const hasExplicitDraftParticipants = Object.prototype.hasOwnProperty.call(values, 'draftObjectParticipant');
+  const hasExplicitDraftParticipants = Object.hasOwn(values, 'draftObjectParticipant');
   const explicitDraftParticipants = Array.isArray(values.draftObjectParticipant)
     ? values.draftObjectParticipant.map(normalizeOptionId).filter((id) => !!id)
     : [];
