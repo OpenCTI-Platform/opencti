@@ -10,28 +10,28 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
 
 const stixCoreObjectsNumberNumberQuery = graphql`
-  query StixCoreObjectsNumberNumberSeriesQuery(
-    $dateAttribute: String
-    $types: [String]
-    $startDate: DateTime
-    $endDate: DateTime
-    $onlyInferred: Boolean
-    $filters: FilterGroup
-    $search: String
-  ) {
-    stixCoreObjectsNumber(
-      dateAttribute: $dateAttribute
-      types: $types
-      startDate: $startDate
-      endDate: $endDate
-      onlyInferred: $onlyInferred
-      filters: $filters
-      search: $search
+    query StixCoreObjectsNumberNumberSeriesQuery(
+        $dateAttribute: String
+        $types: [String]
+        $startDate: DateTime
+        $endDate: DateTime
+        $onlyInferred: Boolean
+        $filters: FilterGroup
+        $search: String
     ) {
-      total
-      count
+        stixCoreObjectsNumber(
+            dateAttribute: $dateAttribute
+            types: $types
+            startDate: $startDate
+            endDate: $endDate
+            onlyInferred: $onlyInferred
+            filters: $filters
+            search: $search
+        ) {
+            total
+            count
+        }
     }
-  }
 `;
 
 const StixCoreObjectsNumber = ({
@@ -41,6 +41,8 @@ const StixCoreObjectsNumber = ({
   parameters = {},
   entityType,
   popover,
+  variant,
+  height,
 }) => {
   const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
@@ -59,43 +61,42 @@ const StixCoreObjectsNumber = ({
   );
 
   return (
-    <QueryRenderer
-      query={stixCoreObjectsNumberNumberQuery}
-      variables={{
-        types: dataSelectionTypes,
-        dateAttribute,
-        filters,
-        startDate,
-        endDate: dayAgo(),
-      }}
-      render={({ props }) => {
-        if (props && props.stixCoreObjectsNumber) {
-          const { total, count } = props.stixCoreObjectsNumber;
-          return (
-            <CardNumber
-              entityType={entityType}
-              label={translatedTitle}
-              value={total}
-              diffLabel={t_i18n('24 hours')}
-              diffValue={total - count}
-              action={popover}
-            />
-          );
-        }
-        if (props) {
-          return (
-            <WidgetContainer title={title}>
-              <WidgetNoData />
-            </WidgetContainer>
-          );
-        }
-        return (
-          <WidgetContainer>
-            <Loader variant={LoaderVariant.inElement} />
-          </WidgetContainer>
-        );
-      }}
-    />
+    <WidgetContainer
+      padding="small"
+      height={height}
+      title={t_i18n('Entities number')}
+      variant={variant}
+      action={popover}
+    >
+      <QueryRenderer
+        query={stixCoreObjectsNumberNumberQuery}
+        variables={{
+          types: dataSelectionTypes,
+          dateAttribute,
+          filters,
+          startDate,
+          endDate: dayAgo(),
+        }}
+        render={({ props }) => {
+          if (props && props.stixCoreObjectsNumber) {
+            const { total, count } = props.stixCoreObjectsNumber;
+            return (
+              <CardNumber
+                entityType={entityType}
+                label={translatedTitle}
+                value={total}
+                diffLabel={t_i18n('24 hours')}
+                diffValue={total - count}
+              />
+            );
+          }
+          if (props) {
+            return <WidgetNoData />;
+          }
+          return <Loader variant={LoaderVariant.inElement} />;
+        }}
+      />
+    </WidgetContainer>
   );
 };
 

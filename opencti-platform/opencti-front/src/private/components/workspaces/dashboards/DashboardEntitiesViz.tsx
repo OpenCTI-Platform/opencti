@@ -70,6 +70,8 @@ const DashboardEntitiesViz = ({
     case 'number':
       return (
         <StixCoreObjectsNumber
+          variant={undefined}
+          height={undefined}
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}

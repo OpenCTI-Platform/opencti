@@ -60,6 +60,8 @@ const DashboardRelationshipsViz = ({
     case 'number':
       return (
         <StixRelationshipsNumber
+          variant={undefined}
+          height={undefined}
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}

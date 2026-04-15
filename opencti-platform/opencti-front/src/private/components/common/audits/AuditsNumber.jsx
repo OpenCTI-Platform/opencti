@@ -86,7 +86,7 @@ const AuditsNumber = ({
     <WidgetContainer
       padding="small"
       height={height}
-      title={translatedTitle}
+      title={t_i18n('Entities number')}
       variant={variant}
       action={popover}
     >
