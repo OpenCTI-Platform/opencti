@@ -388,7 +388,9 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
     logApp.warn('The work cannot be found in database, processed time cannot be updated.', { workId });
     return workId;
   }
-  await redisMarkWorkAsProcessed(workId);
+  if (currentWork.is_multipart && currentWork.status !== 'complete') {
+    await redisMarkWorkAsProcessed(workId);
+  }
   const params = { processed_time: now(), message };
   const { expected, total } = await redisGetWorkCompletionState(workId);
   const isComplete = currentWork.import_expected_number === 0 || isWorkFinished(expected, total);
