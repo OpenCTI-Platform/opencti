@@ -191,11 +191,12 @@ jobs:
 
     - name: Upload e2e coverage to Codecov
       if: always()
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@v6
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        files: ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-front/test-results/lcov.info
+        directory: ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-front/test-results/coverage
         fail_ci_if_error: true
+        network_filter: opencti-platform/opencti-front/
         flags: opencti-front-e2e
         override_branch: ${{ github.head_ref || github.ref_name }}
         override_commit: ${{ github.event.pull_request.head.sha || github.sha }}

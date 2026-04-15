@@ -30,13 +30,13 @@ export default defineConfig({
         entryFilter: (entry) => entry.url.endsWith('.js') && !entry.url.includes('.css') && !entry.url.includes('.map') && !entry.url.includes('node_modules'),
         sourceFilter: (sourcePath) => !sourcePath.includes('.css') && !sourcePath.includes('.map') && !sourcePath.includes('node_modules'),
         sourcePath: (sourcePath) => {
-          // if (sourcePath.startsWith('/home/workspace/')) {
-          //   return sourcePath.replace('/home/workspace/', '');
-          // }
-          // if (sourcePath.startsWith('localhost-3000') || sourcePath.startsWith('http://localhost:3000') || sourcePath.startsWith('https://localhost:3000')) {
-          //   return sourcePath.replace(/^(localhost-3000|https?:\/\/localhost:3000)/, '');
-          // }
-          // return sourcePath;
+          if (sourcePath.startsWith('frontend-e2e-test/')) {
+            return sourcePath.replace('frontend-e2e-test/', '');
+          }
+          if (sourcePath.startsWith('src/')) {
+            return sourcePath.replace('src/', 'opencti-platform/opencti-front/src/');
+          }
+          return sourcePath;
         },
         reports: [
           // LCOV for Codecov upload
