@@ -503,15 +503,24 @@ const elExecuteWithAbortSignal = async (
     const r = await elkOperation({ signal: abortSignal });
     return oebp(r);
   }
-  const promise = openSearchOperation();
-  if (abortSignal) {
-    abortSignal.addEventListener('abort', () => {
-      // OpenSearch client does not support abort signal, so we need to manually abort the request
-      (promise as any).abort();
-    });
+  const openSearchOperationPromise = openSearchOperation();
+  const abortRequest = () => {
+    // OpenSearch client does not support abort signal natively, so abort the request when possible.
+    (openSearchOperationPromise as any).abort?.();
+  };
+  if (abortSignal?.aborted) {
+    abortRequest();
+  } else if (abortSignal) {
+    abortSignal.addEventListener('abort', abortRequest, { once: true });
   }
-  const r_1 = await promise;
-  return oebp(r_1);
+  try {
+    const r_1 = await openSearchOperationPromise;
+    return oebp(r_1);
+  } finally {
+    if (abortSignal && !abortSignal.aborted) {
+      abortSignal.removeEventListener('abort', abortRequest);
+    }
+  }
 };
 
 const BULK_MAX_RETRIES = 5;
