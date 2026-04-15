@@ -42,7 +42,7 @@ export interface BasicUserHandlingValues {
   confidence_level?: string;
 }
 
-const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_level, labelTag, isSensitive }: IngestionCreationUserHandlingComponentProps) => {
+export const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_level, labelTag, isSensitive }: IngestionCreationUserHandlingComponentProps) => {
   const { t_i18n } = useFormatter();
   const setAccess = useGranted([SETTINGS_SETACCESSES]);
   const { values, setFieldValue, validateField } = useFormikContext<BasicUserHandlingValues>();

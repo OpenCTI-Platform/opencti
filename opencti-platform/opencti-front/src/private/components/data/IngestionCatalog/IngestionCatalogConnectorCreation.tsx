@@ -57,7 +57,7 @@ const ingestionCatalogConnectorCreationMutation = graphql`
 `;
 
 // Sanitize name for K8s/Docker compatibility
-const sanitizeContainerName = (label: string): string => {
+export const sanitizeContainerName = (label: string): string => {
   let sanitized = label
     .replace(/[^a-zA-Z0-9]+/g, '-')
     .toLowerCase()

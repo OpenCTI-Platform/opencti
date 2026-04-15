@@ -1239,7 +1239,7 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(managedConnectorAdd).not.toBeNull();
       managedConnectorId = managedConnectorAdd.id;
       createdConnectorIds.add(managedConnectorId);
-      expect(managedConnectorAdd.name).toEqual('test-ip-info-connector');
+      expect(managedConnectorAdd.name).toEqual('test-ipinfo-connector');
       expect(managedConnectorAdd.connector_user_id).toBeDefined();
       expect(managedConnectorAdd.manager_requested_status).toEqual('stopped');
       expect(managedConnectorAdd.manager_contract_hash).toBeDefined();
