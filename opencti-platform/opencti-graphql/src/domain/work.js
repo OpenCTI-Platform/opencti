@@ -388,12 +388,13 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
     logApp.warn('The work cannot be found in database, processed time cannot be updated.', { workId });
     return workId;
   }
-  if (currentWork.is_multipart && currentWork.status !== 'complete') {
+  const { expected, total, isMultiPartWork } = await redisGetWorkCompletionState(workId);
+  const workIsFinished = isWorkFinished(expected, total);
+  if (isMultiPartWork && !workIsFinished) {
     await redisMarkWorkAsProcessed(workId);
   }
+  const isComplete = currentWork.import_expected_number === 0 || workIsFinished;
   const params = { processed_time: now(), message };
-  const { expected, total } = await redisGetWorkCompletionState(workId);
-  const isComplete = currentWork.import_expected_number === 0 || isWorkFinished(expected, total);
   let source = 'ctx._source["processed_time"] = params.processed_time;';
   if (isComplete) {
     params.completed_number = total && !Number.isNaN(total) ? total : 1;
