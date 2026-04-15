@@ -186,7 +186,7 @@ describe('createRetentionRule', () => {
   });
 
   it('should have empty string filters when input has empty string (spread overrides local variable)', async () => {
-    // Bug in current code: `...input` at line 72 re-spreads the original input.filters=''
+
     // overriding the local `filters` variable set at line 51.
     // The JSON.parse(filters) at line 54 passes (because local `filters` was defaulted),
     // but the resulting object has `filters: ''` from the spread.
@@ -525,16 +525,7 @@ describe('checkRetentionRule', () => {
       scope: 'invalid_scope' as any,
     };
 
-    // The result.edges will be accessed on the initial empty array,
-    // but since scope is not file/workbench, no filtering occurs.
-    // result is [] so result.edges is undefined => would throw
-    // Actually let's look at the code: result starts as [], then
-    // goes to else branch which logs error. Then the file/workbench filter
-    // doesn't apply. Then result.edges.length is called on [].
-    // [] has no .edges property → would be undefined → .length would throw
-    // Let me verify: result = []; ... return result.edges.length;
-    // Actually result.edges would be undefined on an array, so this would throw.
-    // The current code has a bug for unknown scopes - it will throw a TypeError.
+
     // Let's test the actual behavior:
     await expect(checkRetentionRule(context, input)).rejects.toThrow();
     expect(logApp.error).toHaveBeenCalledWith(
