@@ -18,10 +18,7 @@ jobs:
         with:
           filters: |
             code:
-              - '**'
-              - '!docs/**'
-              - '!**.md'
-              - '!.github/*.md'
+              - '!(docs/**|**/*.md)'
 
   wf-build-image:
       name: Build image
