@@ -461,6 +461,35 @@ describe('Filters utils', () => {
       const result3 = getEntityTypeThreeFirstLevelsFilterValues(filters3, ['File', 'Domain-Name'], []);
       expect(result3).toEqual(['Stix-Cyber-Observable', 'File']);
     });
+    it('should return only observable subtypes when filter with AND  in third level', () => {
+      // filters: Observable AND (labels AND (Domain-Name OR File))
+      // result: Domain-Name, File
+      const filters = {
+        mode: 'and',
+        filters: [
+          { key: 'entity_type', operator: 'eq', values: ['Stix-Cyber-Observable'] },
+        ],
+        filterGroups: [
+          {
+            mode: 'and',
+            filters: [
+              { key: 'objectLabel', operator: 'eq', values: ['label1-id'] },
+            ],
+            filterGroups: [
+              {
+                mode: 'and',
+                filters: [
+                  { key: 'entity_type', operator: 'eq', values: ['Domain-Name', 'File'] },
+                ],
+                filterGroups: [],
+              },
+            ],
+          },
+        ],
+      };
+      const result = getEntityTypeThreeFirstLevelsFilterValues(filters, ['Domain-Name', 'File'], ['Report', 'Malware']);
+      expect(result).toEqual(['Domain-Name', 'File']);
+    });
   });
 
   describe('useBuildEntityTypeBasedFilterContext', () => {
