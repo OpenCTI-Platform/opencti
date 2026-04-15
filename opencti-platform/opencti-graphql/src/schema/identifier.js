@@ -388,7 +388,7 @@ const filteredIdContributions = (contrib, way, data) => {
     if (resolver) {
       objectData[destKey] = value ? resolver(value) : value;
     } else {
-      objectData[destKey] = value;
+      objectData[destKey] = R.is(String, value) ? value.trim() : value;
     }
   }
   return R.filter((keyValue) => !R.isEmpty(keyValue) && !R.isNil(keyValue), objectData);
