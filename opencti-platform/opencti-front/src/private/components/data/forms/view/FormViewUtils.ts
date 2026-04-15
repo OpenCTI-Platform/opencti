@@ -358,7 +358,7 @@ export const convertFormSchemaToYupSchema = (
 };
 
 export const formatFormDataForSubmission = (
-  values: Record<string, string | string[] | { value: string } | { value: string }[] | Record<string, unknown> | Record<string, unknown>[]>,
+  values: Record<string, string | string[] | null | { value: string } | { value: string }[] | Record<string, unknown> | Record<string, unknown>[]>,
   schema: FormSchemaDefinition,
 ): Record<string, unknown> => {
   const formattedData: Record<string, unknown> = {};

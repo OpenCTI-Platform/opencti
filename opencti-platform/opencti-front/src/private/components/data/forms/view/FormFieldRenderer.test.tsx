@@ -35,6 +35,8 @@ const renderFieldInFormik = (
           field={fieldProps}
           values={{ title: '' }}
           setFieldValue={vi.fn()}
+          errors={{}}
+          touched={{}}
         />
       )}
     </Formik>,
@@ -85,6 +87,8 @@ describe('FormFieldRenderer - isReadOnly', () => {
             values={{ title: '' }}
             setFieldValue={vi.fn()}
             useGridLayout={true}
+            errors={{}}
+            touched={{}}
           />
         )}
       </Formik>,

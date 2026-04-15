@@ -29,7 +29,7 @@ const CreatorFieldQuery = graphql`
     members(search: $search, entityTypes: [User]) {
       edges {
         node {
-          internal_id: id
+          id
           name
           entity_type
           effective_confidence_level {
@@ -81,7 +81,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
             {textToShow}
             <IconButton
               component={Link}
-              to={`/dashboard/settings/accesses/users/${node.internal_id}`}
+              to={`/dashboard/settings/accesses/users/${node.id}`}
               sx={{ marginLeft: 1 }}
               color="primary"
             >
@@ -105,7 +105,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
             (data as CreatorFieldSearchQuery$data)?.members?.edges ?? []
           ).map((n) => ({
             label: n?.node.name ?? t_i18n('Unknown'),
-            value: n?.node.internal_id,
+            value: n?.node.id,
             extra: getExtraFromNode(n?.node),
           }));
           const templateValues = [...creatorOptions, ...NewCreators];

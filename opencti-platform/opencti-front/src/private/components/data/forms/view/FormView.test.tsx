@@ -71,7 +71,7 @@ const mockUserContext = createMockUserContext({ entitySettings: { edges: [] } })
 const resolveAndWait = async (relayEnv: ReturnType<typeof testRender>['relayEnv'], form: object) => {
   await waitFor(() => {
     relayEnv.mock.resolveMostRecentOperation((operation) =>
-      MockPayloadGenerator.generate(operation, { Form: () => form })
+      MockPayloadGenerator.generate(operation, { Form: () => form }),
     );
   });
   await waitFor(() => {
@@ -224,4 +224,3 @@ describe('FormView', () => {
     expect(screen.queryByTestId('created-by-field')).toBeNull();
   });
 });
-
