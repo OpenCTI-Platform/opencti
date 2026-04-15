@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { LocalStorage } from '../../utils/hooks/useLocalStorageModel';
 import { useDataTablePaginationLocalStorage } from './dataTableHooks';
 
-type SortableData = ReadonlyArray<Record<string, string | number | boolean>>;
+type SortableData = ReadonlyArray<Record<string, string | number | boolean | undefined | null>>;
 
 export const sort = (data: SortableData, sortBy: string, orderAsc: boolean) =>
   [...data].sort((lhs, rhs) => {

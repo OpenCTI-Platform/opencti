@@ -6456,7 +6456,7 @@ export type CustomViewDisplay = {
 
 export type CustomViewDisplayContext = {
   __typename?: 'CustomViewDisplayContext';
-  id: Scalars['ID']['output'];
+  customViewId: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   path: Scalars['String']['output'];
 };
@@ -42948,7 +42948,7 @@ export type CustomViewDisplayResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type CustomViewDisplayContextResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomViewDisplayContext'] = ResolversParentTypes['CustomViewDisplayContext']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  customViewId?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;

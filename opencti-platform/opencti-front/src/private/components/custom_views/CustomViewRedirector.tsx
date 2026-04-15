@@ -10,14 +10,14 @@ interface CustomViewRedirectorProps {
 }
 
 const renderMatch = (info: SlugRedirectHandlerPageInfo) =>
-  <RootCustomView customViewId={(info as CustomViewsInfo[number]).id} />;
+  <RootCustomView customViewId={(info as CustomViewsInfo[number]).customViewId} />;
 
 const CustomViewRedirector = ({ entityType, Fallback }: CustomViewRedirectorProps) => {
   const { customViews } = useCustomViews(entityType);
   const pagesInfo = useMemo(() => customViews.reduce(
     (acc, customViewInfo) => ({
       ...acc,
-      [customViewInfo.id.replaceAll('-', '')]: customViewInfo,
+      [customViewInfo.customViewId.replaceAll('-', '')]: customViewInfo,
     }), {} as Record<string, CustomViewsInfo[number]>,
   ), [customViews]);
   return (

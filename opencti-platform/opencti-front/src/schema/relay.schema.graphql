@@ -16137,7 +16137,7 @@ type CustomViewDisplay {
 }
 
 type CustomViewDisplayContext {
-  id: ID!
+  customViewId: ID!
   name: String!
   path: String!
 }

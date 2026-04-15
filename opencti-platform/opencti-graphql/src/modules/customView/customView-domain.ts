@@ -71,7 +71,7 @@ export const getCustomViewsDisplayContext = async (context: AuthContext, user: A
     const infos = infoMap.get(targetEntityType) ?? [];
     // Build the relative path from the slug and the id
     const path = `${slug}-${id.replaceAll('-', '')}`;
-    infos.push({ id, path, name });
+    infos.push({ customViewId: id, path, name });
     infoMap.set(targetEntityType, infos);
     return infoMap;
   }, new Map<string, CustomViewDisplayContext[]>());

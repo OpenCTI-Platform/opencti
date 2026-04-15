@@ -29,7 +29,7 @@ describe('CustomViewRedirector', () => {
           customViews: [{
             entity_type: 'Intrusion-Set',
             custom_views_info: [{
-              id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
+              customViewId: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
               name: 'My custom view',
               path: customViewPath,
             }],
@@ -56,7 +56,7 @@ describe('CustomViewRedirector', () => {
           customViews: [{
             entity_type: 'Intrusion-Set',
             custom_views_info: [{
-              id: 'dc60eb35-a670-4b49-804e-ef38e3655392',
+              customViewId: 'dc60eb35-a670-4b49-804e-ef38e3655392',
               name: 'My custom view',
               path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
             }],
@@ -83,7 +83,7 @@ describe('CustomViewRedirector', () => {
           customViews: [{
             entity_type: 'Intrusion-Set',
             custom_views_info: [{
-              id: 'dc60eb35-a670-4b49-804e-ef38e3655392',
+              customViewId: 'dc60eb35-a670-4b49-804e-ef38e3655392',
               name: 'My custom view',
               path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
             }],
@@ -110,7 +110,7 @@ describe('CustomViewRedirector', () => {
           customViews: [{
             entity_type: 'Intrusion-Set',
             custom_views_info: [{
-              id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
+              customViewId: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
               name: 'My custom view',
               path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
             }],
