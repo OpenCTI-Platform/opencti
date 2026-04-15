@@ -68,8 +68,8 @@ export const createRetentionRule = async (context: AuthContext, user: AuthUser, 
     last_deleted_count: null,
     remaining_count: null,
     retention_unit: input.retention_unit ?? 'days',
-    filters,
     ...input,
+    filters,
   };
   await elIndex(INDEX_INTERNAL_OBJECTS, retentionRule);
   await publishUserAction({
