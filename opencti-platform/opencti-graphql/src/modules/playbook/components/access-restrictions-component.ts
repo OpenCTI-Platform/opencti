@@ -10,7 +10,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organizati
 import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, buildRestrictedMembers } from '../../../utils/authorizedMembers';
-import { applyOperationFieldPatch, extractBundleBaseElement, filterBundleElements, isBundleElementInScope } from '../playbook-utils';
+import { applyOperationFieldPatch, extractBundleBaseElement, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 
 export interface AccessRestrictionsConfiguration {
   applyToElements: PlaybookBundleElementsToApply;
@@ -125,11 +125,10 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
       const element = bundle.objects[index];
       const internalType = generateInternalType(element);
       const isTypeCompatible = AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType);
-      const isFilteredElement = (await filterBundleElements(context, [element], applyWithFilters)).length === 1;
+      const isFilteredElement = (await isBundleElementMatchFilters(context, element, applyWithFilters));
+      const isElementInScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
 
-      const isElementInScope = isTypeCompatible && isBundleElementInScope(element, applyToElements, dataInstanceId) && isFilteredElement;
-
-      if (isElementInScope) {
+      if (isTypeCompatible && isFilteredElement && isElementInScope) {
         const args = {
           entityId: element.id,
           input,

@@ -47,7 +47,7 @@ export const isBundleElementMatchFilters = async (
   context: AuthContext,
   bundleElement: StixObject,
   filters: string | undefined,
-) => {
+): Promise<boolean> => {
   if (!filters || isEmptyField(filters)) return true;
   const jsonFilters = JSON.parse(filters);
   return isStixMatchFilterGroup(

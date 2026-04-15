@@ -457,7 +457,6 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
       expect(result.output_port).toBe('out');
       // Check first object - should not have authorized_members
       const reportExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
-      console.log();
       expect(reportExt.authorized_members).toBeUndefined();
       // Check second object - should have authorized_members
       const secondReportExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
@@ -469,6 +468,8 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
     const filterGrouping = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Grouping"],"mode":"or"}],"filterGroups":[]}';
     const filterReport = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Report"],"mode":"or"}],"filterGroups":[]}';
     const filterAll = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Report", "Grouping", "Case-Incident"],"mode":"or"}],"filterGroups":[]}';
+    const filterReportAndGrouping = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Report", "Grouping"],"mode":"or"}],"filterGroups":[]}';
+    const filterNotMatching = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Incident", "Indicator"],"mode":"or"}],"filterGroups":[]}';
 
     const expectedAccessRestriction = [{
       id: USER_ID,
@@ -490,29 +491,6 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
         type: ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
       }),
     ];
-
-    it('should add authorized_members only to groupings when filtered on groupings and applyToElements = "all-element"', async () => {
-      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
-        mainId: REPORT_ID,
-        bundleObjects: BUNDLE_OBJECTS(),
-        configuration: {
-          access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
-          applyToElements: playbookBundleElementsToApply.allElements.value,
-          applyWithFilters: filterGrouping,
-        },
-      }));
-
-      expect(result.output_port).toBe('out');
-      // Check first object - should not have authorized_members
-      const reportExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
-      expect(reportExt.authorized_members).toBeUndefined();
-      // Check second object - should have authorized_members
-      const secondReportExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
-      expect(secondReportExt.authorized_members).toEqual(expectedAccessRestriction);
-      // Check third object - should not have authorized_members
-      const thirdReportExt = result.bundle.objects[2].extensions[STIX_EXT_OCTI];
-      expect(thirdReportExt.authorized_members).toBeUndefined();
-    });
 
     it('should only add authorized_members to only main element of the bundle when applyToElements = "only-main" and filter on all elements', async () => {
       const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
@@ -537,6 +515,98 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
       expect(thirdReportExt.authorized_members).toBeUndefined();
     });
 
+    it('should not add authorized_members to any element of the bundle when applyToElements = "only-main" and filter do not match main', async () => {
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: {
+          access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+          applyWithFilters: filterGrouping,
+        },
+      }));
+
+      expect(result.output_port).toBe('out');
+      // Check first object - should not have authorized_members
+      const reportExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
+      expect(reportExt.authorized_members).toBeUndefined();
+      // Check second object - should not have authorized_members
+      const secondReportExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
+      expect(secondReportExt.authorized_members).toBeUndefined();
+      // Check third object - should not have authorized_members
+      const thirdReportExt = result.bundle.objects[2].extensions[STIX_EXT_OCTI];
+      expect(thirdReportExt.authorized_members).toBeUndefined();
+    });
+
+    it('should add authorized_members to all elements when filtered match on all and applyToElements = "all-element"', async () => {
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: {
+          access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
+          applyToElements: playbookBundleElementsToApply.allElements.value,
+          applyWithFilters: filterAll,
+        },
+      }));
+
+      expect(result.output_port).toBe('out');
+      // Check first object - should have authorized_members
+      const reportExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
+      expect(reportExt.authorized_members).toEqual(expectedAccessRestriction);
+      // Check second object - should have authorized_members
+      const secondReportExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
+      expect(secondReportExt.authorized_members).toEqual(expectedAccessRestriction);
+      // Check third object - should have authorized_members
+      const thirdReportExt = result.bundle.objects[2].extensions[STIX_EXT_OCTI];
+      expect(thirdReportExt.authorized_members).toEqual(expectedAccessRestriction);
+    });
+
+    it('should add authorized_members only to groupings when filtered on groupings and applyToElements = "all-element"', async () => {
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: {
+          access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
+          applyToElements: playbookBundleElementsToApply.allElements.value,
+          applyWithFilters: filterGrouping,
+        },
+      }));
+
+      expect(result.output_port).toBe('out');
+      // Check first object - should not have authorized_members
+      const reportExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
+      expect(reportExt.authorized_members).toBeUndefined();
+      // Check second object - should have authorized_members
+      const secondReportExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
+      expect(secondReportExt.authorized_members).toEqual(expectedAccessRestriction);
+      // Check third object - should not have authorized_members
+      const thirdReportExt = result.bundle.objects[2].extensions[STIX_EXT_OCTI];
+      expect(thirdReportExt.authorized_members).toBeUndefined();
+    });
+
+    it('should not add authorized_members to any element when filters do not match and applyToElements = "all-element"', async () => {
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: {
+          access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
+          applyToElements: playbookBundleElementsToApply.allElements.value,
+          applyWithFilters: filterNotMatching,
+        },
+      }));
+
+      expect(result.output_port).toBe('out');
+      // Check first object - should not have authorized_members
+      const reportExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
+      expect(reportExt.authorized_members).toBeUndefined();
+      // Check second object - should not have authorized_members
+      const secondReportExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
+      expect(secondReportExt.authorized_members).toBeUndefined();
+      // Check third object - should not have authorized_members
+      const thirdReportExt = result.bundle.objects[2].extensions[STIX_EXT_OCTI];
+      expect(thirdReportExt.authorized_members).toBeUndefined();
+    });
+
     it('should not add authorized_members to any element if applyToElements = "all-except-main" and filter is on main', async () => {
       const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
         mainId: REPORT_ID,
@@ -551,7 +621,6 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
       expect(result.output_port).toBe('out');
       // Check first object - should not have authorized_members
       const reportExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
-      console.log();
       expect(reportExt.authorized_members).toBeUndefined();
       // Check second object - should not have authorized_members
       const secondReportExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
@@ -559,6 +628,52 @@ describe('PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT', () => {
       // Check third object - should not have authorized_members
       const thirdReportExt = result.bundle.objects[2].extensions[STIX_EXT_OCTI];
       expect(thirdReportExt.authorized_members).toBeUndefined();
+    });
+
+    it('should add authorized_members filtered element except main if applyToElements = "all-except-main" and filter matches main and other elements', async () => {
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: {
+          access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
+          applyToElements: playbookBundleElementsToApply.allExceptMain.value,
+          applyWithFilters: filterReportAndGrouping,
+        },
+      }));
+
+      expect(result.output_port).toBe('out');
+      // Check first object - should not have authorized_members
+      const reportExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
+      expect(reportExt.authorized_members).toBeUndefined();
+      // Check second object - should have authorized_members
+      const secondReportExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
+      expect(secondReportExt.authorized_members).toEqual(expectedAccessRestriction);
+      // Check third object - should not have authorized_members
+      const thirdReportExt = result.bundle.objects[2].extensions[STIX_EXT_OCTI];
+      expect(thirdReportExt.authorized_members).toBeUndefined();
+    });
+
+    it('should add authorized_members to all elements except main if applyToElements = "all-except-main" and filter match all elements', async () => {
+      const result = await PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT.executor(testExecutor({
+        mainId: REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: {
+          access_restrictions: [createAccessRestriction(USER_ID, 'admin')],
+          applyToElements: playbookBundleElementsToApply.allExceptMain.value,
+          applyWithFilters: filterAll,
+        },
+      }));
+
+      expect(result.output_port).toBe('out');
+      // Check first object - should not have authorized_members
+      const reportExt = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
+      expect(reportExt.authorized_members).toBeUndefined();
+      // Check second object - should have authorized_members
+      const secondReportExt = result.bundle.objects[1].extensions[STIX_EXT_OCTI];
+      expect(secondReportExt.authorized_members).toEqual(expectedAccessRestriction);
+      // Check third object - should have authorized_members
+      const thirdReportExt = result.bundle.objects[2].extensions[STIX_EXT_OCTI];
+      expect(thirdReportExt.authorized_members).toEqual(expectedAccessRestriction);
     });
   });
 
