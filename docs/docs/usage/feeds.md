@@ -7,7 +7,7 @@ OpenCTI provides versatile mechanisms for sharing data through its built-in feed
 Feeds are configured in the "Data > Data sharing" window. Configuration for all feed types is uniform and relies on the following parameters:
 
 - Filter setup: The feed can have specific filters to publish only a subset of the platform overall knowledge. Any data that meets the criteria established by the user's feed filters will be shared (e.g. specific types of entities, labels, marking definitions, etc.).
-- Access control: A feed can be either public, i.e. accessible without authentication, or restricted. By default, it's accessible to any user with the "Access data sharing" capability, but it's possible to increase restrictions by limiting access to a specific user, group, or organization.
+- Access control: A feed can be either [public](feeds.md#sharing-a-public-csv-feed-taxii-collection-or-stream), i.e. accessible without authentication, or restricted. By default, it's accessible to any user with the "Access data sharing" capability, but it's possible to increase restrictions by limiting access to a specific user, group, or organization.
 
 ![Feed access restriction](assets/feed-access-restriction.png)
 
@@ -25,7 +25,7 @@ In scenarios involving data sharing between two OpenCTI platforms, Live streams 
 * create, update and delete events depending on the parameters,
 * caching already created entities in the last 5 minutes,
 * resolving relationships and dependencies even out of the filters,
-* can be public (without authentication).
+* can be [public](feeds.md#sharing-a-public-csv-feed-taxii-collection-or-stream) (without authentication).
 
 ![Live stream](assets/live-stream.png)
 
@@ -67,6 +67,7 @@ After creating a new collection, every system with a proper access token can con
 As when using the GraphQL API, TAXII 2.1 collections have a classic pagination system that should be handled by the consumer. Also, it's important to understand that element dependencies (nested IDs) inside the collection are not always contained/resolved in the bundle, so consistency needs to be handled at the client level.
 
 <a id="csv-feeds-section"></a>
+
 ## CSV feeds
 
 ### Introduction
@@ -155,3 +156,35 @@ Or in the platform configuration file:
     Changing the size limit can lead to performance degradation depending on your platform and your CSV feed configuration. 
     Please test your setup properly and align this number with your platform capacity to avoid any problem.
 
+## Sharing a Public CSV Feed, Taxii collection or stream
+
+To share any data using one of the above methods in a public way, two conditions must be met:
+
+- The user must have the capability **Manage Data sharing** ([see capabilities](../administration/users.md))
+- The user must have the capability **Manage credentials** ([see capabilities](../administration/users.md))
+
+When these two conditions are met, the user can enable the feed to be public.
+
+In this case, the user must choose a user whose rights will be used to share the data, including markings, organisation membership (for organisation segregation), and authorized members.
+
+![setting a feed as public](assets/public.png)
+
+This helps ensure that data sharing is controlled and that data is not leaked.
+
+
+### Example
+
+I want to share a TAXII collection publicly. I have the required capabilities to do so. I chose a user, UserA, who has access to markings up to TLP:GREEN and is part of the Organisation Filigran.
+
+- If a report is created with TLP:RED, it won't be included in the TAXII collection because my user does not have access to it.
+- In the context of organisation segregation, if a report is created and shared to organisation "OrganisationB", and my user is part of "Filigran" (which is not the platform organisation), this report won't be included.
+
+### Feeds having "system" as user used for impersonation
+
+It may happen that some platform have "system" as a user used for impersonation: this is a case for historic feeds. In this case, the system user is used for impersonation, meaning that any data present in the platform will be shared.
+
+### User used for impersonation is deleted
+
+If a user that was used for the access right impersonation is deleted from the platform, any public feed using this user **will be stopped.**
+
+Additionnally, these feeds **will be made private.**
