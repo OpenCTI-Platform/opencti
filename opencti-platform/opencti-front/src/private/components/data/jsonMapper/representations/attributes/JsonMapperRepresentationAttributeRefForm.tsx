@@ -155,10 +155,10 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
     value: JsonMapperRepresentationFormData[],
   ) => {
     const selectedIds = value.map((v) => v.id);
-    const textIdentifiers = (field.value?.based_on?.identifier ?? []).filter((i) => typeof i !== 'string');
+    const nonStrIdentifiers = (field.value?.based_on?.identifier ?? []).filter((i) => typeof i !== 'string');
 
     // Add new identifiers for newly selected representations
-    const newIdentifiers = [...textIdentifiers];
+    const newIdentifiers = [...nonStrIdentifiers];
     selectedIds.forEach((id) => {
       if (!newIdentifiers.find((i) => i.representation === id)) {
         newIdentifiers.push({ identifier: '', representation: id });

@@ -1,5 +1,5 @@
 import {
-  BasedOnType,
+  BasedOn,
   JsonMapperRepresentationAttribute,
   JsonMapperRepresentationAttributeEdit,
   JsonMapperRepresentationAttributeFormData,
@@ -72,7 +72,7 @@ export const jsonMapperAttributeToFormData = (
     key: attribute.key,
     mode: attribute.mode,
     attr_path: attribute.attr_path,
-    based_on: attribute.based_on as BasedOnType,
+    based_on: attribute.based_on as BasedOn,
     default_values: schemaAttribute ? computeDefaultValues(
       entityType,
       attribute.key,
