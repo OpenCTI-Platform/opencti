@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { addFilter } from '../../../src/utils/filtering/filtering-utils';
 import { type FintelTemplateWidgetAddInput, WidgetPerspective } from '../../../src/generated/graphql';
 import { SELF_ID } from '../../../src/utils/fintelTemplate/__fintelTemplateWidgets';

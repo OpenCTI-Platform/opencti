@@ -2,12 +2,12 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Route, Routes, useParams, useLocation } from 'react-router-dom';
+import { Route, useParams, useLocation } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -24,6 +24,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import DataSourceEdition from './DataSourceEdition';
 import DataSourceDeletion from './DataSourceDeletion';
+import { PATH_DATA_SOURCE, PATH_DATA_SOURCES } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootDataSourcesSubscription($id: ID!) {
@@ -85,14 +86,15 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(dataSourceQuery, queryRef);
   const { dataSource, connectorsForImport, connectorsForExport, settings } = data;
-  const paddingRight = getPaddingRight(location.pathname, dataSource?.id, '/dashboard/techniques/data_sources', false);
+  const basePath = PATH_DATA_SOURCE(dataSourceId);
+  const paddingRight = getPaddingRight(location.pathname, basePath, false);
   return (
     <>
       {dataSource ? (
         <div style={{ paddingRight }}>
           <Breadcrumbs elements={[
             { label: t_i18n('Techniques') },
-            { label: t_i18n('Data sources'), link: '/dashboard/techniques/data_sources' },
+            { label: t_i18n('Data sources'), link: PATH_DATA_SOURCES },
             { label: dataSource.name, current: true },
           ]}
           />
@@ -113,60 +115,43 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             redirectToContent={true}
             enableEnrollPlaybook={true}
           />
-          <StixDomainObjectTabsBox
-            basePath="/dashboard/techniques/data_sources"
-            entity={dataSource}
-            tabs={[
-              'overview',
-              'content',
-              'files',
-              'history',
-            ]}
-          />
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <DataSource dataSourceData={dataSource} />
-              }
-            />
-            <Route
-              path="/knowledge/*"
-              element={(
-                <DataSourceKnowledgeComponent
-                  data={dataSource}
-                  enableReferences={settings?.platform_enable_reference?.includes(
-                    'Data-Source',
-                  )}
-                />
-              )}
-            />
-            <Route
-              path="/content/*"
-              element={(
+          <StixDomainObjectMain
+            basePath={basePath}
+            pages={{
+              overview:
+                <DataSource dataSourceData={dataSource} />,
+              content: (
                 <StixCoreObjectContentRoot
                   stixCoreObject={dataSource}
                 />
-              )}
-            />
-            <Route
-              path="/files"
-              element={(
+              ),
+              files: (
                 <FileManager
                   id={dataSourceId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
                   entity={dataSource}
                 />
-              )}
-            />
-            <Route
-              path="/history"
-              element={
-                <StixCoreObjectHistory stixCoreObjectId={dataSourceId} />
-              }
-            />
-          </Routes>
+              ),
+              history:
+                <StixCoreObjectHistory stixCoreObjectId={dataSourceId} />,
+            }}
+            extraRoutes={(
+              <>
+                <Route
+                  path="/knowledge/*"
+                  element={(
+                    <DataSourceKnowledgeComponent
+                      data={dataSource}
+                      enableReferences={settings?.platform_enable_reference?.includes(
+                        'Data-Source',
+                      )}
+                    />
+                  )}
+                />,
+              </>
+            )}
+          />
         </div>
       ) : (
         <ErrorNotFound />

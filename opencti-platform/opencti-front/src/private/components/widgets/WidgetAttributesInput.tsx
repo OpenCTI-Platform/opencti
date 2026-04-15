@@ -53,14 +53,17 @@ const attributesByEntityType: Map<string, { attribute: string; label: string }[]
     { attribute: 'severity', label: 'Severity' },
     { attribute: 'priority', label: 'Priority' },
     { attribute: 'information_types', label: 'Information types' },
+    { attribute: 'container_content', label: 'Content' },
   ]],
   ['Case-Rft', [
     { attribute: 'severity', label: 'Severity' },
     { attribute: 'priority', label: 'Priority' },
     { attribute: 'takedown_types', label: 'Takedown types' },
+    { attribute: 'container_content', label: 'Content' },
   ]],
   ['Grouping', [
     { attribute: 'context', label: 'Context' },
+    { attribute: 'container_content', label: 'Content' },
   ]],
   ['Incident', [
     { attribute: 'first_seen', label: 'First seen' },
@@ -68,6 +71,7 @@ const attributesByEntityType: Map<string, { attribute: string; label: string }[]
     { attribute: 'incident_type', label: 'Incident type' },
     { attribute: 'severity', label: 'Severity' },
     { attribute: 'source', label: 'Source' },
+    { attribute: 'container_content', label: 'Content' },
   ]],
   ['Case-Incident', [
     { attribute: 'severity', label: 'Severity' },
@@ -91,7 +95,7 @@ const attributesByEntityType: Map<string, { attribute: string; label: string }[]
     { attribute: 'published', label: 'Report publication date' },
     { attribute: 'report_types', label: 'Report types' },
     { attribute: 'x_opencti_reliability', label: 'Reliability (self)' },
-    { attribute: 'report_content', label: 'Content' },
+    { attribute: 'container_content', label: 'Content' },
   ]],
   ['Task', [
     { attribute: 'due_date', label: 'Due date' },

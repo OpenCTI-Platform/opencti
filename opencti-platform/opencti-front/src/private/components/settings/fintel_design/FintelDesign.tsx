@@ -5,7 +5,6 @@ import { FintelDesignQuery } from '@components/settings/fintel_design/__generate
 import Grid from '@mui/material/Grid2';
 import { useTheme } from '@mui/styles';
 import { FintelDesign_fintelDesign$key } from '@components/settings/fintel_design/__generated__/FintelDesign_fintelDesign.graphql';
-import CustomizationMenu from '@components/settings/CustomizationMenu';
 import FintelDesignForm from '@components/settings/fintel_design/FintelDesignForm';
 import FintelDesignEdition from '@components/settings/fintel_design/FintelDesignEdition';
 import { Box, Stack } from '@mui/material';
@@ -93,7 +92,6 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
   return (
     <>
       <PageContainer withRightMenu>
-        <CustomizationMenu />
         <Breadcrumbs
           elements={[
             { label: t_i18n('Settings') },

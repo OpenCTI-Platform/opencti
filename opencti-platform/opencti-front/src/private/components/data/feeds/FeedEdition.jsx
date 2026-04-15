@@ -42,9 +42,11 @@ import {
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
+import CreatorField from '../../common/form/CreatorField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { convertAuthorizedMembers } from '../../../../utils/edition';
+import { convertAuthorizedMembers, convertUser } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useTheme } from '@mui/material/styles';
@@ -151,6 +153,8 @@ const feedValidation = (t) => Yup.object().shape({
   rolling_time: Yup.number().required(t('This field is required')),
   feed_types: Yup.array().min(1, t('Minimum one entity type')).required(t('This field is required')),
   feed_public: Yup.bool().nullable(),
+  feed_public_user_id: Yup.object().nullable()
+    .when('feed_public', { is: true, then: (s) => s.required(t('This field is required')) }),
   authorized_members: Yup.array().nullable(),
 });
 
@@ -160,6 +164,7 @@ const FeedEditionContainer = (props) => {
   const { t_i18n } = useFormatter();
   const { ignoredAttributesInFeeds } = useAttributes();
   const { schema } = useAuth();
+  const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
 
   const [selectedTypes, setSelectedTypes] = useState(feed.feed_types);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(feed.filters));
@@ -207,6 +212,7 @@ const FeedEditionContainer = (props) => {
       R.assoc('rolling_time', parseInt(values.rolling_time, 10)),
       R.assoc('feed_attributes', finalFeedAttributes),
       R.assoc('filters', serializeFilterGroupForBackend(filters)),
+      R.assoc('feed_public_user_id', values.feed_public_user_id?.value ?? null),
       R.assoc(
         'authorized_members',
         values.authorized_members.map(({ value }) => ({
@@ -366,6 +372,7 @@ const FeedEditionContainer = (props) => {
     include_header: feed.include_header,
     feed_types: feed.feed_types,
     feed_public: feed.feed_public,
+    feed_public_user_id: convertUser(feed, 'feed_public_user'),
     authorized_members: convertAuthorizedMembers(feed),
   };
 
@@ -414,7 +421,7 @@ const FeedEditionContainer = (props) => {
                 onSubmit={onSubmit}
                 onReset={onReset}
               >
-                {({ values, submitForm, handleReset, isSubmitting }) => (
+                {({ values, submitForm, handleReset, isSubmitting, setFieldValue }) => (
                   <Form>
                     <Field
                       component={TextField}
@@ -447,6 +454,7 @@ const FeedEditionContainer = (props) => {
                         name="feed_public"
                         containerstyle={{ marginLeft: 2, marginTop: 20 }}
                         label={t_i18n('Public feed')}
+                        disabled={!isGrantedToSetAccesses}
                       />
                       {!values.feed_public && (
                         <ObjectMembersField
@@ -455,6 +463,15 @@ const FeedEditionContainer = (props) => {
                           multiple={true}
                           helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
                           name="authorized_members"
+                        />
+                      )}
+                      {values.feed_public && (
+                        <CreatorField
+                          name="feed_public_user_id"
+                          label={t_i18n('Share data corresponding to permissions associated with this user')}
+                          containerStyle={fieldSpacingContainerStyle}
+                          disabled={!isGrantedToSetAccesses}
+                          onChange={(name, value) => setFieldValue(name, value)}
                         />
                       )}
                     </Alert>
@@ -814,6 +831,11 @@ const FeedEditionFragment = createFragmentContainer(FeedEditionContainer, {
         }
       }
       feed_public
+      feed_public_user {
+        id
+        entity_type
+        name
+      }
       authorized_members {
         id
         member_id

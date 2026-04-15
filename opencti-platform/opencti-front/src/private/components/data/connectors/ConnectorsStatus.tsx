@@ -4,13 +4,14 @@ import Dialog from '@common/dialog/Dialog';
 import { getConnectorMetadata, IngestionConnectorType } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
 import ConnectorsList, { connectorsListQuery } from '@components/data/connectors/ConnectorsList';
+import ConnectorsLogos, { connectorsLogosQuery } from '@components/data/connectors/ConnectorsLogos';
 import ConnectorsState, { connectorsStateQuery } from '@components/data/connectors/ConnectorsState';
 import ConnectorsStatusFilters from '@components/data/connectors/ConnectorsStatusFilters';
 import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
 import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 import useConnectorsStatusFilters from '@components/data/connectors/hooks/useConnectorsStatusFilters';
-import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, HubOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
+import { DeleteOutlined, DeveloperBoardOutlined, ExtensionOutlined, PlaylistRemoveOutlined } from '@mui/icons-material';
 import { ListItemButton } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -40,6 +41,7 @@ import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModif
 import { connectorDeletionMutation, connectorResetStateMutation } from './Connector';
 import SortConnectorsHeader from './SortConnectorsHeader';
 import canDeleteConnector from './utils/canDeleteConnector';
+import { ConnectorsLogosQuery } from './__generated__/ConnectorsLogosQuery.graphql';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -79,11 +81,13 @@ const useStyles = makeStyles<Theme>({
 interface ConnectorsStatusContentProps {
   connectorsListData: ConnectorsListQuery['response'];
   connectorsStateData: ConnectorsStateQuery['response'];
+  logosBySlug: Map<string, string>;
 }
 
 const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> = ({
   connectorsListData,
   connectorsStateData,
+  logosBySlug,
 }) => {
   const { t_i18n, nsdt, n } = useFormatter();
 
@@ -339,11 +343,13 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
               .filter((connector) => connector.connector_type !== 'internal')
               .map((connector) => {
                 let ConnectorIcon = ExtensionOutlined;
-                if (connector.is_managed) {
-                  ConnectorIcon = HubOutlined;
-                } else if (connector.built_in) {
+                if (connector.built_in) {
                   ConnectorIcon = DeveloperBoardOutlined;
                 }
+
+                const connectorLogoSrc = connector.manager_contract_excerpt?.slug
+                  ? logosBySlug.get(connector.manager_contract_excerpt.slug)
+                  : undefined;
 
                 const connectorType = connector.connector_type
                   ? getConnectorMetadata(connector.connector_type as IngestionConnectorType, t_i18n).label
@@ -400,7 +406,22 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                       to={`/dashboard/data/ingestion/connectors/${connector.id}`}
                     >
                       <ListItemIcon>
-                        <ConnectorIcon />
+                        {connectorLogoSrc
+                          ? (
+                              <Tooltip title={connector.manager_contract_excerpt?.title || ''} placement="top">
+                                <img
+                                  src={connectorLogoSrc}
+                                  alt="connector logo"
+                                  style={{
+                                    width: 24,
+                                    height: 24,
+                                    objectFit: 'contain',
+                                    borderRadius: 4,
+                                  }}
+                                />
+                              </Tooltip>
+                            )
+                          : <ConnectorIcon />}
                       </ListItemIcon>
 
                       <ListItemText
@@ -414,9 +435,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                             <Tooltip title={connector.title} placement="top">
                               <div className={classes.bodyItem}>
                                 <span className={classes.bodyItemText}>
-                                  {
-                                    connector.is_managed ? connector.manager_contract_excerpt?.title : connector.name
-                                  }
+                                  {connector.title}
                                 </span>
                               </div>
                             </Tooltip>
@@ -465,10 +484,13 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
 const ConnectorsStatus: React.FC = () => {
   const [connectorsListRef, loadConnectorsList] = useQueryLoader<ConnectorsListQuery>(connectorsListQuery);
   const [connectorsStateRef, loadConnectorsState] = useQueryLoader<ConnectorsStateQuery>(connectorsStateQuery);
+  const [connectorsLogosRef, loadConnectorsLogos] = useQueryLoader<ConnectorsLogosQuery>(connectorsLogosQuery);
+  const [logosBySlug, setLogosBySlug] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     loadConnectorsList({}, { fetchPolicy: 'store-and-network' });
     loadConnectorsState({}, { fetchPolicy: 'store-and-network' });
+    loadConnectorsLogos({}, { fetchPolicy: 'store-and-network' });
   }, []);
 
   const refetchConnectorsState = useCallback(() => {
@@ -492,10 +514,21 @@ const ConnectorsStatus: React.FC = () => {
         {({ data: connectorsListData }) => (
           <ConnectorsState queryRef={connectorsStateRef}>
             {({ data: connectorsStateData }) => (
-              <ConnectorsStatusContent
-                connectorsListData={connectorsListData}
-                connectorsStateData={connectorsStateData}
-              />
+              <>
+                <ConnectorsStatusContent
+                  connectorsListData={connectorsListData}
+                  connectorsStateData={connectorsStateData}
+                  logosBySlug={logosBySlug}
+                />
+                {connectorsLogosRef && (
+                  <React.Suspense fallback={null}>
+                    <ConnectorsLogos
+                      queryRef={connectorsLogosRef}
+                      onLoaded={setLogosBySlug}
+                    />
+                  </React.Suspense>
+                )}
+              </>
             )}
           </ConnectorsState>
         )}

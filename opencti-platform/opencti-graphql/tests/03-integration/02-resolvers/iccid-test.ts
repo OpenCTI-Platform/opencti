@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 
 const READ_QUERY = gql`

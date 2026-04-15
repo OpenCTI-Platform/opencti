@@ -18,17 +18,37 @@ def test_unknown_type(opencti_stix2: OpenCTIStix2, caplog):
 
 
 def test_convert_markdown(opencti_stix2: OpenCTIStix2):
+    # Matched pair is converted to backticks
     result = opencti_stix2.convert_markdown(
         " my <code> is very </special> </code> to me"
     )
     assert " my ` is very </special> ` to me" == result
 
 
+def test_convert_markdown_multiple_pairs(opencti_stix2: OpenCTIStix2):
+    # Multiple matched pairs are all converted
+    result = opencti_stix2.convert_markdown("<code>foo</code> and <code>bar</code>")
+    assert "`foo` and `bar`" == result
+
+
 def test_convert_markdown_typo(opencti_stix2: OpenCTIStix2):
-    result = opencti_stix2.convert_markdown(
-        " my <code is very </special> </code> to me"
-    )
-    assert " my <code is very </special> ` to me" == result
+    # Malformed opening tag (<code missing closing >) means no valid pair exists; nothing should be replaced
+    text = " my <code is very </special> </code> to me"
+    result = opencti_stix2.convert_markdown(text)
+    assert text == result
+
+
+def test_convert_markdown_literal_code_tag(opencti_stix2: OpenCTIStix2):
+    # A lone <code> without a matching </code> is literal content and must not be altered
+    text = 'Run python3 -c "<code>" and pass it to subprocess.run(..., shell=True)'
+    result = opencti_stix2.convert_markdown(text)
+    assert text == result
+
+
+def test_convert_markdown_mixed_matched_and_lone(opencti_stix2: OpenCTIStix2):
+    # A matched pair is converted, but a trailing lone <code> is left untouched
+    result = opencti_stix2.convert_markdown("<code>foo</code> and <code>")
+    assert "`foo` and <code>" == result
 
 
 def test_format_date_with_tz(opencti_stix2: OpenCTIStix2):

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import useAuth from '../../../../utils/hooks/useAuth';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
@@ -310,6 +310,7 @@ const ThreatActorGroupKnowledgeComponent = ({
             />
           )}
         />
+        <Route index element={<Navigate replace={true} to="overview" />} />
       </Routes>
     </div>
   );

@@ -1,14 +1,14 @@
 import { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Routes } from 'react-router-dom';
 import { graphql } from 'react-relay';
+import { Route } from 'react-router-dom';
 import * as R from 'ramda';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import withRouter from '../../../../utils/compat_router/withRouter';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import CourseOfAction from './CourseOfAction';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -21,6 +21,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import CourseOfActionEdition from './CourseOfActionEdition';
 import CourseOfActionDeletion from './CouseOfActionDeletion';
+import { PATH_COURSE_OF_ACTION, PATH_COURSES_OF_ACTION } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
@@ -99,12 +100,13 @@ class RootCourseOfAction extends Component {
             if (props) {
               if (props.courseOfAction) {
                 const { courseOfAction } = props;
-                const paddingRight = getPaddingRight(location.pathname, courseOfAction.id, '/dashboard/techniques/courses_of_action', false);
+                const basePath = PATH_COURSE_OF_ACTION(courseOfActionId);
+                const paddingRight = getPaddingRight(location.pathname, basePath, false);
                 return (
                   <div style={{ paddingRight }}>
                     <Breadcrumbs elements={[
                       { label: t('Techniques') },
-                      { label: t('Courses of action'), link: '/dashboard/techniques/courses_of_action' },
+                      { label: t('Courses of action'), link: PATH_COURSES_OF_ACTION },
                       { label: courseOfAction.name, current: true },
                     ]}
                     />
@@ -125,55 +127,34 @@ class RootCourseOfAction extends Component {
                       redirectToContent={true}
                       enableEnrollPlaybook={true}
                     />
-                    <StixDomainObjectTabsBox
-                      basePath="/dashboard/techniques/courses_of_action"
-                      entity={courseOfAction}
-                      tabs={[
-                        'overview',
-                        'content',
-                        'files',
-                        'history',
-                      ]}
-                    />
-                    <Routes>
-                      <Route
-                        path="/"
-                        element={
-                          <CourseOfAction courseOfActionData={props.courseOfAction} />
-                        }
-                      />
-                      <Route
-                        path="/knowledge/*"
-                        element={
-                          <CourseOfActionKnowledge courseOfAction={props.courseOfAction} />
-                        }
-                      />
-                      <Route
-                        path="/content/*"
-                        element={(
+                    <StixDomainObjectMain
+                      basePath={basePath}
+                      pages={{
+                        overview:
+                          <CourseOfAction courseOfActionData={props.courseOfAction} />,
+                        content: (
                           <StixCoreObjectContentRoot
                             stixCoreObject={courseOfAction}
                           />
-                        )}
-                      />
-                      <Route
-                        path="/files"
-                        element={(
+                        ),
+                        files: (
                           <FileManager
                             id={courseOfActionId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.courseOfAction}
                           />
-                        )}
-                      />
-                      <Route
-                        path="/history"
-                        element={
-                          <StixCoreObjectHistory stixCoreObjectId={courseOfActionId} />
-                        }
-                      />
-                    </Routes>
+                        ),
+                        history:
+                          <StixCoreObjectHistory stixCoreObjectId={courseOfActionId} />,
+                      }}
+                      extraRoutes={(
+                        <Route
+                          path="/knowledge/*"
+                          element={<CourseOfActionKnowledge courseOfAction={props.courseOfAction} />}
+                        />
+                      )}
+                    />
                   </div>
                 );
               }

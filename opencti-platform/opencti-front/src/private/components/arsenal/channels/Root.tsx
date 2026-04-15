@@ -1,16 +1,16 @@
 import { Suspense, useMemo } from 'react';
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Channel from './Channel';
 import ChannelKnowledge from './ChannelKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -26,6 +26,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import ChannelEdition from './ChannelEdition';
 import ChannelDeletion from './ChannelDeletion';
+import { PATH_CHANNEL, PATH_CHANNELS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootChannelSubscription($id: ID!) {
@@ -99,8 +100,9 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
 
   const { forceUpdate } = useForceUpdate();
 
-  const paddingRight = getPaddingRight(location.pathname, channelId, '/dashboard/arsenal/channels');
-  const link = `/dashboard/arsenal/channels/${channelId}/knowledge`;
+  const basePath = PATH_CHANNEL(channelId);
+  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
       {channel ? (
@@ -133,7 +135,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Arsenal') },
-              { label: t_i18n('Channels'), link: '/dashboard/arsenal/channels' },
+              { label: t_i18n('Channels'), link: PATH_CHANNELS },
               { label: channel.name, current: true },
             ]}
             />
@@ -162,78 +164,41 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               redirectToContent={true}
               enableEnrollPlaybook={true}
             />
-            <StixDomainObjectTabsBox
-              basePath="/dashboard/arsenal/channels"
-              entity={channel}
-              tabs={[
-                'overview',
-                'knowledge-overview',
-                'content',
-                'analyses',
-                'files',
-                'history',
-              ]}
-            />
-            <Routes>
-              <Route
-                path="/"
-                element={(
-                  <Channel channelData={channel} />
-                )}
-              />
-              <Route
-                path="/knowledge"
-                element={(
-                  <Navigate
-                    replace={true}
-                    to={`/dashboard/arsenal/channels/${channelId}/knowledge/overview`}
-                  />
-                )}
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
+            <StixDomainObjectMain
+              basePath={basePath}
+              pages={{
+                overview:
+                  <Channel channelData={channel} />,
+                knowledge: (
                   <div key={forceUpdate}>
                     <ChannelKnowledge channelData={channel} />
                   </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
+                ),
+                content: (
                   <StixCoreObjectContentRoot
                     stixCoreObject={channel}
                   />
-                )}
-              />
-              <Route
-                path="/analyses/*"
-                element={(
+                ),
+                analyses: (
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={channel}
                   />
-                )}
-              />
-              <Route
-                path="/files"
-                element={(
+                ),
+                files: (
                   <FileManager
                     id={channelId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={channel}
                   />
-                )}
-              />
-              <Route
-                path="/history"
-                element={(
+                ),
+                history: (
                   <StixCoreObjectHistory
                     stixCoreObjectId={channelId}
                   />
-                )}
-              />
-            </Routes>
+                ),
+              }}
+            />
           </div>
         </>
       ) : (

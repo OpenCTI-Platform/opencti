@@ -1,27 +1,27 @@
-import Grid from '@mui/material/Grid';
-import React, { BaseSyntheticEvent, useRef, useState } from 'react';
-import Tooltip from '@mui/material/Tooltip';
-import { Add as AddIcon, CloudUploadOutlined } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
-import { graphql, useFragment } from 'react-relay';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
+import { Add as AddIcon, CloudUploadOutlined } from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
+import { BaseSyntheticEvent, useRef, useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import FintelTemplatesLines, { TemplateType } from './FintelTemplatesLines';
-import { FintelTemplatesGrid_templates$key } from './__generated__/FintelTemplatesGrid_templates.graphql';
-import FintelTemplateFormDrawer from './FintelTemplateFormDrawer';
-import { FintelTemplateFormInputs } from './FintelTemplateForm';
+import Card from '../../../../../components/common/card/Card';
 import { useFormatter } from '../../../../../components/i18n';
-import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
-import useFintelTemplateImport from './useFintelTemplateImport';
 import { handleError, MESSAGING$ } from '../../../../../relay/environment';
 import { resolveLink } from '../../../../../utils/Entity';
-import Card from '../../../../../components/common/card/Card';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import { useSubTypeOutletContext } from '../SubTypeOutletContext';
+import { FintelTemplatesManager_templates$key } from './__generated__/FintelTemplatesManager_templates.graphql';
+import { FintelTemplateFormInputs } from './FintelTemplateForm';
+import FintelTemplateFormDrawer from './FintelTemplateFormDrawer';
+import FintelTemplatesLines, { TemplateType } from './FintelTemplatesLines';
+import useFintelTemplateImport from './useFintelTemplateImport';
 
 export const fintelTemplatesFragmentParams = { orderBy: 'name', orderMode: 'asc' };
 
 const fintelTemplatesFragment = graphql`
-  fragment FintelTemplatesGrid_templates on EntitySetting {
+  fragment FintelTemplatesManager_templates on EntitySetting {
     id
     target_type
     fintelTemplates (orderBy: name, orderMode: asc) {
@@ -40,11 +40,9 @@ const fintelTemplatesFragment = graphql`
   }
 `;
 
-interface FintelTemplatesGridProps {
-  data: FintelTemplatesGrid_templates$key;
-}
+const FintelTemplatesManager = () => {
+  const { subType } = useSubTypeOutletContext();
 
-const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
   const navigate = useNavigate();
   const { t_i18n } = useFormatter();
   const inputFileRef = useRef<HTMLInputElement>(null);
@@ -55,7 +53,7 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [templateToEdit, setTemplateToEdit] = useState<{ id: string } & FintelTemplateFormInputs>();
 
-  const dataResolved = useFragment(fintelTemplatesFragment, data);
+  const dataResolved = useFragment<FintelTemplatesManager_templates$key>(fintelTemplatesFragment, subType.settings);
   if (!dataResolved) return null;
   const { target_type, fintelTemplates, id: entitySettingId } = dataResolved;
 
@@ -98,56 +96,54 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
         accept="application/JSON"
         onChange={onUpload}
       />
-      <Grid item xs={6}>
-        <Card
-          title={<>{t_i18n('FINTEL Templates')} <EEChip /></>}
-          action={isEnterpriseEdition && (
-            <div>
-              <Tooltip title={t_i18n('Create a new template')}>
-                <IconButton
-                  onClick={() => setDrawerOpen(true)}
-                  size="small"
-                >
-                  <AddIcon fontSize="small" color="primary" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title={t_i18n('Import a template')}>
-                <IconButton
-                  disabled={importMutating}
-                  onClick={() => inputFileRef.current?.click()}
-                  size="small"
-                >
-                  <CloudUploadOutlined fontSize="small" color="primary" />
-                </IconButton>
-              </Tooltip>
+      <Card
+        title={<>{t_i18n('FINTEL Templates')} <EEChip /></>}
+        action={isEnterpriseEdition && (
+          <div>
+            <Tooltip title={t_i18n('Create a new template')}>
+              <IconButton
+                onClick={() => setDrawerOpen(true)}
+                size="small"
+              >
+                <AddIcon fontSize="small" color="primary" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t_i18n('Import a template')}>
+              <IconButton
+                disabled={importMutating}
+                onClick={() => inputFileRef.current?.click()}
+                size="small"
+              >
+                <CloudUploadOutlined fontSize="small" color="primary" />
+              </IconButton>
+            </Tooltip>
+          </div>
+        )}
+      >
+        <div style={{ height: '100%', width: '100%' }} ref={(r) => setDataTableRef(r)}>
+          {!isEnterpriseEdition && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              textAlign: 'center',
+            }}
+            >
+              {t_i18n('FINTEL templates are available with an Enterprise Edition subscription')}
             </div>
           )}
-        >
-          <div style={{ height: '100%', width: '100%' }} ref={(r) => setDataTableRef(r)}>
-            {!isEnterpriseEdition && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100%',
-                textAlign: 'center',
-              }}
-              >
-                {t_i18n('FINTEL templates are available with an Enterprise Edition subscription')}
-              </div>
-            )}
-            {isEnterpriseEdition && (
-              <FintelTemplatesLines
-                fintelTemplates={fintelTemplates}
-                dataTableRef={dataTableRef}
-                onUpdate={onUpdate}
-                entitySettingId={entitySettingId}
-                targetType={target_type}
-              />
-            )}
-          </div>
-        </Card>
-      </Grid>
+          {isEnterpriseEdition && (
+            <FintelTemplatesLines
+              fintelTemplates={fintelTemplates}
+              dataTableRef={dataTableRef}
+              onUpdate={onUpdate}
+              entitySettingId={entitySettingId}
+              targetType={target_type}
+            />
+          )}
+        </div>
+      </Card>
 
       {isEnterpriseEdition && (
         <FintelTemplateFormDrawer
@@ -165,4 +161,4 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
   );
 };
 
-export default FintelTemplatesGrid;
+export default FintelTemplatesManager;

@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import {
   ADMIN_API_TOKEN,
@@ -12,10 +12,9 @@ import {
   testContext,
   USER_EDITOR,
 } from '../../utils/testQuery';
-import { adminQueryWithSuccess, awaitUntilCondition, unSetOrganization, setOrganization, queryAsUserIsExpectedError, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess, awaitUntilCondition, unSetOrganization, setOrganization, queryAsUserIsExpectedError, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { findById } from '../../../src/domain/report';
 import { execChildPython } from '../../../src/python/pythonBridge';
-import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 const ORGANIZATION_SHARING_QUERY = gql`
   mutation StixCoreObjectSharingGroupAddMutation(
@@ -94,24 +93,24 @@ describe('oganization-sharing-test', () => {
         }
       `;
       // Delete the organization should fail with error
-      await queryAsUserIsExpectedError(USER_EDITOR.client, {
+      await queryAsUserIsExpectedError(USER_EDITOR, {
         query: DELETE_QUERY,
         variables: { id: PLATFORM_ORGANIZATION.id },
       }, 'Cannot delete the platform organization.', 'FUNCTIONAL_ERROR');
     });
     it('should user from different organization not access the report', async () => {
-      const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+      const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
         query: REPORT_STIX_DOMAIN_ENTITIES,
         variables: { id: reportInternalId },
       });
-      expect(queryResult.data.report).toBeNull();
+      expect(queryResult.data?.report).toBeNull();
     });
 
     // If this test fails, please check that one worker is running.
     it('should share Report with Organization - WORKER REQUIRED', async () => {
       // Get organization id
       organizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
-      const organizationSharingQueryResult = await adminQueryWithSuccess({
+      const organizationSharingQueryResult = await queryAsAdminWithSuccess({
         query: ORGANIZATION_SHARING_QUERY,
         variables: { id: reportInternalId, organizationId },
       });
@@ -119,19 +118,19 @@ describe('oganization-sharing-test', () => {
     });
     it('should Editor user access all objects', async () => {
       const condition = async () => {
-        const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+        const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
           query: REPORT_STIX_DOMAIN_ENTITIES,
           variables: { id: reportInternalId },
         });
-        return queryResult.data.report !== null && queryResult.data.report.objects.edges.length === 8;
+        return queryResult.data?.report !== null && queryResult.data?.report.objects.edges.length === 8;
       };
       // wait for task manager & worker to handle organization sharing
       await awaitUntilCondition(condition, 1000, 10, true, 'Please check that you have a test worker running');
-      const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
+      const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
         query: REPORT_STIX_DOMAIN_ENTITIES,
         variables: { id: reportInternalId },
       });
-      expect(queryResult.data.report.objects.edges.length).toEqual(8);
+      expect(queryResult.data?.report.objects.edges.length).toEqual(8);
     });
     it('should all entities deleted', async () => {
       const PURGE_QUERY = gql`
@@ -144,14 +143,14 @@ describe('oganization-sharing-test', () => {
           }
         }
       `;
-      const purgeQueryResult = await adminQueryWithSuccess({
+      const purgeQueryResult = await queryAsAdminWithSuccess({
         query: PURGE_QUERY,
         variables: {
           id: reportInternalId,
           purgeElements: true,
         },
       });
-      expect(purgeQueryResult.data.reportEdit.delete).toEqual(reportInternalId);
+      expect(purgeQueryResult.data?.reportEdit.delete).toEqual(reportInternalId);
     });
     it('should plateform organization sharing and EE deactivated', async () => {
       await unSetOrganization();

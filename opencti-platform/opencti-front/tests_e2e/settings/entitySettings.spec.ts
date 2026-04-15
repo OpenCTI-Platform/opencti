@@ -25,6 +25,7 @@ test('Testing content customization for Report', { tag: ['@ce'] }, async ({ page
 
   // Opening Report configuration
   await page.getByRole('link', { name: 'Report' }).click();
+  await page.getByRole('tab', { name: 'Attributes' }).click();
   await page.getByRole('button', { name: 'Content' }).click();
   // Update the default value for content
   await page.getByLabel('Editing area: main').fill('Content from customization');
@@ -39,6 +40,7 @@ test('Testing content customization for Report', { tag: ['@ce'] }, async ({ page
   // Revert changes
   await leftBarPage.clickOnMenu('Settings', 'Customization');
   await page.getByRole('link', { name: 'Report' }).click();
+  await page.getByRole('tab', { name: 'Attributes' }).click();
   await page.getByRole('button', { name: 'Content' }).click();
   await page.getByLabel('Editing area: main').fill('');
   await page.getByRole('button', { name: 'Update' }).click();

@@ -28,7 +28,7 @@ interface EntityStixCoreRelationshipsRelationshipsViewProps {
   currentView: string;
   allDirections?: boolean;
   isRelationReversed?: boolean;
-  enableContextualView: boolean;
+  enableContextualView?: boolean;
   enableEntitiesView?: boolean;
   enableNestedView?: boolean;
   paddingRightButtonAdd?: number;

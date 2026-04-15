@@ -54,10 +54,11 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'report_types', label: 'Report type' },
     { attribute: 'objectAssignee' },
     { attribute: 'objectParticipant' },
-    { attribute: 'report_content', label: 'Content' },
+    { attribute: 'container_content', label: 'Content' },
   ],
   Grouping: [
     { attribute: 'context' },
+    { attribute: 'container_content', label: 'Content' },
   ],
   'Malware-Analysis': [
     { attribute: 'product', label: 'Product' },
@@ -79,6 +80,7 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'information_types', label: 'Information type' },
     { attribute: 'objectAssignee' },
     { attribute: 'objectParticipant' },
+    { attribute: 'container_content', label: 'Content' },
   ],
   'Case-Rft': [
     { attribute: 'priority' },
@@ -86,6 +88,7 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'takedown_types', label: 'Takedown type' },
     { attribute: 'objectAssignee' },
     { attribute: 'objectParticipant' },
+    { attribute: 'container_content', label: 'Content' },
   ],
   Task: [
     { attribute: 'due_date', label: 'Due date' },
@@ -95,6 +98,7 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   Incident: [
     { attribute: 'incident_type' },
     { attribute: 'severity', label: 'Severity' },
+    { attribute: 'container_content', label: 'Content' },
   ],
   Indicator: [
     { attribute: 'pattern_type', label: 'Pattern type' },

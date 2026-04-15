@@ -133,7 +133,7 @@ const buildReportDeleteElementsFilter = (reportId) => {
     mode: 'and',
     filters: [
       { key: [refKey], values: [reportId] },
-      { key: [refKey], values: [`doc['${refKey}.keyword'].length == 1`], operator: 'script' },
+      { key: [refKey], values: [`doc['${refKey}.keyword'].length == 1`], operator: 'internal_script' },
     ],
     filterGroups: [],
   };

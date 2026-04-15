@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_USER, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { ENTITY_BANK_ACCOUNT, ENTITY_EMAIL_ADDR, ENTITY_EMAIL_MESSAGE, ENTITY_IPV6_ADDR, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
 import {
   BUILT_IN_DECAY_RULE_IP_URL,
@@ -387,30 +388,30 @@ describe('DecayRule rights management checks', () => {
         order: 12,
       },
     };
-    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
       query: CREATE_QUERY,
       variables: DECAY_RULE_TO_CREATE,
     });
 
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: CREATE_QUERY,
       variables: DECAY_RULE_TO_CREATE,
     });
   });
 
   it('should Participant/Editor user not be allowed to list DecayRules.', async () => {
-    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, { query: DECAY_RULE_LIST_QUERY, variables: { first: 10 } });
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: DECAY_RULE_LIST_QUERY, variables: { first: 10 } });
 
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, { query: DECAY_RULE_LIST_QUERY, variables: { first: 10 } });
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: DECAY_RULE_LIST_QUERY, variables: { first: 10 } });
   });
 
   it('should Participant/Editor user not be allowed to delete DecayRules.', async () => {
-    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
       query: DELETE_QUERY,
       variables: { id: 'dummy-id' },
     });
 
-    await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: DELETE_QUERY,
       variables: { id: 'dummy-id' },
     });

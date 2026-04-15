@@ -17,8 +17,10 @@ import ObjectMembersField from '../../common/form/ObjectMembersField';
 import Filters from '../../common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle, FieldOption } from '../../../../utils/field';
+import CreatorField from '../../common/form/CreatorField';
 import { emptyFilterGroup, serializeFilterGroupForBackend, stixFilters } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -51,6 +53,7 @@ export interface StreamCollectionCreationFormValues {
   description: string;
   stream_public: boolean;
   authorized_members: FieldOption[];
+  stream_public_user_id?: FieldOption | null;
 }
 
 const StreamCollectionCreationForm = ({
@@ -61,6 +64,7 @@ const StreamCollectionCreationForm = ({
   helpers,
 }: StreamCollectionFormProps) => {
   const { t_i18n } = useFormatter();
+  const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
 
   const [commit] = useApiMutation<StreamCollectionCreationMutation>(streamCollectionCreationMutation);
 
@@ -80,6 +84,7 @@ const StreamCollectionCreationForm = ({
           name: values.name,
           description: values.description,
           stream_public: values.stream_public,
+          stream_public_user_id: (values.stream_public_user_id as FieldOption)?.value ?? null,
           authorized_members,
           filters: jsonFilters,
         },
@@ -108,6 +113,8 @@ const StreamCollectionCreationForm = ({
     description: Yup.string().nullable(),
     stream_public: Yup.bool(),
     authorized_members: Yup.array().nullable(),
+    stream_public_user_id: Yup.object().nullable()
+      .when('stream_public', { is: true, then: (s) => s.required(t_i18n('This field is required')) }),
   });
 
   return (
@@ -117,6 +124,7 @@ const StreamCollectionCreationForm = ({
         description: '',
         stream_public: false,
         authorized_members: [],
+        stream_public_user_id: null,
       }}
       validationSchema={validationSchema}
       onSubmit={onSubmit}
@@ -143,7 +151,13 @@ const StreamCollectionCreationForm = ({
               icon={false}
               severity="warning"
               variant="outlined"
-              sx={{ width: '100%', position: 'relative' }}
+              sx={{ width: '100%',
+                position: 'relative',
+                '& .MuiAlert-message': {
+                  width: '100%',
+                  overflow: 'hidden',
+                },
+              }}
             >
               <AlertTitle>
                 {t_i18n('Make this stream public and available to anyone')}
@@ -153,8 +167,10 @@ const StreamCollectionCreationForm = ({
                   <Switch
                     checked={values.stream_public}
                     onChange={(_, checked) => setFieldValue('stream_public', checked)}
+                    disabled={!isGrantedToSetAccesses}
                   />
                 )}
+                style={{ marginLeft: 1 }}
                 label={t_i18n('Public stream')}
               />
               {!values.stream_public && (
@@ -164,6 +180,14 @@ const StreamCollectionCreationForm = ({
                   helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
                   multiple
                   name="authorized_members"
+                />
+              )}
+              {values.stream_public && (
+                <CreatorField
+                  name="stream_public_user_id"
+                  label={t_i18n('Share data corresponding to permissions associated with this user')}
+                  containerStyle={fieldSpacingContainerStyle}
+                  onChange={(name, value) => setFieldValue(name, value)}
                 />
               )}
             </Alert>

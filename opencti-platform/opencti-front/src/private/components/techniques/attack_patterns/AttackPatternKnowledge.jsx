@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
@@ -223,6 +223,7 @@ const AttackPatternKnowledgeComponent = ({
             />
           )}
         />
+        <Route index element={<Navigate replace={true} to="overview" />} />
       </Routes>
     </div>
   );

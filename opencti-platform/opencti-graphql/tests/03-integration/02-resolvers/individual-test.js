@@ -1,7 +1,8 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
-import { adminQueryWithError } from '../../utils/testQueryHelper';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { queryAsAdminWithError } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 
 const LIST_QUERY = gql`
@@ -252,7 +253,7 @@ describe('Individual associated to user tests', () => {
       }
     `;
     // Delete the individual
-    await adminQueryWithError({
+    await queryAsAdminWithError({
       query: DELETE_QUERY,
       variables: { id: individualUserId },
     }, 'Cannot delete an individual corresponding to a user', 'FUNCTIONAL_ERROR');
@@ -270,7 +271,7 @@ describe('Individual associated to user tests', () => {
         }
       }
     `;
-    await adminQueryWithError({
+    await queryAsAdminWithError({
       query: UPDATE_QUERY,
       variables: { id: individualUserId, input: [{ key: 'name', value: ['Individual - test'] }] },
     }, 'Cannot update an individual corresponding to a user', 'FUNCTIONAL_ERROR');

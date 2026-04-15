@@ -98,6 +98,7 @@ import { sendMail, smtpComputeFrom } from '../database/smtp';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 import { doYield } from '../utils/eventloop-utils';
+import { disablePublicSharingForDeletedUser } from '../modules/dataSharing/dataSharing-utils';
 import { sanitizeUser } from '../utils/templateContextSanitizer';
 import { safeRender } from '../utils/safeEjs.client';
 import { totp } from '../utils/totp';
@@ -110,15 +111,18 @@ import { memoize } from '../utils/memoize';
 import { getSettings } from './settings';
 import passport from 'passport';
 import {
+  EnvStrategyType,
   getConfigurationAdminEmail,
   getConfigurationAdminPassword,
   getConfigurationAdminToken,
+  isLocalAuthForcedEnabledFromEnv,
   LOCAL_STRATEGY_IDENTIFIER,
   PROVIDERS,
 } from '../modules/authenticationProvider/providers-configuration';
 import { addOrganization } from '../modules/organization/organization-domain';
 import validator from 'validator';
 import xtmOneClient from '../modules/xtm/one/xtm-one-client';
+import { logAuthInfo } from '../modules/authenticationProvider/providers-logger';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -1201,6 +1205,7 @@ export const userDelete = async (context, user, userId) => {
   await deleteAllTriggerAndDigestByUser(userId);
   await deleteAllNotificationByUser(userId);
   await deleteAllWorkspaceForUser(context, user, userId);
+  await disablePublicSharingForDeletedUser(context, userId);
 
   const deleted = await deleteElementById(context, user, userId, ENTITY_TYPE_USER);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : deleted.user_email;
@@ -1520,7 +1525,8 @@ export const sessionLogin = async (context, input) => {
         resolve({ user: authUser, provider: LOCAL_STRATEGY_IDENTIFIER });
       })({ body });
     });
-    if (user && (settings.local_auth?.enabled || user.id === OPENCTI_ADMIN_UUID)) {
+    // Local auth can be force to be enabled in env with force_local, in which case any other configuration is bypass
+    if (user && (isLocalAuthForcedEnabledFromEnv() || settings.local_auth?.enabled || user.id === OPENCTI_ADMIN_UUID)) {
       loggedUser = await sessionAuthenticateUser(context, context.req, user, provider);
     }
   }
@@ -1539,6 +1545,7 @@ export const sessionLogin = async (context, input) => {
     context_data: { username: ENABLED_DEMO_MODE ? REDACTED_USER.name : input.email, provider: 'form' },
   });
   // User cannot be authenticated in any providers
+  logAuthInfo('User cannot be authenticated in any providers', EnvStrategyType.STRATEGY_LOCAL, { username: input.email });
   throw AuthenticationFailure();
 };
 

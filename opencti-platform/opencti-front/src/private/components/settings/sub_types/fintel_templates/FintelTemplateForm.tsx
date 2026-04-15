@@ -6,7 +6,7 @@ import { InformationOutline } from 'mdi-material-ui';
 import * as Yup from 'yup';
 import TextField from '../../../../../components/TextField';
 import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
-import MarkdownField from '../../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
 import SwitchField from '../../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
@@ -107,6 +107,7 @@ const FintelTemplateForm = ({
             {!isEdition && (
               <FormButtonContainer>
                 <Button
+                  variant="secondary"
                   disabled={isSubmitting}
                   onClick={() => {
                     handleReset();

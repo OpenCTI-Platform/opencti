@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { createUploadFromTestDataFile, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 
 const CREATE_THEME_MUTATION = gql`

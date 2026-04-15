@@ -12,7 +12,7 @@ import { graphql } from 'react-relay';
 import { v4 as uuid } from 'uuid';
 import * as Yup from 'yup';
 import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import SelectField from '../../../../components/fields/SelectField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';

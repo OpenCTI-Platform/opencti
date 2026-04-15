@@ -206,6 +206,7 @@ export const taxiiFeedExport = async (ingestionTaxii: BasicStoreEntityIngestionT
   const {
     name,
     description,
+    scheduling_period,
     uri,
     version,
     collection,
@@ -218,6 +219,7 @@ export const taxiiFeedExport = async (ingestionTaxii: BasicStoreEntityIngestionT
     configuration: {
       name,
       description,
+      scheduling_period,
       uri,
       version,
       collection,

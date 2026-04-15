@@ -840,6 +840,10 @@ export const createDraftAndAskJobImport = async (
   user: AuthUser,
   args: {
     authorized_members?: DraftWorkspaceAddInput['authorized_members'];
+    description?: DraftWorkspaceAddInput['description'];
+    objectAssignee?: DraftWorkspaceAddInput['objectAssignee'];
+    objectParticipant?: DraftWorkspaceAddInput['objectParticipant'];
+    createdBy?: DraftWorkspaceAddInput['createdBy'];
     entity_id?: string;
     fileName: string;
     connectorId?: string;
@@ -852,6 +856,10 @@ export const createDraftAndAskJobImport = async (
 ) => {
   const {
     authorized_members,
+    description,
+    objectAssignee,
+    objectParticipant,
+    createdBy,
     fileName,
     connectorId,
     configuration,
@@ -859,7 +867,15 @@ export const createDraftAndAskJobImport = async (
     entity_id,
     bypassEntityId,
   } = args;
-  const { id } = await addDraftWorkspace(context, user, { name: fileName, authorized_members, entity_id });
+  const { id } = await addDraftWorkspace(context, user, {
+    name: fileName,
+    authorized_members,
+    description,
+    objectAssignee,
+    objectParticipant,
+    createdBy,
+    entity_id,
+  });
 
   return askJobImport(
     { ...context, draft_context: id },

@@ -9,7 +9,7 @@ import inject18n, { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation } from '../../../relay/environment';
-import MarkdownField from '../../../components/fields/MarkdownField';
+import MarkdownField from '../../../components/fields/markdownField/MarkdownField';
 
 const styles = (theme) => ({
   drawerPaper: {

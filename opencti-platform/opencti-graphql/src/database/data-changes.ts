@@ -182,10 +182,10 @@ export const generateMessageFromChanges = (resolvedMap: Record<string, string>,
     if (attribute?.multiple) {
       if ((human.changes_added ?? []).length > 0) {
         const message = convertChange(human.changes_added);
-        if (actions['add']) {
-          actions['add'].push({ message, field: attribute?.label });
+        if (actions['adds']) {
+          actions['adds'].push({ message, field: attribute?.label });
         } else {
-          actions['add'] = [{ message, field: attribute?.label }];
+          actions['adds'] = [{ message, field: attribute?.label }];
         }
       }
       if ((human.changes_removed ?? []).length > 0) {

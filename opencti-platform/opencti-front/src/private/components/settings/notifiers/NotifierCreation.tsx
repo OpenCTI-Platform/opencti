@@ -1,6 +1,7 @@
 import Button from '@common/button/Button';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
+import Box from '@mui/material/Box';
 import CoreForm from '@rjsf/core';
 import JsonForm from '@rjsf/mui';
 import { Field, Form, Formik } from 'formik';
@@ -165,23 +166,39 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
             name="authorized_members"
           />
           {connector && (
-            <JsonForm
-              uiSchema={{
-                ...JSON.parse(connector.ui_schema ?? ' {}'),
-                ...uiSchema,
+            <Box
+              sx={{
+                paddingLeft: '15px',
+                '& .MuiGrid-root': {
+                  flexDirection: 'column',
+                  paddingTop: '16px',
+                },
+                '& .MuiGrid-container': {
+                  paddingTop: '10px',
+                },
               }}
-              ref={formRef}
-              showErrorList={false}
-              liveValidate
-              validator={notifierValidator}
-              schema={JSON.parse(connector.schema ?? ' {}')}
-              formData={JSON.parse(notifierConfiguration.current)}
-              onChange={(newValue) => {
-                notifierConfiguration.current = JSON.stringify(
-                  newValue.formData,
-                );
-              }}
-            />
+            >
+              <JsonForm
+                uiSchema={{
+                  ...JSON.parse(connector.ui_schema ?? ' {}'),
+                  ...uiSchema,
+                }}
+                ref={formRef}
+                tagName="div"
+                showErrorList={false}
+                liveValidate
+                validator={notifierValidator}
+                schema={JSON.parse(connector.schema ?? ' {}')}
+                formData={JSON.parse(notifierConfiguration.current)}
+                onChange={(newValue) => {
+                  notifierConfiguration.current = JSON.stringify(
+                    newValue.formData,
+                  );
+                }}
+              >
+                <></>
+              </JsonForm>
+            </Box>
           )}
           <FormButtonContainer>
             <Button

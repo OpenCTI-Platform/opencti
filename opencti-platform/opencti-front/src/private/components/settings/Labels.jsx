@@ -4,7 +4,6 @@ import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import LabelPopover from './labels/LabelPopover';
 import LabelCreation from './labels/LabelCreation';
-import LabelsVocabulariesMenu from './LabelsVocabulariesMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../components/i18n';
@@ -157,7 +156,6 @@ const Labels = () => {
 
   return (
     <div className={classes.container} data-testid="labels-page">
-      <LabelsVocabulariesMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Labels'), current: true }]} />
       {queryRef && (
         <DataTable

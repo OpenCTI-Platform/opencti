@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { adminQueryWithError, adminQueryWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { PlaybookAddLinkInput, PlaybookAddNodeInput } from '../../../src/generated/graphql';
 import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
 import { UNSUPPORTED_ERROR } from '../../../src/config/errors';
@@ -114,7 +114,7 @@ const EMPTY_STRING_FILTERS = JSON.stringify({
 // -- Helpers to build playbook state --
 
 const createPlaybook = async (name: string): Promise<string> => {
-  const result = await queryAsUserWithSuccess(USER_SECURITY.client, {
+  const result = await queryAsUserWithSuccess(USER_SECURITY, {
     query: CREATE_PLAYBOOK,
     variables: { input: { name } },
   });
@@ -122,7 +122,7 @@ const createPlaybook = async (name: string): Promise<string> => {
 };
 
 const deletePlaybook = async (id: string) => {
-  await queryAsUserWithSuccess(USER_SECURITY.client, {
+  await queryAsUserWithSuccess(USER_SECURITY, {
     query: DELETE_PLAYBOOK,
     variables: { id },
   });
@@ -135,7 +135,7 @@ const addEntryNode = async (playbookId: string, name = 'entry-node'): Promise<st
     name,
     position: { x: 1, y: 1 },
   };
-  const result = await adminQueryWithSuccess({
+  const result = await queryAsAdminWithSuccess({
     query: ADD_NODE_PLAYBOOK,
     variables: { id: playbookId, input: addNodeInput },
   });
@@ -149,7 +149,7 @@ const addMatchingNode = async (playbookId: string, name = 'matching-node'): Prom
     name,
     position: { x: 5, y: 5 },
   };
-  const result = await adminQueryWithSuccess({
+  const result = await queryAsAdminWithSuccess({
     query: ADD_NODE_PLAYBOOK,
     variables: { id: playbookId, input: addNodeInput },
   });
@@ -162,7 +162,7 @@ const addLink = async (playbookId: string, fromNode: string, toNode: string, fro
     from_port: fromPort,
     to_node: toNode,
   };
-  const result = await adminQueryWithSuccess({
+  const result = await queryAsAdminWithSuccess({
     query: ADD_LINK_PLAYBOOK,
     variables: { id: playbookId, input: addLinkInput },
   });
@@ -170,7 +170,7 @@ const addLink = async (playbookId: string, fromNode: string, toNode: string, fro
 };
 
 const readPlaybookDefinition = async (playbookId: string) => {
-  const result = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
+  const result = await queryAsAdminWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
   return JSON.parse(result.data?.playbook.playbook_definition);
 };
 
@@ -178,14 +178,14 @@ const clearPlaybook = async (playbookId: string) => {
   const playbookDef = await readPlaybookDefinition(playbookId);
   // Delete all links first
   for (const link of playbookDef.links) {
-    await adminQueryWithSuccess({
+    await queryAsAdminWithSuccess({
       query: DELETE_LINK_PLAYBOOK,
       variables: { id: playbookId, linkId: link.id },
     });
   }
   // Then delete all nodes
   for (const node of playbookDef.nodes) {
-    await adminQueryWithSuccess({
+    await queryAsAdminWithSuccess({
       query: DELETE_NODE_PLAYBOOK,
       variables: { id: playbookId, nodeId: node.id },
     });
@@ -209,25 +209,25 @@ describe('Playbook resolver standard behavior', () => {
 
   describe('playbook CRUD', () => {
     it('should list playbooks', async () => {
-      const queryResult = await adminQueryWithSuccess({ query: LIST_PLAYBOOKS, variables: { first: 10 } });
+      const queryResult = await queryAsAdminWithSuccess({ query: LIST_PLAYBOOKS, variables: { first: 10 } });
       expect(queryResult.data?.playbooks.edges.length).toEqual(1);
     });
 
     it('should not add playbook if no Manage Playbooks capability', async () => {
-      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
         query: CREATE_PLAYBOOK,
         variables: { input: { name: 'Playbook-forbidden' } },
       });
     });
 
     it('should read playbook', async () => {
-      const queryResult = await adminQueryWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
+      const queryResult = await queryAsAdminWithSuccess({ query: READ_PLAYBOOK, variables: { id: playbookId } });
       expect(queryResult.data?.playbook.name).toEqual('Playbook1');
       expect(queryResult.data?.playbook.playbook_running).toEqual(false);
     });
 
     it('should not update playbook if no Manage Playbooks capability', async () => {
-      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
         query: UPDATE_PLAYBOOK,
         variables: {
           id: playbookId,
@@ -237,7 +237,7 @@ describe('Playbook resolver standard behavior', () => {
     });
 
     it('should update playbook with Manage Playbooks capability', async () => {
-      const queryResult = await queryAsUserWithSuccess(USER_SECURITY.client, {
+      const queryResult = await queryAsUserWithSuccess(USER_SECURITY, {
         query: UPDATE_PLAYBOOK,
         variables: {
           id: playbookId,
@@ -258,7 +258,7 @@ describe('Playbook resolver standard behavior', () => {
         name: 'node1',
         position: { x: 1, y: 1 },
       };
-      await adminQueryWithSuccess({
+      await queryAsAdminWithSuccess({
         query: ADD_NODE_PLAYBOOK,
         variables: { id: playbookId, input: addNodeInput },
       });
@@ -282,7 +282,7 @@ describe('Playbook resolver standard behavior', () => {
         name: 'duplicate-entry',
         position: { x: 1, y: 2 },
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_NODE_PLAYBOOK,
           variables: { id: playbookId, input: addNodeInput },
@@ -299,7 +299,7 @@ describe('Playbook resolver standard behavior', () => {
         name: 'unknown-component',
         position: { x: 3, y: 12 },
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_NODE_PLAYBOOK,
           variables: { id: playbookId, input: addNodeInput },
@@ -321,7 +321,7 @@ describe('Playbook resolver standard behavior', () => {
         name: 'incorrectNode',
         position: { x: 1, y: 1 },
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_NODE_PLAYBOOK,
           variables: { id: playbookId, input: addNodeInput },
@@ -343,7 +343,7 @@ describe('Playbook resolver standard behavior', () => {
         name: 'incorrectNode',
         position: { x: 1, y: 1 },
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_NODE_PLAYBOOK,
           variables: { id: playbookId, input: addNodeInput },
@@ -367,7 +367,7 @@ describe('Playbook resolver standard behavior', () => {
         name: 'node1-replaced',
         position: { x: 10, y: 20 },
       };
-      const replaceResult = await adminQueryWithSuccess({
+      const replaceResult = await queryAsAdminWithSuccess({
         query: REPLACE_NODE_PLAYBOOK,
         variables: { id: playbookId, nodeId: entryNodeId, input: replaceNodeInput },
       });
@@ -390,7 +390,7 @@ describe('Playbook resolver standard behavior', () => {
         name: 'bad-node',
         position: { x: 1, y: 1 },
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: REPLACE_NODE_PLAYBOOK,
           variables: { id: playbookId, nodeId: entryNodeId, input: replaceNodeInput },
@@ -412,7 +412,7 @@ describe('Playbook resolver standard behavior', () => {
         name: 'bad-filters-node',
         position: { x: 1, y: 1 },
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: REPLACE_NODE_PLAYBOOK,
           variables: { id: playbookId, nodeId: entryNodeId, input: replaceNodeInput },
@@ -429,7 +429,7 @@ describe('Playbook resolver standard behavior', () => {
         name: 'forbidden-replace',
         position: { x: 1, y: 1 },
       };
-      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
         query: REPLACE_NODE_PLAYBOOK,
         variables: { id: playbookId, nodeId: entryNodeId, input: replaceNodeInput },
       });
@@ -467,7 +467,7 @@ describe('Playbook resolver standard behavior', () => {
         from_port: 'out',
         to_node: matchingNodeId,
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_LINK_PLAYBOOK,
           variables: { id: playbookId, input: addLinkInput },
@@ -483,7 +483,7 @@ describe('Playbook resolver standard behavior', () => {
         from_port: 'out',
         to_node: matchingNodeId,
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_LINK_PLAYBOOK,
           variables: { id: playbookId, input: addLinkInput },
@@ -499,7 +499,7 @@ describe('Playbook resolver standard behavior', () => {
         from_port: 'fake-port',
         to_node: matchingNodeId,
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_LINK_PLAYBOOK,
           variables: { id: playbookId, input: addLinkInput },
@@ -515,7 +515,7 @@ describe('Playbook resolver standard behavior', () => {
         from_port: 'out',
         to_node: 'fake-node-id',
       };
-      await adminQueryWithError(
+      await queryAsAdminWithError(
         {
           query: ADD_LINK_PLAYBOOK,
           variables: { id: playbookId, input: addLinkInput },
@@ -531,7 +531,7 @@ describe('Playbook resolver standard behavior', () => {
         from_port: 'out',
         to_node: matchingNodeId,
       };
-      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
         query: ADD_LINK_PLAYBOOK,
         variables: { id: playbookId, input: addLinkInput },
       });
@@ -547,14 +547,14 @@ describe('Playbook resolver standard behavior', () => {
     });
 
     it('should not delete a link if no Manage Playbooks capability', async () => {
-      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
         query: DELETE_LINK_PLAYBOOK,
         variables: { id: playbookId, linkId },
       });
     });
 
     it('should delete an existing link and keep nodes', async () => {
-      const deleteResult = await adminQueryWithSuccess({
+      const deleteResult = await queryAsAdminWithSuccess({
         query: DELETE_LINK_PLAYBOOK,
         variables: { id: playbookId, linkId },
       });
@@ -566,7 +566,7 @@ describe('Playbook resolver standard behavior', () => {
     });
 
     it('should handle deleting a non-existent link gracefully', async () => {
-      const deleteResult = await adminQueryWithSuccess({
+      const deleteResult = await queryAsAdminWithSuccess({
         query: DELETE_LINK_PLAYBOOK,
         variables: { id: playbookId, linkId: 'non-existent-link-id' },
       });
@@ -583,14 +583,14 @@ describe('Playbook resolver standard behavior', () => {
     });
 
     it('should not delete a node if no Manage Playbooks capability', async () => {
-      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
         query: DELETE_NODE_PLAYBOOK,
         variables: { id: playbookId, nodeId: entryNodeId },
       });
     });
 
     it('should delete a node and its associated links', async () => {
-      const deleteResult = await adminQueryWithSuccess({
+      const deleteResult = await queryAsAdminWithSuccess({
         query: DELETE_NODE_PLAYBOOK,
         variables: { id: playbookId, nodeId: matchingNodeId },
       });
@@ -603,7 +603,7 @@ describe('Playbook resolver standard behavior', () => {
     });
 
     it('should delete the last remaining entry node and leave the playbook empty', async () => {
-      const deleteResult = await adminQueryWithSuccess({
+      const deleteResult = await queryAsAdminWithSuccess({
         query: DELETE_NODE_PLAYBOOK,
         variables: { id: playbookId, nodeId: entryNodeId },
       });
@@ -617,14 +617,14 @@ describe('Playbook resolver standard behavior', () => {
 
   describe('playbookDelete', () => {
     it('should not delete playbook if no Manage Playbooks capability', async () => {
-      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+      await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
         query: DELETE_PLAYBOOK,
         variables: { id: playbookId },
       });
     });
 
     it('should remove playbook with Manage Playbooks capability', async () => {
-      const queryResult = await queryAsUserWithSuccess(USER_SECURITY.client, {
+      const queryResult = await queryAsUserWithSuccess(USER_SECURITY, {
         query: DELETE_PLAYBOOK,
         variables: { id: playbookId },
       });

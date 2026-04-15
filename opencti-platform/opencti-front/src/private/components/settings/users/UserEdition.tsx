@@ -149,7 +149,7 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
                   <Tab
                     disabled={user.objectAssignedOrganization?.edges.length === 0}
                     label={(
-                      <div style={{ alignItems: 'center', display: 'flex' }}>
+                      <div style={{ alignItems: 'center', display: 'flex', textTransform: 'none' }}>
                         {t_i18n('Organizations admin')}<EEChip />
                       </div>
                     )}

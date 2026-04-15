@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
-import { Route, Routes, useParams } from 'react-router-dom';
+import { Route, useParams } from 'react-router-dom';
 import { graphql, useSubscription } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import { QueryRenderer } from '../../../../relay/environment';
 import Note from './Note';
@@ -16,6 +16,7 @@ import Security, { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import NoteEdition from './NoteEdition';
 import NoteDeletion from './NoteDeletion';
+import { PATH_NOTE, PATH_NOTES } from '@components/common/routes/paths';
 
 const subscription = graphql`
     subscription RootNoteSubscription($id: ID!) {
@@ -68,6 +69,7 @@ const RootNote = () => {
   );
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
+  const basePath = PATH_NOTE(noteId);
   return (
     <>
       <QueryRenderer
@@ -81,7 +83,7 @@ const RootNote = () => {
                 <>
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
-                    { label: t_i18n('Notes'), link: '/dashboard/analyses/notes' },
+                    { label: t_i18n('Notes'), link: PATH_NOTES },
                   ]}
                   />
                   <CollaborativeSecurity
@@ -125,40 +127,27 @@ const RootNote = () => {
                       enableEnrollPlaybook={true}
                     />
                   </CollaborativeSecurity>
-                  <StixDomainObjectTabsBox
-                    basePath="/dashboard/analyses/notes"
-                    entity={note}
-                    tabs={[
-                      'overview',
-                      'files',
-                      'history',
-                    ]}
-                  />
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={<Note noteFragment={note} enableReferences={false} />}
-                    />
-                    <Route
-                      path="/files"
-                      element={(
+                  <StixDomainObjectMain
+                    basePath={basePath}
+                    pages={{
+                      overview: <Note noteFragment={note} enableReferences={false} />,
+                      files: (
                         <FileManager
                           id={noteId}
                           connectorsExport={props.connectorsForExport}
                           connectorsImport={props.connectorsForImport}
                           entity={note}
                         />
-                      )}
-                    />
-                    <Route
-                      path="/history"
-                      element={<StixCoreObjectHistory stixCoreObjectId={noteId} withoutRelations />}
-                    />
-                    <Route
-                      path="/knowledge/relations/:relationId"
-                      element={<StixCoreRelationship entityId={note.id} />}
-                    />
-                  </Routes>
+                      ),
+                      history: <StixCoreObjectHistory stixCoreObjectId={noteId} withoutRelations />,
+                    }}
+                    extraRoutes={(
+                      <Route
+                        path="/knowledge/relations/:relationId"
+                        element={<StixCoreRelationship entityId={note.id} />}
+                      />
+                    )}
+                  />
                 </>
               );
             }

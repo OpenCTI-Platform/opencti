@@ -312,6 +312,7 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
             resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
+            entityTypes={['DraftWorkspace']}
             contextFilters={contextFilters}
             preloadedPaginationProps={preloadedPaginationProps}
             lineFragment={DraftLineFragment}

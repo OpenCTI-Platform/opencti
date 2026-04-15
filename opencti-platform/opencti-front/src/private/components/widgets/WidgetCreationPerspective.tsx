@@ -6,6 +6,7 @@ import { LibraryBooksOutlined } from '@mui/icons-material';
 import React from 'react';
 import { v4 as uuid } from 'uuid';
 import { getDefaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
+import useAttributes from '../../../utils/hooks/useAttributes';
 import { useFormatter } from '../../../components/i18n';
 import { indexedVisualizationTypes, WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
@@ -15,16 +16,33 @@ import Card from '../../../components/common/card/Card';
 
 const WidgetCreationPerspective = () => {
   const { t_i18n } = useFormatter();
-  const { context, config, setStep, setConfigWidget } = useWidgetConfigContext();
+  const { context, config, setStep, setConfigWidget, fintelEntityType } = useWidgetConfigContext();
   const { type, dataSelection } = config.widget;
 
+  // Container and domain object have different filters for the perspective selection
+  const { containerTypes } = useAttributes();
+  const isContainer = containerTypes.includes(fintelEntityType ?? '');
+
   const handleSelectPerspective = (perspective: WidgetPerspective) => {
+    let filterKey = 'objects';
+    let filterValues: (object | string)[] = [SELF_ID];
+
+    // Handle Non-Container Logic
+    if (!isContainer) {
+      if (perspective === 'entities') {
+        filterKey = 'regardingOf';
+        filterValues = [{ key: 'id', values: [SELF_ID] }];
+      } else {
+        filterKey = 'fromId';
+      }
+    }
+
     const fintelTemplateEntitiesInitialFilters = {
       mode: 'and',
       filters: [{
         id: uuid(),
-        key: 'objects',
-        values: [SELF_ID],
+        key: filterKey,
+        values: filterValues,
         operator: 'eq',
         mode: 'or',
       }],

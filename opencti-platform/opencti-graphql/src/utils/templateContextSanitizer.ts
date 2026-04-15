@@ -10,14 +10,14 @@ const userSchema = z.object({
   user_email: z.string().optional().catch(undefined),
   api_token: z.string().optional().catch(undefined),
   account_status: z.string().optional().catch(undefined),
-}).strip(); // Strip unknown fields instead of rejecting
+});
 
 const settingsSchema = z.object({
   platform_title: z.string().optional().catch(undefined),
   platform_email: z.string().optional().catch(undefined),
   platform_base_url: z.string().optional().catch(undefined),
   platform_theme: z.string().optional().catch(undefined),
-}).strip(); // Strip unknown fields instead of rejecting
+});
 
 const notificationSchema = z.object({
   id: z.string().optional().catch(undefined),
@@ -25,7 +25,7 @@ const notificationSchema = z.object({
   notification_type: z.string().optional().catch(undefined),
   trigger_type: z.string().optional().catch(undefined),
   created: z.string().optional().catch(undefined),
-}).strip(); // Strip unknown fields instead of rejecting
+});
 
 // Main SafeTemplateContext schema - single source of truth
 const notificationDataSchema = z.object({
@@ -35,10 +35,10 @@ const notificationDataSchema = z.object({
   notification: notificationSchema.optional().catch(undefined),
 
   // Arrays - accept any structure (business data)
-  content: z.array(z.record(z.unknown())).optional().catch(undefined),
-  notification_content: z.array(z.record(z.unknown())).optional().catch(undefined),
-  data: z.array(z.record(z.unknown())).optional().catch(undefined),
-  users: z.array(z.record(z.unknown())).optional().catch(undefined),
+  content: z.array(z.record(z.string(), z.unknown())).optional().catch(undefined),
+  notification_content: z.array(z.record(z.string(), z.unknown())).optional().catch(undefined),
+  data: z.array(z.record(z.string(), z.unknown())).optional().catch(undefined),
+  users: z.array(z.record(z.string(), z.unknown())).optional().catch(undefined),
 
   // Simple string fields
   platform_uri: z.string().optional().catch(undefined),
@@ -49,7 +49,7 @@ const notificationDataSchema = z.object({
   description: z.string().optional().catch(undefined),
 
   // Report and other business objects - permissive
-  report: z.record(z.unknown()).optional().catch(undefined),
+  report: z.record(z.string(), z.unknown()).optional().catch(undefined),
 
   // Root level fields
   id: z.string().optional().catch(undefined),
@@ -63,7 +63,7 @@ const notificationDataSchema = z.object({
   published: z.string().optional().catch(undefined),
   labels: z.union([z.string(), z.array(z.string())]).optional().catch(undefined),
   report_types: z.union([z.string(), z.array(z.string())]).optional().catch(undefined),
-}).strip(); // Use strip() instead of strict() to remove unknown fields
+});
 
 // Export inferred types
 export type SanitizedUser = z.infer<typeof userSchema>;

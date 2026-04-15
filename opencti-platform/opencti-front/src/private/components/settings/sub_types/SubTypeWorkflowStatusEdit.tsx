@@ -1,5 +1,5 @@
 import Button from '@common/button/Button';
-import Dialog from '@mui/material/Dialog';
+import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';

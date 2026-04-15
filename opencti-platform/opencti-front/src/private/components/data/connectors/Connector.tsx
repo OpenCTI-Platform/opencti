@@ -303,13 +303,14 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 <Label>
                   {t_i18n('Scope')}
                 </Label>
-                {connector.connector_scope?.map((scope) => (
-                  <Tag
-                    key={scope}
-                    label={scope}
-                    sx={{ mr: 1 }}
-                  />
-                ))}
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {connector.connector_scope?.map((scope) => (
+                    <Tag
+                      key={scope}
+                      label={scope}
+                    />
+                  ))}
+                </Box>
               </Grid>
               {connectorFiltersEnabled && (
                 <Grid item xs={6}>
@@ -690,6 +691,25 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     );
   }, [connector.manager_connector_logs, theme, t_i18n]);
 
+  const managedConnectorDisplayName = (() => {
+    if (!connector.is_managed) {
+      return connector.name;
+    }
+
+    const excerptTitle = connector.manager_contract_excerpt?.title?.trim();
+    const connectorTitle = connector.title?.trim();
+
+    if (!excerptTitle) {
+      return connector.name;
+    }
+
+    if (!connectorTitle || connectorTitle === excerptTitle) {
+      return excerptTitle;
+    }
+
+    return `${excerptTitle} - ${connectorTitle}`;
+  })();
+
   return (
     <>
       <div
@@ -707,7 +727,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
             gap: theme.spacing(1),
           }}
         >
-          {connector.is_managed ? connector.manager_contract_excerpt?.title : connector.name}
+          {managedConnectorDisplayName}
           <div style={{ display: 'inline-block' }}>
             <ConnectorStatusChip connector={connector} />
           </div>

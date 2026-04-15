@@ -1,5 +1,5 @@
 import { useMemo, Suspense } from 'react';
-import { Route, Routes, Navigate, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
@@ -7,12 +7,12 @@ import { RootAttackPatternQuery } from '@components/techniques/attack_patterns/_
 import { RootAttackPatternSubscription } from '@components/techniques/attack_patterns/__generated__/RootAttackPatternSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import AttackPattern from './AttackPattern';
 import AttackPatternKnowledge from './AttackPatternKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -26,6 +26,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import AttackPatternEdition from './AttackPatternEdition';
 import AttackPatternDeletion from './AttackPatternDeletion';
+import { PATH_ATTACK_PATTERN, PATH_ATTACK_PATTERNS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -80,6 +81,7 @@ type RootAttackPatternProps = {
   attackPatternId: string;
   queryRef: PreloadedQuery<RootAttackPatternQuery>;
 };
+
 const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps) => {
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootAttackPatternSubscription>>(() => ({
     subscription,
@@ -98,8 +100,8 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
 
   const { forceUpdate } = useForceUpdate();
 
-  const paddingRight = getPaddingRight(location.pathname, attackPatternId, '/dashboard/techniques/attack_patterns');
-  const link = `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`;
+  const basePath = PATH_ATTACK_PATTERN(attackPatternId);
+  const paddingRight = getPaddingRight(location.pathname, basePath);
 
   return (
     <CreateRelationshipContextProvider>
@@ -110,7 +112,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               path="/knowledge/*"
               element={(
                 <StixCoreObjectKnowledgeBar
-                  stixCoreObjectLink={link}
+                  stixCoreObjectLink={`${basePath}/knowledge`}
                   availableSections={[
                     'victimology',
                     'threat_actors',
@@ -131,7 +133,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Techniques') },
-              { label: t_i18n('Attack patterns'), link: '/dashboard/techniques/attack_patterns' },
+              { label: t_i18n('Attack patterns'), link: PATH_ATTACK_PATTERNS },
               { label: attackPattern.name, current: true },
             ]}
             />
@@ -158,71 +160,35 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               redirectToContent={true}
               enableEnrollPlaybook={true}
             />
-            <StixDomainObjectTabsBox
-              basePath="/dashboard/techniques/attack_patterns"
-              entity={attackPattern}
-              tabs={[
-                'overview',
-                'knowledge-overview',
-                'content',
-                'analyses',
-                'files',
-                'history',
-              ]}
-            />
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <AttackPattern attackPatternData={attackPattern} />
-                }
-              />
-              <Route
-                path="/knowledge"
-                element={
-                  <Navigate to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/overview`} replace={true} />
-                }
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
+            <StixDomainObjectMain
+              basePath={basePath}
+              pages={{
+                overview:
+                  <AttackPattern attackPatternData={attackPattern} />,
+                knowledge: (
                   <div key={forceUpdate}>
                     <AttackPatternKnowledge attackPatternData={attackPattern} />
                   </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
+                ),
+                content: (
                   <StixCoreObjectContentRoot
                     stixCoreObject={attackPattern}
                   />
-                )}
-              />
-              <Route
-                path="/analyses"
-                element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={attackPattern} />
-                }
-              />
-              <Route
-                path="/files"
-                element={(
+                ),
+                analyses:
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={attackPattern} />,
+                files: (
                   <FileManager
                     id={attackPatternId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={attackPattern}
                   />
-                )}
-              />
-              <Route
-                path="/history"
-                element={
-                  <StixCoreObjectHistory stixCoreObjectId={attackPatternId} />
-                }
-              />
-            </Routes>
+                ),
+                history:
+                  <StixCoreObjectHistory stixCoreObjectId={attackPatternId} />,
+              }}
+            />
           </div>
         </>
       ) : (

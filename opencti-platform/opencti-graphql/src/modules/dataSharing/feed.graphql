@@ -23,6 +23,8 @@ type Feed {
   feed_types: [String!]!
   feed_attributes: [FeedAttribute!]!
   feed_public: Boolean
+  feed_public_user_id: String @auth(for: [TAXIIAPI])
+  feed_public_user: Creator @auth(for: [TAXIIAPI])
   authorized_members: [MemberAccess!] @auth(for: [TAXIIAPI])
 }
 input FeedMappingInput {
@@ -47,6 +49,7 @@ input FeedAddInput {
   include_header: Boolean!
   feed_types: [String!]!
   feed_public: Boolean
+  feed_public_user_id: String
   feed_attributes: [FeedAttributeMappingInput!]!
   authorized_members: [MemberAccessInput!]
 }

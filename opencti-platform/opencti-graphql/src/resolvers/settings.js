@@ -15,9 +15,6 @@ import {
   settingsCleanContext,
   settingsEditContext,
   settingsEditField,
-  updateLocalAuth,
-  updateCertAuth,
-  updateHeaderAuth,
 } from '../domain/settings';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents, subscribeToPlatformSettingsEvents } from '../graphql/subscriptionWrapper';
@@ -32,6 +29,7 @@ import { CguStatus, PlatformType } from '../generated/graphql';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 import { ALLOW_EMAIL_REWRITE, smtpConfiguredEmail } from '../database/smtp';
 import { isAuthenticationForcedFromEnv } from '../modules/authenticationProvider/providers-configuration';
+import { updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/setting-auth';
 
 const settingsResolvers = {
   Query: {

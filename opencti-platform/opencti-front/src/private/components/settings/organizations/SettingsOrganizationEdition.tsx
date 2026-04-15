@@ -10,7 +10,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import OpenVocabField from '@components/common/form/OpenVocabField';
 import EEField from '@components/common/entreprise_edition/EEField';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';

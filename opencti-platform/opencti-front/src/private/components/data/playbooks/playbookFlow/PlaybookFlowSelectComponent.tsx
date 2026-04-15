@@ -19,12 +19,12 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ItemIcon from '../../../../../components/ItemIcon';
 import { useFormatter } from '../../../../../components/i18n';
-import { PlaybookComponents, PlaybookNode } from '../types/playbook-types';
+import { PlaybookComponent, PlaybookComponents, PlaybookNode } from '../types/playbook-types';
 
 interface PlaybookSelectComponentProps {
   components: PlaybookComponents;
   selectedNode: PlaybookNode | null;
-  onSelect: (componentId: string) => void;
+  onSelect: (component: PlaybookComponent) => void;
 }
 
 const PlaybookFlowSelectComponent = ({
@@ -47,7 +47,7 @@ const PlaybookFlowSelectComponent = ({
           <ListItemButton
             divider
             key={component.id}
-            onClick={() => onSelect(component.id)}
+            onClick={() => onSelect(component)}
           >
             <ListItemIcon>
               <ItemIcon type={component.icon} />

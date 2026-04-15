@@ -17,7 +17,7 @@ import * as Yup from 'yup';
 import Card from '../../../../components/common/card/Card';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import PeriodicityField from '../../../../components/fields/PeriodicityField';
 import SelectField from '../../../../components/fields/SelectField';
 import SwitchField from '../../../../components/fields/SwitchField';

@@ -1,5 +1,5 @@
 import { Suspense, useMemo } from 'react';
-import { Route, Routes, useParams } from 'react-router-dom';
+import { Route, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootObservedDataSubscription } from './__generated__/RootObservedDataSubscription.graphql';
@@ -7,8 +7,8 @@ import { RootObservedDataQuery } from './__generated__/RootObservedDataQuery.gra
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ObservedData from './ObservedData';
 import FileManager from '../../common/files/FileManager';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
@@ -21,6 +21,7 @@ import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../uti
 import ObservedDataDeletion from './ObservedDataDeletion';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { PATH_OBSERVED_DATA, PATH_OBSERVED_DATAS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootObservedDataSubscription($id: ID!) {
@@ -88,12 +89,13 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
     return <ErrorNotFound />;
   }
 
+  const basePath = PATH_OBSERVED_DATA(observedDataId);
   return (
     <>
       <div>
         <Breadcrumbs elements={[
           { label: t_i18n('Events') },
-          { label: t_i18n('Observed datas'), link: '/dashboard/events/observed_data' },
+          { label: t_i18n('Observed datas'), link: PATH_OBSERVED_DATAS },
           { label: observedData.name, current: true },
         ]}
         />
@@ -113,62 +115,37 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
           disableAuthorizedMembers={true}
           enableEnricher={false}
         />
-        <StixDomainObjectTabsBox
-          basePath="/dashboard/events/observed_data"
-          entity={observedData}
-          tabs={[
-            'overview',
-            'entities',
-            'observables',
-            'files',
-            'history',
-          ]}
-        />
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <ObservedData observedDataData={observedData} />
-            }
-          />
-          <Route
-            path="/entities"
-            element={
-              <ContainerStixDomainObjects container={observedData} />
-            }
-          />
-          <Route
-            path="/observables"
-            element={
-              <ContainerStixCyberObservables container={observedData} />
-            }
-          />
-          <Route
-            path="/files"
-            element={(
+        <StixDomainObjectMain
+          basePath={basePath}
+          pages={{
+            overview:
+              <ObservedData observedDataData={observedData} />,
+            entities:
+              <ContainerStixDomainObjects container={observedData} />,
+            observables:
+              <ContainerStixCyberObservables container={observedData} />,
+            files: (
               <FileManager
                 id={observedDataId}
                 connectorsExport={connectorsForExport}
                 connectorsImport={connectorsForImport}
                 entity={observedData}
               />
-            )}
-          />
-          <Route
-            path="/history"
-            element={
-              <StixCoreObjectHistory stixCoreObjectId={observedDataId} />
-            }
-          />
-          <Route
-            path="/knowledge/relations/:relationId/"
-            element={(
-              <StixCoreRelationship
-                entityId={observedData.id}
-              />
-            )}
-          />
-        </Routes>
+            ),
+            history:
+              <StixCoreObjectHistory stixCoreObjectId={observedDataId} />,
+          }}
+          extraRoutes={(
+            <Route
+              path="/knowledge/relations/:relationId/"
+              element={(
+                <StixCoreRelationship
+                  entityId={observedData.id}
+                />
+              )}
+            />
+          )}
+        />
       </div>
     </>
   );

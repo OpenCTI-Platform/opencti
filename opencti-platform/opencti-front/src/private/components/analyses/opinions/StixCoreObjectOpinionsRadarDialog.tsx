@@ -11,7 +11,7 @@ import { graphql, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import * as Yup from 'yup';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';

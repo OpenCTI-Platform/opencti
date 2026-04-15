@@ -79,7 +79,7 @@ const SubTypeWorkflowStatusAdd: FunctionComponent<
     <div style={{ display: display ? 'block' : 'none' }}>
       <Fab
         onClick={handleOpen}
-        color="secondary"
+        color="primary"
         aria-label="Add"
         className={classes.createButton}
       >

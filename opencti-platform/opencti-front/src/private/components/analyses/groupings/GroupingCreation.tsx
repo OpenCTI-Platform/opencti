@@ -14,7 +14,7 @@ import * as Yup from 'yup';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import RichTextField from '../../../../components/fields/RichTextField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';

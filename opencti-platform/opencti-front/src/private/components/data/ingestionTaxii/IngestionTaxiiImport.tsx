@@ -19,6 +19,7 @@ export const taxiiFeedImportQuery = graphql`
         name
         description
         uri
+        scheduling_period
         version
         collection
         authentication_type

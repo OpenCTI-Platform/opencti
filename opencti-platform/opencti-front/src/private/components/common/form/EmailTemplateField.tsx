@@ -98,35 +98,9 @@ const EmailTemplateFieldComponent: FunctionComponent<EmailTemplateFieldComponent
   );
 };
 
-type EmailTemplateFieldProps = Omit<EmailTemplateFieldComponentProps, 'queryRef'>;
-
-const EmailTemplateField = ({ ...props }: EmailTemplateFieldProps) => {
-  const { t_i18n } = useFormatter();
-  const isEnterpriseEdition = useEnterpriseEdition();
-
+const EmailTemplateFieldLoader = (props: EmailTemplateFieldProps) => {
   const queryRef = useQueryLoading<EmailTemplateFieldQuery>(emailTemplateFieldQuery);
   const { name, label } = props;
-
-  if (!isEnterpriseEdition) {
-    return (
-      <>
-        <EETooltip title={t_i18n('Only available in EE')}>
-          <Field
-            component={AutocompleteField}
-            name={name}
-            disabled={true}
-            fullWidth={true}
-            options={[]}
-            style={fieldSpacingContainerStyle}
-            renderOption={() => null}
-            textfieldprops={{
-              label: t_i18n('Email template'),
-            }}
-          />
-        </EETooltip>
-      </>
-    );
-  }
 
   return queryRef ? (
     <React.Suspense fallback={(
@@ -137,9 +111,7 @@ const EmailTemplateField = ({ ...props }: EmailTemplateFieldProps) => {
         fullWidth={true}
         options={[]}
         renderOption={() => null}
-        textfieldprops={{
-          label,
-        }}
+        textfieldprops={{ label }}
       />
     )}
     >
@@ -148,6 +120,32 @@ const EmailTemplateField = ({ ...props }: EmailTemplateFieldProps) => {
   ) : (
     <Loader variant={LoaderVariant.inElement} />
   );
+};
+
+type EmailTemplateFieldProps = Omit<EmailTemplateFieldComponentProps, 'queryRef'>;
+const EmailTemplateField = ({ ...props }: EmailTemplateFieldProps) => {
+  const { t_i18n } = useFormatter();
+  const isEnterpriseEdition = useEnterpriseEdition();
+  const { name } = props;
+
+  if (!isEnterpriseEdition) {
+    return (
+      <EETooltip title={t_i18n('Only available in EE')}>
+        <Field
+          component={AutocompleteField}
+          name={name}
+          disabled={true}
+          fullWidth={true}
+          options={[]}
+          style={fieldSpacingContainerStyle}
+          renderOption={() => null}
+          textfieldprops={{ label: t_i18n('Email template') }}
+        />
+      </EETooltip>
+    );
+  }
+
+  return <EmailTemplateFieldLoader {...props} />;
 };
 
 export default EmailTemplateField;

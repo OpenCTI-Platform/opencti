@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { internalAdminQuery, queryAsAdmin } from '../../utils/testQuery';
-import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess, queryAsAdmin } from '../../utils/testQueryHelper';
 
 const LIST_QUERY = `
   query stixCyberObservables(
@@ -240,7 +239,10 @@ describe('StixCyberObservable resolver standard behavior', () => {
     expect(queryResult.data.stixCyberObservables.edges.length).toEqual(6);
   });
   it('should list stixCyberObservables orderBy observable_value', async () => {
-    const queryResult = await internalAdminQuery(LIST_QUERY, { first: 10, orderBy: 'observable_value', orderMode: 'desc' });
+    const queryResult = await queryAsAdmin({
+      query: LIST_QUERY,
+      variables: { first: 10, orderBy: 'observable_value', orderMode: 'desc' },
+    });
     expect(queryResult.data.stixCyberObservables).not.toBeNull();
     expect(queryResult.data.stixCyberObservables.edges.length).toEqual(6);
   });

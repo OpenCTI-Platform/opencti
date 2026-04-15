@@ -9208,6 +9208,8 @@ export type Feed = {
   feed_attributes: Array<FeedAttribute>;
   feed_date_attribute?: Maybe<Scalars['String']['output']>;
   feed_public?: Maybe<Scalars['Boolean']['output']>;
+  feed_public_user?: Maybe<Creator>;
+  feed_public_user_id?: Maybe<Scalars['String']['output']>;
   feed_types: Array<Scalars['String']['output']>;
   filters?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
@@ -9224,6 +9226,7 @@ export type FeedAddInput = {
   feed_attributes: Array<FeedAttributeMappingInput>;
   feed_date_attribute: Scalars['String']['input'];
   feed_public?: InputMaybe<Scalars['Boolean']['input']>;
+  feed_public_user_id?: InputMaybe<Scalars['String']['input']>;
   feed_types: Array<Scalars['String']['input']>;
   filters?: InputMaybe<Scalars['String']['input']>;
   include_header: Scalars['Boolean']['input'];
@@ -13833,6 +13836,7 @@ export type IngestionTaxii = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  scheduling_period?: Maybe<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
   toConfigurationExport: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
@@ -13858,6 +13862,7 @@ export type IngestionTaxiiAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   ingestion_running?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
+  scheduling_period?: InputMaybe<Scalars['String']['input']>;
   uri: Scalars['String']['input'];
   user_id: Scalars['String']['input'];
   version: TaxiiVersion;
@@ -15841,6 +15846,7 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   externalReferences?: Maybe<ExternalReferenceConnection>;
   filesFromTemplate?: Maybe<FileConnection>;
   fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  first_seen?: Maybe<Scalars['DateTime']['output']>;
   groupings?: Maybe<GroupingConnection>;
   hostVm?: Maybe<Software>;
   id: Scalars['ID']['output'];
@@ -15849,6 +15855,7 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  last_seen?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   modules?: Maybe<Array<Scalars['String']['output']>>;
@@ -16213,6 +16220,7 @@ export type ManagerContractConfiguration = {
 
 export type ManagerContractExcerpt = {
   __typename?: 'ManagerContractExcerpt';
+  logo: Scalars['String']['output'];
   slug: Scalars['String']['output'];
   title: Scalars['String']['output'];
 };
@@ -17659,8 +17667,12 @@ export type MutationCreateDraftAndAskJobImportArgs = {
   bypassValidation?: InputMaybe<Scalars['Boolean']['input']>;
   configuration?: InputMaybe<Scalars['String']['input']>;
   connectorId?: InputMaybe<Scalars['String']['input']>;
+  createdBy?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
   fileName: Scalars['ID']['input'];
   forceValidation?: InputMaybe<Scalars['Boolean']['input']>;
+  objectAssignee?: InputMaybe<Array<Scalars['String']['input']>>;
+  objectParticipant?: InputMaybe<Array<Scalars['String']['input']>>;
   validationMode?: InputMaybe<ValidationMode>;
 };
 
@@ -32419,6 +32431,8 @@ export type StreamCollection = {
   name?: Maybe<Scalars['String']['output']>;
   stream_live?: Maybe<Scalars['Boolean']['output']>;
   stream_public?: Maybe<Scalars['Boolean']['output']>;
+  stream_public_user?: Maybe<Creator>;
+  stream_public_user_id?: Maybe<Scalars['String']['output']>;
 };
 
 export type StreamCollectionAddInput = {
@@ -32428,6 +32442,7 @@ export type StreamCollectionAddInput = {
   name: Scalars['String']['input'];
   stream_live?: InputMaybe<Scalars['Boolean']['input']>;
   stream_public?: InputMaybe<Scalars['Boolean']['input']>;
+  stream_public_user_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type StreamCollectionConnection = {
@@ -32742,7 +32757,6 @@ export type Synchronizer = {
   stream_id: Scalars['String']['output'];
   synchronized?: Maybe<Scalars['Boolean']['output']>;
   toConfigurationExport: Scalars['String']['output'];
-  token?: Maybe<Scalars['String']['output']>;
   uri: Scalars['String']['output'];
   user?: Maybe<Creator>;
 };
@@ -33497,6 +33511,8 @@ export type TaxiiCollection = {
   name?: Maybe<Scalars['String']['output']>;
   score_to_confidence?: Maybe<Scalars['Boolean']['output']>;
   taxii_public?: Maybe<Scalars['Boolean']['output']>;
+  taxii_public_user?: Maybe<Creator>;
+  taxii_public_user_id?: Maybe<Scalars['String']['output']>;
 };
 
 export type TaxiiCollectionAddInput = {
@@ -33507,6 +33523,7 @@ export type TaxiiCollectionAddInput = {
   name: Scalars['String']['input'];
   score_to_confidence?: InputMaybe<Scalars['Boolean']['input']>;
   taxii_public?: InputMaybe<Scalars['Boolean']['input']>;
+  taxii_public_user_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type TaxiiCollectionConnection = {
@@ -33546,6 +33563,7 @@ export type TaxiiFeedAddInputFromImport = {
   collection: Scalars['String']['output'];
   description: Scalars['String']['output'];
   name: Scalars['String']['output'];
+  scheduling_period?: Maybe<Scalars['String']['output']>;
   uri: Scalars['String']['output'];
   version: Scalars['String']['output'];
 };
@@ -40776,6 +40794,13 @@ export type ConstraintDirectiveArgs = {
 
 export type ConstraintDirectiveResolver<Result, Parent, ContextType = any, Args = ConstraintDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
+export type FfDirectiveArgs = {
+  flags: Array<Scalars['String']['input']>;
+  softFail?: Maybe<Scalars['Boolean']['input']>;
+};
+
+export type FfDirectiveResolver<Result, Parent, ContextType = any, Args = FfDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
 export type PublicDirectiveArgs = { };
 
 export type PublicDirectiveResolver<Result, Parent, ContextType = any, Args = PublicDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
@@ -43785,6 +43810,8 @@ export type FeedResolvers<ContextType = any, ParentType extends ResolversParentT
   feed_attributes?: Resolver<Array<ResolversTypes['FeedAttribute']>, ParentType, ContextType>;
   feed_date_attribute?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   feed_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  feed_public_user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  feed_public_user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   feed_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -45240,6 +45267,7 @@ export type IngestionTaxiiResolvers<ContextType = any, ParentType extends Resolv
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -45972,6 +46000,7 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<MalwareAnalysisExternalReferencesArgs>>;
   filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MalwareAnalysisFilesFromTemplateArgs>>;
   fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  first_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<MalwareAnalysisGroupingsArgs>>;
   hostVm?: Resolver<Maybe<ResolversTypes['Software']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -45980,6 +46009,7 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MalwareAnalysisJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   modules?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -46094,6 +46124,7 @@ export type ManagerContractConfigurationResolvers<ContextType = any, ParentType 
 }>;
 
 export type ManagerContractExcerptResolvers<ContextType = any, ParentType extends ResolversParentTypes['ManagerContractExcerpt'] = ResolversParentTypes['ManagerContractExcerpt']> = ResolversObject<{
+  logo?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
@@ -50293,6 +50324,8 @@ export type StreamCollectionResolvers<ContextType = any, ParentType extends Reso
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   stream_live?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   stream_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  stream_public_user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  stream_public_user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type StreamCollectionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StreamCollectionConnection'] = ResolversParentTypes['StreamCollectionConnection']> = ResolversObject<{
@@ -50429,7 +50462,6 @@ export type SynchronizerResolvers<ContextType = any, ParentType extends Resolver
   stream_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   synchronized?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
 }>;
@@ -50659,6 +50691,8 @@ export type TaxiiCollectionResolvers<ContextType = any, ParentType extends Resol
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   score_to_confidence?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   taxii_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  taxii_public_user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  taxii_public_user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type TaxiiCollectionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaxiiCollectionConnection'] = ResolversParentTypes['TaxiiCollectionConnection']> = ResolversObject<{
@@ -50683,6 +50717,7 @@ export type TaxiiFeedAddInputFromImportResolvers<ContextType = any, ParentType e
   collection?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
@@ -52727,5 +52762,6 @@ export type DirectiveResolvers<ContextType = any> = ResolversObject<{
   allowUnprotectedOTP?: AllowUnprotectedOtpDirectiveResolver<any, any, ContextType>;
   auth?: AuthDirectiveResolver<any, any, ContextType>;
   constraint?: ConstraintDirectiveResolver<any, any, ContextType>;
+  ff?: FfDirectiveResolver<any, any, ContextType>;
   public?: PublicDirectiveResolver<any, any, ContextType>;
 }>;

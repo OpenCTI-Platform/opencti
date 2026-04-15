@@ -123,6 +123,7 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
       const { nonce, state } = encodeOidcState(referer);
       session.nonce = nonce;
       params.set('state', state);
+      params.set('nonce', nonce);
     }
     return params;
   };

@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import fs from 'node:fs';
-import { ADMIN_USER, internalAdminQuery, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { csvMapperAreaMalware, csvMapperAreaMalwareDefault } from './default-values/mapper-area-malware';
 import { parseReadableToLines, parsingProcess } from '../../../src/parser/csv-parser';
 import { handleRefEntities, mappingProcess } from '../../../src/parser/csv-mapper';
@@ -8,6 +8,7 @@ import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../src/modules/a
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { csvMapperFile } from './files-hashes/mapper-files';
 import { csvMapperAreaMarking } from './default-values/mapper-area-marking';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 
 const ENTITY_SETTINGS_UPDATE = `
   mutation entitySettingsEdit($ids: [ID!]!, $input: [EditInput!]!) {
@@ -78,25 +79,31 @@ describe('CSV-MAPPER', () => {
   let markings;
 
   afterAll(async () => {
-    await internalAdminQuery(ENTITY_SETTINGS_UPDATE, {
-      ids: [entitySettingArea.id],
-      input: {
-        key: 'attributes_configuration',
-        value: entitySettingArea.attributes_configuration
-      }
+    await queryAsAdmin({
+      query: ENTITY_SETTINGS_UPDATE,
+      variables: {
+        ids: [entitySettingArea.id],
+        input: {
+          key: 'attributes_configuration',
+          value: entitySettingArea.attributes_configuration,
+        },
+      },
     });
-    await internalAdminQuery(ENTITY_SETTINGS_UPDATE, {
-      ids: [entitySettingMalware.id],
-      input: {
-        key: 'attributes_configuration',
-        value: entitySettingMalware.attributes_configuration
-      }
+    await queryAsAdmin({
+      query: ENTITY_SETTINGS_UPDATE,
+      variables: {
+        ids: [entitySettingMalware.id],
+        input: {
+          key: 'attributes_configuration',
+          value: entitySettingMalware.attributes_configuration,
+        },
+      },
     });
   });
 
   beforeAll(async () => {
-    const { data } = await internalAdminQuery(GET_QUERY);
-    [individual,] = data.individuals.edges.map((e) => e.node);
+    const { data } = await queryAsAdmin({ query: GET_QUERY });
+    [individual] = data.individuals.edges.map((e) => e.node);
     const entitySettings = data.entitySettings.edges.map((e) => e.node);
     entitySettingArea = entitySettings.find((setting) => setting.target_type === ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA);
     entitySettingMalware = entitySettings.find((setting) => setting.target_type === ENTITY_TYPE_MALWARE);
@@ -107,32 +114,35 @@ describe('CSV-MAPPER', () => {
       { name: 'createdBy', default_values: [individual.id], mandatory: false },
       { name: 'latitude', default_values: ['1.11'], mandatory: false },
       { name: 'longitude', default_values: ['2.22'], mandatory: false },
-      { name: 'description', default_values: ['hello'], mandatory: false }
+      { name: 'description', default_values: ['hello'], mandatory: false },
     ];
-    await internalAdminQuery(
-      ENTITY_SETTINGS_UPDATE,
-      {
+    await queryAsAdmin({
+      query: ENTITY_SETTINGS_UPDATE,
+      variables: {
         ids: [entitySettingArea.id],
         input: {
           key: 'attributes_configuration',
-          value: JSON.stringify(areaDefaultValues)
-        }
-      }
-    );
+          value: JSON.stringify(areaDefaultValues),
+        },
+      },
+    });
     const malwareDefaultValues = [
       { name: 'createdBy', default_values: [individual.id], mandatory: false },
       { name: 'killChainPhases', default_values: killChainPhases.map((p) => p.id), mandatory: false },
       { name: 'malware_types', default_values: ['rootkit'], mandatory: false },
       { name: 'implementation_languages', default_values: ['lua', 'perl'], mandatory: false },
       { name: 'architecture_execution_envs', default_values: ['powerpc', 'x86'], mandatory: false },
-      { name: 'description', default_values: ['hello'], mandatory: false }
+      { name: 'description', default_values: ['hello'], mandatory: false },
     ];
-    await internalAdminQuery(ENTITY_SETTINGS_UPDATE, {
-      ids: [entitySettingMalware.id],
-      input: {
-        key: 'attributes_configuration',
-        value: JSON.stringify(malwareDefaultValues)
-      }
+    await queryAsAdmin({
+      query: ENTITY_SETTINGS_UPDATE,
+      variables: {
+        ids: [entitySettingMalware.id],
+        input: {
+          key: 'attributes_configuration',
+          value: JSON.stringify(malwareDefaultValues),
+        },
+      },
     });
   });
 
@@ -227,7 +237,7 @@ describe('CSV-MAPPER', () => {
       const killChainPhase = killChainPhases[0];
       const data = (await mapData(
         filePath,
-        csvMapperAreaMalwareDefault(individual.id, [killChainPhase.id])
+        csvMapperAreaMalwareDefault(individual.id, [killChainPhase.id]),
       )).flat();
 
       const morbihan = data.find((object) => object.name === 'morbihan');
@@ -316,8 +326,8 @@ describe('CSV-MAPPER', () => {
         ...ADMIN_USER,
         default_marking: [{
           entity_type: 'GLOBAL',
-          values: [tlpAmber.id]
-        }]
+          values: [tlpAmber.id],
+        }],
       };
     });
 

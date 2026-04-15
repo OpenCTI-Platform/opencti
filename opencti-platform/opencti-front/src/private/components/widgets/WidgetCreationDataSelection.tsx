@@ -18,9 +18,10 @@ import Alert from '../../../components/Alert';
 type StepContainerProps = {
   perspective?: WidgetPerspective | null;
   children: React.ReactNode;
+  id: string;
 };
 
-const StepContainer = ({ perspective, children }: StepContainerProps) => {
+const StepContainer = ({ perspective, children, id }: StepContainerProps) => {
   let borderColorKey: 'primary' | 'secondary' = 'secondary';
 
   if (perspective === 'relationships') {
@@ -31,6 +32,7 @@ const StepContainer = ({ perspective, children }: StepContainerProps) => {
 
   return (
     <Box
+      data-testid={id}
       sx={{
         position: 'relative',
         width: '100%',
@@ -104,6 +106,7 @@ const WidgetCreationDataSelection = () => {
         dataSelection.map((item, i) => {
           return (
             <StepContainer
+              id={`widget-selection-${i}`}
               key={itemIds[i]}
               perspective={item.perspective}
             >

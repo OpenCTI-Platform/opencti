@@ -1,5 +1,5 @@
 import { useMemo, Suspense } from 'react';
-import { Route, Routes, Navigate, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootNarrativeQuery } from '@components/techniques/narratives/__generated__/RootNarrativeQuery.graphql';
@@ -8,11 +8,11 @@ import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Narrative from './Narrative';
 import NarrativeKnowledge from './NarrativeKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -26,6 +26,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import NarrativeEdition from './NarrativeEdition';
 import NarrativeDeletion from './NarrativeDeletion';
+import { PATH_NARRATIVE, PATH_NARRATIVES } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootNarrativeSubscription($id: ID!) {
@@ -98,8 +99,9 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
 
   const { forceUpdate } = useForceUpdate();
 
-  const paddingRight = getPaddingRight(location.pathname, narrativeId, '/dashboard/techniques/narratives');
-  const link = `/dashboard/techniques/narratives/${narrativeId}/knowledge`;
+  const basePath = PATH_NARRATIVE(narrativeId);
+  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
       {narrative ? (
@@ -127,7 +129,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Techniques') },
-              { label: t_i18n('Narratives'), link: '/dashboard/techniques/narratives' },
+              { label: t_i18n('Narratives'), link: PATH_NARRATIVES },
               { label: narrative.name, current: true },
             ]}
             />
@@ -153,71 +155,35 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
                 </Security>
               )}
             />
-            <StixDomainObjectTabsBox
-              basePath="/dashboard/techniques/narratives"
-              entity={narrative}
-              tabs={[
-                'overview',
-                'knowledge-overview',
-                'content',
-                'analyses',
-                'files',
-                'history',
-              ]}
-            />
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <Narrative narrativeData={narrative} />
-                }
-              />
-              <Route
-                path="/knowledge"
-                element={
-                  <Navigate to={`/dashboard/techniques/narratives/${narrativeId}/knowledge/overview`} replace={true} />
-                }
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
+            <StixDomainObjectMain
+              basePath={basePath}
+              pages={{
+                overview:
+                  <Narrative narrativeData={narrative} />,
+                knowledge: (
                   <div key={forceUpdate}>
                     <NarrativeKnowledge narrativeData={narrative} />
                   </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
+                ),
+                content: (
                   <StixCoreObjectContentRoot
                     stixCoreObject={narrative}
                   />
-                )}
-              />
-              <Route
-                path="/analyses"
-                element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={narrative} />
-                }
-              />
-              <Route
-                path="/files"
-                element={(
+                ),
+                analyses:
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={narrative} />,
+                files: (
                   <FileManager
                     id={narrativeId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={narrative}
                   />
-                )}
-              />
-              <Route
-                path="/history"
-                element={
-                  <StixCoreObjectHistory stixCoreObjectId={narrativeId} />
-                }
-              />
-            </Routes>
+                ),
+                history:
+                  <StixCoreObjectHistory stixCoreObjectId={narrativeId} />,
+              }}
+            />
           </div>
         </>
       ) : (

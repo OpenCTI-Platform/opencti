@@ -1,7 +1,8 @@
 import { describe, expect, it, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
 import { Readable } from 'stream';
-import { ADMIN_USER, queryAsAdmin, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { utcDate } from '../../../src/utils/format';
 import { deleteElement, getElementsToDelete } from '../../../src/manager/retentionManager';
 import { allFilesForPaths } from '../../../src/modules/internal/document/document-domain';

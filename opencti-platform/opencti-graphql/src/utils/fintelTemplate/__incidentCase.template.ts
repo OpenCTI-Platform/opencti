@@ -1,5 +1,11 @@
 import type { FintelTemplateAddInput } from '../../generated/graphql';
-import { widgetAttackPatterns, widgetContainerObservables, widgetIncidentIOC, widgetIncidentResponseMultiAttributes, widgetIncidentTasksActions } from './__fintelTemplateWidgets';
+import {
+  widgetContainerAttackPatterns,
+  widgetContainerObservables,
+  widgetIncidentIOC,
+  widgetIncidentResponseMultiAttributes,
+  widgetIncidentTasksActions,
+} from './__fintelTemplateWidgets';
 
 const template_content = `
 <div>
@@ -104,7 +110,7 @@ export const fintelTemplateIncidentResponse: FintelTemplateAddInput = {
     widgetContainerObservables,
     widgetIncidentIOC,
     widgetIncidentTasksActions,
-    widgetAttackPatterns,
+    widgetContainerAttackPatterns,
     widgetIncidentResponseMultiAttributes,
   ],
 };

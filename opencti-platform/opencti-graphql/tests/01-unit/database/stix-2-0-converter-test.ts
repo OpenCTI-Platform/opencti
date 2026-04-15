@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import '../../../src/modules/index';
 import { EXPECTED_MALWARE, MALWARE_INSTANCE } from './instances-stix-2-0-converter/malware';
 import { EXPECTED_REPORT, REPORT_INSTANCE } from './instances-stix-2-0-converter/containers/report';
 import { EXPECTED_OBSERVED_DATA, OBSERVED_DATA_INSTANCE } from './instances-stix-2-0-converter/containers/observed-data';
@@ -21,8 +22,15 @@ import { convertCaseRftToStix_2_0 } from '../../../src/modules/case/case-rft/cas
 import { convertCaseRfiToStix_2_0 } from '../../../src/modules/case/case-rfi/case-rfi-converter';
 import { convertChannelToStix_2_0 } from '../../../src/modules/channel/channel-converter';
 import { convertThreatActorIndividualToStix_2_0 } from '../../../src/modules/threatActorIndividual/threatActorIndividual-converter';
+import { convertNarrativeToStix_2_0 } from '../../../src/modules/narrative/narrative-converter';
+import { convertDataComponentToStix_2_0 } from '../../../src/modules/dataComponent/dataComponent-converter';
+import { convertDataSourceToStix_2_0 } from '../../../src/modules/dataSource/dataSource-converter';
+import { convertOrganizationToStix_2_0 } from '../../../src/modules/organization/organization-converter';
+import { convertSecurityPlatformToStix_2_0 } from '../../../src/modules/securityPlatform/securityPlatform-converter';
 import {
+  convertAttackPatternToStix,
   convertCampaignToStix,
+  convertCourseOfActionToStix,
   convertIntrusionSetToStix,
   convertToolToStix,
   convertThreatActorGroupToStix,
@@ -34,13 +42,42 @@ import {
   convertReportToStix,
   convertIncidentToStix,
   convertSightingToStix,
+  convertIdentityToStix,
+  convertLocationToStix,
 } from '../../../src/database/stix-2-0-converter';
+import {
+  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_IDENTITY_SECTOR,
+  ENTITY_TYPE_IDENTITY_SYSTEM,
+  ENTITY_TYPE_LOCATION_REGION,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_LOCATION_CITY,
+  ENTITY_TYPE_LOCATION_POSITION,
+} from '../../../src/schema/stixDomainObject';
 import { CAMPAIGN_INSTANCE, EXPECTED_CAMPAIGN } from './instances-stix-2-0-converter/SDOs/campaign';
 import { EXPECTED_INCIDENT, INCIDENT_INSTANCE } from './instances-stix-2-0-converter/SDOs/incident';
 import { EXPECTED_INTRUSION_SET, INTRUSION_SET_INSTANCE } from './instances-stix-2-0-converter/SDOs/intrusion-set';
 import { EXPECTED_THREAT_ACTOR_GROUP, THREAT_ACTOR_GROUP_INSTANCE } from './instances-stix-2-0-converter/SDOs/threat-actor-group';
 import { EXPECTED_THREAT_ACTOR_INDIVIDUAL, THREAT_ACTOR_INDIVIDUAL_INSTANCE } from './instances-stix-2-0-converter/SDOs/threat-actor-individual';
 import { EXPECTED_SIGHTING, SIGHTING_INSTANCE } from './instances-stix-2-0-converter/sightings';
+import { ATTACK_PATTERN_INSTANCE, EXPECTED_ATTACK_PATTERN } from './instances-stix-2-0-converter/techniques/attack-pattern';
+import { EXPECTED_NARRATIVE, NARRATIVE_INSTANCE } from './instances-stix-2-0-converter/techniques/narrative';
+import { COURSE_OF_ACTION_INSTANCE, EXPECTED_COURSE_OF_ACTION } from './instances-stix-2-0-converter/techniques/course-of-action';
+import { DATA_COMPONENT_INSTANCE, EXPECTED_DATA_COMPONENT } from './instances-stix-2-0-converter/techniques/data-component';
+import { DATA_SOURCE_INSTANCE, EXPECTED_DATA_SOURCE } from './instances-stix-2-0-converter/techniques/data-source';
+import { INDIVIDUAL_INSTANCE, EXPECTED_INDIVIDUAL } from './instances-stix-2-0-converter/identities/individual';
+import { SECTOR_INSTANCE, EXPECTED_SECTOR } from './instances-stix-2-0-converter/identities/sector';
+import { SYSTEM_INSTANCE, EXPECTED_SYSTEM } from './instances-stix-2-0-converter/identities/system';
+import { ORGANIZATION_INSTANCE, EXPECTED_ORGANIZATION } from './instances-stix-2-0-converter/identities/organization';
+import { SECURITY_PLATFORM_INSTANCE, EXPECTED_SECURITY_PLATFORM } from './instances-stix-2-0-converter/identities/security-platform';
+import { EVENT_INSTANCE, EXPECTED_EVENT } from './instances-stix-2-0-converter/event';
+import { convertEventToStix_2_0 } from '../../../src/modules/event/event-converter';
+import { REGION_INSTANCE, EXPECTED_REGION } from './instances-stix-2-0-converter/locations/region';
+import { COUNTRY_INSTANCE, EXPECTED_COUNTRY } from './instances-stix-2-0-converter/locations/country';
+import { CITY_INSTANCE, EXPECTED_CITY } from './instances-stix-2-0-converter/locations/city';
+import { POSITION_INSTANCE, EXPECTED_POSITION } from './instances-stix-2-0-converter/locations/position';
+import { ADMINISTRATIVE_AREA_INSTANCE, EXPECTED_ADMINISTRATIVE_AREA } from './instances-stix-2-0-converter/locations/administrative-area';
+import { convertAdministrativeAreaToStix_2_0 } from '../../../src/modules/administrativeArea/administrativeArea-converter';
 
 describe('Stix 2.0 opencti converter', () => {
   // SDOs
@@ -79,6 +116,27 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Threat Actor Individual', async () => {
     const result = convertThreatActorIndividualToStix_2_0(THREAT_ACTOR_INDIVIDUAL_INSTANCE);
     expect(result).toEqual(EXPECTED_THREAT_ACTOR_INDIVIDUAL);
+  });
+  // Techniques
+  it('should convert Attack Pattern', async () => {
+    const result = convertAttackPatternToStix(ATTACK_PATTERN_INSTANCE);
+    expect(result).toEqual(EXPECTED_ATTACK_PATTERN);
+  });
+  it('should convert Narrative', async () => {
+    const result = convertNarrativeToStix_2_0(NARRATIVE_INSTANCE);
+    expect(result).toEqual(EXPECTED_NARRATIVE);
+  });
+  it('should convert Course of Action', async () => {
+    const result = convertCourseOfActionToStix(COURSE_OF_ACTION_INSTANCE);
+    expect(result).toEqual(EXPECTED_COURSE_OF_ACTION);
+  });
+  it('should convert Data Component', async () => {
+    const result = convertDataComponentToStix_2_0(DATA_COMPONENT_INSTANCE);
+    expect(result).toEqual(EXPECTED_DATA_COMPONENT);
+  });
+  it('should convert Data Source', async () => {
+    const result = convertDataSourceToStix_2_0(DATA_SOURCE_INSTANCE);
+    expect(result).toEqual(EXPECTED_DATA_SOURCE);
   });
   // Containers
   it('should convert Report', async () => {
@@ -125,5 +183,52 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert StixSightingRelationship', async () => {
     const result = convertSightingToStix(SIGHTING_INSTANCE);
     expect(result).toEqual(EXPECTED_SIGHTING);
+  });
+  // Identities
+  it('should convert Individual', async () => {
+    const result = convertIdentityToStix(INDIVIDUAL_INSTANCE, ENTITY_TYPE_IDENTITY_INDIVIDUAL);
+    expect(result).toEqual(EXPECTED_INDIVIDUAL);
+  });
+  it('should convert Sector', async () => {
+    const result = convertIdentityToStix(SECTOR_INSTANCE, ENTITY_TYPE_IDENTITY_SECTOR);
+    expect(result).toEqual(EXPECTED_SECTOR);
+  });
+  it('should convert System', async () => {
+    const result = convertIdentityToStix(SYSTEM_INSTANCE, ENTITY_TYPE_IDENTITY_SYSTEM);
+    expect(result).toEqual(EXPECTED_SYSTEM);
+  });
+  it('should convert Organization', async () => {
+    const result = convertOrganizationToStix_2_0(ORGANIZATION_INSTANCE);
+    expect(result).toEqual(EXPECTED_ORGANIZATION);
+  });
+  it('should convert SecurityPlatform', async () => {
+    const result = convertSecurityPlatformToStix_2_0(SECURITY_PLATFORM_INSTANCE);
+    expect(result).toEqual(EXPECTED_SECURITY_PLATFORM);
+  });
+  // Events
+  it('should convert Event', async () => {
+    const result = convertEventToStix_2_0(EVENT_INSTANCE);
+    expect(result).toEqual(EXPECTED_EVENT);
+  });
+  // Locations
+  it('should convert Region', async () => {
+    const result = convertLocationToStix(REGION_INSTANCE, ENTITY_TYPE_LOCATION_REGION);
+    expect(result).toEqual(EXPECTED_REGION);
+  });
+  it('should convert Country', async () => {
+    const result = convertLocationToStix(COUNTRY_INSTANCE, ENTITY_TYPE_LOCATION_COUNTRY);
+    expect(result).toEqual(EXPECTED_COUNTRY);
+  });
+  it('should convert City', async () => {
+    const result = convertLocationToStix(CITY_INSTANCE, ENTITY_TYPE_LOCATION_CITY);
+    expect(result).toEqual(EXPECTED_CITY);
+  });
+  it('should convert Position', async () => {
+    const result = convertLocationToStix(POSITION_INSTANCE, ENTITY_TYPE_LOCATION_POSITION);
+    expect(result).toEqual(EXPECTED_POSITION);
+  });
+  it('should convert Administrative Area', async () => {
+    const result = convertAdministrativeAreaToStix_2_0(ADMINISTRATIVE_AREA_INSTANCE);
+    expect(result).toEqual(EXPECTED_ADMINISTRATIVE_AREA);
   });
 });

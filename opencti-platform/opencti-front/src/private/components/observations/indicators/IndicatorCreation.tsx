@@ -16,7 +16,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import TextField from '../../../../components/TextField';
 import type { Theme } from '../../../../components/Theme';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';

@@ -1,130 +1,37 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import useGranted, {
-  isOnlyOrganizationAdmin,
-  VIRTUAL_ORGANIZATION_ADMIN,
-  SETTINGS_SETACCESSES,
+import {
   SETTINGS_SETCUSTOMIZATION,
   SETTINGS_SETLABELS,
-  SETTINGS_SETMARKINGS,
   SETTINGS_SECURITYACTIVITY,
   SETTINGS_FILEINDEXING,
   SETTINGS_SUPPORT,
   SETTINGS_SETPARAMETERS,
-  SETTINGS_SETDISSEMINATION,
   SETTINGS_SETMANAGEXTMHUB,
   SETTINGS_SETVOCABULARIES,
   SETTINGS_SETKILLCHAINPHASES,
   SETTINGS_SETCASETEMPLATES,
   SETTINGS_SETSTATUSTEMPLATES,
+  SETTINGS_SETACCESSES,
+  SETTINGS_SETMARKINGS,
+  SETTINGS_SETDISSEMINATION,
   SETTINGS_SETAUTH,
+  VIRTUAL_ORGANIZATION_ADMIN,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
+import useSettingsFallbackUrl from '../../../utils/hooks/useSettingsFallbackUrl';
 
 const Security = lazy(() => import('../../../utils/Security'));
-const CaseTemplates = lazy(() => import('./case_templates/CaseTemplates'));
-const CaseTemplateTasks = lazy(() => import('./case_templates/CaseTemplateTasks'));
-const Groups = lazy(() => import('./Groups'));
-const RootGroup = lazy(() => import('./groups/Root'));
-const KillChainPhases = lazy(() => import('./KillChainPhases'));
-const Labels = lazy(() => import('./Labels'));
-const MarkingDefinitions = lazy(() => import('./MarkingDefinitions'));
-const Notifiers = lazy(() => import('./Notifiers'));
-const RootSettingsOrganization = lazy(() => import('./organizations/Root'));
-const Policies = lazy(() => import('./Policies'));
-const Retention = lazy(() => import('./Retention'));
-const Roles = lazy(() => import('./Roles'));
-const RootRole = lazy(() => import('./roles/Root'));
-const Rules = lazy(() => import('./rules/Rules'));
-const Sessions = lazy(() => import('./Sessions'));
 const Settings = lazy(() => import('./Settings'));
-const SettingsOrganizations = lazy(() => import('./SettingsOrganizations'));
-const SSODefinitions = lazy(() => import('./sso_definitions/SSODefinitions'));
 const FileIndexing = lazy(() => import('./file_indexing/FileIndexing'));
-const StatusTemplates = lazy(() => import('./status_templates/StatusTemplates'));
-const RootSubType = lazy(() => import('./sub_types/Root'));
-const SubTypes = lazy(() => import('./sub_types/SubTypes'));
-const Users = lazy(() => import('./Users'));
-const RootUser = lazy(() => import('./users/Root'));
-const Vocabularies = lazy(() => import('./Vocabularies'));
-const VocabularyCategories = lazy(() => import('./VocabularyCategories'));
-const Audit = lazy(() => import('./activity/audit/Root'));
-const Configuration = lazy(() => import('./activity/configuration/Configuration'));
-const Alerting = lazy(() => import('./activity/alerting/Alerting'));
-const DecayRuleTabs = lazy(() => import('./decay/DecayRuleTabs'));
-const DecayRule = lazy(() => import('./decay/DecayRule'));
-const ExclusionLists = lazy(() => import('./exclusion_lists/ExclusionLists'));
-const DisseminationLists = lazy(() => import('./dissemination_lists/DisseminationLists'));
-const EmailTemplates = lazy(() => import('./email_template/EmailTemplates'));
-const EmailTemplate = lazy(() => import('./email_template/EmailTemplate'));
-const FintelDesigns = lazy(() => import('./fintel_design/FintelDesigns'));
-const FintelDesign = lazy(() => import('./fintel_design/FintelDesign'));
 const Experience = lazy(() => import('./Experience'));
-
-const AccessesRedirect = () => {
-  const adminOrga = isOnlyOrganizationAdmin();
-  const hasSetAccesses = useGranted([SETTINGS_SETACCESSES]);
-  const hasVirtualOrgAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
-  const hasSetMarkings = useGranted([SETTINGS_SETMARKINGS]);
-  const hasSetDissemination = useGranted([SETTINGS_SETDISSEMINATION]);
-  const hasSetAuth = useGranted([SETTINGS_SETAUTH]);
-  if (hasSetAccesses) {
-    return <Navigate to="/dashboard/settings/accesses/roles" />;
-  }
-  if (hasVirtualOrgAdmin) {
-    return <Navigate to={adminOrga ? '/dashboard/settings/accesses/organizations' : '/dashboard/settings/accesses/roles'} />;
-  }
-  if (hasSetAuth) {
-    return <Navigate to="/dashboard/settings/accesses/authentications" />;
-  }
-  if (hasSetMarkings) {
-    return <Navigate to="/dashboard/settings/accesses/marking" />;
-  }
-  if (hasSetDissemination) {
-    return <Navigate to="/dashboard/settings/accesses/dissemination_list" />;
-  }
-  return <Navigate to="/dashboard/settings" />;
-};
+const RootAccesses = lazy(() => import('./accesses/Root'));
+const RootActivity = lazy(() => import('./activity/Root'));
+const RootCustomization = lazy(() => import('./customization/Root'));
+const RootVocabularies = lazy(() => import('./vocabularies/Root'));
 
 const Root = () => {
-  const isGrantedToLabels = useGranted([SETTINGS_SETLABELS]);
-  const isGrantedToVocabularies = useGranted([SETTINGS_SETVOCABULARIES]);
-  const isGrantedToKillChainPhases = useGranted([SETTINGS_SETKILLCHAINPHASES]);
-  const isGrantedToCaseTemplates = useGranted([SETTINGS_SETCASETEMPLATES]);
-  const isGrantedToStatusTemplates = useGranted([SETTINGS_SETSTATUSTEMPLATES]);
-  const isGrantedToTaxonomies = isGrantedToLabels || isGrantedToVocabularies || isGrantedToKillChainPhases || isGrantedToCaseTemplates || isGrantedToStatusTemplates;
-
-  const urlWithCapabilities = () => {
-    const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
-    const isGrantedToSecurityAccess = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);
-    const isGrantedToMarkingOnly = useGranted([SETTINGS_SETMARKINGS]);
-    const isGrantedToDisseminationListOnly = useGranted([SETTINGS_SETDISSEMINATION]);
-    const isGrantedToSsoOnly = useGranted([SETTINGS_SETAUTH]);
-    const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
-    const isGrantedToActivity = useGranted([SETTINGS_SECURITYACTIVITY]);
-    const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
-    const isGrantedToExperience = useGranted([SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]);
-    if (isGrantedToParameters) return '/dashboard/settings';
-    if (isGrantedToSecurityAccess) return '/dashboard/settings/accesses';
-    if (isGrantedToMarkingOnly) return '/dashboard/settings/accesses/marking';
-    if (isGrantedToDisseminationListOnly) return '/dashboard/settings/accesses/dissemination_list';
-    if (isGrantedToSsoOnly) return '/dashboard/settings/accesses/authentications';
-    if (isGrantedToCustomization) return '/dashboard/settings/customization';
-    if (isGrantedToTaxonomies) return '/dashboard/settings/vocabularies';
-    if (isGrantedToActivity) return '/dashboard/settings/activity';
-    if (isGrantedToFileIndexing) return '/dashboard/settings/file_indexing';
-    if (isGrantedToExperience) return '/dashboard/settings/experience';
-    return '/dashboard';
-  };
-
-  const generateTaxonomyLink = () => {
-    if (isGrantedToLabels) return '/dashboard/settings/vocabularies/labels';
-    if (isGrantedToKillChainPhases) return '/dashboard/settings/vocabularies/kill_chain_phases';
-    if (isGrantedToCaseTemplates) return '/dashboard/settings/vocabularies/case_templates';
-    if (isGrantedToStatusTemplates) return '/dashboard/settings/vocabularies/status_templates';
-    if (isGrantedToVocabularies) return '/dashboard/settings/vocabularies/fields';
-    return '/dashboard';
-  };
+  const fallbackUrl = useSettingsFallbackUrl();
 
   return (
     <div data-testid="settings-page">
@@ -135,223 +42,35 @@ const Root = () => {
             element={(
               <Security
                 needs={[SETTINGS_SETPARAMETERS]}
-                placeholder={
-                  <Navigate to={urlWithCapabilities()} />
-                }
+                placeholder={<Navigate to={fallbackUrl} />}
               >
                 <Settings />
               </Security>
             )}
           />
           <Route
-            path="/accesses"
+            path="/accesses/*"
             element={(
               <Security
                 needs={[SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS, SETTINGS_SETDISSEMINATION, SETTINGS_SETAUTH, VIRTUAL_ORGANIZATION_ADMIN]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
+                placeholder={<Navigate to={fallbackUrl} />}
               >
-                <AccessesRedirect />
+                <RootAccesses />
               </Security>
             )}
           />
           <Route
-            path="/accesses/users"
+            path="/activity/*"
             element={(
-              <Security
-                needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <Users />
-              </Security>
-            )}
-          />
-          <Route
-            path="/accesses/users/:userId/*"
-            element={(
-              <Security
-                needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <RootUser />
-              </Security>
-            )}
-          />
-          <Route
-            path="/accesses/organizations"
-            element={(
-              <Security
-                needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <SettingsOrganizations />
-              </Security>
-            )}
-          />
-          <Route
-            path="/accesses/organizations/:organizationId/*"
-            element={(
-              <Security
-                needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <RootSettingsOrganization />
-              </Security>
-            )}
-          />
-          <Route
-            path="/accesses/roles"
-            element={(
-              <Security
-                needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <Roles />
-              </Security>
-            )}
-          />
-          <Route
-            path="/accesses/policies"
-            element={(
-              <Security
-                needs={[SETTINGS_SETACCESSES]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <Policies />
-              </Security>
-            )}
-          />
-          <Route
-            path="/accesses/roles/:roleId/*"
-            element={(
-              <Security
-                needs={[SETTINGS_SETACCESSES]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <RootRole />
-              </Security>
-            )}
-          />
-          <Route
-            path="/accesses/groups"
-            element={(
-              <Security
-                needs={[SETTINGS_SETACCESSES]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <Groups />
-              </Security>
-            )}
-          />
-          <Route
-            path="/accesses/groups/:groupId/*"
-            element={(
-              <Security
-                needs={[SETTINGS_SETACCESSES]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <RootGroup />
-              </Security>
-            )}
-          />
-          <Route
-            path="/accesses/sessions"
-            element={(
-              <Security
-                needs={[SETTINGS_SETACCESSES]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <Sessions />
-              </Security>
-            )}
-          />
-          <Route
-            path="/accesses/marking"
-            element={(
-              <Security
-                needs={[SETTINGS_SETMARKINGS]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <MarkingDefinitions />
-              </Security>
-            )}
-          />
-          <Route
-            path="/accesses/dissemination_list"
-            element={(
-              <Security
-                needs={[SETTINGS_SETDISSEMINATION]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <DisseminationLists />
-              </Security>
-            )}
-          />
-          <Route
-            path="/accesses/email_templates"
-            element={(
-              <Security
-                needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <EmailTemplates />
-              </Security>
-            )}
-          />
-          <Route
-            path="/accesses/email_templates/:emailTemplateId/*"
-            element={(
-              <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <EmailTemplate />
-              </Security>
-            )}
-          />
-          <Route
-            path="/accesses/authentications"
-            element={(
-              <Security
-                needs={[SETTINGS_SETAUTH]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <SSODefinitions />
-              </Security>
-            )}
-          />
-          <Route
-            path="/activity"
-            element={(
-              <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <Navigate to="/dashboard/settings/activity/audit" replace={true} />
-              </Security>
-            )}
-          />
-          <Route
-            path="/activity/audit"
-            element={(
-              <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <Audit />
-              </Security>
-            )}
-          />
-          <Route
-            path="/activity/configuration"
-            element={(
-              <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <Configuration />
-              </Security>
-            )}
-          />
-          <Route
-            path="/activity/alerting"
-            element={(
-              <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <Alerting />
+              <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={fallbackUrl} />}>
+                <RootActivity />
               </Security>
             )}
           />
           <Route
             path="/file_indexing"
             element={(
-              <Security needs={[SETTINGS_FILEINDEXING]} placeholder={<Navigate to={urlWithCapabilities()} />}>
+              <Security needs={[SETTINGS_FILEINDEXING]} placeholder={<Navigate to={fallbackUrl} />}>
                 <FileIndexing />
               </Security>
             )}
@@ -359,174 +78,27 @@ const Root = () => {
           <Route
             path="/experience"
             element={(
-              <Security needs={[SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]} placeholder={<Navigate to={urlWithCapabilities()} />}>
+              <Security needs={[SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]} placeholder={<Navigate to={fallbackUrl} />}>
                 <Experience />
               </Security>
             )}
           />
           <Route
-            path="/customization"
+            path="/customization/*"
             element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <Navigate to="/dashboard/settings/customization/entity_types" replace={true} />
+              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+                <RootCustomization />
               </Security>
             )}
           />
           <Route
-            path="/customization/entity_types"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <SubTypes />
-              </Security>
-            )}
-          />
-          <Route
-            path="/customization/retention"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <Retention />
-              </Security>
-            )}
-          />
-          <Route
-            path="/customization/entity_types/:subTypeId/*"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <RootSubType />
-              </Security>
-            )}
-          />
-          <Route
-            path="/customization/rules"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <Rules />
-              </Security>
-            )}
-          />
-          <Route
-            path="customization/decay"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <DecayRuleTabs />
-              </Security>
-            )}
-          />
-          <Route
-            path="customization/decay/:decayRuleId/*"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <DecayRule />
-              </Security>
-            )}
-          />
-          <Route
-            path="customization/exclusion_lists"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <ExclusionLists />
-              </Security>
-            )}
-          />
-          <Route
-            path="customization/fintel_designs"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <FintelDesigns />
-              </Security>
-            )}
-          />
-          <Route
-            path="customization/fintel_designs/:fintelDesignId/*"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <FintelDesign />
-              </Security>
-            )}
-          />
-          <Route
-            path="/customization/notifiers"
-            element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <Notifiers />
-              </Security>
-            )}
-          />
-          <Route path="/vocabularies" element={<Navigate to={generateTaxonomyLink()} />} />
-          <Route
-            path="/vocabularies/labels"
+            path="/vocabularies/*"
             element={(
               <Security
-                needs={[SETTINGS_SETLABELS]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
+                needs={[SETTINGS_SETLABELS, SETTINGS_SETKILLCHAINPHASES, SETTINGS_SETSTATUSTEMPLATES, SETTINGS_SETCASETEMPLATES, SETTINGS_SETVOCABULARIES]}
+                placeholder={<Navigate to={fallbackUrl} />}
               >
-                <Labels />
-              </Security>
-            )}
-          />
-          <Route
-            path="/vocabularies/kill_chain_phases"
-            element={(
-              <Security
-                needs={[SETTINGS_SETKILLCHAINPHASES]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <KillChainPhases />
-              </Security>
-            )}
-          />
-          <Route
-            path="/vocabularies/status_templates"
-            element={(
-              <Security
-                needs={[SETTINGS_SETSTATUSTEMPLATES]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <StatusTemplates />
-              </Security>
-            )}
-          />
-          <Route
-            path="/vocabularies/case_templates"
-            element={(
-              <Security
-                needs={[SETTINGS_SETCASETEMPLATES]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <CaseTemplates />
-              </Security>
-            )}
-          />
-          <Route
-            path="/vocabularies/case_templates/:caseTemplateId/*"
-            element={(
-              <Security
-                needs={[SETTINGS_SETCASETEMPLATES]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <CaseTemplateTasks />
-              </Security>
-            )}
-          />
-          <Route
-            path="/vocabularies/fields"
-            element={(
-              <Security
-                needs={[SETTINGS_SETVOCABULARIES]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <VocabularyCategories />
-              </Security>
-            )}
-          />
-          <Route
-            path="/vocabularies/fields/:category"
-            element={(
-              <Security
-                needs={[SETTINGS_SETVOCABULARIES]}
-                placeholder={<Navigate to={urlWithCapabilities()} />}
-              >
-                <Vocabularies />
+                <RootVocabularies />
               </Security>
             )}
           />

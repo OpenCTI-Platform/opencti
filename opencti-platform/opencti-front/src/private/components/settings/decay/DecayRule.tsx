@@ -13,7 +13,6 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
-import CustomizationMenu from '../CustomizationMenu';
 import { DecayRule_decayRule$key } from './__generated__/DecayRule_decayRule.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -91,7 +90,6 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
         { label: decayRule.name, current: true },
       ]}
       />
-      <CustomizationMenu />
       <div style={{ marginBottom: theme.spacing(3), display: 'flex' }}>
         <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: theme.spacing(1) }}>
           <TitleMainEntity>

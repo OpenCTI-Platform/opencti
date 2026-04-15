@@ -202,6 +202,9 @@ const filtersStixCoreObjectsSearchQuery = graphql`
           ... on StixCyberObservable {
             observable_value
           }
+          ... on SecurityCoverage {
+            name
+          }
           createdBy {
             ... on Identity {
               id

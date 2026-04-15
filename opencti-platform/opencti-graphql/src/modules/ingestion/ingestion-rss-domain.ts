@@ -138,7 +138,7 @@ export const rssFeedExport = async (context: AuthContext,
     object_marking_refs,
   } = ingestionRss;
   const basicMarkingDefinitions = await storeLoadByIds<BasicStoreEntityMarkingDefinition>(context, user, object_marking_refs ?? [], ENTITY_TYPE_MARKING_DEFINITION);
-  const markingDefinitionsFormated = basicMarkingDefinitions.map((marking) => {
+  const markingDefinitionsFormated = basicMarkingDefinitions.filter(Boolean).map((marking) => {
     return { label: marking.definition, value: marking.internal_id };
   });
   return JSON.stringify({

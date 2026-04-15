@@ -1,5 +1,4 @@
-import { z, ZodLiteral, ZodNever, ZodType } from 'zod';
-import type { ZodTypeDef } from 'zod';
+import { z, type ZodLiteral, type ZodNever, type ZodType } from 'zod';
 import {
   modeDescription,
   modeKeys,
@@ -23,7 +22,7 @@ import {
 export function createZodLiteralList(
   filterKeys: string[],
   FilterObject: Record<string, { description: string }>,
-): Array<z.ZodLiteral<string>> {
+): Array<ZodLiteral<string>> {
   return filterKeys.map((key: string) => {
     // Extract the description from the FilterObject's definition.
     return z.literal(key).describe(FilterObject[key].description);
@@ -52,24 +51,18 @@ export function createZodLiteralUnion(
   filterKeys: string[],
   FilterObject: Record<string, { description: string }>,
   unionDescription?: string,
-): ZodType<string, ZodTypeDef, string> | ZodNever {
+): ZodType<string, string> | ZodNever {
   const literalList = createZodLiteralList(filterKeys, FilterObject);
 
   // Return appropriate schema based on how many keys were selected
-  let resultUnion: ZodType<string, ZodTypeDef, string> | ZodNever;
+  let resultUnion: ZodType<string, string> | ZodNever;
   if (literalList.length === 0) {
     resultUnion = z.never();
   } else if (literalList.length === 1) {
     [resultUnion] = literalList;
   } else {
     // z.union requires a tuple with at least two schemas.
-    resultUnion = z.union(
-      literalList as [
-        ZodLiteral<string>,
-        ZodLiteral<string>,
-        ...ZodLiteral<string>[],
-      ],
-    );
+    resultUnion = z.union(literalList);
   }
 
   if (unionDescription) {

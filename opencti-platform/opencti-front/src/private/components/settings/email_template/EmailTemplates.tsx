@@ -1,5 +1,4 @@
 import React from 'react';
-import AccessesMenu from '@components/settings/AccessesMenu';
 import { graphql } from 'react-relay';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import EmailTemplateCreation from '@components/settings/email_template/EmailTemplateCreation';
@@ -149,7 +148,6 @@ const EmailTemplates = () => {
 
   return (
     <div data-testid="email-templates-page">
-      <AccessesMenu />
       <PageContainer withRightMenu>
         <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Email templates'), current: true }]} />
         {!isEnterpriseEdition ? (

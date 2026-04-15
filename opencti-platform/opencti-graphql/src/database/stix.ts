@@ -571,6 +571,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_TECHNOLOGY_TO, type: REL_EXTENDED },
     { name: RELATION_TECHNOLOGY_FROM, type: REL_EXTENDED },
   ],
+  [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [
+    { name: RELATION_BELONGS_TO, type: REL_EXTENDED },
+  ],
   [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
     { name: RELATION_DETECTS, type: REL_NEW },
   ],
@@ -648,6 +651,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_INTRUSION_SET}`]: [
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN },
+    { name: RELATION_PART_OF, type: REL_EXTENDED },
   ],
   [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_CAMPAIGN}`]: [
     { name: RELATION_ATTRIBUTED_TO, type: REL_EXTENDED },
@@ -1161,6 +1165,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_IPV4_ADDR}_${ENTITY_IPV4_ADDR}`]: [
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN },
+    { name: RELATION_COMMUNICATES_WITH, type: REL_EXTENDED },
   ],
   // endregion
   // region IPV6_ADDR

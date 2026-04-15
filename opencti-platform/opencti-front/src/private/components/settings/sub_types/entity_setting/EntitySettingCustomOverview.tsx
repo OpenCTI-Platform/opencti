@@ -1,41 +1,43 @@
-import React from 'react';
-import Paper from '@mui/material/Paper';
-import { RestartAlt } from '@mui/icons-material';
-import Grid from '@mui/material/Grid';
 import IconButton from '@common/button/IconButton';
+import { RestartAlt } from '@mui/icons-material';
+import Grid from '@mui/material/Grid2';
+import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
-import { useFragment } from 'react-relay';
 import { useTheme } from '@mui/styles';
+import { useFragment } from 'react-relay';
+import ErrorNotFound from '../../../../../components/ErrorNotFound';
+import type { Theme } from '../../../../../components/Theme';
+import Card from '../../../../../components/common/card/Card';
+import { useFormatter } from '../../../../../components/i18n';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import EntitySettingsOverviewLayoutCustomization, {
   EntitySettingsOverviewLayoutCustomizationData,
   entitySettingsOverviewLayoutCustomizationEdit,
   entitySettingsOverviewLayoutCustomizationFragment,
 } from './EntitySettingsOverviewLayoutCustomization';
-import { useFormatter } from '../../../../../components/i18n';
-import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { EntitySettingsOverviewLayoutCustomization_entitySetting$key } from './__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
-import ErrorNotFound from '../../../../../components/ErrorNotFound';
-import type { Theme } from '../../../../../components/Theme';
-import Card from '../../../../../components/common/card/Card';
 
-interface EntitySettingCustomOverviewProps {
-  entitySettingsData: EntitySettingsOverviewLayoutCustomization_entitySetting$key;
-}
-
-const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = ({ entitySettingsData }) => {
+const EntitySettingCustomOverview = () => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
+  const { subType } = useSubTypeOutletContext();
+
   const entitySetting = useFragment(
     entitySettingsOverviewLayoutCustomizationFragment,
-    entitySettingsData,
+    (subType?.settings ?? null) as EntitySettingsOverviewLayoutCustomization_entitySetting$key | null,
   );
+
+  const [commitReset] = useApiMutation((entitySettingsOverviewLayoutCustomizationEdit));
+
+  if (!subType) return <ErrorNotFound />;
+  if (!subType.settings) return <ErrorNotFound />;
 
   if (!entitySetting) {
     return <ErrorNotFound />;
   }
 
-  const [commitReset] = useApiMutation((entitySettingsOverviewLayoutCustomizationEdit));
   const resetLayout = () => {
     commitReset({
       variables: {
@@ -50,9 +52,11 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
 
   const layout = entitySetting.overview_layout_customization;
 
-  return layout ? (
-    <>
-      <Grid item xs={6}>
+  if (!layout) return null;
+
+  return (
+    <Grid container spacing={2}>
+      <Grid size={6}>
         <Card
           title={t_i18n('Overview layout customization')}
           action={(
@@ -73,11 +77,11 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
           />
         </Card>
       </Grid>
-      <Grid item xs={6}>
+      <Grid size={6}>
         <Card title={t_i18n('Preview')}>
           <Grid container>
             {layout.map(({ key, width, label }) => (
-              <Grid item xs={width} key={key}>
+              <Grid size={width} key={key}>
                 <Paper
                   className="paper-for-grid"
                   style={{
@@ -100,8 +104,8 @@ const EntitySettingCustomOverview: React.FC<EntitySettingCustomOverviewProps> = 
           </Grid>
         </Card>
       </Grid>
-    </>
-  ) : null;
+    </Grid>
+  );
 };
 
 export default EntitySettingCustomOverview;

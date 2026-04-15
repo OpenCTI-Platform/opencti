@@ -54,13 +54,6 @@ const syncPopoverStartMutation = graphql`
   mutation SyncPopoverStartMutation($id: ID!) {
     synchronizerStart(id: $id) {
       id
-      name
-      uri
-      token
-      stream_id
-      listen_deletion
-      no_dependencies
-      ssl_verify
     }
   }
 `;
@@ -69,13 +62,6 @@ const syncPopoverStopMutation = graphql`
   mutation SyncPopoverStopMutation($id: ID!) {
     synchronizerStop(id: $id) {
       id
-      name
-      uri
-      token
-      stream_id
-      listen_deletion
-      no_dependencies
-      ssl_verify
     }
   }
 `;
@@ -86,7 +72,6 @@ const syncEditionQuery = graphql`
       id
       name
       uri
-      token
       stream_id
       listen_deletion
       no_dependencies

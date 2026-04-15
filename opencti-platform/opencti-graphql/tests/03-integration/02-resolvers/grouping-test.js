@@ -1,6 +1,7 @@
 import { expect, afterAll, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { now } from '../../../src/utils/format';
 import { fullEntitiesList } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';

@@ -1,4 +1,5 @@
- import { defineConfig } from 'vitest/config';
+import path from 'node:path';
+import { defineConfig } from 'vitest/config';
 import graphql from '@rollup/plugin-graphql';
 import type { PluginOption } from 'vite';
 
@@ -15,7 +16,10 @@ export const buildTestConfig = (include: string[]) => defineConfig({
       exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**', '*.md'],
       reporter: ['text', 'json', 'html'],
       clean: false,
-    }
+    },
+    alias: {
+      graphql: path.resolve(__dirname, './node_modules/graphql/index.js'),
+    },
   },
 });
 

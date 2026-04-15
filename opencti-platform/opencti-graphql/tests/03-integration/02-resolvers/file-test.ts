@@ -1,6 +1,6 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { fileToReadStream } from '../../../src/database/file-storage';
 import Upload from 'graphql-upload/Upload.mjs';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';

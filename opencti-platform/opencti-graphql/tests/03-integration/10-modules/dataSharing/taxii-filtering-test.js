@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin, testContext } from '../../../utils/testQuery';
+import { ADMIN_USER, testContext } from '../../../utils/testQuery';
+import { queryAsAdmin } from '../../../utils/testQueryHelper';
 import { addAllowedMarkingDefinition } from '../../../../src/domain/markingDefinition';
 import { collectionQuery, taxiiCollectionEditField } from '../../../../src/modules/dataSharing/taxiiCollection-domain';
 import { storeLoadById } from '../../../../src/database/middleware-loader';

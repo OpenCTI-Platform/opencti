@@ -7,7 +7,6 @@ import StatusTemplateCreation from './StatusTemplateCreation';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { StatusTemplatesLinesPaginationQuery, StatusTemplatesLinesPaginationQuery$variables } from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
-import LabelsVocabulariesMenu from '../LabelsVocabulariesMenu';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
@@ -136,7 +135,6 @@ const StatusTemplates = () => {
 
   return (
     <div style={{ marginRight: 200 }} data-testid="status-template-page">
-      <LabelsVocabulariesMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Status templates'), current: true }]} />
       {queryRef && (
         <DataTable

@@ -215,7 +215,10 @@ export default defineConfig({
       targets: [
         {
           src: 'src/static/ext/*',
-          dest: 'static/ext'
+          dest: 'static/ext',
+          rename: {
+            stripBase: true
+          }
         }
       ]
     }),

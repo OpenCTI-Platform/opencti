@@ -10,7 +10,6 @@ import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../components/i18n';
 import { RETENTION_MANAGER } from '../../../utils/platformModulesHelper';
-import CustomizationMenu from './CustomizationMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { DataColumns } from '../../../components/list_lines';
@@ -81,14 +80,12 @@ const Retention = () => {
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(RETENTION_MANAGER))}
         </Alert>
-        <CustomizationMenu />
       </div>
     );
   }
   const queryRef = useQueryLoading<RetentionLinesPaginationQuery>(RetentionLinesQuery, paginationOptions);
   return (
     <div className={classes.container} data-testid="retention-page">
-      <CustomizationMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Retention'), current: true }]} />
       <ListLines
         dataColumns={dataColumns}

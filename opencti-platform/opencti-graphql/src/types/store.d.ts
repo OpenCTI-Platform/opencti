@@ -332,6 +332,9 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_location_type: string;
   x_opencti_reliability: string;
   x_opencti_organization_type: string;
+  // Course-Of-Action specific
+  x_opencti_threat_hunting: string;
+  x_opencti_log_sources: Array<string>;
   // CVSS3
   x_opencti_cvss_vector_string: string;
   x_opencti_cvss_base_severity: string;
@@ -477,6 +480,7 @@ interface BasicStoreEntityFeed extends BasicStoreEntity {
   rolling_time: number;
   include_header: boolean;
   feed_public: boolean;
+  feed_public_user_id: string;
   feed_types: Array<string>;
   feed_date_attribute: string;
   feed_attributes: Array<{

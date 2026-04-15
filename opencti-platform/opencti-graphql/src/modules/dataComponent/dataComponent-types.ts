@@ -1,4 +1,5 @@
 import type { StixDomainObject, StixId, StixOpenctiExtension } from '../../types/stix-2-1-common';
+import type { StixDomainObject as StixDomainObject2 } from '../../types/stix-2-0-common';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreEntityDataSource } from '../dataSource/dataSource-types';
@@ -30,3 +31,12 @@ export interface StixDataComponent extends StixDomainObject {
     };
   };
 }
+
+// region Stix 2.0 type
+export interface Stix2DataComponent extends StixDomainObject2 {
+  name: string;
+  description: string;
+  aliases: Array<string>;
+  x_mitre_data_source_ref: string | undefined;
+}
+// endregion

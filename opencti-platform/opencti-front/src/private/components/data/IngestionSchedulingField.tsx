@@ -2,11 +2,11 @@ import { Field } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import React from 'react';
 import SelectField from '../../../components/fields/SelectField';
-import { FieldOption, fieldSpacingContainerStyle } from '../../../utils/field';
+import { fieldSpacingContainerStyle } from '../../../utils/field';
 import { useFormatter } from '../../../components/i18n';
 
 interface IngestionSchedulingProps {
-  handleSubmitField?: (name: string, value: FieldOption[]) => void | null;
+  handleSubmitField?: (name: string, value: string) => void;
 }
 
 const IngestionSchedulingField = ({ handleSubmitField }: IngestionSchedulingProps) => {

@@ -2,21 +2,21 @@ import { useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { ObjectSchema, ObjectShape, Schema } from 'yup';
 import {
-  EntitySettingSettings_entitySetting$data,
-  EntitySettingSettings_entitySetting$key,
-} from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingSettings_entitySetting.graphql';
-import { entitySettingFragment } from '../../private/components/settings/sub_types/entity_setting/EntitySettingSettings';
+  EntitySettingsFragment_entitySetting$data,
+  EntitySettingsFragment_entitySetting$key,
+} from '../../private/components/settings/sub_types/entity_setting/__generated__/EntitySettingsFragment_entitySetting.graphql';
+import { entitySettingsFragment } from '../../private/components/settings/sub_types/entity_setting/EntitySettingsFragment';
 import useAuth from './useAuth';
 import { useFormatter } from '../../components/i18n';
 import useHelper from './useHelper';
 
-export type EntitySetting = EntitySettingSettings_entitySetting$data;
+export type EntitySetting = EntitySettingsFragment_entitySetting$data;
 
 const useEntitySettings = (entityType?: string | string[]): EntitySetting[] => {
   const { entitySettings } = useAuth();
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
   return entitySettings.edges
-    .map(({ node }) => useFragment<EntitySettingSettings_entitySetting$key>(entitySettingFragment, node))
+    .map(({ node }) => useFragment<EntitySettingsFragment_entitySetting$key>(entitySettingsFragment, node))
     .filter(({ target_type }: EntitySetting) => (entityType ? entityTypes.includes(target_type) : true));
 };
 

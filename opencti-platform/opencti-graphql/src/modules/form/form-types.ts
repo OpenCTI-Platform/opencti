@@ -30,6 +30,7 @@ export interface AdditionalEntity {
   label: string; // Display label for this entity in the form
   multiple: boolean; // Whether this entity allows multiple instances
   lookup?: boolean; // Whether this is an entity lookup (select existing entities)
+  disableCreation?: boolean; // Whether to disable creation of new entities (only allow lookup)
   fieldMode?: 'multiple' | 'parsed'; // Whether to have multiple fields or parse a single field
   parseField?: 'text' | 'textarea'; // Type of field when using parsed mode
   parseMode?: 'comma' | 'line'; // How to parse the field (comma-separated or line-by-line)
@@ -94,6 +95,7 @@ export interface FormSchemaDefinition {
   allowDraftOverride?: boolean; // Whether users can override the draft setting
   mainEntityMultiple?: boolean; // Whether main entity allows multiple instances
   mainEntityLookup?: boolean; // Whether main entity is an entity lookup (select existing)
+  mainEntityDisableCreation?: boolean; // Whether to disable creation of new main entities (only allow lookup)
   mainEntityFieldMode?: 'multiple' | 'parsed'; // Whether to have multiple fields or parse a single field
   mainEntityParseField?: 'text' | 'textarea'; // Type of field when using parsed mode for main entity
   mainEntityParseMode?: 'comma' | 'line'; // How to parse the field for main entity
@@ -148,6 +150,7 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
     mainEntityType: { type: 'string' },
     mainEntityMultiple: { type: 'boolean' },
     mainEntityLookup: { type: 'boolean' },
+    mainEntityDisableCreation: { type: 'boolean' },
     mainEntityFieldMode: {
       type: 'string',
       enum: ['multiple', 'parsed'],
@@ -179,6 +182,7 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
           minAmount: { type: 'number', minimum: 0 },
           required: { type: 'boolean' },
           lookup: { type: 'boolean' },
+          disableCreation: { type: 'boolean' },
           fieldMode: {
             type: 'string',
             enum: ['multiple', 'parsed'],

@@ -11,7 +11,7 @@ import { instanceTriggerDescription } from '@components/profile/triggers/Trigger
 import AutocompleteField from '../../../../components/AutocompleteField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import SelectField from '../../../../components/fields/SelectField';
 import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';

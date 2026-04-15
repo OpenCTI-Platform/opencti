@@ -8,7 +8,7 @@ import * as R from 'ramda';
 import { FunctionComponent, SyntheticEvent, useState } from 'react';
 import { graphql } from 'react-relay';
 import AutocompleteField, { AutocompleteFieldProps } from '../../../../components/AutocompleteField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
@@ -174,9 +174,6 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
                 component={MarkdownField}
                 name="description"
                 label={t_i18n('Description')}
-                fullWidth={true}
-                multiline={true}
-                rows="4"
                 style={{ marginTop: 20, marginBottom: 20 }}
               />
               <DialogActions>

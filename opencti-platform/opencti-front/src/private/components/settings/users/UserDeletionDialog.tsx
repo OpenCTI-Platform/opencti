@@ -59,6 +59,7 @@ const UserDeletionDialog: FunctionComponent<UserDeletionDialogProps> = ({
       <ul>
         <li>{t_i18n('All notifications, triggers and digests associated with the user will be deleted.')}</li>
         <li>{t_i18n('All investigations and dashboard where the user is the only admin, will be deleted.')}</li>
+        <li>{t_i18n('All public streams, taxii, csv using this user right to share data will be stopped and turn private. Please update them with a new user to turn them public again.')}</li>
       </ul>
       {t_i18n('If you want to keep the associated information, we recommend deactivating the user instead.')}
       <DialogActions>

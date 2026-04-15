@@ -3,7 +3,7 @@
 
 import fs from 'node:fs';
 import _ from '../src/modules/index';
-import { printSchema } from 'graphql/utilities';
+import { printSchema } from 'graphql';
 import createSchema from '../src/graphql/schema';
 
 const schema = createSchema();

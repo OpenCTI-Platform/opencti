@@ -1,15 +1,15 @@
 import { useMemo } from 'react';
 import { useFragment } from 'react-relay';
-import { EntitySettingSettings_entitySetting$key } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingSettings_entitySetting.graphql';
-import { entitySettingFragment } from '@components/settings/sub_types/entity_setting/EntitySettingSettings';
+import { entitySettingsFragment } from '@components/settings/sub_types/entity_setting/EntitySettingsFragment';
 import useAuth from './useAuth';
+import { EntitySettingsFragment_entitySetting$key } from '@components/settings/sub_types/entity_setting/__generated__/EntitySettingsFragment_entitySetting.graphql';
 
 type OverviewWidgetLayout = { key: string; width: number; label: string };
 
 const useOverviewLayoutCustomization: (entityType: string) => OverviewWidgetLayout[] = (entityType) => {
   const { entitySettings } = useAuth();
   const entitySettingsData = entitySettings?.edges?.map((setting) => (
-    useFragment<EntitySettingSettings_entitySetting$key>(entitySettingFragment, setting.node)));
+    useFragment<EntitySettingsFragment_entitySetting$key>(entitySettingsFragment, setting.node)));
 
   const overviewLayoutCustomization = useMemo(() => {
     const overviewLayoutCustomizationEntries = entitySettingsData

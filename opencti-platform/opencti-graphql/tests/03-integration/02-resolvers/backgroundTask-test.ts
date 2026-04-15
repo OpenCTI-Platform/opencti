@@ -2,7 +2,7 @@ import { expect, describe, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryUnauthenticatedIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { deleteWork } from '../../../src/domain/work';
-import { ADMIN_USER, internalAdminQuery, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, queryInitPlatformAsAdmin, testContext } from '../../utils/testQuery';
 import { getBestBackgroundConnectorId } from '../../../src/database/rabbitmq';
 import { createWorkForBackgroundTask } from '../../../src/domain/backgroundTask-common';
 
@@ -27,7 +27,7 @@ describe('Verify deleted works', () => {
 
     let error: any;
     try {
-      await internalAdminQuery(DELETE_QUERY, { id: 'whatever-id' }, { workId: work?.id });
+      await queryInitPlatformAsAdmin(DELETE_QUERY, { id: 'whatever-id' }, { workId: work?.id });
     } catch (err) {
       error = err;
     }

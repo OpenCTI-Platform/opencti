@@ -1,4 +1,29 @@
 import type { StixDate, StixDomainObject } from './stix-2-0-common';
+import type { StixInternalKillChainPhase } from './stix-2-0-smo';
+
+// Attack Pattern Specific Properties
+// name, description, aliases, kill_chain_phases
+export interface StixAttackPattern extends StixDomainObject {
+  name: string;
+  description: string;
+  aliases: Array<string>;
+  kill_chain_phases: Array<StixInternalKillChainPhase>;
+  x_mitre_id: string;
+  x_mitre_platforms: Array<string>;
+  x_mitre_permissions_required: Array<string>;
+  x_mitre_detection: string;
+}
+
+// Course of Action Specific Properties
+// name, description
+export interface StixCourseOfAction extends StixDomainObject {
+  name: string;
+  description: string;
+  x_opencti_aliases: Array<string>;
+  x_mitre_id: string;
+  x_opencti_threat_hunting: string;
+  x_opencti_log_sources: Array<string>;
+}
 
 export interface StixCampaign extends StixDomainObject {
   name: string;
@@ -116,6 +141,40 @@ export interface StixVulnerability extends StixDomainObject {
   x_opencti_score: number;
   x_opencti_epss_score: number;
   x_opencti_epss_percentile: number;
+}
+
+// Location Specific Properties
+// name, description, latitude, longitude, precision, region, country, city, street_address, postal_code
+export interface StixLocation extends StixDomainObject {
+  name: string; // optional
+  description: string; // optional
+  latitude: number | undefined; // optional
+  longitude: number | undefined; // optional
+  precision: number | undefined; // optional
+  region: string | undefined; // optional
+  country: string | undefined; // optional
+  city: string | undefined; // optional
+  street_address: string; // optional
+  postal_code: string; // optional
+  x_opencti_location_type: string;
+  x_opencti_aliases: Array<string>;
+}
+
+// Identity Specific Properties
+// name, description, roles, identity_class, sectors, contact_information
+export interface StixIdentity extends StixDomainObject {
+  name: string; // optional
+  description: string; // optional
+  roles: Array<string>; // optional
+  identity_class: string; // 'individual' | 'group' | 'system' | 'organization' | 'class' | 'unknown'; // optional
+  sectors: Array<string>; // optional
+  contact_information: string; // optional
+  x_opencti_aliases: Array<string>;
+  x_opencti_firstname: string;
+  x_opencti_lastname: string;
+  x_opencti_organization_type: string;
+  x_opencti_reliability: string;
+  x_opencti_score: number;
 }
 
 export interface StixIncident extends StixDomainObject {

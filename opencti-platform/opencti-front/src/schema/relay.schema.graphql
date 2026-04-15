@@ -8,6 +8,8 @@ directive @allowUnlicensedLTS on OBJECT | FIELD_DEFINITION
 
 directive @constraint(minLength: Int, maxLength: Int, startsWith: String, endsWith: String, notContains: String, pattern: String, format: String, min: Int, max: Int, exclusiveMin: Int, exclusiveMax: Int, multipleOf: Int) on INPUT_FIELD_DEFINITION
 
+directive @ff(flags: [String!]!, softFail: Boolean = false) on FIELD_DEFINITION
+
 """Controls the rate of traffic."""
 directive @rateLimit(
   """Number of occurrences allowed over duration."""
@@ -711,7 +713,6 @@ type Synchronizer {
   id: ID!
   name: String!
   uri: String!
-  token: String
   stream_id: String!
   user: Creator
   running: Boolean!
@@ -2241,6 +2242,7 @@ type ManagerContractConfiguration {
 type ManagerContractExcerpt {
   title: String!
   slug: String!
+  logo: String!
 }
 
 enum ConnectorPriorityGroup {
@@ -10314,7 +10316,7 @@ type Mutation {
   uploadAndAskJobImport(file: Upload!, fileMarkings: [String!], connectors: [ConnectorWithConfig!], validationMode: ValidationMode, draftId: String, noTriggerImport: Boolean): File
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean, file_markings: [String!], refreshEntity: Boolean): File
   askJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode, forceValidation: Boolean): File
-  createDraftAndAskJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode, forceValidation: Boolean, authorized_members: [MemberAccessInput!]): File
+  createDraftAndAskJobImport(fileName: ID!, connectorId: String, configuration: String, bypassEntityId: String, bypassValidation: Boolean, validationMode: ValidationMode, forceValidation: Boolean, authorized_members: [MemberAccessInput!], description: String, objectAssignee: [String!], objectParticipant: [String!], createdBy: String): File
   resetFileIndexing: Boolean
   synchronizerAdd(input: SynchronizerAddInput!): Synchronizer
   synchronizerAddAutoUser(id: ID!, input: SynchronizerAddAutoUserInput!): Synchronizer
@@ -13130,6 +13132,8 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   result: String
   analysisSco: StixCyberObservableConnection
   sample: StixCyberObservable
+  first_seen: DateTime
+  last_seen: DateTime
 }
 
 enum MalwareAnalysesOrdering {
@@ -13645,6 +13649,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
   refreshed_at: DateTime
   name: String!
   description: String
+  scheduling_period: String
   uri: String!
   collection: String!
   version: TaxiiVersion!
@@ -13682,6 +13687,7 @@ type IngestionTaxiiEdge {
 type TaxiiFeedAddInputFromImport {
   name: String!
   description: String!
+  scheduling_period: String
   uri: String!
   version: String!
   collection: String!
@@ -13694,6 +13700,7 @@ input IngestionTaxiiAddInput {
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
+  scheduling_period: String
   version: TaxiiVersion!
   authentication_type: IngestionAuthType!
   authentication_value: String
@@ -16181,6 +16188,8 @@ type TaxiiCollection {
   include_inferences: Boolean
   score_to_confidence: Boolean
   taxii_public: Boolean
+  taxii_public_user_id: String
+  taxii_public_user: Creator
   authorized_members: [MemberAccess!]
 }
 
@@ -16200,6 +16209,7 @@ input TaxiiCollectionAddInput {
   description: String
   filters: String
   taxii_public: Boolean
+  taxii_public_user_id: String
   authorized_members: [MemberAccessInput!]
   include_inferences: Boolean
   score_to_confidence: Boolean
@@ -16243,6 +16253,8 @@ type Feed {
   feed_types: [String!]!
   feed_attributes: [FeedAttribute!]!
   feed_public: Boolean
+  feed_public_user_id: String
+  feed_public_user: Creator
   authorized_members: [MemberAccess!]
 }
 
@@ -16271,6 +16283,7 @@ input FeedAddInput {
   include_header: Boolean!
   feed_types: [String!]!
   feed_public: Boolean
+  feed_public_user_id: String
   feed_attributes: [FeedAttributeMappingInput!]!
   authorized_members: [MemberAccessInput!]
 }
@@ -16321,6 +16334,8 @@ type StreamCollection {
   filters: String
   stream_live: Boolean
   stream_public: Boolean
+  stream_public_user_id: String
+  stream_public_user: Creator
   authorized_members: [MemberAccess!]
   consumers: [StreamCollectionConsumer!]!
 }
@@ -16342,6 +16357,7 @@ input StreamCollectionAddInput {
   filters: String
   stream_live: Boolean
   stream_public: Boolean
+  stream_public_user_id: String
   authorized_members: [MemberAccessInput!]
 }
 

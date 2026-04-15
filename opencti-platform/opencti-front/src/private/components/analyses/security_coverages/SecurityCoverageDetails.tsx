@@ -6,7 +6,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
-import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -27,13 +26,6 @@ const securityCoverageDetailsFragment = graphql`
     name
     description
     external_uri
-    coverage_last_result
-    coverage_valid_from
-    coverage_valid_to
-    coverage_information {
-      coverage_name
-      coverage_score
-    }
     objectCovered {
       id
       entity_type
@@ -53,7 +45,7 @@ interface SecurityCoverageDetailsProps {
 const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> = ({
   securityCoverage,
 }) => {
-  const { t_i18n, fndt } = useFormatter();
+  const { t_i18n } = useFormatter();
   const data = useFragment(securityCoverageDetailsFragment, securityCoverage);
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
 
@@ -72,18 +64,6 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
               {t_i18n('Description')}
             </Label>
             <ExpandableMarkdown source={data.description} limit={300} />
-          </Grid>
-          <Grid item xs={12}>
-            <Label sx={{ mb: 1 }}>
-              {t_i18n('Coverage information')}
-            </Label>
-            <SecurityCoverageInformation coverage_information={data.coverage_information ?? []} variant="details" />
-          </Grid>
-          <Grid item xs={6}>
-            <Label>
-              {t_i18n('Last result')}
-            </Label>
-            {data.coverage_last_result ? fndt(data.coverage_last_result) : EMPTY_VALUE}
           </Grid>
           <Grid item xs={6}>
             <Label>
@@ -110,18 +90,6 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
                 )}
               </FieldOrEmpty>
             </List>
-          </Grid>
-          <Grid item xs={6}>
-            <Label>
-              {t_i18n('Valid from')}
-            </Label>
-            {data.coverage_valid_from ? fndt(data.coverage_valid_from) : EMPTY_VALUE}
-          </Grid>
-          <Grid item xs={6}>
-            <Label>
-              {t_i18n('Valid until')}
-            </Label>
-            {data.coverage_valid_to ? fndt(data.coverage_valid_to) : EMPTY_VALUE}
           </Grid>
           <Grid item xs={12}>
             <SecurityCoverageSecurityPlatforms securityCoverage={data} />

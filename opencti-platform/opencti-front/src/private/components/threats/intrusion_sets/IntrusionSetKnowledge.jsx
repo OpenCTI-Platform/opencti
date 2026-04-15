@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
@@ -279,6 +279,21 @@ const IntrusionSetKnowledgeComponent = ({
           )}
         />
         <Route
+          path="/intrusion_sets"
+          element={(
+            <EntityStixCoreRelationships
+              key={location.pathname}
+              entityId={intrusionSet.id}
+              relationshipTypes={['part-of', 'derived-from']}
+              stixCoreObjectTypes={['Intrusion-Set']}
+              entityLink={link}
+              defaultStartTime={intrusionSet.first_seen}
+              defaultStopTime={intrusionSet.last_seen}
+              allDirections
+            />
+          )}
+        />
+        <Route
           path="/sightings"
           element={(
             <EntityStixSightingRelationships
@@ -300,6 +315,7 @@ const IntrusionSetKnowledgeComponent = ({
             />
           )}
         />
+        <Route index element={<Navigate replace={true} to="overview" />} />
       </Routes>
     </>
   );

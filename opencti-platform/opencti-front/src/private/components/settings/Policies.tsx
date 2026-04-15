@@ -13,7 +13,7 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-r
 import * as Yup from 'yup';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Card from '../../../components/common/card/Card';
-import MarkdownField from '../../../components/fields/MarkdownField';
+import MarkdownField from '../../../components/fields/markdownField/MarkdownField';
 import SelectField from '../../../components/fields/SelectField';
 import SwitchField from '../../../components/fields/SwitchField';
 
@@ -30,7 +30,6 @@ import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { Policies$key } from './__generated__/Policies.graphql';
 import { PoliciesQuery } from './__generated__/PoliciesQuery.graphql';
-import AccessesMenu from './AccessesMenu';
 import { DialogActions } from '@mui/material';
 
 const PoliciesFragment = graphql`
@@ -142,7 +141,6 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
       }}
       data-testid="policies-settings-page"
     >
-      <AccessesMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Policies'), current: true }]} />
       <Grid container={true} spacing={3}>
         <Grid item xs={12}>

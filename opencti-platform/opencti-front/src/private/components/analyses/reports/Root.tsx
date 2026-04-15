@@ -1,12 +1,9 @@
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { graphql, useSubscription } from 'react-relay';
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import Security from 'src/utils/Security';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -29,6 +26,7 @@ import ReportEdition from './ReportEdition';
 import ReportDeletion from './ReportDeletion';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import AIInsights from '@components/common/ai/AIInsights';
+import { PATH_REPORT, PATH_REPORTS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -95,6 +93,7 @@ const RootReport = () => {
   const enableReferences = useIsEnforceReference('Report') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
   useSubscription(subConfig);
+  const basePath = PATH_REPORT(reportId);
   return (
     <>
       <QueryRenderer
@@ -104,15 +103,15 @@ const RootReport = () => {
           if (props) {
             if (props.report) {
               const { report } = props;
-              const isOverview = location.pathname === `/dashboard/analyses/reports/${report.id}`;
-              const paddingRight = getPaddingRight(location.pathname, reportId, '/dashboard/analyses/reports', false);
+              const isOverview = location.pathname === basePath;
+              const paddingRight = getPaddingRight(location.pathname, basePath, false);
               const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
               const currentAccessRight = useGetCurrentUserAccessRight(report.currentUserAccessRight);
               return (
                 <div style={{ paddingRight }} data-testid="report-details-page">
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
-                    { label: t_i18n('Reports'), link: '/dashboard/analyses/reports' },
+                    { label: t_i18n('Reports'), link: PATH_REPORTS },
                     { label: report.name, current: true },
                   ]}
                   />
@@ -135,79 +134,36 @@ const RootReport = () => {
                     redirectToContent={true}
                     enableEnricher={true}
                   />
-                  <StixDomainObjectTabsBox
-                    basePath="/dashboard/analyses/reports"
-                    entity={report}
-                    tabs={[
-                      'overview',
-                      'knowledge-graph',
-                      'content',
-                      'entities',
-                      'observables',
-                      'files',
-                    ]}
-                    extraActions={!isKnowledgeOrContent && (
-                      <>
-                        <AIInsights id={report.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
-                        <StixCoreObjectSecurityCoverage id={report.id} coverage={report.securityCoverage} />
-                      </>
-                    )}
-                  />
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={
-                        <Report reportFragment={report} />
-                      }
-                    />
-                    <Route
-                      path="/entities"
-                      element={(
-                        <ContainerStixDomainObjects
-                          container={report}
-                          enableReferences={enableReferences}
-                        />
-                      )}
-                    />
-                    <Route
-                      path="/observables"
-                      element={(
-                        <ContainerStixCyberObservables
-                          container={report}
-                          enableReferences={enableReferences}
-                        />
-                      )}
-                    />
-                    <Route
-                      path="/knowledge"
-                      element={(
-                        <Navigate
-                          replace={true}
-                          to={`/dashboard/analyses/reports/${reportId}/knowledge/graph`}
-                        />
-                      )}
-                    />
-                    <Route
-                      path="/content/*"
-                      element={(
-                        <StixCoreObjectContentRoot
-                          stixCoreObject={report}
-                          isContainer={true}
-                        />
-                      )}
-                    />
-                    <Route
-                      path="/knowledge/*"
-                      element={(
+                  <StixDomainObjectMain
+                    basePath={basePath}
+                    pages={{
+                      overview:
+                        <Report reportFragment={report} />,
+                      knowledge: (
                         <ReportKnowledge
                           report={report}
                           enableReferences={enableReferences}
                         />
-                      )}
-                    />
-                    <Route
-                      path="/files"
-                      element={(
+                      ),
+                      content: (
+                        <StixCoreObjectContentRoot
+                          stixCoreObject={report}
+                          isContainer={true}
+                        />
+                      ),
+                      entities: (
+                        <ContainerStixDomainObjects
+                          container={report}
+                          enableReferences={enableReferences}
+                        />
+                      ),
+                      observables: (
+                        <ContainerStixCyberObservables
+                          container={report}
+                          enableReferences={enableReferences}
+                        />
+                      ),
+                      files: (
                         <StixCoreObjectFilesAndHistory
                           id={reportId}
                           connectorsExport={props.connectorsForExport}
@@ -216,9 +172,15 @@ const RootReport = () => {
                           withoutRelations={true}
                           bypassEntityId={true}
                         />
-                      )}
-                    />
-                  </Routes>
+                      ),
+                    }}
+                    extraActions={!isKnowledgeOrContent && (
+                      <>
+                        <AIInsights id={report.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
+                        <StixCoreObjectSecurityCoverage id={report.id} coverage={report.securityCoverage} />
+                      </>
+                    )}
+                  />
                 </div>
               );
             }

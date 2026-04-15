@@ -43,7 +43,6 @@ export const OPENVOCAB_FIELD_MAPPINGS: VocabularyMapping[] = [
 
   // Report attributes
   { attribute: 'report_types', vocabularyType: 'report_types_ov', label: 'Report types', multiple: true },
-  { attribute: 'report_content', vocabularyType: 'report_content_ov', label: 'Content', multiple: false },
 
   // Grouping attributes
   { attribute: 'context', vocabularyType: 'grouping-context-ov', label: 'Context', multiple: false },
@@ -93,6 +92,9 @@ export const OPENVOCAB_FIELD_MAPPINGS: VocabularyMapping[] = [
 
   // Ingestion RSS attributes
   { attribute: 'ingestion_running', vocabularyType: 'ingestion_running_ov', label: 'Ingestion running', multiple: false },
+
+  // Container attributes
+  { attribute: 'content', vocabularyType: 'content_ov', label: 'Content', multiple: false },
 ];
 
 /**

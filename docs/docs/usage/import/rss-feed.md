@@ -48,4 +48,6 @@ By default, a user is already provided.
 Finally, you need to click on create to create your new ingester.
 
 
-You can select RSS Feeds from the XTM Hub by clicking the ```Import from Hub``` button
+You can select RSS Feeds from the XTM Hub by clicking the ```Import from Hub``` button. 
+
+If your OpenCTI instance is registered on the XTM Hub, you can directly import RSS Feeds in 1 click from XTM Hub. After a confirmation popup, it will open the creation drawer with everything prefilled where you can adjust the config before creating the ingester.

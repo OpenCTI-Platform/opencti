@@ -6,7 +6,6 @@ import { AccountCircleOutlined, ManageAccountsOutlined, PersonOutlined } from '@
 import SettingsOrganizationUserCreation from './users/SettingsOrganizationUserCreation';
 import EnterpriseEdition from '../common/entreprise_edition/EnterpriseEdition';
 import UserCreation from './users/UserCreation';
-import AccessesMenu from './AccessesMenu';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
@@ -219,7 +218,6 @@ const Users = () => {
       }}
       data-testid="users-settings-page"
     >
-      <AccessesMenu />
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Security') },

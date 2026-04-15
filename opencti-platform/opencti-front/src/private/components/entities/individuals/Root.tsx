@@ -1,5 +1,5 @@
 import React, { useMemo, Suspense, useState } from 'react';
-import { Route, Routes, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { propOr } from 'ramda';
@@ -7,7 +7,7 @@ import { RootIndividualQuery } from '@components/entities/individuals/__generate
 import { RootIndicatorSubscription } from '@components/observations/indicators/__generated__/RootIndicatorSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
@@ -29,6 +29,7 @@ import IndividualEdition from './IndividualEdition';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import IndividualDeletion from './IndividualDeletion';
+import { PATH_INDIVIDUAL, PATH_INDIVIDUALS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {
@@ -127,10 +128,11 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
 
   const { forceUpdate } = useForceUpdate();
 
-  const link = `/dashboard/entities/individuals/${individualId}/knowledge`;
+  const basePath = PATH_INDIVIDUAL(individualId);
+  const link = `${basePath}/knowledge`;
   let paddingRight = 0;
   if (viewAs === 'knowledge') {
-    paddingRight = getPaddingRight(location.pathname, individualId, '/dashboard/entities/individuals');
+    paddingRight = getPaddingRight(location.pathname, basePath);
   }
 
   return (
@@ -164,7 +166,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Entities') },
-              { label: t_i18n('Individuals'), link: '/dashboard/entities/individuals' },
+              { label: t_i18n('Individuals'), link: PATH_INDIVIDUALS },
               { label: individual.name, current: true },
             ]}
             />
@@ -196,69 +198,35 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               disableSharing={individual.isUser}
               enableEnrollPlaybook={true}
             />
-            <StixDomainObjectTabsBox
-              basePath="/dashboard/entities/individuals"
-              entity={individual}
-              tabs={[
-                'overview',
-                'knowledge-overview',
-                'content',
-                'analyses',
-                'sightings',
-                'files',
-                'history',
-              ]}
-            />
-            <Routes>
-              <Route
-                path="/"
-                element={(
+            <StixDomainObjectMain
+              basePath={basePath}
+              pages={{
+                overview: (
                   <Individual
                     individualData={individual}
                     viewAs={viewAs}
                   />
-                )}
-              />
-              <Route
-                path="/knowledge"
-                element={(
-                  <Navigate
-                    replace={true}
-                    to={`/dashboard/entities/individuals/${individualId}/knowledge/overview`}
-                  />
-                )}
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
+                ),
+                knowledge: (
                   <div key={forceUpdate}>
                     <IndividualKnowledge
                       individualData={individual}
                       viewAs={viewAs}
                     />
                   </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
+                ),
+                content: (
                   <StixCoreObjectContentRoot
                     stixCoreObject={individual}
                   />
-                )}
-              />
-              <Route
-                path="/analyses"
-                element={(
+                ),
+                analyses: (
                   <IndividualAnalysis
                     individual={individual}
                     viewAs={viewAs}
                   />
-                )}
-              />
-              <Route
-                path="/sightings"
-                element={(
+                ),
+                sightings: (
                   <EntityStixSightingRelationships
                     entityId={individual.id}
                     entityLink={link}
@@ -275,28 +243,22 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
                       'System',
                     ]}
                   />
-                )}
-              />
-              <Route
-                path="/files"
-                element={(
+                ),
+                files: (
                   <FileManager
                     id={individualId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={individual}
                   />
-                )}
-              />
-              <Route
-                path="/history"
-                element={(
+                ),
+                history: (
                   <StixCoreObjectHistory
                     stixCoreObjectId={individualId}
                   />
-                )}
-              />
-            </Routes>
+                ),
+              }}
+            />
           </div>
         </>
       ) : (

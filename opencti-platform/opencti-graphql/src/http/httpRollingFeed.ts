@@ -1,11 +1,14 @@
-/* eslint-disable camelcase */
 import * as R from 'ramda';
 import type Express from 'express';
 import nconf from 'nconf';
 import { TAXIIAPI } from '../domain/user';
 import { basePath } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
-import { isUserHasCapability, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
+import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
+import { getEntityFromCache } from '../database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import type { BasicStoreSettings } from '../types/settings';
 import { findById as findFeed } from '../modules/dataSharing/feed-domain';
 import { fullEntitiesOrRelationsList } from '../database/middleware';
 import { minutesAgo } from '../utils/format';
@@ -276,6 +279,12 @@ export const buildCsvLines = (elements: any[], feed: BasicStoreEntityFeed, neigh
   return lines;
 };
 
+export const resolveUserForFeed = async (context: AuthContext, feed: BasicStoreEntityFeed): Promise<AuthUser> => {
+  if (feed.feed_public) return resolvePublicUser(context, feed.feed_public_user_id);
+  if (context.user) return context.user;
+  throw ForbiddenAccess();
+};
+
 const initHttpRollingFeeds = (app: Express.Application) => {
   app.get(`${basePath}/feeds/:id`, async (req: Express.Request, res: Express.Response) => {
     const { id } = req.params as { id: string };
@@ -302,7 +311,11 @@ const initHttpRollingFeeds = (app: Express.Application) => {
         }
       }
       // User is available or feed is public
-      const user = context.user ?? SYSTEM_USER;
+      const user = await resolveUserForFeed(context, feed);
+      if (feed.feed_public) {
+        const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+        context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
+      }
       const filters = feed.filters ? JSON.parse(feed.filters) : undefined;
       const fromDate = minutesAgo(feed.rolling_time);
       const field = feed.feed_date_attribute ?? 'created_at';

@@ -63,7 +63,7 @@ describe('Connector reset state functionality', () => {
         only_contextual: false,
       },
     };
-    const connector = await queryAsUserWithSuccess(USER_CONNECTOR.client, {
+    const connector = await queryAsUserWithSuccess(USER_CONNECTOR, {
       query: CREATE_CONNECTOR_QUERY,
       variables: CONNECTOR_TO_CREATE,
     });
@@ -75,7 +75,7 @@ describe('Connector reset state functionality', () => {
   });
 
   it('should fetch connector with queue details from RabbitMQ API', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR.client, {
+    const queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, {
       query: READ_CONNECTOR_QUERY,
       variables: { id: TEST_RESET_CN_ID },
     });
@@ -91,14 +91,14 @@ describe('Connector reset state functionality', () => {
 
   it('should return consistent queue details across multiple API calls', async () => {
     
-    const firstFetch = await queryAsUserWithSuccess(USER_CONNECTOR.client, {
+    const firstFetch = await queryAsUserWithSuccess(USER_CONNECTOR, {
       query: READ_CONNECTOR_QUERY,
       variables: { id: TEST_RESET_CN_ID },
     });
 
     await waitInSec(0.5);
 
-    const secondFetch = await queryAsUserWithSuccess(USER_CONNECTOR.client, {
+    const secondFetch = await queryAsUserWithSuccess(USER_CONNECTOR, {
       query: READ_CONNECTOR_QUERY,
       variables: { id: TEST_RESET_CN_ID },
     });
@@ -113,7 +113,7 @@ describe('Connector reset state functionality', () => {
   });
 
   it('should reset connector state and clear queue', async () => {
-    const resetResult = await queryAsUserWithSuccess(USER_CONNECTOR.client, {
+    const resetResult = await queryAsUserWithSuccess(USER_CONNECTOR, {
       query: RESET_CONNECTOR_QUERY,
       variables: { id: TEST_RESET_CN_ID },
     });
@@ -126,7 +126,7 @@ describe('Connector reset state functionality', () => {
 
     await waitInSec(2);
 
-    const verifyResult = await queryAsUserWithSuccess(USER_CONNECTOR.client, {
+    const verifyResult = await queryAsUserWithSuccess(USER_CONNECTOR, {
       query: READ_CONNECTOR_QUERY,
       variables: { id: TEST_RESET_CN_ID },
     });
@@ -138,15 +138,15 @@ describe('Connector reset state functionality', () => {
   it('should handle rapid successive API calls without errors', async () => {
  
     const rapidCalls = await Promise.all([
-      queryAsUserWithSuccess(USER_CONNECTOR.client, {
+      queryAsUserWithSuccess(USER_CONNECTOR, {
         query: READ_CONNECTOR_QUERY,
         variables: { id: TEST_RESET_CN_ID },
       }),
-      queryAsUserWithSuccess(USER_CONNECTOR.client, {
+      queryAsUserWithSuccess(USER_CONNECTOR, {
         query: READ_CONNECTOR_QUERY,
         variables: { id: TEST_RESET_CN_ID },
       }),
-      queryAsUserWithSuccess(USER_CONNECTOR.client, {
+      queryAsUserWithSuccess(USER_CONNECTOR, {
         query: READ_CONNECTOR_QUERY,
         variables: { id: TEST_RESET_CN_ID },
       }),
@@ -165,7 +165,7 @@ describe('Connector reset state functionality', () => {
   });
 
   afterAll(async () => {
-    await queryAsUserWithSuccess(USER_CONNECTOR.client, {
+    await queryAsUserWithSuccess(USER_CONNECTOR, {
       query: DELETE_CONNECTOR_QUERY,
       variables: { id: TEST_RESET_CN_ID },
     });

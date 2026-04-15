@@ -13,7 +13,7 @@ import validator from 'validator';
 import archiverZipEncrypted from 'archiver-zip-encrypted';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
-import { printSchema } from 'graphql/utilities';
+import { printSchema } from 'graphql';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
 import { sessionAuthenticateUser, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, isStorageAlive } from '../database/raw-file-storage';
@@ -448,7 +448,7 @@ const createApp = async (app, schema) => {
           if (err) {
             const authLogger = strategy.logger;
             if (authLogger) {
-              authLogger.error('Callback processing error', {}, err);
+              authLogger.error('Callback processing error', { err }, err);
             }
           }
           setCookieError(res, err?.message);
@@ -477,9 +477,9 @@ const createApp = async (app, schema) => {
           if (err || !user) {
             const authLogger = strategy.logger;
             if (authLogger) {
-              authLogger.error('Callback processing error', {}, err);
+              authLogger.error('Callback login error', { err }, err);
             } else {
-              logApp.error('Error auth provider callback', { cause: err, provider });
+              logApp.error('Error auth provider login', { cause: err, provider });
             }
             reject(err);
           } else {

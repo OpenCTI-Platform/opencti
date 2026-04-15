@@ -1,7 +1,8 @@
 import gql from 'graphql-tag';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { now } from 'moment';
-import { ADMIN_USER, buildStandardUser, ONE_MINUTE, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, ONE_MINUTE, testContext } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { FilterMode, FilterOperator, PirType, StatsOperation } from '../../../src/generated/graphql';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { internalLoadById, pageEntitiesConnection, pageRelationsConnection } from '../../../src/database/middleware-loader';

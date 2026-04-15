@@ -1,17 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import * as PropTypes from 'prop-types';
 import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
-import { graphql, useLazyLoadQuery, usePreloadedQuery, useQueryLoader, useSubscription } from 'react-relay';
+import { graphql, PreloadedQuery, useLazyLoadQuery, usePreloadedQuery, useQueryLoader, useSubscription } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { Stack } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/styles';
+import type { Theme } from '../../../../components/Theme';
+import type { RootUserQuery, RootUserQuery$variables } from './__generated__/RootUserQuery.graphql';
+import type { RootUserEditionQuery } from './__generated__/RootUserEditionQuery.graphql';
 import ConvertUser from './ConvertUser';
 import UserDeletionDialog from './UserDeletionDialog';
 import UserEmailSend from './UserEmailSend';
-import AccessesMenu from '../AccessesMenu';
 import Security from '../../../../utils/Security';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../../utils/hooks/useGranted';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -43,19 +44,19 @@ const subscription = graphql`
   ) {
     user(id: $id) {
       ...User_user
-        @arguments(
-          groupsOrderBy: $groupsOrderBy
-          groupsOrderMode: $groupsOrderMode
-          organizationsOrderBy: $organizationsOrderBy
-          organizationsOrderMode: $organizationsOrderMode
-        )
+      @arguments(
+        groupsOrderBy: $groupsOrderBy
+        groupsOrderMode: $groupsOrderMode
+        organizationsOrderBy: $organizationsOrderBy
+        organizationsOrderMode: $organizationsOrderMode
+      )
       ...UserEdition_user
-        @arguments(
-          groupsOrderBy: $groupsOrderBy
-          groupsOrderMode: $groupsOrderMode
-          organizationsOrderBy: $organizationsOrderBy
-          organizationsOrderMode: $organizationsOrderMode
-        )
+      @arguments(
+        groupsOrderBy: $groupsOrderBy
+        groupsOrderMode: $groupsOrderMode
+        organizationsOrderBy: $organizationsOrderBy
+        organizationsOrderMode: $organizationsOrderMode
+      )
     }
   }
 `;
@@ -74,19 +75,25 @@ const userQuery = graphql`
       user_email
       user_service_account
       ...User_user
-        @arguments(
-          groupsOrderBy: $groupsOrderBy
-          groupsOrderMode: $groupsOrderMode
-          organizationsOrderBy: $organizationsOrderBy
-          organizationsOrderMode: $organizationsOrderMode
-        )
+      @arguments(
+        groupsOrderBy: $groupsOrderBy
+        groupsOrderMode: $groupsOrderMode
+        organizationsOrderBy: $organizationsOrderBy
+        organizationsOrderMode: $organizationsOrderMode
+      )
       ...UserAnalytics_user
       ...UserHistoryTab_user
     }
   }
 `;
 
-const RootUserComponent = ({ queryRef, userId, refetch }) => {
+interface RootUserComponentProps {
+  queryRef: PreloadedQuery<RootUserQuery>;
+  userId: string;
+  refetch: () => void;
+}
+
+const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps) => {
   const subConfig = useMemo(
     () => ({
       subscription,
@@ -97,11 +104,11 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
 
   useSubscription(subConfig);
-  const { user: data } = usePreloadedQuery(userQuery, queryRef);
-  const userEditionData = useLazyLoadQuery(
+  const { user: data } = usePreloadedQuery<RootUserQuery>(userQuery, queryRef);
+  const userEditionData = useLazyLoadQuery<RootUserEditionQuery>(
     userEditionQuery,
     { id: userId },
   );
@@ -113,7 +120,6 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
     <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}>
       {data ? (
         <div style={{ paddingRight: 200 }}>
-          <AccessesMenu />
           <Breadcrumbs elements={[
             { label: t_i18n('Settings') },
             { label: t_i18n('Security') },
@@ -126,7 +132,11 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
               {data.name}
             </TitleMainEntity>
             <div style={{ display: 'flex', gap: theme.spacing(0.5) }}>
-              <UserEmailSend outlined userId={userId} />
+              <UserEmailSend
+                outlined
+                userId={userId}
+                onClose={() => {}}
+              />
               {canDelete && (
                 <PopoverMenu>
                   {({ closeMenu }) => (
@@ -144,7 +154,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
               )}
               <ConvertUser
                 userId={data.id}
-                userServiceAccount={data.user_service_account}
+                userServiceAccount={data.user_service_account ?? false}
               />
               <UserDeletionDialog
                 userId={data.id}
@@ -190,13 +200,13 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
             <Route
               path="/analytics"
               element={(
-                <UserAnalytics data={data} refetch={refetch} />
+                <UserAnalytics data={data} />
               )}
             />
             <Route
               path="/history"
               element={(
-                <UserHistoryTab data={data} refetch={refetch} />
+                <UserHistoryTab data={data} />
               )}
             />
           </Routes>
@@ -210,22 +220,21 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
 
 const RootUser = () => {
   const { userId } = useParams();
-  const queryParams = {
-    id: userId,
-    rolesOrderBy: 'name',
-    rolesOrderMode: 'asc',
+  const queryParams: RootUserQuery$variables = {
+    id: userId ?? '',
     groupsOrderBy: 'name',
     groupsOrderMode: 'asc',
     organizationsOrderBy: 'name',
     organizationsOrderMode: 'asc',
   };
-  const [queryRef, loadQuery] = useQueryLoader(userQuery);
+  const [queryRef, loadQuery] = useQueryLoader<RootUserQuery>(userQuery);
   useEffect(() => {
     loadQuery(queryParams, { fetchPolicy: 'store-and-network' });
   }, []);
   const refetch = React.useCallback(() => {
     loadQuery(queryParams, { fetchPolicy: 'store-and-network' });
   }, [queryRef]);
+  if (!userId) return <ErrorNotFound />;
   return (
     <>
       {queryRef && (
@@ -239,11 +248,6 @@ const RootUser = () => {
       )}
     </>
   );
-};
-
-RootUser.propTypes = {
-  children: PropTypes.node,
-  match: PropTypes.object,
 };
 
 export default RootUser;

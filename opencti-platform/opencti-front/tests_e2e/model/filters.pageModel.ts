@@ -1,15 +1,19 @@
-import { Page, expect } from '@playwright/test';
+import { Locator, Page, expect } from '@playwright/test';
 
 export default class FiltersPageModel {
-  constructor(private page: Page) {}
+  private readonly root: Locator | Page;
+
+  constructor(private page: Page, readonly rootLocator?: Locator) {
+    this.root = rootLocator ?? page;
+  }
 
   async addFilter(filterKey: string, filterLabel: string) {
-    await this.page.getByLabel('Add filter').fill(filterKey);
+    await this.root.getByLabel('Add filter').fill(filterKey);
 
-    await expect(this.page.getByRole('option', { name: filterKey })).toBeVisible();
-    await this.page.getByRole('option', { name: filterKey }).click();
+    await expect(this.page.getByRole('option', { name: filterKey, exact: true })).toBeVisible();
+    await this.page.getByRole('option', { name: filterKey, exact: true }).click();
 
-    await expect(this.page.getByRole('combobox', { name: filterKey })).toBeVisible();
+    await expect(this.page.getByRole('combobox', { name: filterKey, exact: true })).toBeVisible();
     await this.page.getByRole('combobox', { name: filterKey }).click();
 
     await expect(this.page.getByLabel(filterLabel, { exact: true }).getByRole('checkbox')).toBeVisible();
@@ -19,7 +23,7 @@ export default class FiltersPageModel {
   }
 
   async addFilterInDatatable(filterKey: string, filterLabel: string, deflakeButton: string) {
-    await this.page.getByLabel('Add filter').fill(filterKey);
+    await this.root.getByLabel('Add filter').fill(filterKey);
 
     await expect(this.page.getByRole('option', { name: filterKey })).toBeVisible();
     await this.page.getByRole('option', { name: filterKey }).click();
@@ -53,7 +57,7 @@ export default class FiltersPageModel {
   }
 
   async removeLastFilter() {
-    await expect(this.page.getByTestId('CancelIcon').last()).toBeVisible();
-    await this.page.getByTestId('CancelIcon').last().click({ force: true });
+    await expect(this.root.getByTestId('CancelIcon').last()).toBeVisible();
+    await this.root.getByTestId('CancelIcon').last().click({ force: true });
   }
 }

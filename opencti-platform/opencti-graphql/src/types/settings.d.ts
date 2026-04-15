@@ -22,6 +22,7 @@ export type CertAuthConfig = {
 
 export type LocalAuthConfig = {
   enabled: boolean;
+  button_label_override: string;
 };
 
 export type HeadersAuthConfig = {

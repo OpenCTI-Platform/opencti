@@ -1,6 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE, ENTITY_TYPE_RESOLVED_FILTERS } from '../../../src/schema/stixDomainObject';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import {

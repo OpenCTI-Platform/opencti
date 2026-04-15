@@ -28,7 +28,6 @@ import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/styles';
 import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
-import ActivityMenu from '../../ActivityMenu';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 import CreatorField from '../../../common/form/CreatorField';
@@ -139,7 +138,6 @@ const ConfigurationComponent: FunctionComponent<
         )}
       >
         <div className={classes.container}>
-          <ActivityMenu />
           <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Configuration'), current: true }]} />
           <Grid container={true} spacing={3}>
             <Grid item xs={12}>

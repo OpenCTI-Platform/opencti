@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, editorQuery, participantQuery, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { now } from '../../../src/utils/format';
-import { queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 
 const LIST_QUERY = gql`
   query opinions(
@@ -131,7 +131,7 @@ describe('Opinion resolver standard behavior', () => {
         createdBy: 'identity--7b82b010-b1c0-4dae-981f-7756374a17df',
       },
     };
-    const opinion = await editorQuery({
+    const opinion = await queryAsUser(USER_EDITOR, {
       query: CREATE_QUERY,
       variables: OPINION_TO_CREATE,
     });
@@ -141,14 +141,14 @@ describe('Opinion resolver standard behavior', () => {
     opinionInternalId = opinion.data.opinionAdd.id;
   });
   it('should opinion loaded by internal id', async () => {
-    const queryResult = await editorQuery({ query: READ_QUERY, variables: { id: opinionInternalId } });
+    const queryResult = await queryAsUser(USER_EDITOR, { query: READ_QUERY, variables: { id: opinionInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.opinion).not.toBeNull();
     expect(queryResult.data.opinion.id).toEqual(opinionInternalId);
     expect(queryResult.data.opinion.toStix.length).toBeGreaterThan(6);
   });
   it('should opinion loaded by stix id', async () => {
-    const queryResult = await editorQuery({ query: READ_QUERY, variables: { id: opinionStixId } });
+    const queryResult = await queryAsUser(USER_EDITOR, { query: READ_QUERY, variables: { id: opinionStixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.opinion).not.toBeNull();
     expect(queryResult.data.opinion.id).toEqual(opinionInternalId);
@@ -178,7 +178,7 @@ describe('Opinion resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: OPINION_STIX_DOMAIN_ENTITIES,
       variables: { id: datasetOpinionInternalId },
     });
@@ -197,7 +197,7 @@ describe('Opinion resolver standard behavior', () => {
         )
       }
     `;
-    let queryResult = await editorQuery({
+    let queryResult = await queryAsUser(USER_EDITOR, {
       query: OPINION_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP,
       variables: {
         id: datasetOpinionInternalId,
@@ -207,7 +207,7 @@ describe('Opinion resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.opinionContainsStixObjectOrStixRelationship).not.toBeNull();
     expect(queryResult.data.opinionContainsStixObjectOrStixRelationship).toBeTruthy();
-    queryResult = await editorQuery({
+    queryResult = await queryAsUser(USER_EDITOR, {
       query: OPINION_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP,
       variables: {
         id: datasetOpinionInternalId,
@@ -219,11 +219,11 @@ describe('Opinion resolver standard behavior', () => {
     expect(queryResult.data.opinionContainsStixObjectOrStixRelationship).toBeTruthy();
   });
   it('should list opinions', async () => {
-    const queryResult = await editorQuery({ query: LIST_QUERY, variables: { first: 10 } });
+    const queryResult = await queryAsUser(USER_EDITOR, { query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data.opinions.edges.length).toEqual(2);
   });
   it('should timeseries opinions to be accurate', async () => {
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: TIMESERIES_QUERY,
       variables: {
         field: 'created',
@@ -240,7 +240,7 @@ describe('Opinion resolver standard behavior', () => {
   it('should timeseries opinions for entity to be accurate', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     datasetMalwareInternalId = malware.internal_id;
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: TIMESERIES_QUERY,
       variables: {
         objectId: datasetMalwareInternalId,
@@ -257,7 +257,7 @@ describe('Opinion resolver standard behavior', () => {
   });
   it('should timeseries opinions for author to be accurate', async () => {
     const identity = await elLoadById(testContext, ADMIN_USER, 'identity--7b82b010-b1c0-4dae-981f-7756374a17df');
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: TIMESERIES_QUERY,
       variables: {
         authorId: identity.internal_id,
@@ -273,7 +273,7 @@ describe('Opinion resolver standard behavior', () => {
     expect(queryResult.data.opinionsTimeSeries[3].value).toEqual(0);
   });
   it('should opinions number to be accurate', async () => {
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: NUMBER_QUERY,
       variables: {
         endDate: now(),
@@ -283,7 +283,7 @@ describe('Opinion resolver standard behavior', () => {
     expect(queryResult.data.opinionsNumber.count).toEqual(2);
   });
   it('should opinions number by entity to be accurate', async () => {
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: NUMBER_QUERY,
       variables: {
         objectId: datasetMalwareInternalId,
@@ -294,7 +294,7 @@ describe('Opinion resolver standard behavior', () => {
     expect(queryResult.data.opinionsNumber.count).toEqual(1);
   });
   it('should opinions distribution to be accurate', async () => {
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: DISTRIBUTION_QUERY,
       variables: {
         field: 'created-by.internal_id',
@@ -304,7 +304,7 @@ describe('Opinion resolver standard behavior', () => {
     expect(queryResult.data.opinionsDistribution.length).toEqual(0);
   });
   it('should opinions distribution by entity to be accurate', async () => {
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: DISTRIBUTION_QUERY,
       variables: {
         objectId: datasetMalwareInternalId,
@@ -328,7 +328,7 @@ describe('Opinion resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: UPDATE_QUERY,
       variables: { id: opinionInternalId, input: { key: 'explanation', value: ['Opinion - test'] } },
     });
@@ -344,7 +344,7 @@ describe('Opinion resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: CONTEXT_PATCH_QUERY,
       variables: { id: opinionInternalId, input: { focusOn: 'description' } },
     });
@@ -360,7 +360,7 @@ describe('Opinion resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: CONTEXT_PATCH_QUERY,
       variables: { id: opinionInternalId },
     });
@@ -383,7 +383,7 @@ describe('Opinion resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: RELATION_ADD_QUERY,
       variables: {
         id: opinionInternalId,
@@ -408,7 +408,7 @@ describe('Opinion resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: opinionInternalId,
@@ -427,12 +427,12 @@ describe('Opinion resolver standard behavior', () => {
       }
     `;
     // Delete the opinion
-    await editorQuery({
+    await queryAsUser(USER_EDITOR, {
       query: DELETE_QUERY,
       variables: { id: opinionInternalId },
     });
     // Verify is no longer found
-    const queryResult = await editorQuery({ query: READ_QUERY, variables: { id: opinionStixId } });
+    const queryResult = await queryAsUser(USER_EDITOR, { query: READ_QUERY, variables: { id: opinionStixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.opinion).toBeNull();
   });
@@ -464,11 +464,11 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
         opinion: 'agree',
         explanation: 'Explanation of the opinion',
         objects: [
-        ]
+        ],
       },
     };
 
-    const queryResult = await participantQuery({
+    const queryResult = await queryAsUser(USER_PARTICIPATE, {
       query: CREATE_QUERY,
       variables: OPINION_TO_CREATE,
     });
@@ -492,7 +492,7 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
         }
     `;
 
-    const queryResult = await participantQuery({
+    const queryResult = await queryAsUser(USER_PARTICIPATE, {
       query: UPDATE_QUERY,
       variables: { id: participantOpinionStixId, input: { key: 'opinion', value: ['disagree'] } },
     });
@@ -510,12 +510,12 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
         }
     `;
     // Delete the opinion
-    await participantQuery({
+    await queryAsUser(USER_PARTICIPATE, {
       query: DELETE_QUERY,
       variables: { id: participantOpinionStixId },
     });
     // Verify is no longer found
-    const queryResult = await participantQuery({ query: READ_QUERY, variables: { id: participantOpinionStixId } });
+    const queryResult = await queryAsUser(USER_PARTICIPATE, { query: READ_QUERY, variables: { id: participantOpinionStixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.opinion).toBeNull();
   });
@@ -546,7 +546,7 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
       },
     };
 
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: CREATE_QUERY,
       variables: OPINION_TO_CREATE,
     });
@@ -567,7 +567,7 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
         }
     `;
 
-    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
       query: UPDATE_QUERY,
       variables: { id: editorOpinionStixId, input: { key: 'opinion', value: 'agree' } },
     });
@@ -590,7 +590,7 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
         }
     `;
 
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: UPDATE_QUERY,
       variables: { id: editorOpinionStixId, input: [{ key: 'authors', value: [participantId] }] },
     });
@@ -614,7 +614,7 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
         }
     `;
 
-    const queryResult = await editorQuery({
+    const queryResult = await queryAsUser(USER_EDITOR, {
       query: UPDATE_QUERY,
       variables: { id: editorOpinionStixId, input: { key: 'opinion', value: 'neutral' } },
     });
@@ -630,12 +630,12 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
         }
     `;
     // Delete the opinion
-    await editorQuery({
+    await queryAsUser(USER_EDITOR, {
       query: DELETE_QUERY,
       variables: { id: editorOpinionStixId },
     });
     // Verify is no longer found
-    const queryResult = await editorQuery({ query: READ_QUERY, variables: { id: editorOpinionStixId } });
+    const queryResult = await queryAsUser(USER_EDITOR, { query: READ_QUERY, variables: { id: editorOpinionStixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.opinion).toBeNull();
   });

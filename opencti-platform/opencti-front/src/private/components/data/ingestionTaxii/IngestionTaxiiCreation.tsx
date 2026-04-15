@@ -16,6 +16,7 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import PasswordTextField from '../../../../components/PasswordTextField';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import IngestionCreationUserHandling from '@components/data/IngestionCreationUserHandling';
+import IngestionSchedulingField from '@components/data/IngestionSchedulingField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { IngestionTaxiiImportQuery$data } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiImportQuery.graphql';
@@ -56,6 +57,7 @@ const ingestionTaxiiCreationValidation = () => {
 interface IngestionTaxiiAddInput {
   name: string;
   description?: string | null;
+  scheduling_period?: string | null;
   uri: string;
   version: string;
   collection: string;
@@ -113,6 +115,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
     const input = {
       name: values.name,
       description: values.description,
+      scheduling_period: values.scheduling_period,
       uri: values.uri,
       version: values.version,
       collection: values.collection,
@@ -147,6 +150,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
   const initialValues: IngestionTaxiiAddInput = {
     name: ingestionTaxiiData?.name || '',
     description: ingestionTaxiiData?.description || '',
+    scheduling_period: ingestionTaxiiData?.scheduling_period ?? 'auto',
     uri: ingestionTaxiiData?.uri || '',
     version: ingestionTaxiiData?.version || '',
     collection: ingestionTaxiiData?.collection || '',
@@ -188,6 +192,7 @@ const IngestionTaxiiCreation: FunctionComponent<IngestionTaxiiCreationProps> = (
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
+              <IngestionSchedulingField />
               <Field
                 component={TextField}
                 variant="standard"

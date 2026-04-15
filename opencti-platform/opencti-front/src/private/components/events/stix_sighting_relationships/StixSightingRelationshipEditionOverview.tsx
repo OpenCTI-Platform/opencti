@@ -6,7 +6,7 @@ import * as Yup from 'yup';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';

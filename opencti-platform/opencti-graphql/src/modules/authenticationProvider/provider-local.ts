@@ -13,7 +13,7 @@ export const registerLocalStrategy = async () => {
   // @ts-ignore as per document new LocalStrategy is the right way, not sure what to do.
   const localStrategy = new LocalStrategy({}, (username: string, password: string, done: any) => {
     return login(username, password).then((info) => {
-      logAuthInfo('Successfully logged', EnvStrategyType.STRATEGY_LOCAL, { username });
+      logAuthInfo('User found in database', EnvStrategyType.STRATEGY_LOCAL, { username });
       addUserLoginCount();
       return done(null, info);
     }).catch((err) => {

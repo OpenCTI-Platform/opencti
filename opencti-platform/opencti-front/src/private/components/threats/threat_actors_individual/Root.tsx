@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
@@ -12,8 +12,8 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import { RootThreatActorIndividualQuery } from './__generated__/RootThreatActorIndividualQuery.graphql';
 import { RootThreatActorIndividualSubscription } from './__generated__/RootThreatActorIndividualSubscription.graphql';
 import ThreatActorIndividual from './ThreatActorIndividual';
-import StixDomainObjectTabsBox from '@components/common/stix_domain_objects/StixDomainObjectTabsBox';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import ThreatActorIndividualKnowledge from './ThreatActorIndividualKnowledge';
@@ -27,6 +27,7 @@ import ThreatActorIndividualEdition from './ThreatActorIndividualEdition';
 import ThreatActorIndividualDeletion from './ThreatActorIndividualDeletion';
 import StixCoreRelationshipCreationFromEntityHeader from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
+import { PATH_THREAT_ACTORS_INDIVIDUAL, PATH_THREAT_ACTORS_INDIVIDUALS } from '@components/common/routes/paths';
 
 const subscription = graphql`
   subscription RootThreatActorIndividualSubscription($id: ID!) {
@@ -111,9 +112,10 @@ const RootThreatActorIndividualComponent = ({
     queryRef,
   );
   const { forceUpdate } = useForceUpdate();
-  const isOverview = location.pathname === `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}`;
-  const paddingRight = getPaddingRight(location.pathname, threatActorIndividualId, '/dashboard/threats/threat_actors_individual');
-  const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividualId}/knowledge`;
+  const basePath = PATH_THREAT_ACTORS_INDIVIDUAL(threatActorIndividualId);
+  const isOverview = location.pathname === basePath;
+  const paddingRight = getPaddingRight(location.pathname, basePath);
+  const link = `${basePath}/knowledge`;
   return (
     <CreateRelationshipContextProvider>
       {threatActorIndividual ? (
@@ -151,7 +153,7 @@ const RootThreatActorIndividualComponent = ({
           <div style={{ paddingRight }}>
             <Breadcrumbs elements={[
               { label: t_i18n('Threats') },
-              { label: t_i18n('Threat actors (individual)'), link: '/dashboard/threats/threat_actors_individual' },
+              { label: t_i18n('Threat actors (individual)'), link: PATH_THREAT_ACTORS_INDIVIDUALS },
               { label: threatActorIndividual.name, current: true },
             ]}
             />
@@ -182,75 +184,39 @@ const RootThreatActorIndividualComponent = ({
               redirectToContent={true}
               enableEnrollPlaybook={true}
             />
-            <StixDomainObjectTabsBox
-              basePath="/dashboard/threats/threat_actors_individual"
-              entity={threatActorIndividual}
-              tabs={[
-                'overview',
-                'knowledge-overview',
-                'content',
-                'analyses',
-                'files',
-                'history',
-              ]}
-              extraActions={isOverview && <AIInsights id={threatActorIndividual.id} />}
-            />
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <ThreatActorIndividual threatActorIndividualData={threatActorIndividual} />
-                }
-              />
-              <Route
-                path="/knowledge"
-                element={
-                  <Navigate to={`/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge/overview`} replace={true} />
-                }
-              />
-              <Route
-                path="/knowledge/*"
-                element={(
+            <StixDomainObjectMain
+              basePath={basePath}
+              pages={{
+                overview:
+                  <ThreatActorIndividual threatActorIndividualData={threatActorIndividual} />,
+                knowledge: (
                   <div key={forceUpdate}>
                     <ThreatActorIndividualKnowledge
                       threatActorIndividualData={threatActorIndividual}
                       relatedRelationshipTypes={THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES}
                     />
                   </div>
-                )}
-              />
-              <Route
-                path="/content/*"
-                element={(
+                ),
+                content: (
                   <StixCoreObjectContentRoot
                     stixCoreObject={threatActorIndividual}
                   />
-                )}
-              />
-              <Route
-                path="/analyses"
-                element={
-                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={threatActorIndividual} />
-                }
-              />
-              <Route
-                path="/files"
-                element={(
+                ),
+                analyses:
+                  <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={threatActorIndividual} />,
+                files: (
                   <FileManager
                     id={threatActorIndividualId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={threatActorIndividual}
                   />
-                )}
-              />
-              <Route
-                path="/history"
-                element={
-                  <StixCoreObjectHistory stixCoreObjectId={threatActorIndividualId} />
-                }
-              />
-            </Routes>
+                ),
+                history:
+                  <StixCoreObjectHistory stixCoreObjectId={threatActorIndividualId} />,
+              }}
+              extraActions={isOverview && <AIInsights id={threatActorIndividual.id} />}
+            />
           </div>
         </>
       ) : (
