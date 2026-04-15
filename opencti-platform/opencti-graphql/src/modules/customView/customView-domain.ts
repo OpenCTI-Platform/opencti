@@ -1,7 +1,7 @@
 import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView } from './customView-types';
-import { type CustomViewsDisplayContext, type CustomViewDisplayContext, FilterMode } from '../../generated/graphql';
+import { FilterMode } from '../../generated/graphql';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -45,6 +45,10 @@ function isCustomViewsAvailableForEntityType(entityType: string) {
     && !ENTITY_TYPES_WITHOUT_CUSTOM_VIEWS.includes(entityType);
 }
 
+export function computeCustomViewPath({ slug, id }: BasicStoreEntityCustomView) {
+  return `${slug}-${id.replaceAll('-', '')}`;
+}
+
 // View Use Cases (all authed users)
 
 export const getCustomViewByIdForDisplay = async (
@@ -52,12 +56,13 @@ export const getCustomViewByIdForDisplay = async (
   user: AuthUser,
   customViewId: string,
 ) => {
-  return storeLoadById<BasicStoreEntityCustomView>(
+  const entity = await storeLoadById<BasicStoreEntityCustomView>(
     context,
     user,
     customViewId,
     ENTITY_TYPE_CUSTOM_VIEW,
   );
+  return entity;
 };
 
 export const getCustomViewsDisplayContext = async (context: AuthContext, user: AuthUser) => {
@@ -67,14 +72,11 @@ export const getCustomViewsDisplayContext = async (context: AuthContext, user: A
     [ENTITY_TYPE_CUSTOM_VIEW],
   );
   const customViewInfoMap = allCustomViewEntities.reduce((infoMap, customViewEntity) => {
-    const { id, name, slug, target_entity_type: targetEntityType } = customViewEntity;
-    const infos = infoMap.get(targetEntityType) ?? [];
-    // Build the relative path from the slug and the id
-    const path = `${slug}-${id.replaceAll('-', '')}`;
-    infos.push({ customViewId: id, path, name });
-    infoMap.set(targetEntityType, infos);
+    const infos = infoMap.get(customViewEntity.target_entity_type) ?? [];
+    infos.push(customViewEntity);
+    infoMap.set(customViewEntity.target_entity_type, infos);
     return infoMap;
-  }, new Map<string, CustomViewDisplayContext[]>());
+  }, new Map<string, BasicStoreEntityCustomView[]>());
   return Array.from(customViewInfoMap.keys()).reduce((acc, targetEntityType) => {
     if (!isCustomViewsAvailableForEntityType(targetEntityType)) {
       return acc;
@@ -85,7 +87,10 @@ export const getCustomViewsDisplayContext = async (context: AuthContext, user: A
       custom_views_info: customViewsInfos,
     });
     return acc;
-  }, [] as CustomViewsDisplayContext[]);
+  }, [] as {
+    custom_views_info: BasicStoreEntityCustomView[];
+    entity_type: string;
+  }[]);
 };
 
 // Settings Use Cases (admin users)
@@ -118,13 +123,6 @@ export const getCustomViewsSettings = async (
   );
   return {
     canEntityTypeHaveCustomViews: true,
-    customViews: customViewEntities.map(
-      ({ id, name, description, created_at, updated_at }) => ({
-        id,
-        name,
-        description,
-        updated_at,
-        created_at,
-      })),
+    customViews: customViewEntities,
   };
 };

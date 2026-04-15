@@ -7,7 +7,7 @@ import { RootCustomViewQuery } from './__generated__/RootCustomViewQuery.graphql
 import CustomView from './CustomView';
 
 const customViewQuery = graphql`
-  query RootCustomViewQuery($id: String!) {
+  query RootCustomViewQuery($id: ID!) {
     customViewDisplay(id: $id) {
       manifest
     }

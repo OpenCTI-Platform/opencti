@@ -20,7 +20,7 @@ const READ_CONTEXT_QUERY = gql`
 `;
 
 const READ_CUSTOM_VIEW_FOR_DISPLAY_QUERY = gql`
-  query CustomViewDisplayTest($id: String!) {
+  query CustomViewDisplayTest($id: ID!) {
     customViewDisplay(id: $id) {
       manifest
     }

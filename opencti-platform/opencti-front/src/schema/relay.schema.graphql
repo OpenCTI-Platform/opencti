@@ -9753,7 +9753,7 @@ type Query {
   """
   authLogHistoryById(id: String!): [AuthLogEntry!]!
   customViewsDisplayContext: [CustomViewsDisplayContext!]
-  customViewDisplay(id: String!): CustomViewDisplay
+  customViewDisplay(id: ID!): CustomView
   customViewsSettings(entityType: String!): CustomViewsSettings!
   taxiiCollection(id: String!): TaxiiCollection
   taxiiCollections(first: Int, after: ID, orderBy: TaxiiCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): TaxiiCollectionConnection
@@ -16129,35 +16129,18 @@ type CustomView implements InternalObject & BasicObject {
   description: String
   slug: String!
   manifest: String
-  target_entity_type: String!
-}
-
-type CustomViewDisplay {
-  manifest: String
-}
-
-type CustomViewDisplayContext {
-  customViewId: ID!
-  name: String!
   path: String!
+  target_entity_type: String!
 }
 
 type CustomViewsDisplayContext {
   entity_type: String!
-  custom_views_info: [CustomViewDisplayContext!]!
-}
-
-type CustomViewInfoForSettings {
-  id: ID!
-  name: String!
-  description: String!
-  created_at: DateTime!
-  updated_at: DateTime!
+  custom_views_info: [CustomView!]!
 }
 
 type CustomViewsSettings {
   canEntityTypeHaveCustomViews: Boolean!
-  customViews: [CustomViewInfoForSettings!]!
+  customViews: [CustomView!]!
 }
 
 type TaxiiCollection {

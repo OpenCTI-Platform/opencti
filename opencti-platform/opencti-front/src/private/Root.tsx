@@ -294,7 +294,7 @@ const rootPrivateQuery = graphql`
     customViewsDisplayContext {
       entity_type
       custom_views_info {
-        customViewId
+        id
         name
         path
       }

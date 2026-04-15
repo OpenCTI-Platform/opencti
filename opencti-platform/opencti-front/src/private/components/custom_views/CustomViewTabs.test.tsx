@@ -24,9 +24,9 @@ const TestWrapper = ({ entityType, basePath }: TestWrapperProps) => {
 
   const { anchorEl, onOpen, onClose, isOpen } = dropDownMenuState;
 
-  const renderMenuItems = () => customViews.map(({ customViewId, name, path }) => (
+  const renderMenuItems = () => customViews.map(({ id, name, path }) => (
     <MenuItem
-      key={customViewId}
+      key={id}
       role="link"
       component={Link}
       to={`${basePath}/${path}`}
@@ -96,7 +96,7 @@ describe('useCustomViewTabs', () => {
           customViews: [{
             entity_type: 'Intrusion-Set',
             custom_views_info: [{
-              customViewId: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
+              id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
               name: customViewDisplayName,
               path: customViewPath,
             }],
@@ -126,11 +126,11 @@ describe('useCustomViewTabs', () => {
           customViews: [{
             entity_type: 'Intrusion-Set',
             custom_views_info: [{
-              customViewId: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
+              id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
               name: 'My first custom view',
               path: 'some-path',
             }, {
-              customViewId: '90ebf22f-2c36-4836-b21a-e114ed4ca2ab',
+              id: '90ebf22f-2c36-4836-b21a-e114ed4ca2ab',
               name: 'My second custom view',
               path: 'some-other-path',
             }],
@@ -169,7 +169,7 @@ describe('useCustomViewTabs', () => {
           customViews: [{
             entity_type: 'Intrusion-Set',
             custom_views_info: [{
-              customViewId: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
+              id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
               name: customViewDisplayName,
               path: customViewPath,
             }],

@@ -21,11 +21,11 @@ const CustomViewTabDropDownMenu = ({ displayMode, customViews, dropDownMenuState
       anchorEl={anchorEl}
       isOpen={isOpen}
       onClose={onClose}
-      renderMenuItems={() => customViews.map(({ customViewId, name, path }) => {
+      renderMenuItems={() => customViews.map(({ id, name, path }) => {
         const isSelected = currentCustomViewMenuItem === path;
         return (
           <MenuItem
-            key={customViewId}
+            key={id}
             selected={isSelected}
             role="link"
             component={Link}

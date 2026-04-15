@@ -3,7 +3,7 @@ type CustomView implements InternalObject & BasicObject {
     entity_type: String!
     standard_id: String!
     parent_types: [String!]!
-    metrics:[Metric]
+    metrics: [Metric]
     created_at: DateTime!
     updated_at: DateTime!
     # CustomView-specific fields
@@ -11,35 +11,18 @@ type CustomView implements InternalObject & BasicObject {
     description: String
     slug: String!
     manifest: String
+    path: String! # Derived field, not stored in DB
     target_entity_type: String!
-}
-
-type CustomViewDisplay {
-    manifest: String
-}
-
-type CustomViewDisplayContext {
-    customViewId: ID!
-    name: String!
-    path: String!
 }
 
 type CustomViewsDisplayContext {
     entity_type: String!
-    custom_views_info: [CustomViewDisplayContext!]!
-}
-
-type CustomViewInfoForSettings {
-    id: ID!
-    name: String!
-    description: String!
-    created_at: DateTime!
-    updated_at: DateTime!
+    custom_views_info: [CustomView!]!
 }
 
 type CustomViewsSettings {
     canEntityTypeHaveCustomViews: Boolean!
-    customViews: [CustomViewInfoForSettings!]!
+    customViews: [CustomView!]!
 }
 
 # Queries
@@ -50,7 +33,7 @@ type Query {
     # available for which entity types
     customViewsDisplayContext: [CustomViewsDisplayContext!] @auth @ff(flags: ["CUSTOM_VIEW"], softFail: true)
     # Display a custom view
-    customViewDisplay(id: String!): CustomViewDisplay @auth @ff(flags: ["CUSTOM_VIEW"])
+    customViewDisplay(id: ID!): CustomView @auth @ff(flags: ["CUSTOM_VIEW"])
 
     ## Administration use cases
 
