@@ -71,8 +71,7 @@ import type { FileHandle } from 'fs/promises';
 const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 // Sanitize name for K8s/Docker
 const sanitizeContainerName = (label: string): string => {
-  const withHyphens = label.replace(/([a-z])([A-Z])/g, '$1-$2');
-  let sanitized = withHyphens
+  let sanitized = label
     .replace(/[^a-zA-Z0-9]+/g, '-')
     .toLowerCase()
     .replace(/^-+/, '')
