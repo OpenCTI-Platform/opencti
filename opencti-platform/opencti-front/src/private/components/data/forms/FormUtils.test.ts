@@ -99,4 +99,169 @@ describe('convertFormBuilderDataToSchema', () => {
       },
     ]);
   });
+
+  it('should produce enabled=false for name when defaultValue is empty or whitespace', () => {
+    const schema = convertFormBuilderDataToSchema({
+      ...baseBuilderData,
+      draftDefaults: {
+        name: { enabled: false, isEditable: true, isRequired: false, defaultValue: '   ' },
+      },
+    });
+    expect(schema.draftDefaults?.name?.enabled).toBe(false);
+  });
+
+  it('should produce enabled=true for name when defaultValue is non-empty', () => {
+    const schema = convertFormBuilderDataToSchema({
+      ...baseBuilderData,
+      draftDefaults: {
+        name: { enabled: true, isEditable: true, isRequired: true, defaultValue: 'My Default Name' },
+      },
+    });
+    expect(schema.draftDefaults?.name?.enabled).toBe(true);
+    expect(schema.draftDefaults?.name?.defaultValue).toBe('My Default Name');
+    expect(schema.draftDefaults?.name?.isRequired).toBe(true);
+  });
+
+  it('should produce enabled=false for description when defaultValue is empty', () => {
+    const schema = convertFormBuilderDataToSchema({
+      ...baseBuilderData,
+      draftDefaults: {
+        description: { enabled: false, isEditable: false, isRequired: false, defaultValue: '' },
+      },
+    });
+    expect(schema.draftDefaults?.description?.enabled).toBe(false);
+  });
+
+  it('should produce enabled=true for description when defaultValue is non-empty', () => {
+    const schema = convertFormBuilderDataToSchema({
+      ...baseBuilderData,
+      draftDefaults: {
+        description: { enabled: true, isEditable: true, isRequired: false, defaultValue: 'Default desc' },
+      },
+    });
+    expect(schema.draftDefaults?.description?.enabled).toBe(true);
+    expect(schema.draftDefaults?.description?.defaultValue).toBe('Default desc');
+  });
+
+  it('should produce enabled=false for objectAssignee when defaults array is empty', () => {
+    const schema = convertFormBuilderDataToSchema({
+      ...baseBuilderData,
+      draftDefaults: {
+        objectAssignee: { enabled: false, isEditable: true, isRequired: false, defaults: [] },
+      },
+    });
+    expect(schema.draftDefaults?.objectAssignee?.enabled).toBe(false);
+  });
+
+  it('should produce enabled=true for objectAssignee when defaults array has entries', () => {
+    const schema = convertFormBuilderDataToSchema({
+      ...baseBuilderData,
+      draftDefaults: {
+        objectAssignee: {
+          enabled: true,
+          isEditable: false,
+          isRequired: true,
+          defaults: [{ value: 'user-1', label: 'User 1' }],
+        },
+      },
+    });
+    expect(schema.draftDefaults?.objectAssignee?.enabled).toBe(true);
+    expect(schema.draftDefaults?.objectAssignee?.isRequired).toBe(true);
+    expect(schema.draftDefaults?.objectAssignee?.defaults).toHaveLength(1);
+  });
+
+  it('should produce enabled=true for objectParticipant when defaults array has entries', () => {
+    const schema = convertFormBuilderDataToSchema({
+      ...baseBuilderData,
+      draftDefaults: {
+        objectParticipant: {
+          enabled: true,
+          isEditable: true,
+          isRequired: false,
+          defaults: [{ value: 'p-1', label: 'Participant 1' }],
+        },
+      },
+    });
+    expect(schema.draftDefaults?.objectParticipant?.enabled).toBe(true);
+    expect(schema.draftDefaults?.objectParticipant?.defaults).toEqual([{ value: 'p-1', label: 'Participant 1' }]);
+  });
+
+  it('should include static author config in schema', () => {
+    const schema = convertFormBuilderDataToSchema({
+      ...baseBuilderData,
+      draftDefaults: {
+        author: {
+          type: 'static',
+          isEditable: false,
+          isRequired: true,
+          defaultValue: 'identity-99',
+          defaultValueLabel: 'My Org',
+          defaultValueType: 'Organization',
+        },
+      },
+    });
+    expect(schema.draftDefaults?.author?.type).toBe('static');
+    expect(schema.draftDefaults?.author?.defaultValue).toBe('identity-99');
+    expect(schema.draftDefaults?.author?.defaultValueLabel).toBe('My Org');
+    expect(schema.draftDefaults?.author?.defaultValueType).toBe('Organization');
+    expect(schema.draftDefaults?.author?.isRequired).toBe(true);
+  });
+
+  it('should include main_entity_author type in schema', () => {
+    const schema = convertFormBuilderDataToSchema({
+      ...baseBuilderData,
+      draftDefaults: {
+        author: {
+          type: 'main_entity_author',
+          isEditable: true,
+          isRequired: false,
+        },
+      },
+    });
+    expect(schema.draftDefaults?.author?.type).toBe('main_entity_author');
+  });
+
+  it('should return undefined draftDefaults when not set', () => {
+    const schema = convertFormBuilderDataToSchema({
+      ...baseBuilderData,
+      draftDefaults: undefined,
+    });
+    expect(schema.draftDefaults).toBeUndefined();
+  });
+
+  it('should include isReadOnly on field definitions when set', () => {
+    const schema = convertFormBuilderDataToSchema({
+      ...baseBuilderData,
+      fields: [
+        {
+          id: 'f1',
+          name: 'title',
+          label: 'Title',
+          type: 'text',
+          required: false,
+          isReadOnly: true,
+          attributeMapping: { entity: 'main_entity', attributeName: 'name' },
+        },
+      ],
+    });
+    expect(schema.fields[0].isReadOnly).toBe(true);
+  });
+
+  it('should not include isReadOnly on field when not set', () => {
+    const schema = convertFormBuilderDataToSchema({
+      ...baseBuilderData,
+      fields: [
+        {
+          id: 'f1',
+          name: 'title',
+          label: 'Title',
+          type: 'text',
+          required: false,
+          isReadOnly: false,
+          attributeMapping: { entity: 'main_entity', attributeName: 'name' },
+        },
+      ],
+    });
+    expect(schema.fields[0].isReadOnly).toBe(false);
+  });
 });

@@ -1157,8 +1157,13 @@ export const formSubmit = async (
 
       // Apply draft defaults for author
       const canOverrideDraftAuthor = isBypass || (schema.draftDefaults?.author?.isEditable !== false);
+      const isAuthorRequired = schema.draftDefaults?.author?.isRequired === true;
+      const hasExplicitDraftAuthor = Object.hasOwn(values, 'draftAuthor');
       if (canOverrideDraftAuthor && values.draftAuthor) {
         createdBy = normalizeOptionId(values.draftAuthor) || null;
+      } else if (canOverrideDraftAuthor && hasExplicitDraftAuthor && !isAuthorRequired) {
+        // User explicitly cleared the field; it's editable and not required → honour the opt-out
+        createdBy = null;
       } else if (schema.draftDefaults?.author) {
         if (schema.draftDefaults.author.type === 'static') {
           createdBy = schema.draftDefaults.author.defaultValue || null;

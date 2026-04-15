@@ -24,7 +24,6 @@ import { useFormatter } from '../../../../../components/i18n';
 import { environment } from '../../../../../relay/environment';
 import { FieldOption } from '../../../../../utils/field';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
-import useAuth from '../../../../../utils/hooks/useAuth';
 import useEntitySettings from '../../../../../utils/hooks/useEntitySettings';
 import useGranted, { BYPASS, INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
 import useImportAccess from '../../../../../utils/hooks/useImportAccess';
@@ -143,7 +142,6 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const { me: _me } = useAuth();
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [pollingEntityId, setPollingEntityId] = useState<string | null>(null);

@@ -102,4 +102,79 @@ describe('formatFormDataForSubmission', () => {
 
     expect(formatted.draftObjectParticipant).toEqual(['participant-1', 'participant-2']);
   });
+
+  it('should include draftDescription when present', () => {
+    const values = {
+      name: 'My report',
+      draftDescription: '  My description  ',
+    };
+
+    const formatted = formatFormDataForSubmission(values as SubmissionValues, baseSchema);
+
+    expect(formatted).toHaveProperty('draftDescription', 'My description');
+  });
+
+  it('should not include draftDescription when omitted', () => {
+    const values = {
+      name: 'My report',
+    };
+
+    const formatted = formatFormDataForSubmission(values as SubmissionValues, baseSchema);
+
+    expect(formatted).not.toHaveProperty('draftDescription');
+  });
+
+  it('should include draftDescription as empty string when explicitly whitespace', () => {
+    const values = {
+      name: 'My report',
+      draftDescription: '   ',
+    };
+
+    const formatted = formatFormDataForSubmission(values as SubmissionValues, baseSchema);
+
+    expect(formatted).toHaveProperty('draftDescription', '');
+  });
+
+  it('should extract draftAuthor id from object', () => {
+    const values = {
+      name: 'My report',
+      draftAuthor: { value: 'identity-1', label: 'Org A' },
+    };
+
+    const formatted = formatFormDataForSubmission(values as SubmissionValues, baseSchema);
+
+    expect(formatted.draftAuthor).toBe('identity-1');
+  });
+
+  it('should set draftAuthor to null when value is null (explicit opt-out signal)', () => {
+    const values = {
+      name: 'My report',
+      draftAuthor: null,
+    };
+
+    const formatted = formatFormDataForSubmission(values as SubmissionValues, baseSchema);
+
+    expect(formatted).toHaveProperty('draftAuthor', null);
+  });
+
+  it('should set draftAuthor to null when object has no value property (explicit opt-out signal)', () => {
+    const values = {
+      name: 'My report',
+      draftAuthor: { label: 'No value field' },
+    };
+
+    const formatted = formatFormDataForSubmission(values as SubmissionValues, baseSchema);
+
+    expect(formatted).toHaveProperty('draftAuthor', null);
+  });
+
+  it('should not include draftAuthor key when draftAuthor is absent from values', () => {
+    const values = {
+      name: 'My report',
+    };
+
+    const formatted = formatFormDataForSubmission(values as SubmissionValues, baseSchema);
+
+    expect(formatted).not.toHaveProperty('draftAuthor');
+  });
 });

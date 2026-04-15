@@ -701,10 +701,12 @@ export const formatFormDataForSubmission = (
     formattedData.draftObjectParticipant = normalizeDraftSelectionIds(draftObjectParticipant);
   }
 
-  if (values.draftAuthor) {
-    const selectedDraftAuthor = values.draftAuthor as { value: string };
-    if (selectedDraftAuthor && selectedDraftAuthor.value) {
+  if (Object.hasOwn(values, 'draftAuthor')) {
+    const selectedDraftAuthor = values.draftAuthor as { value: string } | null | undefined;
+    if (selectedDraftAuthor?.value) {
       formattedData.draftAuthor = selectedDraftAuthor.value;
+    } else {
+      formattedData.draftAuthor = null; // explicit opt-out signal
     }
   }
 
