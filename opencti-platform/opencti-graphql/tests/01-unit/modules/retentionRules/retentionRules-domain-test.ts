@@ -185,11 +185,7 @@ describe('createRetentionRule', () => {
     expect(parsedFilters).toEqual({ mode: 'and', filters: [], filterGroups: [] });
   });
 
-  it('should have empty string filters when input has empty string (spread overrides local variable)', async () => {
-
-    // overriding the local `filters` variable set at line 51.
-    // The JSON.parse(filters) at line 54 passes (because local `filters` was defaulted),
-    // but the resulting object has `filters: ''` from the spread.
+  it('should default filters to empty filter set when input has empty string', async () => {
     const input = {
       name: 'Empty filter string',
       filters: '',
@@ -198,8 +194,9 @@ describe('createRetentionRule', () => {
     };
 
     const result = await createRetentionRule(context, user, input);
-    // The spread `...input` overrides the defaulted local variable
-    expect(result.filters).toBe('');
+    // `filters` is placed after `...input` in the object literal, so the locally-defaulted value correctly overrides the empty string from input.
+    const parsedFilters = JSON.parse(result.filters as string);
+    expect(parsedFilters).toEqual({ mode: 'and', filters: [], filterGroups: [] });
   });
 
   it('should throw UnsupportedError when filters is invalid JSON', async () => {
@@ -524,7 +521,6 @@ describe('checkRetentionRule', () => {
       max_retention: 5,
       scope: 'invalid_scope' as any,
     };
-
 
     // Let's test the actual behavior:
     await expect(checkRetentionRule(context, input)).rejects.toThrow();
