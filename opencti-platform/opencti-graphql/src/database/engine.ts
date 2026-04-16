@@ -500,12 +500,12 @@ const elExecuteWithAbortSignal = async (
   elkOperation: (opts: { signal: AbortSignal | undefined }) => Promise<any>,
   openSearchOperation: () => Promise<any>,
 ): Promise<any> => {
+  if (abortSignal?.aborted) {
+    throw new AbortError('The http call was aborted before el request started.');
+  }
   if (engine instanceof ElkClient) {
     const r = await elkOperation({ signal: abortSignal });
     return oebp(r);
-  }
-  if (abortSignal?.aborted) {
-    throw new AbortError('The http call was aborted before el request started.');
   }
   const openSearchOperationPromise = openSearchOperation();
   const abortRequest = () => {

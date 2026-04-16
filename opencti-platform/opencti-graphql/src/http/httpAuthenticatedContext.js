@@ -39,8 +39,26 @@ export const computeLoaders = (executeContext, user) => {
   };
 };
 
-export const createAuthenticatedContext = async (req, res, contextName, requestAbortSignal) => {
+const createRequestAbortSignal = (req, res) => {
+  const abortController = new AbortController();
+  const abort = () => {
+    if (!abortController.signal.aborted) {
+      abortController.abort();
+    }
+  };
+  req.once('aborted', abort);
+  res.once('close', () => {
+    // `close` is emitted for both success and disconnect; only abort on disconnect.
+    if (!res.writableEnded) {
+      abort();
+    }
+  });
+  return abortController.signal;
+};
+
+export const createAuthenticatedContext = async (req, res, contextName) => {
   const executeContext = executionContext(contextName);
+  const requestAbortSignal = createRequestAbortSignal(req, res);
   executeContext.req = req;
   executeContext.res = res;
   executeContext.requestAbortSignal = requestAbortSignal;
