@@ -68,7 +68,7 @@ describe('findPlaybooksForEntity', () => {
 
   it('should include playbook with component PLAYBOOK_INTERNAL_DATA_STREAM when filters match', async () => {
     vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
-    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { enrollInPlaybook: true })]);
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { canEnrollManually: true })]);
     vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
 
     const result = await findPlaybooksForEntity(testContext, {} as any, 'entity-id');
@@ -77,18 +77,18 @@ describe('findPlaybooksForEntity', () => {
 
   it('should include playbook with component PLAYBOOK_INTERNAL_MANUAL_TRIGGER when filters match', async () => {
     vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
-    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_INTERNAL_MANUAL_TRIGGER', { enrollInPlaybook: true })]);
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_INTERNAL_MANUAL_TRIGGER', { canEnrollManually: true })]);
     vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
 
     const result = await findPlaybooksForEntity(testContext, {} as any, 'entity-id');
     expect(result).toHaveLength(1);
   });
 
-  // -- EnrollInPlaybook --
+  // -- canEnrollManually --
 
-  it('should exclude playbook when enrollInPlaybook is false', async () => {
+  it('should exclude playbook when canEnrollManually is false', async () => {
     vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
-    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { enrollInPlaybook: false })]);
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { canEnrollManually: false })]);
     vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
 
     const result = await findPlaybooksForEntity(testContext, {} as any, 'entity-id');
@@ -96,7 +96,7 @@ describe('findPlaybooksForEntity', () => {
     expect(stixFiltering.isStixMatchFilterGroup).not.toHaveBeenCalled();
   });
 
-  it('should include playbook when enrollInPlaybook is undefined', async () => {
+  it('should include playbook when canEnrollManually is undefined', async () => {
     vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
     vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', {})]);
     vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
@@ -109,7 +109,7 @@ describe('findPlaybooksForEntity', () => {
 
   it('should exclude playbook when filters do not match', async () => {
     vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
-    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { enrollInPlaybook: true })]);
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { canEnrollManually: true })]);
     vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(false);
 
     const result = await findPlaybooksForEntity(testContext, {} as any, 'entity-id');
@@ -118,7 +118,7 @@ describe('findPlaybooksForEntity', () => {
 
   it('should call isStixMatchFilterGroup with null when no filters are set', async () => {
     vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
-    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { enrollInPlaybook: true })]);
+    vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { canEnrollManually: true })]);
     vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
 
     await findPlaybooksForEntity(testContext, {} as any, 'entity-id');
@@ -132,9 +132,9 @@ describe('findPlaybooksForEntity', () => {
   it('should handle multiple playbooks and return only matching ones', async () => {
     vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockStixEntity);
     vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([
-      buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { enrollInPlaybook: true }),
-      buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { enrollInPlaybook: false }),
-      buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { enrollInPlaybook: true }),
+      buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { canEnrollManually: true }),
+      buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { canEnrollManually: false }),
+      buildPlaybook('PLAYBOOK_INTERNAL_DATA_STREAM', { canEnrollManually: true }),
     ]);
     vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
 

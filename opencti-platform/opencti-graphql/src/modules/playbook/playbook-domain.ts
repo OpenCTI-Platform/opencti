@@ -70,8 +70,8 @@ export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUse
       const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
       const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
       if (instance && (instance.component_id === 'PLAYBOOK_INTERNAL_DATA_STREAM' || instance.component_id === 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER')) {
-        const { filters, enrollInPlaybook } = JSON.parse(instance.configuration ?? '{}') as StreamConfiguration;
-        const isAvailableForManualEnrollment = enrollInPlaybook ?? true;
+        const { filters, canEnrollManually } = JSON.parse(instance.configuration ?? '{}') as StreamConfiguration;
+        const isAvailableForManualEnrollment = canEnrollManually ?? true;
         if (!isAvailableForManualEnrollment) continue;
 
         const jsonFilters = filters ? JSON.parse(filters) : null;
