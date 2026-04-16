@@ -4,7 +4,7 @@ import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedFo
 import type { PlaybookAddLinkInput, PlaybookAddNodeInput } from '../../../src/generated/graphql';
 import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
 import { UNSUPPORTED_ERROR } from '../../../src/config/errors';
-import { USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
+import { getUserIdByEmail, USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
 
 const LIST_PLAYBOOKS = gql`
   query playbooks(
@@ -253,7 +253,8 @@ describe('Playbook resolver standard behavior', () => {
       expect(playbook?.created_at).toEqual(playbookCreatedAt);
       // creators should be returned and contain the user who created the playbook
       expect(playbook?.creators.length).toEqual(1);
-      expect(playbook?.creators[0].id).toEqual(USER_SECURITY.id);
+      const securityUserId = await getUserIdByEmail(USER_SECURITY.email);
+      expect(playbook?.creators[0].id).toEqual(securityUserId);
     });
 
     it('should not update playbook if no Manage Playbooks capability', async () => {
