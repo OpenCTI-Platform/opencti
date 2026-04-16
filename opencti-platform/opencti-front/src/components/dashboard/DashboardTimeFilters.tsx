@@ -51,7 +51,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
       <Stack direction="row" gap={1}>
         <FormControl
           size="small"
-          style={{ width: 194, marginLeft: 20 }}
+          style={{ width: 194 }}
           variant="outlined"
         >
           <InputLabel
