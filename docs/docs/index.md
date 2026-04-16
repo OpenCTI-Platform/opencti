@@ -8,7 +8,7 @@ hide:
 
 Welcome to the OpenCTI Documentation space. Here you will be able to find all documents, meeting notes and presentations about the platform.
 
-fake update
+fake update 2
 !!! info "Release notes"
 
     Please, be sure to also take a look at the [OpenCTI releases notes](https://github.com/OpenCTI-Platform/opencti/releases), they may contain important information about releases and deployments.
