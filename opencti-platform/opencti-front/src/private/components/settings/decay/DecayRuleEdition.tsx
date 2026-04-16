@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 import { graphql } from 'react-relay';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import Drawer from '@components/common/drawer/Drawer';
@@ -10,7 +10,6 @@ import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import { InformationOutline } from 'mdi-material-ui';
 import { FormikConfig } from 'formik/dist/types';
-import ObservableTypesField from '@components/common/form/ObservableTypesField';
 import decayRuleValidator from './DecayRuleValidator';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
@@ -21,6 +20,12 @@ import { handleError } from '../../../../relay/environment';
 import { DecayRule_decayRule$data } from './__generated__/DecayRule_decayRule.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
+import Filters from '@components/common/lists/Filters';
+import FilterIconButton from '../../../../components/FilterIconButton';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
+import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import { enabledFilters } from './utils/enabledFilters';
+import { useTheme } from '@mui/material/styles';
 
 export const decayRuleEditionMutation = graphql`
   mutation DecayRuleEditionMutation($id: ID!, $input: [EditInput!]!) {
@@ -39,7 +44,7 @@ interface DecayRuleEditionFormData {
   decay_pound: number;
   decay_points: number[];
   decay_revoke_score: number;
-  decay_observable_types: string[];
+  decay_filters: string;
 }
 
 interface DecayRuleEditionFormProps {
@@ -51,7 +56,21 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
   initialValues,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const [commitUpdate] = useApiMutation(decayRuleEditionMutation);
+  const [filters, filterHelpers] = useFiltersState(deserializeFilterGroupForFrontend(initialValues.decay_filters) ?? emptyFilterGroup);
+
+  useEffect(() => {
+    commitUpdate({
+      variables: {
+        id: decayRuleId,
+        input: { key: 'decay_filters', value: serializeFilterGroupForBackend(filters) },
+      },
+      onError: (error: Error) => {
+        handleError(error);
+      },
+    });
+  }, [filters]);
 
   const handleSubmitField = (name: string, value: string | string[] | number | number[] | null) => {
     decayRuleValidator(t_i18n)
@@ -104,12 +123,24 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
             onSubmit={handleSubmitField}
             style={{ marginTop: 20 }}
           />
-          <ObservableTypesField
-            name="decay_observable_types"
-            label={t_i18n('Apply on indicator observable types (none = ALL)')}
-            multiple={true}
-            onChange={handleSubmitField}
-            style={{ marginTop: 20 }}
+          <Box sx={{
+            paddingTop: '30px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: theme.spacing(1),
+            marginBottom: theme.spacing(1),
+          }}
+          >
+            <Filters
+              availableFilterKeys={enabledFilters}
+              helpers={filterHelpers}
+              searchContext={{ entityTypes: ['Indicator'] }}
+            />
+          </Box>
+          <FilterIconButton
+            filters={filters}
+            helpers={filterHelpers}
+            searchContext={{ entityTypes: ['Indicator'] }}
           />
           <Field
             component={TextField}
@@ -243,7 +274,7 @@ const DecayRuleEdition: FunctionComponent<DecayRuleEditionProps> = ({
     decay_pound: decayRule.decay_pound,
     decay_points: decayRule.decay_points ? [...decayRule.decay_points] : [],
     decay_revoke_score: decayRule.decay_revoke_score,
-    decay_observable_types: decayRule.decay_observable_types ? [...decayRule.decay_observable_types] : [],
+    decay_filters: decayRule.decay_filters ?? '',
   };
   return (
     <Drawer
