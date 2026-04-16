@@ -46,13 +46,17 @@ const createRequestAbortSignal = (req, res) => {
       abortController.abort();
     }
   };
-  req.once('aborted', abort);
-  res.once('close', () => {
+  if (req.once) {
+    req.once('aborted', abort);
+  }
+  if (res.once) {
+    res.once('close', () => {
     // `close` is emitted for both success and disconnect; only abort on disconnect.
-    if (!res.writableEnded) {
-      abort();
-    }
-  });
+      if (!res.writableEnded) {
+        abort();
+      }
+    });
+  }
   return abortController.signal;
 };
 
