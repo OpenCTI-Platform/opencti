@@ -86,7 +86,7 @@ const decayRulesLineFragment = graphql`
 const LOCAL_STORAGE_KEY = 'view-decay-rules';
 
 const DecayRules = () => {
-  const { fd, t_i18n } = useFormatter();
+  const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   const { platformModuleHelpers } = useAuth();
 
