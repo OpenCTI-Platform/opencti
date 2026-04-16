@@ -401,7 +401,8 @@ interface BasicStoreEntity extends BasicStoreCommon {
   secondary_motivations: Array<string>;
   personal_motivations: Array<string>;
   infrastructure_types: Array<string>;
-  threat_actor_types: Array<string>;
+  threat_actor_group_types: Array<string>;
+  threat_actor_individual_types: Array<string>;
   tool_types: Array<string>;
   architecture_execution_envs: Array<string>;
   implementation_languages: Array<string>;

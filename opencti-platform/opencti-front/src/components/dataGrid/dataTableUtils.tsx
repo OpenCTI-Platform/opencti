@@ -1178,13 +1178,22 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       );
     },
   },
-  threat_actor_types: {
-    id: 'threat_actor_types',
+  threat_actor_group_types: {
+    id: 'threat_actor_group_types',
     label: 'Types',
     percentWidth: 20,
     isSortable: true,
-    render: ({ threat_actor_types }) => {
-      return defaultRender(threat_actor_types);
+    render: ({ threat_actor_group_types }) => {
+      return defaultRender(threat_actor_group_types);
+    },
+  },
+  threat_actor_individual_types: {
+    id: 'threat_actor_individual_types',
+    label: 'Types',
+    percentWidth: 20,
+    isSortable: true,
+    render: ({ threat_actor_individual_types }) => {
+      return defaultRender(threat_actor_individual_types);
     },
   },
   timestamp: {

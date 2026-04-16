@@ -87,7 +87,7 @@ const threatActorIndividualEditionOverviewFragment = graphql`
   fragment ThreatActorIndividualEditionOverview_ThreatActorIndividual on ThreatActorIndividual {
     id
     name
-    threat_actor_types
+    threat_actor_individual_types
     confidence
     entity_type
     description
@@ -151,7 +151,7 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
   const { mandatoryAttributes } = useIsMandatoryAttribute(THREAT_ACTOR_INDIVIDUAL_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
-    threat_actor_types: Yup.array().nullable(),
+    threat_actor_individual_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
@@ -239,7 +239,7 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
     killChainPhases: convertKillChainPhases(threatActorIndividual),
     x_opencti_workflow_id: convertStatus(t_i18n, threatActorIndividual) as FieldOption,
     confidence: threatActorIndividual.confidence,
-    threat_actor_types: threatActorIndividual.threat_actor_types ?? [],
+    threat_actor_individual_types: threatActorIndividual.threat_actor_individual_types ?? [],
     references: [],
   };
   return (
@@ -276,9 +276,9 @@ const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<
           <OpenVocabField
             variant="edit"
             type="threat-actor-individual-type-ov"
-            name="threat_actor_types"
-            label={t_i18n('Threat actor types')}
-            required={(mandatoryAttributes.includes('threat_actor_types'))}
+            name="threat_actor_individual_types"
+            label={t_i18n('Threat actor individual types')}
+            required={(mandatoryAttributes.includes('threat_actor_group_types'))}
             containerStyle={{ width: '100%', marginTop: 20 }}
             multiple={true}
             onFocus={editor.changeFocus}

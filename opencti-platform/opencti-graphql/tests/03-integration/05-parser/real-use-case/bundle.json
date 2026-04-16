@@ -52,7 +52,7 @@
         }
       },
       "name": "Play",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "RANSOMWARE"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -128,7 +128,7 @@
         }
       },
       "name": "Unknown",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "INTRUSION"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -217,7 +217,7 @@
         }
       },
       "name": "NoName057",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "DOS/DDOS/RDOS"
       ],
       "primary_motivation": "DISRUPTION"
@@ -421,7 +421,7 @@
         }
       },
       "name": "APT29",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "DATA"
       ],
       "primary_motivation": "ESPIONAGE"
@@ -595,7 +595,7 @@
         }
       },
       "name": "Cybercat",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "DATA"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -884,7 +884,7 @@
         }
       },
       "name": "Akira",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "RANSOMWARE"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -1138,7 +1138,7 @@
         }
       },
       "name": "North Korean State-Sponsored Lazarus Hacking Group",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "MALWARE"
       ],
       "primary_motivation": "UNKNOWN"
@@ -1226,7 +1226,7 @@
         }
       },
       "name": "Unknown\n(Reptile Rootkit)",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "MALWARE"
       ],
       "primary_motivation": "UNKNOWN"
@@ -1336,7 +1336,7 @@
         }
       },
       "name": "Anonymous Sudan",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "DOS/DDOS/RDOS"
       ],
       "primary_motivation": "UNKNOWN"
@@ -1459,7 +1459,7 @@
         }
       },
       "name": "UAC-0006 Group\n(SmokeLoader malware)",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "MALWARE"
       ],
       "primary_motivation": "UNKNOWN"
@@ -1535,7 +1535,7 @@
         }
       },
       "name": "Snatch Ransomware Group",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "RANSOMWARE"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -1598,7 +1598,7 @@
         }
       },
       "name": "BianLian Ransomware Group",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "RANSOMWARE"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -1648,7 +1648,7 @@
         }
       },
       "name": "NoName",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "DOS/DDOS/RDOS"
       ],
       "primary_motivation": "DISRUPTION"
@@ -1702,7 +1702,7 @@
         }
       },
       "name": "8Base",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "RANSOMWARE"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -1756,7 +1756,7 @@
         }
       },
       "name": "SiegedSec Hacking Group",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "DATA"
       ],
       "primary_motivation": "IDEOLOGY"
@@ -1840,7 +1840,7 @@
         }
       },
       "name": "Two Students (Internal)",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "INSIDER THREAT"
       ],
       "primary_motivation": "IDEOLOGY"
@@ -1890,7 +1890,7 @@
         }
       },
       "name": "Cl0p",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "RANSOMWARE"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -2209,7 +2209,7 @@
         }
       },
       "name": "Rhysida",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "RANSOMWARE"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -2293,7 +2293,7 @@
         }
       },
       "name": "Redline\nRaccoon\nTitan\nAurora\nVidar",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "MALWARE"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -2356,7 +2356,7 @@
         }
       },
       "name": "Realst",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "MALWARE"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -2410,7 +2410,7 @@
         }
       },
       "name": "SparkRAT",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "TROJAN"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -2494,7 +2494,7 @@
         }
       },
       "name": "Casbaneiro",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "FRAUD"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -2620,7 +2620,7 @@
         }
       },
       "name": "BlackCat/ ALPHV",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "RANSOMWARE"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -2661,7 +2661,7 @@
         }
       },
       "name": "Decoy Dog",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "WEB THREATS"
       ],
       "primary_motivation": "ESPIONAGE"
@@ -2715,7 +2715,7 @@
         }
       },
       "name": "NoBit",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "RANSOMWARE"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -2756,7 +2756,7 @@
         }
       },
       "name": "Spyhide stalkerware",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "SPYWARE"
       ],
       "primary_motivation": "ESPIONAGE"
@@ -2874,7 +2874,7 @@
         }
       },
       "name": "IT Army Ukraine",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "DOS/DDOS/RDOS"
       ],
       "primary_motivation": "DISRUPTION"
@@ -3149,7 +3149,7 @@
         }
       },
       "name": "NoEscape",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "RANSOMWARE"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -3386,7 +3386,7 @@
         }
       },
       "name": "ALPHV / BlackCat",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "RANSOMWARE"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -3440,7 +3440,7 @@
         }
       },
       "name": "Unknown\n(Cybercriminals utilizing the Remcos Remote Access Trojan (RAT))",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "MALWARE"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -4008,7 +4008,7 @@
         }
       },
       "name": "Lazarus Group",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "MINER/CRYPTO"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -4058,7 +4058,7 @@
         }
       },
       "name": "Fenix, a Mexico-based cybercrime group",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "PHISHING"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -4108,7 +4108,7 @@
         }
       },
       "name": "Nitrogen cybercrime group",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "PHISHING"
       ],
       "primary_motivation": "UNKNOWN"
@@ -4158,7 +4158,7 @@
         }
       },
       "name": "Unknown individual or group  (FraudGPT)",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "PHISHING"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -4272,7 +4272,7 @@
         }
       },
       "name": "BLOODNET",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "DOS/DDOS/RDOS"
       ],
       "primary_motivation": "DISRUPTION"
@@ -4505,7 +4505,7 @@
         }
       },
       "name": "Lazarus",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "MINER/CRYPTO"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -4593,7 +4593,7 @@
         }
       },
       "name": "BlueBravo",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "PHISHING"
       ],
       "primary_motivation": "ESPIONAGE"
@@ -4677,7 +4677,7 @@
         }
       },
       "name": "Bluenet Z",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "DOS/DDOS/RDOS"
       ],
       "primary_motivation": "DISRUPTION"
@@ -4778,7 +4778,7 @@
         }
       },
       "name": "Unknown\n(Criminal organization with international reach)",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "FRAUD"
       ],
       "primary_motivation": "FINANCIAL GAIN"
@@ -4930,7 +4930,7 @@
         }
       },
       "name": "Unknown\n(Hacker group with an \"overseas government background\")",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "INTRUSION"
       ],
       "primary_motivation": "ESPIONAGE"
@@ -5154,7 +5154,7 @@
         }
       },
       "name": "Mysterious Elephant APT group",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "INTRUSION"
       ],
       "primary_motivation": "UNKNOWN"
@@ -5387,7 +5387,7 @@
         }
       },
       "name": "Lockbit",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "RANSOMWARE"
       ],
       "primary_motivation": "FINANCIAL GAIN"

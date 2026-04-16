@@ -275,7 +275,6 @@ class StixObjectOrStixRelationship:
                 name
                 description
                 aliases
-                threat_actor_types
                 first_seen
                 last_seen
                 roles
@@ -285,6 +284,12 @@ class StixObjectOrStixRelationship:
                 primary_motivation
                 secondary_motivations
                 personal_motivations
+            }
+            ... on Threat-Actor-Group {
+                threat_actor_group_types
+            }
+            ... on Threat-Actor-Individual {
+                threat_actor_individual_types
             }
             ... on Tool {
                 name

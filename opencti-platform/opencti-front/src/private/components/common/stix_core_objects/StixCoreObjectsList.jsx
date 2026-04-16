@@ -215,15 +215,14 @@ export const stixCoreObjectsListQuery = graphql`
             description
             modified
             aliases
-            threat_actor_types
           }
           ... on ThreatActorGroup {
-            threat_actor_types
+            threat_actor_group_types
             modified
             aliases
           }
           ... on ThreatActorIndividual {
-            threat_actor_types
+            threat_actor_individual_types
             modified
             aliases
           }

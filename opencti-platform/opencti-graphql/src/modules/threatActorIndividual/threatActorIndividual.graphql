@@ -124,7 +124,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   name: String!
   description: String
   aliases: [String]
-  threat_actor_types: [String]
+  threat_actor_individual_types: [String]
   first_seen: DateTime
   last_seen: DateTime
   roles: [String]
@@ -188,7 +188,7 @@ enum ThreatActorsIndividualOrdering {
   confidence
   _score
   objectMarking
-  threat_actor_types
+  threat_actor_individual_types
 }
 type ThreatActorIndividualConnection {
   pageInfo: PageInfo!
@@ -205,7 +205,7 @@ input ThreatActorIndividualAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   aliases: [String]
-  threat_actor_types: [String]
+  threat_actor_individual_types: [String]
   first_seen: DateTime
   last_seen: DateTime
   roles: [String]

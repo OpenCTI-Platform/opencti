@@ -20,15 +20,15 @@ export const csvMapperMockSimpleEntity: Partial<CsvMapperParsed> = {
           },
         },
         {
-          key: 'threat_actor_types',
+          key: 'threat_actor_group_types',
           column: {
             column_name: 'AG',
             configuration: {
               separator: ',',
-            }
+            },
           },
         },
-      ]
-    }
-  ]
+      ],
+    },
+  ],
 };

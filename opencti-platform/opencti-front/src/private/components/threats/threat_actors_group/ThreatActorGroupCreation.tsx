@@ -53,7 +53,7 @@ const THREAT_ACTOR_GROUP_TYPE = 'Threat-Actor-Group';
 
 interface ThreatActorGroupAddInput {
   name: string;
-  threat_actor_types: string[];
+  threat_actor_group_types: string[];
   confidence: number | null;
   description: string;
   createdBy: FieldOption | null;
@@ -96,7 +96,7 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
   );
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string(),
-    threat_actor_types: Yup.array().nullable(),
+    threat_actor_group_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
   }, mandatoryAttributes);
@@ -140,7 +140,7 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
       input: {
         name,
         description: values.description,
-        threat_actor_types: values.threat_actor_types,
+        threat_actor_group_types: values.threat_actor_group_types,
         confidence: parseInt(String(values.confidence), 10),
         createdBy: values.createdBy?.value,
         objectMarking: values.objectMarking.map((v) => v.value),
@@ -167,7 +167,7 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
 
   const initialValues = useDefaultValues('Threat-Actor-Group', {
     name: inputValue ?? '',
-    threat_actor_types: [],
+    threat_actor_group_types: [],
     confidence: defaultConfidence ?? null,
     description: '',
     createdBy: defaultCreatedBy ?? null,
@@ -230,9 +230,9 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
             />
             <OpenVocabField
               type="threat-actor-group-type-ov"
-              name="threat_actor_types"
-              label={t_i18n('Threat actor types')}
-              required={(mandatoryAttributes.includes('threat_actor_types'))}
+              name="threat_actor_group_types"
+              label={t_i18n('Threat actor group types')}
+              required={(mandatoryAttributes.includes('threat_actor_group_types'))}
               multiple={true}
               containerStyle={fieldSpacingContainerStyle}
               onChange={setFieldValue}

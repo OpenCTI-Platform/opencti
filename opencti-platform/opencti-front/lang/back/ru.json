@@ -973,6 +973,8 @@
   "Theme secondary": "Тема вторичная",
   "Theme text color": "Цвет текста темы",
   "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "В этом списке отображаются все сущности, для которых включено ограничение доступа, то есть они доступны только определенным пользователям. На этом экране можно снять ограничение доступа.",
+  "Threat actor group types": "Типы групп агентов угроз",
+  "Threat actor individual types": "Индивидуальные типы агентов угроз",
   "Threat actor types": "Типы субъектов угроз",
   "Threat hunting": "Охота за угрозами",
   "Timestamp": "Временная метка",

@@ -5560,6 +5560,21 @@ input MalwareAddInput {
   upsertOperations: [EditInput!]
 }
 
+enum ThreatActorsGroupOrdering {
+  name
+  created
+  modified
+  created_at
+  updated_at
+  threat_actor_group_types
+  x_opencti_workflow_id
+  confidence
+  sophistication
+  resource_level
+  _score
+  objectMarking
+}
+
 enum ThreatActorsOrdering {
   name
   created
@@ -5571,7 +5586,6 @@ enum ThreatActorsOrdering {
   sophistication
   resource_level
   _score
-  threat_actor_types
   objectMarking
 }
 
@@ -5634,7 +5648,6 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   name: String!
   description: String
   aliases: [String]
-  threat_actor_types: [String]
   first_seen: DateTime
   last_seen: DateTime
   roles: [String]
@@ -5718,7 +5731,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   name: String!
   description: String
   aliases: [String]
-  threat_actor_types: [String]
+  threat_actor_group_types: [String]
   first_seen: DateTime
   last_seen: DateTime
   roles: [String]
@@ -5751,7 +5764,7 @@ input ThreatActorGroupAddInput {
   name: String!
   description: String
   aliases: [String]
-  threat_actor_types: [String]
+  threat_actor_group_types: [String]
   first_seen: DateTime
   last_seen: DateTime
   roles: [String]
@@ -9604,7 +9617,7 @@ type Query {
   threatActor(id: String): ThreatActor
   threatActors(first: Int, after: ID, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ThreatActorConnection
   threatActorGroup(id: String): ThreatActorGroup
-  threatActorsGroup(first: Int, after: ID, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ThreatActorGroupConnection
+  threatActorsGroup(first: Int, after: ID, orderBy: ThreatActorsGroupOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ThreatActorGroupConnection
   tool(id: String): Tool
   tools(first: Int, after: ID, orderBy: ToolsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ToolConnection
   vulnerability(id: String): Vulnerability
@@ -13332,7 +13345,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   name: String!
   description: String
   aliases: [String]
-  threat_actor_types: [String]
+  threat_actor_individual_types: [String]
   first_seen: DateTime
   last_seen: DateTime
   roles: [String]
@@ -13380,7 +13393,7 @@ enum ThreatActorsIndividualOrdering {
   confidence
   _score
   objectMarking
-  threat_actor_types
+  threat_actor_individual_types
 }
 
 type ThreatActorIndividualConnection {
@@ -13401,7 +13414,7 @@ input ThreatActorIndividualAddInput {
   name: String!
   description: String
   aliases: [String]
-  threat_actor_types: [String]
+  threat_actor_individual_types: [String]
   first_seen: DateTime
   last_seen: DateTime
   roles: [String]

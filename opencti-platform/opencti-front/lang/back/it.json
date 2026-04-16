@@ -973,6 +973,8 @@
   "Theme secondary": "Tema secondario",
   "Theme text color": "Colore del testo del tema",
   "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "Questa lista mostra tutte le entità con restrizioni di accesso abilitate, il che significa che sono accessibili solo a utenti specifici. Puoi rimuovere queste restrizioni di accesso in questa schermata.",
+  "Threat actor group types": "Tipi di gruppi di attori pericolosi",
+  "Threat actor individual types": "Tipi individuali di attori di minaccia",
   "Threat actor types": "Tipi di attori di minaccia",
   "Threat hunting": "Ricerca delle minacce",
   "Timestamp": "Timestamp",

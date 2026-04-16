@@ -500,13 +500,13 @@ const convertVulnerabilityToStix = (instance: StoreEntity, type: string): SDO.St
     },
   };
 };
-const convertThreatActorGroupToStix = (instance: StoreEntity, type: string): SDO.StixThreatActor => {
+const convertThreatActorGroupToStix = (instance: StoreEntity, type: string): SDO.StixThreatActorGroup => {
   assertType(ENTITY_TYPE_THREAT_ACTOR_GROUP, type);
   return {
     ...buildStixDomain(instance),
     name: instance.name,
     description: instance.description,
-    threat_actor_types: instance.threat_actor_types,
+    threat_actor_group_types: instance.threat_actor_group_types,
     aliases: instance.aliases,
     first_seen: convertToStixDate(instance.first_seen),
     last_seen: convertToStixDate(instance.last_seen),

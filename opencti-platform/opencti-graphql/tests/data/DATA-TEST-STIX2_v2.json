@@ -34,7 +34,7 @@
       "modified": "2018-11-19T23:39:03.893Z",
       "name": "Disco Team Threat Actor Group",
       "description": "This organized threat actor group operates to create profit from all types of crime.",
-      "threat_actor_types": [
+      "threat_actor_group_types": [
         "crime-syndicate"
       ],
       "aliases": [
@@ -59,7 +59,7 @@
       "modified": "2018-11-19T23:39:03.893Z",
       "name": "Jhon Threat Actor Individual",
       "description": "This organized threat actor individual.",
-      "threat_actor_types": [
+      "threat_actor_individual_types": [
         "crime-syndicate"
       ],
       "sophistication": "expert",
@@ -94,7 +94,7 @@
       ],
       "name": "Henry Threat Actor Individual Hacker",
       "description": "Henry Threat Actor Individual Hacker",
-      "threat_actor_types": [
+      "threat_actor_individual_types": [
         "hacker"
       ]
     },

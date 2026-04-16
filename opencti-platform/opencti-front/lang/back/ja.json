@@ -973,6 +973,8 @@
   "Theme secondary": "テーマ二次",
   "Theme text color": "テーマの文字色",
   "This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "このリストには、一部のアクセス制限が有効になっている、つまり一部の特定のユーザーしかアクセスできないエンティティがすべて表示されます。この画面では、このアクセス制限を削除できます。",
+  "Threat actor group types": "脅威行為者グループのタイプ",
+  "Threat actor individual types": "脅威行為者個人のタイプ",
   "Threat actor types": "洗練度",
   "Threat hunting": "ログソース",
   "Timestamp": "タイムスタンプ",

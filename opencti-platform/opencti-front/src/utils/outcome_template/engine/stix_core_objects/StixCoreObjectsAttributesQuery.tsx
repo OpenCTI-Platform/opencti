@@ -177,9 +177,12 @@ const stixCoreObjectsAttributesQuery = graphql`
                 first_seen
                 last_seen
                 description
-                threat_actor_types
+            }
+            ... on ThreatActorGroup {
+                threat_actor_group_types
             }
             ... on ThreatActorIndividual {
+                threat_actor_individual_types
                 secondary_motivations
                 personal_motivations
                 primary_motivation

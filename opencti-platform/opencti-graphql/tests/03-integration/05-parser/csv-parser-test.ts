@@ -29,11 +29,12 @@ describe('CSV-PARSER', () => {
     expect(objects.length).toBe(5);
     const threatActors: StixThreatActor[] = objects.filter((o) => o.type === 'threat-actor') as StixThreatActor[];
     expect(threatActors.filter((o) => isNotEmptyField(o.name)).length).toBe(5);
-    const threatActorWithTypes = threatActors.filter((o) => isNotEmptyField(o.threat_actor_types))[0];
+    const threatActorWithTypes = threatActors
+      .filter((o) => isNotEmptyField(o.threat_actor_group_types))[0];
     expect(threatActorWithTypes)
       .not
       .toBeNull();
-    expect(threatActorWithTypes.threat_actor_types.length)
+    expect(threatActorWithTypes.threat_actor_group_types.length)
       .toBe(2);
   });
 
@@ -131,11 +132,11 @@ describe('CSV-PARSER', () => {
       .toBe(5);
     expect(threatActors.filter((o) => isNotEmptyField(o.name)).length)
       .toBe(5);
-    const threatActorWithTypes = threatActors.filter((o) => isNotEmptyField(o.threat_actor_types))[0];
+    const threatActorWithTypes = threatActors.filter((o) => isNotEmptyField(o.threat_actor_group_types))[0];
     expect(threatActorWithTypes)
       .not
       .toBeNull();
-    expect(threatActorWithTypes.threat_actor_types.length)
+    expect(threatActorWithTypes.threat_actor_group_types.length)
       .toBe(2);
   });
 

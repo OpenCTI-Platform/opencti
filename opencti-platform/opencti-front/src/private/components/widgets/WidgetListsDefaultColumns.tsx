@@ -106,14 +106,11 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'valid_until', label: 'Valid until' },
     { attribute: 'x_opencti_score' },
   ],
-  'Threat-Actor': [
-    { attribute: 'threat_actor_types', label: 'Threat actor types' },
-  ],
   'Threat-Actor-Individual': [
-    { attribute: 'threat_actor_types', label: 'Threat actor types' },
+    { attribute: 'threat_actor_individual_types', label: 'Threat actor individual types' },
   ],
   'Threat-Actor-Group': [
-    { attribute: 'threat_actor_types', label: 'Threat actor types' },
+    { attribute: 'threat_actor_group_types', label: 'Threat actor group types' },
   ],
   'Intrusion-Set': [
     { attribute: 'resource_level', label: 'Resource level' },

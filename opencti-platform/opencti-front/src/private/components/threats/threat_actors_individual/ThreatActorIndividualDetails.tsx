@@ -25,7 +25,7 @@ const ThreatActorIndividualDetailsFragment = graphql`
     first_seen
     last_seen
     description
-    threat_actor_types
+    threat_actor_individual_types
     sophistication
     resource_level
     personal_motivations
@@ -104,9 +104,9 @@ const ThreatActorIndividualDetails: FunctionComponent<
               <Label>
                 {t_i18n('Threat actor types')}
               </Label>
-              <FieldOrEmpty source={data.threat_actor_types}>
+              <FieldOrEmpty source={data.threat_actor_individual_types}>
                 <Stack direction="row" flexWrap="wrap" gap={1}>
-                  {data.threat_actor_types?.map((threatActorIndividualType) => threatActorIndividualType && (
+                  {data.threat_actor_individual_types?.map((threatActorIndividualType) => threatActorIndividualType && (
                     <Tag
                       key={threatActorIndividualType}
                       label={threatActorIndividualType}

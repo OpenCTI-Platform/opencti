@@ -1581,15 +1581,30 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
     },
   ],
   [
-    'threat_actor_types',
+    'threat_actor_individual_types',
     {
-      filterKey: 'threat_actor_types',
-      label: 'Threat actor types',
+      filterKey: 'threat_actor_individual_types',
+      label: 'Threat actor individual types',
+      type: 'vocabulary',
+      multiple: true,
+      subEntityTypes: [
+        'Threat-Actor-Individual',
+      ],
+      elementsForFilterValuesSearch: [
+        'threat_actor_individual_type_ov',
+      ],
+      subFilters: null,
+    },
+  ],
+  [
+    'threat_actor_group_types',
+    {
+      filterKey: 'threat_actor_group_types',
+      label: 'Threat actor group types',
       type: 'vocabulary',
       multiple: true,
       subEntityTypes: [
         'Threat-Actor-Group',
-        'Threat-Actor-Individual',
       ],
       elementsForFilterValuesSearch: [
         'threat_actor_group_type_ov',

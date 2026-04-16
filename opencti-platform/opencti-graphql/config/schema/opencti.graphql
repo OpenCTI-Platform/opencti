@@ -7302,6 +7302,20 @@ input MalwareAddInput {
 }
 
 ############## ThreatActorsGroup
+enum ThreatActorsGroupOrdering {
+  name
+  created
+  modified
+  created_at
+  updated_at
+  threat_actor_group_types
+  x_opencti_workflow_id
+  confidence
+  sophistication
+  resource_level
+  _score
+  objectMarking
+}
 enum ThreatActorsOrdering {
   name
   created
@@ -7313,7 +7327,6 @@ enum ThreatActorsOrdering {
   sophistication
   resource_level
   _score
-  threat_actor_types
   objectMarking
 }
 type ThreatActorGroupConnection {
@@ -7438,11 +7451,10 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
     search: String
     filters: FilterGroup
   ): FileConnection
-  # ThreatActorGroup
+  # ThreatActor
   name: String!
   description: String
   aliases: [String]
-  threat_actor_types: [String]
   first_seen: DateTime
   last_seen: DateTime
   roles: [String]
@@ -7609,7 +7621,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   name: String!
   description: String
   aliases: [String]
-  threat_actor_types: [String]
+  threat_actor_group_types: [String]
   first_seen: DateTime
   last_seen: DateTime
   roles: [String]
@@ -7656,7 +7668,7 @@ input ThreatActorGroupAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
   aliases: [String]
-  threat_actor_types: [String]
+  threat_actor_group_types: [String]
   first_seen: DateTime
   last_seen: DateTime
   roles: [String]
@@ -15522,7 +15534,7 @@ type Query {
   threatActorsGroup(
     first: Int
     after: ID
-    orderBy: ThreatActorsOrdering
+    orderBy: ThreatActorsGroupOrdering
     orderMode: OrderingMode
     filters: FilterGroup
     search: String

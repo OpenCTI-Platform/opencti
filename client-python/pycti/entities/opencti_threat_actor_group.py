@@ -126,7 +126,7 @@ class ThreatActorGroup:
             name
             description
             aliases
-            threat_actor_types
+            threat_actor_group_types
             first_seen
             last_seen
             roles
@@ -225,7 +225,7 @@ class ThreatActorGroup:
         )
         query = (
             """
-            query ThreatActorsGroup($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: ThreatActorsOrdering, $orderMode: OrderingMode) {
+            query ThreatActorsGroup($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: ThreatActorsGroupOrdering, $orderMode: OrderingMode) {
                 threatActorsGroup(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
@@ -373,8 +373,8 @@ class ThreatActorGroup:
         :type description: str
         :param aliases: (optional) list of alias names for the Threat-Actor-Group
         :type aliases: list
-        :param threat_actor_types: (optional) list of threat actor types
-        :type threat_actor_types: list
+        :param threat_actor_group_types: (optional) list of threat actor group types
+        :type threat_actor_group_types: list
         :param first_seen: (optional) date in OpenCTI date format
         :type first_seen: str
         :param last_seen: (optional) date in OpenCTI date format
@@ -416,7 +416,7 @@ class ThreatActorGroup:
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
         aliases = kwargs.get("aliases", None)
-        threat_actor_types = kwargs.get("threat_actor_types", None)
+        threat_actor_group_types = kwargs.get("threat_actor_group_types", None)
         first_seen = kwargs.get("first_seen", None)
         last_seen = kwargs.get("last_seen", None)
         roles = kwargs.get("roles", None)
@@ -467,7 +467,7 @@ class ThreatActorGroup:
                         "name": name,
                         "description": description,
                         "aliases": aliases,
-                        "threat_actor_types": threat_actor_types,
+                        "threat_actor_group_types": threat_actor_group_types,
                         "first_seen": first_seen,
                         "last_seen": last_seen,
                         "roles": roles,
@@ -567,9 +567,9 @@ class ThreatActorGroup:
                     else None
                 ),
                 aliases=self.opencti.stix2.pick_aliases(stix_object),
-                threat_actor_types=(
-                    stix_object["threat_actor_types"]
-                    if "threat_actor_types" in stix_object
+                threat_actor_group_types=(
+                    stix_object["threat_actor_group_types"]
+                    if "threat_actor_group_types" in stix_object
                     else None
                 ),
                 first_seen=(

@@ -143,7 +143,7 @@ const ThreatActorsIndividual = () => {
       name: {
         percentWidth: 15,
       },
-      threat_actor_types: {
+      threat_actor_individual_types: {
         label: 'Type',
         percentWidth: 13,
       },
