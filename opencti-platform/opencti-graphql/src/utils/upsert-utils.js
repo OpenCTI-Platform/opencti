@@ -128,25 +128,46 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
   if (type === ENTITY_TYPE_INDICATOR) {
     if (resolvedElement.decay_applied_rule) {
       // Do not compute decay again when:
-      // - base score does not change
-      // - same userIs has already updated to the same score previously
+      // - base score does not change (indicator is still at its initial score, decay not started yet)
       const isScoreInUpsertSameAsBaseScore = updatePatch.decay_base_score === resolvedElement.decay_base_score && updatePatch.decay_base_score === resolvedElement.x_opencti_score;
+      // - same userId has already updated to the same score previously
       const hasSameScoreChangedBySameSource = hasSameSourceAlreadyUpdateThisScore(user.id, updatePatch.x_opencti_score, resolvedElement.decay_history);
-      if (isScoreInUpsertSameAsBaseScore || hasSameScoreChangedBySameSource) {
-        logApp.debug(`[OPENCTI][DECAY] on upsert indicator skip decay, do not change score, keep:${resolvedElement.x_opencti_score}`, { elementScore: resolvedElement.x_opencti_score, patchScore: updatePatch.x_opencti_score, isScoreInUpsertSameAsBaseScore, hasSameScoreChangedBySameSource });
+      // - the live score in the upsert is identical to the current live score (e.g. a Playbook re-ingesting
+      //   the indicator bundle without any score change — the bundle carries the current decayed score,
+      //   not the original base score, so addIndicator incorrectly computes a new decay start from it)
+      const isLiveScoreUnchanged = updatePatch.x_opencti_score === resolvedElement.x_opencti_score;
+      if (isScoreInUpsertSameAsBaseScore || hasSameScoreChangedBySameSource || isLiveScoreUnchanged) {
+        logApp.debug(
+          `[OPENCTI][DECAY] on upsert indicator skip decay, do not change score, keep:${resolvedElement.x_opencti_score}`,
+          {
+            elementScore: resolvedElement.x_opencti_score,
+            patchScore: updatePatch.x_opencti_score,
+            isScoreInUpsertSameAsBaseScore,
+            hasSameScoreChangedBySameSource,
+            isLiveScoreUnchanged,
+          },
+        );
         // don't reset score, valid_from & valid_until
         updatePatch.x_opencti_score = resolvedElement.x_opencti_score; // don't change the score
         updatePatch.valid_from = resolvedElement.valid_from;
         updatePatch.valid_until = resolvedElement.valid_until;
         // don't reset decay attributes
         updatePatch.revoked = resolvedElement.revoked;
+        updatePatch.decay_base_score = resolvedElement.decay_base_score; // preserve the original base score
         updatePatch.decay_base_score_date = resolvedElement.decay_base_score_date;
         updatePatch.decay_applied_rule = resolvedElement.decay_applied_rule;
         updatePatch.decay_history = []; // History is multiple, forcing to empty array will prevent any modification
         updatePatch.decay_next_reaction_date = resolvedElement.decay_next_reaction_date;
       } else {
-        // As base_score as change, decay will be reset by upsert
-        logApp.debug('[OPENCTI][DECAY] Decay is restarted', { elementScore: resolvedElement.x_opencti_score, initialPatchScore: basePatch.x_opencti_score, updatePatchScore: updatePatch.x_opencti_score });
+        // As base_score has changed, decay will be reset by upsert
+        logApp.debug(
+          '[OPENCTI][DECAY] Decay is restarted',
+          {
+            elementScore: resolvedElement.x_opencti_score,
+            initialPatchScore: basePatch.x_opencti_score,
+            updatePatchScore: updatePatch.x_opencti_score,
+          },
+        );
       }
     }
 
