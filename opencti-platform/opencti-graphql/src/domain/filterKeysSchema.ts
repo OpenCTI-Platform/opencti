@@ -418,7 +418,7 @@ const completeFilterDefinitionMapWithSpecialKeys = (
     filterDefinitionsMap.set(WORKFLOW_USER_FILTER, {
       filterKey: WORKFLOW_USER_FILTER,
       type: 'id',
-      label: 'User',
+      label: 'Part of user',
       multiple: true,
       subEntityTypes,
       elementsForFilterValuesSearch: [ENTITY_TYPE_USER],
@@ -426,7 +426,7 @@ const completeFilterDefinitionMapWithSpecialKeys = (
     filterDefinitionsMap.set(WORKFLOW_GROUP_FILTER, {
       filterKey: WORKFLOW_GROUP_FILTER,
       type: 'id',
-      label: 'Group',
+      label: 'Part of group',
       multiple: true,
       subEntityTypes,
       elementsForFilterValuesSearch: [ENTITY_TYPE_GROUP],
@@ -434,7 +434,7 @@ const completeFilterDefinitionMapWithSpecialKeys = (
     filterDefinitionsMap.set(WORKFLOW_ORGANIZATION_FILTER, {
       filterKey: WORKFLOW_ORGANIZATION_FILTER,
       type: 'id',
-      label: 'Organization',
+      label: 'Part of organization',
       multiple: true,
       subEntityTypes,
       elementsForFilterValuesSearch: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
