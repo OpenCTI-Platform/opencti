@@ -14,6 +14,7 @@ OpenCTI is a cyber threat intelligence platform built with a **monorepo structur
 ## Critical Build Requirements
 
 ### Enable Corepack First
+fake
 **CRITICAL**: Before any yarn commands, enable corepack to use Yarn 4.12.0:
 ```bash
 corepack enable                 # One-time setup, downloads correct Yarn version
