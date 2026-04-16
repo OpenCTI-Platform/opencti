@@ -70,7 +70,7 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
         <Grid container={true} spacing={2} sx={{ marginBottom: 2 }}>
           <Grid item xs={6}>
             <Label>
-              {t_i18n('Information type')}
+              {t_i18n('Request for information types')}
             </Label>
             <FieldOrEmpty source={informationTypes}>
               <Stack direction="row" flexWrap="wrap" gap={1}>

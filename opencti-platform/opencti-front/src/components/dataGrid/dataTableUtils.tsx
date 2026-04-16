@@ -539,7 +539,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   },
   information_types: {
     id: 'information_types',
-    label: 'Information type',
+    label: 'Request for information types',
     percentWidth: 9,
     isSortable: true,
     render: (
@@ -1119,7 +1119,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   },
   takedown_types: {
     id: 'takedown_types',
-    label: 'Takedown type',
+    label: 'Request for takedown types',
     percentWidth: 9,
     isSortable: true,
     render: (
