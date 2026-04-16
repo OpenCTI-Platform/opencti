@@ -4052,13 +4052,17 @@ export const elUpdate = async (
       body: documentBody,
     };
     if (engine instanceof ElkClient) {
-      return engine.update(updateRequest).catch((err: any) => {
+      try {
+        return engine.update(updateRequest);
+      } catch (err: any) {
         throw DatabaseError('Update indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
-      });
+      }
     }
-    return engine.update(updateRequest).catch((err: any) => {
+    try {
+      return engine.update(updateRequest);
+    } catch (err: any) {
       throw DatabaseError('Update indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
-    });
+    }
   };
   return retryElOperations(updateOperation);
 };
@@ -4093,13 +4097,17 @@ export const elDelete = (indexName: string, documentId: string) => {
       refresh: true,
     };
     if (engine instanceof ElkClient) {
-      return engine.delete(deleteRequest).catch((err: any) => {
+      try {
+        return engine.delete(deleteRequest);
+      } catch (err: any) {
         throw DatabaseError('Deleting indexing fail', { cause: err, documentId });
-      });
+      }
     }
-    return engine.delete(deleteRequest).catch((err: any) => {
+    try {
+      return engine.delete(deleteRequest);
+    } catch (err: any) {
       throw DatabaseError('Deleting indexing fail', { cause: err, documentId });
-    });
+    }
   };
   return retryElOperations(deleteOperation);
 };
@@ -4352,13 +4360,17 @@ export const elReindexElements = async (
       refresh: true,
     };
     if (engine instanceof ElkClient) {
-      return engine.reindex(reindexParams).catch((err) => {
+      try {
+        return engine.reindex(reindexParams);
+      } catch (err: any) {
         throw DatabaseError(`Reindexing fail from ${sourceIndex} to ${destIndex}`, { cause: err, body: reindexParams.body });
-      });
+      }
     }
-    return engine.reindex(reindexParams).catch((err) => {
+    try {
+      return engine.reindex(reindexParams);
+    } catch (err: any) {
       throw DatabaseError(`Reindexing fail from ${sourceIndex} to ${destIndex}`, { cause: err, body: reindexParams.body });
-    });
+    }
   };
   return retryElOperations(reindexOperation);
 };
@@ -5042,13 +5054,11 @@ export const elUpdateElement = async (context: AuthContext, user: AuthUser, inst
 export const getStats = (indices = READ_PLATFORM_INDICES) => {
   const statsOperation = async () => {
     if (engine instanceof ElkClient) {
-      return engine.indices
-        .stats({ index: indices }) //
-        .then((result) => oebp(result)._all.primaries);
+      const engineIndicesStats = await engine.indices.stats({ index: indices });
+      return oebp(engineIndicesStats)._all.primaries;
     }
-    return engine.indices
-      .stats({ index: indices }) //
-      .then((result) => oebp(result)._all.primaries);
+    const engineIndicesStats = await engine.indices.stats({ index: indices });
+    return oebp(engineIndicesStats)._all.primaries;
   };
   return retryElOperations(statsOperation);
 };
