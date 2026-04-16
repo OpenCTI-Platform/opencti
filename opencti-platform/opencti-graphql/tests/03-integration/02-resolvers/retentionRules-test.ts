@@ -381,8 +381,8 @@ describe('RetentionRules module – integration tests', () => {
       const input: RetentionRuleAddInput = {
         name: 'check short retention',
         filters: emptyFilters,
-        max_retention: 999999,
-        retention_unit: RetentionUnit.Days,
+        max_retention: 1,
+        retention_unit: RetentionUnit.Minutes,
         scope: RetentionRuleScope.Knowledge,
       };
 
