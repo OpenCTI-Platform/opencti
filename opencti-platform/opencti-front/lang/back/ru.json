@@ -830,6 +830,8 @@
   "Representative": "Представитель",
   "Request access data as json field": "Запрос данных доступа в виде json-поля",
   "Request access workflow": "Рабочий процесс запроса доступа",
+  "Request for information types": "Запрос на информацию",
+  "Request for takedown types": "Типы запросов на отмену",
   "Resolves to": "Разрешается в",
   "Resource level": "Уровень ресурсов",
   "Restrict delete to its own entities": "Ограничить удаление собственными подразделениями",

@@ -830,6 +830,8 @@
   "Representative": "Repräsentativ",
   "Request access data as json field": "Zugangsdaten als json-Feld anfordern",
   "Request access workflow": "Arbeitsablauf zur Beantragung des Zugangs",
+  "Request for information types": "Ersuchen um Informationstypen",
+  "Request for takedown types": "Ersuchen um Aufnahme von Informationen",
   "Resolves to": "Löst sich auf in",
   "Resource level": "Ressourcenniveau",
   "Restrict delete to its own entities": "Löschen auf eigene Entitäten beschränken",

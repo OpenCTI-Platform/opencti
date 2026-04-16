@@ -830,6 +830,8 @@
   "Representative": "代表者",
   "Request access data as json field": "アクセスデータをjsonフィールドでリクエスト",
   "Request access workflow": "リクエストアクセスワークフロー",
+  "Request for information types": "資料請求の種類",
+  "Request for takedown types": "削除要請の種類",
   "Resolves to": "に解決する",
   "Resource level": "主な動機",
   "Restrict delete to its own entities": "削除を自身のエンティティに制限する",
