@@ -37,7 +37,13 @@ const validateNotifier = (notifier: { notifier_connector_id: string; notifier_co
   }
   // Connector Schema is valued, we have checked that before
   const validate = ajv.compile(JSON.parse(notifierConnector.connector_schema ?? '{}'));
-  const isValidConfiguration = validate(JSON.parse(notifier.notifier_configuration));
+  let parsedConfiguration: unknown;
+  try {
+    parsedConfiguration = JSON.parse(notifier.notifier_configuration);
+  } catch {
+    throw UnsupportedError('This configuration is invalid', { configuration: notifier.notifier_configuration });
+  }
+  const isValidConfiguration = validate(parsedConfiguration);
   if (!isValidConfiguration) {
     throw UnsupportedError('This configuration is invalid', { configuration: notifier.notifier_configuration, errors: validate.errors });
   }
