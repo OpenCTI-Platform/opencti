@@ -10,16 +10,16 @@ import { useFormatter } from '../../../../../components/i18n';
 import WorkflowConditionFilters from './WorkflowConditionFilters';
 
 interface WorkflowFieldItemProps extends FieldProps {
-  onDelete: () => void;
+  onDelete?: () => void;
 }
 
 const WorkflowFieldItem = ({ field, onDelete }: WorkflowFieldItemProps) => {
   const { t_i18n } = useFormatter();
   const { name, value } = field;
   const isCondition = name === 'conditions';
-  const showExpandAccordionDetails = isCondition || !!value.params;
+  const showExpandAccordionDetails = !!value.params;
 
-  const [expanded, setExpanded] = useState(showExpandAccordionDetails);
+  const [expanded, setExpanded] = useState(isCondition || showExpandAccordionDetails);
   const deletion = useDeletion({});
 
   return (
@@ -29,15 +29,17 @@ const WorkflowFieldItem = ({ field, onDelete }: WorkflowFieldItemProps) => {
           <Typography sx={{ display: 'inline-flex', alignItems: 'center', fontWeight: 'bold', flexGrow: 1 }}>
             {isCondition ? t_i18n('Condition') : camelCaseToSentenceCase(value.type)}
           </Typography>
-          <IconButton
-            color="error"
-            onClick={(e) => {
-              e.stopPropagation();
-              deletion.handleOpenDelete();
-            }}
-          >
-            <DeleteOutlined fontSize="small" />
-          </IconButton>
+          {onDelete && (
+            <IconButton
+              color="error"
+              onClick={(e) => {
+                e.stopPropagation();
+                deletion.handleOpenDelete();
+              }}
+            >
+              <DeleteOutlined fontSize="small" />
+            </IconButton>
+          )}
         </AccordionSummary>
         <AccordionDetails sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {isCondition ? (
@@ -50,14 +52,16 @@ const WorkflowFieldItem = ({ field, onDelete }: WorkflowFieldItemProps) => {
         </AccordionDetails>
       </Accordion>
 
-      <DeleteDialog
-        message={t_i18n('Are you sure?')}
-        deletion={deletion}
-        submitDelete={() => {
-          onDelete();
-          deletion.handleCloseDelete();
-        }}
-      />
+      {onDelete && (
+        <DeleteDialog
+          message={t_i18n('Are you sure?')}
+          deletion={deletion}
+          submitDelete={() => {
+            onDelete();
+            deletion.handleCloseDelete();
+          }}
+        />
+      )}
     </>
   );
 };

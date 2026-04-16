@@ -22,7 +22,7 @@ export type Status = {
 export type Transition = {
   event: string;
   actions?: Action[];
-  conditions?: FilterGroup;
+  conditions?: { filters: FilterGroup };
 };
 
 export const NEW_EVENT_NAME = 'NEW_EVENT';

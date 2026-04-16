@@ -18,6 +18,8 @@ export class WorkflowFactory {
       return ((ctx as any)?.user?.organizations || []).map((o: any) => o.id);
     } else if (key === 'workflow_role') {
       return ((ctx as any)?.user?.roles || []).map((r: any) => r.name);
+    } else if (key === 'workflow_user') {
+      return ((ctx as any)?.user?.id || ((ctx as any)?.user?.internal_id) || null);
     } else if (key === 'name') {
       return ctx.entity.name;
     } else {
@@ -59,7 +61,7 @@ export class WorkflowFactory {
   }
 
   private static evaluateFilter<TContext extends Context>(ctx: TContext, filter: Filter): boolean {
-    const { key, operator, values } = filter;
+    const { key, operator, values, mode } = filter;
     // OpenCTI filters usually use the first element of the key array as the field path
     if (!key || !operator) return true;
 
@@ -67,9 +69,8 @@ export class WorkflowFactory {
       ? key.flatMap((k) => this.getNestedValue(ctx, k))
       : this.getNestedValue(ctx, key);
 
-    // In the new format, 'values' is an array.
-    // Standard behavior: if any value in the filter matches, the filter is TRUE (OR logic within the filter)
-    return values.some((expectedValue) => {
+    // Evaluate each value against the operator
+    const results = values.map((expectedValue) => {
       switch (operator) {
         case FilterOperator.Eq:
           // If actualValue is an array, check if any element matches
@@ -101,10 +102,15 @@ export class WorkflowFactory {
         case FilterOperator.StartsWith:
           return String(actualValue).toLowerCase().startsWith(String(expectedValue).toLowerCase());
         default:
-          console.warn(`Operator '${operator}' not yet implemented in engine, defaulting to true.`);
-          return true;
+          console.warn(`Operator '${operator}' not yet implemented in engine, defaulting to false.`);
+          return false;
       }
     });
+
+    // Combine results based on filter mode: AND or OR
+    return mode === FilterMode.And
+      ? results.every((res) => res === true)
+      : results.some((res) => res === true);
   }
 
   /**

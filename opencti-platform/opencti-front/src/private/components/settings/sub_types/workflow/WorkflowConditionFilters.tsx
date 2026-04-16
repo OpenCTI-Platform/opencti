@@ -2,7 +2,7 @@ import { Box } from '@mui/material';
 import Filters from '@components/common/lists/Filters';
 import FilterIconButton from '../../../../../components/FilterIconButton';
 import useFiltersState from '../../../../../utils/filters/useFiltersState';
-import { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
+import type { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import { useEffect } from 'react';
 import { FieldProps } from 'formik';

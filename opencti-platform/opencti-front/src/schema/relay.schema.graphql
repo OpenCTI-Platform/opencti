@@ -10794,7 +10794,7 @@ type WorkflowSerializedTransition {
   to: String!
   event: String!
   actions: [WorkflowActionConfig!]
-  conditions: JSON!
+  conditions: JSON
 }
 
 type WorkflowSchema {

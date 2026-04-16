@@ -37584,7 +37584,7 @@ export type WorkflowSerializedState = {
 export type WorkflowSerializedTransition = {
   __typename?: 'WorkflowSerializedTransition';
   actions?: Maybe<Array<WorkflowActionConfig>>;
-  conditions: Scalars['JSON']['output'];
+  conditions?: Maybe<Scalars['JSON']['output']>;
   event: Scalars['String']['output'];
   from: Scalars['String']['output'];
   to: Scalars['String']['output'];
@@ -52135,7 +52135,7 @@ export type WorkflowSerializedStateResolvers<ContextType = any, ParentType exten
 
 export type WorkflowSerializedTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSerializedTransition'] = ResolversParentTypes['WorkflowSerializedTransition']> = ResolversObject<{
   actions?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
-  conditions?: Resolver<ResolversTypes['JSON'], ParentType, ContextType>;
+  conditions?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   from?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   to?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

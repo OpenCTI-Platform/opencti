@@ -4,6 +4,7 @@ import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
 import { NODE_SIZE } from '../utils';
 import { snakeCaseToSentenceCase } from '../../../../../../utils/String';
+import { useMemo } from 'react';
 
 const generatePath = (points: number[][]) => {
   const path = points.map(([x, y]) => `${x},${y}`).join(' L');
@@ -23,6 +24,21 @@ const TransitionNode = ({ data, id }: NodeProps) => {
   const edges = getEdges();
   const hasIncomingEdge = edges.some((edge) => edge.target === id);
   const hasOutgoingEdge = edges.some((edge) => edge.source === id);
+
+  const conditionAndActions = useMemo(() => {
+    const filterCount = data.conditions?.filters?.filters?.length ?? 0;
+    const filterGroupCount = data.conditions?.filters?.filterGroups?.length ?? 0;
+    const totalConditions = filterCount + filterGroupCount;
+    const hasConditions = totalConditions > 0;
+    const hasActions = data.actions?.length > 0;
+    return (
+      <>
+        {hasConditions && `${totalConditions} ${t_i18n('conditions')}`}
+        {hasConditions && hasActions && ' | '}
+        {hasActions && `${data.actions?.length} ${t_i18n('actions')}`}
+      </>
+    );
+  }, [data.conditions, data.actions]);
 
   const hexagonPath = generatePath([
     [0, innerHeight / 2],
@@ -72,9 +88,7 @@ const TransitionNode = ({ data, id }: NodeProps) => {
             </div>
             <ul style={{ margin: 0, padding: 0, listStyleType: 'none' }}>
               <li>
-                {!!data.conditions?.filters?.filters && `${data.conditions.filters?.filters?.length} ${t_i18n('conditions')}`}
-                {!!data.conditions?.filters?.filters && !!data.actions?.length ? ' | ' : ' '}
-                {!!data.actions?.length && `${data.actions?.length} ${t_i18n('actions')}`}
+                {conditionAndActions}
               </li>
             </ul>
           </div>
