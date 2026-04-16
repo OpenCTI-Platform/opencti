@@ -1,21 +1,21 @@
 import React, { useRef, useState } from 'react';
 import Button from '@common/button/Button';
 import MenuItem from '@mui/material/MenuItem';
-import { Widget } from 'src/utils/widget/widget';
-import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
-import WidgetConfig from '../../widgets/WidgetConfig';
-import Security from '../../../../utils/Security';
-import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
-import { useFormatter } from '../../../../components/i18n';
+import VisuallyHiddenInput from '../../private/components/common/VisuallyHiddenInput';
+import WidgetConfig from '../../private/components/widgets/WidgetConfig';
+import Security from '../../utils/Security';
+import { EXPLORE_EXUPDATE } from '../../utils/hooks/useGranted';
+import { useFormatter } from '../i18n';
+import type { DashboardWidget } from './dashboard-types';
 
 type WorkspaceWidgetConfigProps = {
   handleImportWidget: (widgetFile: File) => void;
-  widget?: Widget;
-  onComplete: (value: Widget, variableName?: string) => void;
+  widget?: DashboardWidget;
+  onComplete: (value: DashboardWidget, variableName?: string) => void;
   closeMenu?: () => void;
 };
 
-const WorkspaceWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidget }: WorkspaceWidgetConfigProps) => {
+const DashboardWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidget }: WorkspaceWidgetConfigProps) => {
   const { t_i18n } = useFormatter();
   const [isWidgetConfigOpen, setIsWidgetConfigOpen] = useState<boolean>(false);
   const inputRef: React.MutableRefObject<HTMLInputElement | null> = useRef(null);
@@ -73,7 +73,7 @@ const WorkspaceWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
         </MenuItem>
       )}
       <WidgetConfig
-        onComplete={onComplete}
+        onComplete={(widget, variableName) => onComplete(widget as DashboardWidget, variableName)}
         widget={widget}
         onClose={handleCloseWidgetConfig}
         open={isWidgetConfigOpen}
@@ -83,4 +83,4 @@ const WorkspaceWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
   );
 };
 
-export default WorkspaceWidgetConfig;
+export default DashboardWidgetConfig;

@@ -13,7 +13,7 @@ import type { Theme } from '../../../components/Theme';
 import ItemMarkings from '../../../components/ItemMarkings';
 import ItemBoolean from '../../../components/ItemBoolean';
 import useAuth from '../../../utils/hooks/useAuth';
-import { copyPublicLinkUrl } from '../../../utils/dashboard';
+import { copyPublicLinkUrl } from './workspace-utils';
 
 export const workspaceShareListQuery = graphql`
   query WorkspaceShareListQuery($filters: FilterGroup) {

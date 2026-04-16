@@ -7,18 +7,18 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { useState } from 'react';
-import DeleteDialog from '../../../../components/DeleteDialog';
-import { useFormatter } from '../../../../components/i18n';
-import Security from '../../../../utils/Security';
-import useDeletion from '../../../../utils/hooks/useDeletion';
-import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
-import handleWidgetExportJson from '../../../../utils/widget/widgetExportHandler';
-import WorkspaceWidgetConfig from './WorkspaceWidgetConfig';
+import DeleteDialog from '../DeleteDialog';
+import { useFormatter } from '../i18n';
+import Security from '../../utils/Security';
+import useDeletion from '../../utils/hooks/useDeletion';
+import { EXPLORE_EXUPDATE } from '../../utils/hooks/useGranted';
+import DashboardWidgetConfig from './DashboardWidgetConfig';
 
-const WorkspaceWidgetPopover = ({
+const DashboardWidgetPopover = ({
   onUpdate,
   onDuplicate,
   onDelete,
+  onExport,
   widget,
   workspace,
 }) => {
@@ -39,7 +39,7 @@ const WorkspaceWidgetPopover = ({
   };
 
   const handleExportWidget = () => {
-    handleWidgetExportJson(workspace.id, widget);
+    onExport?.(workspace.id, widget);
   };
 
   return (
@@ -66,11 +66,10 @@ const WorkspaceWidgetPopover = ({
         className="noDrag"
       >
         <Security needs={[EXPLORE_EXUPDATE]}>
-          <WorkspaceWidgetConfig
+          <DashboardWidgetConfig
             closeMenu={() => setAnchorEl(null)}
             onComplete={onUpdate}
             widget={widget}
-            data={workspace}
           />
           <MenuItem onClick={handleExportWidget}>{t_i18n('Export')}</MenuItem>
           <MenuItem onClick={handleOpenDuplicate}>{t_i18n('Duplicate')}</MenuItem>
@@ -109,4 +108,4 @@ const WorkspaceWidgetPopover = ({
   );
 };
 
-export default WorkspaceWidgetPopover;
+export default DashboardWidgetPopover;

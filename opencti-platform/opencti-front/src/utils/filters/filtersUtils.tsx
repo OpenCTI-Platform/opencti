@@ -11,7 +11,7 @@ import { isEmptyField, uniqueArray } from '../utils';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 import { dateFiltersValueForDisplay } from '../Time';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../widget/widgetUtils';
-import type { DashboardManifest } from '../dashboard';
+import type { DashboardManifest } from '../../components/dashboard/dashboard-types';
 
 // ----------------------------------------------------------------------------------------------------------------------
 

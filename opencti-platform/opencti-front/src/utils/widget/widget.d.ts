@@ -47,8 +47,8 @@ interface WidgetLayout {
   x: number;
   y: number;
   i: string;
-  moved: boolean;
-  static: boolean;
+  moved?: boolean;
+  static?: boolean;
 }
 
 export interface Widget {
