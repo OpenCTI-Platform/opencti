@@ -87,7 +87,7 @@ const WorkspaceHeader = ({
 
   return (
     <>
-      <div style={{ margin: variant === 'dashboard' ? '0 20px' : 0, display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <Tooltip title={workspace.name}>
             <Typography

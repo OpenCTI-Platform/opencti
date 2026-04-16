@@ -16,17 +16,12 @@ const CustomView = ({ manifest }: CustomViewProps) => {
   return (
     <Box
       ref={containerRef}
-      sx={{
-      // Compensate gridConfig margins to avoid outer margins
-        margin: '0 -20px 0 -20px',
-        marginTop: '-20px',
-      }}
     >
       <ReactGridLayout
         className="layout"
         width={width}
         layout={Object.values(widgetsLayouts)}
-        gridConfig={{ margin: [20, 20], rowHeight: 50, cols: 12 }}
+        gridConfig={{ margin: [20, 20], rowHeight: 50, cols: 12, containerPadding: [0, 0] }}
         resizeConfig={{ enabled: false }}
         dragConfig={{ enabled: false }}
         dropConfig={{ enabled: false }}

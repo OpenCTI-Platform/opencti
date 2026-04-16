@@ -265,70 +265,70 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
       id="container"
       ref={containerRef}
       sx={{
-        margin: '0 -20px 0 -20px',
-        marginTop: noToolbar ? '-20px' : '10px',
         '& .react-grid-item.react-grid-placeholder': {
           border: `2px solid ${theme.palette.primary.main}`,
           borderRadius: 1,
         },
       }}
     >
-      {!noToolbar && (
-        <Stack gap={1}>
-          <WorkspaceHeader
-            handleAddWidget={handleAddWidget}
-            handleImportWidget={importWidget}
-            data={workspace}
-            variant="dashboard"
-          />
-          <DashboardTimeFilters
-            workspace={workspace}
-            config={manifest.config}
-            handleDateChange={handleDateChange}
-          />
-        </Stack>
-      )}
-      <ReactGridLayout
-        className="layout"
-        width={width}
-        layout={Object.values(widgetsLayouts)}
-        gridConfig={{ margin: [20, 20], rowHeight: 50, cols: 12 }}
-        dragConfig={{ enabled: userCanEdit ? !noToolbar : false, cancel: '.noDrag' }}
-        resizeConfig={{ enabled: userCanEdit ? !noToolbar : false }}
-        onLayoutChange={userCanEdit && !noToolbar ? onLayoutChange : () => true}
-        onResizeStart={userCanEdit ? (_, { i }) => handleResize(i) : undefined}
-        onResizeStop={userCanEdit ? handleResize : undefined}
-      >
-        {widgetsArray.map((widget) => {
-          if (!widgetsLayouts[widget.id]) return null;
-          const popover = userCanEdit && !noToolbar && (
-            <WorkspaceWidgetPopover
-              widget={widget}
-              workspace={workspace}
-              onUpdate={handleUpdateWidget}
-              onDuplicate={handleDuplicateWidget}
-              onDelete={() => handleDeleteWidget(widget.id)}
+      <Stack gap={2}>
+        {!noToolbar && (
+          <Stack gap={1}>
+            <WorkspaceHeader
+              handleAddWidget={handleAddWidget}
+              handleImportWidget={importWidget}
+              data={workspace}
+              variant="dashboard"
             />
-          );
+            <DashboardTimeFilters
+              currentUserAccessRight={workspace.currentUserAccessRight}
+              config={manifest.config}
+              handleDateChange={handleDateChange}
+            />
+          </Stack>
+        )}
+        <ReactGridLayout
+          className="layout"
+          width={width}
+          layout={Object.values(widgetsLayouts)}
+          gridConfig={{ margin: [20, 20], rowHeight: 50, cols: 12, containerPadding: [0, 0] }}
+          dragConfig={{ enabled: userCanEdit ? !noToolbar : false, cancel: '.noDrag' }}
+          resizeConfig={{ enabled: userCanEdit ? !noToolbar : false }}
+          onLayoutChange={userCanEdit && !noToolbar ? onLayoutChange : () => true}
+          onResizeStart={userCanEdit ? (_, { i }) => handleResize(i) : undefined}
+          onResizeStop={userCanEdit ? handleResize : undefined}
+        >
+          {widgetsArray.map((widget) => {
+            if (!widgetsLayouts[widget.id]) return null;
+            const popover = userCanEdit && !noToolbar && (
+              <WorkspaceWidgetPopover
+                widget={widget}
+                workspace={workspace}
+                onUpdate={handleUpdateWidget}
+                onDuplicate={handleDuplicateWidget}
+                onDelete={() => handleDeleteWidget(widget.id)}
+              />
+            );
 
-          return (
-            <div
-              key={widget.id}
-              style={{
-                display: 'relative',
-              }}
-            >
-              {widget.id === idToResize ? <div /> : (
-                <DashboardViz
-                  widget={widget}
-                  config={manifest.config}
-                  popover={popover}
-                />
-              )}
-            </div>
-          );
-        })}
-      </ReactGridLayout>
+            return (
+              <div
+                key={widget.id}
+                style={{
+                  display: 'relative',
+                }}
+              >
+                {widget.id === idToResize ? <div /> : (
+                  <DashboardViz
+                    widget={widget}
+                    config={manifest.config}
+                    popover={popover}
+                  />
+                )}
+              </div>
+            );
+          })}
+        </ReactGridLayout>
+      </Stack>
     </Box>
   );
 };
