@@ -3,6 +3,7 @@ import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTy
 import { useDataTableLocalSort } from '../../../../../components/dataGrid/dataTableHooks';
 import { useFormatter } from '../../../../../components/i18n';
 import type { CustomViewsSettings_customViews$data } from './__generated__/CustomViewsSettings_customViews.graphql';
+import DrawOutlinedIcon from '@mui/icons-material/DrawOutlined';
 
 type CustomViewsSettingsEntry = CustomViewsSettings_customViews$data['customViews'][number];
 
@@ -36,6 +37,7 @@ const CustomViewsSettingsDataTable = ({
 
   return (
     <DataTableWithoutFragment
+      icon={() => <DrawOutlinedIcon color="secondary" />}
       initialValues={DEFAULT_SORT_CONFIG}
       dataColumns={DATA_COLUMNS}
       storageKey={storageKey}
