@@ -7,7 +7,7 @@ import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../../utils/authorizedMembers';
-import { applyOperationFieldPatch, filterBundleElements, isBundleElementInScope } from '../playbook-utils';
+import { applyOperationFieldPatch, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 import { executionContext } from '../../../utils/access';
 
 export interface RemoveAccessRestrictionsConfiguration {
@@ -53,11 +53,10 @@ export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<Re
       const element = bundle.objects[index];
       const internalType = generateInternalType(element);
       const isTypeCompatible = AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType);
-      const isFilteredElement = (await filterBundleElements(context, [element], applyWithFilters)).length === 1;
+      const isFilteredElement = await isBundleElementMatchFilters(context, element, applyWithFilters);
+      const isElementInScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
 
-      const isElementInScope = isTypeCompatible && isBundleElementInScope(element, applyToElements, dataInstanceId) && isFilteredElement;
-
-      if (isElementInScope) {
+      if (isTypeCompatible && isFilteredElement && isElementInScope) {
         const patchValue = {
           op: EditOperation.Replace,
           path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/restricted_members`,
