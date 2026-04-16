@@ -47,7 +47,7 @@ export const isBundleElementMatchFilters = async (
   context: AuthContext,
   bundleElement: StixObject,
   filters: string | undefined,
-) => {
+): Promise<boolean> => {
   if (!filters || isEmptyField(filters)) return true;
   const jsonFilters = JSON.parse(filters);
   return isStixMatchFilterGroup(
@@ -71,7 +71,7 @@ export const filterBundleElements = async (
   context: AuthContext,
   bundleElements: StixObject[],
   filters: string | undefined,
-) => {
+): Promise<StixObject[]> => {
   if (!filters || isEmptyField(filters)) return bundleElements;
   const jsonFilters = JSON.parse(filters);
   const filterResults = await Promise.all(

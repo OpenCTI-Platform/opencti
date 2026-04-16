@@ -10,10 +10,11 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organizati
 import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, buildRestrictedMembers } from '../../../utils/authorizedMembers';
-import { applyOperationFieldPatch, extractBundleBaseElement, isBundleElementInScope } from '../playbook-utils';
+import { applyOperationFieldPatch, extractBundleBaseElement, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 
 export interface AccessRestrictionsConfiguration {
   applyToElements: PlaybookBundleElementsToApply;
+  applyWithFilters?: string;
   access_restrictions: {
     groupsRestriction: {
       label: string;
@@ -38,6 +39,11 @@ const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA: JSONSchemaType<AccessRestri
         { const: playbookBundleElementsToApply.allElements.value, title: playbookBundleElementsToApply.allElements.title },
         { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
       ],
+    },
+    applyWithFilters: {
+      type: 'string',
+      nullable: true,
+      default: '',
     },
     access_restrictions: {
       type: 'array',
@@ -67,7 +73,7 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
   schema: async () => PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
-    const { access_restrictions: accessRestrictions, applyToElements } = playbookNode.configuration;
+    const { access_restrictions: accessRestrictions, applyToElements, applyWithFilters } = playbookNode.configuration;
     // Resolve potential dynamic access rights
     const baseData = extractBundleBaseElement(dataInstanceId, bundle) as StixObject;
     const finalAccessRestrictions = [];
@@ -114,10 +120,15 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
     if (input.length === 0) {
       return { output_port: 'out', bundle };
     }
+
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       const internalType = generateInternalType(element);
-      if (AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType) && isBundleElementInScope(element, applyToElements, dataInstanceId)) {
+      const isTypeCompatible = AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(internalType);
+      const isFilteredElement = (await isBundleElementMatchFilters(context, element, applyWithFilters));
+      const isElementInScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
+
+      if (isTypeCompatible && isFilteredElement && isElementInScope) {
         const args = {
           entityId: element.id,
           input,
