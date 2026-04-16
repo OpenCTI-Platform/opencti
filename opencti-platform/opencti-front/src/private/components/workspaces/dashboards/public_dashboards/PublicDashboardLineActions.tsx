@@ -13,7 +13,7 @@ import { EXPLORE_EXUPDATE_PUBLISH } from '../../../../../utils/hooks/useGranted'
 import Security from '../../../../../utils/Security';
 import { useGetCurrentUserAccessRight } from '../../../../../utils/authorizedMembers';
 import { deleteNode } from '../../../../../utils/store';
-import { copyPublicLinkUrl } from '../../../../../utils/dashboard';
+import { copyPublicLinkUrl } from '../../workspace-utils';
 
 interface PublicDashboardLineActionsProps {
   publicDashboard: PublicDashboards_PublicDashboard$data;

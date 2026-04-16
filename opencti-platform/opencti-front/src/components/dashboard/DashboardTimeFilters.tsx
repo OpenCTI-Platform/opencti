@@ -5,28 +5,23 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import DatePicker from '@common/input/DatePicker';
 import { parse, buildDate } from 'src/utils/Time';
-import { InvestigationGraph_fragment$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_fragment.graphql';
-import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../../utils/hooks/useGranted';
-import Security from '../../../../utils/Security';
-import { useFormatter } from '../../../../components/i18n';
-import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
-import { Dashboard_workspace$data } from './__generated__/Dashboard_workspace.graphql';
+import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../utils/hooks/useGranted';
+import Security from '../../utils/Security';
+import { useFormatter } from '../i18n';
+import { useGetCurrentUserAccessRight } from '../../utils/authorizedMembers';
 import { Stack } from '@mui/material';
 import { useTheme } from '@mui/styles';
-import { Theme } from '../../../../components/Theme';
+import { Theme } from '../Theme';
+import { DashboardConfig } from './dashboard-types';
 
 interface DashboardTimeFiltersProps {
-  workspace: Dashboard_workspace$data | InvestigationGraph_fragment$data;
-  config?: {
-    startDate: string | null;
-    endDate: string | null;
-    relativeDate: string | null;
-  };
+  currentUserAccessRight: string | null | undefined;
+  config?: DashboardConfig;
   handleDateChange: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void;
 }
 
 const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
-  workspace,
+  currentUserAccessRight,
   config = {
     startDate: null,
     endDate: null,
@@ -36,7 +31,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { canEdit } = useGetCurrentUserAccessRight(workspace.currentUserAccessRight);
+  const { canEdit } = useGetCurrentUserAccessRight(currentUserAccessRight);
 
   const handleChangeRelativeDate = (event: SelectChangeEvent) => {
     const { value } = event.target;

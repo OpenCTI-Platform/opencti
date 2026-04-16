@@ -11,7 +11,7 @@ import { EXPLORE_EXUPDATE } from 'src/utils/hooks/useGranted';
 import ExportButtons from 'src/components/ExportButtons';
 import { useGetCurrentUserAccessRight } from 'src/utils/authorizedMembers';
 import { truncate } from 'src/utils/String';
-import WorkspaceWidgetConfig from 'src/private/components/workspaces/dashboards/WorkspaceWidgetConfig';
+import DashboardWidgetConfig from 'src/components/dashboard/DashboardWidgetConfig';
 import { WorkspaceHeaderToStixReportBundleQuery$data } from '@components/workspaces/workspaceHeader/__generated__/WorkspaceHeaderToStixReportBundleQuery.graphql';
 import WorkspaceKebabMenu from '@components/workspaces/WorkspaceKebabMenu';
 import WorkspaceHeaderTagManager from '@components/workspaces/workspaceHeader/WorkspaceHeaderTagManager';
@@ -120,7 +120,7 @@ const WorkspaceHeader = ({
                 needs={[EXPLORE_EXUPDATE]}
                 hasAccess={canEdit}
               >
-                <WorkspaceWidgetConfig
+                <DashboardWidgetConfig
                   onComplete={handleAddWidget}
                   handleImportWidget={handleImportWidget}
                 />
