@@ -331,11 +331,11 @@ export const updateExpectationsNumber = async (context, user, workId, expectatio
     logApp.warn('The work cannot be found in database, expectation cannot be updated.', { workId, expectations });
     return workId;
   }
+  await redisUpdateActionExpectation(user, workId, expectations);
   const params = { updated_at: now(), import_expected_number: expectations };
   let source = 'ctx._source.updated_at = params.updated_at;';
   source += 'ctx._source["import_expected_number"] = ctx._source["import_expected_number"] + params.import_expected_number;';
   await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
-  await redisUpdateActionExpectation(user, workId, expectations);
   // Ensure that work hasn't been deleted in the meantime in case of race condition
   const workAlive = await isWorkAlive(context, user, workId);
   if (!workAlive) {
@@ -389,11 +389,10 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
     return workId;
   }
   const { expected, total, isMultiPartWork } = await redisGetWorkCompletionState(workId);
-  const workIsFinished = isWorkFinished(expected, total);
-  if (isMultiPartWork && !workIsFinished) {
+  const isComplete = isWorkFinished(expected, total);
+  if (isMultiPartWork && !isComplete) {
     await redisMarkWorkAsProcessed(workId);
   }
-  const isComplete = currentWork.import_expected_number === 0 || workIsFinished;
   const params = { processed_time: now(), message };
   let source = 'ctx._source["processed_time"] = params.processed_time;';
   if (isComplete) {

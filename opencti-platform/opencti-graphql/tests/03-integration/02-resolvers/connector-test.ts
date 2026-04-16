@@ -489,6 +489,33 @@ describe('Connector using the default work isMultiPartWork=false option', () => 
   });
 });
 
+describe('Connector completing without actual work', () => {
+  it('should mark work as completed', async () => {
+    let queryResult = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: CREATE_WORK_QUERY,
+      variables: {
+        connectorId: TEST_CN_ID,
+        friendlyName: 'TestConnectorNoWork',
+      },
+    });
+    const workId = queryResult.data.workAdd.id;
+
+    // Admin sees 'progress' status
+    queryResult = await queryAsAdminWithSuccess({ query: READ_WORK_QUERY, variables: { id: workId } });
+    expect(queryResult.data.work.status).toEqual('progress');
+
+    // Connector notifies backend it's done
+    await queryAsUserWithSuccess(USER_CONNECTOR, { query: UPDATE_WORK_QUERY, variables: {
+      id: workId,
+      message: 'Done',
+    } });
+
+    // Admin sees status changed to `complete`
+    queryResult = await queryAsAdminWithSuccess({ query: READ_WORK_QUERY, variables: { id: workId } });
+    expect(queryResult.data.work.status).toEqual('complete');
+  });
+});
+
 describe('Capability checks', () => {
   it('Editor user should not be allowed to see connector details', async () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: READ_CONNECTOR_QUERY, variables: { id: TEST_CN_ID } });

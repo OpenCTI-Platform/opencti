@@ -499,8 +499,8 @@ export const redisGetWorkCompletionState = async (workId: string) => {
     is_processed,
     is_multipart,
   } = await redisGetWork(workId);
-  const total = parseInt(pn, 10);
-  const expected = parseInt(en, 10);
+  const total = pn ? parseInt(pn, 10) : 0;
+  const expected = en ? parseInt(en, 10) : 0;
   const isProcessed = is_processed === 'true';
   const isMultiPartWork = is_multipart === 'true';
   return { total, expected, isProcessed, isMultiPartWork };
