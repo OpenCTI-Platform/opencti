@@ -196,6 +196,7 @@ import { pushAll, unshiftAll } from '../utils/arrayUtil';
 import { getRoleAssumerWithWebIdentity } from '../utils/awsSdk';
 import { elConvertHits, elConvertHitsToMap, INNER_HITS_WINDOWS_SIZE } from './engine-data-converter';
 import { isEsScriptFilterEnabled } from './engine-config';
+import { AbortError } from 'node-fetch';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -503,21 +504,22 @@ const elExecuteWithAbortSignal = async (
     const r = await elkOperation({ signal: abortSignal });
     return oebp(r);
   }
+  if (abortSignal?.aborted) {
+    throw new AbortError('The http call was aborted before el request started.');
+  }
   const openSearchOperationPromise = openSearchOperation();
   const abortRequest = () => {
     // OpenSearch client does not support abort signal natively, so abort the request when possible.
     (openSearchOperationPromise as any).abort?.();
   };
-  if (abortSignal?.aborted) {
-    abortRequest();
-  } else if (abortSignal) {
+  if (abortSignal) {
     abortSignal.addEventListener('abort', abortRequest, { once: true });
   }
   try {
     const r_1 = await openSearchOperationPromise;
     return oebp(r_1);
   } finally {
-    if (abortSignal && !abortSignal.aborted) {
+    if (abortSignal) {
       abortSignal.removeEventListener('abort', abortRequest);
     }
   }
