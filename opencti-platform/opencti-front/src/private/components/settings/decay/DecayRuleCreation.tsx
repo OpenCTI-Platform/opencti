@@ -6,7 +6,6 @@ import { insertNode } from '../../../../utils/store';
 import { DecayRulesLinesPaginationQuery$variables } from './__generated__/DecayRulesLinesPaginationQuery.graphql';
 import DecayRuleCreationForm from './DecayRuleCreationForm';
 
-
 interface DecayRuleCreationProps {
   paginationOptions: DecayRulesLinesPaginationQuery$variables;
 }
