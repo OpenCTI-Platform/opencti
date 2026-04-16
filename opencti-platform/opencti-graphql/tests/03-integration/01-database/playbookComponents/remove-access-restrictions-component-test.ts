@@ -355,7 +355,7 @@ describe('PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT', () => {
       }));
 
       expect(result.output_port).toBe('out');
-      // Main element - should not have upsert operation
+      // Main element - should have correct upsert operation
       const reportResult = result.bundle.objects.find((o) => o.id === REPORT_ID);
       const reportExtension = reportResult?.extensions[STIX_EXT_OCTI];
       expect(reportExtension?.opencti_upsert_operations?.length).toEqual(1);
