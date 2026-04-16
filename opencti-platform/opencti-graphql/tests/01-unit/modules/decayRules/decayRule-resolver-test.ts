@@ -1,14 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
-import {
-  ENTITY_BANK_ACCOUNT,
-  ENTITY_EMAIL_ADDR,
-  ENTITY_EMAIL_MESSAGE,
-  ENTITY_IPV6_ADDR,
-  ENTITY_SOFTWARE,
-} from '../../../../src/schema/stixCyberObservable';
+import { ADMIN_USER, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { queryAsAdmin } from '../../../utils/testQueryHelper';
+import { ENTITY_BANK_ACCOUNT, ENTITY_EMAIL_ADDR, ENTITY_EMAIL_MESSAGE, ENTITY_IPV6_ADDR, ENTITY_SOFTWARE } from '../../../../src/schema/stixCyberObservable';
 import { BUILT_IN_DECAY_RULE_IP_URL, checkDecayRules, type DecayRuleConfiguration, FALLBACK_DECAY_RULE, initDecayRules } from '../../../../src/modules/decayRule/decayRule-domain';
 import type { AuthContext } from '../../../../src/types/user';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../../tests/utils/testQueryHelper';
@@ -154,14 +148,12 @@ describe('DecayRule resolver standard behavior', () => {
         decay_lifetime: 42,
         decay_filters: JSON.stringify({
           mode: 'and',
-          filters: [
-            {
-              key: ['x_opencti_main_observable_type'],
-              operator: 'eq',
-              values: [ENTITY_EMAIL_MESSAGE, ENTITY_IPV6_ADDR],
-              mode: 'or',
-            },
-          ],
+          filters: [{
+            key: ['x_opencti_main_observable_type'],
+            operator: 'eq',
+            values: [ENTITY_EMAIL_MESSAGE, ENTITY_EMAIL_ADDR],
+            mode: 'or',
+          }],
           filterGroups: [],
         }),
         decay_points: [90, 15, 45, -1], // disorder and negative number in purpose, to check of ordering is done correctly.
@@ -174,9 +166,9 @@ describe('DecayRule resolver standard behavior', () => {
     };
 
     const resolvedIndicator = {
-      _index: 'openctii_stix_domain_objects',
+      _index: 'opencti_stix_domain_objects',
       pattern_type: 'stix',
-      pattern: "[domain-name:value = 'myDomainName.com']",
+      pattern: "[email-addr:value = 'test@example.com']",
       name: 'test D',
       description: '',
       indicator_types: [],
@@ -185,7 +177,7 @@ describe('DecayRule resolver standard behavior', () => {
       confidence: 100,
       x_opencti_score: 50,
       x_opencti_detection: false,
-      x_opencti_main_observable_type: 'Domain-Name',
+      x_opencti_main_observable_type: ENTITY_EMAIL_ADDR,
       x_mitre_platforms: [],
       killChainPhases: [],
       objectMarking: [],
@@ -214,10 +206,12 @@ describe('DecayRule resolver standard behavior', () => {
 
     // Verify that other observable got the right decay rule
     // No built-in for ENTITY_SOFTWARE, so should be FALLBACK
+    resolvedIndicator.x_opencti_main_observable_type = ENTITY_SOFTWARE;
     const indicatorDecayRuleOther = await checkDecayRules(adminContext, ADMIN_USER, resolvedIndicator);
     expect(indicatorDecayRuleOther).toBeDefined();
     expect(indicatorDecayRuleOther.name).toBe(TEST_FALLBACK_DECAY_RULE.name);
 
+    resolvedIndicator.x_opencti_main_observable_type = ENTITY_IPV6_ADDR;
     const indicatorDecayRuleIP = await checkDecayRules(adminContext, ADMIN_USER, resolvedIndicator);
     expect(indicatorDecayRuleIP).toBeDefined();
     expect(indicatorDecayRuleIP.name).toBe(TEST_IP_DECAY_RULE.name);
