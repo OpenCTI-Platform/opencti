@@ -1,13 +1,15 @@
 import { z } from 'zod';
 import { ValidationError } from '../../config/errors';
 import { ActionDefinitions } from './registry/workflow-actions';
-import { ConditionRegistry } from './registry/workflow-conditions';
 import { storeLoadByIds, fullEntitiesList } from '../../database/middleware-loader';
 import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION } from './types/workflow-types';
 import { isBasicObject } from '../../schema/stixCoreObject';
+import { FilterMode, FilterOperator } from '../../generated/graphql';
+
+const filterModeValues = Object.values(FilterMode) as [string, ...string[]];
+const filterOperatorValues = Object.values(FilterOperator) as [string, ...string[]];
 
 export const workflowActionConfigSchema = z.object({
   type: z.string().max(255),
@@ -15,11 +17,22 @@ export const workflowActionConfigSchema = z.object({
   mode: z.enum(['sync', 'async']).optional(),
 });
 
+export const workflowFilterSchema = z.object({
+  id: z.string().optional(),
+  key: z.string().max(255),
+  values: z.array(z.any()),
+  operator: z.string().optional(),
+  mode: z.string().optional(),
+});
+
+export const workflowFilterGroupSchema: z.ZodType<any> = z.lazy(() => z.object({
+  mode: z.string(),
+  filters: z.array(workflowFilterSchema),
+  filterGroups: z.array(workflowFilterGroupSchema),
+}));
+
 export const workflowConditionConfigSchema = z.object({
-  field: z.string().max(255).optional(),
-  operator: z.enum(['eq', 'neq', 'gt', 'lt', 'gte', 'lte', 'contains']).optional(),
-  value: z.any().optional(),
-  type: z.string().max(255).optional(),
+  filters: workflowFilterGroupSchema,
 });
 
 export const workflowSerializedStateSchema = z.object({
@@ -30,11 +43,11 @@ export const workflowSerializedStateSchema = z.object({
 });
 
 export const workflowSerializedTransitionSchema = z.object({
-  from: z.union([z.string().max(255), z.array(z.string().max(255))]),
-  to: z.string().max(255),
+  from: z.union([z.string().max(255), z.array(z.string().max(255))]).nullable(),
+  to: z.string().max(255).nullable(),
   event: z.string().max(255),
   actions: z.array(workflowActionConfigSchema).optional(),
-  conditions: z.array(workflowConditionConfigSchema).optional(),
+  conditions: workflowConditionConfigSchema.optional(),
 });
 
 export const workflowDefinitionSchema = z.object({
@@ -56,7 +69,7 @@ const validateAction = (action: z.infer<typeof workflowActionConfigSchema>, sour
   if (definition.paramsSchema) {
     const result = definition.paramsSchema.safeParse(action.params);
     if (!result.success) {
-      throw ValidationError(`Invalid params for action '${action.type}' in ${source}`, { errors: result.error.errors });
+      throw ValidationError(`Invalid params for action '${action.type}' in ${source}`, { errors: result.error.issues });
     }
   }
 };
@@ -77,7 +90,7 @@ export const validateWorkflowDefinitionData = async (
 
   const validationResult = workflowDefinitionSchema.safeParse(parsed);
   if (!validationResult.success) {
-    throw ValidationError('Workflow definition schema validation failed', { errors: validationResult.error.errors });
+    throw ValidationError('Workflow definition schema validation failed', { errors: validationResult.error.issues });
   }
 
   const { id, initialState, states = [], transitions } = validationResult.data;
@@ -96,9 +109,6 @@ export const validateWorkflowDefinitionData = async (
       throw ValidationError('Workflow id already exists');
     }
   }
-
-  const entityAttributesMap = schemaAttributesDefinition.getAttributes(entityType);
-  const supportedFields = new Set(Array.from(entityAttributesMap.keys()));
 
   const definedStates = new Set<string>();
   states.forEach((state) => {
@@ -119,8 +129,11 @@ export const validateWorkflowDefinitionData = async (
   let hasValidateDraft = false;
 
   for (const transition of transitions) {
+    if (transition.from === null || transition.to === null) {
+      throw ValidationError(`Transition ${transition.event} should be linked to at least one status`);
+    }
     if (events.has(transition.event)) {
-      throw ValidationError(`Event '${transition.event}' referenced in multiple transitions`);
+      throw ValidationError(`Transition '${transition.event}' referenced in multiple transitions`);
     }
     events.add(transition.event);
 
@@ -135,21 +148,31 @@ export const validateWorkflowDefinitionData = async (
     }
 
     if (transition.conditions) {
-      for (const condition of transition.conditions) {
-        if (condition.type && !ConditionRegistry[condition.type]) {
-          throw ValidationError(`Condition type '${condition.type}' doesn't exist`);
+      // Validate filters recursively
+      const validateFilterGroup = (group: any): void => {
+        if (!group.filters || !Array.isArray(group.filters)) {
+          return;
         }
-        if (condition.field) {
-          if (!condition.operator) {
-            throw ValidationError('Condition operator must be provided when field is set');
+        group.filters.forEach((filter: any) => {
+          if (!filter.key) {
+            throw ValidationError('Filter key is required');
           }
-          if (!supportedFields.has(condition.field) && condition.field !== 'status' && condition.field !== 'status_id') {
-            throw ValidationError(`Condition field '${condition.field}' is not supported for entity type '${entityType}'`);
+          if (!filter.values || !Array.isArray(filter.values)) {
+            throw ValidationError('Filter values must be an array');
           }
+          if (filter.operator && !filterOperatorValues.includes(filter.operator)) {
+            throw ValidationError(`Invalid filter operator '${filter.operator}'`);
+          }
+          if (filter.mode && !filterModeValues.includes(filter.mode)) {
+            throw ValidationError(`Invalid filter mode '${filter.mode}'`);
+          }
+        });
+        if (group.filterGroups && Array.isArray(group.filterGroups)) {
+          group.filterGroups.forEach(validateFilterGroup);
         }
-        if (condition.value !== undefined && typeof condition.value === 'string' && condition.value.length > 255) {
-          throw ValidationError('Condition value length > 255');
-        }
+      };
+      if (transition.conditions.filters) {
+        validateFilterGroup(transition.conditions.filters);
       }
     }
 

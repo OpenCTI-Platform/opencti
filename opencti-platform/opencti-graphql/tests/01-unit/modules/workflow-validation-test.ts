@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
 
 vi.mock('../../../src/database/middleware-loader', () => ({
@@ -6,33 +6,41 @@ vi.mock('../../../src/database/middleware-loader', () => ({
   fullEntitiesList: vi.fn().mockResolvedValue([]),
 }));
 
-vi.mock('../../../src/schema/schema-types', async (importOriginal) => {
+vi.mock('../../../src/database/engine', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual as any,
-    schemaTypes: {
-      ...(actual as any).schemaTypes,
-      schemaNames: () => ['DraftWorkspace', 'Incident', 'Report'],
-    },
+    elList: vi.fn().mockResolvedValue([]),
   };
 });
 
-vi.mock('../../../src/schema/schema-attributes', async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual as any,
-    schemaAttributesDefinition: {
-      ...(actual as any).schemaAttributesDefinition,
-      getAttributes: () => new Map([['title', {}]]),
-    },
-  };
-});
+vi.mock('../../../src/schema/stixCoreObject', () => ({
+  isBasicObject: vi.fn((type) => ['Incident', 'Report'].includes(type)),
+}));
+
+vi.mock('../../../src/schema/schema-utils', () => ({
+  getParentTypes: vi.fn().mockReturnValue([]),
+  getAttributes: vi.fn().mockReturnValue(new Map()),
+}));
 
 const mockContext = {} as any;
-const mockUser = {} as any;
+const mockUser = {
+  id: 'user-1',
+  user_email: 'test@example.com',
+  roles: [],
+  groups: [],
+  organizations: [],
+  allowed_marking: [],
+  effective_confidence_level: {},
+  capabilities: [],
+} as any;
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 describe('Workflow Validation', () => {
-  it('should pass valid workflow definition', async () => {
+  it('should pass valid workflow definition without conditions', async () => {
     const valid = {
       id: 'valid-id',
       name: 'Valid Workflow',
@@ -46,21 +54,52 @@ describe('Workflow Validation', () => {
       ],
     };
 
-    await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'Incident')).resolves.toBeDefined();
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'Incident');
+    expect(result).toBeDefined();
+  });
+
+  it('should pass valid workflow definition with FilterGroup conditions', async () => {
+    const valid = {
+      id: 'valid-id',
+      name: 'Valid Workflow',
+      initialState: 'existing-state',
+      states: [
+        { statusId: 'existing-state' },
+        { statusId: 'in-progress' },
+      ],
+      transitions: [
+        {
+          from: 'existing-state',
+          to: 'in-progress',
+          event: 'start',
+          conditions: {
+            filters: {
+              mode: 'and',
+              filters: [
+                { key: 'status', values: ['active'], operator: 'eq' },
+              ],
+              filterGroups: [],
+            },
+          },
+        },
+      ],
+    };
+
+    const result = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'Incident');
+    expect(result).toBeDefined();
   });
 
   it('should fail if entity type does not exist', async () => {
-    const valid = {
+    const invalid = {
       initialState: 'test',
       transitions: [],
     };
-    await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'NonExistingType')).rejects.toThrow(/Entity type 'NonExistingType' doesn't exist/);
+    await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'NonExistingType')).rejects.toThrow("Entity type 'NonExistingType' doesn't exist");
   });
 
   it('should fail if DraftWorkspace does not have validateDraft action', async () => {
     const invalid = {
       initialState: 'existing-state',
-      states: [],
       transitions: [
         { from: 'existing-state', to: 'in-progress', event: 'publish', actions: [{ type: 'log' }] },
       ],
@@ -69,46 +108,55 @@ describe('Workflow Validation', () => {
     await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'DraftWorkspace')).rejects.toThrow('DraftWorkspace workflow must contain at least one validateDraft action');
   });
 
-  it('should fail if event is duplicate', async () => {
+  it('should fail if event is duplicated', async () => {
     const invalid = {
       initialState: 'existing-state',
-      states: [],
       transitions: [
         { from: 'a', to: 'b', event: 'test' },
         { from: 'b', to: 'c', event: 'test' },
       ],
     };
-    await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Report')).rejects.toThrow("Event 'test' referenced in multiple transitions");
+    await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Report')).rejects.toThrow("Transition 'test' referenced in multiple transitions");
   });
 
-  it('should fail if condition operator is missing when field is present', async () => {
+  it('should fail if transition from is null', async () => {
     const invalid = {
       initialState: 'existing-state',
       transitions: [
-        { from: 'a', to: 'b', event: 'test', conditions: [{ field: 'title' }] },
+        { from: null, to: 'b', event: 'test' },
       ],
     };
-    await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident')).rejects.toThrow('Condition operator must be provided when field is set');
+    await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident')).rejects.toThrow('Transition test should be linked to at least one status');
   });
 
-  it('should fail if condition field is not supported', async () => {
+  it('should fail if transition to is null', async () => {
     const invalid = {
       initialState: 'existing-state',
       transitions: [
-        { from: 'a', to: 'b', event: 'test', conditions: [{ field: 'unknown', operator: 'eq' }] },
+        { from: 'a', to: null, event: 'test' },
       ],
     };
-    // Expected condition failure since 'unknown' is not in getAttributes Map
-    await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident')).rejects.toThrow("Condition field 'unknown' is not supported for entity type 'Incident'");
+    await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident')).rejects.toThrow('Transition test should be linked to at least one status');
   });
 
-  it('should fail if action params are invalid', async () => {
+  it('should fail if filter operator is invalid', async () => {
     const invalid = {
       initialState: 'existing-state',
       transitions: [
-        { from: 'a', to: 'b', event: 'test', actions: [{ type: 'log', params: { message: 123 } }] },
+        {
+          from: 'a',
+          to: 'b',
+          event: 'test',
+          conditions: {
+            filters: {
+              mode: 'and',
+              filters: [{ key: 'status', values: ['test'], operator: 'invalid_op' }],
+              filterGroups: [],
+            },
+          },
+        },
       ],
     };
-    await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident')).rejects.toThrow("Invalid params for action 'log'");
+    await expect(validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident')).rejects.toThrow("Invalid filter operator 'invalid_op'");
   });
 });
