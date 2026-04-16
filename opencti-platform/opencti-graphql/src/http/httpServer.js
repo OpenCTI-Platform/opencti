@@ -36,18 +36,18 @@ const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', tru
 
 const createRequestAbortSignal = (req, res) => {
   const abortController = new AbortController();
-  const abortIfDisconnected = () => {
-    // `close` is emitted for both success and disconnect; only abort on disconnect.
-    if (!res.writableEnded && !abortController.signal.aborted) {
-      abortController.abort();
-    }
-  };
-  req.once('aborted', () => {
+  const abort = () => {
     if (!abortController.signal.aborted) {
       abortController.abort();
     }
+  };
+  req.once('aborted', abort);
+  res.once('close', () => {
+    // `close` is emitted for both success and disconnect; only abort on disconnect.
+    if (!res.writableEnded) {
+      abort();
+    }
   });
-  res.once('close', abortIfDisconnected);
   return abortController.signal;
 };
 
