@@ -17,6 +17,7 @@ enum RetentionRuleScope {
   knowledge
   file
   workbench
+  history
 }
 enum RetentionUnit {
   minutes
@@ -64,4 +65,3 @@ type Mutation {
   retentionRuleCheck(input: RetentionRuleAddInput): Int! @auth(for: [SETTINGS_SETCUSTOMIZATION])
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
-

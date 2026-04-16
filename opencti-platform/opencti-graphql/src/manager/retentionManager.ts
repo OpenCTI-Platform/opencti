@@ -47,6 +47,8 @@ export const deleteElement = async (context: AuthContext, scope: string, nodeId:
   } else if (scope === 'file' || scope === 'workbench') {
     // forceDelete: true to clean up orphan ES entries even if S3 file doesn't exist
     await deleteFile(context, RETENTION_MANAGER_USER, nodeId, { forceDelete: true });
+  } else if (scope === 'history') {
+    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, 'History', { forceDelete: true });
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
@@ -63,6 +65,10 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
   } else if (scope === 'workbench') {
     // exact_path: false to get ALL workbenches (both global and entity-attached)
     result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/pending', undefined, { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString(), exact_path: false });
+  } else if (scope === 'history') {
+    const jsonFilters = filters ? JSON.parse(filters) : null;
+    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, { ...queryOptions, types: ['History'], first: RETENTION_BATCH_SIZE }) as any;
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }

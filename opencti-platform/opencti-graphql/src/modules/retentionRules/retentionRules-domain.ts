@@ -34,6 +34,11 @@ export const checkRetentionRule = async (context: AuthContext, input: RetentionR
   } else if (scope === 'workbench') {
     // exact_path: false to get ALL workbenches (both global and entity-attached)
     result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/pending', undefined, { notModifiedSince: before.toISOString(), exact_path: false });
+  } else if (scope === 'history') {
+    const jsonFilters = filters ? JSON.parse(filters) : null;
+    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, { ...queryOptions, types: ['History'], first: 1 });
+    return result.pageInfo.globalCount;
   } else {
     logApp.error('[Retention manager] Scope not existing for Retention Rule.', { scope });
   }

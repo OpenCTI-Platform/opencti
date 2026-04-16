@@ -16356,6 +16356,7 @@ enum RetentionRuleScope {
   knowledge
   file
   workbench
+  history
 }
 
 enum RetentionUnit {
