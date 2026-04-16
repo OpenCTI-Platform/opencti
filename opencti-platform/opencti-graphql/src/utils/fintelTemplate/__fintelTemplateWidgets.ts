@@ -67,7 +67,7 @@ export const widgetRFIMultiAttributes: FintelTemplateWidgetAddInput = {
     dataSelection: [{
       columns: [
         ...containerColumns,
-        { label: 'Information types', attribute: 'information_types', variableName: 'informationTypes' },
+        { label: 'Request for information types', attribute: 'information_types', variableName: 'informationTypes' },
       ],
       instance_id: SELF_ID,
     }],
@@ -86,7 +86,7 @@ export const widgetRFTMultiAttributes: FintelTemplateWidgetAddInput = {
     dataSelection: [{
       columns: [
         ...containerColumns,
-        { label: 'Takedown types', attribute: 'takedown_types', variableName: 'takedownTypes' },
+        { label: 'Request for takedown types', attribute: 'takedown_types', variableName: 'takedownTypes' },
       ],
       instance_id: SELF_ID,
     }],
