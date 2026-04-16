@@ -24,6 +24,13 @@ import ContainerAddStixCoreObjectsInLine from './ContainerAddStixCoreObjectsInLi
 const ContainerStixDomainObjectsFragment = graphql`
     fragment ContainerStixDomainObjects_container on Container {
         id
+        objectMarking {
+          id
+          definition
+          definition_type
+          x_opencti_order
+          x_opencti_color
+        }
         ... on Report {
             name
         }
@@ -201,6 +208,7 @@ const ContainerStixDomainObjects = ({ container, enableReferences }: {
             paginationOptions={queryPaginationOptions}
             containerStixCoreObjects={selectWithoutInferred}
             enableReferences={enableReferences}
+            defaultMarkingDefinitions={containerData.objectMarking ?? []}
           />
         </Security>
       )}

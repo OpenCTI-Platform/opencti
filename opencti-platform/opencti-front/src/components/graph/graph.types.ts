@@ -1,4 +1,5 @@
 import { ForceGraphProps } from 'react-force-graph-3d';
+import { DefaultMarking } from '@components/settings/marking_definitions/markingDefinition.types';
 
 interface GraphElement {
   id: string;
@@ -64,7 +65,7 @@ export interface GraphEntity {
   confidence?: number | null | undefined;
   createdBy?: unknown | null | undefined;
   published?: unknown | null | undefined;
-  objectMarking?: readonly unknown[] | null | undefined;
+  objectMarking?: readonly DefaultMarking[] | null | undefined;
 }
 
 // Stuff kept in URL and local storage.

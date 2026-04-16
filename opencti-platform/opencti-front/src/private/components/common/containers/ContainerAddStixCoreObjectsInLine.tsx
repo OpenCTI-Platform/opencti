@@ -18,6 +18,7 @@ import { ContainerAddStixCoreObjectsLinesQuery, ContainerAddStixCoreObjectsLines
 import { ContainerStixDomainObjectsLinesQuery$variables } from './__generated__/ContainerStixDomainObjectsLinesQuery.graphql';
 import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
 import { ContainerStixCyberObservablesLinesPaginationQuery$variables } from '@components/common/containers/__generated__/ContainerStixCyberObservablesLinesPaginationQuery.graphql';
+import { DefaultMarking } from '@components/settings/marking_definitions/markingDefinition.types';
 
 interface ControlledDialProps {
   onOpen: () => void;
@@ -114,7 +115,7 @@ interface ContainerAddStixCoreObjectsInLineProps {
   onDelete?: (node: { id: string }) => void;
   confidence?: number;
   defaultCreatedBy?: unknown;
-  defaultMarkingDefinitions?: unknown[];
+  defaultMarkingDefinitions?: readonly DefaultMarking[];
   selectedText?: string;
   enableReferences?: boolean | undefined;
   knowledgeGraph?: boolean | undefined;
@@ -245,7 +246,8 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
           open={openCreateObservable}
           handleClose={() => setOpenCreateObservable(false)}
           type={undefined}
-          defaultCreatedBy={undefined}
+          defaultCreatedBy={defaultCreatedBy}
+          defaultMarkingDefinitions={defaultMarkingDefinitions as unknown as []}
         />
       </>
     );
