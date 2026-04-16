@@ -45,12 +45,10 @@ describe('notifierEdit', () => {
   });
 
   it('should NOT crash when notifier_configuration key is missing from input (find vs filter bug)', async () => {
-    // Avant le fix : filter(...)[0].value[0] → TypeError si clé absente
     const inputWithoutConfig: EditInput[] = baseInput.filter((i) => i.key !== 'notifier_configuration');
 
     await expect(notifierEdit(mockContext, mockUser, notifierId, inputWithoutConfig))
       .rejects.toThrow('This configuration is invalid');
-    // L'erreur attendue est une UnsupportedError métier, pas un TypeError runtime
   });
 
   it('should NOT crash when notifier_connector_id key is missing from input (find vs filter bug)', async () => {
@@ -58,7 +56,6 @@ describe('notifierEdit', () => {
 
     await expect(notifierEdit(mockContext, mockUser, notifierId, inputWithoutConnectorId))
       .rejects.toThrow('Invalid notifier connector');
-    // L'erreur attendue est une UnsupportedError métier, pas un TypeError runtime
   });
 
   it('should NOT crash when restricted_members value is null (value.map bug)', async () => {
@@ -67,7 +64,6 @@ describe('notifierEdit', () => {
       { key: 'restricted_members', value: null as any },
     ];
 
-    // Avant le fix : value.map(...) → TypeError si value est null
     await expect(notifierEdit(mockContext, mockUser, notifierId, inputWithNullMembers))
       .resolves.not.toThrow();
   });
