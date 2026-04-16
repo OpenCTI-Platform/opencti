@@ -4051,15 +4051,11 @@ export const elUpdate = async (
       refresh: true,
       body: documentBody,
     };
-    if (engine instanceof ElkClient) {
-      try {
-        return engine.update(updateRequest);
-      } catch (err: any) {
-        throw DatabaseError('Update indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
-      }
-    }
     try {
-      return engine.update(updateRequest);
+      if (engine instanceof ElkClient) {
+        return await engine.update(updateRequest);
+      }
+      return await engine.update(updateRequest);
     } catch (err: any) {
       throw DatabaseError('Update indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
     }
@@ -4096,15 +4092,11 @@ export const elDelete = (indexName: string, documentId: string) => {
       timeout: BULK_TIMEOUT,
       refresh: true,
     };
-    if (engine instanceof ElkClient) {
-      try {
-        return engine.delete(deleteRequest);
-      } catch (err: any) {
-        throw DatabaseError('Deleting indexing fail', { cause: err, documentId });
-      }
-    }
     try {
-      return engine.delete(deleteRequest);
+      if (engine instanceof ElkClient) {
+        return await engine.delete(deleteRequest);
+      }
+      return await engine.delete(deleteRequest);
     } catch (err: any) {
       throw DatabaseError('Deleting indexing fail', { cause: err, documentId });
     }
@@ -4359,15 +4351,11 @@ export const elReindexElements = async (
       },
       refresh: true,
     };
-    if (engine instanceof ElkClient) {
-      try {
-        return engine.reindex(reindexParams);
-      } catch (err: any) {
-        throw DatabaseError(`Reindexing fail from ${sourceIndex} to ${destIndex}`, { cause: err, body: reindexParams.body });
-      }
-    }
     try {
-      return engine.reindex(reindexParams);
+      if (engine instanceof ElkClient) {
+        return await engine.reindex(reindexParams);
+      }
+      return await engine.reindex(reindexParams);
     } catch (err: any) {
       throw DatabaseError(`Reindexing fail from ${sourceIndex} to ${destIndex}`, { cause: err, body: reindexParams.body });
     }
