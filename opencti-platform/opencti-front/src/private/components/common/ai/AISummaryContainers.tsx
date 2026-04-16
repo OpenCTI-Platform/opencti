@@ -75,6 +75,7 @@ interface ContainersAiSummaryProps {
 
 import { type AgentOption, fetchAgentsForIntent, callAgent, callAgentStream } from '../../../../utils/ai/agentApi';
 import useAgentStream from '../../../../utils/ai/useAgentStream';
+import { findFilterFromKey } from '../../../../utils/filters/filtersUtils';
 export { type AgentOption, fetchAgentsForIntent, callAgent, callAgentStream };
 
 // ── Legacy display sub-component ────────────────────────────────────────
@@ -206,8 +207,8 @@ const XtmOneContainerSummary = ({ isContainer, filters, loading, setLoading, sel
 
   // Build a prompt from the filters that describes what to summarize
   const buildPrompt = useCallback((): string => {
-    const idFilter = filters.filters.find((f) => f.key === 'id');
-    const objectsFilter = filters.filters.find((f) => f.key === 'objects');
+    const idFilter = findFilterFromKey(filters, 'id');
+    const objectsFilter = findFilterFromKey(filters, 'objects');
 
     if (isContainer && idFilter && idFilter.values.length > 0) {
       const containerId = idFilter.values[0];

@@ -39,6 +39,7 @@ import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/S
 import { TopBarNotificationNumberSubscription$data } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import { TopBarQuery } from './__generated__/TopBarQuery.graphql';
 import { THEME_DARK_DEFAULT_BACKGROUND } from '../../../components/ThemeDark';
+import { extractJsonContent } from '../../../utils/String';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -98,14 +99,6 @@ const isFilterGroupLike = (value: unknown): boolean => {
   return typeof objectValue.mode === 'string'
     && Array.isArray(objectValue.filters)
     && Array.isArray(objectValue.filterGroups);
-};
-
-const extractJsonContent = (content: string): string => {
-  const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-  if (codeBlockMatch?.[1]) {
-    return codeBlockMatch[1].trim();
-  }
-  return content.trim();
 };
 
 const parseNlqAgentResponse = (content: string): ParsedNlqResponse | null => {

@@ -308,3 +308,19 @@ export const sanitize = (data, escapeHtml = false) => {
 export const isStringSafe = (data) => {
   return data === purify.sanitize(data);
 };
+
+/**
+ * Extract JSON content from a string that may contain a Markdown code block.
+ * If the string contains a ```json or ``` fenced block, returns its inner content (trimmed).
+ * Otherwise, returns the whole string trimmed.
+ *
+ * @param content {string} The raw string potentially wrapping JSON in a code block.
+ * @returns {string} The extracted JSON string.
+ */
+export const extractJsonContent = (content) => {
+  const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (codeBlockMatch?.[1]) {
+    return codeBlockMatch[1].trim();
+  }
+  return content.trim();
+};

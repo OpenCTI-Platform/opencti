@@ -1,6 +1,6 @@
 import purify from 'dompurify';
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { displayEntityTypeForTranslation, translateDateInterval, isStringSafe, sanitize } from './String';
+import { displayEntityTypeForTranslation, translateDateInterval, isStringSafe, sanitize, extractJsonContent } from './String';
 
 describe('String utils', () => {
   describe('translateDateInterval', () => {
@@ -88,6 +88,42 @@ describe('String utils', () => {
       expect(sanitize(testC, true)).toEqual('&lt;p&gt;abc&lt;iframe//src=jAva&amp;Tab;script:alert(3)&gt;def&lt;/p&gt;');
       expect(isStringSafe(testC)).toEqual(false);
       expect(isStringSafe(sanitize(testC, true))).toEqual(true);
+    });
+  });
+
+  describe('extractJsonContent', () => {
+    it('should extract JSON from a ```json code block', () => {
+      const input = '```json\n{"key": "value"}\n```';
+      expect(extractJsonContent(input)).toBe('{"key": "value"}');
+    });
+
+    it('should extract JSON from a ``` code block without language tag', () => {
+      const input = '```\n{"a": 1}\n```';
+      expect(extractJsonContent(input)).toBe('{"a": 1}');
+    });
+
+    it('should return trimmed content when there is no code block', () => {
+      expect(extractJsonContent('  {"plain": true}  ')).toBe('{"plain": true}');
+    });
+
+    it('should handle extra whitespace inside code block', () => {
+      const input = '```json\n  \n  {"spaced": true}  \n  \n```';
+      expect(extractJsonContent(input)).toBe('{"spaced": true}');
+    });
+
+    it('should extract only the first code block', () => {
+      const input = 'text ```json\n{"first": 1}\n``` more ```json\n{"second": 2}\n```';
+      expect(extractJsonContent(input)).toBe('{"first": 1}');
+    });
+
+    it('should handle multiline JSON inside code block', () => {
+      const input = '```json\n{\n  "a": 1,\n  "b": 2\n}\n```';
+      expect(extractJsonContent(input)).toBe('{\n  "a": 1,\n  "b": 2\n}');
+    });
+
+    it('should return trimmed string for empty input', () => {
+      expect(extractJsonContent('')).toBe('');
+      expect(extractJsonContent('   ')).toBe('');
     });
   });
 });
