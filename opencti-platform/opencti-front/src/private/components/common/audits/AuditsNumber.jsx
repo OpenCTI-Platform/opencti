@@ -65,7 +65,7 @@ const AuditsNumber = ({
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  const title = parameters.title ?? t_i18n('Entities number');
+  const title = parameters.title ?? t_i18n('Audits number');
   const translatedTitle = translateEntityType(title);
 
   if (!isGrantedToSettings || !isEnterpriseEdition) {

@@ -82,7 +82,7 @@ const StixRelationshipsNumber = ({
     <WidgetContainer
       padding="small"
       height={height}
-      title={t_i18n('Entities number')}
+      title={t_i18n('Relationships number')}
       variant={variant}
       action={popover}
     >
