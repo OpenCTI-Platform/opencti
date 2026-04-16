@@ -4803,13 +4803,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pdfmake@npm:^0.2.0":
-  version: 0.2.13
-  resolution: "@types/pdfmake@npm:0.2.13"
+"@types/pdfmake@npm:0.3.2":
+  version: 0.3.2
+  resolution: "@types/pdfmake@npm:0.3.2"
   dependencies:
     "@types/node": "npm:*"
     "@types/pdfkit": "npm:*"
-  checksum: 10c0/168b4ac4ed2f328be6c8afc149daecb8c64a220fb4cfeb45227b1e302457cd317e34f99cb075ab74908536926bd96af725bfaabd1189ed2fd870b861c42c5b2b
+  checksum: 10c0/0ea880a84870bd63f2aebbe5b3cb7ffa1bb5082d6e33244d88b61eab392c7ceb710b3565abb273a2aca02e88baf4f434730af3653f8320f7e1d6f439b473d8da
   languageName: node
   linkType: hard
 

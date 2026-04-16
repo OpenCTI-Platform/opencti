@@ -119,14 +119,15 @@ export const exportPdf = (
           ],
         };
         const pdf = pdfMake.createPdf(docDefinition);
-        pdf.download(`${name}.pdf`);
-        if (adjust) {
-          container.setAttribute(
-            'style',
-            `width:${offsetWidth}px; height:${offsetHeight}px;`,
-          );
-        }
-        resolve();
+        pdf.download(`${name}.pdf`).then(() => {
+          if (adjust) {
+            container.setAttribute(
+              'style',
+              `width:${offsetWidth}px; height:${offsetHeight}px;`,
+            );
+          }
+          resolve();
+        });
       })
       .catch((reason) => {
         reject(reason);

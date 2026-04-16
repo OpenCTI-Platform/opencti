@@ -184,6 +184,7 @@
     "node": ">=20.0.0"
   },
   "resolutions": {
+    "@types/pdfmake": "0.3.2",
     "cookie": "1.1.1",
     "d3-color": "3.1.0",
     "glob-parent": "6.0.2",
