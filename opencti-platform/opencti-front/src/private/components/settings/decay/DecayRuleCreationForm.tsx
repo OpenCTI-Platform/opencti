@@ -1,30 +1,29 @@
 import React from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { useFormatter } from 'src/components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { useTheme } from '@mui/material/styles';
-import useApiMutation from 'src/utils/hooks/useApiMutation';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { Field, FieldArray, Form, Formik, FormikConfig } from 'formik';
 import { handleErrorInForm } from '../../../../relay/environment';
-import { emptyFilterGroup, serializeFilterGroupForBackend } from 'src/utils/filters/filtersUtils';
+import { emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import decayRuleValidator from '@components/settings/decay/DecayRuleValidator';
-import TextField from 'src/components/TextField';
-import MarkdownField from 'src/components/fields/MarkdownField';
-import ObservableTypesField from '@components/common/form/ObservableTypesField';
+import TextField from '../../../../components/TextField';
+import MarkdownField from '../../../../components/fields/MarkdownField';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import IconButton from '@common/button/IconButton';
 import { AddOutlined, Delete } from '@mui/icons-material';
-import SwitchField from 'src/components/fields/SwitchField';
-import { fieldSpacingContainerStyle } from 'src/utils/field';
+import SwitchField from '../../../../components/fields/SwitchField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import Button from '@common/button/Button';
 import Filters from '@components/common/lists/Filters';
 import { enabledFilters } from './utils/enabledFilters';
-import useFiltersState from 'src/utils/filters/useFiltersState';
-import FilterIconButton from 'src/components/FilterIconButton';
+import useFiltersState from '../../../../utils/filters/useFiltersState';
+import FilterIconButton from '../../../../components/FilterIconButton';
 
 const decayRuleCreationFormAddMutation = graphql`
   mutation DecayRuleCreationFormAddMutation($input: DecayRuleAddInput!) {
