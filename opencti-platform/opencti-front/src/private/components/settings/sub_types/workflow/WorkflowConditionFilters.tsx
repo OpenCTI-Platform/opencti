@@ -24,7 +24,6 @@ const WorkflowConditionFilters = ({
   const availableEntityTypes = ['User', 'Group', 'Organization', 'DraftWorkspace'];
   const availableFilterKeys = [
     'name',
-    'workflow_id',
     'workflow_user',
     'workflow_group',
     'workflow_organization',

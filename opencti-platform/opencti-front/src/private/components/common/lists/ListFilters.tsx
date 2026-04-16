@@ -125,7 +125,7 @@ const ListFilters = ({
 
   const getGroupLabel = (key: string, filterDefinition: ReturnType<typeof getFilterDefinitionFromFilterKeysMap>): string => {
     const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
-    if (key === 'workflow_id' || (key === 'name' && filterDefinition?.label === 'Draft name')) {
+    if (key === 'name' && filterDefinition?.label === 'Draft name') {
       return t_i18n('Draft filters');
     }
     if (WORKFLOW_FILTER_KEYS.includes(key)) {
@@ -142,7 +142,7 @@ const ListFilters = ({
     if (WORKFLOW_FILTER_KEYS.includes(key)) {
       return 1;
     }
-    if (key === 'workflow_id' || (key === 'name' && filterDefinition?.label === 'Draft name')) {
+    if (key === 'name' && filterDefinition?.label === 'Draft name') {
       return 2;
     }
     if (isFilterKeyForAllTypes(subEntityTypes)) {
