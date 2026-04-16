@@ -346,7 +346,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
                   containerStixCoreObjects={[...(container.objects?.edges ?? [])]}
                   paginationOptions={queryPaginationOptions}
                   enableReferences={enableReferences}
-                  defaultMarkingDefinitions={(container.objectMarking ?? []) as unknown[]}
+                  defaultMarkingDefinitions={container.objectMarking ?? []}
                 />
               </Security>
             )}
