@@ -2652,9 +2652,14 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
           }
         }
         if (operation === UPDATE_OPERATION_ADD) {
-          const filteredList = (updatedInstance[key] || []).filter((d: any) => !isInferredIndex(d.i_relation._index));
-          const currentIds = filteredList.map((o: any) => [o.id, o.standard_id]).flat();
-          const refsToCreate = refs.filter((r) => !currentIds.includes(r.internal_id));
+          // Re-evaluate existing refs from storage while we hold the lock.
+          // The loaded instance can be stale when concurrent workers update the same object.
+          const currentRels = await fullRelationsList(context, user, relType, {
+            indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+            fromId: initial.internal_id,
+          });
+          const currentRelToIds = new Set(currentRels.map((rel: BasicStoreRelation) => rel.toId));
+          const refsToCreate = refs.filter((r) => !currentRelToIds.has(r.internal_id));
           if (refsToCreate.length > 0) {
             const newRelations = buildInstanceRelTo(refsToCreate, relType);
             pushAll(relationsToCreate, newRelations);

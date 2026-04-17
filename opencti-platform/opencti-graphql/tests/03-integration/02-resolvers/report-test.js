@@ -1,12 +1,16 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
+import { randomUUID } from 'node:crypto';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 import { now } from '../../../src/utils/format';
 import { fullEntitiesList } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
-import { deleteElementById } from '../../../src/database/middleware';
+import { deleteElementById, storeLoadByIdWithRefs, updateAttributeFromLoadedWithRefs } from '../../../src/database/middleware';
+import { addThreatActorIndividual } from '../../../src/modules/threatActorIndividual/threatActorIndividual-domain';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../../../src/modules/threatActorIndividual/threatActorIndividual-types';
+import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 
 const LIST_QUERY = gql`
   query reports(
@@ -494,6 +498,58 @@ describe('Report resolver standard behavior', () => {
   });
 
   describe('When adding an observable to a report', () => {
+    it('should ignore duplicate object addition from a stale loaded snapshot', async () => {
+      const CREATE_QUERY = gql`
+        mutation ReportAdd($input: ReportAddInput!) {
+          reportAdd(input: $input) {
+            id
+          }
+        }
+      `;
+      const DELETE_QUERY = gql`
+        mutation reportDelete($id: ID!) {
+          reportEdit(id: $id) {
+            delete
+          }
+        }
+      `;
+      const isolatedReport = await queryAsAdmin({
+        query: CREATE_QUERY,
+        variables: {
+          input: {
+            stix_id: `report--${randomUUID()}`,
+            name: `Concurrent report objects add ${now()}`,
+            description: 'Regression test report',
+            published: '2020-02-26T00:51:35.000Z',
+          },
+        },
+      });
+      const isolatedReportId = isolatedReport.data.reportAdd.id;
+      const objectToAdd = await addThreatActorIndividual(testContext, ADMIN_USER, {
+        name: `Concurrent object ${randomUUID()}`,
+        description: 'Temporary object for stale snapshot regression test',
+      });
+      try {
+        const staleLoadedReport = await storeLoadByIdWithRefs(testContext, ADMIN_USER, isolatedReportId);
+        const inputs = [
+          {
+            key: 'objects',
+            operation: 'add',
+            value: [objectToAdd.internal_id],
+          },
+        ];
+
+        const firstUpdate = await updateAttributeFromLoadedWithRefs(testContext, ADMIN_USER, staleLoadedReport, inputs);
+        const secondUpdate = await updateAttributeFromLoadedWithRefs(testContext, ADMIN_USER, staleLoadedReport, inputs);
+
+        expect(firstUpdate.event).not.toBeNull();
+        expect(secondUpdate.event).toBeNull();
+      } finally {
+        await stixDomainObjectDelete(testContext, ADMIN_USER, objectToAdd.id, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
+        await queryAsAdmin({ query: DELETE_QUERY, variables: { id: isolatedReportId } });
+      }
+    });
+
     it('should add the observable and update updated_at and modified', async () => {
       const RELATION_ADD_OBSERVABLE_QUERY = gql`
       mutation ReportEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
