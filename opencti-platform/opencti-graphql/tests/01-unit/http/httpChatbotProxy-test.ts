@@ -523,7 +523,7 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
     await postAgentMessageStream(req, res);
 
     expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.send).toHaveBeenCalledWith({ status: 503, error: 'Network failure' });
+    expect(res.send).toHaveBeenCalledWith({ status: 503, error: 'XTM One is unreachable' });
   });
 });
 
