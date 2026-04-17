@@ -98,6 +98,7 @@
   "Built-in": "Eingebaut",
   "Button display name": "Anzeigename der Schaltfläche",
   "Can escalate privs": "Kann Privilegien eskalieren",
+  "canEnrollManually": "Verfügbar für manuelle Einschreibung",
   "Capabilities": "Fähigkeiten",
   "Capability order": "Reihenfolge der Fähigkeiten",
   "Card number": "Kartennummer",

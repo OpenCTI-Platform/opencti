@@ -98,6 +98,7 @@
   "Built-in": "設定",
   "Button display name": "ボタン表示名",
   "Can escalate privs": "特権をエスカレートできる",
+  "canEnrollManually": "マニュアル登録が可能",
   "Capabilities": "脅威行為者のタイプ",
   "Capability order": "能力順",
   "Card number": "カード番号",

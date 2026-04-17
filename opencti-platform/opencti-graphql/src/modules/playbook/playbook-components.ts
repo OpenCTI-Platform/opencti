@@ -106,6 +106,7 @@ export interface StreamConfiguration {
   update: boolean;
   delete: boolean;
   filters: string;
+  canEnrollManually: boolean;
 }
 const PLAYBOOK_INTERNAL_DATA_STREAM_SCHEMA: JSONSchemaType<StreamConfiguration> = {
   type: 'object',
@@ -114,6 +115,7 @@ const PLAYBOOK_INTERNAL_DATA_STREAM_SCHEMA: JSONSchemaType<StreamConfiguration> 
     update: { type: 'boolean', default: false },
     delete: { type: 'boolean', default: false },
     filters: { type: 'string' },
+    canEnrollManually: { type: 'boolean', default: true },
   },
   required: ['create', 'update', 'delete'],
 };

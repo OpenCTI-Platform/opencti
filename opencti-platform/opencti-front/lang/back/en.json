@@ -98,6 +98,7 @@
   "Built-in": "Built-in",
   "Button display name": "Button display name",
   "Can escalate privs": "Can escalate privs",
+  "canEnrollManually": "Available for manual enrollment",
   "Capabilities": "Capabilities",
   "Capability order": "Capability order",
   "Card number": "Card number",
