@@ -185,7 +185,7 @@ describe('Function allFieldsContributingToStandardId', () => {
     fields = allFieldsContributingToStandardId({ entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE });
     expect(fields).toEqual(['hashes', 'name']);
     fields = allFieldsContributingToStandardId({ entity_type: ENTITY_TYPE_CONTAINER_NOTE });
-    expect(fields).toEqual(['content', 'created']);
+    expect(fields).toEqual(['content', 'created', 'attribute_abstract']);
   });
 });
 

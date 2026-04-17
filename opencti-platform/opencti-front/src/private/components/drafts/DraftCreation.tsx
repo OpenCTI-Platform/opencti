@@ -20,7 +20,7 @@ import FormButtonContainer from '@common/form/FormButtonContainer';
 import useDefaultValues from '../../../utils/hooks/useDefaultValues';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../utils/hooks/useGranted';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../utils/hooks/useEntitySettings';
-import MarkdownField from '../../../components/fields/MarkdownField';
+import MarkdownField from '../../../components/fields/markdownField/MarkdownField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../utils/field';
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';

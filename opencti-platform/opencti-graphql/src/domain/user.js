@@ -98,6 +98,7 @@ import { sendMail, smtpComputeFrom } from '../database/smtp';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 import { doYield } from '../utils/eventloop-utils';
+import { disablePublicSharingForDeletedUser } from '../modules/dataSharing/dataSharing-utils';
 import { sanitizeUser } from '../utils/templateContextSanitizer';
 import { safeRender } from '../utils/safeEjs.client';
 import { totp } from '../utils/totp';
@@ -1204,6 +1205,7 @@ export const userDelete = async (context, user, userId) => {
   await deleteAllTriggerAndDigestByUser(userId);
   await deleteAllNotificationByUser(userId);
   await deleteAllWorkspaceForUser(context, user, userId);
+  await disablePublicSharingForDeletedUser(context, userId);
 
   const deleted = await deleteElementById(context, user, userId, ENTITY_TYPE_USER);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : deleted.user_email;

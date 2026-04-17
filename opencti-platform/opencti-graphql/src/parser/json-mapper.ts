@@ -25,6 +25,7 @@ import '../modules';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { getHashesNames } from '../modules/internal/csvMapper/csvMapper-utils';
 import {
+  type AttributeBasedOnIdentifierComplex,
   type BasedRepresentationAttribute,
   type ComplexAttributePath,
   type JsonMapperParsed,
@@ -47,6 +48,7 @@ import { SYSTEM_USER } from '../utils/access';
 import { safeRender } from '../utils/safeEjs';
 import { computeDefaultValue, formatValue, handleDefaultMarkings, handleRefEntities, type InputType } from './csv-mapper';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
+import { pushAll } from '../utils/arrayUtil';
 
 const format = (value: string | string[], def: AttributeDefinition, attribute: SimpleAttributePath | ComplexAttributePath | undefined) => {
   if (Array.isArray(value)) {
@@ -264,25 +266,35 @@ const handleBasedOnAttribute = async (
   // endregion
   // region bind the value and override default if needed
   if (attribute.based_on && attribute.based_on.representations) {
-    let entities: Record<string, InputType>[];
-    if (attribute.based_on.identifier) {
-      const mappedIdentifiers = extractTargetIdentifierFromJson(base, record, attribute.based_on.identifier, definition);
-      entities = attribute.based_on.representations
-        .flatMap((id) => {
-          const representationsMap = otherEntities.get(id);
-          if (!representationsMap) return [];
-          return mappedIdentifiers.flatMap((ident) => {
-            const e = representationsMap.get(ident);
-            return e ? [e] : [];
-          });
-        });
-    } else {
-      entities = attribute.based_on.representations
-        .flatMap((id) => {
-          const representationsMap = otherEntities.get(id);
-          return representationsMap ? Array.from(representationsMap.values()) : [];
-        });
+    const entities: Record<string, InputType>[] = [];
+    const ident = attribute.based_on.identifier;
+    const isRetroCompatibilityIdentifier = typeof ident === 'string' && isNotEmptyField(ident);
+    for (let index = 0; index < attribute.based_on.representations.length; index += 1) {
+      const representation = attribute.based_on.representations[index];
+      let emptyMatching = true;
+      let mappedIdentifiers: string[] = [];
+      if (isRetroCompatibilityIdentifier) {
+        emptyMatching = false;
+        mappedIdentifiers = extractTargetIdentifierFromJson(base, record, ident, definition);
+      } else {
+        const identifiers = (attribute.based_on.identifier ?? []) as AttributeBasedOnIdentifierComplex[];
+        const targetIdentifier = identifiers.find((ident) => ident.representation === representation);
+        if (targetIdentifier?.identifier) {
+          emptyMatching = false;
+          mappedIdentifiers = extractTargetIdentifierFromJson(base, record, targetIdentifier.identifier, definition);
+        }
+      }
+      const byRepresentation = otherEntities.get(representation);
+      const elementsByRepresentation = Array.from(byRepresentation?.values() ?? []);
+      if (!emptyMatching) {
+        pushAll(entities, elementsByRepresentation.filter((e) => e !== undefined
+          && mappedIdentifiers.includes(e.__identifier as string)) as Record<string, InputType>[]);
+      } else {
+        pushAll(entities, elementsByRepresentation
+          .filter((e) => e !== undefined) as Record<string, InputType>[]);
+      }
     }
+
     if (entities.length > 0) {
       const entity_type = input[entityType.name] as string;
       // Is relation from or to (stix-core || stix-sighting)
@@ -376,7 +388,7 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
   };
 
   const baseJson = typeof data === 'string' ? JSON.parse(data) : data;
-  const baseArray = Array.isArray(baseJson) ? baseJson : [baseJson];
+  const baseArray = [baseJson]; // Wrapping in array for base JSON to have JsonPath base array compatibility
   for (let index = 0; index < baseArray.length; index += 1) {
     const element = baseArray[index];
     // region variables

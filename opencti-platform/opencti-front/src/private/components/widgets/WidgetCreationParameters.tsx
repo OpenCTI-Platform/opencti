@@ -24,7 +24,7 @@ import { isNotEmptyField } from '../../../utils/utils';
 import { capitalizeFirstLetter } from '../../../utils/String';
 import MarkdownDisplay from '../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../components/i18n';
-import { findFiltersFromKeys, getEntityTypeTwoFirstLevelsFilterValues, SELF_ID, SELF_ID_VALUE } from '../../../utils/filters/filtersUtils';
+import { findFiltersFromKeys, getEntityTypeThreeFirstLevelsFilterValues, SELF_ID, SELF_ID_VALUE } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import type { WidgetColumn, WidgetParameters } from '../../../utils/widget/widget';
 import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline, getMaxResultCount } from '../../../utils/widget/widgetUtils';
@@ -807,7 +807,7 @@ const WidgetCreationParameters = () => {
               const getEntityTypeFromFilters = (filterGroup?: FilterGroup | null): string | undefined => {
                 if (!filterGroup) return undefined;
 
-                const entityTypeFilters = getEntityTypeTwoFirstLevelsFilterValues(filterGroup);
+                const entityTypeFilters = getEntityTypeThreeFirstLevelsFilterValues(filterGroup);
                 const hasSingleEntityType = entityTypeFilters.length === 1;
                 const otherFiltersLength = filterGroup?.filters?.filter((filter) => filter.key !== 'entity_type')?.length;
 

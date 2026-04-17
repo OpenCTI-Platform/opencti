@@ -1,6 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "7.260409.0",
+  "version": "7.260416.0",
   "private": true,
   "workspaces": [
     "packages/*"
@@ -55,7 +55,7 @@
     "@rjsf/validator-ajv8": "6.4.2",
     "analytics": "0.8.19",
     "apexcharts": "4.4.0",
-    "axios": "1.14.0",
+    "axios": "1.15.0",
     "buffer": "6.0.3",
     "ckeditor5": "43.3.1",
     "classnames": "2.5.1",
@@ -82,22 +82,24 @@
     "js-file-download": "0.4.12",
     "json5": "2.2.3",
     "leaflet": "1.9.4",
-    "markdown-to-jsx": "9.7.13",
+    "markdown-to-jsx": "9.7.15",
     "marked": "18.0.0",
     "mdi-material-ui": "7.9.4",
     "moment": "2.30.1",
     "moment-timezone": "0.6.1",
+    "monaco-editor": "0.52.2",
+    "monaco-graphql": "1.7.3",
     "pdfmake": "0.3.7",
     "prop-types": "15.8.1",
     "qrcode": "1.5.4",
     "ramda": "0.32.0",
-    "react": "19.2.4",
+    "react": "19.2.5",
     "react-apexcharts": "1.7.0",
     "react-color": "2.19.3",
     "react-compound-slider": "3.4.0",
     "react-cookie": "8.1.0",
     "react-csv": "2.2.2",
-    "react-dom": "19.2.4",
+    "react-dom": "19.2.5",
     "react-draggable": "4.5.0",
     "react-force-graph-2d": "1.29.1",
     "react-force-graph-3d": "1.29.1",
@@ -190,8 +192,8 @@
     "glob-parent": "6.0.2",
     "json5": "2.2.3",
     "lodash-es@npm:4.17.21": "4.17.23",
-    "react": "19.2.4",
-    "webpack": "5.105.4"
+    "react": "19.2.5",
+    "webpack": "5.106.0"
   },
   "dependenciesMeta": {
     "canvas": {

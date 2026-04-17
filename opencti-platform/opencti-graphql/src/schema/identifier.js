@@ -197,7 +197,7 @@ const stixBaseEntityContribution = {
     // Entities
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
     [D.ENTITY_TYPE_CAMPAIGN]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_CONTAINER_NOTE]: [{ src: 'content' }, { src: 'created', dependencies: ['content'] }],
+    [D.ENTITY_TYPE_CONTAINER_NOTE]: [{ src: 'content' }, { src: 'created', dependencies: ['content'] }, { src: 'attribute_abstract', dependencies: ['content'] }],
     [D.ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [{ src: 'objects' }],
     [D.ENTITY_TYPE_CONTAINER_OPINION]: [{ src: 'opinion' }, { src: 'created', dependencies: ['opinion'] }],
     [D.ENTITY_TYPE_CONTAINER_REPORT]: [{ src: NAME_FIELD }, { src: 'published' }],
@@ -388,7 +388,7 @@ const filteredIdContributions = (contrib, way, data) => {
     if (resolver) {
       objectData[destKey] = value ? resolver(value) : value;
     } else {
-      objectData[destKey] = value;
+      objectData[destKey] = R.is(String, value) ? value.trim() : value;
     }
   }
   return R.filter((keyValue) => !R.isEmpty(keyValue) && !R.isNil(keyValue), objectData);

@@ -14,7 +14,7 @@ import TextField from '../../../../../components/TextField';
 import SelectField from '../../../../../components/fields/SelectField';
 import { DraftContext } from '../../../../../utils/hooks/useDraftContext';
 import useAuth from '../../../../../utils/hooks/useAuth';
-import MarkdownField from '../../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';

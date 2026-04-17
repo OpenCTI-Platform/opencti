@@ -1,6 +1,7 @@
 import type { Resolvers } from '../../generated/graphql';
 import { createFeed, feedDelete, findFeedPaginated, editFeed, findById } from './feed-domain';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
+import { loadCreator } from '../../database/members';
 
 const feedResolvers: Resolvers = {
   Query: {
@@ -9,6 +10,7 @@ const feedResolvers: Resolvers = {
   },
   Feed: {
     authorized_members: (feed, _, context) => getAuthorizedMembers(context, context.user, feed),
+    feed_public_user: (feed, _, context) => feed.feed_public_user_id ? loadCreator(context, context.user, feed.feed_public_user_id) : null,
   },
   Mutation: {
     feedAdd: (_, { input }, context) => createFeed(context, context.user, input),

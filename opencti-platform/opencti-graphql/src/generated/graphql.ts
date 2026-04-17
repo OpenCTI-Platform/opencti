@@ -9208,6 +9208,8 @@ export type Feed = {
   feed_attributes: Array<FeedAttribute>;
   feed_date_attribute?: Maybe<Scalars['String']['output']>;
   feed_public?: Maybe<Scalars['Boolean']['output']>;
+  feed_public_user?: Maybe<Creator>;
+  feed_public_user_id?: Maybe<Scalars['String']['output']>;
   feed_types: Array<Scalars['String']['output']>;
   filters?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
@@ -9224,6 +9226,7 @@ export type FeedAddInput = {
   feed_attributes: Array<FeedAttributeMappingInput>;
   feed_date_attribute: Scalars['String']['input'];
   feed_public?: InputMaybe<Scalars['Boolean']['input']>;
+  feed_public_user_id?: InputMaybe<Scalars['String']['input']>;
   feed_types: Array<Scalars['String']['input']>;
   filters?: InputMaybe<Scalars['String']['input']>;
   include_header: Scalars['Boolean']['input'];
@@ -14292,6 +14295,12 @@ export enum IntrusionSetsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type JsonAttributeBasedOn = {
+  __typename?: 'JsonAttributeBasedOn';
+  identifier?: Maybe<Array<Maybe<JsonIdentifier>>>;
+  representations?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+};
+
 export type JsonAttributeColumnConfiguration = {
   pattern_date?: Maybe<Scalars['String']['output']>;
   separator?: Maybe<Scalars['String']['output']>;
@@ -14315,6 +14324,12 @@ export type JsonComplexPathVariable = {
   independent?: Maybe<Scalars['Boolean']['output']>;
   path?: Maybe<Scalars['String']['output']>;
   variable?: Maybe<Scalars['String']['output']>;
+};
+
+export type JsonIdentifier = {
+  __typename?: 'JsonIdentifier';
+  identifier?: Maybe<Scalars['String']['output']>;
+  representation?: Maybe<Scalars['String']['output']>;
 };
 
 export type JsonMapper = BasicObject & InternalObject & {
@@ -14373,7 +14388,7 @@ export type JsonMapperRepresentation = {
 export type JsonMapperRepresentationAttribute = {
   __typename?: 'JsonMapperRepresentationAttribute';
   attr_path?: Maybe<AttributePath>;
-  based_on?: Maybe<AttributeBasedOn>;
+  based_on?: Maybe<JsonAttributeBasedOn>;
   complex_path?: Maybe<ComplexPath>;
   default_values?: Maybe<Array<DefaultValue>>;
   key: Scalars['String']['output'];
@@ -23216,6 +23231,8 @@ export type PlayBookExecutionStep = {
 
 export type Playbook = BasicObject & InternalObject & {
   __typename?: 'Playbook';
+  created_at?: Maybe<Scalars['DateTime']['output']>;
+  creators?: Maybe<Array<Creator>>;
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -23228,6 +23245,7 @@ export type Playbook = BasicObject & InternalObject & {
   queue_messages: Scalars['Int']['output'];
   standard_id: Scalars['String']['output'];
   toConfigurationExport: Scalars['String']['output'];
+  updated_at?: Maybe<Scalars['DateTime']['output']>;
 };
 
 export type PlaybookAddInput = {
@@ -23286,8 +23304,10 @@ export type PlaybookInsertResult = {
 
 export enum PlaybooksOrdering {
   Score = '_score',
+  CreatedAt = 'created_at',
   Name = 'name',
-  PlaybookRunning = 'playbook_running'
+  PlaybookRunning = 'playbook_running',
+  UpdatedAt = 'updated_at'
 }
 
 export type Position = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
@@ -32427,6 +32447,8 @@ export type StreamCollection = {
   name?: Maybe<Scalars['String']['output']>;
   stream_live?: Maybe<Scalars['Boolean']['output']>;
   stream_public?: Maybe<Scalars['Boolean']['output']>;
+  stream_public_user?: Maybe<Creator>;
+  stream_public_user_id?: Maybe<Scalars['String']['output']>;
 };
 
 export type StreamCollectionAddInput = {
@@ -32436,6 +32458,7 @@ export type StreamCollectionAddInput = {
   name: Scalars['String']['input'];
   stream_live?: InputMaybe<Scalars['Boolean']['input']>;
   stream_public?: InputMaybe<Scalars['Boolean']['input']>;
+  stream_public_user_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type StreamCollectionConnection = {
@@ -33504,6 +33527,8 @@ export type TaxiiCollection = {
   name?: Maybe<Scalars['String']['output']>;
   score_to_confidence?: Maybe<Scalars['Boolean']['output']>;
   taxii_public?: Maybe<Scalars['Boolean']['output']>;
+  taxii_public_user?: Maybe<Creator>;
+  taxii_public_user_id?: Maybe<Scalars['String']['output']>;
 };
 
 export type TaxiiCollectionAddInput = {
@@ -33514,6 +33539,7 @@ export type TaxiiCollectionAddInput = {
   name: Scalars['String']['input'];
   score_to_confidence?: InputMaybe<Scalars['Boolean']['input']>;
   taxii_public?: InputMaybe<Scalars['Boolean']['input']>;
+  taxii_public_user_id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type TaxiiCollectionConnection = {
@@ -39202,10 +39228,12 @@ export type ResolversTypes = ResolversObject<{
   IntrusionSetEditMutations: ResolverTypeWrapper<Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['IntrusionSet']> }>;
   IntrusionSetsOrdering: IntrusionSetsOrdering;
   JSON: ResolverTypeWrapper<Scalars['JSON']['output']>;
+  JsonAttributeBasedOn: ResolverTypeWrapper<JsonAttributeBasedOn>;
   JsonAttributeColumnConfiguration: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['JsonAttributeColumnConfiguration']>;
   JsonComplexPath: ResolverTypeWrapper<Omit<JsonComplexPath, 'complex' | 'configuration'> & { complex?: Maybe<ResolversTypes['JsonComplexPathConfiguration']>, configuration?: Maybe<ResolversTypes['JsonAttributeColumnConfiguration']> }>;
   JsonComplexPathConfiguration: ResolverTypeWrapper<Omit<JsonComplexPathConfiguration, 'complex'> & { complex?: Maybe<ResolversTypes['JsonComplexPathConfiguration']> }>;
   JsonComplexPathVariable: ResolverTypeWrapper<JsonComplexPathVariable>;
+  JsonIdentifier: ResolverTypeWrapper<JsonIdentifier>;
   JsonMapper: ResolverTypeWrapper<BasicStoreEntityJsonMapper>;
   JsonMapperAddInput: JsonMapperAddInput;
   JsonMapperAddInputFromImport: ResolverTypeWrapper<JsonMapperAddInputFromImport>;
@@ -40232,10 +40260,12 @@ export type ResolversParentTypes = ResolversObject<{
   IntrusionSetEdge: Omit<IntrusionSetEdge, 'node'> & { node: ResolversParentTypes['IntrusionSet'] };
   IntrusionSetEditMutations: Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['IntrusionSet']> };
   JSON: Scalars['JSON']['output'];
+  JsonAttributeBasedOn: JsonAttributeBasedOn;
   JsonAttributeColumnConfiguration: ResolversInterfaceTypes<ResolversParentTypes>['JsonAttributeColumnConfiguration'];
   JsonComplexPath: Omit<JsonComplexPath, 'complex' | 'configuration'> & { complex?: Maybe<ResolversParentTypes['JsonComplexPathConfiguration']>, configuration?: Maybe<ResolversParentTypes['JsonAttributeColumnConfiguration']> };
   JsonComplexPathConfiguration: Omit<JsonComplexPathConfiguration, 'complex'> & { complex?: Maybe<ResolversParentTypes['JsonComplexPathConfiguration']> };
   JsonComplexPathVariable: JsonComplexPathVariable;
+  JsonIdentifier: JsonIdentifier;
   JsonMapper: BasicStoreEntityJsonMapper;
   JsonMapperAddInput: JsonMapperAddInput;
   JsonMapperAddInputFromImport: JsonMapperAddInputFromImport;
@@ -43800,6 +43830,8 @@ export type FeedResolvers<ContextType = any, ParentType extends ResolversParentT
   feed_attributes?: Resolver<Array<ResolversTypes['FeedAttribute']>, ParentType, ContextType>;
   feed_date_attribute?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   feed_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  feed_public_user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  feed_public_user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   feed_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -45428,6 +45460,11 @@ export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
   name: 'JSON';
 }
 
+export type JsonAttributeBasedOnResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonAttributeBasedOn'] = ResolversParentTypes['JsonAttributeBasedOn']> = ResolversObject<{
+  identifier?: Resolver<Maybe<Array<Maybe<ResolversTypes['JsonIdentifier']>>>, ParentType, ContextType>;
+  representations?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+}>;
+
 export type JsonAttributeColumnConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonAttributeColumnConfiguration'] = ResolversParentTypes['JsonAttributeColumnConfiguration']> = ResolversObject<{
   __resolveType: TypeResolveFn<null, ParentType, ContextType>;
   pattern_date?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -45449,6 +45486,11 @@ export type JsonComplexPathVariableResolvers<ContextType = any, ParentType exten
   independent?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   path?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   variable?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type JsonIdentifierResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonIdentifier'] = ResolversParentTypes['JsonIdentifier']> = ResolversObject<{
+  identifier?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  representation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type JsonMapperResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonMapper'] = ResolversParentTypes['JsonMapper']> = ResolversObject<{
@@ -45492,7 +45534,7 @@ export type JsonMapperRepresentationResolvers<ContextType = any, ParentType exte
 
 export type JsonMapperRepresentationAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonMapperRepresentationAttribute'] = ResolversParentTypes['JsonMapperRepresentationAttribute']> = ResolversObject<{
   attr_path?: Resolver<Maybe<ResolversTypes['AttributePath']>, ParentType, ContextType>;
-  based_on?: Resolver<Maybe<ResolversTypes['AttributeBasedOn']>, ParentType, ContextType>;
+  based_on?: Resolver<Maybe<ResolversTypes['JsonAttributeBasedOn']>, ParentType, ContextType>;
   complex_path?: Resolver<Maybe<ResolversTypes['ComplexPath']>, ParentType, ContextType>;
   default_values?: Resolver<Maybe<Array<ResolversTypes['DefaultValue']>>, ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -47939,6 +47981,8 @@ export type PlayBookExecutionStepResolvers<ContextType = any, ParentType extends
 }>;
 
 export type PlaybookResolvers<ContextType = any, ParentType extends ResolversParentTypes['Playbook'] = ResolversParentTypes['Playbook']> = ResolversObject<{
+  created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -47951,6 +47995,7 @@ export type PlaybookResolvers<ContextType = any, ParentType extends ResolversPar
   queue_messages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -50311,6 +50356,8 @@ export type StreamCollectionResolvers<ContextType = any, ParentType extends Reso
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   stream_live?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   stream_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  stream_public_user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  stream_public_user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type StreamCollectionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StreamCollectionConnection'] = ResolversParentTypes['StreamCollectionConnection']> = ResolversObject<{
@@ -50676,6 +50723,8 @@ export type TaxiiCollectionResolvers<ContextType = any, ParentType extends Resol
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   score_to_confidence?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   taxii_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  taxii_public_user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  taxii_public_user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type TaxiiCollectionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaxiiCollectionConnection'] = ResolversParentTypes['TaxiiCollectionConnection']> = ResolversObject<{
@@ -52357,10 +52406,12 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IntrusionSetEdge?: IntrusionSetEdgeResolvers<ContextType>;
   IntrusionSetEditMutations?: IntrusionSetEditMutationsResolvers<ContextType>;
   JSON?: GraphQLScalarType;
+  JsonAttributeBasedOn?: JsonAttributeBasedOnResolvers<ContextType>;
   JsonAttributeColumnConfiguration?: JsonAttributeColumnConfigurationResolvers<ContextType>;
   JsonComplexPath?: JsonComplexPathResolvers<ContextType>;
   JsonComplexPathConfiguration?: JsonComplexPathConfigurationResolvers<ContextType>;
   JsonComplexPathVariable?: JsonComplexPathVariableResolvers<ContextType>;
+  JsonIdentifier?: JsonIdentifierResolvers<ContextType>;
   JsonMapper?: JsonMapperResolvers<ContextType>;
   JsonMapperAddInputFromImport?: JsonMapperAddInputFromImportResolvers<ContextType>;
   JsonMapperConnection?: JsonMapperConnectionResolvers<ContextType>;

@@ -10,7 +10,7 @@ import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForE
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { adaptFieldValue } from '../../../../utils/String';
 import { buildDate, formatDate } from '../../../../utils/Time';

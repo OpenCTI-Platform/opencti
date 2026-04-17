@@ -10,7 +10,7 @@ import CreateEntityControlledDial from '../../../components/CreateEntityControll
 import TextField from '../../../components/TextField';
 import IconButton from '../../../components/common/button/IconButton';
 import FormButtonContainer from '../../../components/common/form/FormButtonContainer';
-import MarkdownField from '../../../components/fields/MarkdownField';
+import MarkdownField from '../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../components/i18n';
 import { handleError, handleErrorInForm } from '../../../relay/environment';
 import { resolveLink } from '../../../utils/Entity';

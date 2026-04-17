@@ -1,15 +1,31 @@
-import React, { useState } from 'react';
+import React, { CSSProperties, FocusEvent, useState } from 'react';
 import ReactMde from 'react-mde';
-import { useField } from 'formik';
+import { FieldInputProps, FormikProps, useField } from 'formik';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import { isNil } from 'ramda';
-import useAI from '../../utils/hooks/useAI';
-import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI';
-import { useFormatter } from '../i18n';
-import MarkdownDisplay from '../MarkdownDisplay';
+import useAI from '../../../utils/hooks/useAI';
+import TextFieldAskAI from '../../../private/components/common/form/TextFieldAskAI';
+import { useFormatter } from '../../i18n';
+import MarkdownDisplay from '../../MarkdownDisplay';
 
-const MarkdownField = (props) => {
+interface MarkdownFieldProps {
+  form: FormikProps<Record<string, unknown>>;
+  field: FieldInputProps<string>;
+  required?: boolean;
+  onFocus?: (name: string) => void;
+  onSubmit?: (name: string, value: string) => void;
+  onSelect?: (value: string) => void;
+  label?: string;
+  style?: CSSProperties;
+  disabled?: boolean;
+  controlledSelectedTab?: 'write' | 'preview';
+  controlledSetSelectTab?: (tab: 'write' | 'preview') => void;
+  height?: number;
+  askAi?: boolean;
+}
+
+const MarkdownField = (props: MarkdownFieldProps) => {
   const {
     form: { setFieldValue, setFieldTouched, submitCount },
     field: { name },
@@ -26,18 +42,20 @@ const MarkdownField = (props) => {
     askAi,
   } = props;
   const { t_i18n } = useFormatter();
-  const [selectedTab, setSelectedTab] = useState('write');
+  const [selectedTab, setSelectedTab] = useState<'write' | 'preview'>('write');
   const [field, meta] = useField(name);
   const { fullyActive } = useAI();
-  const internalOnFocus = (event) => {
-    const { nodeName } = event.relatedTarget || {};
+
+  const internalOnFocus = (event: FocusEvent<HTMLDivElement>) => {
+    const { nodeName } = (event.relatedTarget as HTMLElement) || {};
     if (nodeName === 'INPUT' || nodeName === undefined) {
       if (typeof onFocus === 'function') {
         onFocus(name);
       }
     }
   };
-  const internalOnBlur = (event) => {
+
+  const internalOnBlur = (event: FocusEvent<HTMLDivElement>) => {
     const isClickOutsideCurrentField = !event.currentTarget.contains(event.relatedTarget);
     if (isClickOutsideCurrentField) {
       setFieldTouched(name, true);
@@ -46,8 +64,9 @@ const MarkdownField = (props) => {
       }
     }
   };
+
   const internalOnSelect = () => {
-    const selection = window.getSelection().toString();
+    const selection = window.getSelection()?.toString() ?? '';
     if (typeof onSelect === 'function' && selection.length > 2 && disabled) {
       onSelect(selection.trim());
     }
@@ -73,7 +92,7 @@ const MarkdownField = (props) => {
         value={field.value ?? ''}
         readOnly={disabled}
         onChange={(value) => setFieldValue(name, value)}
-        selectedTab={controlledSelectedTab || selectedTab}
+        selectedTab={controlledSelectedTab ?? selectedTab}
         onTabChange={(tab) => (controlledSetSelectTab
           ? controlledSetSelectTab(tab)
           : setSelectedTab(tab))
@@ -97,8 +116,8 @@ const MarkdownField = (props) => {
         childProps={{
           textArea: { onSelect: internalOnSelect },
         }}
-        minEditorHeight={height || 100}
-        maxEditorHeight={height || 100}
+        minEditorHeight={height ?? 100}
+        maxEditorHeight={height ?? 100}
         minPreviewHeight={140}
       />
       {showError && (
@@ -107,7 +126,7 @@ const MarkdownField = (props) => {
       {askAi && fullyActive && (
         <TextFieldAskAI
           currentValue={field.value ?? ''}
-          setFieldValue={(val) => {
+          setFieldValue={(val: string) => {
             setFieldValue(name, val);
             if (typeof onSubmit === 'function') {
               onSubmit(name, val || '');
@@ -115,7 +134,7 @@ const MarkdownField = (props) => {
           }}
           format="markdown"
           variant="markdown"
-          disabled={props.disabled}
+          disabled={disabled}
         />
       )}
     </div>

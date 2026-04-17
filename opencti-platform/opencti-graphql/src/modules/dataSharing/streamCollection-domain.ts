@@ -3,12 +3,14 @@ import { createEntity, deleteElementById, updateAttribute } from '../../database
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
-import { isUserHasCapability, MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../../utils/access';
+import { FunctionalError } from '../../config/errors';
+import { isUserHasCapability, MEMBER_ACCESS_RIGHT_VIEW, SETTINGS_SET_ACCESSES, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { TAXIIAPI } from '../../domain/user';
+import { validatePublicUserId } from './dataSharing-utils';
 import { getConsumersForCollection, getLocalConsumerMetrics } from '../../graphql/streamConsumerRegistry';
 import { fetchStreamInfo } from '../../database/stream/stream-handler';
 import { computeProcessingLagMetrics } from '../../utils/consumer-metrics';
@@ -21,6 +23,15 @@ export const createStreamCollection = async (context: AuthContext, user: AuthUse
   // our stix matching is currently limited, we need to validate the input filters
   if (input.filters) {
     validateFilterGroupForStixMatch(JSON.parse(input.filters));
+  }
+  if (input.stream_public && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    throw FunctionalError('You must have the SETTINGS_SETACCESSES capability to create a public stream collection');
+  }
+  if (input.stream_public && !input.stream_public_user_id) {
+    throw FunctionalError('A user must be configured when the stream collection is public');
+  }
+  if (input.stream_public_user_id) {
+    await validatePublicUserId(context, input.stream_public_user_id);
   }
 
   // Insert the collection
@@ -62,7 +73,22 @@ export const streamCollectionEditField = async (context: AuthContext, user: Auth
     // our stix matching is currently limited, we need to validate the input filters
     validateFilterGroupForStixMatch(JSON.parse(filtersItem.value[0]));
   }
-
+  const publicFields = ['stream_public', 'stream_public_user_id'];
+  if (input.some((item) => publicFields.includes(item.key)) && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    throw FunctionalError('You must have the SETTINGS_SETACCESSES capability to modify public stream collection settings');
+  }
+  const publicUserIdItem = input.find((item) => item.key === 'stream_public_user_id');
+  if (publicUserIdItem?.value?.[0]) {
+    await validatePublicUserId(context, publicUserIdItem.value[0]);
+  }
+  const settingPublicTrue = input.find((item) => item.key === 'stream_public' && item.value?.[0] === 'true');
+  if (settingPublicTrue) {
+    const existingCollection = await findById(context, user, collectionId);
+    const effectiveUserId = publicUserIdItem?.value?.[0] ?? existingCollection?.stream_public_user_id;
+    if (!effectiveUserId) {
+      throw FunctionalError('A user must be configured when the stream collection is public');
+    }
+  }
   const finalInput = input.map(({ key, value }) => {
     const item = { key, value };
     if (key === authorizedMembers.name) {

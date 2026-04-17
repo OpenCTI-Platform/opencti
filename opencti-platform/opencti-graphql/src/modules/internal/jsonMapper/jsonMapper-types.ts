@@ -1,18 +1,3 @@
-/*
-Copyright (c) 2021-2025 Filigran SAS
-
-This file is part of the OpenCTI Enterprise Edition ("EE") and is
-licensed under the OpenCTI Enterprise Edition License (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*/
-
 import type { BasicStoreEntity, StoreEntity } from '../../../types/store';
 import type { StixObject, StixOpenctiExtensionSDO } from '../../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
@@ -35,8 +20,13 @@ export interface SimpleAttributePath {
   independent?: boolean;
   configuration?: AttributeColumnConfiguration;
 }
-interface AttributeBasedOn {
+export interface AttributeBasedOnIdentifierComplex {
+  representation: string | null;
   identifier?: string;
+}
+
+interface AttributeBasedOn {
+  identifier?: string | AttributeBasedOnIdentifierComplex[];
   representations?: string[];
 }
 
@@ -112,7 +102,7 @@ export interface BasicStoreEntityJsonMapper extends BasicStoreEntity {
   user_chosen_markings?: string[];
 }
 
-export interface StoreEntityJsonMapper extends BasicStoreEntityJsonMapper, StoreEntity {}
+export interface StoreEntityJsonMapper extends BasicStoreEntityJsonMapper, StoreEntity { }
 
 export interface StixJsonMapper extends StixObject {
   name: string;

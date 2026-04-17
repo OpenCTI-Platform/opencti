@@ -60,7 +60,7 @@ const SearchBulkContainer = () => {
       isSortable: false,
     },
     createdBy: {},
-    creators: {},
+    creator: {},
     objectLabel: {},
     created_at: {
       percentWidth: 14,

@@ -8,7 +8,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
-import MarkdownField from '../../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
 import SelectField from '../../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';

@@ -4,7 +4,7 @@ import {
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_LOCATION_COUNTRY,
-  ENTITY_TYPE_MALWARE
+  ENTITY_TYPE_MALWARE,
 } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { ENTITY_DOMAIN_NAME, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_IPV4_ADDR } from '../../../src/schema/stixCyberObservable';
@@ -25,10 +25,10 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
                   { value: '1', result: 90 },
                   { value: '2', result: 60 },
                   { value: '3', result: 30 },
-              ])`
+              ])`,
 
-      }
-    }
+      },
+    },
   ],
   representations: [
     {
@@ -36,7 +36,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_MARKING_DEFINITION,
-        path: '$.Event.Tag[?(@.name.includes("tlp:"))]'
+        path: '$.Event.Tag[?(@.name.includes("tlp:"))]',
       },
       identifier: '$.id',
       attributes: [
@@ -45,7 +45,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           mode: 'complex',
           complex_path: {
             variables: [{ variable: 'name', path: '$.name' }],
-            formula: 'name.split(":")[0]'
+            formula: 'name.split(":")[0]',
           },
         }, {
           key: 'definition',
@@ -53,8 +53,8 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           attr_path: {
             path: '$.name',
           },
-        }
-      ]
+        },
+      ],
     },
     {
       id: 'countryRepresentation',
@@ -62,7 +62,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
       target: {
         entity_type: ENTITY_TYPE_LOCATION_COUNTRY,
         // path: '$.Event.Galaxy..GalaxyCluster[?(@.meta && @.meta.country)].meta.country'
-        path: '$.Event.Galaxy..GalaxyCluster[?(@.type == \'country\')]'
+        path: '$.Event.Galaxy..GalaxyCluster[?(@.type == \'country\')]',
       },
       identifier: '$.meta.ISO',
       attributes: [
@@ -72,15 +72,15 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           attr_path: {
             path: '$.meta.ISO',
           },
-        }
-      ]
+        },
+      ],
     },
     {
       id: 'orgRepresentation',
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
-        path: '$.Event.Orgc'
+        path: '$.Event.Orgc',
       },
       identifier: '$.uuid',
       attributes: [
@@ -90,15 +90,15 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           attr_path: {
             path: '$.name',
           },
-        }
-      ]
+        },
+      ],
     },
     {
       id: 'externalRefsRepresentation',
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_EXTERNAL_REFERENCE,
-        path: '$.Event.Attribute[?(@.type == \'link\')]'
+        path: '$.Event.Attribute[?(@.type == \'link\')]',
       },
       identifier: '$.id',
       attributes: [
@@ -122,15 +122,15 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           attr_path: {
             path: '$.value',
           },
-        }
-      ]
+        },
+      ],
     },
     {
       id: 'externalRefsRepresentation',
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_EXTERNAL_REFERENCE,
-        path: '$.Event.Galaxy..GalaxyCluster..meta.refs'
+        path: '$.Event.Galaxy..GalaxyCluster..meta.refs',
       },
       identifier: '$',
       attributes: [
@@ -139,7 +139,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           mode: 'simple',
           attr_path: {
             path: '$.Event.id',
-            independent: true
+            independent: true,
           },
         },
         {
@@ -148,35 +148,35 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           attr_path: {
             path: '$',
           },
-        }
-      ]
+        },
+      ],
     },
     {
       id: 'externalRefsRepresentation',
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_EXTERNAL_REFERENCE,
-        path: '$.Event'
+        path: '$.Event',
       },
       identifier: '$.id',
       attributes: [
         {
           key: 'source_name',
           mode: 'simple',
-          default_values: ['MISP Event']
+          default_values: ['MISP Event'],
         },
         {
           key: 'description',
           mode: 'simple',
           attr_path: {
-            path: '$.info'
+            path: '$.info',
           },
         },
         {
           key: 'external_id',
           mode: 'simple',
           attr_path: {
-            path: '$.uuid'
+            path: '$.uuid',
           },
         },
         {
@@ -184,10 +184,10 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           mode: 'complex',
           complex_path: {
             variables: [{ variable: 'uuid', path: '$.uuid' }],
-            formula: 'externalUri + "/events/view/" + uuid'
+            formula: 'externalUri + "/events/view/" + uuid',
           },
-        }
-      ]
+        },
+      ],
     },
     // IntrusionSets
     {
@@ -195,7 +195,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_INTRUSION_SET,
-        path: '$.Event.Galaxy[?(@.type == \'threat-actor\')].GalaxyCluster'
+        path: '$.Event.Galaxy[?(@.type == \'threat-actor\')].GalaxyCluster',
       },
       identifier: '$.id',
       attributes: [
@@ -217,7 +217,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           key: 'createdBy',
           mode: 'base',
           based_on: {
-            representations: ['orgRepresentation']
+            representations: ['orgRepresentation'],
           },
         },
         {
@@ -232,24 +232,24 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           mode: 'base',
           based_on: {
             identifier: '$.meta.refs',
-            representations: ['externalRefsRepresentation']
-          }
+            representations: ['externalRefsRepresentation'],
+          },
         },
         {
           key: 'objectMarking',
           mode: 'base',
           based_on: {
-            representations: ['markingRepresentation']
-          }
-        }
-      ]
+            representations: ['markingRepresentation'],
+          },
+        },
+      ],
     },
     {
       id: 'originates-from-threat-actor-Country',
       type: JsonMapperRepresentationType.Relationship,
       target: {
         entity_type: 'originates-from',
-        path: '$.Event.Galaxy[?(@.type == \'threat-actor\')].GalaxyCluster'
+        path: '$.Event.Galaxy[?(@.type == \'threat-actor\')].GalaxyCluster',
       },
       attributes: [
         {
@@ -258,9 +258,9 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.id',
             representations: [
-              'galaxy-Intrusion-Set'
-            ]
-          }
+              'galaxy-Intrusion-Set',
+            ],
+          },
         },
         {
           key: 'to',
@@ -268,18 +268,18 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.meta.country',
             representations: [
-              'countryRepresentation'
-            ]
-          }
-        }
-      ]
+              'countryRepresentation',
+            ],
+          },
+        },
+      ],
     },
     {
       id: 'galaxy-Intrusion-Set',
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_INTRUSION_SET,
-        path: '$.Event.Galaxy[?(@.type == \'microsoft-activity-group\')].GalaxyCluster'
+        path: '$.Event.Galaxy[?(@.type == \'microsoft-activity-group\')].GalaxyCluster',
       },
       identifier: '$.id',
       attributes: [
@@ -308,10 +308,10 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           key: 'objectMarking',
           mode: 'base',
           based_on: {
-            representations: ['markingRepresentation']
-          }
-        }
-      ]
+            representations: ['markingRepresentation'],
+          },
+        },
+      ],
     },
     // Malwares
     {
@@ -319,7 +319,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_MALWARE,
-        path: '$.Event.Galaxy[?(@.type == \'malpedia\')].GalaxyCluster'
+        path: '$.Event.Galaxy[?(@.type == \'malpedia\')].GalaxyCluster',
       },
       identifier: '$.id',
       attributes: [
@@ -328,7 +328,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           mode: 'complex',
           complex_path: {
             variables: [{ variable: 'name', path: '$.value' }],
-            formula: 'extractWithRegexp("(.*)( - )([A-Z][0-9]{1,})", 1, name)'
+            formula: 'extractWithRegexp("(.*)( - )([A-Z][0-9]{1,})", 1, name)',
           },
         },
         {
@@ -341,16 +341,16 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
         {
           key: 'is_family',
           mode: 'simple',
-          default_values: ['true']
+          default_values: ['true'],
         },
         {
           key: 'objectMarking',
           mode: 'base',
           based_on: {
-            representations: ['markingRepresentation']
-          }
-        }
-      ]
+            representations: ['markingRepresentation'],
+          },
+        },
+      ],
     },
     // sha256
     {
@@ -358,7 +358,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE,
-        path: '$.Event.Attribute[?(@.type == \'sha256\')]'
+        path: '$.Event.Attribute[?(@.type == \'sha256\')]',
       },
       identifier: '$.id',
       attributes: [
@@ -385,24 +385,24 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
                   { value: '1', result: 290 },
                   { value: '2', result: 60 },
                   { value: '3', result: 30 },
-              ])`
-          }
+              ])`,
+          },
         },
         {
           key: 'objectMarking',
           mode: 'base',
           based_on: {
-            representations: ['markingRepresentation']
-          }
-        }
-      ]
+            representations: ['markingRepresentation'],
+          },
+        },
+      ],
     },
     {
       id: 'attributes-sha256-indicator',
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_INDICATOR,
-        path: '$.Event.Attribute[?(@.type == \'sha256\')]'
+        path: '$.Event.Attribute[?(@.type == \'sha256\')]',
       },
       identifier: '$.id',
       attributes: [
@@ -412,9 +412,9 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           complex_path: {
             variables: [
               { path: '$.value', variable: 'value' },
-              { path: '$.type', variable: 'type' }
+              { path: '$.type', variable: 'type' },
             ],
-            formula: 'patternFromValue("File_" + type, value)'
+            formula: 'patternFromValue("File_" + type, value)',
           },
         },
         {
@@ -439,8 +439,8 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
             independent: true,
             configuration: {
               pattern_date: 'yyyy-MM-dd',
-              timezone: 'UTC'
-            }
+              timezone: 'UTC',
+            },
           },
         },
         {
@@ -451,8 +451,8 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
             independent: true,
             configuration: {
               pattern_date: 'yyyy-MM-dd',
-              timezone: 'UTC'
-            }
+              timezone: 'UTC',
+            },
           },
         },
         {
@@ -463,30 +463,30 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
             independent: true,
             configuration: {
               pattern_date: 'yyyy-MM-dd',
-              timezone: 'UTC'
-            }
+              timezone: 'UTC',
+            },
           },
         },
         {
           key: 'x_opencti_score',
           mode: 'simple',
-          default_values: ['90']
+          default_values: ['90'],
         },
         {
           key: 'objectMarking',
           mode: 'base',
           based_on: {
-            representations: ['markingRepresentation']
-          }
-        }
-      ]
+            representations: ['markingRepresentation'],
+          },
+        },
+      ],
     },
     {
       id: 'based-on-sha256Obs-sha256Indicator',
       type: JsonMapperRepresentationType.Relationship,
       target: {
         entity_type: 'based-on',
-        path: '$.Event.Attribute[?(@.type == \'sha256\')]'
+        path: '$.Event.Attribute[?(@.type == \'sha256\')]',
       },
       attributes: [
         {
@@ -495,9 +495,9 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.id',
             representations: [
-              'attributes-sha256-indicator'
-            ]
-          }
+              'attributes-sha256-indicator',
+            ],
+          },
         },
         {
           key: 'to',
@@ -505,18 +505,18 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.id',
             representations: [
-              'attributes-sha256-observable'
-            ]
-          }
-        }
-      ]
+              'attributes-sha256-observable',
+            ],
+          },
+        },
+      ],
     },
     {
       id: 'related-to-sha256Obs-IntrusionSet',
       type: JsonMapperRepresentationType.Relationship,
       target: {
         entity_type: 'related-to',
-        path: '$.Event.Attribute[?(@.type == \'sha256\')]'
+        path: '$.Event.Attribute[?(@.type == \'sha256\')]',
       },
       attributes: [
         {
@@ -525,27 +525,27 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.id',
             representations: [
-              'attributes-sha256-observable'
-            ]
-          }
+              'attributes-sha256-observable',
+            ],
+          },
         },
         {
           key: 'to',
           mode: 'base',
           based_on: {
             representations: [
-              'galaxy-Intrusion-Set', 'galaxy-malpedia-malware'
-            ]
-          }
-        }
-      ]
+              'galaxy-Intrusion-Set', 'galaxy-malpedia-malware',
+            ],
+          },
+        },
+      ],
     },
     {
       id: 'indicates-sha256Indicator-IntrusionSet',
       type: JsonMapperRepresentationType.Relationship,
       target: {
         entity_type: 'indicates',
-        path: '$.Event.Attribute[?(@.type == \'sha256\')]'
+        path: '$.Event.Attribute[?(@.type == \'sha256\')]',
       },
       attributes: [
         {
@@ -554,20 +554,20 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.id',
             representations: [
-              'attributes-sha256-indicator'
-            ]
-          }
+              'attributes-sha256-indicator',
+            ],
+          },
         },
         {
           key: 'to',
           mode: 'base',
           based_on: {
             representations: [
-              'galaxy-Intrusion-Set', 'galaxy-malpedia-malware'
-            ]
-          }
-        }
-      ]
+              'galaxy-Intrusion-Set', 'galaxy-malpedia-malware',
+            ],
+          },
+        },
+      ],
     },
     // filename
     {
@@ -575,7 +575,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_HASHED_OBSERVABLE_STIX_FILE,
-        path: '$.Event.Attribute[?(@.type == \'filename\')]'
+        path: '$.Event.Attribute[?(@.type == \'filename\')]',
       },
       identifier: '$.id',
       attributes: [
@@ -596,23 +596,23 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
         {
           key: 'x_opencti_score',
           mode: 'simple',
-          default_values: ['90']
+          default_values: ['90'],
         },
         {
           key: 'objectMarking',
           mode: 'base',
           based_on: {
-            representations: ['markingRepresentation']
-          }
-        }
-      ]
+            representations: ['markingRepresentation'],
+          },
+        },
+      ],
     },
     {
       id: 'attributes-files-indicator',
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_INDICATOR,
-        path: '$.Event.Attribute[?(@.type == \'filename\')]'
+        path: '$.Event.Attribute[?(@.type == \'filename\')]',
       },
       identifier: '$.id',
       attributes: [
@@ -623,7 +623,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
             variables: [
               { path: '$.value', variable: 'value' },
             ],
-            formula: 'patternFromValue("File_name", value)'
+            formula: 'patternFromValue("File_name", value)',
           },
         },
         {
@@ -648,8 +648,8 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
             independent: true,
             configuration: {
               pattern_date: 'yyyy-MM-dd',
-              timezone: 'UTC'
-            }
+              timezone: 'UTC',
+            },
           },
         },
         {
@@ -660,30 +660,30 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
             independent: true,
             configuration: {
               pattern_date: 'yyyy-MM-dd',
-              timezone: 'UTC'
-            }
+              timezone: 'UTC',
+            },
           },
         },
         {
           key: 'x_opencti_score',
           mode: 'simple',
-          default_values: ['90']
+          default_values: ['90'],
         },
         {
           key: 'objectMarking',
           mode: 'base',
           based_on: {
-            representations: ['markingRepresentation']
-          }
-        }
-      ]
+            representations: ['markingRepresentation'],
+          },
+        },
+      ],
     },
     {
       id: 'based-on-filesObs-filesIndicator',
       type: JsonMapperRepresentationType.Relationship,
       target: {
         entity_type: 'based-on',
-        path: '$.Event.Attribute[?(@.type == \'filename\')]'
+        path: '$.Event.Attribute[?(@.type == \'filename\')]',
       },
       attributes: [
         {
@@ -692,9 +692,9 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.id',
             representations: [
-              'attributes-files-indicator'
-            ]
-          }
+              'attributes-files-indicator',
+            ],
+          },
         },
         {
           key: 'to',
@@ -702,18 +702,18 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.id',
             representations: [
-              'attributes-files-observable'
-            ]
-          }
-        }
-      ]
+              'attributes-files-observable',
+            ],
+          },
+        },
+      ],
     },
     {
       id: 'related-to-filesObs-IntrusionSet',
       type: JsonMapperRepresentationType.Relationship,
       target: {
         entity_type: 'related-to',
-        path: '$.Event.Attribute[?(@.type == \'filename\')]'
+        path: '$.Event.Attribute[?(@.type == \'filename\')]',
       },
       attributes: [
         {
@@ -722,27 +722,27 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.id',
             representations: [
-              'attributes-files-observable'
-            ]
-          }
+              'attributes-files-observable',
+            ],
+          },
         },
         {
           key: 'to',
           mode: 'base',
           based_on: {
             representations: [
-              'galaxy-Intrusion-Set', 'galaxy-malpedia-malware'
-            ]
-          }
-        }
-      ]
+              'galaxy-Intrusion-Set', 'galaxy-malpedia-malware',
+            ],
+          },
+        },
+      ],
     },
     {
       id: 'indicates-filesIndicator-IntrusionSet',
       type: JsonMapperRepresentationType.Relationship,
       target: {
         entity_type: 'indicates',
-        path: '$.Event.Attribute[?(@.type == \'filename\')]'
+        path: '$.Event.Attribute[?(@.type == \'filename\')]',
       },
       attributes: [
         {
@@ -751,20 +751,20 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.id',
             representations: [
-              'attributes-files-indicator'
-            ]
-          }
+              'attributes-files-indicator',
+            ],
+          },
         },
         {
           key: 'to',
           mode: 'base',
           based_on: {
             representations: [
-              'galaxy-Intrusion-Set', 'galaxy-malpedia-malware'
-            ]
-          }
-        }
-      ]
+              'galaxy-Intrusion-Set', 'galaxy-malpedia-malware',
+            ],
+          },
+        },
+      ],
     },
     // ipv4
     {
@@ -772,7 +772,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_IPV4_ADDR,
-        path: '$.Event.Attribute[?(@.type == \'ip-dst\' && @.value.match(/^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$/))]'
+        path: '$.Event.Attribute[?(@.type == \'ip-dst\' && @.value.match(/^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$/))]',
       },
       identifier: '$.id',
       attributes: [
@@ -786,7 +786,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
         {
           key: 'x_opencti_score',
           mode: 'simple',
-          default_values: ['90']
+          default_values: ['90'],
         },
         {
           key: 'x_opencti_description',
@@ -799,17 +799,17 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           key: 'objectMarking',
           mode: 'base',
           based_on: {
-            representations: ['markingRepresentation']
-          }
-        }
-      ]
+            representations: ['markingRepresentation'],
+          },
+        },
+      ],
     },
     {
       id: 'attributes-ips-v4-indicator',
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_INDICATOR,
-        path: '$.Event.Attribute[?(@.type == \'ip-dst\' && @.value.match(/^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$/))]'
+        path: '$.Event.Attribute[?(@.type == \'ip-dst\' && @.value.match(/^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$/))]',
       },
       identifier: '$.id',
       attributes: [
@@ -818,20 +818,20 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           mode: 'complex',
           complex_path: {
             variables: [
-              { path: '$.value', variable: 'value' }
+              { path: '$.value', variable: 'value' },
             ],
-            formula: 'patternFromValue("IPv4-Addr", value)'
+            formula: 'patternFromValue("IPv4-Addr", value)',
           },
         },
         {
           key: 'x_opencti_score',
           mode: 'simple',
-          default_values: ['90']
+          default_values: ['90'],
         },
         {
           key: 'pattern_type',
           mode: 'simple',
-          default_values: ['stix']
+          default_values: ['stix'],
         },
         {
           key: 'x_opencti_detection',
@@ -851,17 +851,17 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           key: 'objectMarking',
           mode: 'base',
           based_on: {
-            representations: ['markingRepresentation']
-          }
-        }
-      ]
+            representations: ['markingRepresentation'],
+          },
+        },
+      ],
     },
     {
       id: 'based-on-ipsv4Obs-ipsv4Indicator',
       type: JsonMapperRepresentationType.Relationship,
       target: {
         entity_type: 'based-on',
-        path: '$.Event.Attribute[?(@.type == \'ip-dst\' && @.value.match(/^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$/))]'
+        path: '$.Event.Attribute[?(@.type == \'ip-dst\' && @.value.match(/^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$/))]',
       },
       attributes: [
         {
@@ -870,9 +870,9 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.id',
             representations: [
-              'attributes-ips-v4-indicator'
-            ]
-          }
+              'attributes-ips-v4-indicator',
+            ],
+          },
         },
         {
           key: 'to',
@@ -880,18 +880,18 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.id',
             representations: [
-              'attributes-ips-v4-observable'
-            ]
-          }
-        }
-      ]
+              'attributes-ips-v4-observable',
+            ],
+          },
+        },
+      ],
     },
     {
       id: 'related-to-ipsv4Obs-IntrusionSet',
       type: JsonMapperRepresentationType.Relationship,
       target: {
         entity_type: 'related-to',
-        path: '$.Event.Attribute[?(@.type == \'ip-dst\' && @.value.match(/^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$/))]'
+        path: '$.Event.Attribute[?(@.type == \'ip-dst\' && @.value.match(/^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$/))]',
       },
       attributes: [
         {
@@ -900,27 +900,27 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.id',
             representations: [
-              'attributes-ips-v4-observable'
-            ]
-          }
+              'attributes-ips-v4-observable',
+            ],
+          },
         },
         {
           key: 'to',
           mode: 'base',
           based_on: {
             representations: [
-              'galaxy-Intrusion-Set', 'galaxy-malpedia-malware'
-            ]
-          }
-        }
-      ]
+              'galaxy-Intrusion-Set', 'galaxy-malpedia-malware',
+            ],
+          },
+        },
+      ],
     },
     {
       id: 'indicates-to-ipsv4Indicator-IntrusionSet',
       type: JsonMapperRepresentationType.Relationship,
       target: {
         entity_type: 'indicates',
-        path: '$.Event.Attribute[?(@.type == \'ip-dst\' && @.value.match(/^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$/))]'
+        path: '$.Event.Attribute[?(@.type == \'ip-dst\' && @.value.match(/^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)(\\.(?!$)|$)){4}$/))]',
       },
       attributes: [
         {
@@ -929,20 +929,20 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.id',
             representations: [
-              'attributes-ips-v4-indicator'
-            ]
-          }
+              'attributes-ips-v4-indicator',
+            ],
+          },
         },
         {
           key: 'to',
           mode: 'base',
           based_on: {
             representations: [
-              'galaxy-Intrusion-Set', 'galaxy-malpedia-malware'
-            ]
-          }
-        }
-      ]
+              'galaxy-Intrusion-Set', 'galaxy-malpedia-malware',
+            ],
+          },
+        },
+      ],
     },
     // Domains
     {
@@ -950,7 +950,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_DOMAIN_NAME,
-        path: '$.Event.Attribute[?(@.type == \'domain\')]'
+        path: '$.Event.Attribute[?(@.type == \'domain\')]',
       },
       identifier: '$.id',
       attributes: [
@@ -967,15 +967,15 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           attr_path: {
             path: '$.comment',
           },
-        }
-      ]
+        },
+      ],
     },
     {
       id: 'attributes-domains-indicator',
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_INDICATOR,
-        path: '$.Event.Attribute[?(@.type == \'domain\')]'
+        path: '$.Event.Attribute[?(@.type == \'domain\')]',
       },
       identifier: '$.id',
       attributes: [
@@ -984,22 +984,22 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           mode: 'complex',
           complex_path: {
             variables: [
-              { path: '$.value', variable: 'value' }
+              { path: '$.value', variable: 'value' },
             ],
-            formula: 'patternFromValue("Domain-Name", value)'
+            formula: 'patternFromValue("Domain-Name", value)',
           },
         },
         {
           key: 'x_opencti_score',
           mode: 'complex',
           complex_path: {
-            formula: 'mapper_confidence'
-          }
+            formula: 'mapper_confidence',
+          },
         },
         {
           key: 'pattern_type',
           mode: 'simple',
-          default_values: ['stix']
+          default_values: ['stix'],
         },
         {
           key: 'x_opencti_detection',
@@ -1019,17 +1019,17 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           key: 'objectMarking',
           mode: 'base',
           based_on: {
-            representations: ['markingRepresentation']
-          }
-        }
-      ]
+            representations: ['markingRepresentation'],
+          },
+        },
+      ],
     },
     {
       id: 'based-on-domainsObs-domainsIndicator',
       type: JsonMapperRepresentationType.Relationship,
       target: {
         entity_type: 'based-on',
-        path: '$.Event.Attribute[?(@.type == \'domain\')]'
+        path: '$.Event.Attribute[?(@.type == \'domain\')]',
       },
       attributes: [
         {
@@ -1038,9 +1038,9 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.id',
             representations: [
-              'attributes-domains-indicator'
-            ]
-          }
+              'attributes-domains-indicator',
+            ],
+          },
         },
         {
           key: 'to',
@@ -1048,18 +1048,18 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.id',
             representations: [
-              'attributes-domains-observable'
-            ]
-          }
-        }
-      ]
+              'attributes-domains-observable',
+            ],
+          },
+        },
+      ],
     },
     {
       id: 'related-to-domainsObs-IntrusionSet',
       type: JsonMapperRepresentationType.Relationship,
       target: {
         entity_type: 'related-to',
-        path: '$.Event.Attribute[?(@.type == \'domain\')]'
+        path: '$.Event.Attribute[?(@.type == \'domain\')]',
       },
       attributes: [
         {
@@ -1068,27 +1068,27 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.id',
             representations: [
-              'attributes-domains-observable'
-            ]
-          }
+              'attributes-domains-observable',
+            ],
+          },
         },
         {
           key: 'to',
           mode: 'base',
           based_on: {
             representations: [
-              'galaxy-Intrusion-Set', 'galaxy-malpedia-malware'
-            ]
-          }
-        }
-      ]
+              'galaxy-Intrusion-Set', 'galaxy-malpedia-malware',
+            ],
+          },
+        },
+      ],
     },
     {
       id: 'indicates-domainsIndicator-IntrusionSet',
       type: JsonMapperRepresentationType.Relationship,
       target: {
         entity_type: 'indicates',
-        path: '$.Event.Attribute[?(@.type == \'domain\')]'
+        path: '$.Event.Attribute[?(@.type == \'domain\')]',
       },
       attributes: [
         {
@@ -1097,20 +1097,20 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.id',
             representations: [
-              'attributes-domains-indicator'
-            ]
-          }
+              'attributes-domains-indicator',
+            ],
+          },
         },
         {
           key: 'to',
           mode: 'base',
           based_on: {
             representations: [
-              'galaxy-Intrusion-Set', 'galaxy-malpedia-malware'
-            ]
-          }
-        }
-      ]
+              'galaxy-Intrusion-Set', 'galaxy-malpedia-malware',
+            ],
+          },
+        },
+      ],
     },
     // Reports
     {
@@ -1118,7 +1118,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_CONTAINER_REPORT,
-        path: '$.Event'
+        path: '$.Event',
       },
       identifier: '$.id',
       attributes: [
@@ -1127,7 +1127,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
           mode: 'complex',
           complex_path: {
             variables: [{ variable: 'info', path: '$.info' }, { variable: 'reference', path: '$.Attribute[?(@.category == \'Internal reference\')]' }],
-            formula: 'reference?.value ?? info'
+            formula: 'reference?.value ?? info',
           },
         },
         {
@@ -1140,7 +1140,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
         {
           key: 'report_types',
           mode: 'simple',
-          default_values: ['misp-event']
+          default_values: ['misp-event'],
         },
         {
           key: 'published',
@@ -1149,23 +1149,23 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
             path: '$.date',
             configuration: {
               pattern_date: 'yyyy-MM-dd',
-              timezone: 'UTC'
-            }
+              timezone: 'UTC',
+            },
           },
         },
         {
           key: 'objectMarking',
           mode: 'base',
           based_on: {
-            representations: ['markingRepresentation']
-          }
+            representations: ['markingRepresentation'],
+          },
         },
         {
           key: 'externalReferences',
           mode: 'base',
           based_on: {
-            representations: ['externalRefsRepresentation']
-          }
+            representations: ['externalRefsRepresentation'],
+          },
         },
         {
           key: 'objects',
@@ -1198,11 +1198,11 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
               'attributes-domains-indicator',
               'based-on-domainsObs-domainsIndicator',
               'related-to-domainsObs-IntrusionSet',
-              'indicates-domainsIndicator-IntrusionSet'
-            ]
-          }
-        }
-      ]
+              'indicates-domainsIndicator-IntrusionSet',
+            ],
+          },
+        },
+      ],
     },
     // Notes
     {
@@ -1210,7 +1210,7 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_CONTAINER_NOTE,
-        path: '$.Event.EventReport'
+        path: '$.Event.EventReport',
       },
       identifier: '$.id',
       attributes: [
@@ -1236,8 +1236,8 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
             independent: true,
             configuration: {
               pattern_date: 'yyyy-MM-dd',
-              timezone: 'UTC'
-            }
+              timezone: 'UTC',
+            },
           },
         },
         {
@@ -1248,27 +1248,27 @@ export const misp_mapper: Partial<JsonMapperParsed> = {
             independent: true,
             configuration: {
               pattern_date: 'yyyy-MM-dd',
-              timezone: 'UTC'
-            }
+              timezone: 'UTC',
+            },
           },
         },
         {
           key: 'objectMarking',
           mode: 'base',
           based_on: {
-            representations: ['markingRepresentation']
-          }
+            representations: ['markingRepresentation'],
+          },
         },
         {
           key: 'objects',
           mode: 'base',
           based_on: {
-            representations: ['event-reports-reports']
-          }
-        }
-      ]
+            representations: ['event-reports-reports'],
+          },
+        },
+      ],
     },
-  ]
+  ],
 };
 
 export const misp_data = `{

@@ -15,7 +15,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import TextField from '../../../../components/TextField';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';

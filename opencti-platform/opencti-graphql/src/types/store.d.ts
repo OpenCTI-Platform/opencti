@@ -480,6 +480,7 @@ interface BasicStoreEntityFeed extends BasicStoreEntity {
   rolling_time: number;
   include_header: boolean;
   feed_public: boolean;
+  feed_public_user_id: string;
   feed_types: Array<string>;
   feed_date_attribute: string;
   feed_attributes: Array<{

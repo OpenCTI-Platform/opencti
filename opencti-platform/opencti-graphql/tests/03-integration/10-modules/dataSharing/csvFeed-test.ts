@@ -1,9 +1,9 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { ADMIN_USER, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { queryAsAdmin } from '../../../utils/testQueryHelper';
 import { queryAsAdminWithSuccess, queryAsUser } from '../../../utils/testQueryHelper';
-import { logApp } from '../../../../src/config/conf';
+import { getBaseUrl, logApp } from '../../../../src/config/conf';
 
 describe('CSV Feed resolver standard behavior', () => {
   let internalFeedId: string;
@@ -66,6 +66,7 @@ describe('CSV Feed resolver standard behavior', () => {
             mappings: [{ type: 'Country', attribute: 'name' }],
           }],
           feed_public: true,
+          feed_public_user_id: ADMIN_USER.id,
         },
       },
     });
@@ -107,6 +108,7 @@ describe('CSV Feed resolver standard behavior', () => {
             mappings: [{ type: 'Country', attribute: 'name' }],
           }],
           feed_public: true,
+          feed_public_user_id: ADMIN_USER.id,
           authorized_members: [],
         },
       },
@@ -195,6 +197,19 @@ describe('CSV Feed resolver standard behavior', () => {
     // Internal feed should not be found
     expect(allFeedsResponse?.data?.feeds?.edges
       .filter((feed: any) => feed.node.name === 'List of created cities - internal csv feed').length).toBe(0);
+  });
+
+  it('should access public CSV feed via HTTP without authentication', async () => {
+    const response = await fetch(`${getBaseUrl()}/feeds/${publicFeedId}`);
+    expect(response.status).toBe(200);
+    const content = await response.text();
+    // Feed has include_header: true, first line should be the column name 'A'
+    expect(content.startsWith('A')).toBe(true);
+  });
+
+  it('should reject unauthenticated HTTP access to internal CSV feed', async () => {
+    const response = await fetch(`${getBaseUrl()}/feeds/${internalFeedId}`);
+    expect(response.status).not.toBe(200);
   });
 
   it('Delete public feed collection', async () => {

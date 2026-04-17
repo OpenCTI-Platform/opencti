@@ -278,12 +278,12 @@ export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) =
   return inputFilters;
 };
 
-// fetch the entity type filters possible values of first and second levels
+// fetch the entity type filters possible values of first and second levels and third levels
 // and remove Observable if the filters target only some sub observable types
 // exemple: Observable AND (Domain-Name) --> [Domain-Name]
 // exemple: Domain-Name OR Observable --> [Domain-Name, Observable]
 // exemple: Stix-Domain-Object AND (Malware OR (Country AND City)) --> [Stix-Domain-Object, Malware]
-export const getEntityTypeTwoFirstLevelsFilterValues = (
+export const getEntityTypeThreeFirstLevelsFilterValues = (
   filters?: FilterGroup,
   observableTypes?: string[],
   domainObjectTypes?: string [],
@@ -318,6 +318,32 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (
     }
     if (filters.mode === 'or') {
       return [];
+    }
+    // Check third level values
+    const subFilterGroupssSeparatedWithAnd = filters.filterGroups
+      .filter((fg) => fg.mode === 'and' || (fg.mode === 'or' && fg.filters.length === 1))
+      .map((fg) => fg.filterGroups)
+      .flat();
+    const thirdFiltersSeperatedWithAnd = subFilterGroupssSeparatedWithAnd
+      .filter((fg) => fg.mode === 'and' || (fg.mode === 'or' && fg.filters.length === 1))
+      .map((fg) => fg.filters)
+      .flat();
+    if (thirdFiltersSeperatedWithAnd.length > 0) {
+      const thirdLevelValues = findFiltersFromKeys(thirdFiltersSeperatedWithAnd, ['entity_type'], 'eq')
+        .map(({ values }) => values)
+        .flat();
+      if (thirdLevelValues.length > 0) {
+        if (filters.mode === 'and') {
+          // if all second values are observables sub types : remove observable from firstLevelValue
+          if (thirdLevelValues.every((type) => observableTypes?.includes(type))) {
+            firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Cyber-Observable');
+          }
+          if (thirdLevelValues.every((type) => domainObjectTypes?.includes(type))) {
+            firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Domain-Object');
+          }
+        }
+        return [...firstLevelValues, ...thirdLevelValues];
+      }
     }
   }
   return firstLevelValues;

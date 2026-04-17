@@ -4,7 +4,7 @@ import {
   emptyFilterGroup,
   findFiltersFromKeys,
   formatFiltersInPirContext,
-  getEntityTypeTwoFirstLevelsFilterValues,
+  getEntityTypeThreeFirstLevelsFilterValues,
   isRegardingOfFilterWarning,
   removeIdAndIncorrectKeysFromFilterGroupObject,
   removeIdFromFilterGroupObject,
@@ -179,7 +179,7 @@ describe('Filters utils', () => {
           },
         ],
       };
-      const result = getEntityTypeTwoFirstLevelsFilterValues(filters, ['Domain-Name', 'File']);
+      const result = getEntityTypeThreeFirstLevelsFilterValues(filters, ['Domain-Name', 'File']);
       expect(result).toEqual(['Domain-Name']);
     });
 
@@ -199,7 +199,7 @@ describe('Filters utils', () => {
           },
         ],
       };
-      const result = getEntityTypeTwoFirstLevelsFilterValues(filters, ['Domain-Name', 'File'], ['Stix-Domain-Object']);
+      const result = getEntityTypeThreeFirstLevelsFilterValues(filters, ['Domain-Name', 'File'], ['Stix-Domain-Object']);
       expect(result).toEqual(['Stix-Cyber-Observable', 'Domain-Name']);
     });
 
@@ -211,7 +211,7 @@ describe('Filters utils', () => {
         filters: [{ key: 'entity_type', operator: 'eq', values: ['Domain-Name', 'Stix-Cyber-Observable'] }],
         filterGroups: [],
       };
-      const result = getEntityTypeTwoFirstLevelsFilterValues(filters, ['Domain-Name', 'File'], ['Stix-Domain-Object']);
+      const result = getEntityTypeThreeFirstLevelsFilterValues(filters, ['Domain-Name', 'File'], ['Stix-Domain-Object']);
       expect(result).toEqual(['Domain-Name', 'Stix-Cyber-Observable']);
     });
 
@@ -232,7 +232,7 @@ describe('Filters utils', () => {
           },
         ],
       };
-      const result = getEntityTypeTwoFirstLevelsFilterValues(filters, ['Domain-Name', 'File']);
+      const result = getEntityTypeThreeFirstLevelsFilterValues(filters, ['Domain-Name', 'File']);
       expect(result).toEqual(['Domain-Name']);
     });
 
@@ -253,7 +253,7 @@ describe('Filters utils', () => {
           },
         ],
       };
-      const result = getEntityTypeTwoFirstLevelsFilterValues(filters, ['Domain-Name', 'File'], ['Report', 'Malware']);
+      const result = getEntityTypeThreeFirstLevelsFilterValues(filters, ['Domain-Name', 'File'], ['Report', 'Malware']);
       expect(result).toEqual(['Stix-Cyber-Observable']);
     });
 
@@ -275,7 +275,7 @@ describe('Filters utils', () => {
           },
         ],
       };
-      const result = getEntityTypeTwoFirstLevelsFilterValues(filters, ['Domain-Name', 'File'], ['Report', 'Malware']);
+      const result = getEntityTypeThreeFirstLevelsFilterValues(filters, ['Domain-Name', 'File'], ['Report', 'Malware']);
       expect(result).toEqual(['Domain-Name', 'File']);
     });
 
@@ -293,7 +293,7 @@ describe('Filters utils', () => {
           },
         ],
       };
-      const result = getEntityTypeTwoFirstLevelsFilterValues(filters, ['Domain-Name', 'File'], ['Malware', 'Artifact', 'Country', 'City']);
+      const result = getEntityTypeThreeFirstLevelsFilterValues(filters, ['Domain-Name', 'File'], ['Malware', 'Artifact', 'Country', 'City']);
       expect(result).toEqual(['Malware']);
     });
 
@@ -308,7 +308,7 @@ describe('Filters utils', () => {
         ],
         filterGroups: [],
       };
-      const result = getEntityTypeTwoFirstLevelsFilterValues(filters, [], ['Malware', 'Report', 'Country', 'City']);
+      const result = getEntityTypeThreeFirstLevelsFilterValues(filters, [], ['Malware', 'Report', 'Country', 'City']);
       expect(result).toEqual(['Report', 'Malware']);
     });
 
@@ -323,7 +323,7 @@ describe('Filters utils', () => {
         ],
         filterGroups: [],
       };
-      const result = getEntityTypeTwoFirstLevelsFilterValues(filters, ['File'], ['Malware', 'Report', 'Country', 'City']);
+      const result = getEntityTypeThreeFirstLevelsFilterValues(filters, ['File'], ['Malware', 'Report', 'Country', 'City']);
       expect(result).toEqual(['Report', 'File', 'Malware']);
     });
 
@@ -344,7 +344,7 @@ describe('Filters utils', () => {
           filterGroups: [],
         }],
       };
-      const result = getEntityTypeTwoFirstLevelsFilterValues(filters, [], []);
+      const result = getEntityTypeThreeFirstLevelsFilterValues(filters, [], []);
       expect(result).toEqual([]);
       // filters: (Malware) AND (label=label1 OR marking=marking1)
       // result: Malware
@@ -362,7 +362,7 @@ describe('Filters utils', () => {
           filterGroups: [],
         }],
       };
-      const result2 = getEntityTypeTwoFirstLevelsFilterValues(filters2, [], []);
+      const result2 = getEntityTypeThreeFirstLevelsFilterValues(filters2, [], []);
       expect(result2).toEqual(['Malware']);
     });
 
@@ -384,7 +384,7 @@ describe('Filters utils', () => {
           filterGroups: [],
         }],
       };
-      const result = getEntityTypeTwoFirstLevelsFilterValues(filters, [], []);
+      const result = getEntityTypeThreeFirstLevelsFilterValues(filters, [], []);
       expect(result).toEqual(['Malware', 'City']);
       // filters: (Malware) AND (City OR label=label1)
       // result: Malware
@@ -402,7 +402,7 @@ describe('Filters utils', () => {
           filterGroups: [],
         }],
       };
-      const result2 = getEntityTypeTwoFirstLevelsFilterValues(filters2, [], []);
+      const result2 = getEntityTypeThreeFirstLevelsFilterValues(filters2, [], []);
       expect(result2).toEqual(['Malware']);
     });
 
@@ -423,7 +423,7 @@ describe('Filters utils', () => {
           filterGroups: [],
         }],
       };
-      const result = getEntityTypeTwoFirstLevelsFilterValues(filters, ['File', 'Domain-Name'], []);
+      const result = getEntityTypeThreeFirstLevelsFilterValues(filters, ['File', 'Domain-Name'], []);
       expect(result).toEqual(['Stix-Cyber-Observable']);
       // filters: (Stix-Cyber-Observable) AND (File)
       // result: File
@@ -440,7 +440,7 @@ describe('Filters utils', () => {
           filterGroups: [],
         }],
       };
-      const result2 = getEntityTypeTwoFirstLevelsFilterValues(filters2, ['File', 'Domain-Name'], []);
+      const result2 = getEntityTypeThreeFirstLevelsFilterValues(filters2, ['File', 'Domain-Name'], []);
       expect(result2).toEqual(['File']);
       // filters: (Stix-Cyber-Observable) OR (File AND label=label1)
       // result: Stix-Cyber-Observable
@@ -458,8 +458,37 @@ describe('Filters utils', () => {
           filterGroups: [],
         }],
       };
-      const result3 = getEntityTypeTwoFirstLevelsFilterValues(filters3, ['File', 'Domain-Name'], []);
+      const result3 = getEntityTypeThreeFirstLevelsFilterValues(filters3, ['File', 'Domain-Name'], []);
       expect(result3).toEqual(['Stix-Cyber-Observable', 'File']);
+    });
+    it('should return only observable subtypes when filter with AND  in third level', () => {
+      // filters: Observable AND (labels AND (Domain-Name OR File))
+      // result: Domain-Name, File
+      const filters = {
+        mode: 'and',
+        filters: [
+          { key: 'entity_type', operator: 'eq', values: ['Stix-Cyber-Observable'] },
+        ],
+        filterGroups: [
+          {
+            mode: 'and',
+            filters: [
+              { key: 'objectLabel', operator: 'eq', values: ['label1-id'] },
+            ],
+            filterGroups: [
+              {
+                mode: 'and',
+                filters: [
+                  { key: 'entity_type', operator: 'eq', values: ['Domain-Name', 'File'] },
+                ],
+                filterGroups: [],
+              },
+            ],
+          },
+        ],
+      };
+      const result = getEntityTypeThreeFirstLevelsFilterValues(filters, ['Domain-Name', 'File'], ['Report', 'Malware']);
+      expect(result).toEqual(['Domain-Name', 'File']);
     });
   });
 

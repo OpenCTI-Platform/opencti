@@ -15,7 +15,7 @@ import CreateEntityControlledDial from '../../../../components/CreateEntityContr
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import ProgressBar from '../../../../components/ProgressBar';
 import { handleErrorInForm } from '../../../../relay/environment';

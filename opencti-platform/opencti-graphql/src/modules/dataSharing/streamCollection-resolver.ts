@@ -11,6 +11,7 @@ import {
 } from './streamCollection-domain';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 import { fetchStreamInfo } from '../../database/stream/stream-handler';
+import { loadCreator } from '../../database/members';
 
 const streamCollectionResolvers: Resolvers = {
   Query: {
@@ -21,6 +22,7 @@ const streamCollectionResolvers: Resolvers = {
   StreamCollection: {
     authorized_members: (stream, _, context) => getAuthorizedMembers(context, context.user, stream),
     consumers: (stream) => getStreamCollectionConsumers(stream.id),
+    stream_public_user: (stream, _, context) => stream.stream_public_user_id ? loadCreator(context, context.user, stream.stream_public_user_id) : null,
   },
   Mutation: {
     streamCollectionAdd: (_, { input }, context) => createStreamCollection(context, context.user, input),

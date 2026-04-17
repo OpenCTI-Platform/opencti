@@ -2,20 +2,31 @@ name: OpenCTI CI
 on:
   workflow_dispatch:
   push:
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - '.github/*.md'
   pull_request:
     types: [opened, synchronize, reopened]
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - '.github/*.md'
 
 jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            code:
+              - '**'
+              - '!docs/**'
+              - '!**.md'
+              - '!.github/*.md'
+
   wf-build-image:
       name: Build image
+      needs: changes
+      if: needs.changes.outputs.code == 'true' || github.event_name == 'workflow_dispatch'
       uses: ./.github/workflows/ci-docker-build.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
@@ -26,7 +37,8 @@ jobs:
   wf-backend-test:
       name: Backend
       uses: ./.github/workflows/ci-test-backend.yml
-      needs: wf-build-image
+      needs: [changes, wf-build-image]
+      if: needs.changes.outputs.code == 'true' || github.event_name == 'workflow_dispatch'
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
         run-id: ${{ github.run_id }}
@@ -34,6 +46,8 @@ jobs:
 
   wf-frontend-test:
       name: Frontend
+      needs: changes
+      if: needs.changes.outputs.code == 'true' || github.event_name == 'workflow_dispatch'
       uses: ./.github/workflows/ci-test-frontend.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
@@ -42,13 +56,16 @@ jobs:
   wf-client-python-test:
       name: Client Python
       uses: ./.github/workflows/ci-test-client-python.yml
-      needs: wf-build-image
+      needs: [changes, wf-build-image]
+      if: needs.changes.outputs.code == 'true' || github.event_name == 'workflow_dispatch'
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets: inherit
 
   wf-license-check:
       name: License check
+      needs: changes
+      if: needs.changes.outputs.code == 'true' || github.event_name == 'workflow_dispatch'
       uses: ./.github/workflows/ci-license-check.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}

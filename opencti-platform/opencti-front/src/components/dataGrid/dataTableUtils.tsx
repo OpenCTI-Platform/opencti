@@ -247,15 +247,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value);
     },
   },
-  creators: {
-    id: 'creators',
-    label: 'Creators',
-    percentWidth: 12,
-    render: ({ creators }) => {
-      const value = creators?.map((c: { name: string }) => c.name);
-      return defaultRender(value);
-    },
-  },
   coverage_information: {
     label: 'Coverage',
     percentWidth: 12,

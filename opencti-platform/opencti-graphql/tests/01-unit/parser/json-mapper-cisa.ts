@@ -15,7 +15,7 @@ export const cisa_mapper: Partial<JsonMapperParsed> = {
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_MARKING_DEFINITION,
-        path: '$'
+        path: '$',
       },
       attributes: [
         {
@@ -25,31 +25,31 @@ export const cisa_mapper: Partial<JsonMapperParsed> = {
         }, {
           key: 'definition',
           mode: 'simple',
-          default_values: ['tlp:white']
-        }
-      ]
+          default_values: ['tlp:white'],
+        },
+      ],
     },
     {
       id: 'orgRepresentation',
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
-        path: '$'
+        path: '$',
       },
       attributes: [
         {
           key: 'name',
           mode: 'simple',
-          default_values: ['Cybersecurity and Infrastructure Security Agency']
-        }
-      ]
+          default_values: ['Cybersecurity and Infrastructure Security Agency'],
+        },
+      ],
     },
     {
       id: 'vulnerabilityRepresentation',
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_TYPE_VULNERABILITY,
-        path: '$.vulnerabilities[?(@.cveID)]'
+        path: '$.vulnerabilities[?(@.cveID)]',
       },
       identifier: '$.cveID',
       attributes: [
@@ -75,8 +75,8 @@ export const cisa_mapper: Partial<JsonMapperParsed> = {
             independent: true,
             configuration: {
               pattern_date: 'yyyy-MM-dd',
-              timezone: 'UTC'
-            }
+              timezone: 'UTC',
+            },
           },
         },
         {
@@ -87,32 +87,32 @@ export const cisa_mapper: Partial<JsonMapperParsed> = {
             independent: true,
             configuration: {
               pattern_date: 'yyyy-MM-dd',
-              timezone: 'UTC'
-            }
+              timezone: 'UTC',
+            },
           },
         },
         {
           key: 'createdBy',
           mode: 'base',
           based_on: {
-            representations: ['orgRepresentation']
+            representations: ['orgRepresentation'],
           },
         },
         {
           key: 'objectMarking',
           mode: 'base',
           based_on: {
-            representations: ['markingRepresentation']
-          }
-        }
-      ]
+            representations: ['markingRepresentation'],
+          },
+        },
+      ],
     },
     {
       id: 'softwareRepresentation',
       type: JsonMapperRepresentationType.Entity,
       target: {
         entity_type: ENTITY_SOFTWARE,
-        path: '$.vulnerabilities[?(@.product)]'
+        path: '$.vulnerabilities[?(@.product)]',
       },
       identifier: '$.product,$.vendorProject',
       attributes: [
@@ -130,14 +130,14 @@ export const cisa_mapper: Partial<JsonMapperParsed> = {
             path: '$.vendorProject',
           },
         },
-      ]
+      ],
     },
     {
       id: 'software-related-to-identity',
       type: JsonMapperRepresentationType.Relationship,
       target: {
         entity_type: 'related-to',
-        path: '$.vulnerabilities[?(@.product)]'
+        path: '$.vulnerabilities[?(@.product)]',
       },
       attributes: [
         {
@@ -146,27 +146,27 @@ export const cisa_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.product,$.vendorProject',
             representations: [
-              'softwareRepresentation'
-            ]
-          }
+              'softwareRepresentation',
+            ],
+          },
         },
         {
           key: 'to',
           mode: 'base',
           based_on: {
             representations: [
-              'orgRepresentation'
-            ]
-          }
-        }
-      ]
+              'orgRepresentation',
+            ],
+          },
+        },
+      ],
     },
     {
       id: 'software-has-vulnerability',
       type: JsonMapperRepresentationType.Relationship,
       target: {
         entity_type: 'has',
-        path: '$.vulnerabilities[?(@.product)]'
+        path: '$.vulnerabilities[?(@.product)]',
       },
       attributes: [
         {
@@ -175,9 +175,9 @@ export const cisa_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.product,$.vendorProject',
             representations: [
-              'softwareRepresentation'
-            ]
-          }
+              'softwareRepresentation',
+            ],
+          },
         },
         {
           key: 'to',
@@ -185,13 +185,13 @@ export const cisa_mapper: Partial<JsonMapperParsed> = {
           based_on: {
             identifier: '$.cveID',
             representations: [
-              'vulnerabilityRepresentation'
-            ]
-          }
-        }
-      ]
+              'vulnerabilityRepresentation',
+            ],
+          },
+        },
+      ],
     },
-  ]
+  ],
 };
 
 export const cisa_data = `{

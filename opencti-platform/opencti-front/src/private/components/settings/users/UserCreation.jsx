@@ -10,7 +10,7 @@ import * as Yup from 'yup';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import SelectField from '../../../../components/fields/SelectField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
@@ -155,7 +155,6 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
           <Alert severity="info">
             {t_i18n('Unless you prevent the default groups assignation, the user will be created with the specified groups and the default groups.')}
           </Alert>
-          <br />
           <Formik
             initialValues={initialValues}
             validationSchema={userValidation(t_i18n)}

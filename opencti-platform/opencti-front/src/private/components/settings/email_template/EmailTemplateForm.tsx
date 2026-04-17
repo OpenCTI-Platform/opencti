@@ -7,7 +7,7 @@ import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 
 export interface EmailTemplateFormInputs {

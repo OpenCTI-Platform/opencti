@@ -13,7 +13,7 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-r
 import * as Yup from 'yup';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Card from '../../../components/common/card/Card';
-import MarkdownField from '../../../components/fields/MarkdownField';
+import MarkdownField from '../../../components/fields/markdownField/MarkdownField';
 import SelectField from '../../../components/fields/SelectField';
 import SwitchField from '../../../components/fields/SwitchField';
 

@@ -17,15 +17,18 @@ import Filters from '../../common/lists/Filters';
 import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend, useAvailableFilterKeysForEntityTypes } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { convertAuthorizedMembers } from '../../../../utils/edition';
+import { convertAuthorizedMembers, convertUser } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { useTheme } from '@mui/material/styles';
+import CreatorField from '../../common/form/CreatorField';
 
 interface TaxiiCollectionCreationForm {
   restricted_members: FieldOption[] | null;
   taxii_public?: boolean | null;
   name: string | null;
   description: string | null;
+  taxii_public_user_id?: FieldOption | string | null;
 }
 
 const taxiiCollectionMutationFieldPatch = graphql`
@@ -46,6 +49,7 @@ const taxiiCollectionValidation = (requiredSentence: string) => Yup.object().sha
   description: Yup.string().nullable(),
   restricted_members: Yup.array().nullable(),
   taxii_public: Yup.bool().nullable(),
+  taxii_public_user_id: Yup.mixed().nullable(),
   include_inferences: Yup.bool().nullable(),
   score_to_confidence: Yup.bool().nullable(),
 });
@@ -53,6 +57,7 @@ const taxiiCollectionValidation = (requiredSentence: string) => Yup.object().sha
 const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: TaxiiCollectionEdition_taxiiCollection$data }> = ({ taxiiCollection }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
   const initialValues = {
     name: taxiiCollection.name ?? '',
     description: taxiiCollection.description ?? '',
@@ -60,6 +65,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
     restricted_members: convertAuthorizedMembers(taxiiCollection),
     include_inferences: taxiiCollection.include_inferences,
     score_to_confidence: taxiiCollection.score_to_confidence,
+    taxii_public_user_id: convertUser(taxiiCollection, 'taxii_public_user'),
   };
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(taxiiCollection.filters) ?? undefined);
   const handleSubmitField = (name: string, value: FieldOption[] | string) => {
@@ -129,7 +135,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
       initialValues={initialValues}
       validationSchema={taxiiCollectionValidation(t_i18n('This field is required'))}
     >
-      {() => (
+      {({ values, setFieldValue }) => (
         <Form>
           <Field
             component={TextField}
@@ -166,12 +172,17 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
               {t_i18n('Make this TAXII collection public and available to anyone')}
             </AlertTitle>
             <FormControlLabel
-              control={<Switch defaultChecked={!!initialValues.taxii_public} />}
+              control={<Switch checked={!!values.taxii_public} disabled={!isGrantedToSetAccesses} />}
               style={{ marginLeft: 1 }}
-              onChange={(_, checked) => handleSubmitField('taxii_public', checked.toString())}
+              onChange={(_, checked) => {
+                setFieldValue('taxii_public', checked);
+                if (!checked) {
+                  handleSubmitField('taxii_public', 'false');
+                }
+              }}
               label={t_i18n('Public collection')}
             />
-            {!initialValues.taxii_public && (
+            {!values.taxii_public && (
               <ObjectMembersField
                 label="Accessible for"
                 style={fieldSpacingContainerStyle}
@@ -179,6 +190,37 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
                 multiple={true}
                 helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
                 name="restricted_members"
+              />
+            )}
+            {values.taxii_public && (
+              <CreatorField
+                name="taxii_public_user_id"
+                label={t_i18n('Share data corresponding to permissions associated with this user')}
+                containerStyle={fieldSpacingContainerStyle}
+                disabled={!isGrantedToSetAccesses}
+                onChange={(_, value) => {
+                  const userId = (value as FieldOption)?.value ?? '';
+                  if (!taxiiCollection.taxii_public) {
+                    commitMutation({
+                      mutation: taxiiCollectionMutationFieldPatch,
+                      variables: {
+                        id: taxiiCollection.id,
+                        input: [
+                          { key: 'taxii_public_user_id', value: userId },
+                          { key: 'taxii_public', value: 'true' },
+                        ],
+                      },
+                      setSubmitting: undefined,
+                      onCompleted: undefined,
+                      onError: undefined,
+                      optimisticResponse: undefined,
+                      optimisticUpdater: undefined,
+                      updater: undefined,
+                    });
+                  } else {
+                    handleSubmitField('taxii_public_user_id', userId);
+                  }
+                }}
               />
             )}
           </Alert>
@@ -234,6 +276,11 @@ const TaxiiCollectionEditionFragment = createFragmentContainer(
         description
         filters
         taxii_public
+        taxii_public_user {
+          id
+          entity_type
+          name
+        }
         include_inferences
         score_to_confidence
         authorized_members {
