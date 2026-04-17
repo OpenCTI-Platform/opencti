@@ -1,4 +1,5 @@
 import axios from 'axios';
+import FormData from 'form-data';
 import type Express from 'express';
 import nconf from 'nconf';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
@@ -92,6 +93,7 @@ export const getChatbotAgents = async (req: Express.Request, res: Express.Respon
 
 // ── POST /chatbot/sessions ──────────────────────────────────────────────
 // Proxies to XTM One Platform Chat API to create/resume a conversation.
+// req.body JSON is forwarded as-is — skip_memory passes through automatically.
 
 export const postChatbotSession = async (req: Express.Request, res: Express.Response) => {
   try {
@@ -124,6 +126,7 @@ export const postChatbotSession = async (req: Express.Request, res: Express.Resp
 
 // ── POST /chatbot/messages ──────────────────────────────────────────────
 // Proxies to XTM One Platform Chat API (streaming SSE).
+// req.body JSON is forwarded as-is — file_ids passes through automatically.
 
 export const postChatbotMessage = async (req: Express.Request, res: Express.Response) => {
   try {
@@ -269,6 +272,58 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
     } else {
       setCookieError(res, message);
       res.status(200).json({ content: '', status: 'error', error: message, code: 503 });
+    }
+  }
+};
+
+// ── POST /chatbot/conversations/:conversationId/upload ───────────────────
+// Proxies a multipart file upload to Copilot's platform upload endpoint.
+// Streams the request body directly — does not buffer or re-encode the file.
+
+export const postChatbotFileUpload = async (req: Express.Request, res: Express.Response) => {
+  try {
+    const context = await authenticateAndVerify(req, res);
+    if (!context) return;
+
+    const { conversationId } = req.params;
+    if (!conversationId) {
+      res.status(400).json({ error: 'conversationId is required' });
+      return;
+    }
+
+    const url = `${XTM_ONE_URL}/api/v1/platform/chat/conversations/${conversationId}/upload`;
+    const jwt = await issueAuthenticationJWT(context.user);
+
+    // Forward the multipart body as-is using form-data so the file bytes
+    // are streamed to Copilot without buffering or base64 re-encoding.
+    const form = new FormData();
+    form.append('file', req, {
+      filename: (req.headers['x-filename'] as string) || 'upload',
+      contentType: req.headers['content-type'] || 'application/octet-stream',
+      knownLength: parseInt(req.headers['content-length'] || '0', 10) || undefined,
+    });
+
+    const response = await axios.post(url, form, {
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+        'X-Platform-URL': getChatbotUrl(req),
+        'X-Platform-Product': 'opencti',
+        'X-Platform-Version': PLATFORM_VERSION,
+        ...form.getHeaders(),
+      },
+      timeout: 60000,
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+    });
+
+    res.json(response.data);
+  } catch (e: unknown) {
+    logApp.error('Error in chatbot file upload proxy', { cause: e });
+    const { message } = e as Error;
+    if (axios.isAxiosError(e) && e.response) {
+      res.status(e.response.status).json({ error: e.response.data?.detail ?? message });
+    } else {
+      res.status(503).json({ error: message });
     }
   }
 };

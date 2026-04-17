@@ -25,6 +25,7 @@ import { FormikConfig, FormikErrors, useFormik } from 'formik';
 import { useMemo, useState } from 'react';
 import { graphql, UseMutationConfig } from 'react-relay';
 import { Link } from 'react-router-dom';
+import { useChatbot } from '@components/chatbox/ChatbotContext';
 import { Theme } from '../../../../../components/Theme';
 import { THEME_DARK_DIALOG_BACKGROUND } from '../../../../../components/ThemeDark';
 import { THEME_LIGHT_DIALOG_BACKGROUND } from '../../../../../components/ThemeLight';
@@ -131,6 +132,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);
 
   const theme = useTheme<Theme>();
+  const { openChat, xtmOneConfigured } = useChatbot();
 
   const draftContext = useDraftContext();
   const {
@@ -407,28 +409,38 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
 
       // If workbench
       return (
-        // Navigate to entity button (if associated entity exists)
-        optionsContext.values.associatedEntity?.value ? !entityId && (
-          <Button
-            color="secondary"
-            onClick={() => handleClose()}
-            component={Link}
-            to={`${resolveLink(optionsContext.values.associatedEntity.type)}/${optionsContext.values.associatedEntity.value}/files`}
-          >
-            {t_i18n('Navigate to entity')}
-          </Button>
-        ) : (
-          <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+        <>
+          {xtmOneConfigured && (
+            <Button
+              color="secondary"
+              onClick={() => { handleClose(); openChat(); }}
+            >
+              {t_i18n('Open in Chat')}
+            </Button>
+          )}
+          {/* Navigate to entity button (if associated entity exists) */}
+          {optionsContext.values.associatedEntity?.value ? !entityId && (
             <Button
               color="secondary"
               onClick={() => handleClose()}
               component={Link}
-              to="/dashboard/data/import/file"
+              to={`${resolveLink(optionsContext.values.associatedEntity.type)}/${optionsContext.values.associatedEntity.value}/files`}
             >
-              {t_i18n('Navigate to import')}
+              {t_i18n('Navigate to entity')}
             </Button>
-          </Security>
-        )
+          ) : (
+            <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+              <Button
+                color="secondary"
+                onClick={() => handleClose()}
+                component={Link}
+                to="/dashboard/data/import/file"
+              >
+                {t_i18n('Navigate to import')}
+              </Button>
+            </Security>
+          )}
+        </>
       );
     }
 
@@ -448,6 +460,8 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     handleClose,
     setDraftContext,
     entityId,
+    xtmOneConfigured,
+    openChat,
     t_i18n,
   ]);
 
