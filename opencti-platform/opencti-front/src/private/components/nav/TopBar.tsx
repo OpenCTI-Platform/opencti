@@ -21,7 +21,7 @@ import type { Theme } from '../../../components/Theme';
 import UploadImport from '../../../components/UploadImport';
 import { APP_BASE_PATH, MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
-import { isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
+import { isFilterGroupFormatCorrect, isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useAuth from '../../../utils/hooks/useAuth';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
@@ -91,16 +91,6 @@ interface ParsedNlqResponse {
   error?: string;
 }
 
-const isFilterGroupLike = (value: unknown): boolean => {
-  if (!value || typeof value !== 'object') {
-    return false;
-  }
-  const objectValue = value as { mode?: unknown; filters?: unknown; filterGroups?: unknown };
-  return typeof objectValue.mode === 'string'
-    && Array.isArray(objectValue.filters)
-    && Array.isArray(objectValue.filterGroups);
-};
-
 const parseNlqAgentResponse = (content: string): ParsedNlqResponse | null => {
   try {
     const jsonContent = extractJsonContent(content);
@@ -117,12 +107,12 @@ const parseNlqAgentResponse = (content: string): ParsedNlqResponse | null => {
         : [];
 
       if ('filters' in parsed) {
-        if (!parsedError && typeof parsed.filters !== 'string' && !isFilterGroupLike(parsed.filters)) {
+        if (!parsedError && typeof parsed.filters !== 'string' && !isFilterGroupFormatCorrect(parsed.filters)) {
           return null;
         }
         const filters = typeof parsed.filters === 'string'
           ? parsed.filters
-          : isFilterGroupLike(parsed.filters)
+          : isFilterGroupFormatCorrect(parsed.filters)
             ? JSON.stringify(parsed.filters)
             : undefined;
         return { filters, notResolvedValues, error: parsedError };
@@ -132,7 +122,7 @@ const parseNlqAgentResponse = (content: string): ParsedNlqResponse | null => {
         return { notResolvedValues, error: parsedError };
       }
 
-      if (!isFilterGroupLike(parsed)) {
+      if (!isFilterGroupFormatCorrect(parsed)) {
         return null;
       }
 
@@ -154,7 +144,7 @@ const toValidSerializedFilterGroup = (filters?: string): string | null => {
   }
   try {
     const parsed = JSON.parse(filters);
-    return isFilterGroupLike(parsed) ? JSON.stringify(parsed) : null;
+    return isFilterGroupFormatCorrect(parsed) ? JSON.stringify(parsed) : null;
   } catch {
     return null;
   }

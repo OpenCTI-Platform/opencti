@@ -5,6 +5,7 @@ import {
   findFiltersFromKeys,
   formatFiltersInPirContext,
   getEntityTypeThreeFirstLevelsFilterValues,
+  isFilterGroupFormatCorrect,
   isRegardingOfFilterWarning,
   removeIdAndIncorrectKeysFromFilterGroupObject,
   removeIdFromFilterGroupObject,
@@ -861,5 +862,38 @@ describe('formatFiltersInPirContext', () => {
     };
     const result = formatFiltersInPirContext(initialFilters, 'pir-id-1');
     expect(result).toEqual(expectedFormattedFilters);
+  });
+});
+
+describe('isFilterGroupFormatCorrect', () => {
+  it('should return true for a valid filter group', () => {
+    expect(isFilterGroupFormatCorrect({ mode: 'and', filters: [], filterGroups: [] })).toBe(true);
+    expect(isFilterGroupFormatCorrect({ mode: 'or', filters: [], filterGroups: [] })).toBe(true);
+    expect(isFilterGroupFormatCorrect({
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' }],
+      filterGroups: [{ mode: 'or', filters: [{ key: 'objectLabel', values: [], operator: 'nil' }], filterGroups: [] }],
+    })).toBe(true);
+  });
+
+  it('should return false for null or undefined or empty object', () => {
+    expect(isFilterGroupFormatCorrect(null)).toBe(false);
+    expect(isFilterGroupFormatCorrect(undefined)).toBe(false);
+    expect(isFilterGroupFormatCorrect({})).toBe(false);
+  });
+
+  it('should return false for a non-object value', () => {
+    expect(isFilterGroupFormatCorrect('string')).toBe(false);
+    expect(isFilterGroupFormatCorrect(42)).toBe(false);
+  });
+
+  it('should return false when mode is missing or invalid', () => {
+    expect(isFilterGroupFormatCorrect({ filters: [], filterGroups: [] })).toBe(false);
+    expect(isFilterGroupFormatCorrect({ mode: 'xor', filters: [], filterGroups: [] })).toBe(false);
+  });
+
+  it('should return false when filters or filterGroups is not an array', () => {
+    expect(isFilterGroupFormatCorrect({ mode: 'and', filters: 'bad', filterGroups: [] })).toBe(false);
+    expect(isFilterGroupFormatCorrect({ mode: 'and', filters: [], filterGroups: {} })).toBe(false);
   });
 });

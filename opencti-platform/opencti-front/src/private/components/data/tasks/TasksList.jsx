@@ -30,7 +30,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { truncate } from '../../../../utils/String';
 import { convertFiltersFromOldFormat } from '../../../../utils/filters/filtersFromOldFormat';
-import { deserializeFilterGroupForFrontend, isFilterFormatCorrect, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, isStringifiedFilterGroupFormatCorrect, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { deleteNode } from '../../../../utils/store';
 
@@ -238,7 +238,7 @@ const TasksList = ({ data, options }) => {
           let filters = null;
           let listIds = '';
           if (task.task_filters) {
-            filters = isFilterFormatCorrect(task.task_filters)
+            filters = isStringifiedFilterGroupFormatCorrect(task.task_filters)
               ? deserializeFilterGroupForFrontend(task.task_filters)
               : convertFiltersFromOldFormat(task.task_filters);
           } else if (task.task_ids) {
