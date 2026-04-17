@@ -270,8 +270,9 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
       setCookieError(res, message);
       res.status(200).json({ content: '', status: 'error', error: detail, code: e.response.status });
     } else {
-      setCookieError(res, message);
-      res.status(200).json({ content: '', status: 'error', error: message, code: 503 });
+      const userMessage = 'XTM One is unreachable';
+      setCookieError(res, userMessage);
+      res.status(200).json({ content: '', status: 'error', error: userMessage, code: 503 });
     }
   }
 };
@@ -359,8 +360,9 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
       res.write(`data: ${JSON.stringify({ type: 'error', content: `⚠️ **Error** — ${detail}` })}\n\n`);
       res.end();
     } else {
-      setCookieError(res, message);
-      res.status(503).send({ status: 503, error: message });
+      const userMessage = 'XTM One is unreachable';
+      setCookieError(res, userMessage);
+      res.status(503).send({ status: 503, error: userMessage });
     }
   }
 };

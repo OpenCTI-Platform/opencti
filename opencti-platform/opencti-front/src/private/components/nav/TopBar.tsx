@@ -256,13 +256,14 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const runXtmOneNlq = async (searchKeyword: string): Promise<void> => {
     const agents = await fetchAgentsForIntent(NLQ_INTENT);
     if (agents.length === 0) {
-      setIsNLQLoading(false);
-      MESSAGING$.notifyError(t_i18n('No NLQ agent is available'));
-      return;
+      throw new Error('xtm_one_unavailable');
     }
 
     const response = await callAgent(agents[0].slug, buildNlqPrompt(searchKeyword));
     if (response.status === 'error') {
+      if (response.code === 503) {
+        throw new Error('xtm_one_unavailable');
+      }
       setIsNLQLoading(false);
       MESSAGING$.notifyError(response.error ?? t_i18n('NLQ agent call failed'));
       return;
@@ -306,9 +307,14 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     if (askAI && isEnterpriseEdition) {
       setIsNLQLoading(true);
       if (xtmOneConfigured === true) {
-        runXtmOneNlq(searchKeyword).catch(() => {
-          setIsNLQLoading(false);
-          MESSAGING$.notifyError(t_i18n('NLQ call failed'));
+        runXtmOneNlq(searchKeyword).catch((err) => {
+          if ((err as Error)?.message === 'xtm_one_unavailable') {
+            MESSAGING$.notifyNLQ(t_i18n('XTM One is unreachable, falling back to built-in AI'));
+            runLegacyNlq(searchKeyword);
+          } else {
+            setIsNLQLoading(false);
+            MESSAGING$.notifyError(t_i18n('NLQ call failed'));
+          }
         });
       } else {
         runLegacyNlq(searchKeyword);
