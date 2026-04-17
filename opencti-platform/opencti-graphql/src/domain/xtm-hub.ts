@@ -12,9 +12,8 @@ import { notify } from '../database/redis';
 import { utcDate } from '../utils/format';
 import { sendAdministratorsLostConnectivityEmail } from '../modules/xtm/hub/xtm-hub-email';
 import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
-
-import { pushAll } from '../utils/arrayUtil';
 import { addNewsFeed } from '../modules/xtm/hub/news-feed/news-feed-domain';
+import { pushAll } from '../utils/arrayUtil';
 
 interface AttributeUpdate {
   key: keyof BasicStoreSettings;

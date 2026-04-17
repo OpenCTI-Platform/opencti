@@ -1,7 +1,8 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf } from '../config/conf';
 import { executionContext, HUB_REGISTRATION_MANAGER_USER } from '../utils/access';
-import { checkXTMHubConnectivity } from '../domain/xtm-hub';
+import { checkXTMHubConnectivity, loadAndSaveLatestNewsFeed } from '../domain/xtm-hub';
+import { XtmHubRegistrationStatus } from '../generated/graphql';
 
 const HUB_REGISTRATION_MANAGER_ENABLED = booleanConf('hub_registration_manager:enabled', true);
 const HUB_REGISTRATION_MANAGER_KEY = conf.get('hub_registration_manager:lock_key') || 'hub_registration_manager_lock';
@@ -13,7 +14,10 @@ const SCHEDULE_TIME = conf.get('hub_registration_manager:interval') || 60 * 60 *
  */
 export const hubRegistrationManager = async () => {
   const context = executionContext('hub_registration_manager');
-  await checkXTMHubConnectivity(context, HUB_REGISTRATION_MANAGER_USER);
+  const { status } = await checkXTMHubConnectivity(context, HUB_REGISTRATION_MANAGER_USER);
+  if (status === XtmHubRegistrationStatus.Registered) {
+    await loadAndSaveLatestNewsFeed(context, HUB_REGISTRATION_MANAGER_USER);
+  }
 };
 
 const HUB_REGISTRATION_MANAGER_DEFINITION: ManagerDefinition = {
