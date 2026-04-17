@@ -7,7 +7,6 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@common/button/IconButton';
 import { AutoModeOutlined, ContentCopyOutlined } from '@mui/icons-material';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import CircularProgress from '@mui/material/CircularProgress';
 import { AISummaryForecastStixCoreObjectAskAiForecastQuery$data } from '@components/common/ai/__generated__/AISummaryForecastStixCoreObjectAskAiForecastQuery.graphql';
 import Tooltip from '@mui/material/Tooltip';
 import { AISummaryForecastSubscription, AISummaryForecastSubscription$data } from './__generated__/AISummaryForecastSubscription.graphql';
