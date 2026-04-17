@@ -20,6 +20,11 @@
   ],
   updateNotScheduled: false,
   rebaseWhen: 'conflicted',
+  vulnerabilityAlerts: {
+    // as we don't rely on Renovate to be informed of dependency security advisories,
+    // vulnerabilityAlerts is disable since it can cause problems by skipping minimumReleaseAge, schedule and others constraints
+    'enabled': false,
+  },
   packageRules: [
     // openid-clientv5 is an aliased+patched dependency pinned to openid-client@5.7.1.
     // Its jose resolution is also pinned. Disable all Renovate updates for both.
@@ -31,20 +36,20 @@
         'major'
       ],
       enabled: false,
-      description: 'Do not update openid-clientv5 (aliased and patched, pinned to v5)'
+      description: 'Do not update openid-clientv5 (aliased and patched, pinned to v5)',
     },
     {
       matchPackageNames: [
         'jose',
       ],
       matchDepTypes: [
-        'resolutions'
+        'resolutions',
       ],
       matchUpdateTypes: [
-        'major'
+        'major',
       ],
       enabled: false,
-      description: 'Do not update openid-clientv5/jose resolution to major versions'
+      description: 'Do not update openid-clientv5/jose resolution to major versions',
     },
     {
       description: 'Disable updates of images intentionally pinned to older versions for compatibility testing',
@@ -66,7 +71,7 @@
         'monorepo:aws-sdk-js-v3',
       ],
       description: 'Update aws-sdk-js-v3 only once a week on Sunday',
-      schedule: ['* * * * 0']
+      schedule: ['* * * * 0'],
     },
     // group non-major devDependencies once a week to avoid Renovate noise
     {
@@ -84,12 +89,12 @@
         'digest',
       ],
       rebaseWhen: 'auto',
-    }
+    },
   ],
   // do lock file maintenance once a week on Sunday
   lockFileMaintenance: {
     schedule: ['* * * * 0'],
     rebaseWhen: 'auto',
     enabled: true,
-  }
+  },
 }
