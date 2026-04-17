@@ -1977,7 +1977,7 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
     'information_types',
     {
       filterKey: 'information_types',
-      label: 'Information types',
+      label: 'Request for information types',
       type: 'vocabulary',
       multiple: true,
       subEntityTypes: [
@@ -1993,7 +1993,7 @@ filterKeysSchema.set('Stix-Core-Object', new Map([
     'takedown_types',
     {
       filterKey: 'takedown_types',
-      label: 'Takedown types',
+      label: 'Request for takedown types',
       type: 'vocabulary',
       multiple: true,
       subEntityTypes: [

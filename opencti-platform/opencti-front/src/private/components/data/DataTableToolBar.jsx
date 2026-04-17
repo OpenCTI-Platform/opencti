@@ -976,11 +976,11 @@ class DataTableToolBar extends Component {
             value: 'incident_response_types_ov',
           },
           checkTypes(typesWithRfiTypes) && {
-            label: t('Request for information type'),
+            label: t('Request for information types'),
             value: 'request_for_information_types_ov',
           },
           checkTypes(typesWithRftTypes) && {
-            label: t('Request for takedown type'),
+            label: t('Request for takedown types'),
             value: 'request_for_takedown_types_ov',
           },
           checkTypes(typesWithScore) && { label: t('Score'), value: 'x_opencti_score' },

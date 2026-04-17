@@ -70,7 +70,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
         <Grid container={true} spacing={2} sx={{ marginBottom: 2 }}>
           <Grid item xs={6}>
             <Label>
-              {t_i18n('Takedown type')}
+              {t_i18n('Request for takedown types')}
             </Label>
             <FieldOrEmpty source={takedownTypes}>
               <Stack direction="row" flexWrap="wrap" gap={1}>

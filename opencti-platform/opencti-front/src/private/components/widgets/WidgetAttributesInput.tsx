@@ -52,13 +52,13 @@ const attributesByEntityType: Map<string, { attribute: string; label: string }[]
   ['Case-Rfi', [
     { attribute: 'severity', label: 'Severity' },
     { attribute: 'priority', label: 'Priority' },
-    { attribute: 'information_types', label: 'Information types' },
+    { attribute: 'information_types', label: 'Request for information types' },
     { attribute: 'container_content', label: 'Content' },
   ]],
   ['Case-Rft', [
     { attribute: 'severity', label: 'Severity' },
     { attribute: 'priority', label: 'Priority' },
-    { attribute: 'takedown_types', label: 'Takedown types' },
+    { attribute: 'takedown_types', label: 'Request for takedown types' },
     { attribute: 'container_content', label: 'Content' },
   ]],
   ['Grouping', [
