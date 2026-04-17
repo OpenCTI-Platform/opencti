@@ -20,15 +20,15 @@ OpenCTI is a cyber threat intelligence platform built with a **monorepo structur
 
 ## Global Commands & Setup
 
-### 1. Enable Corepack First (CRITICAL)
-Before any `yarn` command, enable corepack to use the pinned Yarn version (4.12.0):
+### 1. Enable Corepack (first-time only)
+Only needed if Yarn is not already available. Run once per machine:
 ```bash
 corepack enable
 ```
+Do **not** add this before every command — assume a dev environment already has corepack enabled.
 
-### 2. Copy .yarnrc.yml (CRITICAL)
-**Before any `yarn` command** in subdirectories, you MUST copy `.yarnrc.yml` from `opencti-platform/`.
-Checks will fail without it.
+### 2. Copy .yarnrc.yml (first install only)
+Only needed when running `yarn install` for the first time in a subdirectory that does not already have `.yarnrc.yml`:
 
 ```bash
 # Example for backend
@@ -37,7 +37,38 @@ cp ../.yarnrc.yml .yarnrc.yml
 yarn install
 ```
 
-### 3. Local Development Stack
+Do **not** copy `.yarnrc.yml` before running tests or other commands — it only matters for `yarn install`.
+
+### 3. Root NX Commands (run from repo root)
+The root `package.json` uses **NX** to orchestrate all workspaces at once. Prefer these over manually running commands in each subdirectory:
+
+```bash
+# Install all dependencies (frontend + backend + Python)
+yarn deps          # without Python virtualenv
+yarn deps:venv     # with Python virtualenv (recommended)
+
+# Start all dev servers
+yarn dev           # without Python virtualenv
+yarn dev:venv      # with Python virtualenv
+
+# Build everything
+yarn build         # without Python virtualenv
+yarn build:venv    # with Python virtualenv
+
+# Run all tests
+yarn test          # without Python virtualenv
+yarn test:venv     # with Python virtualenv
+
+# Lint everything
+yarn lint
+
+# Regenerate GraphQL schema across all packages
+yarn graphql
+```
+
+The `:venv` variants wrap the command with a Python virtual environment — use them when working on `client-python` or `opencti-worker` and running the backend app.
+
+### 4. Local Development Stack
 Start the necessary infrastructure (Elastic, Redis, RabbitMQ, MinIO):
 ```bash
 cd opencti-platform/opencti-dev
@@ -47,7 +78,8 @@ docker compose up -d
 
 ## Common Pitfalls
 
-- **Yarn Failures**: Did you copy `.yarnrc.yml`? Did you run `corepack enable`?
+- **Yarn install fails**: Is `.yarnrc.yml` present in the subdirectory? Run `cp ../.yarnrc.yml .yarnrc.yml` then retry.
+- **Yarn not found**: Run `corepack enable` once.
 - **Python Dependencies**: Backend requires `yarn install:python`.
 - **Relay**: Frontend requires `yarn relay` after any GraphQL changes.
 - **Node Memory**: Use `NODE_OPTIONS=--max_old_space_size=8192` for large builds.

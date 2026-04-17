@@ -1,5 +1,5 @@
 # Components
 
 - Prefer functional components with hooks.
-- Use `React.memo` judiciously for performance in lists.
+- Do **not** wrap list row (`*Line`) components in `React.memo` — this is not the pattern used. `React.memo` is reserved for specialized graph/visualization nodes.
 - Keep components focused and small.

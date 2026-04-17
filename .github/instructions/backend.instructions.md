@@ -38,11 +38,11 @@ The `opencti-graphql` module is the core API server for the OpenCTI platform. It
 ## Setup & Build
 
 ### Prerequisites
-- **Yarn 4.12.0**: Enabled via `corepack enable`.
+- **Yarn 4.13.0**: Enabled via `corepack enable`.
 - **Python Deps**: Required for some internal logic.
 
 ### Commands
-Before running commands, ensure `.yarnrc.yml` is present (copy from parent).
+> Only copy `.yarnrc.yml` from the parent if running `yarn install` for the first time. It is not needed for tests or builds once dependencies are installed.
 
 ```bash
 # Installation

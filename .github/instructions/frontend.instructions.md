@@ -37,7 +37,7 @@ It uses **Relay** for data fetching and **Material UI** for styling.
 ## Setup & Build
 
 ### Prerequisites
-- **Yarn 4.12.0**: Enabled via `corepack enable`.
+- **Yarn 4.13.0**: Enabled via `corepack enable`.
 - **Relay Compiler**: Essential for GraphQL fragment generation.
 
 ### Commands
@@ -49,8 +49,8 @@ yarn install
 
 # Development
 yarn relay        # 1. Compile Relay artifacts (CRITICAL)
-yarn start        # 2. Start dev server (Vite)
-# OR: yarn dev    # Short for relay + vite
+yarn dev          # 2. Start Vite dev server (relay + vite)
+yarn start        # Alt: relay + Node-based dev server (SSR-like)
 
 # Build
 yarn build        # Production build
