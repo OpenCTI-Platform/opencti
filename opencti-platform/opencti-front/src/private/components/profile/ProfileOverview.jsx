@@ -475,6 +475,37 @@ const ProfileOverviewComponent = (props) => {
         </Card>
       ) : null}
       <Card title={t('Authentication')}>
+        {(settings.available_news_feed_types?.length > 0) && (
+          <Card title={t('XTM Hub Newsfeeds')}>
+            <ListItem style={{ padding: '20px 0 0 0' }}>
+              <ListItemText primary={t('Receive all XTM Hub newsfeeds')} />
+              <Switch
+                checked={!me.unsubscribed_news_feed_types?.includes('*')}
+                onChange={(_, value) => handleSubmitField(
+                  'unsubscribed_news_feed_types',
+                  value ? [] : ['*'],
+                )}
+              />
+            </ListItem>
+            {settings.available_news_feed_types.map((feedType) => (
+              <ListItem key={feedType} style={{ padding: '10px 0 0 0' }}>
+                <ListItemText primary={t(feedType)} />
+                <Switch
+                  disabled={me.unsubscribed_news_feed_types?.includes('*')}
+                  checked={!me.unsubscribed_news_feed_types?.includes(feedType)}
+                  onChange={(_, value) => {
+                    const current = (me.unsubscribed_news_feed_types ?? [])
+                      .filter((type) => type !== '*');
+                    const next = value
+                      ? current.filter((type) => type !== feedType)
+                      : [...current, feedType];
+                    handleSubmitField('unsubscribed_news_feed_types', next);
+                  }}
+                />
+              </ListItem>
+            ))}
+          </Card>
+        )}
         <div style={{ float: 'right', marginTop: -5 }}>
           {useOtp && (
             <Button
@@ -619,6 +650,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       submenu_show_icons
       submenu_auto_collapse
       monochrome_labels
+      unsubscribed_news_feed_types
       personal_notifiers {
         id
         name

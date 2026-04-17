@@ -1753,6 +1753,7 @@ type User implements BasicObject & InternalObject {
   submenu_show_icons: Boolean
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
+  unsubscribed_news_feed_types: [String!]
   editContext: [EditUserContext!]
   creator: Creator
 }
@@ -1799,6 +1800,7 @@ type MeUser implements BasicObject & InternalObject {
   submenu_show_icons: Boolean
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
+  unsubscribed_news_feed_types: [String!]
   can_manage_sensitive_config: Boolean
   draftContext: DraftWorkspace
 }
@@ -1834,6 +1836,7 @@ input UserAddInput {
   submenu_show_icons: Boolean
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
+  unsubscribed_news_feed_types: [String!]
   groups: [ID!]
   user_confidence_level: ConfidenceLevelInput
   prevent_default_groups: Boolean
