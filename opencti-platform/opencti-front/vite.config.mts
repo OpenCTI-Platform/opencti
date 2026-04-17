@@ -168,7 +168,14 @@ const depsToOptimize = [
   "use-analytics",
   "uuid",
   "d3-scale",
-  "react-compound-slider"
+  "react-compound-slider",
+  "graphiql",
+  "@graphiql/toolkit",
+  "monaco-editor",
+  "monaco-graphql",
+  "monaco-editor/esm/vs/editor/editor.worker.js",
+  "monaco-editor/esm/vs/language/json/json.worker.js",
+  "monaco-graphql/esm/graphql.worker.js",
  ];
 
 const logger = createLogger();

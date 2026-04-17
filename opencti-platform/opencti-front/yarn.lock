@@ -11686,7 +11686,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"monaco-graphql@npm:^1.7.3":
+"monaco-graphql@npm:1.7.3, monaco-graphql@npm:^1.7.3":
   version: 1.7.3
   resolution: "monaco-graphql@npm:1.7.3"
   dependencies:
@@ -12233,6 +12233,8 @@ __metadata:
     mdi-material-ui: "npm:7.9.4"
     moment: "npm:2.30.1"
     moment-timezone: "npm:0.6.1"
+    monaco-editor: "npm:0.52.2"
+    monaco-graphql: "npm:1.7.3"
     monocart-reporter: "npm:2.10.0"
     pdfmake: "npm:0.2.21"
     prop-types: "npm:15.8.1"

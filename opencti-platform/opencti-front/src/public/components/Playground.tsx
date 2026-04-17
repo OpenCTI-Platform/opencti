@@ -1,3 +1,6 @@
+// Side-effect import: configures Monaco workers BEFORE GraphiQL loads Monaco.
+import '../workers/setupMonacoWorkers';
+
 import React from 'react';
 import { GraphiQL } from 'graphiql';
 import { createGraphiQLFetcher } from '@graphiql/toolkit';
