@@ -81,6 +81,7 @@ import './securityCoverage/securityCoverage';
 import './authenticationProvider/authenticationProvider';
 import './customView/customView';
 import './retentionRules/retentionRules';
+import './xtm/hub/news-feed/news-feed';
 
 // incomplete modules
 import './report/report';
