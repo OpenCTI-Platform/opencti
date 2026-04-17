@@ -22,7 +22,7 @@
   rebaseWhen: 'conflicted',
   vulnerabilityAlerts: {
     // as we don't rely on Renovate to be informed of dependency security advisories,
-    // vulnerabilityAlerts is disable since it can cause problems by skipping minimumReleaseAge, schedule and others constraints
+    // vulnerabilityAlerts is disabled since it can cause problems by skipping minimumReleaseAge, schedule and others constraints
     'enabled': false,
   },
   packageRules: [
@@ -77,8 +77,10 @@
     {
       groupName: 'devDependencies (non-major)',
       groupSlug: 'dev-dependencies-non-major',
-      description: 'Batch non-major update of dev dependencies once a week on Sunday',
-      schedule: ['* * * * 0'],
+      description: 'Batch non-major updates of dev dependencies once a week on Sunday',
+      schedule: [
+	      '* * * * 0',
+      ],
       matchDepTypes: [
         'devDependencies',
       ],
@@ -93,7 +95,9 @@
   ],
   // do lock file maintenance once a week on Sunday
   lockFileMaintenance: {
-    schedule: ['* * * * 0'],
+    schedule: [
+      '* * * * 0',
+    ],
     rebaseWhen: 'auto',
     enabled: true,
   },
