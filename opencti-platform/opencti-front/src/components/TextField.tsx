@@ -1,4 +1,4 @@
-import React, { ChangeEvent, ClipboardEvent, FocusEvent, KeyboardEvent, ReactNode, useCallback } from 'react';
+import React, { ChangeEvent, ClipboardEvent, FocusEvent, KeyboardEvent, ReactNode, Ref, useCallback } from 'react';
 import { TextField as MuiTextField, TextFieldProps as MuiTextFieldProps } from '@mui/material';
 import { fieldToTextField } from 'formik-mui';
 import { FieldProps, useField } from 'formik';
@@ -16,6 +16,7 @@ export type TextFieldProps = FieldProps<string> & MuiTextFieldProps & {
   onSubmit?: (name: string, value: string) => void;
   onKeyDown?: (key: string) => void;
   onBeforePaste?: (value: string) => string;
+  inputRef?: Ref<HTMLInputElement>;
 };
 
 const TextField = (props: TextFieldProps) => {
@@ -27,6 +28,7 @@ const TextField = (props: TextFieldProps) => {
     onFocus,
     onSubmit,
     onKeyDown,
+    inputRef,
   } = props;
   const { fullyActive } = useAI();
 
@@ -101,6 +103,7 @@ const TextField = (props: TextFieldProps) => {
     <MuiTextField
       {...otherProps}
       value={value ?? ''}
+      inputRef={inputRef}
       error={showError}
       helperText={
 
