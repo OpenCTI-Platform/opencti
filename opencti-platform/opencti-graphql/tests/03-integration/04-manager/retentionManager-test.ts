@@ -9,7 +9,7 @@ import { allFilesForPaths } from '../../../src/modules/internal/document/documen
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { uploadToStorage } from '../../../src/database/file-storage';
 import { elLoadById, elRawUpdateByQuery } from '../../../src/database/engine';
-import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../../src/database/utils';
+import { READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../../src/database/utils';
 import { DatabaseError } from '../../../src/config/errors';
 import { deleteFile, loadFile } from '../../../src/database/file-storage';
 import { deleteElementById } from '../../../src/database/middleware';
@@ -355,5 +355,33 @@ describe('Retention Manager tests ', () => {
     const individualUserId = 'identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91'; // admin individual
     await expect(() => deleteElement(context, 'knowledge', individualUserId, { knowledgeType: ENTITY_TYPE_IDENTITY_INDIVIDUAL }))
       .rejects.toThrowError('Cannot delete an individual corresponding to a user');
+  });
+  it('should fetch history entries to be deleted by a retention rule on history scope', async () => {
+    // A very large retention window should include all history entries
+    const before = utcDate();
+    const historyElements = await getElementsToDelete(context, 'history', before);
+    expect(historyElements.edges.length).toBeGreaterThan(0);
+    // All returned elements must come from the history index (entity_type = 'History')
+    historyElements.edges.forEach((edge: any) => {
+      expect(edge.node.entity_type).toBe('History');
+    });
+  });
+  it('should return 0 history entries when retention window excludes all entries', async () => {
+    // A date far in the past → no entries should be older than that date
+    const beforeThePlatformExisted = utcDate('2000-01-01T00:00:00.000Z');
+    const historyElements = await getElementsToDelete(context, 'history', beforeThePlatformExisted);
+    expect(historyElements.edges.length).toBe(0);
+  });
+  it('should delete a history entry using deleteElement with history scope', async () => {
+    // Fetch one existing history entry
+    const before = utcDate();
+    const historyElements = await getElementsToDelete(context, 'history', before);
+    expect(historyElements.edges.length).toBeGreaterThan(0);
+    const historyEntryId = historyElements.edges[0].node.id;
+    // Delete it via the retention manager
+    await deleteElement(context, 'history', historyEntryId);
+    // Verify it is no longer findable
+    const deleted = await elLoadById(testContext, ADMIN_USER, historyEntryId, { indices: READ_INDEX_HISTORY });
+    expect(deleted).toBeUndefined();
   });
 });

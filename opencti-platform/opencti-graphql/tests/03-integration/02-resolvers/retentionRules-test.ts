@@ -376,6 +376,47 @@ describe('RetentionRules module – integration tests', () => {
       expect(count).toBeGreaterThanOrEqual(0);
     });
 
+    it('should return a count for history scope', async () => {
+      // A very large retention window (e.g., 10 years) should include all history logs written so far
+      const input: RetentionRuleAddInput = {
+        name: 'check history',
+        filters: emptyFilters,
+        max_retention: 3650,
+        retention_unit: RetentionUnit.Days,
+        scope: RetentionRuleScope.History,
+      };
+
+      const response = await queryAsAdminWithSuccess({
+        query: CHECK_RETENTION_RULE,
+        variables: { input },
+      });
+
+      const count = response.data?.retentionRuleCheck;
+      expect(typeof count).toBe('number');
+      // The test environment always generates at least some history entries
+      expect(count).toBeGreaterThan(0);
+    });
+
+    it('should return 0 for history scope when retention window is too short', async () => {
+      // A 1-minute retention window means "only logs older than 1 minute" → very likely 0 in a fresh test run
+      const input: RetentionRuleAddInput = {
+        name: 'check history short window',
+        filters: emptyFilters,
+        max_retention: 1,
+        retention_unit: RetentionUnit.Minutes,
+        scope: RetentionRuleScope.History,
+      };
+
+      const response = await queryAsAdminWithSuccess({
+        query: CHECK_RETENTION_RULE,
+        variables: { input },
+      });
+
+      const count = response.data?.retentionRuleCheck;
+      expect(typeof count).toBe('number');
+      expect(count).toBe(0);
+    });
+
     it('should return 0 elements when max_retention is very short (minutes)', async () => {
       // A very short retention (1 minute) should find elements modified before 1 minute ago – likely 0 in a fresh test run
       const input: RetentionRuleAddInput = {
