@@ -4,7 +4,7 @@ import { topEntitiesList, pageEntitiesConnection, storeLoadById } from '../../da
 import { ENTITY_TYPE_RETENTION_RULE, type BasicStoreEntityRetentionRule } from './retentionRules-types';
 import { generateInternalId, generateStandardId } from '../../schema/identifier';
 import { elIndex, elPaginate } from '../../database/engine';
-import { INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES } from '../../database/utils';
+import { INDEX_INTERNAL_OBJECTS, READ_INDEX_HISTORY, READ_STIX_INDICES } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import { utcDate } from '../../utils/format';
 import { RETENTION_MANAGER_USER } from '../../utils/access';
@@ -37,7 +37,7 @@ export const checkRetentionRule = async (context: AuthContext, input: RetentionR
   } else if (scope === 'history') {
     const jsonFilters = filters ? JSON.parse(filters) : null;
     const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
-    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, { ...queryOptions, types: ['History'], first: 1 });
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: ['History'], first: 1 });
     return result.pageInfo.globalCount;
   } else {
     logApp.error('[Retention manager] Scope not existing for Retention Rule.', { scope });

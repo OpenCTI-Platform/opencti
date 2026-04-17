@@ -6,7 +6,7 @@ import { deleteElementById, patchAttribute } from '../database/middleware';
 import { executionContext, RETENTION_MANAGER_USER } from '../utils/access';
 import { ENTITY_TYPE_RETENTION_RULE } from '../modules/retentionRules/retentionRules-types';
 import { now, utcDate } from '../utils/format';
-import { READ_STIX_INDICES } from '../database/utils';
+import { READ_INDEX_HISTORY, READ_STIX_INDICES } from '../database/utils';
 import { elPaginate } from '../database/engine';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import type { ManagerDefinition } from './managerModule';
@@ -68,7 +68,7 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
   } else if (scope === 'history') {
     const jsonFilters = filters ? JSON.parse(filters) : null;
     const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
-    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, { ...queryOptions, types: ['History'], first: RETENTION_BATCH_SIZE }) as any;
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: ['History'], first: RETENTION_BATCH_SIZE }) as any;
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
