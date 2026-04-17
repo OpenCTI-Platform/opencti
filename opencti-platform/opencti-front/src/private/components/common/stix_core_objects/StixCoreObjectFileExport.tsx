@@ -304,13 +304,12 @@ const StixCoreObjectFileExportComponent = ({
           const fileName = `${values.exportFileName}.pdf`;
           const fileMarkingNames = values.fileMarkings.map(({ label }) => label);
           const PDF = await htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames, values.fintelDesign?.value);
-          PDF.getBlob((blob) => {
-            uploadFile({
-              id: scoId,
-              fileMarkings,
-              file: new File([blob], fileName, { type: blob.type }),
-              fromTemplate: true,
-            });
+          const blob = await PDF.getBlob();
+          uploadFile({
+            id: scoId,
+            fileMarkings,
+            file: new File([blob], fileName, { type: blob.type }),
+            fromTemplate: true,
           });
         }
       } else if (values.fileToExport !== null) {
@@ -331,13 +330,12 @@ const StixCoreObjectFileExportComponent = ({
         const PDF = isFromTemplate
           ? await htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames, values.fintelDesign?.value)
           : htmlToPdf(fileId, fileData);
-        PDF.getBlob((blob) => {
-          uploadFile({
-            id: scoId,
-            fileMarkings,
-            file: new File([blob], fileName, { type: blob.type }),
-            fromTemplate: isFromTemplate,
-          });
+        const blob = await PDF.getBlob();
+        uploadFile({
+          id: scoId,
+          fileMarkings,
+          file: new File([blob], fileName, { type: blob.type }),
+          fromTemplate: isFromTemplate,
         });
       }
     } catch (e) {

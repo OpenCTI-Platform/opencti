@@ -89,7 +89,7 @@
     "moment-timezone": "0.6.1",
     "monaco-editor": "0.52.2",
     "monaco-graphql": "1.7.3",
-    "pdfmake": "0.2.21",
+    "pdfmake": "0.3.7",
     "prop-types": "15.8.1",
     "qrcode": "1.5.4",
     "ramda": "0.32.0",
@@ -186,6 +186,7 @@
     "node": ">=20.0.0"
   },
   "resolutions": {
+    "@types/pdfmake": "0.3.2",
     "cookie": "1.1.1",
     "d3-color": "3.1.0",
     "glob-parent": "6.0.2",

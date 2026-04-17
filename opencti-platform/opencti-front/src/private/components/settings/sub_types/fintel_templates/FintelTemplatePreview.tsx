@@ -82,10 +82,9 @@ const FintelTemplatePreview = ({
     };
     const htmlTemplate = await buildFileFromTemplate(scoId, maxMarkings, undefined, template);
     const PDF = await htmlToPdfReport(scoName, htmlTemplate, 'Preview', fileMarkings, fintelDesign);
-    PDF.getBlob((blob) => {
-      const file = new File([blob], 'Preview.pdf', { type: blob.type });
-      setPdf(file);
-    });
+    const blob = await PDF.getBlob();
+    const file = new File([blob], 'Preview.pdf', { type: blob.type });
+    setPdf(file);
   };
 
   useEffect(() => {

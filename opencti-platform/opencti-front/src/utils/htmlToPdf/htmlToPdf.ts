@@ -34,7 +34,9 @@ const generatePdf = (pdfMakeObject: TDocumentDefinitions, checkOrientation = fal
   if (checkOrientation) {
     docDefinition.pageOrientation = determineOrientation();
   }
-  return pdfMake.createPdf(docDefinition, defaultTableLayout, FONTS);
+  pdfMake.setTableLayouts(defaultTableLayout);
+  pdfMake.setFonts(FONTS);
+  return pdfMake.createPdf(docDefinition);
 };
 
 /**

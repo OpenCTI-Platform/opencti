@@ -461,7 +461,7 @@ class StixCoreObjectContentComponent extends Component {
       .replaceAll(regex, '');
     const fragment = stixCoreObject.name.split('/');
     const currentName = R.last(fragment);
-    htmlToPdf('content', htmlData).download(`${currentName}.pdf`);
+    await htmlToPdf('content', htmlData).download(`${currentName}.pdf`);
   }
 
   render() {

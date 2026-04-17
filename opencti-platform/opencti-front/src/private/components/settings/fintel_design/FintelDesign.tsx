@@ -80,10 +80,9 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
     };
     const htmlTemplate = await buildFileFromTemplate('', [], undefined, template);
     const PDF = await htmlToPdfReport('', htmlTemplate, 'Preview', [], fintelDesign);
-    PDF.getBlob((blob) => {
-      const file = new File([blob], 'Preview.pdf', { type: blob.type });
-      setPdf(file);
-    });
+    const blob = await PDF.getBlob();
+    const file = new File([blob], 'Preview.pdf', { type: blob.type });
+    setPdf(file);
   };
   useEffect(() => {
     buildPreview();
