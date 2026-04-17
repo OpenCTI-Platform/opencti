@@ -57,7 +57,7 @@ const XtmOneAISummaryDisplay: FunctionComponent<XtmOneAISummaryDisplayProps> = (
               <div style={{ float: 'right', marginTop: 20, display: 'flex', alignItems: 'center', gap: '5px' }}>
                 {generatedAt && (
                   <Typography variant="caption">
-                    Generated on {new Date(generatedAt).toLocaleString()}.
+                    {t_i18n('Generated on')} {new Date(generatedAt).toLocaleString()}.
                   </Typography>
                 )}
                 <Tooltip title={t_i18n('Copy to clipboard')}>
