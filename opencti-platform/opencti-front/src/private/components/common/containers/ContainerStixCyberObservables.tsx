@@ -346,6 +346,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
                   containerStixCoreObjects={[...(container.objects?.edges ?? [])]}
                   paginationOptions={queryPaginationOptions}
                   enableReferences={enableReferences}
+                  defaultMarkingDefinitions={container.objectMarking ?? []}
                 />
               </Security>
             )}
@@ -378,6 +379,13 @@ const ContainerStixCyberObservables = createFragmentContainer(
     container: graphql`
       fragment ContainerStixCyberObservables_container on Container {
         id
+        objectMarking {
+          id
+          definition
+          definition_type
+          x_opencti_order
+          x_opencti_color
+        }
         ... on Report {
           name
         }

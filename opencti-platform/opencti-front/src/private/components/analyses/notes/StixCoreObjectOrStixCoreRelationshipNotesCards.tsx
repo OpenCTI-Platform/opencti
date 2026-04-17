@@ -37,6 +37,7 @@ import AddNotesFunctionalComponent from './AddNotesFunctionalComponent';
 import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import CardTitle from '../../../../components/common/card/CardTitle';
 import CardAccordion from '../../../../components/common/card/CardAccordion';
+import { DefaultMarking } from './../../settings/marking_definitions/markingDefinition.types';
 
 export const stixCoreObjectOrStixCoreRelationshipNotesCardsQuery = graphql`
   query StixCoreObjectOrStixCoreRelationshipNotesCardsQuery(
@@ -111,14 +112,6 @@ export interface NoteAddInput {
   likelihood?: number;
   objectMarking: FieldOption[];
   objectLabel: FieldOption[];
-}
-
-interface DefaultMarking {
-  readonly definition: string | null | undefined;
-  readonly definition_type: string | null | undefined;
-  readonly id: string;
-  readonly x_opencti_color: string | null | undefined;
-  readonly x_opencti_order?: number;
 }
 
 interface StixCoreObjectOrStixCoreRelationshipNotesCardsProps {

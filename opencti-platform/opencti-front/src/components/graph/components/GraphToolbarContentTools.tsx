@@ -121,7 +121,7 @@ const GraphToolbarContentTools = ({
           containerId={entity.id}
           containerStixCoreObjects={rawObjects.map((o) => ({ node: o }))}
           defaultCreatedBy={entity.createdBy ?? null}
-          defaultMarkingDefinitions={(entity.objectMarking ?? []) as unknown[]}
+          defaultMarkingDefinitions={entity.objectMarking ?? []}
           targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
           onAdd={addNode as (node: { id: string }) => void}
           onDelete={removeFromAddPanel}
