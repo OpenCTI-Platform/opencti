@@ -14,6 +14,7 @@ import { sendAdministratorsLostConnectivityEmail } from '../modules/xtm/hub/xtm-
 import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 
 import { pushAll } from '../utils/arrayUtil';
+import { addNewsFeed } from '../modules/xtm/hub/news-feed/news-feed-domain';
 
 interface AttributeUpdate {
   key: keyof BasicStoreSettings;
@@ -187,6 +188,50 @@ const handleLostConnectivityEmail = async (context: AuthContext, settings: Basic
   return attributeUpdates;
 };
 
+export const loadAndSaveLatestNewsFeed = async (context: AuthContext, user: AuthUser): Promise<void> => {
+  const isEnabled = booleanConf('XTMHUB_NEWS_FEED_ENABLED', true);
+  if (!isEnabled) {
+    return;
+  }
+
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+  if (!settings.xtm_hub_token) {
+    logApp.info('[XTMH] Cannot fetch news feed: platform is not registered');
+    return;
+  }
+
+  const {
+    news_feed_items: newsFeedItems,
+    available_news_feed_types: availableNewsFeedTypes,
+  } = await xtmHubClient.consumeProvisionedNewsFeedItems(settings.id, settings.xtm_hub_token);
+  if (newsFeedItems.length === 0) {
+    return;
+  }
+
+  const users = await getEntitiesListFromCache(context, user, ENTITY_TYPE_USER) as AuthUser[];
+  const nonServiceAccountUsers = users.filter((u) => !u.user_service_account);
+  for (const feedItem of newsFeedItems) {
+    for (const platformUser of nonServiceAccountUsers) {
+      try {
+        await addNewsFeed(context, platformUser, { ...feedItem, user_id: platformUser.id });
+      } catch (e) {
+        logApp.error(e, { message: '[XTMH] Error adding news feed item', userId: platformUser.id });
+      }
+    }
+  }
+
+  await updateAttribute(
+    context,
+    user,
+    settings.id,
+    ENTITY_TYPE_SETTINGS,
+    [{ key: 'xtm_hub_available_news_feed_types', value: availableNewsFeedTypes }],
+  );
+
+  const updatedSettings = await getSettings(context);
+  await notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, HUB_REGISTRATION_MANAGER_USER);
+};
+
 export const contactUsXtmHub = async (context: AuthContext, user: AuthUser, message: string): Promise<{ success: boolean }> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
 
@@ -200,5 +245,5 @@ export const contactUsXtmHub = async (context: AuthContext, user: AuthUser, mess
     platformToken: settings.xtm_hub_token,
   };
 
-  return xtmHubClient.contactUs(platformInformation, message); ;
+  return xtmHubClient.contactUs(platformInformation, message);
 };

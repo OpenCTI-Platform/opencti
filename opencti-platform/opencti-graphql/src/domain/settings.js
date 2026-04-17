@@ -193,6 +193,7 @@ const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [
   'xtm_hub_registration_status',
   'xtm_hub_should_send_connectivity_email',
   'xtm_hub_backend_is_reachable',
+  'xtm_hub_available_news_feed_types',
 ];
 
 export const settingsEditField = async (context, user, settingsId, input) => {

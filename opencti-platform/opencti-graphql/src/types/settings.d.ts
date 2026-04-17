@@ -57,6 +57,7 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   xtm_hub_last_connectivity_check?: Date;
   xtm_hub_should_send_connectivity_email?: boolean;
   xtm_hub_backend_is_reachable?: boolean;
+  available_news_feed_types?: string[];
   platform_ai_enabled: boolean;
   filigran_chatbot_ai_cgu_status: CguStatus;
   view_all_users: boolean;

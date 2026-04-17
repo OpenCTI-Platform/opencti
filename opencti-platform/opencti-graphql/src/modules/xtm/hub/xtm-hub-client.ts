@@ -1,8 +1,22 @@
 import { getHttpClient } from '../../../utils/http-client';
 import conf, { logApp, PLATFORM_VERSION } from '../../../config/conf';
 import type { Success } from '../../../generated/graphql';
+import { type NewsFeedItemMetadata, NewsFeedItemType } from './news-feed/news-feed-types';
 
 type RegistrationStatus = 'active' | 'inactive' | 'not_found';
+
+export interface ProvisionedNewsFeedItem {
+  title: string;
+  type: NewsFeedItemType;
+  tags: string[];
+  metadata: NewsFeedItemMetadata[];
+  creation_date: Date;
+}
+
+interface ConsumeProvisionedNewsFeedItemsResponse {
+  news_feed_items: ProvisionedNewsFeedItem[];
+  available_news_feed_types: NewsFeedItemType[];
+}
 
 const HUB_BACKEND_URL = conf.get('xtm:xtmhub_api_override_url') ?? conf.get('xtm:xtmhub_url');
 const HUB_OPENCTI_IDENTIFIER = 'opencti';
@@ -99,6 +113,50 @@ export const xtmHubClient = {
     } catch (error) {
       logApp.warn('XTM Hub is unreachable', { reason: error });
       return { success: false };
+    }
+  },
+  consumeProvisionedNewsFeedItems: async (platformId: string, platformToken: string): Promise<ConsumeProvisionedNewsFeedItemsResponse> => {
+    const mutation = `
+      mutation ConsumeProvisionedNewsFeedItems {
+        consumeProvisionedNewsFeedItems {
+          news_feed_items {
+            title
+            type
+            tags
+            metadata {
+              key
+              value
+            }
+            creation_date
+          }
+          available_news_feed_types
+        }
+      }
+    `;
+
+    const httpClient = getHttpClient({
+      baseURL: HUB_BACKEND_URL,
+      responseType: 'json',
+      headers: {
+        'Content-Type': 'application/json',
+        'XTM-Hub-Platform-Id': platformId,
+        'XTM-Hub-Platform-Token': platformToken,
+      },
+    });
+
+    const emptyResponse: ConsumeProvisionedNewsFeedItemsResponse = { news_feed_items: [], available_news_feed_types: [] };
+
+    try {
+      const response = await httpClient.post('/graphql-api', { query: mutation });
+      const { data, errors } = response.data;
+      if ((errors?.length ?? 0) > 0) {
+        logApp.warn('XTM Hub consumeProvisionedNewsFeedItems error', { reason: errors?.[0] });
+        return emptyResponse;
+      }
+      return data?.consumeProvisionedNewsFeedItems ?? emptyResponse;
+    } catch (error) {
+      logApp.warn('XTM Hub is unreachable', { reason: error });
+      return emptyResponse;
     }
   },
   contactUs: async (platform: { platformId: string; platformToken: string }, message: string): Promise<Success> => {
