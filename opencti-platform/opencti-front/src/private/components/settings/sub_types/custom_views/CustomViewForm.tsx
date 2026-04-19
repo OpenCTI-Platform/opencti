@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import Button from '@common/button/Button';
 import { Field, Form, Formik, type FormikConfig } from 'formik';
 import * as Yup from 'yup';
@@ -36,6 +37,12 @@ const CustomViewForm = ({
     name: '',
     description: null,
   };
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (nameInputRef.current) {
+      nameInputRef.current.focus();
+    }
+  }, []);
 
   return (
     <Formik<CustomViewFormInputs>
@@ -54,6 +61,7 @@ const CustomViewForm = ({
               label={t_i18n('Name')}
               fullWidth={true}
               required
+              inputRef={nameInputRef}
             />
             <Field
               component={MarkdownField}
