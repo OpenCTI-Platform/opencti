@@ -13,6 +13,7 @@ type CustomView implements InternalObject & BasicObject {
     manifest: String
     path: String! # Derived field, not stored in DB
     targetEntityType: String!
+    toWidgetExport(widgetId: ID!): String! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
 }
 
 type CustomViewsEdge {
@@ -57,6 +58,7 @@ type Query {
     customViewsSettings(
         entityType: String!
     ): CustomViewsSettings! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
+    customView(id: ID!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
 }
 
 # Mutations
@@ -65,5 +67,7 @@ type Mutation {
 
     # Add a new custom view
     customViewAdd(input: CustomViewAddInput!): CustomView! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
+    customViewEdit(id: ID!, input: [EditInput!]!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    customViewWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 

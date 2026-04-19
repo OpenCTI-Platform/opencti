@@ -37,7 +37,7 @@ import { createInternalObject, editInternalObject } from '../../domain/internalO
 
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
-export const sanitizeElementForPublishAction = (element: BasicStoreEntityWorkspace) => {
+export const sanitizeElementForPublishAction = <T>(element: T) => {
   // Because manifest can be huge we remove this data from activity logs.
   return { ...element, manifest: undefined };
 };
@@ -358,19 +358,7 @@ export const generateWidgetExportConfiguration = async (context: AuthContext, us
   if (workspace.type !== 'dashboard') {
     throw FunctionalError('WORKSPACE_EXPORT_INCOMPATIBLE_TYPE', { type: workspace.type });
   }
-  const parsedManifest = fromB64(workspace.manifest ?? '{}');
-  if (parsedManifest && isNotEmptyField(parsedManifest.widgets) && parsedManifest.widgets[widgetId]) {
-    const widgetDefinition = parsedManifest.widgets[widgetId];
-    delete widgetDefinition.id; // Remove current widget id
-    await convertWidgetsIds(context, user, [widgetDefinition], 'internal');
-    const exportConfigration = {
-      openCTI_version: pjson.version,
-      type: 'widget',
-      configuration: toB64(widgetDefinition) as string,
-    };
-    return JSON.stringify(exportConfigration);
-  }
-  throw FunctionalError('WIDGET_EXPORT_NOT_FOUND', { workspace: workspace.id, widget: widgetId });
+  return exportWidget(context, user, workspace, widgetId);
 };
 
 export const workspaceImportConfiguration = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
@@ -425,10 +413,9 @@ interface WidgetConfigImportData extends ConfigImportData {
   configuration?: string; // widget definition in base64.
 }
 
-export const workspaceImportWidgetConfiguration = async (
+export const processImportWidgetConfiguration = async (
   context: AuthContext,
   user: AuthUser,
-  workspaceId: string,
   input: ImportWidgetInput,
 ) => {
   const parsedData = await extractContentFrom<WidgetConfigImportData>(input.file);
@@ -464,6 +451,44 @@ export const workspaceImportWidgetConfiguration = async (
     },
   };
   const updatedManifest = toB64(updatedObjects);
+  return {
+    updatedManifest,
+    importedWidgetId,
+  };
+};
+
+interface DashboardLike {
+  id: string;
+  manifest?: string | undefined | null;
+}
+
+export const exportWidget = async (context: AuthContext, user: AuthUser, entity: DashboardLike, widgetId: string) => {
+  const parsedManifest = fromB64(entity.manifest ?? '{}');
+  if (parsedManifest && isNotEmptyField(parsedManifest.widgets) && parsedManifest.widgets[widgetId]) {
+    const widgetDefinition = parsedManifest.widgets[widgetId];
+    delete widgetDefinition.id; // Remove current widget id
+    await convertWidgetsIds(context, user, [widgetDefinition], 'internal');
+    const exportConfigration = {
+      openCTI_version: pjson.version,
+      type: 'widget',
+      configuration: toB64(widgetDefinition) as string,
+    };
+    return JSON.stringify(exportConfigration);
+  }
+  throw FunctionalError('WIDGET_EXPORT_NOT_FOUND', { workspace: entity.id, widget: widgetId });
+};
+
+export const workspaceImportWidgetConfiguration = async (
+  context: AuthContext,
+  user: AuthUser,
+  workspaceId: string,
+  input: ImportWidgetInput,
+) => {
+  const { updatedManifest, importedWidgetId } = await processImportWidgetConfiguration(
+    context,
+    user,
+    input,
+  );
   const { element } = await updateAttribute<StoreEntityWorkspace>(
     context,
     user,

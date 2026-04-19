@@ -45,6 +45,7 @@ import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 import { ENTITY_TYPE_AUTHENTICATION_PROVIDER } from '../modules/authenticationProvider/authenticationProvider-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
+import { ENTITY_TYPE_CUSTOM_VIEW } from '../modules/customView/customView-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -793,6 +794,10 @@ export const BUS_TOPICS = {
     ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_AUTHENTICATION_PROVIDER_ADDED_TOPIC`,
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_AUTHENTICATION_PROVIDER_EDIT_TOPIC`,
     DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_AUTHENTICATION_PROVIDER_DELETE_TOPIC`,
+  },
+  [ENTITY_TYPE_CUSTOM_VIEW]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}CUSTOM_VIEW_EDIT_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}CUSTOM_VIEW_ADDED_TOPIC`,
   },
 };
 
