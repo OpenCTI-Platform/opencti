@@ -33,6 +33,13 @@ type CustomViewsSettings {
     canEntityTypeHaveCustomViews: Boolean!
 }
 
+input CustomViewAddInput {
+    name: String! @constraint(minLength: 2, format: "not-blank")
+    description: String
+    manifest: String
+    target_entity_type: String!
+}
+
 # Queries
 type Query {
     # Display a custom view
@@ -51,3 +58,12 @@ type Query {
         entityType: String!
     ): CustomViewsSettings! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
 }
+
+# Mutations
+type Mutation {
+    ## Administration use cases
+
+    # Add a new custom view
+    customViewAdd(input: CustomViewAddInput!): CustomView! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
+}
+
