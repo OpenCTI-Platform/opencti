@@ -9,6 +9,7 @@ import CustomViewFormDrawer from './CustomViewFormDrawer';
 import useEntityTranslation from '../../../../../utils/hooks/useEntityTranslation';
 import DashboardWidgetConfig from 'src/components/dashboard/DashboardWidgetConfig';
 import type { DashboardWidget } from '../../../../../components/dashboard/dashboard-types';
+import CustomViewKebabMenu from './CustomViewKebabMenu';
 // import ExportButtons from 'src/components/ExportButtons';
 
 const headerFragment = graphql`
@@ -17,6 +18,7 @@ const headerFragment = graphql`
     name
     description
     target_entity_type
+    ...CustomViewKebabMenu_customView
   }
 `;
 
@@ -62,6 +64,7 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget }: Custo
             //    exportToPdf={false}
             //  />
           }
+          <CustomViewKebabMenu data={customView} />
           <DashboardWidgetConfig
             onComplete={onCreateWidget}
             handleImportWidget={onImportWidget}
