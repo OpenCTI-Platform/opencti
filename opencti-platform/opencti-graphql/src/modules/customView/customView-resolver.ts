@@ -10,6 +10,7 @@ import {
   customViewImportWidgetConfiguration,
   exportCustomViewWidget,
   duplicateCustomView,
+  deleteCustomView,
 } from './customView-domain';
 
 const customViewResolver: Resolvers = {
@@ -50,6 +51,9 @@ const customViewResolver: Resolvers = {
     },
     customViewDuplicate: (_parent, { input }, context) => {
       return duplicateCustomView(context, context.user, input);
+    },
+    customViewDelete: (_, { id }, context) => {
+      return deleteCustomView(context, context.user, id);
     },
   },
 };
