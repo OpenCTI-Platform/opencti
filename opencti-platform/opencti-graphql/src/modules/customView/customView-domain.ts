@@ -1,7 +1,15 @@
-import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView, type StoreEntityCustomView } from './customView-types';
-import { FilterMode, FilterOperator, type QueryCustomViewsArgs, type CustomViewAddInput, type CustomViewDuplicateInput, type EditInput, type ImportWidgetInput } from '../../generated/graphql';
+import {
+  FilterMode,
+  FilterOperator,
+  type QueryCustomViewsArgs,
+  type CustomViewAddInput,
+  type CustomViewDuplicateInput,
+  type EditInput,
+  type ImportWidgetInput,
+} from '../../generated/graphql';
 import slugify from 'slug';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,

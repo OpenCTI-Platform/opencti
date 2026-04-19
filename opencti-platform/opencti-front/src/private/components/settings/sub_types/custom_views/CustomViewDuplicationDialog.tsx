@@ -8,9 +8,8 @@ import TextField from '@mui/material/TextField';
 import { useFormatter } from '../../../../../components/i18n';
 import { handleError, MESSAGING$ } from '../../../../../relay/environment';
 import stopEvent from '../../../../../utils/domEvent';
-import useApiMutation from '../../../../../utils/hooks/useApiMutation';
-import { CustomViewDuplicationDialog_DuplicateMutation } from './__generated__/CustomViewDuplicationDialog_DuplicateMutation.graphql';
-import { CustomViewDuplicationDialog_Fragment$data, CustomViewDuplicationDialog_Fragment$key } from './__generated__/CustomViewDuplicationDialog_Fragment.graphql';
+import type { CustomViewDuplicationDialog_Fragment$data, CustomViewDuplicationDialog_Fragment$key } from './__generated__/CustomViewDuplicationDialog_Fragment.graphql';
+import useCustomViewDuplicate from './useCustomViewDuplicate';
 
 const customViewDuplicationFragment = graphql`
   fragment CustomViewDuplicationDialog_Fragment on CustomView {
@@ -29,16 +28,6 @@ interface CustomViewDuplicationDialogProps {
   setDuplicating: (value: boolean) => void;
 }
 
-const duplicateMutation = graphql`
-  mutation CustomViewDuplicationDialog_DuplicateMutation(
-    $input: CustomViewDuplicateInput!
-  ) {
-    customViewDuplicate(input: $input) {
-      id
-      targetEntityType
-    }
-  }
-`;
 const CustomViewDuplicationDialog: FunctionComponent<
   CustomViewDuplicationDialogProps
 > = ({
@@ -56,9 +45,7 @@ const CustomViewDuplicationDialog: FunctionComponent<
     [t_i18n, customView.name],
   );
   const [newName, setNewName] = useState(duplicatedCustomViewInitialName);
-  const [commitDuplicateCustomView] = useApiMutation<CustomViewDuplicationDialog_DuplicateMutation>(
-    duplicateMutation,
-  );
+  const [commitDuplicateCustomView] = useCustomViewDuplicate();
   const submitDashboardDuplication = (
     e: UIEvent,
     sourceCustomView: CustomViewDuplicationDialog_Fragment$data,

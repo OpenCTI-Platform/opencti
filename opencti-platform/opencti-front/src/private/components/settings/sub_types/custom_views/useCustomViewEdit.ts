@@ -11,6 +11,7 @@ const customViewEditMutation = graphql`
       description
       path
       enabled
+      default
     }
   }
 `;

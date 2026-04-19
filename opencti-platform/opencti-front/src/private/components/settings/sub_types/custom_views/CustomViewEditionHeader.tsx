@@ -19,6 +19,7 @@ const headerFragment = graphql`
     description
     targetEntityType
     enabled
+    default
     ...CustomViewKebabMenu_customView
   }
 `;

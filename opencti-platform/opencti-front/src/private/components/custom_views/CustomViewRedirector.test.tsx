@@ -4,11 +4,12 @@ import testRender from '../../../utils/tests/test-render';
 import CustomViewRedirector from './CustomViewRedirector';
 import { Route, Routes } from 'react-router-dom';
 import { useCustomViewsData } from './useCustomViewsData';
+import type { CustomViewProps } from './CustomView';
 
-const CUSTOM_VIEW_MOCK_CONTENT = 'A great custom view page';
+const getCustomViewMockContent = (id: string) => `A great custom view page (${id})`;
 
 vi.mock('./CustomView', () => ({
-  default: () => <span>{CUSTOM_VIEW_MOCK_CONTENT}</span>,
+  default: ({ customViewId }: CustomViewProps) => <span>{getCustomViewMockContent(customViewId)}</span>,
   __esModule: true,
 }));
 
@@ -31,16 +32,18 @@ describe('CustomViewRedirector', () => {
         path: customViewPath,
         targetEntityType: 'Intrusion-Set',
         enabled: true,
+        default: false,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
     const customViewPath = 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3';
+    const id = '1504f07b-ee3f-4c09-ae66-b9550eb3abe3';
     testRender(
       <Routes>
         <Route
           path="*"
           element={
-            <CustomViewRedirector entityType="Intrusion-Set" Fallback="Not matched" />
+            <CustomViewRedirector entityType="Intrusion-Set" Fallback="Not matched" indexFallback="Index fallback" />
           }
         />
       </Routes>,
@@ -48,7 +51,7 @@ describe('CustomViewRedirector', () => {
         route: customViewPath,
       },
     );
-    expect(screen.getByText(CUSTOM_VIEW_MOCK_CONTENT)).toBeInTheDocument();
+    expect(screen.getByText(getCustomViewMockContent(id))).toBeInTheDocument();
   });
 
   it('renders fallback when no match', () => {
@@ -59,6 +62,7 @@ describe('CustomViewRedirector', () => {
         path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
         targetEntityType: 'Intrusion-Set',
         enabled: true,
+        default: false,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
@@ -67,7 +71,7 @@ describe('CustomViewRedirector', () => {
         <Route
           path="*"
           element={
-            <CustomViewRedirector entityType="Intrusion-Set" Fallback="Not matched" />
+            <CustomViewRedirector entityType="Intrusion-Set" Fallback="Not matched" indexFallback="Index fallback" />
           }
         />
       </Routes>,
@@ -86,6 +90,7 @@ describe('CustomViewRedirector', () => {
         path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
         targetEntityType: 'Intrusion-Set',
         enabled: true,
+        default: false,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
@@ -94,7 +99,7 @@ describe('CustomViewRedirector', () => {
         <Route
           path="*"
           element={
-            <CustomViewRedirector entityType="Case-Rft" Fallback="Not matched" />
+            <CustomViewRedirector entityType="Case-Rft" Fallback="Not matched" indexFallback="Index fallback" />
           }
         />
       </Routes>,
@@ -106,13 +111,15 @@ describe('CustomViewRedirector', () => {
   });
 
   it('renders custom view when the id in the path matches but not the slug', () => {
+    const id = '1504f07b-ee3f-4c09-ae66-b9550eb3abe3';
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
       allCustomViews: [{
-        id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
+        id,
         name: 'My custom view',
         path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
         targetEntityType: 'Intrusion-Set',
         enabled: true,
+        default: false,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
@@ -121,7 +128,7 @@ describe('CustomViewRedirector', () => {
         <Route
           path="*"
           element={
-            <CustomViewRedirector entityType="Intrusion-Set" Fallback="Not matched" />
+            <CustomViewRedirector entityType="Intrusion-Set" Fallback="Not matched" indexFallback="Index fallback" />
           }
         />
       </Routes>,
@@ -129,7 +136,7 @@ describe('CustomViewRedirector', () => {
         route: 'old-slug-1504f07bee3f4c09ae66b9550eb3abe3',
       },
     );
-    expect(screen.getByText(CUSTOM_VIEW_MOCK_CONTENT)).toBeInTheDocument();
+    expect(screen.getByText(getCustomViewMockContent(id))).toBeInTheDocument();
   });
 
   it('renders fallback when on custom view route but view is disabled', () => {
@@ -160,5 +167,65 @@ describe('CustomViewRedirector', () => {
       },
     );
     expect(screen.getByText(/Not matched/i)).toBeInTheDocument();
+  });
+
+  it('renders default custom view when on index and there is a default view', () => {
+    const defaultCustomViewId = '1504f07b-ee3f-4c09-ae66-b9550eb3abe3';
+    vi.mocked(useCustomViewsData).mockImplementation(() => ({
+      allCustomViews: [{
+        id: 'c1ed490c-bb1b-44c5-9e38-46574ed87bd0',
+        name: 'My other custom view',
+        path: 'my-other-custom-view-c1ed490cbb1b44c59e3846574ed87bd0',
+        default: false,
+        enabled: true,
+      }, {
+        id: defaultCustomViewId,
+        name: 'My custom view',
+        path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
+        default: true,
+        enabled: true,
+      }],
+      refetchCustomViews: () => ({ dispose: () => {} }),
+    }));
+    testRender(
+      <Routes>
+        <Route
+          path="*"
+          element={
+            <CustomViewRedirector entityType="Intrusion-Set" Fallback="Not matched" indexFallback="Index fallback" />
+          }
+        />
+      </Routes>,
+      {
+        route: '/',
+      },
+    );
+    expect(screen.getByText(getCustomViewMockContent(defaultCustomViewId))).toBeInTheDocument();
+  });
+
+  it('renders indexFallback when on index and there is no default view', () => {
+    vi.mocked(useCustomViewsData).mockImplementation(() => ({
+      allCustomViews: [{
+        id: 'c1ed490c-bb1b-44c5-9e38-46574ed87bd0',
+        name: 'My other custom view',
+        path: 'my-other-custom-view-c1ed490cbb1b44c59e3846574ed87bd0',
+        default: false,
+        enabled: true,
+      }],
+    }));
+    testRender(
+      <Routes>
+        <Route
+          path="*"
+          element={
+            <CustomViewRedirector entityType="Intrusion-Set" Fallback="Not matched" indexFallback="Index fallback" />
+          }
+        />
+      </Routes>,
+      {
+        route: '/',
+      },
+    );
+    expect(screen.getByText(/Index fallback/i)).toBeInTheDocument();
   });
 });

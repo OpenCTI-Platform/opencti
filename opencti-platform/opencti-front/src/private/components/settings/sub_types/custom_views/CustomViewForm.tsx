@@ -13,6 +13,7 @@ export interface CustomViewFormInputs {
   name: string;
   description?: string | null;
   enabled?: boolean | null;
+  default?: boolean | null;
 }
 
 export type CustomViewFormInputKeys = keyof CustomViewFormInputs;
@@ -21,6 +22,7 @@ const DEFAULT_VALUES: CustomViewFormInputs = {
   name: '',
   description: null,
   enabled: false,
+  default: false,
 };
 
 interface CustomViewFormProps {
@@ -44,6 +46,7 @@ const CustomViewForm = ({
     name: Yup.string().trim().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     enabled: Yup.boolean().nullable(),
+    default: Yup.boolean().nullable(),
   };
 
   const validation = Yup.object().shape(validators);
@@ -84,6 +87,13 @@ const CustomViewForm = ({
                 multiline={true}
                 rows="4"
                 onSubmit={handleFieldSubmit(setSubmitting)}
+              />
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="default"
+                label={t_i18n('Set as default custom view')}
+                onChange={handleFieldSubmit(setSubmitting)}
               />
               <Field
                 component={SwitchField}
