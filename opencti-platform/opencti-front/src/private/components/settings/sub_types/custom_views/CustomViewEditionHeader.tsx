@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Box, Typography } from '@mui/material';
+import { Box, Tooltip } from '@mui/material';
 import Button from '@common/button/Button';
+import Tag from '@common/tag/Tag';
+import { useTheme } from '@mui/styles';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import StopIcon from '@mui/icons-material/Stop';
+import TitleMainEntity from '../../../../../components/common/typography/TitleMainEntity';
 import { CustomViewEditionHeader_customView$key } from './__generated__/CustomViewEditionHeader_customView.graphql';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../../components/i18n';
@@ -10,6 +15,8 @@ import useEntityTranslation from '../../../../../utils/hooks/useEntityTranslatio
 import DashboardWidgetConfig from 'src/components/dashboard/DashboardWidgetConfig';
 import type { Widget } from '../../../../../utils/widget/widget';
 import CustomViewMenu from './CustomViewMenu';
+import type { Theme } from '../../../../../components/Theme';
+import useCustomViewEdit from './useCustomViewEdit';
 
 const headerFragment = graphql`
   fragment CustomViewEditionHeader_customView on CustomView {
@@ -17,6 +24,7 @@ const headerFragment = graphql`
     name
     description
     targetEntityType
+    enabled
     ...CustomViewMenu_customView
   }
 `;
@@ -32,6 +40,8 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget }: Custo
   const { translateEntityType } = useEntityTranslation();
   const [isFormOpen, setFormOpen] = useState(false);
   const customView = useFragment(headerFragment, data);
+  const theme = useTheme<Theme>();
+  const [commitCustomViewMutation, mutating] = useCustomViewEdit();
   const customizationLink = '/dashboard/settings/customization/entity_types';
   const subTypeLink = `${customizationLink}/${customView.targetEntityType}/custom-views`;
   const breadcrumb = [
@@ -42,16 +52,42 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget }: Custo
     { label: t_i18n('Custom Views') },
     { label: customView.name },
   ];
-
+  const handleToggleEnabled = () => {
+    commitCustomViewMutation({
+      variables: {
+        id: customView.id,
+        input: [{
+          key: 'enabled',
+          value: [!customView.enabled],
+        }],
+      },
+    });
+  };
   return (
     <>
       <Breadcrumbs elements={breadcrumb} />
 
-      <Box sx={{ display: 'flex', gap: 1 }}>
-        <Typography variant="h1" sx={{ float: 'left' }}>
-          {customView.name}
-        </Typography>
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        <TitleMainEntity>{customView.name}</TitleMainEntity>
+        <Tag
+          color={
+            customView.enabled
+              ? theme.palette.severity.low
+              : theme.palette.severity.critical
+          }
+          label={
+            customView.enabled
+              ? t_i18n('View is active')
+              : t_i18n('View is stopped')
+          }
+          labelTextTransform="none"
+        />
         <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: 1 }}>
+          <Tooltip title={customView.enabled ? t_i18n('Disable') : t_i18n('Enable')}>
+            <Button variant="secondary" iconOnly disabled={mutating} onClick={handleToggleEnabled}>
+              {customView.enabled ? <StopIcon /> : <PlayArrowIcon />}
+            </Button>
+          </Tooltip>
           <CustomViewMenu data={customView} />
           <DashboardWidgetConfig
             onComplete={onCreateWidget}

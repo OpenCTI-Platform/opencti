@@ -30,6 +30,7 @@ describe('CustomViewRedirector', () => {
         name: 'My custom view',
         path: customViewPath,
         targetEntityType: 'Intrusion-Set',
+        enabled: true,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
@@ -57,6 +58,7 @@ describe('CustomViewRedirector', () => {
         name: 'My custom view',
         path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
         targetEntityType: 'Intrusion-Set',
+        enabled: true,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
@@ -83,6 +85,7 @@ describe('CustomViewRedirector', () => {
         name: 'My custom view',
         path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
         targetEntityType: 'Intrusion-Set',
+        enabled: true,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
@@ -109,6 +112,7 @@ describe('CustomViewRedirector', () => {
         name: 'My custom view',
         path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
         targetEntityType: 'Intrusion-Set',
+        enabled: true,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
@@ -126,5 +130,35 @@ describe('CustomViewRedirector', () => {
       },
     );
     expect(screen.getByText(CUSTOM_VIEW_MOCK_CONTENT)).toBeInTheDocument();
+  });
+
+  it('renders fallback when on custom view route but view is disabled', () => {
+    const customViewPath = 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3';
+    const id = '1504f07b-ee3f-4c09-ae66-b9550eb3abe3';
+    vi.mocked(useCustomViewsData).mockImplementation(() => ({
+      allCustomViews: [{
+        id,
+        name: 'My custom view',
+        path: customViewPath,
+        targetEntityType: 'Intrusion-Set',
+        default: false,
+        enabled: false,
+      }],
+      refetchCustomViews: () => ({ dispose: () => {} }),
+    }));
+    testRender(
+      <Routes>
+        <Route
+          path="*"
+          element={
+            <CustomViewRedirector entityType="Intrusion-Set" Fallback="Not matched" indexFallback="Index fallback" />
+          }
+        />
+      </Routes>,
+      {
+        route: customViewPath,
+      },
+    );
+    expect(screen.getByText(/Not matched/i)).toBeInTheDocument();
   });
 });
