@@ -238,6 +238,7 @@ export async function duplicateCustomView(
     slug: slugify(input.name),
     created_at,
     updated_at: created_at,
+    enabled: false,
   };
   const entity = await createEntity(
     context,
