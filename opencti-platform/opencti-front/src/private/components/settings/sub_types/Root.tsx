@@ -9,6 +9,7 @@ import EntitySettingAttributesCard from './entity_setting/EntitySettingAttribute
 import EntitySettingCustomOverview from './entity_setting/EntitySettingCustomOverview';
 import FintelTemplatesManager from './fintel_templates/FintelTemplatesManager';
 import GlobalWorkflowSettingsCard from './workflow/GlobalWorkflowSettingsCard';
+import CustomViewEdition from './custom_views/CustomViewEdition';
 import CustomViewsSettings from './custom_views/CustomViewsSettings';
 import {
   SUBTYPE_TAB_ATTRIBUTES,
@@ -58,12 +59,16 @@ const RootSubType = () => {
           {isCustomViewFeatureEnabled ? <Route path={SUBTYPE_TAB_CUSTOM_VIEWS} element={<CustomViewsSettings />} /> : null}
         </Route>
         <Route
-          path="/templates/:templateId"
+          path={`/${SUBTYPE_TAB_TEMPLATES}/:templateId`}
           element={(
             <EEGuard redirect={`/dashboard/settings/customization/entity_types/${subTypeId}`}>
               <FintelTemplate />
             </EEGuard>
           )}
+        />
+        <Route
+          path={`/${SUBTYPE_TAB_CUSTOM_VIEWS}/:customViewId`}
+          element={<CustomViewEdition />}
         />
         <Route path="*" element={<ErrorNotFound />} />
       </Routes>
