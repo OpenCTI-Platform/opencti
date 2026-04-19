@@ -1,22 +1,24 @@
 import { Link } from 'react-router-dom';
-import Tab from '@mui/material/Tab';
+import Tab, { TabProps } from '@mui/material/Tab';
 import type { CustomViewDisplayMode } from './useCustomViewTabs';
 import { useCustomViews } from './useCustomViews';
 import { TabWithDropDownMenu, useDropDownMenuState } from '../../../components/TabWithDropDownMenu';
 import { useFormatter } from '../../../components/i18n';
 
-interface CustomViewTabProps {
+type CustomViewTabProps = {
   displayMode: CustomViewDisplayMode;
   customViews: ReturnType<typeof useCustomViews>['customViews'];
   dropDownMenuState: ReturnType<typeof useDropDownMenuState>;
   value: string;
-}
+} & TabProps<'a'> & TabProps<'div'>;
 
-const CustomViewTab = ({ customViews, displayMode, dropDownMenuState, value }: CustomViewTabProps) => {
+const CustomViewTab = ({ customViews, displayMode, dropDownMenuState, value, ...tabProps }: CustomViewTabProps) => {
   const { t_i18n } = useFormatter();
   if (displayMode === 'single') {
     return (
       <Tab
+        {...tabProps}
+        key="custom-view"
         component={Link}
         to={customViews[0].path}
         value={value}
@@ -37,6 +39,7 @@ const CustomViewTab = ({ customViews, displayMode, dropDownMenuState, value }: C
   if (displayMode === 'dropdown') {
     return (
       <TabWithDropDownMenu
+        {...tabProps}
         value={value}
         label={t_i18n('Custom view')}
         isOpen={dropDownMenuState.isOpen}
