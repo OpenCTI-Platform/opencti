@@ -8,6 +8,7 @@ import {
   findAllCustomViews,
   customViewImportWidgetConfiguration,
   exportCustomViewWidget,
+  duplicateCustomView,
 } from './customView-domain';
 
 const customViewResolver: Resolvers = {
@@ -42,6 +43,9 @@ const customViewResolver: Resolvers = {
     },
     customViewWidgetConfigurationImport: (_, { id, input }, context) => {
       return customViewImportWidgetConfiguration(context, context.user, id, input);
+    },
+    customViewDuplicate: (_parent, { input }, context) => {
+      return duplicateCustomView(context, context.user, input);
     },
   },
 };

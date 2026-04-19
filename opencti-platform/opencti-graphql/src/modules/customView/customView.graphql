@@ -46,6 +46,13 @@ input CustomViewImportWidgetInput {
     manifest: String
 }
 
+input CustomViewDuplicateInput {
+    name: String! @constraint(minLength: 2, format: "not-blank")
+    description: String
+    manifest: String
+    targetEntityType: String!
+}
+
 type Query {
     customViews(
         entityType: String
@@ -65,5 +72,6 @@ type Mutation {
     customViewAdd(input: CustomViewAddInput!): CustomView! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
     customViewEdit(id: ID!, input: [EditInput!]!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
     customViewWidgetConfigurationImport(id: ID!, input: CustomViewImportWidgetInput!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    customViewDuplicate(input: CustomViewDuplicateInput!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 

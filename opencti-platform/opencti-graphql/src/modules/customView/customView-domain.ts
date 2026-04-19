@@ -1,7 +1,7 @@
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView, type StoreEntityCustomView } from './customView-types';
-import { type QueryCustomViewsArgs, type CustomViewAddInput, type EditInput, type CustomViewImportWidgetInput } from '../../generated/graphql';
+import { type QueryCustomViewsArgs, type CustomViewAddInput, type CustomViewDuplicateInput, type EditInput, type CustomViewImportWidgetInput } from '../../generated/graphql';
 import slugify from 'slug';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -205,4 +205,41 @@ export const exportCustomViewWidget = async (
     throw FunctionalError('WIDGET_EXPORT_NOT_FOUND', { customView: customView.id, widget: widgetId });
   }
   return result.data;
+};
+
+export async function duplicateCustomView(
+  context: AuthContext,
+  user: AuthUser,
+  input: CustomViewDuplicateInput,
+) {
+  if (!isCustomViewsAvailableForEntityType(input.targetEntityType)) {
+    throw FunctionalError(
+      'Custom views cannot be created for given entity type', {
+        entityType: input.targetEntityType,
+      });
+  }
+  const customViewToCreate = {
+    description: input.description,
+    manifest: input.manifest,
+    name: input.name,
+    target_entity_type: input.targetEntityType,
+    slug: slugify(input.name),
+  };
+  const entity = await createEntity(
+    context,
+    user,
+    customViewToCreate,
+    ENTITY_TYPE_CUSTOM_VIEW,
+  );
+  const sanitizedElement = { ...input, manifest: undefined };
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
+    message: `creates custom view \`${entity.name}\` from custom-named duplication`,
+    context_data: { id: entity.id, entity_type: ENTITY_TYPE_CUSTOM_VIEW, input: sanitizedElement },
+  });
+  await notify(BUS_TOPICS[ENTITY_TYPE_CUSTOM_VIEW].ADDED_TOPIC, entity, user);
+  return entity;
 };
