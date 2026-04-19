@@ -17,7 +17,7 @@ const customViewDuplicationFragment = graphql`
     name
     description
     manifest
-    target_entity_type
+    targetEntityType
   }
 `;
 
@@ -35,7 +35,7 @@ const duplicateMutation = graphql`
   ) {
     customViewDuplicate(input: $input) {
       id
-      target_entity_type
+      targetEntityType
     }
   }
 `;
@@ -70,7 +70,7 @@ const CustomViewDuplicationDialog: FunctionComponent<
           name: sourceCustomView.name,
           description: sourceCustomView.description,
           manifest: sourceCustomView.manifest,
-          target_entity_type: sourceCustomView.target_entity_type,
+          targetEntityType: sourceCustomView.targetEntityType,
         },
       },
       onError: (error) => {
@@ -82,7 +82,7 @@ const CustomViewDuplicationDialog: FunctionComponent<
           <span>
             {t_i18n('The custom view has been duplicated. You can manage it')}{' '}
             <Link
-              to={`/dashboard/settings/customization/entity_types/${result.customViewDuplicate?.target_entity_type}/custom-views/${result.customViewDuplicate?.id}`}
+              to={`/dashboard/settings/customization/entity_types/${result.customViewDuplicate?.targetEntityType}/custom-views/${result.customViewDuplicate?.id}`}
             >
               {t_i18n('here')}
             </Link>

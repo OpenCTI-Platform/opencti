@@ -7,12 +7,13 @@ import ToggleButton from '@mui/material/ToggleButton';
 import { useFormatter } from '../../../../../components/i18n';
 import CustomViewDuplicationDialog from './CustomViewDuplicationDialog';
 import type { CustomViewKebabMenu_customView$key } from './__generated__/CustomViewKebabMenu_customView.graphql';
+import CustomViewDeletionDialog from './CustomViewDeletionDialog';
 
 const kebabMenuFragment = graphql`
   fragment CustomViewKebabMenu_customView on CustomView {
     id
     name
-    target_entity_type
+    targetEntityType
     ...CustomViewDuplicationDialog_Fragment
   }
 `;
@@ -42,6 +43,17 @@ const useDuplicate = (onDuplicate = noop) => {
   };
 };
 
+const useDelete = (onDelete = noop) => {
+  const [openDelete, setOpenDelete] = useState(false);
+  const handleCloseDeletion = () => setOpenDelete(false);
+  const handleOpenDeletion = () => {
+    onDelete();
+    setOpenDelete(true);
+  };
+
+  return { openDelete, handleOpenDeletion, handleCloseDeletion };
+};
+
 const CustomViewKebabMenu = ({ data }: CustomViewKebabMenuProps) => {
   const customView = useFragment(kebabMenuFragment, data);
   const { t_i18n } = useFormatter();
@@ -61,6 +73,7 @@ const CustomViewKebabMenu = ({ data }: CustomViewKebabMenuProps) => {
     handleDuplication,
     handleCloseDuplicate,
   } = useDuplicate(handleClose);
+  const { openDelete, handleOpenDeletion, handleCloseDeletion } = useDelete(handleClose);
   return (
     <div>
       <ToggleButton
@@ -97,7 +110,14 @@ const CustomViewKebabMenu = ({ data }: CustomViewKebabMenuProps) => {
         }}
       >
         <MenuItem onClick={handleDuplication}>{t_i18n('Duplicate the custom view')}</MenuItem>
+        <MenuItem onClick={handleOpenDeletion}>{t_i18n('Delete')}</MenuItem>
       </Menu>
+      <CustomViewDeletionDialog
+        id={customView.id}
+        isOpen={openDelete}
+        handleClose={handleCloseDeletion}
+        target_entity_type={customView.target_entity_type}
+      />
       <CustomViewDuplicationDialog
         data={customView}
         displayDuplicate={displayDuplicate}

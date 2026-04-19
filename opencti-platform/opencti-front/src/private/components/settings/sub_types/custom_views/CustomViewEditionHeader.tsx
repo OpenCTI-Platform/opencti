@@ -17,7 +17,7 @@ const headerFragment = graphql`
     id
     name
     description
-    target_entity_type
+    targetEntityType
     ...CustomViewKebabMenu_customView
   }
 `;
@@ -36,12 +36,12 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget }: Custo
   useEntityTranslation();
   const customView = useFragment(headerFragment, data);
   const customizationLink = '/dashboard/settings/customization/entity_types';
-  const subTypeLink = `${customizationLink}/${customView.target_entity_type}/custom-views`;
+  const subTypeLink = `${customizationLink}/${customView.targetEntityType}/custom-views`;
   const breadcrumb = [
     { label: t_i18n('Settings') },
     { label: t_i18n('Customization') },
     { label: t_i18n('Entity types'), link: customizationLink },
-    { label: translateEntityType(customView.target_entity_type), link: subTypeLink },
+    { label: translateEntityType(customView.targetEntityType), link: subTypeLink },
     { label: t_i18n('Custom Views') },
     { label: customView.name },
   ];
@@ -76,7 +76,7 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget }: Custo
       </Box>
 
       <CustomViewFormDrawer
-        entityType={customView.target_entity_type}
+        entityType={customView.targetEntityType}
         isOpen={isFormOpen}
         onClose={() => setFormOpen(false)}
         customView={customView}

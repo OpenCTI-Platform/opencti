@@ -1242,6 +1242,7 @@
   "Do you want to delete this CSV Feed?": "Вы хотите удалить этот CSV-канал?",
   "Do you want to delete this CSV ingester?": "Вы хотите удалить этот CSV-загрузчик?",
   "Do you want to delete this CSV mapper?": "Вы хотите удалить этот CSV-маппер?",
+  "Do you want to delete this custom view?": "Хотите ли вы удалить это пользовательское представление?",
   "Do you want to delete this dashboard?": "Вы хотите удалить этот дашборд?",
   "Do you want to delete this data component?": "Хотите ли вы удалить этот компонент данных?",
   "Do you want to delete this data source?": "Хотите ли вы удалить этот источник данных?",
