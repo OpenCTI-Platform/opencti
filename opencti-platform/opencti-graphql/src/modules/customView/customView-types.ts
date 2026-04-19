@@ -12,6 +12,7 @@ export interface BasicStoreEntityCustomView extends BasicStoreEntity {
   manifest: string;
   target_entity_type: string;
   enabled: boolean;
+  default: boolean;
 }
 
 export interface StoreEntityCustomView extends StoreEntity {
@@ -21,6 +22,7 @@ export interface StoreEntityCustomView extends StoreEntity {
   manifest: string;
   target_entity_type: string;
   enabled: boolean;
+  default: boolean;
 }
 // endregion
 
@@ -32,6 +34,7 @@ export interface StixCustomView extends StixObject {
   manifest: string;
   target_entity_type: string;
   enabled: boolean;
+  default: boolean;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

@@ -1,7 +1,7 @@
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView, type StoreEntityCustomView } from './customView-types';
-import { type QueryCustomViewsArgs, type CustomViewAddInput, type CustomViewDuplicateInput, type EditInput, type ImportWidgetInput } from '../../generated/graphql';
+import { FilterMode, FilterOperator, type QueryCustomViewsArgs, type CustomViewAddInput, type CustomViewDuplicateInput, type EditInput, type ImportWidgetInput } from '../../generated/graphql';
 import slugify from 'slug';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -157,6 +157,7 @@ export const editCustomView = async (
   input: EditInput[],
 ) => {
   const nameInput = input.find((i) => i.key === 'name');
+  const defaultFieldValue = input.find((i) => i.key === 'default')?.value?.[0];
   const { element } = await updateAttribute<StoreEntityCustomView>(
     context,
     user,
@@ -178,8 +179,48 @@ export const editCustomView = async (
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for custom view ${element.name}`,
     context_data: { id: element.id, entity_type: ENTITY_TYPE_CUSTOM_VIEW, input },
   });
-
   await notify(BUS_TOPICS[ENTITY_TYPE_CUSTOM_VIEW].EDIT_TOPIC, element, user);
+  // Unset the `default` fields for other CustomViews of the same
+  // target_entity_type to enforce uniqueness constraint
+  if (typeof defaultFieldValue === 'boolean' && defaultFieldValue) {
+    const previousDefaultCustomViews = await fullEntitiesList<BasicStoreEntityCustomView>(
+      context,
+      user,
+      [ENTITY_TYPE_CUSTOM_VIEW],
+      {
+        filters: {
+          filters: [{
+            key: ['target_entity_type'],
+            values: [element.target_entity_type],
+          }, {
+            key: ['default'],
+            values: [true],
+          }, {
+            key: ['id'],
+            values: [element.id],
+            operator: FilterOperator.NotEq,
+          }],
+          filterGroups: [],
+          mode: FilterMode.And,
+        },
+      },
+    );
+    // There should be only one but we never know as the constraint is not
+    // enforced at the DB level.
+    const promises = previousDefaultCustomViews.map((entity) => {
+      return updateAttribute<StoreEntityCustomView>(
+        context,
+        user,
+        entity.id,
+        ENTITY_TYPE_CUSTOM_VIEW,
+        [{
+          key: 'default',
+          value: [false],
+        }],
+      );
+    });
+    await Promise.all(promises);
+  }
   return element;
 };
 
@@ -239,6 +280,7 @@ export async function duplicateCustomView(
     created_at,
     updated_at: created_at,
     enabled: false,
+    default: false,
   };
   const entity = await createEntity(
     context,
