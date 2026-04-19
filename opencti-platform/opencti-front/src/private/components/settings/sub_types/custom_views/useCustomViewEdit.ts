@@ -10,6 +10,7 @@ const customViewEditMutation = graphql`
       name
       description
       path
+      enabled
     }
   }
 `;

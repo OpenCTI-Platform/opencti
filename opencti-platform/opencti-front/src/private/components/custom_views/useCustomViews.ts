@@ -77,7 +77,9 @@ export const useCustomViews = (entityType: string) => {
   if (!customViews) {
     return NO_CUSTOM_VIEWS;
   }
-  const nonNullCustomViews = customViews.filter((c) => !!c);
+  const nonNullCustomViews = customViews
+    .filter((c) => !!c)
+    .filter(({ enabled }) => enabled === true);
   const getCurrentCustomViewTab = matchPath(nonNullCustomViews);
   return { customViews: nonNullCustomViews, getCurrentCustomViewTab };
 };

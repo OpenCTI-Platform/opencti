@@ -2576,6 +2576,7 @@
   "Make this stream public and available to anyone": "このストリームを公開して誰でも利用できるようにする",
   "Make this taxii collection public and available to anyone": "このTaxiiコレクションを公開し、誰でも利用できるようにする",
   "Make this TAXII collection public and available to anyone": "このTAXIIコレクションを公開し、誰でも利用できるようにする。",
+  "Make this view visible to users": "このビューをユーザーに見せる",
   "Malicious": "悪性",
   "Maliciousness": "悪意がある",
   "Malware": "マルウェア",

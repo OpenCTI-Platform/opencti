@@ -18,6 +18,7 @@ const customViewFragment = graphql`
     id
     name
     description
+    enabled
   }
 `;
 
@@ -117,7 +118,7 @@ const CustomViewsSettingsDataTable = ({
 
   return (
     <DataTable
-      icon={() => <DrawOutlinedIcon color="secondary" />}
+      icon={(customView: CustomViewsSettingsDataTable_data$data) => <DrawOutlinedIcon color={customView.enabled ? 'secondary' : 'disabled'} />}
       initialValues={DEFAULT_SORT_CONFIG}
       dataColumns={DATA_COLUMNS}
       storageKey={storageKey}
