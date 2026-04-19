@@ -12,6 +12,7 @@ const convertCustomViewToStix = (instance: StoreEntityCustomView): StixCustomVie
     description: instance.description,
     manifest: instance.manifest,
     target_entity_type: instance.target_entity_type,
+    enabled: Boolean(instance.enabled),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

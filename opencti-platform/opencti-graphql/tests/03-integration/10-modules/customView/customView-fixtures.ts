@@ -8,6 +8,7 @@ type BasicStoreEntityCustomViewForTestsKeys = Extract<
   | 'slug'
   | 'manifest'
   | 'target_entity_type'
+  | 'enabled'
 >;
 
 type BasicStoreEntityCustomViewForTests = Record<
@@ -232,6 +233,7 @@ export const CUSTOM_VIEW_ENTITY_1: BasicStoreEntityCustomViewForTests = {
   slug: 'first-custom-view',
   manifest: DASHBOARD_MANIFEST,
   target_entity_type: 'Intrusion-Set',
+  enabled: true,
 };
 
 export const CUSTOM_VIEW_ENTITY_2: BasicStoreEntityCustomViewForTests = {
@@ -240,6 +242,7 @@ export const CUSTOM_VIEW_ENTITY_2: BasicStoreEntityCustomViewForTests = {
   slug: 'second-custom-view',
   manifest: DASHBOARD_MANIFEST,
   target_entity_type: 'Case-Rft',
+  enabled: false,
 };
 
 export const CUSTOM_VIEW_ENTITY_INVALID: BasicStoreEntityCustomViewForTests = {
@@ -248,4 +251,5 @@ export const CUSTOM_VIEW_ENTITY_INVALID: BasicStoreEntityCustomViewForTests = {
   slug: 'invalid-custom-view',
   manifest: DASHBOARD_MANIFEST,
   target_entity_type: 'Feedback', // Can't have custom views on Feedback entity_type
+  enabled: false,
 };
