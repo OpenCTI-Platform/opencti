@@ -44,6 +44,29 @@ const READ_ALL_CUSTOM_VIEWS_QUERY = gql`
           updated_at
           targetEntityType
           enabled
+          default
+        }
+      }
+    }
+  }
+`;
+
+const READ_DEFAULT_CUSTOM_VIEWS_QUERY = gql`
+  query DefaultCustomViewsTest($entityType: String) {
+    customViews(
+      entityType: $entityType
+      filters: {
+        mode: and
+        filters: [{
+          key: ["default"]
+          values: [true]
+        }]
+        filterGroups: []
+      }
+    ) {
+      edges {
+        node {
+          id
         }
       }
     }
@@ -61,6 +84,7 @@ const CREATE_CUSTOM_VIEW_QUERY = gql`
       updated_at
       created_at
       enabled
+      default
     }
   }
 `;
@@ -77,6 +101,7 @@ const EDIT_CUSTOM_VIEW_QUERY = gql`
       path
       manifest
       updated_at
+      default
     }
   }
 `;
@@ -114,6 +139,7 @@ const DUPLICATE_CUSTOM_VIEW_QUERY = gql`
       created_at
       updated_at
       enabled
+      default
     }
   }
 `;
@@ -187,6 +213,7 @@ describe('CustomView resolvers', () => {
           updated_at: expect.any(Date),
           targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
           enabled: true,
+          default: true,
         });
         expect(nodes).toContainEqual({
           id: customView2?.id,
@@ -197,6 +224,7 @@ describe('CustomView resolvers', () => {
           updated_at: expect.any(Date),
           targetEntityType: CUSTOM_VIEW_ENTITY_2.target_entity_type,
           enabled: false,
+          default: false,
         });
         // Ordered by name ascending as defined by the query
         // Doesn't contain custom view not part of the whitelist
@@ -269,6 +297,8 @@ describe('CustomView resolvers', () => {
             updated_at: expect.any(Date),
             // Defaults to false when not provided
             enabled: false,
+            // Defaults to false when not provided
+            default: false,
           });
         });
 
@@ -399,6 +429,8 @@ describe('CustomView resolvers', () => {
             updated_at: expect.any(Date),
             // Defaults to false when not provided
             enabled: false,
+            // Defaults to false when not provided
+            default: false,
           };
           expect(result.data.customViewDuplicate).toMatchObject(expectedResult);
           expect(result.data.customViewDuplicate.id).not.toBe(customView2?.id);
@@ -423,9 +455,83 @@ describe('CustomView resolvers', () => {
           // Not returned in list query
           const listResult = await queryAsAdminWithSuccess({
             query: READ_ALL_CUSTOM_VIEWS_QUERY,
+            variables: {
+              entityType: result.data.targetEntityType,
+            },
           });
           const nodeIds = listResult.data.customViews.edges.map((e: any) => e.node).map((node: any) => node.id);
           expect(nodeIds).not.toContain(customView2?.id);
+        });
+
+        it('should guarantee unique default custom view', async () => {
+          // 1. Guarantee unique default custom view upon creation
+          let result = await queryAsAdminWithSuccess({
+            query: CREATE_CUSTOM_VIEW_QUERY,
+            variables: {
+              input: {
+                name: 'The new default',
+                targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+                default: true,
+              },
+            },
+          });
+          const firstElementId = result.data.customViewAdd.id;
+          expect(result.data.customViewAdd.default).toBe(true);
+
+          let listResult = await queryAsAdminWithSuccess({
+            query: READ_DEFAULT_CUSTOM_VIEWS_QUERY,
+            variables: {
+              entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+            },
+          });
+          let nodes = listResult.data.customViews.edges.map((e: any) => e.node);
+          expect(nodes.length).toBe(1);
+          expect(nodes[0].id).toBe(result.data.customViewAdd.id);
+
+          // 2. Guarantee unique default custom view upon duplication
+          result = await queryAsAdminWithSuccess({
+            query: DUPLICATE_CUSTOM_VIEW_QUERY,
+            variables: {
+              input: {
+                name: 'The newer default',
+                targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+                default: true,
+              },
+            },
+          });
+          expect(result.data.customViewDuplicate.default).toBe(true);
+
+          listResult = await queryAsAdminWithSuccess({
+            query: READ_DEFAULT_CUSTOM_VIEWS_QUERY,
+            variables: {
+              entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+            },
+          });
+          nodes = listResult.data.customViews.edges.map((e: any) => e.node);
+          expect(nodes.length).toBe(1);
+          expect(nodes[0].id).toBe(result.data.customViewDuplicate.id);
+
+          result = await queryAsAdminWithSuccess({
+            query: EDIT_CUSTOM_VIEW_QUERY,
+            variables: {
+              id: firstElementId,
+              input: [{
+                key: 'default',
+                value: [true],
+              }],
+            },
+          });
+          expect(result.data.customViewEdit.default).toBe(true);
+
+          listResult = await queryAsAdminWithSuccess({
+            query: READ_DEFAULT_CUSTOM_VIEWS_QUERY,
+            variables: {
+              entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+            },
+          });
+          nodes = listResult.data.customViews.edges.map((e: any) => e.node);
+          expect(nodes.length).toBe(1);
+          expect(nodes[0].id).toBe(firstElementId);
         });
       });
 
