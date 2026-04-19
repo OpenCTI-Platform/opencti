@@ -1242,6 +1242,7 @@
   "Do you want to delete this CSV Feed?": "Voulez-vous supprimer ce flux CSV ?",
   "Do you want to delete this CSV ingester?": "Voulez-vous supprimer cet ingéreur CSV ?",
   "Do you want to delete this CSV mapper?": "Voulez-vous supprimer ce mappeur CSV ?",
+  "Do you want to delete this custom view?": "Voulez-vous supprimer cette vue personnalisée ?",
   "Do you want to delete this dashboard?": "Voulez-vous supprimer ce tableau de bord ?",
   "Do you want to delete this data component?": "Souhaitez-vous supprimer ce composant de données ?",
   "Do you want to delete this data source?": "Souhaitez-vous supprimer cette source de données ?",
