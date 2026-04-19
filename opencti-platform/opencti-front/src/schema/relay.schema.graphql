@@ -10700,6 +10700,7 @@ type Mutation {
   customViewEdit(id: ID!, input: [EditInput!]!): CustomView
   customViewWidgetConfigurationImport(id: ID!, input: CustomViewImportWidgetInput!): CustomView
   customViewDuplicate(input: CustomViewDuplicateInput!): CustomView
+  customViewDelete(id: ID!): ID!
   taxiiCollectionAdd(input: TaxiiCollectionAddInput!): TaxiiCollection
   taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations
   feedAdd(input: FeedAddInput!): Feed

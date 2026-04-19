@@ -73,5 +73,6 @@ type Mutation {
     customViewEdit(id: ID!, input: [EditInput!]!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
     customViewWidgetConfigurationImport(id: ID!, input: CustomViewImportWidgetInput!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
     customViewDuplicate(input: CustomViewDuplicateInput!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION])
+    customViewDelete(id: ID!): ID! @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 

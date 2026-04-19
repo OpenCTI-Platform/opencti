@@ -20,7 +20,7 @@ import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../schema/stixCyberObserva
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { FunctionalError } from '../../config/errors';
 import { exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
-import { createInternalObject, editInternalObject } from '../../domain/internalObject';
+import { createInternalObject, deleteInternalObject, editInternalObject } from '../../domain/internalObject';
 
 /**
  * Exclusion list: entity types not capable of
@@ -225,21 +225,37 @@ export async function duplicateCustomView(
     target_entity_type: input.targetEntityType,
     slug: slugify(input.name),
   };
-  const entity = await createEntity(
+  return createInternalObject<StoreEntityCustomView>(
     context,
     user,
     customViewToCreate,
     ENTITY_TYPE_CUSTOM_VIEW,
+    {
+      auditLogEnabled: true,
+      auditLogContextSanitizer: (element) => ({
+        ...element,
+        manifest: '[sanitized]',
+      }),
+    },
   );
-  const sanitizedElement = { ...input, manifest: undefined };
-  await publishUserAction({
+};
+
+export const deleteCustomView = async (
+  context: AuthContext,
+  user: AuthUser,
+  customViewId: string,
+) => {
+  return deleteInternalObject<StoreEntityCustomView>(
+    context,
     user,
-    event_type: 'mutation',
-    event_scope: 'create',
-    event_access: 'extended',
-    message: `creates custom view \`${entity.name}\` from custom-named duplication`,
-    context_data: { id: entity.id, entity_type: ENTITY_TYPE_CUSTOM_VIEW, input: sanitizedElement },
-  });
-  await notify(BUS_TOPICS[ENTITY_TYPE_CUSTOM_VIEW].ADDED_TOPIC, entity, user);
-  return entity;
+    customViewId,
+    ENTITY_TYPE_CUSTOM_VIEW,
+    {
+      auditLogEnabled: true,
+      auditLogContextSanitizer: (element) => ({
+        ...element,
+        manifest: '[sanitized]',
+      }),
+    },
+  );
 };
