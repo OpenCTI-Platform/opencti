@@ -1,7 +1,7 @@
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView } from './customView-types';
-import { type QueryCustomViewsArgs, type CustomViewAddInput } from '../../generated/graphql';
+import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView, type StoreEntityCustomView } from './customView-types';
+import { type QueryCustomViewsArgs, type CustomViewAddInput, type EditInput, type CustomViewImportWidgetInput } from '../../generated/graphql';
 import slugify from 'slug';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -18,8 +18,12 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRA
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../schema/stixCyberObservable';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { createEntity } from '../../database/middleware';
+import { createEntity, updateAttribute } from '../../database/middleware';
 import { FunctionalError } from '../../config/errors';
+import { publishUserAction } from '../../listener/UserActionListener';
+import { notify } from '../../database/redis';
+import { BUS_TOPICS } from '../../config/conf';
+import { exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
 
 /**
  * Exclusion list: entity types not capable of
@@ -65,9 +69,7 @@ export const computeCustomViewPath = ({ slug, id }: BasicStoreEntityCustomView) 
   return `${slug}-${id.replaceAll('-', '')}`;
 };
 
-// View Use Cases (all authed users)
-
-export const getCustomViewByIdForDisplay = async (
+export const findCustomViewById = async (
   context: AuthContext,
   user: AuthUser,
   customViewId: string,
@@ -101,8 +103,6 @@ export const findAllCustomViews = async (
   );
 };
 
-// Settings Use Cases (admin users)
-
 export const getCustomViewsSettings = (entityType: string) => {
   return { canEntityTypeHaveCustomViews: isCustomViewsAvailableForEntityType(entityType) };
 };
@@ -131,4 +131,92 @@ export const addCustomView = async (
     customViewToCreate,
     ENTITY_TYPE_CUSTOM_VIEW,
   );
+};
+
+export const editCustomView = async (
+  context: AuthContext,
+  user: AuthUser,
+  customViewId: string,
+  input: EditInput[],
+) => {
+  const nameInput = input.find((i) => i.key === 'name');
+  const { element } = await updateAttribute<StoreEntityCustomView>(
+    context,
+    user,
+    customViewId,
+    ENTITY_TYPE_CUSTOM_VIEW,
+    [
+      ...input,
+      ...(nameInput ? [{
+        key: 'slug',
+        value: [slugify(nameInput.value[0])],
+      }] : []),
+    ],
+  );
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for custom view ${element.name}`,
+    context_data: { id: element.id, entity_type: ENTITY_TYPE_CUSTOM_VIEW, input },
+  });
+
+  await notify(BUS_TOPICS[ENTITY_TYPE_CUSTOM_VIEW].EDIT_TOPIC, element, user);
+  return element;
+};
+
+export const customViewImportWidgetConfiguration = async (
+  context: AuthContext,
+  user: AuthUser,
+  customViewId: string,
+  input: CustomViewImportWidgetInput,
+) => {
+  const { updatedManifest, importedWidgetId } = await importDashboardWidgetConfiguration(
+    context,
+    user,
+    input.file,
+    input.manifest,
+  );
+  const { element } = await updateAttribute<StoreEntityCustomView>(
+    context,
+    user,
+    customViewId,
+    ENTITY_TYPE_CUSTOM_VIEW,
+    [{ key: 'manifest', value: [updatedManifest] }],
+  );
+
+  // Because manifest can be huge we remove this data from activity logs.
+  const sanitizedCustomView = {
+    ...element,
+    manifest: undefined,
+  };
+
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
+    message: `import widget (id : ${importedWidgetId}) in custom view (id : ${customViewId})`,
+    context_data: {
+      id: customViewId,
+      entity_type: ENTITY_TYPE_CUSTOM_VIEW,
+      input: sanitizedCustomView,
+    },
+  });
+  await notify(BUS_TOPICS[ENTITY_TYPE_CUSTOM_VIEW].EDIT_TOPIC, element, user);
+  return element;
+};
+
+export const exportCustomViewWidget = async (
+  context: AuthContext,
+  user: AuthUser,
+  customView: BasicStoreEntityCustomView,
+  widgetId: string,
+) => {
+  const result = await exportDashboardWidget(context, user, customView.manifest, widgetId);
+  if (!result.success) {
+    throw FunctionalError('WIDGET_EXPORT_NOT_FOUND', { customView: customView.id, widget: widgetId });
+  }
+  return result.data;
 };
