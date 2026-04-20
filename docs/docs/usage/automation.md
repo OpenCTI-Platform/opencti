@@ -342,6 +342,10 @@ By default, removal is applied to the entity triggering the playbook. You can ch
 
 **Specificities of the component**
 
+**Operations filtering:**
+
+You have the possibility to add filters at the component level. The elements in the bundle will be filtered so only matching elements will be concerned by the operations of the component. This filtering has no impact on the output of the component, the bundle elements remain the same, they are only filtered to determine if the operations should be applied or not.
+
 **This component supports dynamic variables**
 
 - Dynamic from the main entity triggering the playbook: Will remove the authorized members on the corresponding user of the field you choose, based on the triggering entity only. you can choose among:
