@@ -1,4 +1,5 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
+import mime from 'mime-types';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { decryptSynchronizerCredential } from '../domain/connector-sync-crypto';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -17,11 +18,37 @@ import { createSyncHttpUri, httpBase } from '../domain/connector-utils';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { storeSyncConsumerMetrics, clearSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { createParser } from 'eventsource-parser';
+<<<<<<< HEAD
 import { InterruptibleTimer } from './interruptible-timer';
+=======
+import { ALLOWED_EMBEDDED_IMAGE_MIME_TYPES, extractMarkdownImageReferences, rewriteMarkdownImageUrls } from '../database/markdown-embedded-images';
+>>>>>>> a93f91751c ([backend] export embedded storage link MD to data base64 images)
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
 const WAIT_TIME_ACTION = 2000;
+const MARKDOWN_FIELD_KEYS = ['description', 'x_opencti_description', 'content'];
+
+const hasEmbeddedStorageRef = (markdown) => {
+  return markdown.includes('/storage/get/embedded/') || markdown.includes('/storage/view/embedded');
+};
+
+const extractMimeTypeFromHeader = (response) => {
+  const contentTypeHeader = response?.headers?.['content-type'];
+  if (!contentTypeHeader || typeof contentTypeHeader !== 'string') {
+    return null;
+  }
+  return contentTypeHeader.split(';')[0].trim().toLowerCase();
+};
+
+const buildSyncStorageFetchUri = (syncUri, storageUri) => {
+  const storageIndex = storageUri.indexOf('storage/get');
+  if (storageIndex >= 0) {
+    return `${httpBase(syncUri)}${storageUri.substring(storageIndex)}`;
+  }
+  const normalized = storageUri.startsWith('/') ? storageUri.substring(1) : storageUri;
+  return `${httpBase(syncUri)}${normalized}`;
+};
 
 const waitLoopTimer = new InterruptibleTimer();
 
@@ -69,12 +96,99 @@ const syncManagerInstance = (syncId) => {
       const entityFile = entityFiles[index];
       const { uri: fileUri } = entityFile;
       try {
-        const response = await httpClient.get(`${httpBase(uri)}${fileUri.substring(fileUri.indexOf('storage/get'))}`);
+        const response = await httpClient.get(buildSyncStorageFetchUri(uri, fileUri));
         entityFile.data = Buffer.from(response.data, 'utf-8').toString('base64');
       } catch (e) {
         logApp.warn('[OPENCTI] Sync: Error when trying to get file from storage. Skipping file.', { fileUri, message: e.message });
       }
     }
+
+    const allowedMimeTypes = new Set(ALLOWED_EMBEDDED_IMAGE_MIME_TYPES);
+    const resolveEmbeddedImagesInMarkdownDescription = async (markdown) => {
+      const embeddedReferences = extractMarkdownImageReferences(markdown)
+        .filter((reference) => reference.isEmbeddedStorage);
+      if (embeddedReferences.length === 0) {
+        return markdown;
+      }
+
+      const uriByReferenceUrl = new Map();
+      const uniqueReferenceUrls = [...new Set(embeddedReferences.map((reference) => reference.url))];
+
+      for (let i = 0; i < uniqueReferenceUrls.length; i += 1) {
+        const embeddedStorageUri = uniqueReferenceUrls[i];
+        try {
+          const response = await httpClient.get(buildSyncStorageFetchUri(uri, embeddedStorageUri));
+          const headerMimeType = extractMimeTypeFromHeader(response);
+          const pathMimeType = mime.lookup(embeddedStorageUri);
+          const detectedMime = headerMimeType || (pathMimeType || null);
+
+          if (!detectedMime || !allowedMimeTypes.has(detectedMime)) {
+            logApp.warn('[OPENCTI] Sync: Unsupported embedded markdown image mime type, keeping original URI.', {
+              embeddedStorageUri,
+              mimeType: detectedMime,
+            });
+            uriByReferenceUrl.set(embeddedStorageUri, null);
+            continue;
+          }
+
+          const base64Data = Buffer.from(response.data, 'utf-8').toString('base64');
+          uriByReferenceUrl.set(embeddedStorageUri, `data:${detectedMime};base64,${base64Data}`);
+        } catch (e) {
+          logApp.warn('[OPENCTI] Sync: Error while resolving embedded markdown image, keeping original URI.', {
+            embeddedStorageUri,
+            message: e.message,
+          });
+          uriByReferenceUrl.set(embeddedStorageUri, null);
+        }
+      }
+
+      const { markdown: rewrittenMarkdown } = rewriteMarkdownImageUrls(markdown, (reference) => {
+        return uriByReferenceUrl.get(reference.url) ?? undefined;
+      });
+
+      return rewrittenMarkdown;
+    };
+
+    const resolveEmbeddedImagesInDescriptionFields = async (payload) => {
+      if (!payload || typeof payload !== 'object') {
+        return;
+      }
+
+      if (Array.isArray(payload)) {
+        for (let i = 0; i < payload.length; i += 1) {
+          await resolveEmbeddedImagesInDescriptionFields(payload[i]);
+        }
+        return;
+      }
+
+      for (let i = 0; i < MARKDOWN_FIELD_KEYS.length; i += 1) {
+        const key = MARKDOWN_FIELD_KEYS[i];
+        const value = payload[key];
+        if (typeof value === 'string' && hasEmbeddedStorageRef(value)) {
+          payload[key] = await resolveEmbeddedImagesInMarkdownDescription(value);
+        }
+      }
+
+      const descriptions = payload.descriptions;
+      if (Array.isArray(descriptions)) {
+        for (let i = 0; i < descriptions.length; i += 1) {
+          if (typeof descriptions[i] === 'string' && hasEmbeddedStorageRef(descriptions[i])) {
+            descriptions[i] = await resolveEmbeddedImagesInMarkdownDescription(descriptions[i]);
+          }
+        }
+      }
+
+      const entries = Object.entries(payload);
+      for (let i = 0; i < entries.length; i += 1) {
+        const [key, value] = entries[i];
+        if (MARKDOWN_FIELD_KEYS.includes(key) || key === 'descriptions') {
+          continue;
+        }
+        await resolveEmbeddedImagesInDescriptionFields(value);
+      }
+    };
+
+    await resolveEmbeddedImagesInDescriptionFields(processingData);
     return { data: processingData, previous_standard: idOperation?.value };
   };
   const saveCurrentState = async (context, type, eventId) => {

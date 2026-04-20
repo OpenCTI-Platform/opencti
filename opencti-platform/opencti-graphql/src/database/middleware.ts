@@ -2,6 +2,7 @@ import moment from 'moment';
 import * as R from 'ramda';
 import DataLoader from 'dataloader';
 import Bluebird, { Promise as BluePromise } from 'bluebird';
+import mime from 'mime-types';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { compareUnsorted } from 'js-deep-equals';
@@ -227,12 +228,19 @@ import {
 } from '../utils/confidence-level';
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
 import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization } from './data-consistency';
-import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
+import { deleteAllObjectFiles, deleteFile, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
 import { getFileContent } from './raw-file-storage';
 import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import {
+  ALLOWED_EMBEDDED_IMAGE_MIME_TYPES,
+  extractMarkdownImageReferences,
+  findRemovedEmbeddedStoragePathsFromMarkdownFields,
+  rewriteMarkdownImageUrls,
+} from './markdown-embedded-images';
+import { rewriteEmbeddedDataUriImagesInDescriptions, rewriteEmbeddedDataUriImagesInUpdateInputs } from './middlewareEmbeddedImages';
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccessUtils';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { type BasicStoreEntityEntitySetting, ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
@@ -622,6 +630,93 @@ const convertStoreToStixWithResolvedFiles = async (
   instance: StoreCommon,
   version = Version.Stix_2_1,
 ): Promise<S.StixObject | S2.StixObject> => {
+  const allowedMimeTypes = new Set(ALLOWED_EMBEDDED_IMAGE_MIME_TYPES);
+  const resolveEmbeddedImagesInMarkdownDescription = async (markdown: string): Promise<string> => {
+    const embeddedReferences = extractMarkdownImageReferences(markdown)
+      .filter((reference) => reference.isEmbeddedStorage && reference.embeddedStoragePath);
+
+    if (embeddedReferences.length === 0) {
+      return markdown;
+    }
+
+    const uriByStoragePath = new Map<string, string | null>();
+    const uniqueStoragePaths = R.uniq(embeddedReferences.map((reference) => reference.embeddedStoragePath as string));
+
+    for (let i = 0; i < uniqueStoragePaths.length; i += 1) {
+      const storagePath = uniqueStoragePaths[i];
+      try {
+        const detectedMime = mime.lookup(storagePath);
+        if (!detectedMime || !allowedMimeTypes.has(detectedMime as typeof ALLOWED_EMBEDDED_IMAGE_MIME_TYPES[number])) {
+          logApp.warn('[OPENCTI] Unsupported embedded markdown image mime type during STIX export, keeping original URI', {
+            storagePath,
+            mimeType: detectedMime || null,
+          });
+          uriByStoragePath.set(storagePath, null);
+          continue;
+        }
+        const base64Data = await getFileContent(storagePath, 'base64');
+        uriByStoragePath.set(storagePath, `data:${detectedMime};base64,${base64Data}`);
+      } catch (error) {
+        logApp.warn('[OPENCTI] Unable to resolve embedded markdown image during STIX export, keeping original URI', {
+          storagePath,
+          error,
+        });
+        uriByStoragePath.set(storagePath, null);
+      }
+    }
+
+    const { markdown: rewrittenMarkdown } = rewriteMarkdownImageUrls(markdown, (reference) => {
+      if (!reference.embeddedStoragePath) {
+        return undefined;
+      }
+      const resolvedUri = uriByStoragePath.get(reference.embeddedStoragePath);
+      return resolvedUri ?? undefined;
+    });
+
+    return rewrittenMarkdown;
+  };
+
+  const resolveEmbeddedImagesInDescriptionFields = async (payload: unknown): Promise<void> => {
+    if (!payload || typeof payload !== 'object') {
+      return;
+    }
+
+    if (Array.isArray(payload)) {
+      for (let i = 0; i < payload.length; i += 1) {
+        await resolveEmbeddedImagesInDescriptionFields(payload[i]);
+      }
+      return;
+    }
+
+    const markdownFieldCandidates = ['description', 'x_opencti_description', 'content'];
+    const hasEmbeddedStorageRef = (s: string) => s.includes('/storage/get/embedded/') || s.includes('/storage/view/embedded');
+    for (let i = 0; i < markdownFieldCandidates.length; i += 1) {
+      const key = markdownFieldCandidates[i];
+      const value = (payload as Record<string, unknown>)[key];
+      if (typeof value === 'string' && hasEmbeddedStorageRef(value)) {
+        (payload as Record<string, unknown>)[key] = await resolveEmbeddedImagesInMarkdownDescription(value);
+      }
+    }
+
+    const descriptions = (payload as Record<string, unknown>).descriptions;
+    if (Array.isArray(descriptions)) {
+      for (let i = 0; i < descriptions.length; i += 1) {
+        if (typeof descriptions[i] === 'string' && hasEmbeddedStorageRef(descriptions[i])) {
+          descriptions[i] = await resolveEmbeddedImagesInMarkdownDescription(descriptions[i]);
+        }
+      }
+    }
+
+    const entries = Object.entries(payload as Record<string, unknown>);
+    for (let i = 0; i < entries.length; i += 1) {
+      const [key, value] = entries[i];
+      if (markdownFieldCandidates.includes(key) || key === 'descriptions') {
+        continue;
+      }
+      await resolveEmbeddedImagesInDescriptionFields(value);
+    }
+  };
+
   const instanceInStix = convertStoreToStix(instance, version);
   const nonResolvedFiles = ('x_opencti_files' in instanceInStix && instanceInStix.x_opencti_files) || ('extensions' in instanceInStix && instanceInStix.extensions[STIX_EXT_OCTI].files);
   if (nonResolvedFiles) {
@@ -633,8 +728,29 @@ const convertStoreToStixWithResolvedFiles = async (
       currentFile.no_trigger_import = true;
     }
   }
+  await resolveEmbeddedImagesInDescriptionFields(instanceInStix);
   return instanceInStix;
 };
+
+const extractMarkingIds = (entity: Record<string, any>): string[] => {
+  const candidates = entity.objectMarking ?? entity[INPUT_MARKINGS] ?? [];
+  if (!Array.isArray(candidates)) {
+    return [];
+  }
+
+  return candidates
+    .map((candidate) => {
+      if (typeof candidate === 'string') {
+        return candidate;
+      }
+      if (candidate?.internal_id) {
+        return candidate.internal_id;
+      }
+      return candidate?.id;
+    })
+    .filter((id) => isNotEmptyField(id));
+};
+
 export const stixLoadByIds = async (
   context: AuthContext,
   user: AuthUser,
@@ -2416,6 +2532,14 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   if (!validateUserAccessOperation(user, initial, accessOperation, draft)) {
     throw ForbiddenAccess();
   }
+  if (!draftId) {
+    await rewriteEmbeddedDataUriImagesInUpdateInputs(context, user, updates, {
+      entityType: initial.entity_type,
+      entityId: initial.internal_id,
+      entity: initial,
+      fileMarkings: extractMarkingIds(initial as unknown as Record<string, any>),
+    });
+  }
   // Split attributes and meta
   // Supports inputs meta or stix meta
   const metaKeys = [
@@ -2424,7 +2548,13 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   ];
   const meta = updates.filter((e) => metaKeys.includes(e.key));
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
-  const updated = mergeInstanceWithUpdateInputs(initial, inputs);
+  const updated = mergeInstanceWithUpdateInputs(initial, updates);
+  const removedEmbeddedStoragePaths = draftId
+    ? []
+    : findRemovedEmbeddedStoragePathsFromMarkdownFields(initial, updated, {
+        entityType: initial.entity_type,
+        entityId: initial.internal_id,
+      });
   const keys = R.map((t) => t.key, attributes);
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
     const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
@@ -2699,6 +2829,21 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
       const objectsRefRelationships = relationsToCreate.filter((r) => r.relationship_type === RELATION_OBJECT);
       if (objectsRefRelationships.length > 0) {
         await createContainerSharingTask(context, ACTION_TYPE_SHARE, initial, objectsRefRelationships);
+      }
+    }
+    if (updatedInputs.length > 0 && removedEmbeddedStoragePaths.length > 0) {
+      for (let i = 0; i < removedEmbeddedStoragePaths.length; i += 1) {
+        const storagePath = removedEmbeddedStoragePaths[i];
+        try {
+          await deleteFile(context, user, storagePath, { forceDelete: true });
+        } catch (err) {
+          logApp.warn('[OPENCTI] Unable to cleanup removed markdown embedded image file', {
+            storagePath,
+            entityId: initial.internal_id,
+            entityType: initial.entity_type,
+            cause: err,
+          });
+        }
       }
     }
     // Post-operation to update the individual linked to a user
@@ -3125,6 +3270,15 @@ const upsertElement = async (
     if (basePatch.decay_exclusion_applied_rule) {
       delete basePatch.decay_exclusion_applied_rule;
     }
+  }
+
+  if (!getDraftContext(context, user)) {
+    await rewriteEmbeddedDataUriImagesInDescriptions(context, user, basePatch, {
+      entityType: type,
+      entityId: resolvedElement.internal_id,
+      entity: resolvedElement,
+      fileMarkings: extractMarkingIds(resolvedElement),
+    });
   }
 
   const confidenceForUpsert = controlUpsertInputWithUserConfidence(user, basePatch as ObjectWithConfidence, resolvedElement);
@@ -3735,6 +3889,14 @@ const internalCreateEntityRaw = async (
     }
     // Create the object
     const dataEntity = await buildEntityData(context, user, resolvedInput, type, opts) as { element: Record<string, any>; relations: Record<string, any>[] };
+    if (!getDraftContext(context, user)) {
+      await rewriteEmbeddedDataUriImagesInDescriptions(context, user, dataEntity.element, {
+        entityType: type,
+        entityId: dataEntity.element[ID_INTERNAL],
+        entity: dataEntity.element as BasicStoreBase,
+        fileMarkings: extractMarkingIds(resolvedInput),
+      });
+    }
     // Handle multiple files upload (new plural form)
     const filesToUpload = [];
     if (!isEmptyField(resolvedInput.files) && Array.isArray(resolvedInput.files)) {
