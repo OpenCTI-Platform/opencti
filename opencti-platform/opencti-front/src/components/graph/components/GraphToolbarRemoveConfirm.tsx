@@ -118,12 +118,6 @@ const GraphToolbarRemoveConfirm = ({
     const nodesToRemove: string[] = [];
     const linksToRemove: string[] = [];
 
-    const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
-    // Containers checked when cascade delete.
-    const checkedContainerTypes = containerTypes.filter((type) => {
-      return !ignoredStixCoreObjectsTypes.includes(type);
-    });
-
     const allSelection = [...selectedNodes, ...selectedLinks];
     const selectedNodeIds = selectedNodes.map((n) => n.id);
     const associatedLinks = (graphData?.links ?? []).filter(({ source_id, target_id }) => {
@@ -141,7 +135,7 @@ const GraphToolbarRemoveConfirm = ({
 
       const data = (await fetchQuery(
         knowledgeGraphQueryCheckObjectQuery,
-        { id, entityTypes: checkedContainerTypes },
+        { id, entityTypes: containerTypes },
       ).toPromise()) as KnowledgeGraphQueryCheckObjectQuery$data;
       if (
         andDelete

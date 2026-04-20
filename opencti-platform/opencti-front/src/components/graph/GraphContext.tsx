@@ -150,8 +150,7 @@ export const GraphProvider = ({
       })
       .sort((a, b) => a.label.localeCompare(b.label))
       .map((node) => node.entity_type)
-      .filter((v, i, a) => a.indexOf(v) === i)
-      .filter((v) => !['Note', 'Opinion'].includes(v));
+      .filter((v, i, a) => a.indexOf(v) === i);
   }, [graphData?.nodes]);
 
   // Dynamically compute all marking definitions in graphData.

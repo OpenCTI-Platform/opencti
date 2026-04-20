@@ -58,12 +58,12 @@ const useGraphParser = () => {
   const getRelationshipName = (data: ObjectToParse, forNode = false) => {
     const key = forNode ? data.relationship_type : data.entity_type;
     const relTypeStr = `<strong>${t_i18n(`relationship_${key}`)}</strong>`;
-    const createdStr = `${t_i18n('Created the')} ${dateFormat(data.created)}`;
+    const createdStr = `${t_i18n('Created the')} ${dateFormat(data.created) ?? '-'}`;
     const start = data.start_time || data.first_seen;
     const startStr = `${t_i18n('Start time')} ${isNone(start) ? EMPTY_VALUE : dateFormat(start)}`;
     const end = data.stop_time || data.last_seen;
     const endStr = `${t_i18n('Stop time')} ${isNone(end) ? EMPTY_VALUE : dateFormat(end)}`;
-    return `${relTypeStr}\n${createdStr}\n${startStr}\n${endStr}`;
+    return `${relTypeStr}<br/>${createdStr}<br/>${startStr}<br/>${endStr}`;
   };
 
   const getMarkings = (data: ObjectToParse) => {
@@ -198,7 +198,7 @@ const useGraphParser = () => {
       relationship_type: data.relationship_type,
       label: t_i18n(`relationship_${data.entity_type}`),
       markedBy: getMarkings(data),
-      name: sanitize(getRelationshipName(data), true),
+      name: sanitize(getRelationshipName(data), false),
       createdBy: getCreatedBy(data),
       defaultDate: jsDate(defaultDate(data)),
       isNestedInferred: getIsNestedInferred(data),
@@ -210,8 +210,7 @@ const useGraphParser = () => {
   };
 
   const buildGraphData = (objects: ObjectToParse[], graphPositions: OctiGraphPositions) => {
-    const uniqObjects = R.uniqBy(R.prop('id'), objects)
-      .filter((object) => !['Note', 'Opinion'].includes(object.entity_type));
+    const uniqObjects = R.uniqBy(R.prop('id'), objects);
     const uniqIds = uniqObjects.map((o) => o.id);
     const relationshipsIdsInNestedRelationship = objects.flatMap((o) => {
       if (o.from && o.to && (o.from.relationship_type || o.to.relationship_type)) {
