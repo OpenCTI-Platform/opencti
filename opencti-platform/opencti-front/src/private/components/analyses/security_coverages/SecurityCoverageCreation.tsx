@@ -32,6 +32,7 @@ import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../..
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import { insertNode } from '../../../../utils/store';
 import { CoverageInformationFieldAdd } from '../../common/form/CoverageInformationField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -39,7 +40,10 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SecurityCoverageEntityLine from './SecurityCoverageEntityLine';
 import { useNavigate } from 'react-router-dom';
-import { SecurityCoverageCreationMutation } from '@components/analyses/security_coverages/__generated__/SecurityCoverageCreationMutation.graphql';
+import {
+  SecurityCoverageCreationMutation,
+  SecurityCoverageCreationMutation$data,
+} from '@components/analyses/security_coverages/__generated__/SecurityCoverageCreationMutation.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -110,6 +114,14 @@ const securityCoverageMutation = graphql`
         coverage_score
       }
       ...SecurityCoveragesLine_node
+    }
+  }
+`;
+
+const securityCoverageCreationDescriptionPatchMutation = graphql`
+  mutation SecurityCoverageCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    securityCoverageFieldPatch(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -415,6 +427,29 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     undefined,
     { successMessage: `${t_i18n('entity_Security-Coverage')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(securityCoverageCreationDescriptionPatchMutation);
+  const patchSecurityCoverageDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    SecurityCoverageCreationMutation$data,
+    SecurityCoverageFormValues
+  >({
+    getCreatedId: (response) => response?.securityCoverageAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchSecurityCoverageDescription,
+  });
+
   const onSubmit: FormikConfig<SecurityCoverageFormValues>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
@@ -459,12 +494,17 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
         setSubmitting(false);
       },
       onCompleted: (response) => {
-        setSubmitting(false);
-        resetForm();
-        handleClose();
-        if (response.securityCoverageAdd && shouldRedirect) {
-          navigate(`/dashboard/analyses/security_coverages/${response.securityCoverageAdd.id}`);
-        }
+        runAfterStoringTempImagesForEntity(response, values, {
+          onSuccess: () => {
+            setSubmitting(false);
+            resetForm();
+            handleClose();
+            if (response.securityCoverageAdd && shouldRedirect) {
+              navigate(`/dashboard/analyses/security_coverages/${response.securityCoverageAdd.id}`);
+            }
+          },
+          onError: () => setSubmitting(false),
+        });
       },
     });
   };
@@ -694,6 +734,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
               multiline={true}
               rows={4}
               style={fieldSpacingContainerStyle}
+              {...getTempImageFieldProps(values.objectMarking.map((v) => v.value))}
             />
             <ConfidenceField
               containerStyle={fieldSpacingContainerStyle}

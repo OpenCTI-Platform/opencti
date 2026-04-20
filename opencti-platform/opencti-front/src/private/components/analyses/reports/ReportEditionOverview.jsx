@@ -292,6 +292,7 @@ const ReportEditionOverviewComponent = (props) => {
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             askAi={true}
+            uploadEntityId={report.id}
           />
           <ObjectAssigneeField
             name="objectAssignee"

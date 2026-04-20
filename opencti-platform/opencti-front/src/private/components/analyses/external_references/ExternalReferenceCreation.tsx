@@ -16,6 +16,7 @@ import FormButtonContainer from '../../../../components/common/form/FormButtonCo
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import { ExternalReferencesLinesPaginationQuery$variables } from '../__generated__/ExternalReferencesLinesPaginationQuery.graphql';
@@ -43,6 +44,16 @@ const externalReferenceCreationMutation = graphql`
       creators {
           id
           name
+      }
+    }
+  }
+`;
+
+const externalReferenceCreationDescriptionPatchMutation = graphql`
+  mutation ExternalReferenceCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    externalReferenceEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
       }
     }
   }
@@ -100,6 +111,29 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
     undefined,
     { successMessage: `${t_i18n('entity_External-Reference')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(externalReferenceCreationDescriptionPatchMutation);
+  const patchExternalReferenceDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    ExternalReferenceCreationMutation$data,
+    ExternalReferenceAddInput
+  >({
+    getCreatedId: (response) => response?.externalReferenceAdd?.id,
+    getInitialValue: (values) => values.description ?? '',
+    patchField: patchExternalReferenceDescription,
+  });
+
   const onSubmit: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
@@ -125,12 +159,17 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
         setSubmitting(false);
       },
       onCompleted: (response: ExternalReferenceCreationMutation$data) => {
-        setSubmitting(false);
-        resetForm();
-        handleClose();
-        if (onCreate) {
-          onCreate(response.externalReferenceAdd, true);
-        }
+        runAfterStoringTempImagesForEntity(response, values, {
+          onSuccess: () => {
+            setSubmitting(false);
+            resetForm();
+            handleClose();
+            if (onCreate) {
+              onCreate(response.externalReferenceAdd, true);
+            }
+          },
+          onError: () => setSubmitting(false),
+        });
       },
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
@@ -165,12 +204,17 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
         setSubmitting(false);
       },
       onCompleted: (response: ExternalReferenceCreationMutation$data) => {
-        setSubmitting(false);
-        resetForm();
-        if (creationCallback && handleCloseContextual) {
-          creationCallback(response);
-          handleCloseContextual();
-        }
+        runAfterStoringTempImagesForEntity(response, values, {
+          onSuccess: () => {
+            setSubmitting(false);
+            resetForm();
+            if (creationCallback && handleCloseContextual) {
+              creationCallback(response);
+              handleCloseContextual();
+            }
+          },
+          onError: () => setSubmitting(false),
+        });
       },
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
@@ -254,6 +298,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                   multiline={true}
                   rows="4"
                   style={{ marginTop: 20 }}
+                  {...getTempImageFieldProps()}
                 />
                 <FormButtonContainer>
                   <Button
@@ -339,6 +384,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                   multiline={true}
                   rows="4"
                   style={{ marginTop: 20, marginBottom: 20 }}
+                  {...getTempImageFieldProps()}
                 />
                 <DialogActions>
                   <Button

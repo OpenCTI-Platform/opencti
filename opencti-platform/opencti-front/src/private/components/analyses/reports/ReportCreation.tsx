@@ -25,6 +25,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { insertNode } from '../../../../utils/store';
@@ -37,7 +38,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { ReportCreationMutation, ReportCreationMutation$variables } from './__generated__/ReportCreationMutation.graphql';
+import { ReportCreationMutation, ReportCreationMutation$data, ReportCreationMutation$variables } from './__generated__/ReportCreationMutation.graphql';
 
 export const reportCreationMutation = graphql`
   mutation ReportCreationMutation($input: ReportAddInput!) {
@@ -53,6 +54,16 @@ export const reportCreationMutation = graphql`
       confidence
       parent_types
       ...ReportsLine_node
+    }
+  }
+`;
+
+const reportCreationDescriptionPatchMutation = graphql`
+  mutation ReportCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    reportEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
     }
   }
 `;
@@ -137,6 +148,30 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Report')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(reportCreationDescriptionPatchMutation);
+
+  const patchReportDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    ReportCreationMutation$data,
+    ReportAddInput
+  >({
+    getCreatedId: (response) => response?.reportAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchReportDescription,
+  });
+
   const onSubmit: FormikConfig<ReportAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
@@ -178,16 +213,21 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
         setSubmitting(false);
       },
       onCompleted: (response) => {
-        setSubmitting(false);
-        resetForm();
-        if (onClose) {
-          onClose();
-        }
-        if (mapAfter) {
-          navigate(
-            `/dashboard/analyses/reports/${response.reportAdd?.id}/content/mapping`,
-          );
-        }
+        runAfterStoringTempImagesForEntity(response, values, {
+          onSuccess: () => {
+            setSubmitting(false);
+            resetForm();
+            if (onClose) {
+              onClose();
+            }
+            if (mapAfter) {
+              navigate(
+                `/dashboard/analyses/reports/${response.reportAdd?.id}/content/mapping`,
+              );
+            }
+          },
+          onError: () => setSubmitting(false),
+        });
       },
     });
   };
@@ -275,6 +315,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             rows="4"
             style={fieldSpacingContainerStyle}
             askAi={true}
+            {...getTempImageFieldProps(values.objectMarking.map((v) => v.value))}
           />
           <Field
             component={RichTextField}

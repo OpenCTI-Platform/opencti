@@ -24,6 +24,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { insertNode } from '../../../../utils/store';
@@ -34,7 +35,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { GroupingCreationMutation, GroupingCreationMutation$variables } from './__generated__/GroupingCreationMutation.graphql';
+import { GroupingCreationMutation, GroupingCreationMutation$data, GroupingCreationMutation$variables } from './__generated__/GroupingCreationMutation.graphql';
 
 const groupingMutation = graphql`
   mutation GroupingCreationMutation($input: GroupingAddInput!) {
@@ -49,6 +50,14 @@ const groupingMutation = graphql`
       entity_type
       parent_types
       ...GroupingsLine_node
+    }
+  }
+`;
+
+const groupingCreationDescriptionPatchMutation = graphql`
+  mutation GroupingCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    groupingFieldPatch(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -124,6 +133,29 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Grouping')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(groupingCreationDescriptionPatchMutation);
+  const patchGroupingDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    GroupingCreationMutation$data,
+    GroupingAddInput
+  >({
+    getCreatedId: (response) => response?.groupingAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchGroupingDescription,
+  });
+
   const onSubmit: FormikConfig<GroupingAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
@@ -161,16 +193,21 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
         setSubmitting(false);
       },
       onCompleted: (response) => {
-        setSubmitting(false);
-        resetForm();
-        if (onClose) {
-          onClose();
-        }
-        if (mapAfter) {
-          navigate(
-            `/dashboard/analyses/groupings/${response.groupingAdd?.id}/content/mapping`,
-          );
-        }
+        runAfterStoringTempImagesForEntity(response, values, {
+          onSuccess: () => {
+            setSubmitting(false);
+            resetForm();
+            if (onClose) {
+              onClose();
+            }
+            if (mapAfter) {
+              navigate(
+                `/dashboard/analyses/groupings/${response.groupingAdd?.id}/content/mapping`,
+              );
+            }
+          },
+          onError: () => setSubmitting(false),
+        });
       },
     });
   };
@@ -234,6 +271,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             rows="4"
             style={fieldSpacingContainerStyle}
             askAi={true}
+            {...getTempImageFieldProps(values.objectMarking.map((v) => v.value))}
           />
           <Field
             component={RichTextField}

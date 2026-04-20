@@ -147,12 +147,19 @@ const Header = ({ title, id, data, paginationOptions }: HeaderProps) => {
 };
 
 type NoteFormProps = {
+  stixCoreObjectOrStixCoreRelationshipId: string;
   onSubmit: (values: NoteAddInput, formikHelpers: FormikHelpers<NoteAddInput>) => void;
   onCancel: () => void;
   onToggleMore: (value: boolean) => void;
 } & Pick<StixCoreObjectOrStixCoreRelationshipNotesCardsProps, 'defaultMarkings'>;
 
-const NoteForm = ({ defaultMarkings, onCancel, onToggleMore, onSubmit }: NoteFormProps) => {
+const NoteForm = ({
+  defaultMarkings,
+  onCancel,
+  onToggleMore,
+  onSubmit,
+  stixCoreObjectOrStixCoreRelationshipId,
+}: NoteFormProps) => {
   const { t_i18n } = useFormatter();
   const [more, setMore] = useState<boolean>(false);
   const { mandatoryAttributes } = useIsMandatoryAttribute(NOTE_TYPE);
@@ -214,6 +221,7 @@ const NoteForm = ({ defaultMarkings, onCancel, onToggleMore, onSubmit }: NoteFor
               fullWidth={true}
               multiline={true}
               rows="4"
+              uploadEntityId={stixCoreObjectOrStixCoreRelationshipId}
             />
             <ObjectMarkingField
               name="objectMarking"
@@ -417,6 +425,7 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
             {({ changeState }) => (
               <NoteForm
                 defaultMarkings={defaultMarkings}
+                stixCoreObjectOrStixCoreRelationshipId={id}
                 onCancel={() => changeState(false)}
                 onToggleMore={handleMore}
                 onSubmit={onSubmit}

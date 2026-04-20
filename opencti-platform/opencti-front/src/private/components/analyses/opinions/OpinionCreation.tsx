@@ -17,10 +17,12 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import ConfidenceField from '../../common/form/ConfidenceField';
 import type { Theme } from '../../../../components/Theme';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { OpinionCreationMutation$variables } from './__generated__/OpinionCreationMutation.graphql';
+import { OpinionCreationMutation$data, OpinionCreationMutation$variables } from './__generated__/OpinionCreationMutation.graphql';
+import { OpinionCreationUserMutation$data } from './__generated__/OpinionCreationUserMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -63,6 +65,16 @@ export const opinionCreationMutation = graphql`
       parent_types
       opinion
       explanation
+    }
+  }
+`;
+
+const opinionCreationExplanationPatchMutation = graphql`
+  mutation OpinionCreationExplanationPatchMutation($id: ID!, $input: [EditInput]!) {
+    opinionEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
     }
   }
 `;
@@ -114,6 +126,29 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
   );
 
   const [commit] = useApiMutation(opinionCreationMutation);
+  const [commitExplanationPatch] = useApiMutation(opinionCreationExplanationPatchMutation);
+  const patchOpinionExplanation = (id: string, explanation: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitExplanationPatch({
+        variables: {
+          id,
+          input: [{ key: 'explanation', value: explanation }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    Partial<OpinionCreationMutation$data & OpinionCreationUserMutation$data>,
+    OpinionAddInput
+  >({
+    getCreatedId: (response) => response?.opinionAdd?.id,
+    getInitialValue: (values) => values.explanation,
+    patchField: patchOpinionExplanation,
+  });
+
   const onSubmit: FormikConfig<OpinionAddInput>['onSubmit'] = (
     values: OpinionAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<OpinionAddInput>,
@@ -141,12 +176,17 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        if (onCompleted) {
-          onCompleted();
-        }
+      onCompleted: (response) => {
+        runAfterStoringTempImagesForEntity(response, values, {
+          onSuccess: () => {
+            setSubmitting(false);
+            resetForm();
+            if (onCompleted) {
+              onCompleted();
+            }
+          },
+          onError: () => setSubmitting(false),
+        });
       },
     });
   };
@@ -194,6 +234,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+            {...getTempImageFieldProps(values.objectMarking.map((v) => v.value))}
           />
           <ConfidenceField
             entityType="Opinion"
@@ -273,6 +314,29 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
   );
 
   const [commit] = useApiMutation(opinionCreationUserMutation);
+  const [commitExplanationPatch] = useApiMutation(opinionCreationExplanationPatchMutation);
+  const patchOpinionExplanation = (id: string, explanation: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitExplanationPatch({
+        variables: {
+          id,
+          input: [{ key: 'explanation', value: explanation }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    Partial<OpinionCreationMutation$data & OpinionCreationUserMutation$data>,
+    OpinionAddInput
+  >({
+    getCreatedId: (response) => response?.userOpinionAdd?.id,
+    getInitialValue: (values) => values.explanation,
+    patchField: patchOpinionExplanation,
+  });
+
   const onSubmit: FormikConfig<OpinionAddInput>['onSubmit'] = (
     values: OpinionAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<OpinionAddInput>,
@@ -302,12 +366,17 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        if (onCompleted) {
-          onCompleted();
-        }
+      onCompleted: (response) => {
+        runAfterStoringTempImagesForEntity(response, values, {
+          onSuccess: () => {
+            setSubmitting(false);
+            resetForm();
+            if (onCompleted) {
+              onCompleted();
+            }
+          },
+          onError: () => setSubmitting(false),
+        });
       },
     });
   };
@@ -355,6 +424,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+            {...getTempImageFieldProps(values.objectMarking.map((v) => v.value))}
           />
           <ConfidenceField
             entityType="Opinion"
