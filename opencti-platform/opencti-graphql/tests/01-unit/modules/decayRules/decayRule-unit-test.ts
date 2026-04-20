@@ -21,7 +21,7 @@ import {
   checkDecayRules,
 } from '../../../../src/modules/decayRule/decayRule-domain';
 import { ADMIN_USER, testContext } from '../../../../tests/utils/testQuery';
-import { ENTITY_URL, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR } from '../../../../src/schema/stixCyberObservable';
+import { ENTITY_URL, ENTITY_IPV4_ADDR } from '../../../../src/schema/stixCyberObservable';
 import * as cacheModule from '../../../../src/database/cache';
 import * as stixFilteringModule from '../../../../src/utils/filtering/filtering-stix/stix-filtering';
 
