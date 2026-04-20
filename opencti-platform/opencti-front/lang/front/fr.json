@@ -4233,6 +4233,8 @@
   "The reset code you entered is invalid or has expired. You can request a new code.": "Le code de réinitialisation que vous avez saisi n'est pas valide ou a expiré. Vous pouvez demander un nouveau code.",
   "The retention policy will be applied on activity logs (administration events such as login, logout, and security actions)": "La politique de conservation sera appliquée aux journaux d'activité (événements d'administration tels que la connexion, la déconnexion et les actions de sécurité)",
   "The retention policy will be applied on all workbenches (both global and entity-attached)": "La politique de conservation sera appliquée à tous les postes de travail (globaux et rattachés à une entité)",
+  "The retention policy will be applied on history logs of knowledge entities": "La politique de conservation sera appliquée sur les historiques des entités de la knowledge",
+  "Knowledge history logs": "Historiques de la knowledge",
   "The retention policy will be applied on global files (files contained in": "La politique de conservation sera appliquée aux fichiers globaux (fichiers contenus dans",
   "The retention policy will be applied on global workbenches (workbenches contained in": "La politique de conservation sera appliquée sur les postes de travail globaux (postes de travail contenus dans",
   "The retention policy will be applied on history logs of knowledge entities": "La politique de conservation sera appliquée sur les historiques des entités de la connaissance",
