@@ -27,8 +27,11 @@ export const useCustomViews = (entityType: string) => {
   }
   const customViews = customViewsContextForType.custom_views_info ?? [];
   const getCurrentCustomViewTab = matchPath(customViews);
+  const sortedCustomViews = [...customViews].sort(
+    (lhs, rhs) => lhs.name.localeCompare(rhs.name),
+  );
   return {
-    customViews,
+    customViews: sortedCustomViews,
     getCurrentCustomViewTab,
   };
 };
