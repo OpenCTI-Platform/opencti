@@ -503,6 +503,31 @@ describe('RetentionRules module – integration tests', () => {
       expect(count).toBeGreaterThanOrEqual(0);
     });
 
+    it('should return a count for history scope with filters', async () => {
+      // Use a large window to ensure we have entries, combined with an entity_type filter on History
+      const historyFilters = JSON.stringify({
+        mode: 'and',
+        filters: [{ key: ['entity_type'], values: ['History'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      });
+      const input: RetentionRuleAddInput = {
+        name: 'check history with filters',
+        filters: historyFilters,
+        max_retention: 3650,
+        retention_unit: RetentionUnit.Days,
+        scope: RetentionRuleScope.History,
+      };
+
+      const response = await queryAsAdminWithSuccess({
+        query: CHECK_RETENTION_RULE,
+        variables: { input },
+      });
+
+      const count = response.data?.retentionRuleCheck;
+      expect(typeof count).toBe('number');
+      expect(count).toBeGreaterThanOrEqual(0);
+    });
+
     it('should return a count for activity scope', async () => {
       // Verifies the activity code path executes and returns a number.
       const input: RetentionRuleAddInput = {
