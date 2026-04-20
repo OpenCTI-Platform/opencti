@@ -5,6 +5,9 @@ on:
     branches:
       - testing-xtm-one
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   wf-publish-image:
       name: Publish image (testing-xtm-one)
