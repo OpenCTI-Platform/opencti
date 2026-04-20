@@ -18,15 +18,14 @@ import { createSyncHttpUri, httpBase } from '../domain/connector-utils';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { storeSyncConsumerMetrics, clearSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { createParser } from 'eventsource-parser';
-<<<<<<< HEAD
 import { InterruptibleTimer } from './interruptible-timer';
-=======
 import { ALLOWED_EMBEDDED_IMAGE_MIME_TYPES, extractMarkdownImageReferences, rewriteMarkdownImageUrls } from '../database/markdown-embedded-images';
->>>>>>> a93f91751c ([backend] export embedded storage link MD to data base64 images)
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
 const WAIT_TIME_ACTION = 2000;
+
+const waitLoopTimer = new InterruptibleTimer();
 const MARKDOWN_FIELD_KEYS = ['description', 'x_opencti_description', 'content'];
 
 const hasEmbeddedStorageRef = (markdown) => {
@@ -49,8 +48,6 @@ const buildSyncStorageFetchUri = (syncUri, storageUri) => {
   const normalized = storageUri.startsWith('/') ? storageUri.substring(1) : storageUri;
   return `${httpBase(syncUri)}${normalized}`;
 };
-
-const waitLoopTimer = new InterruptibleTimer();
 
 const syncManagerInstance = (syncId) => {
   // Variables

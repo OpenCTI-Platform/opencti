@@ -1,13 +1,35 @@
-import Markdown, { Options as MarkdownProps } from 'react-markdown';
+import Markdown, { Options as MarkdownProps, defaultUrlTransform } from 'react-markdown';
 import remarkParse from 'remark-parse';
 import remarkFlexibleMarkers from 'remark-flexible-markers';
 import { useTheme } from '@mui/styles';
-import React, { FunctionComponent, SyntheticEvent, useState } from 'react';
+import React, { FunctionComponent, SyntheticEvent, useCallback, useMemo, useState } from 'react';
 import remarkGfm from 'remark-gfm';
 import type { Theme } from './Theme';
 import { truncate } from '../utils/String';
 import ExternalLinkPopover from './ExternalLinkPopover';
 import FieldOrEmpty from './FieldOrEmpty';
+import { TEMP_IMAGE_SCHEME } from './fields/markdownField/markdownImageTempUtils';
+
+const STORAGE_IMAGE_PATHS = ['/storage/view', '/storage/get'];
+const markdownStyle: React.CSSProperties = {
+  overflowWrap: 'break-word',
+  wordBreak: 'break-word',
+  hyphens: 'auto',
+};
+
+const isAllowedUploadedImageUrl = (url: string): boolean => {
+  if (!url) return false;
+  if (url.startsWith(TEMP_IMAGE_SCHEME)) return true;
+  if (STORAGE_IMAGE_PATHS.some((path) => url.includes(path))) return true;
+  return defaultUrlTransform(url) !== '';
+};
+
+const transformMarkdownUrl: NonNullable<MarkdownProps['urlTransform']> = (url) => {
+  if (url.startsWith(TEMP_IMAGE_SCHEME)) {
+    return url;
+  }
+  return defaultUrlTransform(url);
+};
 
 export const MarkDownComponents = (
   theme: Theme,
@@ -57,6 +79,7 @@ interface MarkdownWithRedirectionWarningProps {
   remarkPlugins?: MarkdownProps['remarkPlugins'];
   emptyStringIfUndefined?: boolean;
   disableWarningAtLinkClick?: boolean;
+  resolveImageUrl?: (url: string) => string | null;
 }
 
 const MarkdownDisplay: FunctionComponent<
@@ -73,6 +96,7 @@ const MarkdownDisplay: FunctionComponent<
   remarkPlugins,
   emptyStringIfUndefined,
   disableWarningAtLinkClick,
+  resolveImageUrl,
 }) => {
   const theme = useTheme<Theme>();
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
@@ -83,46 +107,85 @@ const MarkdownDisplay: FunctionComponent<
     setDisplayExternalLink(true);
     setExternalLink(url);
   };
-  const disallowedElements: string[] = [];
-  if (removeLinks) {
-    disallowedElements.push('a');
-  }
-  if (removeLineBreaks) {
-    disallowedElements.push('p');
-  }
-  const markdownStyle: React.CSSProperties = {
-    overflowWrap: 'break-word',
-    wordBreak: 'break-word',
-    hyphens: 'auto',
-  };
+  const disallowedElements = useMemo(() => {
+    const elements: string[] = [];
+    if (removeLinks) {
+      elements.push('a');
+    }
+    if (removeLineBreaks) {
+      elements.push('p');
+    }
+    return elements;
+  }, [removeLinks, removeLineBreaks]);
 
-  const markdownElement = () => {
-    return (
-      <div className="markdown" style={markdownStyle}>
-        <Markdown
-          disallowedElements={disallowedElements}
-          unwrapDisallowed={true}
-        >
-          {limit ? truncate(content, limit) : content}
-        </Markdown>
-      </div>
-    );
-  };
-  const remarkGfmMarkdownElement = () => {
+  const resolveMarkdownImageUrl = useCallback((url: string) => {
+    return resolveImageUrl ? resolveImageUrl(url) : url;
+  }, [resolveImageUrl]);
+
+  const imageComponent = useMemo<MarkdownProps['components']>(() => ({
+    img: ({ src, alt, ...imgProps }) => {
+      const rawUrl = typeof src === 'string' ? src : '';
+      const resolvedUrl = resolveMarkdownImageUrl(rawUrl);
+      const isAllowedImage = isAllowedUploadedImageUrl(rawUrl)
+        || (resolvedUrl ? isAllowedUploadedImageUrl(resolvedUrl) : false);
+      if (!resolvedUrl || !isAllowedImage) {
+        return <span>{alt || ''}</span>;
+      }
+
+      return (
+        <img
+          src={resolvedUrl}
+          alt={alt || ''}
+          style={{
+            objectFit: 'cover',
+            maxHeight: '200px',
+          }}
+          {...imgProps}
+        />
+      );
+    },
+  }), [resolveMarkdownImageUrl]);
+
+  const markdownContent = useMemo(() => {
+    return limit ? truncate(content, limit) : content;
+  }, [content, limit]);
+
+  const remarkContent = useMemo(() => {
+    return expand || !limit ? content : truncate(content, limit);
+  }, [content, expand, limit]);
+
+  const markdownRender = useMemo(() => {
+    if (!remarkGfmPlugin) {
+      return (
+        <div className="markdown" style={markdownStyle}>
+          <Markdown
+            components={imageComponent}
+            urlTransform={transformMarkdownUrl}
+            disallowedElements={disallowedElements}
+            unwrapDisallowed={true}
+          >
+            {markdownContent}
+          </Markdown>
+        </div>
+      );
+    }
+
     if (remarkPlugins) {
       return (
         <div className="markdown" style={markdownStyle}>
           <Markdown
             remarkPlugins={remarkPlugins}
+            components={imageComponent}
+            urlTransform={transformMarkdownUrl}
             disallowedElements={disallowedElements}
             unwrapDisallowed={true}
           >
-            {expand || !limit ? content : truncate(content, limit)}
+            {remarkContent}
           </Markdown>
         </div>
-
       );
     }
+
     if (markdownComponents) {
       return (
         <div className="markdown" style={markdownStyle}>
@@ -132,15 +195,17 @@ const MarkdownDisplay: FunctionComponent<
               remarkFlexibleMarkers,
               [remarkParse, { commonmark: !!commonmark }],
             ]}
-            components={MarkDownComponents(theme)}
+            components={{ ...MarkDownComponents(theme), ...imageComponent }}
+            urlTransform={transformMarkdownUrl}
             disallowedElements={disallowedElements}
             unwrapDisallowed={true}
           >
-            {expand || !limit ? content : truncate(content, limit)}
+            {remarkContent}
           </Markdown>
         </div>
       );
     }
+
     return (
       <div className="markdown" style={markdownStyle}>
         <Markdown
@@ -149,14 +214,27 @@ const MarkdownDisplay: FunctionComponent<
             remarkFlexibleMarkers,
             [remarkParse, { commonmark: !!commonmark }],
           ]}
+          components={imageComponent}
+          urlTransform={transformMarkdownUrl}
           disallowedElements={disallowedElements}
           unwrapDisallowed={true}
         >
-          {limit ? truncate(content, limit) : content}
+          {markdownContent}
         </Markdown>
       </div>
     );
-  };
+  }, [
+    commonmark,
+    disallowedElements,
+    imageComponent,
+    markdownComponents,
+    markdownContent,
+    remarkContent,
+    remarkGfmPlugin,
+    remarkPlugins,
+    theme,
+  ]);
+
   const browseLinkWarning = (
     event: SyntheticEvent<HTMLElement, MouseEvent>,
   ) => {
@@ -170,12 +248,12 @@ const MarkdownDisplay: FunctionComponent<
   };
   let markdownDisplayContent;
   if (disableWarningAtLinkClick || removeLinks || removeLineBreaks) {
-    markdownDisplayContent = remarkGfmPlugin ? remarkGfmMarkdownElement() : markdownElement();
+    markdownDisplayContent = markdownRender;
   } else {
     markdownDisplayContent = (
       <>
         <div onClick={(event) => browseLinkWarning(event)}>
-          {remarkGfmPlugin ? remarkGfmMarkdownElement() : markdownElement()}
+          {markdownRender}
         </div>
         <ExternalLinkPopover
           displayExternalLink={displayExternalLink}
