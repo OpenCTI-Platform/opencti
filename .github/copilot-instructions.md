@@ -6,8 +6,13 @@
 > - [Python Client & Worker](instructions/python.instructions.md)
 > - [Code Review Guidelines](instructions/code-review.instructions.md)
 
-> **Copilot Skills** (`.github/skills/`) — procedural playbooks:
-> - `create-workflow` — Scaffold a new GitHub Action workflow (example)
+> **Copilot Skills** (`.github/skills/`) — procedural playbooks, load the relevant one before starting the task:
+> - `create-module` — Scaffold a new backend domain module (entity type, schema, resolvers, converter)
+> - `create-migration` — Create a new ElasticSearch database migration file
+> - `create-react-component` — Create a new Relay-connected React component
+> - `create-creation-form` — Scaffold a creation form drawer (Formik + Relay mutation)
+> - `create-playbook-component` — Add a new playbook automation component
+> - `create-workflow` — Scaffold a new GitHub Actions workflow
 
 ## Project Overview
 
@@ -83,6 +88,19 @@ docker compose up -d
 - **Python Dependencies**: Backend requires `yarn install:python`.
 - **Relay**: Frontend requires `yarn relay` after any GraphQL changes.
 - **Node Memory**: Use `NODE_OPTIONS=--max_old_space_size=8192` for large builds.
+
+## Safety Rules
+
+### Destructive Git & File Operations
+**NEVER** run any operation that could cause loss of uncommitted work without explicit user approval. This includes:
+- `git reset --hard`, `git checkout -- <file>`, `git clean -fd`
+- `git stash drop`, `git rebase`, `git push --force`
+- Deleting or overwriting files that may contain unsaved changes
+
+**Before** running any such command:
+1. Run `git status` and `git diff` to identify uncommitted or unstaged changes.
+2. Present a **clear, plain-language summary** of exactly what would be lost (e.g. "This will discard your unsaved changes to `src/foo.ts` and `src/bar.ts`").
+3. **Wait for explicit approval** before proceeding.
 
 ## Commit Message Format
 
