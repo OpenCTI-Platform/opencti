@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import moment from 'moment';
 import {
   computeIndicatorDecayHistory,
@@ -18,9 +18,12 @@ import {
   computeChartDecayAlgoSerie,
   type ComputeDecayChartInput,
   type DecayHistory,
+  checkDecayRules,
 } from '../../../../src/modules/decayRule/decayRule-domain';
 import { ADMIN_USER, testContext } from '../../../../tests/utils/testQuery';
 import { ENTITY_URL, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR } from '../../../../src/schema/stixCyberObservable';
+import * as cacheModule from '../../../../src/database/cache';
+import * as stixFilteringModule from '../../../../src/utils/filtering/filtering-stix/stix-filtering';
 
 const indicator_fallback_applied_rule: IndicatorDecayRule = {
   decay_rule_id: 'fake-rule-id',
@@ -384,5 +387,53 @@ describe('Decay chart data generation', () => {
     expect(result[50].updated_at).toBe(orderedDataByDateAsc[50].updated_at);
     expect(result[100].updated_at).toBe(orderedDataByDateAsc[100].updated_at);
     expect(result[101].updated_at).toBe(orderedDataByDateAsc[101].updated_at);
+  });
+});
+
+describe('checkDecayRules testing', () => {
+  it('should return matching decay rule with the highest priority (order)', async () => {
+    // Mock the rules cache to return some active rules and one inactive
+    const getEntitiesMock = vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue([
+      { id: 'rule-low-priority', order: 1, active: true, decay_filters: '{"mode":"and", "filters":[]}' },
+      { id: 'rule-high-priority', order: 5, active: true, decay_filters: '{"mode":"and", "filters":[]}' },
+      { id: 'rule-inactive', order: 10, active: false, decay_filters: '{"mode":"and", "filters":[]}' }
+    ] as any);
+
+    // Mock filter group match to true so that both active rules match
+    const filterGroupMock = vi.spyOn(stixFilteringModule, 'isStixMatchFilterGroup').mockResolvedValue(true);
+
+    const indicatorInput = {
+      entity_type: 'Indicator',
+      x_opencti_main_observable_type: ENTITY_IPV4_ADDR,
+    };
+
+    const result = await checkDecayRules(testContext, ADMIN_USER, indicatorInput as any);
+
+    // It should pick rule-high-priority instead of rule-low-priority, and ignore rule-inactive
+    expect(result?.id).toBe('rule-high-priority');
+
+    getEntitiesMock.mockRestore();
+    filterGroupMock.mockRestore();
+  });
+
+  it('should return undefined if no rule matches', async () => {
+    const getEntitiesMock = vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue([
+      { id: 'rule1', order: 1, active: true, decay_filters: '{"mode":"and", "filters":[]}' },
+    ] as any);
+
+    // Mock to false so it does not match
+    const filterGroupMock = vi.spyOn(stixFilteringModule, 'isStixMatchFilterGroup').mockResolvedValue(false);
+
+    const indicatorInput = {
+      entity_type: 'Indicator',
+      x_opencti_main_observable_type: ENTITY_URL,
+    };
+
+    const result = await checkDecayRules(testContext, ADMIN_USER, indicatorInput as any);
+
+    expect(result).toBeUndefined();
+
+    getEntitiesMock.mockRestore();
+    filterGroupMock.mockRestore();
   });
 });
