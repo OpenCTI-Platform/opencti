@@ -1,3 +1,8 @@
+---
+name: create-react-component
+description: "Use when: creating a new Relay-connected React component, defining a GraphQL fragment, or wiring a component to a query"
+---
+
 # Create React Component (Relay)
 
 ## Prerequisites
@@ -5,6 +10,9 @@
 - **Fragment**: The data requirements from GraphQL.
 
 ## Procedure
+
+### Step 0 — Find an Existing Example
+Use the **Codebase Pattern Finder** agent to locate a similar existing component in `opencti-platform/opencti-front/src/private/components/` that uses `useFragment`. Model the new component after the existing one to stay idiomatic.
 
 ### Step 1 — Create Component File
 Location: `opencti-platform/opencti-front/src/private/components/...`.

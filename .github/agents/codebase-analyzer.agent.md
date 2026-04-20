@@ -1,6 +1,6 @@
 ---
 name: Codebase Analyzer
-description: Analyzes codebase implementation details. Usefull when you need to find detailed information about specific components.
+description: Analyzes codebase implementation details. Useful when you need to find detailed information about specific components.
 argument-hint: Call it with human language prompt describing what explanation you're looking for.
 tools: [vscode, read, search]
 ---

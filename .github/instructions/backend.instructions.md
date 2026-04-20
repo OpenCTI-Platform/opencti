@@ -30,6 +30,7 @@ The `opencti-graphql` module is the core API server for the OpenCTI platform. It
   - `schema/`: GraphQL schema definitions
   - `resolvers/`: GraphQL resolvers
   - `domain/`: Business logic and service layer
+  - `modules/`: Self-contained domain modules (entity type, schema, resolvers, converter, domain logic)
   - `database/`: Database connectors and utilities
   - `migrations/`: Database migration scripts
 - `config/`: Configuration files (NODE_ENV based)

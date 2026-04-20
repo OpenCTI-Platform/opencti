@@ -1,5 +1,6 @@
 ---
 applyTo: "**/*"
+description: "Code review checklist: security vulnerabilities, performance issues, code quality, and readability improvements"
 ---
 
 When reviewing code, focus on:

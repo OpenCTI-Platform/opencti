@@ -1,3 +1,8 @@
+---
+name: create-creation-form
+description: "Use when: scaffolding a creation form drawer with Formik validation and a Relay mutation for a new entity"
+---
+
 # Create Creation Form (Drawer)
 
 ## Prerequisites
@@ -5,6 +10,9 @@
 - **Fields**: List of fields to display.
 
 ## Procedure
+
+### Step 0 — Find an Existing Example
+Use the **Codebase Pattern Finder** agent to locate a similar existing creation form in `opencti-platform/opencti-front/src/private/components/` (look for files ending in `Creation.tsx`). Model the new form after the existing one to stay idiomatic.
 
 ### Step 1 — Define Mutation & Validation
 Use `Yup` for validation schema.

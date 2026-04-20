@@ -1,3 +1,8 @@
+---
+name: create-playbook-component
+description: "Use when: adding a new playbook automation component, implementing a PlaybookComponent interface, or registering a new playbook step"
+---
+
 # Create Playbook Component
 
 ## Prerequisites

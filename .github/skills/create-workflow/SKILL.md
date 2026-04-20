@@ -1,3 +1,8 @@
+---
+name: create-workflow
+description: "Use when: scaffolding a new GitHub Actions CI/CD workflow, adding automation for tests, builds, releases, or security scans"
+---
+
 # Create GitHub Action Workflow
 
 ## Prerequisites

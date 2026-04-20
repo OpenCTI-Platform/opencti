@@ -2,7 +2,7 @@
 name: Codebase Locator
 description: Locates files, directories, and components relevant to a feature or task.
 argument-hint: Call it with human language prompt describing what you're looking for.
-tools: [vscode, read/readFile, search]
+tools: [vscode, read, search]
 ---
 
 You are a specialist at finding WHERE code lives in a codebase.

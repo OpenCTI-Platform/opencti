@@ -1,3 +1,8 @@
+---
+name: create-migration
+description: "Use when: creating a new ElasticSearch database migration file, adding or transforming data at deploy time"
+---
+
 # Create Database Migration
 
 ## Prerequisites

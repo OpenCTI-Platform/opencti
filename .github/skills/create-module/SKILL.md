@@ -1,3 +1,8 @@
+---
+name: create-module
+description: "Use when: scaffolding a new backend entity type, domain module, GraphQL schema, resolvers, or STIX converter in opencti-graphql"
+---
+
 # Create Backend Module
 
 ## Prerequisites
@@ -31,8 +36,14 @@ Map the GraphQL Query/Mutation fields to the functions in `<name>-domain.ts`.
 Implement `ModuleDefinition` interface.
 Define attributes, relations, and register the definition using `registerDefinition`.
 
-### Step 8 — Register Module
-1. Create `index.ts` in the module folder.
-2. Import the module in `src/modules/index.ts`.
-3. Add the new types to unions in `src/schema/opencti.graphql` if applicable.
-4. Run `yarn build:schema` to update types.
+### Step 8a — Create Module Entry Point
+Create `index.ts` in the module folder that re-exports the module definition.
+
+### Step 8b — Register Module in Index
+Import and add the new module to `src/modules/index.ts`.
+
+### Step 8c — Update GraphQL Unions (if applicable)
+If the entity belongs to a STIX union type (e.g., `StixObject`, `StixDomainObject`), add it to the relevant unions in `src/schema/opencti.graphql`.
+
+### Step 8d — Regenerate Schema Types
+Run `yarn build:schema` to regenerate TypeScript types from the updated schema.
