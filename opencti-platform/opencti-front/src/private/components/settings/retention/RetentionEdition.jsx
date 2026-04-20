@@ -11,6 +11,7 @@ import { InformationOutline } from 'mdi-material-ui';
 import Button from '@common/button/Button';
 import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
+import Alert from '@mui/material/Alert';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -193,7 +194,7 @@ const RetentionEditionContainer = (props) => {
                 },
               }}
             />
-            {retentionRule.scope === 'knowledge'
+            {(retentionRule.scope === 'knowledge' || retentionRule.scope === 'history')
               && (
                 <>
                   <Box
@@ -240,6 +241,27 @@ const RetentionEditionContainer = (props) => {
                     searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                   />
                 </>
+              )
+            }
+            {retentionRule.scope === 'file'
+              && (
+                <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                  {`${t_i18n('The retention policy will be applied on global files (files contained in')} ${t_i18n('Data')}/${t_i18n('Import')})`}
+                </Alert>
+              )
+            }
+            {retentionRule.scope === 'workbench'
+              && (
+                <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                  {t_i18n('The retention policy will be applied on all workbenches (both global and entity-attached)')}
+                </Alert>
+              )
+            }
+            {retentionRule.scope === 'history'
+              && (
+                <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                  {t_i18n('The retention policy will be applied on history logs of knowledge entities')}
+                </Alert>
               )
             }
             <div className={classes.buttons}>

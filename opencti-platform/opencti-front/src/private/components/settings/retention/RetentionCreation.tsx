@@ -218,6 +218,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   { value: 'knowledge', label: t_i18n('Knowledge') },
                   { value: 'file', label: t_i18n('File') },
                   { value: 'workbench', label: t_i18n('Workbench') },
+                  { value: 'history', label: t_i18n('History') },
                 ]}
                 renderOption={(prop: Record<string, unknown>, option: FieldOption) => (
                   <li {...prop}>
@@ -242,7 +243,14 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   </Alert>
                 )
               }
-              {formValues.scope?.value === 'knowledge' && (
+              {formValues.scope?.value === 'history'
+                && (
+                  <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                    {t_i18n('The retention policy will be applied on history logs of knowledge entities')}
+                  </Alert>
+                )
+              }
+              {(formValues.scope?.value === 'knowledge' || formValues.scope?.value === 'history') && (
                 <>
                   <Box sx={{
                     paddingTop: 4,
