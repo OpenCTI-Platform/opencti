@@ -209,12 +209,30 @@ const useGraphParser = () => {
     };
   };
 
+  /**
+   * Check if a relationship is nested, i.e. its from or to is itself a relationship.
+   */
+  const isNestedRelationship = (data: ObjectToParse) => {
+    return data.from && data.to && (data.from.relationship_type || data.to.relationship_type);
+  };
+
+  /**
+   * Build the two connector links for a nested relationship displayed as a node:
+   * one from its source to the relationship node, one from the relationship node to its target.
+   */
+  const buildNestedLinks = (data: ObjectToParse): [GraphLink, GraphLink] => {
+    return [
+      buildLink(data, { name: '', label: '', target: data.id, target_id: data.id }),
+      buildLink(data, { name: '', label: '', source: data.id, source_id: data.id }),
+    ];
+  };
+
   const buildGraphData = (objects: ObjectToParse[], graphPositions: OctiGraphPositions) => {
     const uniqObjects = R.uniqBy(R.prop('id'), objects);
     const uniqIds = uniqObjects.map((o) => o.id);
     const relationshipsIdsInNestedRelationship = objects.flatMap((o) => {
-      if (o.from && o.to && (o.from.relationship_type || o.to.relationship_type)) {
-        return o.from?.relationship_type ? o.from.id : o.to.id;
+      if (isNestedRelationship(o)) {
+        return o.from?.relationship_type ? o.from.id : o.to!.id;
       }
       return [];
     });
@@ -230,10 +248,7 @@ const useGraphParser = () => {
         return buildLink(o);
       }
       if (relationshipsIdsInNestedRelationship.includes(o.id)) {
-        return [
-          buildLink(o, { name: '', label: '', target: o.id, target_id: o.id }),
-          buildLink(o, { name: '', label: '', source: o.id, source_id: o.id }),
-        ];
+        return buildNestedLinks(o);
       }
       return [];
     });
@@ -308,7 +323,7 @@ const useGraphParser = () => {
     return { links, nodes };
   };
 
-  return { buildGraphData, buildCorrelationData, buildNode, buildLink };
+  return { buildGraphData, buildCorrelationData, buildNode, buildLink, buildNestedLinks, isNestedRelationship };
 };
 
 export default useGraphParser;
