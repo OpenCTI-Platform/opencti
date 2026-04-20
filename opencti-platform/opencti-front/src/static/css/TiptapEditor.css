@@ -1,0 +1,566 @@
+/* Tiptap editor styles - compatible with OpenCTI theme */
+
+.rich-text-editor-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.rich-text-editor-wrapper .ProseMirror {
+  min-height: 100px;
+  padding: 12px;
+  outline: none;
+  font-size: 14px;
+}
+
+.rich-text-editor-wrapper .ProseMirror p {
+  margin: 1em 0;
+}
+
+.rich-text-editor-wrapper .ProseMirror blockquote {
+  overflow: hidden;
+  padding-right: 1.5em;
+  padding-left: 1.5em;
+  margin-left: 0;
+  margin-right: 0;
+  font-style: italic;
+  border-left: solid 5px hsl(0, 0%, 80%);
+  color: inherit;
+}
+
+.rich-text-editor-wrapper .ProseMirror pre {
+  padding: 1em;
+  color: #353535;
+  background: rgba(199, 199, 199, 0.3);
+  border: 1px solid hsl(0, 0%, 77%);
+  border-radius: 2px;
+  text-align: left;
+  direction: ltr;
+  tab-size: 4;
+  white-space: pre-wrap;
+  font-style: normal;
+  min-width: 200px;
+  overflow-x: auto;
+}
+
+html[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre,
+body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
+  color: inherit;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(196,196,196);
+}
+
+.rich-text-editor-wrapper .ProseMirror code {
+  font-family: monospace;
+  font-size: 0.9em;
+  padding: .15em;
+  border-radius: 2px;
+}
+
+.rich-text-editor-wrapper .ProseMirror ul,
+.rich-text-editor-wrapper .ProseMirror ol {
+  padding-left: 1.5em;
+}
+
+/* Task list - no bullets, checkbox and text on same line */
+.rich-text-editor-wrapper .ProseMirror ul[data-type="taskList"],
+.rich-text-content ul[data-type="taskList"],
+.rich-text-content ul.todo-list {
+  list-style: none !important;
+  padding-left: 0;
+}
+
+.rich-text-editor-wrapper .ProseMirror li.tiptap-task-item,
+.rich-text-editor-wrapper .ProseMirror li[data-type="taskItem"],
+.rich-text-content li.tiptap-task-item,
+.rich-text-content li[data-type="taskItem"],
+.rich-text-content ul.todo-list > li {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: flex-start !important;
+  gap: 0.5em;
+  margin: 0.25em 0;
+  list-style: none !important;
+}
+
+.rich-text-editor-wrapper .ProseMirror li.tiptap-task-item > label,
+.rich-text-editor-wrapper .ProseMirror li[data-type="taskItem"] > label,
+.rich-text-content li.tiptap-task-item > label,
+.rich-text-content li[data-type="taskItem"] > label,
+.rich-text-content ul.todo-list > li > label {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  padding-top: 3px; /* align checkbox with first line of text */
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+  line-height: 1;
+}
+.rich-text-content ul.todo-list > li > label.todo-list__label {
+  gap: 0.5rem
+}
+
+/* Task list checkbox - unchecked: transparent, checked: green with white check */
+.rich-text-editor-wrapper .ProseMirror li[data-type="taskItem"] input[type="checkbox"],
+.rich-text-editor-wrapper .ProseMirror li.tiptap-task-item input[type="checkbox"],
+.rich-text-content li[data-type="taskItem"] input[type="checkbox"],
+.rich-text-content li.tiptap-task-item input[type="checkbox"],
+.rich-text-content ul.todo-list > li input[type="checkbox"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid rgba(128, 128, 128, 0.6) !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  border-radius: 2px !important;
+}
+
+.rich-text-editor-wrapper .ProseMirror li[data-type="taskItem"] input[type="checkbox"]:checked,
+.rich-text-editor-wrapper .ProseMirror li.tiptap-task-item input[type="checkbox"]:checked,
+.rich-text-content li[data-type="taskItem"] input[type="checkbox"]:checked,
+.rich-text-content li.tiptap-task-item input[type="checkbox"]:checked,
+.rich-text-content ul.todo-list > li input[type="checkbox"]:checked {
+  background: #22c55e !important;
+  background-color: #22c55e !important;
+  border-color: #22c55e !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M3 8l3 3 7-7'/%3E%3C/svg%3E") !important;
+  background-size: contain !important;
+}
+
+/* data-checked for readonly/display mode when :checked may not apply */
+.rich-text-editor-wrapper .ProseMirror li[data-type="taskItem"][data-checked="true"] input[type="checkbox"],
+.rich-text-content li[data-type="taskItem"][data-checked="true"] input[type="checkbox"],
+.rich-text-content ul.todo-list > li[data-checked="true"] input[type="checkbox"] {
+  background: #22c55e !important;
+  background-color: #22c55e !important;
+  border-color: #22c55e !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M3 8l3 3 7-7'/%3E%3C/svg%3E") !important;
+  background-size: contain !important;
+}
+
+/* content div - use display:contents so its children become flex items of li */
+.rich-text-editor-wrapper .ProseMirror li.tiptap-task-item > div,
+.rich-text-editor-wrapper .ProseMirror li[data-type="taskItem"] > div,
+.rich-text-content li.tiptap-task-item > div,
+.rich-text-content li[data-type="taskItem"] > div,
+.rich-text-content ul.todo-list > li > div {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  display: contents; /* children (p) become direct flex items - keeps checkbox and text on same line */
+}
+
+.rich-text-editor-wrapper .ProseMirror li.tiptap-task-item p,
+.rich-text-editor-wrapper .ProseMirror li[data-type="taskItem"] p,
+.rich-text-content li.tiptap-task-item p,
+.rich-text-content li[data-type="taskItem"] p,
+.rich-text-content ul.todo-list > li p {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.rich-text-editor-wrapper .ProseMirror table {
+  border-collapse: collapse;
+  max-width: 100%;
+  table-layout: auto;
+  overflow: hidden;
+  margin: 0.9em auto;
+}
+
+.rich-text-editor-wrapper .ProseMirror th,
+.rich-text-editor-wrapper .ProseMirror td,
+.rich-text-content th,
+.rich-text-content td {
+  border: 1px solid #b2b2b2;
+  padding: 0.4em;
+  position: relative;
+}
+
+/* Header cells — distinct background */
+.rich-text-editor-wrapper .ProseMirror th {
+  background-color: rgba(128, 128, 128, 0.12);
+  font-weight: 600;
+}
+
+html[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror th,
+body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror th {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Selected cells highlight (prosemirror-tables adds .selectedCell) */
+.rich-text-editor-wrapper .ProseMirror .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(25, 118, 210, 0.18);
+  pointer-events: none;
+  z-index: 2;
+}
+
+html[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror .selectedCell::after,
+body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror .selectedCell::after {
+  background: rgba(66, 165, 245, 0.22);
+}
+
+/* Column resize handle */
+.rich-text-editor-wrapper .ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  background-color: rgba(25, 118, 210, 0.5);
+  pointer-events: none;
+  z-index: 20;
+}
+
+.rich-text-editor-wrapper .ProseMirror.resize-cursor {
+  cursor: col-resize;
+}
+
+/* Remove paragraph margin inside table cells and list items */
+.rich-text-editor-wrapper .ProseMirror td p,
+.rich-text-editor-wrapper .ProseMirror th p,
+.rich-text-editor-wrapper .ProseMirror li p {
+  margin: 0;
+}
+
+/* Nested tables: slightly smaller, with spacing */
+.rich-text-editor-wrapper .ProseMirror td table,
+.rich-text-editor-wrapper .ProseMirror th table {
+  margin: 0.9em 0;
+}
+
+.rich-text-editor-wrapper .ProseMirror td td,
+.rich-text-editor-wrapper .ProseMirror td th,
+.rich-text-editor-wrapper .ProseMirror th td,
+.rich-text-editor-wrapper .ProseMirror th th {
+  padding: 4px 8px;
+}
+
+.rich-text-editor-wrapper .ProseMirror img {
+  max-width: 100%;
+  height: auto;
+}
+
+.rich-text-editor-wrapper .ProseMirror hr {
+  margin: 15px 0;
+  height: 4px;
+  background: #dedede;
+  border: 0;
+}
+
+.rich-text-editor-wrapper .ProseMirror a {
+  color: #00b1ff;
+  text-decoration: none;
+  cursor: text;
+}
+
+.rich-text-editor-wrapper .ProseMirror a img {
+  cursor: default;
+}
+
+html[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a,
+body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
+  color: #0066cc;
+}
+
+.rich-text-editor-wrapper .ProseMirror .page-break {
+  position: relative;
+  clear: both;
+  padding: 5px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  page-break-after: always;
+}
+
+.rich-text-editor-wrapper .ProseMirror .page-break::after {
+  content: '';
+  position: absolute;
+  border-bottom: 2px dashed #c4c4c4;
+  width: 100%;
+}
+
+.rich-text-editor-wrapper .ProseMirror .mention {
+  background-color: rgba(0, 177, 255, 0.2);
+  border-radius: 4px;
+  padding: 0 2px;
+}
+
+.rich-text-editor-wrapper .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #999;
+  pointer-events: none;
+  height: 0;
+}
+
+.rich-text-editor-wrapper .ProseMirror.ProseMirror-focused {
+  outline: none;
+}
+
+/* HtmlDisplay - shared styles for rendered HTML content */
+.rich-text-content {
+  font-size: 14px;
+}
+
+.rich-text-content p {
+  margin: 1em 0;
+}
+
+
+.rich-text-content .page-break {
+  position: relative;
+  clear: both;
+  padding: 5px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  page-break-after: always;
+}
+
+.rich-text-content .page-break::after {
+  content: '';
+  position: absolute;
+  border-bottom: 2px dashed #c4c4c4;
+  width: 100%;
+}
+
+/* Legacy Editor font-size classes — kept for backward compatibility with stored content */
+.rich-text-content .text-tiny  { font-size: 0.7em; }
+.rich-text-content .text-small { font-size: 0.85em; }
+.rich-text-content .text-big   { font-size: 1.4em; }
+.rich-text-content .text-huge  { font-size: 1.8em; }
+
+/* Legacy Editor highlight classes — kept for backward compatibility with stored content */
+/* General marks */
+.rich-text-content mark,
+.rich-text-editor-wrapper .ProseMirror mark { color: #000000; }
+
+/* Markers: background color */
+.rich-text-content mark.marker-yellow,
+.rich-text-editor-wrapper .ProseMirror mark.marker-yellow { background-color: rgb(255, 255, 0); color: #000000; }
+.rich-text-content mark.marker-green,
+.rich-text-editor-wrapper .ProseMirror mark.marker-green  { background-color: rgb(98, 249, 98); color: #000000; }
+.rich-text-content mark.marker-pink,
+.rich-text-editor-wrapper .ProseMirror mark.marker-pink   { background-color: rgb(252, 120, 153); color: #000000; }
+.rich-text-content mark.marker-blue,
+.rich-text-editor-wrapper .ProseMirror mark.marker-blue   { background-color: rgb(15, 188, 255); color: #000000; }
+/* Pens: text color, transparent background */
+.rich-text-content mark.pen-red,
+.rich-text-editor-wrapper .ProseMirror mark.pen-red   { background-color: transparent !important; color: rgb(231, 19, 19) !important; }
+.rich-text-content mark.pen-green,
+.rich-text-editor-wrapper .ProseMirror mark.pen-green { background-color: transparent !important; color: rgb(18, 138, 0) !important; }
+
+/* Legacy Editor image figure — kept for backward compatibility with stored content */
+.rich-text-content figure.image,
+.rich-text-content figure.image-figure,
+.rich-text-editor-wrapper .ProseMirror figure.image,
+.rich-text-editor-wrapper .ProseMirror figure.image-figure {
+  display: table;
+  clear: both;
+  text-align: center;
+  margin: 0.9em auto;
+  min-width: 50px;
+}
+.rich-text-content figure.image img,
+.rich-text-content figure.image-figure img,
+.rich-text-editor-wrapper .ProseMirror figure.image img,
+.rich-text-editor-wrapper .ProseMirror figure.image-figure img {
+  display: block;
+  max-width: 100%;
+}
+
+/* Legacy Editor support for right-aligned image figures */
+.rich-text-content figure.image-style-side,
+.rich-text-editor-wrapper .ProseMirror figure.image-style-side {
+  float: right !important;
+  clear: none !important;
+  margin: 0.9em 0 0.9em 1.5em !important;
+}
+
+.rich-text-content blockquote {
+  overflow: hidden;
+  padding-right: 1.5em;
+  padding-left: 1.5em;
+  margin-left: 0;
+  margin-right: 0;
+  font-style: italic;
+  border-left: solid 5px hsl(0, 0%, 80%);
+}
+
+.rich-text-content pre {
+  padding: 1em;
+  color: #353535;
+  background: rgba(199, 199, 199, 0.3);
+  border: 1px solid hsl(0, 0%, 77%);
+  border-radius: 2px;
+  text-align: left;
+  direction: ltr;
+  tab-size: 4;
+  white-space: pre-wrap;
+  font-style: normal;
+  min-width: 200px;
+  overflow-x: auto;
+}
+
+html[data-theme="dark"] .rich-text-content pre,
+body[data-theme="dark"] .rich-text-content pre {
+  color: inherit;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(196,196,196);
+}
+
+.rich-text-content code {
+  padding: .15em;
+  border-radius: 2px;
+}
+
+.rich-text-content table {
+  border-collapse: collapse;
+  max-width: 100%;
+  table-layout: auto;
+  overflow: hidden;
+  margin: 0.9em auto;
+}
+
+.rich-text-content th,
+.rich-text-content td {
+  border: 1px solid #b2b2b2;
+  padding: 0.4em;
+}
+
+/* Header cells — display mode */
+.rich-text-content th {
+  background-color: rgba(128, 128, 128, 0.12);
+  font-weight: 600;
+}
+
+html[data-theme="dark"] .rich-text-content th,
+body[data-theme="dark"] .rich-text-content th {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Remove paragraph margin inside table cells and list items — display mode */
+.rich-text-content td p,
+.rich-text-content th p,
+.rich-text-content li p {
+  margin: 0;
+}
+
+/* Legacy Editor figure.table wrapper */
+.rich-text-content figure.table {
+  margin: 0.9em auto;
+}
+
+/* Nested tables — display mode */
+.rich-text-content td table,
+.rich-text-content th table {
+  margin: 0;
+}
+
+.rich-text-content td td,
+.rich-text-content td th,
+.rich-text-content th td,
+.rich-text-content th th {
+  padding: 4px 8px;
+}
+
+.rich-text-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.rich-text-content hr {
+  margin: 15px 0;
+  height: 4px;
+  background: #dedede;
+  border: 0;
+}
+
+.rich-text-content a {
+  color: #00b1ff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+html[data-theme="light"] .rich-text-content a,
+body[data-theme="light"] .rich-text-content a {
+  color: #0066cc;
+}
+
+/* Image resize handles (poignées) - editor only */
+.rich-text-editor-wrapper .ProseMirror [data-resize-handle] {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: rgba(0, 120, 215, 0.8);
+  border: 1px solid #fff;
+  border-radius: 2px;
+  z-index: 10;
+  cursor: nwse-resize;
+}
+.rich-text-editor-wrapper .ProseMirror [data-resize-handle="bottom-right"] {
+  bottom: -4px;
+  right: -4px;
+  cursor: nwse-resize;
+}
+.rich-text-editor-wrapper .ProseMirror [data-resize-handle="bottom-left"] {
+  bottom: -4px;
+  left: -4px;
+  cursor: nesw-resize;
+}
+.rich-text-editor-wrapper .ProseMirror [data-resize-handle="top-right"] {
+  top: -4px;
+  right: -4px;
+  cursor: nesw-resize;
+}
+.rich-text-editor-wrapper .ProseMirror [data-resize-handle="top-left"] {
+  top: -4px;
+  left: -4px;
+  cursor: nwse-resize;
+}
+.rich-text-editor-wrapper .ProseMirror [data-resize-state="resizing"] {
+  user-select: none;
+}
+/* Ensure resize handles aren't clipped and reduce works (top/left handles) */
+.rich-text-editor-wrapper .ProseMirror figure.image-figure,
+.rich-text-editor-wrapper .ProseMirror [data-resize-container] {
+  overflow: visible;
+}
+.rich-text-editor-wrapper .ProseMirror [data-resize-wrapper] {
+  overflow: visible;
+}
+.rich-text-editor-wrapper .ProseMirror figure.image-figure {
+  padding: 4px;
+  box-sizing: content-box;
+}
+/* Image figure + caption (display) */
+.rich-text-content figure.image-figure,
+.rich-text-editor-wrapper .ProseMirror figure.image-figure {
+  display: table;
+  clear: both;
+  text-align: center;
+  margin: 0.9em auto;
+  min-width: 50px;
+}
+.rich-text-content figure.image-figure figcaption,
+.rich-text-editor-wrapper .ProseMirror figure.image-figure figcaption {
+  display: block;
+  font-size: 0.9em;
+  color: inherit;
+  opacity: 0.85;
+  margin-top: 0.25em;
+  text-align: center;
+}

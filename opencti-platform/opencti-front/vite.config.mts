@@ -8,6 +8,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 const depsToOptimize = [
   "@analytics/google-analytics",
   "@ckeditor/ckeditor5-react",
+  "@tiptap/react",
   "@hello-pangea/dnd",
   "@mui/icons-material",
   "@mui/icons-material/ArrowForwardIosSharp",
@@ -124,6 +125,9 @@ const depsToOptimize = [
   "ckeditor5/translations/ja.js",
   "ckeditor5/translations/ko.js",
   "ckeditor5/translations/zh.js",
+  "@tiptap/core",
+  "@tiptap/react",
+  "@tiptap/starter-kit",
   "classnames",
   "convert",
   "date-fns",

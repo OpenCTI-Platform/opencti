@@ -23,10 +23,12 @@ import { isEmptyField } from '../../../../utils/utils';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import withRouter from '../../../../utils/compat_router/withRouter';
+import RichTextEditor from '../../../../components/RichTextEditor';
 import CKEditor from '../../../../components/CKEditor';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import HtmlDisplay from '../../../../components/HtmlDisplay';
 import useAttributes from '../../../../utils/hooks/useAttributes';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
 
@@ -461,7 +463,7 @@ class StixCoreObjectContentComponent extends Component {
       .replaceAll(regex, '');
     const fragment = stixCoreObject.name.split('/');
     const currentName = R.last(fragment);
-    await htmlToPdf('content', htmlData).download(`${currentName}.pdf`);
+    await htmlToPdf('content', htmlData, this.props.isTiptapEditorEnable).download(`${currentName}.pdf`);
   }
 
   render() {
@@ -590,15 +592,27 @@ class StixCoreObjectContentComponent extends Component {
                   className={classes.editorContainer}
                   style={{ minHeight: height, height }}
                 >
-                  <CKEditor
-                    data={currentContent ?? ''}
-                    onChange={(_, editor) => {
-                      this.setState({ currentContent: editor.getData(), changed: true });
-                    }}
-                    onBlur={(_, editor) => {
-                      this.onHtmlFieldChange(editor.getData());
-                    }}
-                  />
+                  {this.props.isTiptapEditorEnable ? (
+                    <RichTextEditor
+                      data={currentContent ?? ''}
+                      onChange={(_, adapter) => {
+                        this.setState({ currentContent: adapter.getData(), changed: true });
+                      }}
+                      onBlur={(_, adapter) => {
+                        this.onHtmlFieldChange(adapter.getData());
+                      }}
+                    />
+                  ) : (
+                    <CKEditor
+                      data={currentContent ?? ''}
+                      onChange={(_, editor) => {
+                        this.setState({ currentContent: editor.getData(), changed: true });
+                      }}
+                      onBlur={(_, editor) => {
+                        this.onHtmlFieldChange(editor.getData());
+                      }}
+                    />
+                  )}
                   <TextFieldAskAI
                     currentValue={currentContent ?? ''}
                     setFieldValue={(val) => {
@@ -944,10 +958,20 @@ const withAttributes = (Component) => {
   return WithAttributes;
 };
 
+const withHelperFF = (Component) => {
+  const WithHelperFF = (props) => {
+    const { isTiptapEditorEnable } = useHelper();
+    return <Component {...props} isTiptapEditorEnable={isTiptapEditorEnable()} />;
+  };
+  WithHelperFF.displayName = `WithHelperFF(${Component.displayName || Component.name || 'Component'})`;
+  return WithHelperFF;
+};
+
 export default R.compose(
   inject18n,
   withTheme,
   withRouter,
   withStyles(styles),
   withAttributes,
+  withHelperFF,
 )(StixCoreObjectContent);

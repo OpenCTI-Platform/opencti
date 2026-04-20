@@ -1,21 +1,25 @@
-import { CKEDITOR_CONTAINER_SELECTOR, MAX_WIDTH_PORTRAIT } from './constants';
+import { TIPTAP_EDITOR_SELECTOR, CKEDITOR_CONTAINER_SELECTOR, MAX_WIDTH_PORTRAIT } from './constants';
 
 /**
- * Loop through elements inside CKEditor to determine if it is
+ * Loop through elements inside the editor to determine if it is
  * necessary to generate a PDF in landscape or portrait.
  *
  * @returns 'landscape' or 'portrait'.
  */
-const determineOrientation = () => {
+const determineOrientation = (isTiptapEnabled = false) => {
   let pdfElementMaxWidth = 0;
-  const elementCkEditor = document.querySelector(CKEDITOR_CONTAINER_SELECTOR);
-  if (elementCkEditor) {
-    // We need to get tables and img width inside ckeditor in order to choose orientation.
-    const tables = Array.from(elementCkEditor.querySelectorAll('figure.table') ?? []);
-    const images = Array.from(elementCkEditor.querySelectorAll('img') ?? []);
+  const selector = isTiptapEnabled ? TIPTAP_EDITOR_SELECTOR : CKEDITOR_CONTAINER_SELECTOR;
+  const elementEditor = document.querySelector(selector);
+  if (elementEditor) {
+    // We need to get tables and img width inside the editor in order to choose orientation.
+    // Tiptap uses <table>, legacy editor used figure.table
+    const tableSelector = isTiptapEnabled ? 'table, figure.table' : 'figure.table';
+    const tables = Array.from(elementEditor.querySelectorAll(tableSelector) ?? []);
+    const images = Array.from(elementEditor.querySelectorAll('img') ?? []);
     [...tables, ...images].forEach((child) => {
-      if (child.clientWidth > pdfElementMaxWidth) {
-        pdfElementMaxWidth = child.clientWidth;
+      const width = (child as HTMLElement).clientWidth;
+      if (width > pdfElementMaxWidth) {
+        pdfElementMaxWidth = width;
       }
     });
   }

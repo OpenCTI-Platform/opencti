@@ -27,6 +27,7 @@ import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPd
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import useGranted, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 import { FieldOption } from '../../../../utils/field';
 
 export const BUILT_IN_HTML_TO_PDF = {
@@ -169,6 +170,8 @@ const StixCoreObjectFileExportComponent = ({
   };
   const { buildFileFromTemplate } = useFileFromTemplate();
   const hasUploadAndExportCapabilities = useGranted([KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT], true);
+  const { isTiptapEditorEnable } = useHelper();
+  const tiptapEnabled = isTiptapEditorEnable();
 
   const {
     connectorsForExport,
@@ -303,7 +306,7 @@ const StixCoreObjectFileExportComponent = ({
           const templateName = values.template.label;
           const fileName = `${values.exportFileName}.pdf`;
           const fileMarkingNames = values.fileMarkings.map(({ label }) => label);
-          const PDF = await htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames, values.fintelDesign?.value);
+          const PDF = await htmlToPdfReport(scoName ?? '', templateContent, templateName, fileMarkingNames, values.fintelDesign?.value, tiptapEnabled);
           const blob = await PDF.getBlob();
           uploadFile({
             id: scoId,
@@ -328,8 +331,8 @@ const StixCoreObjectFileExportComponent = ({
         const fileName = `${values.exportFileName}.pdf`;
         const isFromTemplate = fileId.startsWith('fromTemplate');
         const PDF = isFromTemplate
-          ? await htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames, values.fintelDesign?.value)
-          : htmlToPdf(fileId, fileData);
+          ? await htmlToPdfReport(scoName ?? '', fileData, name, fileMarkingNames, values.fintelDesign?.value, tiptapEnabled)
+          : htmlToPdf(fileId, fileData, tiptapEnabled);
         const blob = await PDF.getBlob();
         uploadFile({
           id: scoId,
