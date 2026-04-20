@@ -28,8 +28,7 @@
     "test:e2e": "E2E_TEST=true yarn playwright test --workers=1 --retries=1 -x",
     "test:e2e:ui": "E2E_TEST=true yarn playwright test --ui --workers=1",
     "generate-test-e2e": "yarn playwright codegen http://localhost:3000/",
-    "test:e2e:coverage": "E2E_TEST=true E2E_COVERAGE=true yarn playwright test && yarn show-report-e2e",
-    "show-report-e2e": "open-cli test-results/report.html && open-cli test-results/coverage/index.html",
+    "test:e2e:coverage": "E2E_TEST=true E2E_COVERAGE=true yarn playwright test",
     "knip": "knip"
   },
   "dependencies": {
@@ -208,7 +207,6 @@
     "knip": "6.12.2",
     "license-checker-rseidelsohn": "4.4.2",
     "monocart-reporter": "2.10.1",
-    "open-cli": "8.0.0",
     "react-router": "6.30.3",
     "relay-compiler": "20.1.1",
     "relay-test-utils": "20.1.1",
