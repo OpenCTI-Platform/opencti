@@ -13367,7 +13367,6 @@ __metadata:
     react-rectangle-selection: "npm:1.0.4"
     react-relay: "npm:20.1.1"
     react-relay-network-modern: "npm:6.2.2"
-    react-router: "npm:6.30.3"
     react-router-dom: "npm:6.30.3"
     react-syntax-highlighter: "npm:16.1.1"
     react-transition-group: "npm:4.4.5"

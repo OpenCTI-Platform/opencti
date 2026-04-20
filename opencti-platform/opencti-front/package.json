@@ -207,7 +207,6 @@
     "knip": "6.12.2",
     "license-checker-rseidelsohn": "4.4.2",
     "monocart-reporter": "2.10.1",
-    "react-router": "6.30.3",
     "relay-compiler": "20.1.1",
     "relay-test-utils": "20.1.1",
     "typescript": "5.9.3",
