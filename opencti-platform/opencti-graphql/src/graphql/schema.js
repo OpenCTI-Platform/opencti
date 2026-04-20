@@ -62,7 +62,7 @@ import globalTypeDefs from '../../config/schema/opencti.graphql';
 import organizationOrIndividualResolvers from '../resolvers/organizationOrIndividual';
 
 import taskResolvers from '../resolvers/backgroundTask';
-import retentionResolvers from '../resolvers/retentionRule';
+
 import statusResolvers from '../resolvers/status';
 import ruleResolvers from '../resolvers/rule';
 import stixResolvers from '../resolvers/stix';
@@ -189,7 +189,6 @@ const schemaResolvers = [
   fileResolvers,
   indexedFileResolvers,
   taskResolvers,
-  retentionResolvers,
   stixResolvers,
   // ENTITIES
   // INTERNAL OBJECT ENTITIES

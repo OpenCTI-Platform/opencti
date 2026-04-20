@@ -1,10 +1,10 @@
 import moment, { type Moment } from 'moment';
 import * as R from 'ramda';
-import { listRules as findRetentionRulesToExecute } from '../domain/retentionRule';
+import { listRules as findRetentionRulesToExecute } from '../modules/retentionRules/retentionRules-domain';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { deleteElementById, patchAttribute } from '../database/middleware';
 import { executionContext, RETENTION_MANAGER_USER } from '../utils/access';
-import { ENTITY_TYPE_RETENTION_RULE } from '../schema/internalObject';
+import { ENTITY_TYPE_RETENTION_RULE } from '../modules/retentionRules/retentionRules-types';
 import { now, utcDate } from '../utils/format';
 import { READ_STIX_INDICES } from '../database/utils';
 import { elPaginate } from '../database/engine';

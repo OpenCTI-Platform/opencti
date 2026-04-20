@@ -1089,55 +1089,6 @@ input QueryTaskAddInput {
   scope: BackgroundTaskScope!
 }
 
-input RetentionRuleAddInput {
-  name: String! @constraint(minLength:2, format: "not-blank")
-  filters: String
-  max_retention: Int! @constraint(min: 1)
-  retention_unit: RetentionUnit
-  scope: RetentionRuleScope!
-}
-enum RetentionRuleOrdering {
-  name
-  scope
-  remaining_count
-  last_execution_date
-  max_retention
-  _score
-}
-enum RetentionRuleScope {
-  knowledge
-  file
-  workbench
-}
-enum RetentionUnit {
-  minutes
-  hours
-  days
-}
-type RetentionRule {
-  id: ID!
-  standard_id: String!
-  name: String!
-  filters: String!
-  max_retention: Int!
-  retention_unit: RetentionUnit!
-  last_execution_date: DateTime
-  last_deleted_count: Int
-  remaining_count: Int
-  scope: RetentionRuleScope!
-}
-type RetentionRuleConnection {
-  pageInfo: PageInfo!
-  edges: [RetentionRuleEdge]
-}
-type RetentionRuleEdge {
-  cursor: String!
-  node: RetentionRule!
-}
-type RetentionRuleEditMutations {
-  delete: ID
-  fieldPatch(input: [EditInput]!): RetentionRule
-}
 ###### ENTITIES
 interface BasicObject {
   id: ID! # internal_id
@@ -14906,14 +14857,6 @@ type Query {
   ): AttributeConnection @auth(for: [KNOWLEDGE])
   schemaAttributeNames(elementType: [String]!) : AttributeConnection @auth(for: [KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS])
   schemaAttributes: [AttributesMap] @auth(for: [KNOWLEDGE])
-  retentionRule(id: String!): RetentionRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  retentionRules(
-    first: Int,
-    after: ID,
-    search: String,
-    orderBy: RetentionRuleOrdering
-    orderMode: OrderingMode
-  ): RetentionRuleConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
   statusTemplate(id: String!): StatusTemplate @auth
   statusTemplates(
     first: Int
@@ -16469,10 +16412,6 @@ type Mutation {
   listTaskAdd(input: ListTaskAddInput!): BackgroundTask! @auth
   queryTaskAdd(input: QueryTaskAddInput!): BackgroundTask! @auth
 
-  ### RETENTION RULE
-  retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule! @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  retentionRuleCheck(input: RetentionRuleAddInput): Int! @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  retentionRuleEdit(id: ID!): RetentionRuleEditMutations @auth(for: [SETTINGS_SETCUSTOMIZATION])
 
   ### RULE
   ruleSetActivation(id: ID!, enable: Boolean!): Rule! @auth(for: [SETTINGS_SETCUSTOMIZATION])

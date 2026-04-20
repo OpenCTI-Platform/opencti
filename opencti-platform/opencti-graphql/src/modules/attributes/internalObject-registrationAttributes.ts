@@ -25,7 +25,6 @@ import {
   ENTITY_TYPE_MIGRATION_REFERENCE,
   ENTITY_TYPE_MIGRATION_STATUS,
   ENTITY_TYPE_PIR_HISTORY,
-  ENTITY_TYPE_RETENTION_RULE,
   ENTITY_TYPE_ROLE,
   ENTITY_TYPE_RULE,
   ENTITY_TYPE_RULE_MANAGER,
@@ -39,7 +38,6 @@ import {
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { EVENT_ACCESS_VALUES, EVENT_SCOPE_VALUES, EVENT_STATUS_VALUES, EVENT_TYPE_VALUES } from '../../manager/activityListener';
-import { RETENTION_SCOPE_VALUES, RETENTION_UNIT_VALUES } from '../../manager/retentionManager';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { computeAccountStatusChoices } from '../../config/conf';
 import { CONNECTOR_PRIORITY_GROUP_VALUES } from '../../database/repository';
@@ -539,16 +537,6 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'last_execution_date', label: 'Last execution date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'task_order_mode', label: 'Order mode for queries', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     errors,
-  ],
-  [ENTITY_TYPE_RETENTION_RULE]: [
-    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'filters', label: 'Filters', type: 'string', format: 'text', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: false },
-    { name: 'max_retention', label: 'Maximum retention', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'retention_unit', label: 'Maximum retention unit', type: 'string', format: 'enum', values: RETENTION_UNIT_VALUES, mandatoryType: 'no', editDefault: true, multiple: false, upsert: false, isFilterable: true },
-    { name: 'last_execution_date', label: 'Last execution date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'last_deleted_count', label: 'Last deleted count', precision: 'integer', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'remaining_count', label: 'Remaining count', precision: 'integer', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'scope', label: 'Scope', type: 'string', format: 'enum', values: RETENTION_SCOPE_VALUES, mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   [ENTITY_TYPE_SYNC]: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: false, isFilterable: true },
