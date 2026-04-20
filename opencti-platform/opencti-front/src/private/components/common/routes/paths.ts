@@ -44,7 +44,7 @@ export const PATH_ADMINISTRATIVE_AREA = (administrativeAreaId: string) => `${PAT
 export const PATH_REGIONS = `${PATH_DASHBOARD}/locations/regions`;
 export const PATH_REGION = (regionId: string) => `${PATH_REGIONS}/${regionId}`;
 export const PATH_COUNTRIES = `${PATH_DASHBOARD}/locations/countries`;
-export const PATH_COUNTRY = (countryId: string) => `${PATH_COUNTRY}/${countryId}`;
+export const PATH_COUNTRY = (countryId: string) => `${PATH_COUNTRIES}/${countryId}`;
 
 // OBSERVATIONS
 export const PATH_ARTIFACTS = `${PATH_DASHBOARD}/observations/artifacts`;
