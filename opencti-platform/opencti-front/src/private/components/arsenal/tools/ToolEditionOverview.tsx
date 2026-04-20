@@ -6,6 +6,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { GenericContext } from '@components/common/model/GenericContextModel';
 import { useTheme } from '@mui/styles';
 import TextField from '../../../../components/TextField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -258,15 +259,17 @@ const ToolEditionOverview: FunctionComponent<ToolEditionOverviewProps> = ({
             helperText={<SubscriptionFocus context={context} fieldName="name" />}
           />
           <Field
-            component={TextField}
+            component={MarkdownField}
             name="description"
             label={t_i18n('Description')}
             required={(mandatoryAttributes.includes('description'))}
             multiline
             fullWidth
+            rows="4"
             style={{ marginTop: theme.spacing(2) }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            uploadEntityId={tool.id}
             helperText={<SubscriptionFocus context={context} fieldName="description" />}
           />
           <ConfidenceField

@@ -227,6 +227,7 @@ const ChannelEditionOverviewComponent = (props) => {
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            uploadEntityId={channel.id}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }

@@ -33,6 +33,7 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import TextField from '../../../../components/TextField';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 
 const toolMutation = graphql`
   mutation ToolCreationMutation($input: ToolAddInput!) {
@@ -47,6 +48,16 @@ const toolMutation = graphql`
       entity_type
       parent_types
       ...ToolsLine_node
+    }
+  }
+`;
+
+const toolCreationDescriptionPatchMutation = graphql`
+  mutation ToolCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    toolEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
     }
   }
 `;
@@ -110,6 +121,28 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Tool')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(toolCreationDescriptionPatchMutation);
+  const patchToolDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    ToolCreationMutation['response'],
+    ToolAddInput
+  >({
+    getCreatedId: (response) => response?.toolAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchToolDescription,
+  });
   const {
     bulkCommit,
     bulkCount,
@@ -154,6 +187,22 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
 
     bulkCommit({
       variables,
+      commit: (args) => {
+        const mutationVariables = args.variables as ToolCreationMutation$variables;
+        commit({
+          ...args,
+          variables: mutationVariables,
+          onCompleted: (response, errors) => {
+            runAfterStoringTempImagesForEntity(response, {
+              ...values,
+              description: mutationVariables.input.description ?? '',
+            }, {
+              onSuccess: () => args.onCompleted?.(response, errors),
+              onError: () => args.onCompleted?.(response, errors),
+            });
+          },
+        });
+      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -241,6 +290,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
               rows="4"
               style={fieldSpacingContainerStyle}
               askAi={true}
+              {...getTempImageFieldProps(values.objectMarking.map((v) => v.value))}
             />
             <ConfidenceField
               entityType="Tool"
