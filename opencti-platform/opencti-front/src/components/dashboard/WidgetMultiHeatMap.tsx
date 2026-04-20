@@ -84,7 +84,7 @@ const WidgetMultiHeatMap = ({
       isStacked,
       colorRanges,
     ) as ApexOptions;
-  }, [maxValue, minValue]);
+  }, [theme, isStacked, maxValue, minValue]);
 
   return (
     <Chart

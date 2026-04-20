@@ -43,7 +43,7 @@ const WidgetMultiAreas = ({
       isStacked,
       hasLegend,
     ) as ApexOptions;
-  }, []);
+  }, [theme, interval, isStacked, hasLegend]);
 
   return (
     <Chart

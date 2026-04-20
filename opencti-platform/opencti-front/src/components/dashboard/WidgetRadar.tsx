@@ -40,7 +40,7 @@ const WidgetRadar = ({
       [],
       true,
     ) as ApexOptions;
-  }, [data, groupBy]);
+  }, [data, groupBy, theme]);
 
   return (
     <Chart

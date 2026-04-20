@@ -41,7 +41,7 @@ const WidgetMultiLines = ({
       false,
       hasLegend,
     ) as ApexOptions;
-  }, [interval]);
+  }, [theme, interval, hasLegend]);
 
   return (
     <Chart

@@ -36,7 +36,7 @@ const WidgetWordCloud = ({ data, groupBy }: WidgetWordCloudProps) => {
       fontSizes: [20, 50],
       scale: 'log',
     };
-  }, []);
+  }, [theme]);
 
   return (
     <ReactWordcloud

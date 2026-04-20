@@ -33,7 +33,7 @@ const WidgetPolarArea = ({
       'bottom',
       colors,
     ) as ApexOptions;
-  }, [data, groupBy]);
+  }, [data, groupBy, theme]);
 
   return (
     <Chart

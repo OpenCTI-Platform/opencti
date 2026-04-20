@@ -35,7 +35,7 @@ const WidgetTree = ({
       return item;
     });
     return [{ data: chartData }];
-  }, [data, groupBy]);
+  }, [data, groupBy, t_i18n]);
 
   const options: ApexOptions = useMemo(() => {
     return treeMapOptions(
@@ -44,7 +44,7 @@ const WidgetTree = ({
       'bottom',
       isDistributed,
     ) as ApexOptions;
-  }, [isDistributed]);
+  }, [theme, isDistributed]);
 
   return (
     <Chart
