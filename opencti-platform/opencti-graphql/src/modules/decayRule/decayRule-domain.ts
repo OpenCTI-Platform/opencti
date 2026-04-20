@@ -405,6 +405,8 @@ export const checkDecayRules = async (context: AuthContext, user: AuthUser, reso
       const filterGroup = JSON.parse(enabledRules[i].decay_filters);
       const result = await isStixMatchFilterGroup(context, user, formattedIndicator, filterGroup);
       if (result) availableRules.push(enabledRules[i]);
+    } else {
+      availableRules.push(enabledRules[i]);
     }
   }
   const sortedAvailableRules = availableRules.sort((a, b) => b.order - a.order);
