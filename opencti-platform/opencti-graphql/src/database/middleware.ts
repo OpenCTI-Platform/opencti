@@ -797,7 +797,7 @@ const convertAggregateDistributions = async (
 export const timeSeriesHistory = async (context: AuthContext, user: AuthUser, args: any) => {
   const { startDate, endDate, interval } = args;
   const argsWithTypes = { ...args, types: args.types ?? [ENTITY_TYPE_HISTORY] };
-  const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, argsWithTypes);
+  const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, argsWithTypes, args.unique, args.countField);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const timeSeriesEntities = async (

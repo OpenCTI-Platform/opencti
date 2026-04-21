@@ -369,6 +369,8 @@ input AuditsTimeSeriesParameters {
   types: [String]
   filters: FilterGroup
   search: String
+  countField: String
+  unique: Boolean
 }
 input StixCoreObjectsTimeSeriesParameters {
   field: String!
@@ -14734,6 +14736,8 @@ type Query {
     onlyInferred: Boolean
     filters: FilterGroup
     search: String
+    field: String
+    unique: Boolean
   ): Number @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   auditsTimeSeries(
     field: String!

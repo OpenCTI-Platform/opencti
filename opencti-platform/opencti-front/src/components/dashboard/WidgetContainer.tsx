@@ -11,7 +11,8 @@ import type { Theme } from '../../components/Theme';
 import { hexToRGB } from '../../utils/Colors';
 import { useFormatter } from '../../components/i18n';
 import Tag from '@common/tag/Tag';
-
+import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
+import { Tooltip } from '@mui/material';
 interface WidgetContainerProps {
   children: ReactNode;
   height?: CSSProperties['height'];
@@ -21,6 +22,7 @@ interface WidgetContainerProps {
   chart?: ApexCharts;
   action?: ReactNode;
   showPreviewTag?: boolean;
+  warning?: string;
 }
 
 const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
@@ -32,10 +34,28 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
   chart,
   action,
   showPreviewTag,
+  warning,
 }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const previewColor = theme.palette.designSystem.tertiary.orange['400'];
+  const titleWithWarning = warning
+    ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
+          {title}
+          <Tooltip
+            title={warning}
+          >
+            <ReportProblemOutlinedIcon
+              style={{
+                fontSize: 15,
+                color: theme.palette.designSystem.alert.warning.primary,
+              }}
+            />
+          </Tooltip>
+        </div>
+      )
+    : title;
   return (
     <div style={{ height: height || '100%' }}>
       {variant !== 'inLine' && variant !== 'inEntity'
@@ -43,7 +63,7 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
             <Card
               title={showPreviewTag ? (
                 <Stack direction="row" alignItems="center" gap={1}>
-                  {title}
+                  {titleWithWarning}
                   <Tag
                     label={t_i18n('Preview data')}
                     size="small"
@@ -56,7 +76,7 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
                     }}
                   />
                 </Stack>
-              ) : title}
+              ) : titleWithWarning}
               padding={padding}
               action={(
                 <div>

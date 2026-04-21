@@ -388,6 +388,8 @@ input AuditsTimeSeriesParameters {
   types: [String]
   filters: FilterGroup
   search: String
+  countField: String
+  unique: Boolean
 }
 
 input StixCoreObjectsTimeSeriesParameters {
@@ -9388,7 +9390,7 @@ type Query {
   log(id: ID!): Log
   audits(first: Int, after: ID, types: [String!], orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
   audit(id: ID!): Log
-  auditsNumber(dateAttribute: String, types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String): Number
+  auditsNumber(dateAttribute: String, types: [String], startDate: DateTime, endDate: DateTime, onlyInferred: Boolean, filters: FilterGroup, search: String, field: String, unique: Boolean): Number
   auditsTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], filters: FilterGroup, search: String): [TimeSeries]
   auditsDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   auditsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [AuditsTimeSeriesParameters]): [MultiTimeSeries]

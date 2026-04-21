@@ -1412,10 +1412,12 @@ export enum AttributesOrdering {
 }
 
 export type AuditsTimeSeriesParameters = {
+  countField?: InputMaybe<Scalars['String']['input']>;
   field: Scalars['String']['input'];
   filters?: InputMaybe<FilterGroup>;
   search?: InputMaybe<Scalars['String']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  unique?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type AuthLogEntry = {
@@ -24723,11 +24725,13 @@ export type QueryAuditsMultiTimeSeriesArgs = {
 export type QueryAuditsNumberArgs = {
   dateAttribute?: InputMaybe<Scalars['String']['input']>;
   endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  field?: InputMaybe<Scalars['String']['input']>;
   filters?: InputMaybe<FilterGroup>;
   onlyInferred?: InputMaybe<Scalars['Boolean']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   startDate?: InputMaybe<Scalars['DateTime']['input']>;
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  unique?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 

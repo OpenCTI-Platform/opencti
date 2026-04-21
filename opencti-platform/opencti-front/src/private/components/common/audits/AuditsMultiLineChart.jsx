@@ -27,6 +27,7 @@ import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines'
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import { UNIQUE_COUNT_ESTIMATION_WARNING, showEstimationWarning } from '../../../../utils/widget/widgetUtils';
 
 const auditsMultiLineChartTimeSeriesQuery = graphql`
   query AuditsMultiLineChartTimeSeriesQuery(
@@ -68,9 +69,10 @@ const AuditsMultiLineChart = ({
     dataSelection,
     host,
   });
-
+  const [showWarning, setShowWarning] = useState(false);
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
+  const warning = showWarning ? t_i18n(UNIQUE_COUNT_ESTIMATION_WARNING) : undefined;
 
   const timeSeriesParameters = useMemo(() => {
     return resolvedDataSelection.map((selection) => {
@@ -81,6 +83,8 @@ const AuditsMultiLineChart = ({
             : 'timestamp',
         types: ['History', 'Activity'],
         filters: removeEntityTypeAllFromFilterGroup(selection.filters),
+        countField: selection.attribute,
+        unique: selection.unique,
       };
     });
   }, [resolvedDataSelection]);
@@ -97,6 +101,7 @@ const AuditsMultiLineChart = ({
     interval: parameters.interval ?? 'day',
     timeSeriesParameters,
   }), [startDate, endDate, fallbackDates, parameters.interval, timeSeriesParameters]);
+
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
@@ -120,12 +125,14 @@ const AuditsMultiLineChart = ({
         </div>
       );
     }
+
     return (
       <QueryRenderer
         query={auditsMultiLineChartTimeSeriesQuery}
         variables={variables}
         render={({ props }) => {
           if (props && props.auditsMultiTimeSeries) {
+            setShowWarning(showEstimationWarning(dataSelection, props.auditsMultiTimeSeries));
             return (
               <WidgetMultiLines
                 series={resolvedDataSelection.map((selection, i) => ({
@@ -158,6 +165,7 @@ const AuditsMultiLineChart = ({
       chart={chart}
       action={popover}
       showPreviewTag={isPreviewMode}
+      warning={warning}
     >
       {renderContent()}
     </WidgetContainer>

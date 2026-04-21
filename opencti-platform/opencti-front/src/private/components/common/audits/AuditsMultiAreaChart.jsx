@@ -27,6 +27,7 @@ import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas'
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetNoHostEntity from '../../../../components/dashboard/WidgetNoHostEntity';
+import { UNIQUE_COUNT_ESTIMATION_WARNING, showEstimationWarning } from '../../../../utils/widget/widgetUtils';
 
 const auditsMultiAreaChartTimeSeriesQuery = graphql`
   query AuditsMultiAreaChartTimeSeriesQuery(
@@ -68,9 +69,10 @@ const AuditsMultiAreaChart = ({
     dataSelection,
     host,
   });
-
+  const [showWarning, setShowWarning] = useState(false);
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
+  const warning = showWarning ? t_i18n(UNIQUE_COUNT_ESTIMATION_WARNING) : undefined;
 
   const timeSeriesParameters = useMemo(() => {
     return resolvedDataSelection.map((selection) => {
@@ -81,6 +83,8 @@ const AuditsMultiAreaChart = ({
             : 'timestamp',
         types: ['History', 'Activity'],
         filters: removeEntityTypeAllFromFilterGroup(selection.filters),
+        countField: selection.attribute,
+        unique: selection.unique,
       };
     });
   }, [resolvedDataSelection]);
@@ -97,6 +101,7 @@ const AuditsMultiAreaChart = ({
     interval: parameters.interval ?? 'day',
     timeSeriesParameters,
   }), [startDate, endDate, fallbackDates, parameters.interval, timeSeriesParameters]);
+
   const renderContent = () => {
     if (isMissingHostEntity) {
       return <WidgetNoHostEntity host={host} />;
@@ -120,12 +125,14 @@ const AuditsMultiAreaChart = ({
         </div>
       );
     }
+
     return (
       <QueryRenderer
         query={auditsMultiAreaChartTimeSeriesQuery}
         variables={variables}
         render={({ props }) => {
           if (props && props.auditsMultiTimeSeries) {
+            setShowWarning(showEstimationWarning(dataSelection, props.auditsMultiTimeSeries));
             return (
               <WidgetMultiAreas
                 series={resolvedDataSelection.map((selection, i) => ({
@@ -159,6 +166,7 @@ const AuditsMultiAreaChart = ({
       chart={chart}
       action={popover}
       showPreviewTag={isPreviewMode}
+      warning={warning}
     >
       {renderContent()}
     </WidgetContainer>

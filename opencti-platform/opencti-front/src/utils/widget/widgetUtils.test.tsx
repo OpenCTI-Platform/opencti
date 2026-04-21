@@ -7,11 +7,13 @@ import {
   isWidgetListOrTimeline,
   isDataSelectionNumberValid,
   isWidgetUsingRelationsAggregation,
+  showEstimationWarning,
+  UNIQUE_COUNT_ESTIMATION_THRESHOLD,
   WidgetVisualizationTypes,
   workspacesWidgetVisualizationTypes,
   fintelTemplatesWidgetVisualizationTypes,
 } from './widgetUtils';
-import type { WidgetDataSelection } from './widget';
+import type { WidgetDataSelection, WidgetMultiTimeSeries } from './widget';
 
 describe('widgetUtils', () => {
   describe('getCurrentCategory', () => {
@@ -321,6 +323,61 @@ describe('widgetUtils', () => {
     it('should only include list widget', () => {
       expect(fintelTemplatesWidgetVisualizationTypes.length).toBe(1);
       expect(fintelTemplatesWidgetVisualizationTypes[0].key).toBe('list');
+    });
+  });
+
+  describe('showEstimationWarning', () => {
+    const buildSeries = (values: number[]): WidgetMultiTimeSeries => ({
+      data: values.map((value) => ({
+        date: '2024-01-01T00:00:00Z',
+        value: value,
+      })),
+    });
+
+    it('should return true when a unique selection has at least one value above the threshold', () => {
+      const dataSelection: WidgetDataSelection[] = [
+        { unique: true, perspective: 'entities', filters: null },
+      ];
+      const data: WidgetMultiTimeSeries[] = [
+        buildSeries([10, UNIQUE_COUNT_ESTIMATION_THRESHOLD + 1]),
+      ];
+      expect(showEstimationWarning(dataSelection, data)).toBe(true);
+    });
+
+    it('should return false when no unique selection exceeds the threshold', () => {
+      const dataSelection: WidgetDataSelection[] = [
+        { unique: true, perspective: 'entities', filters: null },
+      ];
+      const data: WidgetMultiTimeSeries[] = [
+        buildSeries([10, UNIQUE_COUNT_ESTIMATION_THRESHOLD]),
+      ];
+      expect(showEstimationWarning(dataSelection, data)).toBe(false);
+    });
+
+    it('should return false when the selection is not flagged as unique even if values exceed the threshold', () => {
+      const dataSelection: WidgetDataSelection[] = [
+        { unique: false, perspective: 'entities', filters: null },
+      ];
+      const data: WidgetMultiTimeSeries[] = [
+        buildSeries([UNIQUE_COUNT_ESTIMATION_THRESHOLD + 1000]),
+      ];
+      expect(showEstimationWarning(dataSelection, data)).toBe(false);
+    });
+
+    it('should return true if at least one of multiple selections triggers the warning', () => {
+      const dataSelection: WidgetDataSelection[] = [
+        { unique: false, perspective: 'entities', filters: null },
+        { unique: true, perspective: 'entities', filters: null },
+      ];
+      const data: WidgetMultiTimeSeries[] = [
+        buildSeries([UNIQUE_COUNT_ESTIMATION_THRESHOLD + 1]),
+        buildSeries([5, UNIQUE_COUNT_ESTIMATION_THRESHOLD + 2]),
+      ];
+      expect(showEstimationWarning(dataSelection, data)).toBe(true);
+    });
+
+    it('should return false for empty data selection', () => {
+      expect(showEstimationWarning([], [])).toBe(false);
     });
   });
 
