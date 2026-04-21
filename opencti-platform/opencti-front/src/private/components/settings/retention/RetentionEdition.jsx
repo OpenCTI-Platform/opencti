@@ -17,7 +17,12 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Filters from '../../common/lists/Filters';
 import { adaptFieldValue } from '../../../../utils/String';
-import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  isFilterGroupNotEmpty,
+  serializeFilterGroupForBackend,
+  useAvailableFilterKeysForEntityTypes,
+} from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import Drawer from '../../common/drawer/Drawer';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
@@ -84,6 +89,7 @@ const RetentionEditionContainer = (props) => {
   const initialValues = R.pickAll(['name', 'max_retention', 'retention_unit'], retentionRule);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(props.retentionRule?.filters ?? undefined));
   const [verified, setVerified] = useState(true);
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
 
   const retentionValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
@@ -194,55 +200,6 @@ const RetentionEditionContainer = (props) => {
                 },
               }}
             />
-            {(retentionRule.scope === 'knowledge' || retentionRule.scope === 'history')
-              && (
-                <>
-                  <Box
-                    sx={{
-                      paddingTop: 4,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: theme.spacing(1),
-                      marginBottom: theme.spacing(1),
-                    }}
-                  >
-                    <Filters
-                      availableFilterKeys={[
-                        'entity_type',
-                        'workflow_id',
-                        'objectAssignee',
-                        'objects',
-                        'objectMarking',
-                        'objectLabel',
-                        'creator_id',
-                        'createdBy',
-                        'priority',
-                        'severity',
-                        'x_opencti_score',
-                        'x_opencti_detection',
-                        'x_opencti_main_observable_type',
-                        'revoked',
-                        'confidence',
-                        'indicator_types',
-                        'pattern_type',
-                        'fromId',
-                        'toId',
-                        'fromTypes',
-                        'toTypes',
-                      ]}
-                      helpers={helpers}
-                      searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
-                    />
-                  </Box>
-                  <FilterIconButton
-                    filters={filters}
-                    helpers={helpers}
-                    redirection
-                    searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
-                  />
-                </>
-              )
-            }
             {retentionRule.scope === 'file'
               && (
                 <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
@@ -257,9 +214,36 @@ const RetentionEditionContainer = (props) => {
                 </Alert>
               )
             }
+            {retentionRule.scope === 'knowledge'
+              && (
+                <>
+                  <Box
+                    sx={{
+                      paddingTop: 4,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: theme.spacing(1),
+                      marginBottom: theme.spacing(1),
+                    }}
+                  >
+                    <Filters
+                      availableFilterKeys={availableFilterKeys}
+                      helpers={helpers}
+                      searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                    />
+                  </Box>
+                  <FilterIconButton
+                    filters={filters}
+                    helpers={helpers}
+                    redirection
+                    searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                  />
+                </>
+              )
+            }
             {retentionRule.scope === 'history'
               && (
-                <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                <Alert severity="info" style={{ margin: '15px 0 15px 0' }}>
                   {t_i18n('The retention policy will be applied on history logs of knowledge entities')}
                 </Alert>
               )

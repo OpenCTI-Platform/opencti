@@ -88,7 +88,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
       ...values,
       max_retention: Number(values.max_retention),
       scope,
-      filters: scope === 'knowledge' ? values.filters : '',
+      filters: (scope === 'knowledge' || scope === 'history') ? values.filters : '',
     };
     const jsonFilters = serializeFilterGroupForBackend(filters);
     commitMutation({
@@ -121,7 +121,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
       ...values,
       max_retention: Number(values.max_retention),
       scope,
-      filters: scope === 'knowledge' ? values.filters : '',
+      filters: (scope === 'knowledge' || scope === 'history') ? values.filters : '',
     };
     const jsonFilters = serializeFilterGroupForBackend(filters);
     commitMutation({
@@ -250,7 +250,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   </Alert>
                 )
               }
-              {(formValues.scope?.value === 'knowledge' || formValues.scope?.value === 'history') && (
+              {formValues.scope?.value === 'knowledge' && (
                 <>
                   <Box sx={{
                     paddingTop: 4,
