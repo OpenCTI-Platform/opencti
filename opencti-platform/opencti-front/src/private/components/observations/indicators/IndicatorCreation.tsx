@@ -24,6 +24,7 @@ import { parse } from '../../../../utils/Time';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -64,6 +65,14 @@ const indicatorMutation = graphql`
       entity_type
       parent_types
       ...IndicatorsLine_node
+    }
+  }
+`;
+
+const indicatorCreationDescriptionPatchMutation = graphql`
+  mutation IndicatorCreationDescriptionPatchMutation($id: ID!, $input: [EditInput!]!) {
+    indicatorFieldPatch(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -152,6 +161,27 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Indicator')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(indicatorCreationDescriptionPatchMutation);
+  const patchIndicatorDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    IndicatorCreationMutation['response'],
+    IndicatorAddInput
+  >({
+    getCreatedId: (response) => response?.indicatorAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchIndicatorDescription,
+  });
 
   const onSubmit: FormikConfig<IndicatorAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const input: IndicatorCreationMutation$variables['input'] = {
@@ -189,12 +219,23 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        if (onCompleted) {
-          onCompleted();
-        }
+      onCompleted: (response) => {
+        runAfterStoringTempImagesForEntity(response, values, {
+          onSuccess: () => {
+            setSubmitting(false);
+            resetForm();
+            if (onCompleted) {
+              onCompleted();
+            }
+          },
+          onError: () => {
+            setSubmitting(false);
+            resetForm();
+            if (onCompleted) {
+              onCompleted();
+            }
+          },
+        });
       },
     });
   };
@@ -343,6 +384,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             multiline={true}
             rows="4"
             style={fieldSpacingContainerStyle}
+            {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
           />
           <KillChainPhasesField
             name="killChainPhases"

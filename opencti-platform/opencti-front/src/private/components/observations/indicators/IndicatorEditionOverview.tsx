@@ -392,6 +392,7 @@ const IndicatorEditionOverviewComponent: FunctionComponent<IndicatorEditionOverv
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            uploadEntityId={indicator.id}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }

@@ -27,6 +27,7 @@ import CustomFileUploader from '../../common/files/CustomFileUploader';
 import { InfrastructuresLinesPaginationQuery$variables } from '../__generated__/InfrastructuresLinesPaginationQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import { splitMultilines } from '../../../../utils/String';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
 import ProgressBar from '../../../../components/ProgressBar';
@@ -48,6 +49,16 @@ const infrastructureMutation = graphql`
       entity_type
       parent_types
       ...InfrastructuresLine_node
+    }
+  }
+`;
+
+const infrastructureCreationDescriptionPatchMutation = graphql`
+  mutation InfrastructureCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    infrastructureEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
     }
   }
 `;
@@ -122,6 +133,27 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
     undefined,
     { successMessage: `${t_i18n('entity_Infrastructure')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(infrastructureCreationDescriptionPatchMutation);
+  const patchInfrastructureDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    InfrastructureCreationMutation['response'],
+    InfrastructureAddInput
+  >({
+    getCreatedId: (response) => response?.infrastructureAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchInfrastructureDescription,
+  });
   const {
     bulkCommit,
     bulkCount,
@@ -168,6 +200,22 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
 
     bulkCommit({
       variables,
+      commit: (args) => {
+        const mutationVariables = args.variables as InfrastructureCreationMutation$variables;
+        commit({
+          ...args,
+          variables: mutationVariables,
+          onCompleted: (response, errors) => {
+            runAfterStoringTempImagesForEntity(response, {
+              ...values,
+              description: mutationVariables.input.description ?? '',
+            }, {
+              onSuccess: () => args.onCompleted?.(response, errors),
+              onError: () => args.onCompleted?.(response, errors),
+            });
+          },
+        });
+      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -294,6 +342,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
+              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
             />
             <CreatedByField
               name="createdBy"
