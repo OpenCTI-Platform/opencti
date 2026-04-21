@@ -83,13 +83,13 @@ export const getCustomViewsDisplayContext = async (context: AuthContext, user: A
     }
     const customViewsInfos = customViewInfoMap.get(targetEntityType) ?? [];
     acc.push({
-      entity_type: targetEntityType,
-      custom_views_info: customViewsInfos,
+      entityType: targetEntityType,
+      customViews: customViewsInfos,
     });
     return acc;
   }, [] as {
-    custom_views_info: BasicStoreEntityCustomView[];
-    entity_type: string;
+    customViews: BasicStoreEntityCustomView[];
+    entityType: string;
   }[]);
 };
 

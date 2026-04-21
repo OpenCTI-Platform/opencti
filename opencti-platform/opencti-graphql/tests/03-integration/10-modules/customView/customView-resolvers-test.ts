@@ -9,8 +9,8 @@ import { CUSTOM_VIEW_ENTITY_1, CUSTOM_VIEW_ENTITY_2, CUSTOM_VIEW_ENTITY_INVALID 
 const READ_CONTEXT_QUERY = gql`
   query CustomViewsDisplayContextTest {
     customViewsDisplayContext {
-      entity_type
-      custom_views_info {
+      entityType
+      customViews {
         id
         name
         path
@@ -75,16 +75,16 @@ describe('CustomView resolvers', () => {
           variables: {},
         });
         expect(result.data.customViewsDisplayContext).toContainEqual({
-          entity_type: CUSTOM_VIEW_ENTITY_1.target_entity_type,
-          custom_views_info: [{
+          entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+          customViews: [{
             id: customViewId1,
             name: CUSTOM_VIEW_ENTITY_1.name,
             path: `${CUSTOM_VIEW_ENTITY_1.slug}-${customViewId1.replaceAll('-', '')}`,
           }],
         });
         expect(result.data.customViewsDisplayContext).toContainEqual({
-          entity_type: CUSTOM_VIEW_ENTITY_2.target_entity_type,
-          custom_views_info: [{
+          entityType: CUSTOM_VIEW_ENTITY_2.target_entity_type,
+          customViews: [{
             id: customViewId2,
             name: CUSTOM_VIEW_ENTITY_2.name,
             path: `${CUSTOM_VIEW_ENTITY_2.slug}-${customViewId2.replaceAll('-', '')}`,
@@ -99,7 +99,7 @@ describe('CustomView resolvers', () => {
         });
         expect(result.data.customViewsDisplayContext).not.toSatisfy(
           (contexts: CustomViewsDisplayContext[]) => contexts.some((c) => {
-            return c.entity_type === CUSTOM_VIEW_ENTITY_INVALID.target_entity_type;
+            return c.entityType === CUSTOM_VIEW_ENTITY_INVALID.target_entity_type;
           }));
       });
     });

@@ -16130,12 +16130,12 @@ type CustomView implements InternalObject & BasicObject {
   slug: String!
   manifest: String
   path: String!
-  target_entity_type: String!
+  targetEntityType: String!
 }
 
 type CustomViewsDisplayContext {
-  entity_type: String!
-  custom_views_info: [CustomView!]!
+  entityType: String!
+  customViews: [CustomView!]!
 }
 
 type CustomViewsSettings {

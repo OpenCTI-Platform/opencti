@@ -292,8 +292,8 @@ const rootPrivateQuery = graphql`
       }
     }
     customViewsDisplayContext {
-      entity_type
-      custom_views_info {
+      entityType
+      customViews {
         id
         name
         path

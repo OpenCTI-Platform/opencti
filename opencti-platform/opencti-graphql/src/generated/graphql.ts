@@ -6446,14 +6446,14 @@ export type CustomView = BasicObject & InternalObject & {
   path: Scalars['String']['output'];
   slug: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
-  target_entity_type: Scalars['String']['output'];
+  targetEntityType: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
 };
 
 export type CustomViewsDisplayContext = {
   __typename?: 'CustomViewsDisplayContext';
-  custom_views_info: Array<CustomView>;
-  entity_type: Scalars['String']['output'];
+  customViews: Array<CustomView>;
+  entityType: Scalars['String']['output'];
 };
 
 export type CustomViewsSettings = {
@@ -38975,7 +38975,7 @@ export type ResolversTypes = ResolversObject<{
   CsvMapperTestResult: ResolverTypeWrapper<CsvMapperTestResult>;
   CurrentConnectorStatusInput: CurrentConnectorStatusInput;
   CustomView: ResolverTypeWrapper<BasicStoreEntityCustomView>;
-  CustomViewsDisplayContext: ResolverTypeWrapper<Omit<CustomViewsDisplayContext, 'custom_views_info'> & { custom_views_info: Array<ResolversTypes['CustomView']> }>;
+  CustomViewsDisplayContext: ResolverTypeWrapper<Omit<CustomViewsDisplayContext, 'customViews'> & { customViews: Array<ResolversTypes['CustomView']> }>;
   CustomViewsSettings: ResolverTypeWrapper<Omit<CustomViewsSettings, 'customViews'> & { customViews: Array<ResolversTypes['CustomView']> }>;
   DataComponent: ResolverTypeWrapper<BasicStoreEntityDataComponent>;
   DataComponentAddInput: DataComponentAddInput;
@@ -40053,7 +40053,7 @@ export type ResolversParentTypes = ResolversObject<{
   CsvMapperTestResult: CsvMapperTestResult;
   CurrentConnectorStatusInput: CurrentConnectorStatusInput;
   CustomView: BasicStoreEntityCustomView;
-  CustomViewsDisplayContext: Omit<CustomViewsDisplayContext, 'custom_views_info'> & { custom_views_info: Array<ResolversParentTypes['CustomView']> };
+  CustomViewsDisplayContext: Omit<CustomViewsDisplayContext, 'customViews'> & { customViews: Array<ResolversParentTypes['CustomView']> };
   CustomViewsSettings: Omit<CustomViewsSettings, 'customViews'> & { customViews: Array<ResolversParentTypes['CustomView']> };
   DataComponent: BasicStoreEntityDataComponent;
   DataComponentAddInput: DataComponentAddInput;
@@ -42913,14 +42913,14 @@ export type CustomViewResolvers<ContextType = any, ParentType extends ResolversP
   path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  target_entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  targetEntityType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CustomViewsDisplayContextResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomViewsDisplayContext'] = ResolversParentTypes['CustomViewsDisplayContext']> = ResolversObject<{
-  custom_views_info?: Resolver<Array<ResolversTypes['CustomView']>, ParentType, ContextType>;
-  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  customViews?: Resolver<Array<ResolversTypes['CustomView']>, ParentType, ContextType>;
+  entityType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type CustomViewsSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomViewsSettings'] = ResolversParentTypes['CustomViewsSettings']> = ResolversObject<{

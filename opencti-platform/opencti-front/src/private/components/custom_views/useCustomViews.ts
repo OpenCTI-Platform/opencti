@@ -19,13 +19,13 @@ const NO_CUSTOM_VIEWS = {
   getCurrentCustomViewTab: () => undefined,
 };
 
-export const useCustomViews = (entityType: string) => {
+export const useCustomViews = (targetEntityType: string) => {
   const { customViews: customViewsContext } = useAuth();
-  const customViewsContextForType = customViewsContext.find(({ entity_type }) => entity_type === entityType);
+  const customViewsContextForType = customViewsContext.find(({ entityType }) => entityType === targetEntityType);
   if (!customViewsContextForType) {
     return NO_CUSTOM_VIEWS;
   }
-  const customViews = customViewsContextForType.custom_views_info ?? [];
+  const customViews = customViewsContextForType.customViews ?? [];
   const getCurrentCustomViewTab = matchPath(customViews);
   const sortedCustomViews = [...customViews].sort(
     (lhs, rhs) => lhs.name.localeCompare(rhs.name),

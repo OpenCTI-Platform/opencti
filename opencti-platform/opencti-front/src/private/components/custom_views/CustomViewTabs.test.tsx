@@ -94,8 +94,8 @@ describe('useCustomViewTabs', () => {
             }],
           },
           customViews: [{
-            entity_type: 'Intrusion-Set',
-            custom_views_info: [{
+            entityType: 'Intrusion-Set',
+            customViews: [{
               id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
               name: customViewDisplayName,
               path: customViewPath,
@@ -124,8 +124,8 @@ describe('useCustomViewTabs', () => {
             }],
           },
           customViews: [{
-            entity_type: 'Intrusion-Set',
-            custom_views_info: [{
+            entityType: 'Intrusion-Set',
+            customViews: [{
               id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
               name: 'My first custom view',
               path: 'some-path',
@@ -167,8 +167,8 @@ describe('useCustomViewTabs', () => {
             }],
           },
           customViews: [{
-            entity_type: 'Intrusion-Set',
-            custom_views_info: [{
+            entityType: 'Intrusion-Set',
+            customViews: [{
               id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
               name: customViewDisplayName,
               path: customViewPath,

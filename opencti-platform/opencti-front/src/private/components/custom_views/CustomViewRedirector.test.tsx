@@ -27,8 +27,8 @@ describe('CustomViewRedirector', () => {
         route: customViewPath,
         userContext: createMockUserContext({
           customViews: [{
-            entity_type: 'Intrusion-Set',
-            custom_views_info: [{
+            entityType: 'Intrusion-Set',
+            customViews: [{
               id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
               name: 'My custom view',
               path: customViewPath,
@@ -54,8 +54,8 @@ describe('CustomViewRedirector', () => {
         route: 'other-id-in-path-dc60eb35a6704b49804eef38e3655392',
         userContext: createMockUserContext({
           customViews: [{
-            entity_type: 'Intrusion-Set',
-            custom_views_info: [{
+            entityType: 'Intrusion-Set',
+            customViews: [{
               id: 'dc60eb35-a670-4b49-804e-ef38e3655392',
               name: 'My custom view',
               path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
@@ -81,8 +81,8 @@ describe('CustomViewRedirector', () => {
         route: 'other-id-in-path-dc60eb35a6704b49804eef38e3655392',
         userContext: createMockUserContext({
           customViews: [{
-            entity_type: 'Intrusion-Set',
-            custom_views_info: [{
+            entityType: 'Intrusion-Set',
+            customViews: [{
               id: 'dc60eb35-a670-4b49-804e-ef38e3655392',
               name: 'My custom view',
               path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
@@ -108,8 +108,8 @@ describe('CustomViewRedirector', () => {
         route: 'old-slug-1504f07bee3f4c09ae66b9550eb3abe3',
         userContext: createMockUserContext({
           customViews: [{
-            entity_type: 'Intrusion-Set',
-            custom_views_info: [{
+            entityType: 'Intrusion-Set',
+            customViews: [{
               id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
               name: 'My custom view',
               path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
