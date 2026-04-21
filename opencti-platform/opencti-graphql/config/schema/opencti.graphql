@@ -2320,6 +2320,7 @@ enum DraftOperation {
 type DraftVersion {
   draft_id: String!
   draft_operation: DraftOperation!
+  draft_updates_patch: String
 }
 
 interface StixObject {

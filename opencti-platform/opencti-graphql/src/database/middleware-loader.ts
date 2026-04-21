@@ -129,6 +129,7 @@ export interface RelationOptions<T extends BasicStoreCommon> extends RelationFil
   indices?: Array<string>;
   baseData?: boolean;
   withInferences?: boolean;
+  includeDeletedInDraft?: boolean | null;
 }
 
 export const buildAggregationFilter = <T extends BasicStoreCommon>(args: RelationFilters<T>) => {

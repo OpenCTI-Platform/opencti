@@ -11,11 +11,16 @@ import {
   findDraftWorkspacePaginated,
   findDraftWorkspaceRestrictedPaginated,
   getCurrentUserAccessRight,
+  getEntityContainerRefs,
+  getEntityFields,
+  getEntityRelations,
   getObjectsCount,
   getProcessingCount,
   listDraftObjects,
   listDraftRelations,
   listDraftSightingRelations,
+  listDraftContainerObjects,
+  resolveIdRepresentatives,
   validateDraftWorkspace,
 } from './draftWorkspace-domain';
 import { findById as findWorkById, worksForDraft } from '../../domain/work';
@@ -38,6 +43,11 @@ const draftWorkspaceResolvers: Resolvers = {
       context.changeDraftContext(args.draftId);
       return listDraftSightingRelations(context, context.user, args);
     },
+    draftWorkspaceContainerObjects: (_, args, context) => listDraftContainerObjects(context, context.user, args),
+    draftWorkspaceResolveIds: (_, args, context) => resolveIdRepresentatives(context, context.user, args),
+    draftWorkspaceEntityFields: (_, args, context) => getEntityFields(context, context.user, args),
+    draftWorkspaceEntityRelations: (_, args, context) => getEntityRelations(context, context.user, args),
+    draftWorkspaceEntityContainerRefs: (_, args, context) => getEntityContainerRefs(context, context.user, args),
   },
   DraftWorkspace: {
     creators: async (draft, _, context) => loadCreators(context, context.user, draft),

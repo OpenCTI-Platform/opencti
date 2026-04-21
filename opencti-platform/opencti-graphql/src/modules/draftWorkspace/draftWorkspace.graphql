@@ -4,6 +4,13 @@ enum DraftStatus {
     validated
 }
 
+type DraftContainerObjectChange {
+    entity_id: String!
+    entity_type: String!
+    representative_main: String
+    draft_operation: String!
+}
+
 type DraftWorkspace implements InternalObject & BasicObject {
     id: ID!
     entity_type: String!
@@ -35,6 +42,7 @@ type DraftObjectsCount {
     relationshipsCount: Int!
     sightingsCount: Int!
     containersCount: Int!
+    reviewsCount: Int!
 }
 
 # Ordering
@@ -85,7 +93,12 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
+        draftOperation: String
     ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+    draftWorkspaceContainerObjects(
+        draftId: String!
+        containerId: String!
+    ): [DraftContainerObjectChange!]! @auth(for: [KNOWLEDGE])
     draftWorkspaceRelationships(
         draftId: String!,
         types: [String]
@@ -106,6 +119,39 @@ type Query {
         filters: FilterGroup
         search: String
     ): StixSightingRelationshipConnection @auth(for: [KNOWLEDGE])
+    draftWorkspaceResolveIds(draftId: String!, ids: [String!]!): [DraftResolvedId!]! @auth(for: [KNOWLEDGE])
+    draftWorkspaceEntityFields(draftId: String!, entityId: String!): [DraftEntityField!]! @auth(for: [KNOWLEDGE])
+    draftWorkspaceEntityRelations(draftId: String!, entityId: String!): [DraftEntityRelation!]! @auth(for: [KNOWLEDGE])
+    draftWorkspaceEntityContainerRefs(draftId: String!, entityId: String!): [DraftEntityContainerRef!]! @auth(for: [KNOWLEDGE])
+}
+
+type DraftEntityField {
+    field: String!
+    values: [String!]!
+}
+
+type DraftEntityRelation {
+    relation_id: String!
+    relationship_type: String!
+    from_id: String!
+    from_type: String!
+    from_name: String!
+    to_id: String!
+    to_type: String!
+    to_name: String!
+    draft_operation: String!
+}
+
+type DraftEntityContainerRef {
+    container_id: String!
+    container_type: String!
+    container_name: String!
+    draft_operation: String!
+}
+
+type DraftResolvedId {
+    id: String!
+    representative_main: String
 }
 
 input DraftWorkspaceAddInput {
