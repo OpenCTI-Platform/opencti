@@ -18,16 +18,21 @@ export const up = async (next) => {
   const callback = (notes) => {
     const op = notes
       .map((note) => {
-        const newId = generateStandardId(note.entity_type, note);
-        if (newId === note.standard_id) {
+        try {
+          const newId = generateStandardId(note.entity_type, note);
+          if (newId === note.standard_id) {
+            return [];
+          }
+          const previousStixIds = note.x_opencti_stix_ids ?? [];
+          const updatedStixIds = R.uniq([...previousStixIds, note.standard_id]);
+          return [
+            { update: { _index: note._index, _id: note._id } },
+            { doc: { standard_id: newId, x_opencti_stix_ids: updatedStixIds } },
+          ];
+        } catch (err) {
+          logApp.warn('[OPENCTI] Error during note rewrite, skipping', { err, note });
           return [];
         }
-        const previousStixIds = note.x_opencti_stix_ids ?? [];
-        const updatedStixIds = R.uniq([...previousStixIds, note.standard_id]);
-        return [
-          { update: { _index: note._index, _id: note._id } },
-          { doc: { standard_id: newId, x_opencti_stix_ids: updatedStixIds } },
-        ];
       })
       .flat();
     pushAll(bulkOperations, op);
