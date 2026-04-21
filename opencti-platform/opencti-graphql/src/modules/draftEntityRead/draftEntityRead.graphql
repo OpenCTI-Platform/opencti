@@ -1,0 +1,21 @@
+type DraftEntityRead implements InternalObject & BasicObject {
+    id: ID!
+    standard_id: String!
+    entity_type: String!
+    parent_types: [String!]!
+    metrics: [Metric]
+    # DraftEntityRead fields
+    user_id: String!
+    draft_id: String!
+    entity_id: String!
+    is_read: Boolean!
+}
+
+type Query {
+    draftEntityRead(entityId: ID!, draftId: ID!): DraftEntityRead @auth(for: [KNOWLEDGE])
+}
+
+type Mutation {
+    draftEntityMarkRead(entityId: ID!, draftId: ID!): DraftEntityRead @auth(for: [KNOWLEDGE])
+    draftEntityMarkUnread(entityId: ID!, draftId: ID!): DraftEntityRead @auth(for: [KNOWLEDGE])
+}

@@ -9733,6 +9733,7 @@ type Query {
   disseminationList(id: ID!): DisseminationList
   disseminationLists(first: Int, after: ID, orderBy: DisseminationListOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DisseminationListConnection
   savedFilters(first: Int, after: ID, orderBy: SavedFilterOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SavedFilterConnection
+  draftEntityRead(entityId: ID!, draftId: ID!): DraftEntityRead
   pir(id: ID!): Pir
   pirs(first: Int, after: ID, orderBy: PirOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PirConnection
   pirRelationships(pirId: ID!, first: Int, after: ID, orderBy: PirRelationshipOrdering, orderMode: OrderingMode, fromId: [String], fromRole: String, fromTypes: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, stix: Boolean): PirRelationshipConnection
@@ -10657,6 +10658,8 @@ type Mutation {
   savedFilterAdd(input: SavedFilterAddInput!): SavedFilter
   savedFilterDelete(id: ID!): ID
   savedFilterFieldPatch(id: ID!, input: [EditInput!]): SavedFilter
+  draftEntityMarkRead(entityId: ID!, draftId: ID!): DraftEntityRead
+  draftEntityMarkUnread(entityId: ID!, draftId: ID!): DraftEntityRead
   requestAccessAdd(input: RequestAccessAddInput!): ID
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
   pirAdd(input: PirAddInput!): Pir
@@ -15167,6 +15170,18 @@ input SavedFilterAddInput {
   name: String!
   filters: String!
   scope: String!
+}
+
+type DraftEntityRead implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  user_id: String!
+  draft_id: String!
+  entity_id: String!
+  is_read: Boolean!
 }
 
 enum RequestAccessType {
