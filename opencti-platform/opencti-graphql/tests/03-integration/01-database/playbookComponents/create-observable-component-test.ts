@@ -253,5 +253,103 @@ describe('PLAYBOOK_CREATE_OBSERVABLE_COMPONENT', () => {
       expect(result.bundle.objects.filter((o) => o.type === 'domain-name').length).toEqual(0);
       expect(result.bundle.objects.filter((o) => o.type === 'ipv4-addr').length).toEqual(0);
     });
+
+    it('should extract observables only from filtered indicators when applyToElements = "all-elements" and filter matches partial bundle', async () => {
+      const THIRD_INDICATOR_ID = 'indicator--7a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d';
+      const bundleObjects = [
+        testBundleObject<StixIndicator>({
+          id: MAIN_INDICATOR_ID,
+          type: 'indicator',
+          octiExtension: { type: 'Indicator' },
+          pattern: "[domain-name:value = 'example.org']",
+        }),
+        testBundleObject<StixIndicator>({
+          id: SECOND_INDICATOR_ID,
+          type: 'indicator',
+          octiExtension: { type: 'Indicator' },
+          pattern: "[ipv4-addr:value = '8.8.8.8']",
+        }),
+        testBundleObject({
+          id: THIRD_INDICATOR_ID,
+          type: 'Malware',
+        }),
+      ];
+
+      const filterIndicator = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Indicator"],"mode":"or"}],"filterGroups":[]}';
+
+      const result = await PLAYBOOK_CREATE_OBSERVABLE_COMPONENT.executor(testExecutor({
+        mainId: MAIN_INDICATOR_ID,
+        bundleObjects,
+        configuration: {
+          applyToElements: playbookBundleElementsToApply.allElements.value,
+          applyWithFilters: filterIndicator,
+          wrap_in_container: false,
+        },
+      }));
+
+      // Only the 2 indicators matched the filter, Malware is ignored
+      // 2 observables + 2 relationships added = 3 original + 4 new = 7
+      expect(result.output_port).toBe('out');
+      expect(result.bundle.objects.length).toEqual(7);
+
+      const relationships = result.bundle.objects.filter((o) => o.type === 'relationship') as unknown as StixRelation[];
+      expect(relationships.filter((r) => r.source_ref === MAIN_INDICATOR_ID).length).toEqual(1);
+      expect(relationships.filter((r) => r.source_ref === SECOND_INDICATOR_ID).length).toEqual(1);
+
+      // Malware did not produce any observable
+      expect(result.bundle.objects.filter((o) => o.type === 'domain-name').length).toEqual(1);
+      expect(result.bundle.objects.filter((o) => o.type === 'ipv4-addr').length).toEqual(1);
+    });
+
+    it('should extract observables only from filtered indicators except main when applyToElements = "all-except-main" and filter matches partial bundle', async () => {
+      const THIRD_INDICATOR_ID = 'indicator--7a1b2c3d-4e5f-6a7b-8c9d-0e1f2a3b4c5d';
+      const bundleObjects = [
+        testBundleObject<StixIndicator>({
+          id: MAIN_INDICATOR_ID,
+          type: 'indicator',
+          octiExtension: { type: 'Indicator' },
+          pattern: "[domain-name:value = 'example.org']",
+        }),
+        testBundleObject<StixIndicator>({
+          id: SECOND_INDICATOR_ID,
+          type: 'indicator',
+          octiExtension: { type: 'Indicator' },
+          pattern: "[ipv4-addr:value = '8.8.8.8']",
+        }),
+        testBundleObject({
+          id: THIRD_INDICATOR_ID,
+          type: 'Malware',
+        }),
+      ];
+
+      const filterIndicator = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Indicator"],"mode":"or"}],"filterGroups":[]}';
+
+      const result = await PLAYBOOK_CREATE_OBSERVABLE_COMPONENT.executor(testExecutor({
+        mainId: MAIN_INDICATOR_ID,
+        bundleObjects,
+        configuration: {
+          applyToElements: playbookBundleElementsToApply.allExceptMain.value,
+          applyWithFilters: filterIndicator,
+          wrap_in_container: false,
+        },
+      }));
+
+      // Filter matches both indicators but applyToElements excludes main:
+      // only SECOND_INDICATOR processed, Malware ignored
+      // 1 observable + 1 relationship added = 3 original + 2 new = 5
+      expect(result.output_port).toBe('out');
+      expect(result.bundle.objects.length).toEqual(5);
+
+      const relationships = result.bundle.objects.filter((o) => o.type === 'relationship') as unknown as StixRelation[];
+      expect(relationships.filter((r) => r.source_ref === MAIN_INDICATOR_ID).length).toEqual(0);
+      expect(relationships.filter((r) => r.source_ref === SECOND_INDICATOR_ID).length).toEqual(1);
+
+      // Main indicator did not produce any observable
+      expect(result.bundle.objects.filter((o) => o.type === 'domain-name').length).toEqual(0);
+      // Second indicator produced its observable
+      expect(result.bundle.objects.filter((o) => o.type === 'ipv4-addr').length).toEqual(1);
+      // Malware did not produce any observable
+      expect(result.bundle.objects.filter((o) => o.type === 'Malware').length).toEqual(1);
+    });
   });
 });
