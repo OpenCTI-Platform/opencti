@@ -240,6 +240,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             fullWidth={true}
             multiline={true}
             rows="4"
+            uploadEntityId={courseOfAction.id}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
@@ -263,6 +264,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             fullWidth={true}
             multiline={true}
             rows="4"
+            uploadEntityId={courseOfAction.id}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}

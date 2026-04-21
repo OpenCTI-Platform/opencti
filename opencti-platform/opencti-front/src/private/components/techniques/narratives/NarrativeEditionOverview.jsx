@@ -213,6 +213,7 @@ const NarrativeEditionOverviewComponent = (props) => {
             fullWidth={true}
             multiline={true}
             rows="4"
+            uploadEntityId={narrative.id}
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}

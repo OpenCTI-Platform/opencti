@@ -22,6 +22,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import { splitMultilines } from '../../../../utils/String';
@@ -69,6 +70,14 @@ const narrativeMutation = graphql`
           }
         }
       }
+    }
+  }
+`;
+
+const narrativeCreationDescriptionPatchMutation = graphql`
+  mutation NarrativeCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    narrativeFieldPatch(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -127,6 +136,27 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Narrative')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(narrativeCreationDescriptionPatchMutation);
+  const patchNarrativeDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    NarrativeCreationMutation['response'],
+    NarrativeAddInput
+  >({
+    getCreatedId: (response) => response?.narrativeAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchNarrativeDescription,
+  });
   const {
     bulkCommit,
     bulkCount,
@@ -168,6 +198,22 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
 
     bulkCommit({
       variables,
+      commit: (args) => {
+        const mutationVariables = args.variables as NarrativeCreationMutation$variables;
+        commit({
+          ...args,
+          variables: mutationVariables,
+          onCompleted: (response, errors) => {
+            runAfterStoringTempImagesForEntity(response, {
+              ...values,
+              description: mutationVariables.input.description ?? '',
+            }, {
+              onSuccess: () => args.onCompleted?.(response, errors),
+              onError: () => args.onCompleted?.(response, errors),
+            });
+          },
+        });
+      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -249,6 +295,7 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
+              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
             />
             <ConfidenceField
               entityType="Narratives"

@@ -23,6 +23,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import { splitMultilines } from '../../../../utils/String';
@@ -47,6 +48,14 @@ const dataSourceMutation = graphql`
       entity_type
       parent_types
       ...DataSourcesLine_node
+    }
+  }
+`;
+
+const dataSourceCreationDescriptionPatchMutation = graphql`
+  mutation DataSourceCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    dataSourceFieldPatch(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -115,6 +124,27 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Data-Source')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(dataSourceCreationDescriptionPatchMutation);
+  const patchDataSourceDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    DataSourceCreationMutation['response'],
+    DataSourceAddInput
+  >({
+    getCreatedId: (response) => response?.dataSourceAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchDataSourceDescription,
+  });
   const {
     bulkCommit,
     bulkCount,
@@ -158,6 +188,22 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
 
     bulkCommit({
       variables,
+      commit: (args) => {
+        const mutationVariables = args.variables as DataSourceCreationMutation$variables;
+        commit({
+          ...args,
+          variables: mutationVariables,
+          onCompleted: (response, errors) => {
+            runAfterStoringTempImagesForEntity(response, {
+              ...values,
+              description: mutationVariables.input.description ?? '',
+            }, {
+              onSuccess: () => args.onCompleted?.(response, errors),
+              onError: () => args.onCompleted?.(response, errors),
+            });
+          },
+        });
+      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -242,6 +288,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
+              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
             />
             <CreatedByField
               name="createdBy"

@@ -18,6 +18,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -64,6 +65,16 @@ const attackPatternMutation = graphql`
             x_mitre_id
           }
         }
+      }
+    }
+  }
+`;
+
+const attackPatternCreationDescriptionPatchMutation = graphql`
+  mutation AttackPatternCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    attackPatternEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
       }
     }
   }
@@ -117,6 +128,27 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
     undefined,
     { successMessage: `${t_i18n('entity_Attack-Pattern')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(attackPatternCreationDescriptionPatchMutation);
+  const patchAttackPatternDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    AttackPatternCreationMutation['response'],
+    AttackPatternAddInput
+  >({
+    getCreatedId: (response) => response?.attackPatternAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchAttackPatternDescription,
+  });
 
   const onSubmit: FormikConfig<AttackPatternAddInput>['onSubmit'] = (
     values,
@@ -147,12 +179,23 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        if (onCompleted) {
-          onCompleted();
-        }
+      onCompleted: (response, _errors) => {
+        runAfterStoringTempImagesForEntity(response, values, {
+          onSuccess: () => {
+            setSubmitting(false);
+            resetForm();
+            if (onCompleted) {
+              onCompleted();
+            }
+          },
+          onError: () => {
+            setSubmitting(false);
+            resetForm();
+            if (onCompleted) {
+              onCompleted();
+            }
+          },
+        });
       },
     });
   };
@@ -207,6 +250,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
             multiline={true}
             rows="4"
             style={fieldSpacingContainerStyle}
+            {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
           />
           <ConfidenceField
             entityType="Attack-Pattern"

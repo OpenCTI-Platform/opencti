@@ -22,6 +22,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import { splitMultilines } from '../../../../utils/String';
@@ -46,6 +47,14 @@ const dataComponentMutation = graphql`
       entity_type
       parent_types
       ...DataComponentsLine_node
+    }
+  }
+`;
+
+const dataComponentCreationDescriptionPatchMutation = graphql`
+  mutation DataComponentCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    dataComponentFieldPatch(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -107,6 +116,27 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     undefined,
     { successMessage: `${t_i18n('entity_Data-Component')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(dataComponentCreationDescriptionPatchMutation);
+  const patchDataComponentDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    DataComponentCreationMutation['response'],
+    DataComponentAddInput
+  >({
+    getCreatedId: (response) => response?.dataComponentAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchDataComponentDescription,
+  });
   const {
     bulkCommit,
     bulkCount,
@@ -152,6 +182,22 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
 
     bulkCommit({
       variables,
+      commit: (args) => {
+        const mutationVariables = args.variables as DataComponentCreationMutation$variables;
+        commit({
+          ...args,
+          variables: mutationVariables,
+          onCompleted: (response, errors) => {
+            runAfterStoringTempImagesForEntity(response, {
+              ...values,
+              description: mutationVariables.input.description ?? '',
+            }, {
+              onSuccess: () => args.onCompleted?.(response, errors),
+              onError: () => args.onCompleted?.(response, errors),
+            });
+          },
+        });
+      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -244,6 +290,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
+              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
             />
             <CreatedByField
               name="createdBy"

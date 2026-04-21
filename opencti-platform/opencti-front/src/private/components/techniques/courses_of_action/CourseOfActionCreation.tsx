@@ -19,6 +19,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -45,6 +46,16 @@ const courseOfActionMutation = graphql`
       parent_types
       confidence
       ...CoursesOfActionLine_node
+    }
+  }
+`;
+
+const courseOfActionCreationDescriptionPatchMutation = graphql`
+  mutation CourseOfActionCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    courseOfActionEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
     }
   }
 `;
@@ -101,6 +112,27 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
     undefined,
     { successMessage: `${t_i18n('entity_Course-Of-Action')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(courseOfActionCreationDescriptionPatchMutation);
+  const patchCourseOfActionDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    CourseOfActionCreationMutation['response'],
+    CourseOfActionAddInput
+  >({
+    getCreatedId: (response) => response?.courseOfActionAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchCourseOfActionDescription,
+  });
 
   const onSubmit: FormikConfig<CourseOfActionAddInput>['onSubmit'] = (
     values,
@@ -134,12 +166,23 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        if (onCompleted) {
-          onCompleted();
-        }
+      onCompleted: (response, errors) => {
+        runAfterStoringTempImagesForEntity(response, values, {
+          onSuccess: () => {
+            setSubmitting(false);
+            resetForm();
+            if (onCompleted) {
+              onCompleted();
+            }
+          },
+          onError: () => {
+            setSubmitting(false);
+            resetForm();
+            if (onCompleted) {
+              onCompleted();
+            }
+          },
+        });
       },
     });
   };
@@ -192,6 +235,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
             multiline={true}
             rows="4"
             style={fieldSpacingContainerStyle}
+            {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
           />
           <ConfidenceField
             entityType="Course-Of-Action"
