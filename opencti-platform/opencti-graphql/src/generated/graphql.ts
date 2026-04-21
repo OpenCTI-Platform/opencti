@@ -19862,6 +19862,7 @@ export type MutationVulnerabilityEditArgs = {
 export type MutationWorkAddArgs = {
   connectorId: Scalars['String']['input'];
   friendlyName?: InputMaybe<Scalars['String']['input']>;
+  isMultiPartWork?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -46917,7 +46918,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   vocabularyFieldPatch?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyFieldPatchArgs, 'id' | 'input'>>;
   vulnerabilityAdd?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, RequireFields<MutationVulnerabilityAddArgs, 'input'>>;
   vulnerabilityEdit?: Resolver<Maybe<ResolversTypes['VulnerabilityEditMutations']>, ParentType, ContextType, RequireFields<MutationVulnerabilityEditArgs, 'id'>>;
-  workAdd?: Resolver<ResolversTypes['Work'], ParentType, ContextType, RequireFields<MutationWorkAddArgs, 'connectorId'>>;
+  workAdd?: Resolver<ResolversTypes['Work'], ParentType, ContextType, RequireFields<MutationWorkAddArgs, 'connectorId' | 'isMultiPartWork'>>;
   workDelete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationWorkDeleteArgs, 'connectorId'>>;
   workEdit?: Resolver<Maybe<ResolversTypes['WorkEditMutations']>, ParentType, ContextType, RequireFields<MutationWorkEditArgs, 'id'>>;
   workspaceAdd?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceAddArgs, 'input'>>;

@@ -178,9 +178,12 @@ const connectorResolvers = {
     },
     // endregion
     // Work part
-    workAdd: async (_, { connectorId, friendlyName }, context) => {
+    workAdd: async (_, { connectorId, friendlyName, isMultiPartWork }, context) => {
       const connectorEntity = await connector(context, context.user, connectorId);
-      return createWork(context, context.user, connectorEntity, friendlyName, connectorEntity.id, { receivedTime: now() });
+      return createWork(context, context.user, connectorEntity, friendlyName, connectorEntity.id, {
+        receivedTime: now(),
+        isMultiPartWork: isMultiPartWork ?? false,
+      });
     },
     workEdit: (_, { id }, context) => ({
       delete: () => deleteWork(context, context.user, id),

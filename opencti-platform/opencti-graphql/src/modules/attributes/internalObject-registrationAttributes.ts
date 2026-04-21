@@ -487,6 +487,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'received_time', label: 'Reception date', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
     { name: 'completed_time', label: 'Completion date', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
     { name: 'completed_number', label: 'Completed number', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: true },
+    { name: 'is_multipart', label: 'Indicates whether multiple calls to add_expectations are expected for this work', type: 'boolean', editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     {
       name: 'messages',
       label: 'Messages',

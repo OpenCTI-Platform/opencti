@@ -486,11 +486,24 @@ export const redisDeleteWorks = async (internalIds: Array<string>) => {
 export const redisGetWork = async (internalId: string) => {
   return getClientBase().hgetall(internalId);
 };
-export const isWorkCompleted = async (workId: string) => {
-  const { import_processed_number: pn, import_expected_number: en } = await redisGetWork(workId);
-  const total = parseInt(pn, 10);
-  const expected = parseInt(en, 10);
-  return { isComplete: total === expected, total, expected };
+export const redisMarkWorkAsProcessed = async (workId: string) => {
+  const clientBase = getClientBase();
+  await redisTx(clientBase, async (tx) => {
+    await updateObjectRaw(tx, workId, { is_processed: true });
+  });
+};
+export const redisGetWorkCompletionState = async (workId: string) => {
+  const {
+    import_processed_number: pn,
+    import_expected_number: en,
+    is_processed,
+    is_multipart,
+  } = await redisGetWork(workId);
+  const total = pn ? parseInt(pn, 10) : 0;
+  const expected = en ? parseInt(en, 10) : 0;
+  const isProcessed = is_processed === 'true';
+  const isMultiPartWork = is_multipart === 'true';
+  return { total, expected, isProcessed, isMultiPartWork };
 };
 export const redisUpdateWorkFigures = async (workId: string) => {
   const timestamp = now();
@@ -503,7 +516,6 @@ export const redisUpdateWorkFigures = async (workId: string) => {
     await updateObjectCounterRaw(tx, workId, 'import_processed_number', 1);
     await updateObjectRaw(tx, workId, { import_last_processed: timestamp });
   });
-  return isWorkCompleted(workId);
 };
 export const redisGetConnectorStatus = async (connectorId: string) => {
   return getClientBase().get(`work:${connectorId}`);
@@ -514,9 +526,12 @@ export const redisUpdateActionExpectation = async (user: AuthUser, workId: strin
   });
   return workId;
 };
-export const redisInitializeWork = async (workId: string) => {
+export const redisInitializeWork = async (workId: string, isMultiPartWork: boolean) => {
   await redisTx(getClientBase(), async (tx) => {
-    await updateObjectRaw(tx, workId, { is_initialized: true });
+    await updateObjectRaw(tx, workId, {
+      is_initialized: true,
+      is_multipart: isMultiPartWork,
+    });
   });
 };
 // endregion

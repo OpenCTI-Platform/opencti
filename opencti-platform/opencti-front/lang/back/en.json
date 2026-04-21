@@ -449,6 +449,7 @@
   "Include inferences": "Include inferences",
   "Included IDs": "Included IDs",
   "Index date": "Index date",
+  "Indicates whether multiple calls to add_expectations are expected for this work": "Indicates whether multiple calls to add_expectations are expected for this work",
   "Indicator decay manager": "Indicator decay manager",
   "Indicator filters": "Indicator filters",
   "Indicator observable types": "Indicator observable types",
@@ -1074,3 +1075,4 @@
   "XTM One registration manager": "XTM One registration manager",
   "XTM1 CGU acceptance status": "XTM1 CGU acceptance status"
 }
+
