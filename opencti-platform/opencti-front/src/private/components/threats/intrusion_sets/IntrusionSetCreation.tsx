@@ -23,6 +23,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import { splitMultilines } from '../../../../utils/String';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
@@ -44,6 +45,18 @@ const intrusionSetMutation = graphql`
       parent_types
       description
       ...IntrusionSetCard_node
+    }
+  }
+`;
+
+const intrusionSetCreationDescriptionPatchMutation = graphql`
+  mutation IntrusionSetCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    intrusionSetEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+        description
+        ...IntrusionSetCard_node
+      }
     }
   }
 `;
@@ -106,6 +119,27 @@ export const IntrusionSetCreationForm: FunctionComponent<
     undefined,
     { successMessage: `${t_i18n('entity_Intrusion-Set')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(intrusionSetCreationDescriptionPatchMutation);
+  const patchIntrusionSetDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    IntrusionSetCreationMutation['response'],
+    IntrusionSetAddInput
+  >({
+    getCreatedId: (response) => response?.intrusionSetAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchIntrusionSetDescription,
+  });
   const {
     bulkCommit,
     bulkCount,
@@ -147,6 +181,22 @@ export const IntrusionSetCreationForm: FunctionComponent<
 
     bulkCommit({
       variables,
+      commit: (args) => {
+        const mutationVariables = args.variables as IntrusionSetCreationMutation$variables;
+        commit({
+          ...args,
+          variables: mutationVariables,
+          onCompleted: (response, errors) => {
+            runAfterStoringTempImagesForEntity(response, {
+              ...values,
+              description: mutationVariables.input.description ?? '',
+            }, {
+              onSuccess: () => args.onCompleted?.(response, errors),
+              onError: () => args.onCompleted?.(response, errors),
+            });
+          },
+        });
+      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -235,6 +285,7 @@ export const IntrusionSetCreationForm: FunctionComponent<
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
+              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
             />
             <CreatedByField
               name="createdBy"

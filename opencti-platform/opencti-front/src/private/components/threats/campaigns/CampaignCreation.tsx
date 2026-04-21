@@ -23,6 +23,7 @@ import { CampaignsCardsPaginationQuery$variables } from './__generated__/Campaig
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import { splitMultilines } from '../../../../utils/String';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
 import ProgressBar from '../../../../components/ProgressBar';
@@ -44,6 +45,18 @@ const campaignMutation = graphql`
       entity_type
       parent_types
       ...CampaignCard_node
+    }
+  }
+`;
+
+const campaignCreationDescriptionPatchMutation = graphql`
+  mutation CampaignCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    campaignEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+        description
+        ...CampaignCard_node
+      }
     }
   }
 `;
@@ -103,6 +116,27 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Campaign')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(campaignCreationDescriptionPatchMutation);
+  const patchCampaignDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    CampaignCreationMutation['response'],
+    CampaignAddInput
+  >({
+    getCreatedId: (response) => response?.campaignAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchCampaignDescription,
+  });
   const {
     bulkCommit,
     bulkCount,
@@ -144,6 +178,22 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
 
     bulkCommit({
       variables,
+      commit: (args) => {
+        const mutationVariables = args.variables as CampaignCreationMutation$variables;
+        commit({
+          ...args,
+          variables: mutationVariables,
+          onCompleted: (response, errors) => {
+            runAfterStoringTempImagesForEntity(response, {
+              ...values,
+              description: mutationVariables.input.description ?? '',
+            }, {
+              onSuccess: () => args.onCompleted?.(response, errors),
+              onError: () => args.onCompleted?.(response, errors),
+            });
+          },
+        });
+      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -233,6 +283,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
               rows="4"
               style={fieldSpacingContainerStyle}
               askAi={true}
+              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
             />
             <CreatedByField
               name="createdBy"
