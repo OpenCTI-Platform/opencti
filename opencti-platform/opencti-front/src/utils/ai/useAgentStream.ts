@@ -41,7 +41,9 @@ const useAgentStream = (options?: UseAgentStreamOptions): UseAgentStreamReturn =
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
   }, []);
 
-  const abort = useCallback(() => { abortRef.current?.abort(); }, []);
+  const abort = useCallback(() => {
+    abortRef.current?.abort();
+  }, []);
 
   const execute = useCallback((agentSlug: string, prompt: string) => {
     abortRef.current?.abort();

@@ -119,7 +119,9 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const { content: streamContent, loading: agentLoading, error: agentError, execute: executeStream, abort: abortStream } = useAgentStream();
 
   // Sync streamed content to parent's setContent
-  useEffect(() => { if (streamContent) setContent(streamContent); }, [streamContent, setContent]);
+  useEffect(() => {
+    if (streamContent) setContent(streamContent);
+  }, [streamContent, setContent]);
 
   const [agentExecuted, setAgentExecuted] = useState(false);
 

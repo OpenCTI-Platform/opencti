@@ -173,7 +173,9 @@ const XtmOneForecast = ({ id, loading, setLoading, selectedAgent }: XtmOneForeca
     transformContent: cleanHtmlTags,
   });
 
-  useEffect(() => { setLoading(streamLoading); }, [streamLoading, setLoading]);
+  useEffect(() => {
+    setLoading(streamLoading);
+  }, [streamLoading, setLoading]);
 
   const executeCall = useCallback(() => {
     if (!selectedAgent) return;
