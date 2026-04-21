@@ -34,6 +34,6 @@ jobs:
               --conf.password ${{ secrets.AWX_PASSWORD }} \
               job_templates launch 'Rollout restart an instance resources' \
               --inventory eu-west-staging \
-              --extra_vars '{"solution":"opencti", "customer":"filigran-test-octi"}' \
+              --extra_vars '{"solution":"opencti", "customer":"filigran-test-oct2"}' \
               --wait \
               -f human
