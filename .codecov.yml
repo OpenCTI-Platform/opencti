@@ -32,5 +32,5 @@ coverage:
 flags:
   opencti-front-e2e:
       paths:
-        - opencti-platform/opencti-front/src
+        - opencti-platform/opencti-front/src/
       carryforward: false
