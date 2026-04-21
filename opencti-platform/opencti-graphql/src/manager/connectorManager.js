@@ -55,6 +55,7 @@ const closeOldWorks = async (context, connector) => {
                   params,
                 },
               });
+              logApp.info('Work completed by force due to age', { workId: element.internal_id });
             }
           }
           // Delete redis tracking key
