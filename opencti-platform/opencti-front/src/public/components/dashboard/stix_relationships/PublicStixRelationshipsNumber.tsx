@@ -7,7 +7,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import { PublicStixRelationshipsNumberQuery } from './__generated__/PublicStixRelationshipsNumberQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import CardNumber from '../../../../components/common/card/CardNumber';
+import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 
 const publicStixRelationshipsNumberQuery = graphql`
   query PublicStixRelationshipsNumberQuery(
@@ -46,7 +46,7 @@ const PublicStixCoreRelationshipsNumberComponent = ({
   if (publicStixRelationshipsNumber) {
     const { total, count } = publicStixRelationshipsNumber;
     return (
-      <CardNumber
+      <WidgetNumber
         label={title}
         value={total}
         diffLabel={t_i18n('24 hours')}
@@ -67,6 +67,8 @@ const PublicStixCoreRelationshipsNumber = ({
   startDate,
   endDate,
   title,
+  variant,
+  height,
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters } = widget;
@@ -81,20 +83,23 @@ const PublicStixCoreRelationshipsNumber = ({
   );
 
   return (
-    <>
+    <WidgetContainer
+      padding="medium"
+      height={height}
+      title={parameters?.title ?? title ?? t_i18n('Relationships number')}
+      variant={variant}
+    >
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreRelationshipsNumberComponent
-            title={parameters?.title ?? title ?? t_i18n('Entities number')}
+            title={t_i18n('Relationships number')}
             queryRef={queryRef}
           />
         </React.Suspense>
       ) : (
-        <WidgetContainer>
-          <Loader variant={LoaderVariant.inElement} />
-        </WidgetContainer>
+        <Loader variant={LoaderVariant.inElement} />
       )}
-    </>
+    </WidgetContainer>
   );
 };
 

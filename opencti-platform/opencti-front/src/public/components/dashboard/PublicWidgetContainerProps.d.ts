@@ -6,4 +6,6 @@ export interface PublicWidgetContainerProps {
   uriKey: string;
   widget: Widget;
   title?: string;
+  variant?: string;
+  height?: number;
 }

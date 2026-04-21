@@ -53,6 +53,8 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
       case 'number':
         return (
           <PublicStixCoreObjectsNumber
+            variant={undefined}
+            height={undefined}
             startDate={startDate}
             endDate={endDate}
             uriKey={uriKey}
@@ -192,6 +194,8 @@ const usePublicDashboardWidgets = (uriKey: string, config?: PublicManifestConfig
       case 'number':
         return (
           <PublicStixCoreRelationshipsNumber
+            variant={undefined}
+            height={undefined}
             startDate={startDate}
             endDate={endDate}
             uriKey={uriKey}

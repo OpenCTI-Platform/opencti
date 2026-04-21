@@ -7,7 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { PublicWidgetContainerProps } from '../PublicWidgetContainerProps';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import CardNumber from '../../../../components/common/card/CardNumber';
+import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 
 const publicStixCoreObjectsNumberQuery = graphql`
   query PublicStixCoreObjectsNumberQuery(
@@ -46,7 +46,7 @@ const PublicStixCoreObjectsNumberComponent = ({
   if (publicStixCoreObjectsNumber) {
     const { total, count } = publicStixCoreObjectsNumber;
     return (
-      <CardNumber
+      <WidgetNumber
         label={title}
         value={total}
         diffLabel={t_i18n('24 hours')}
@@ -67,6 +67,8 @@ const PublicStixCoreObjectsNumber = ({
   startDate,
   endDate,
   title,
+  height,
+  variant,
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters } = widget;
@@ -81,20 +83,23 @@ const PublicStixCoreObjectsNumber = ({
   );
 
   return (
-    <>
+    <WidgetContainer
+      padding="medium"
+      height={height}
+      title={parameters?.title ?? title ?? t_i18n('Entities number')}
+      variant={variant}
+    >
       {queryRef ? (
         <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreObjectsNumberComponent
-            title={parameters?.title ?? title ?? t_i18n('Entities number')}
+            title={t_i18n('Entities number')}
             queryRef={queryRef}
           />
         </Suspense>
       ) : (
-        <WidgetContainer>
-          <Loader variant={LoaderVariant.inElement} />
-        </WidgetContainer>
+        <Loader variant={LoaderVariant.inElement} />
       )}
-    </>
+    </WidgetContainer>
   );
 };
 
