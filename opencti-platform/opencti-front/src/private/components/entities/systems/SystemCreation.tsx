@@ -31,6 +31,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 
 const systemMutation = graphql`
   mutation SystemCreationMutation($input: SystemAddInput!) {
@@ -46,6 +47,16 @@ const systemMutation = graphql`
       entity_type
       parent_types
       ...SystemLine_node
+    }
+  }
+`;
+
+const systemCreationDescriptionPatchMutation = graphql`
+  mutation SystemCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    stixDomainObjectEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
     }
   }
 `;
@@ -105,6 +116,27 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_System')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(systemCreationDescriptionPatchMutation);
+  const patchSystemDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    SystemCreationMutation['response'],
+    SystemAddInput
+  >({
+    getCreatedId: (response) => response?.systemAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchSystemDescription,
+  });
   const {
     bulkCommit,
     bulkCount,
@@ -151,6 +183,22 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
 
     bulkCommit({
       variables,
+      commit: (args) => {
+        const mutationVariables = args.variables as SystemCreationMutation$variables;
+        commit({
+          ...args,
+          variables: mutationVariables,
+          onCompleted: (response, errors) => {
+            runAfterStoringTempImagesForEntity(response, {
+              ...values,
+              description: mutationVariables.input.description ?? '',
+            }, {
+              onSuccess: () => args.onCompleted?.(response, errors),
+              onError: () => args.onCompleted?.(response, errors),
+            });
+          },
+        });
+      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -241,6 +289,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
+              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
             />
             <ConfidenceField
               entityType="System"

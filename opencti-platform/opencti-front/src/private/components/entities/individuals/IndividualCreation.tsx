@@ -31,6 +31,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 
 const individualMutation = graphql`
   mutation IndividualCreationMutation($input: IndividualAddInput!) {
@@ -46,6 +47,16 @@ const individualMutation = graphql`
       entity_type
       parent_types
       ...IndividualLine_node
+    }
+  }
+`;
+
+const individualCreationDescriptionPatchMutation = graphql`
+  mutation IndividualCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    stixDomainObjectEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
     }
   }
 `;
@@ -106,6 +117,27 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Individual')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(individualCreationDescriptionPatchMutation);
+  const patchIndividualDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    IndividualCreationMutation['response'],
+    IndividualAddInput
+  >({
+    getCreatedId: (response) => response?.individualAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchIndividualDescription,
+  });
   const {
     bulkCommit,
     bulkCount,
@@ -149,6 +181,22 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
 
     bulkCommit({
       variables,
+      commit: (args) => {
+        const mutationVariables = args.variables as IndividualCreationMutation$variables;
+        commit({
+          ...args,
+          variables: mutationVariables,
+          onCompleted: (response, errors) => {
+            runAfterStoringTempImagesForEntity(response, {
+              ...values,
+              description: mutationVariables.input.description ?? '',
+            }, {
+              onSuccess: () => args.onCompleted?.(response, errors),
+              onError: () => args.onCompleted?.(response, errors),
+            });
+          },
+        });
+      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -239,6 +287,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
+              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
             />
             <ConfidenceField
               entityType="Individual"

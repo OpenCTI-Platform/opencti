@@ -1,6 +1,7 @@
 import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
 import React, { FunctionComponent, useEffect, useState } from 'react';
+import { graphql } from 'react-relay';
 import { securityPlatformCreationMutation } from '@components/entities/securityPlatforms/SecurityPlatformCreation';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import {
@@ -26,6 +27,17 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+
+const SecurityPlatformCreationDescriptionPatchMutation = graphql`
+  mutation SecurityPlatformCreationFormDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    stixDomainObjectEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
+    }
+  }
+`;
 
 interface SecurityPlatformCreationFormData {
   name: string;
@@ -68,6 +80,28 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
     { successMessage: `${t_i18n('entity_SecurityPlatform')} ${t_i18n('successfully created')}` },
   );
 
+  const [commitDescriptionPatch] = useApiMutation(SecurityPlatformCreationDescriptionPatchMutation);
+  const patchSecurityPlatformDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    SecurityPlatformCreationMutation['response'],
+    SecurityPlatformCreationFormData
+  >({
+    getCreatedId: (response) => (response?.securityPlatformAdd as { id?: string } | null | undefined)?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchSecurityPlatformDescription,
+  });
+
   const {
     bulkCommit,
     bulkCount,
@@ -108,6 +142,22 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
 
     bulkCommit({
       variables,
+      commit: (args) => {
+        const mutationVariables = args.variables as SecurityPlatformCreationMutation$variables;
+        commit({
+          ...args,
+          variables: mutationVariables,
+          onCompleted: (response, errors) => {
+            runAfterStoringTempImagesForEntity(response, {
+              ...values,
+              description: mutationVariables.input.description ?? '',
+            }, {
+              onSuccess: () => args.onCompleted?.(response, errors),
+              onError: () => args.onCompleted?.(response, errors),
+            });
+          },
+        });
+      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -195,6 +245,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
+              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
             />
             { /* TODO Improve customization (vocab with letter range) 2662 */}
             <OpenVocabField

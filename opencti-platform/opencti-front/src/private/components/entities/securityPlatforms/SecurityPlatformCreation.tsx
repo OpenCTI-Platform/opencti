@@ -12,6 +12,7 @@ import BulkTextModalButton from '../../../../components/fields/BulkTextField/Bul
 export const securityPlatformCreationMutation = graphql`
 mutation SecurityPlatformCreationMutation($input: SecurityPlatformAddInput!) {
     securityPlatformAdd(input: $input) {
+    id
         ...SecurityPlatform_securityPlatform
     }
 }

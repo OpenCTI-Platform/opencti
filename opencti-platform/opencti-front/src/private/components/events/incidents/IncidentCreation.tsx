@@ -30,6 +30,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { IncidentCreationMutation, IncidentCreationMutation$data } from './__generated__/IncidentCreationMutation.graphql';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 
 const IncidentMutation = graphql`
   mutation IncidentCreationMutation($input: IncidentAddInput!) {
@@ -44,6 +45,16 @@ const IncidentMutation = graphql`
       entity_type
       parent_types
       ...IncidentLine_node
+    }
+  }
+`;
+
+const incidentCreationDescriptionPatchMutation = graphql`
+  mutation IncidentCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    stixDomainObjectEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
     }
   }
 `;
@@ -91,6 +102,27 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Incident')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(incidentCreationDescriptionPatchMutation);
+  const patchIncidentDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    IncidentCreationMutation['response'],
+    IncidentAddInput
+  >({
+    getCreatedId: (response) => response?.incidentAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchIncidentDescription,
+  });
   const { mandatoryAttributes } = useIsMandatoryAttribute(INCIDENT_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
@@ -140,12 +172,23 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        if (onCompleted) {
-          onCompleted();
-        }
+      onCompleted: (response) => {
+        runAfterStoringTempImagesForEntity(response, values, {
+          onSuccess: () => {
+            setSubmitting(false);
+            resetForm();
+            if (onCompleted) {
+              onCompleted();
+            }
+          },
+          onError: () => {
+            setSubmitting(false);
+            resetForm();
+            if (onCompleted) {
+              onCompleted();
+            }
+          },
+        });
       },
     });
   };
@@ -215,6 +258,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             multiline={true}
             rows="4"
             style={fieldSpacingContainerStyle}
+            {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
           />
           <Field
             component={TextField}
