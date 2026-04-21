@@ -50,6 +50,7 @@ const middleware = (target, ws = false) => createProxyMiddleware({
       assetNames: "[dir]/[name]-[hash]",
       target: ["chrome58"],
       minify: true,
+      mainFields: ["browser", "module", "main"],
       keepNames: true,
       sourcemap: true,
       outdir: "builder/dev/build",
