@@ -198,7 +198,9 @@ def test_prepare_export_rewrites_embedded_markdown_image_uri_view_path(
     assert len(result) == 1
     assert "data:image/png;base64,Zm9v" in result[0]["description"]
     assert len(fetch_calls) == 1
-    assert fetch_calls[0][0].endswith("/storage/get/embedded/Note/internal-note-id-5/a.png")
+    assert fetch_calls[0][0].endswith(
+        "/storage/get/embedded/Note/internal-note-id-5/a.png"
+    )
     assert fetch_calls[0][1] is True
     assert fetch_calls[0][2] is True
 
@@ -232,7 +234,9 @@ def test_prepare_export_rewrites_urlencoded_view_embedded_markdown_image_uri(
     assert len(result) == 1
     assert "data:image/png;base64,Zm9v" in result[0]["description"]
     assert len(fetch_calls) == 1
-    assert fetch_calls[0][0].endswith("/storage/get/embedded/Note/internal-note-id-7/a.png")
+    assert fetch_calls[0][0].endswith(
+        "/storage/get/embedded/Note/internal-note-id-7/a.png"
+    )
     assert fetch_calls[0][1] is True
     assert fetch_calls[0][2] is True
 
@@ -341,7 +345,10 @@ def test_prepare_export_rewrites_embedded_view_url_with_parentheses_and_trailing
 
     assert len(result) == 1
     assert "data:image/png;base64,Zm9v" in result[0]["description"]
-    assert "https://images.pexels.com/photos/35823637/pexels-photo-35823637.jpeg" in result[0]["description"]
+    assert (
+        "https://images.pexels.com/photos/35823637/pexels-photo-35823637.jpeg"
+        in result[0]["description"]
+    )
     assert len(fetch_calls) == 1
     assert fetch_calls[0][0].endswith(
         "/storage/get/embedded/Report/4279ab6f-2948-4972-b055-6e6f152829af/"
@@ -417,7 +424,9 @@ def test_prepare_export_rewrites_urlencoded_get_embedded_markdown_image_uri(
     assert len(result) == 1
     assert "data:image/png;base64,Zm9v" in result[0]["description"]
     assert len(fetch_calls) == 1
-    assert fetch_calls[0][0].endswith("/storage/get/embedded/Note/internal-note-id-8/a.png")
+    assert fetch_calls[0][0].endswith(
+        "/storage/get/embedded/Note/internal-note-id-8/a.png"
+    )
     assert fetch_calls[0][1] is True
     assert fetch_calls[0][2] is True
 
@@ -485,7 +494,9 @@ def test_prepare_export_rewrites_absolute_embedded_markdown_image_uri(
     assert len(result) == 1
     assert "data:image/png;base64,Zm9v" in result[0]["description"]
     assert len(fetch_calls) == 1
-    assert fetch_calls[0][0].endswith("/storage/get/embedded/Note/internal-note-id-3/a.png")
+    assert fetch_calls[0][0].endswith(
+        "/storage/get/embedded/Note/internal-note-id-3/a.png"
+    )
     assert fetch_calls[0][1] is True
     assert fetch_calls[0][2] is True
 
@@ -522,7 +533,9 @@ def test_prepare_export_rewrites_absolute_embedded_markdown_image_uri_view_path(
     assert len(result) == 1
     assert "data:image/png;base64,Zm9v" in result[0]["description"]
     assert len(fetch_calls) == 1
-    assert fetch_calls[0][0].endswith("/storage/get/embedded/Note/internal-note-id-6/a.png")
+    assert fetch_calls[0][0].endswith(
+        "/storage/get/embedded/Note/internal-note-id-6/a.png"
+    )
     assert fetch_calls[0][1] is True
     assert fetch_calls[0][2] is True
 

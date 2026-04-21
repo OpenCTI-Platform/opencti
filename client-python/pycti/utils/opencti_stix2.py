@@ -265,7 +265,11 @@ class OpenCTIStix2:
 
             rewritten_chunks.append(markdown[cursor:image_start])
             alt_end = markdown.find("]", image_start + 2)
-            if alt_end == -1 or alt_end + 1 >= markdown_length or markdown[alt_end + 1] != "(":
+            if (
+                alt_end == -1
+                or alt_end + 1 >= markdown_length
+                or markdown[alt_end + 1] != "("
+            ):
                 # Keep malformed syntax untouched instead of dropping characters.
                 rewritten_chunks.append(markdown[image_start])
                 cursor = image_start + 1
@@ -293,7 +297,7 @@ class OpenCTIStix2:
                 cursor = image_start + 1
                 continue
 
-            full_match = markdown[image_start:index + 1]
+            full_match = markdown[image_start : index + 1]
             alt_text = markdown[image_start + 2 : alt_end]
             url = markdown[destination_start:index].strip()
             rewritten_chunks.append(_replace_image(alt_text, url, full_match))
@@ -313,9 +317,11 @@ class OpenCTIStix2:
         descriptions = entity.get("descriptions")
         if isinstance(descriptions, list):
             entity["descriptions"] = [
-                self._rewrite_markdown_embedded_storage_images(value)
-                if isinstance(value, str)
-                else value
+                (
+                    self._rewrite_markdown_embedded_storage_images(value)
+                    if isinstance(value, str)
+                    else value
+                )
                 for value in descriptions
             ]
 
