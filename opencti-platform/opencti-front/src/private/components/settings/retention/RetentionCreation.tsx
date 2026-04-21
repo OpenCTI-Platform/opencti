@@ -215,10 +215,10 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 fullWidth={true}
                 onChange={setFieldValue}
                 options={[
-                  { value: 'knowledge', label: t_i18n('Knowledge') },
                   { value: 'file', label: t_i18n('File') },
-                  { value: 'workbench', label: t_i18n('Workbench') },
                   { value: 'history', label: t_i18n('History') },
+                  { value: 'knowledge', label: t_i18n('Knowledge') },
+                  { value: 'workbench', label: t_i18n('Workbench') },
                 ]}
                 renderOption={(prop: Record<string, unknown>, option: FieldOption) => (
                   <li {...prop}>
