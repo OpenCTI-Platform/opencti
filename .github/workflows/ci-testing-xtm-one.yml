@@ -1,0 +1,39 @@
+name: OpenCTI CI for testing-xtm-one
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - testing-xtm-one
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  wf-publish-image:
+      name: Publish image (testing-xtm-one)
+      uses: ./.github/workflows/ci-docker-build.yml
+      with:
+        checkout_ref: ${{ github.sha }}
+        image_tag: testing-xtm-one
+        client_python_local: true
+        publish_to_registry: true
+      secrets: inherit
+
+  wf-redeploy-instance:
+      name: Restart testing-xtm-one instance
+      needs: wf-publish-image
+      runs-on: ubuntu-latest
+      steps:
+        - name: Install AWX cli
+          run: pip install awxkit
+
+        - name: Restart instance via AWX
+          run: |
+            awx --conf.host ${{ secrets.AWX_URL }} \
+              --conf.username ${{ secrets.AWX_USER }} \
+              --conf.password ${{ secrets.AWX_PASSWORD }} \
+              job_templates launch 'Deploy OCTI/OAEV' \
+              --inventory eu-west-production \
+              --extra_vars '{"instance":"opencti", "customer":"filigran-test-octi"}' \
+              --wait \
+              -f human
