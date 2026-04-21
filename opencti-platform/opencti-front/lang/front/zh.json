@@ -4233,8 +4233,6 @@
   "The reset code you entered is invalid or has expired. You can request a new code.": "您输入的重置密码无效或已过期。您可以申请新的代码。",
   "The retention policy will be applied on activity logs (administration events such as login, logout, and security actions)": "保留策略将应用于活动日志（登录、注销和安全操作等管理事件）",
   "The retention policy will be applied on all workbenches (both global and entity-attached)": "保留策略将应用于所有工作台（包括全局工作台和实体附加工作台）",
-  "The retention policy will be applied on history logs of knowledge entities": "The retention policy will be applied on history logs of knowledge entities",
-  "Knowledge history logs": "Knowledge history logs",
   "The retention policy will be applied on global files (files contained in": "保留策略将应用于全局文件（包含在",
   "The retention policy will be applied on global workbenches (workbenches contained in": "保留策略将应用于全局工作台（工作台包含在",
   "The retention policy will be applied on history logs of knowledge entities": "保留政策将适用于知识实体的历史日志",

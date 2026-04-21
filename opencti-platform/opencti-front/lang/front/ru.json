@@ -4233,8 +4233,6 @@
   "The reset code you entered is invalid or has expired. You can request a new code.": "Введенный вами код сброса недействителен или срок его действия истек. Вы можете запросить новый код.",
   "The retention policy will be applied on activity logs (administration events such as login, logout, and security actions)": "Политика хранения будет применяться к журналам активности (события администрирования, такие как вход в систему, выход из системы и действия безопасности)",
   "The retention policy will be applied on all workbenches (both global and entity-attached)": "Политика хранения будет применяться ко всем рабочим столам (как глобальным, так и привязанным к сущностям)",
-  "The retention policy will be applied on history logs of knowledge entities": "The retention policy will be applied on history logs of knowledge entities",
-  "Knowledge history logs": "Knowledge history logs",
   "The retention policy will be applied on global files (files contained in": "Политика хранения будет применяться к глобальным файлам (файлам, содержащимся в",
   "The retention policy will be applied on global workbenches (workbenches contained in": "Политика хранения будет применяться к глобальным рабочим столам (рабочие столы, содержащиеся в",
   "The retention policy will be applied on history logs of knowledge entities": "Политика хранения будет применяться к журналам истории сущностей знаний",

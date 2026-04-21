@@ -4233,8 +4233,6 @@
   "The reset code you entered is invalid or has expired. You can request a new code.": "입력한 재설정 코드가 유효하지 않거나 만료되었습니다. 새 코드를 요청할 수 있습니다.",
   "The retention policy will be applied on activity logs (administration events such as login, logout, and security actions)": "보존 정책은 활동 로그(로그인, 로그아웃 및 보안 작업과 같은 관리 이벤트)에 적용됩니다",
   "The retention policy will be applied on all workbenches (both global and entity-attached)": "보존 정책은 모든 워크벤치(글로벌 및 엔티티에 연결된 워크벤치 모두)에 적용됩니다",
-  "The retention policy will be applied on history logs of knowledge entities": "The retention policy will be applied on history logs of knowledge entities",
-  "Knowledge history logs": "Knowledge history logs",
   "The retention policy will be applied on global files (files contained in": "보존 정책은 글로벌 파일(",
   "The retention policy will be applied on global workbenches (workbenches contained in": "에 포함된 파일)에 적용됩니다",
   "The retention policy will be applied on history logs of knowledge entities": "보존 정책은 지식 엔티티의 기록 로그에 적용됩니다",

@@ -4233,8 +4233,6 @@
   "The reset code you entered is invalid or has expired. You can request a new code.": "Der von Ihnen eingegebene Rückstellcode ist ungültig oder abgelaufen. Sie können einen neuen Code anfordern.",
   "The retention policy will be applied on activity logs (administration events such as login, logout, and security actions)": "Die Aufbewahrungsrichtlinie wird auf Aktivitätsprotokolle angewendet (Verwaltungsereignisse wie Anmeldung, Abmeldung und Sicherheitsmaßnahmen)",
   "The retention policy will be applied on all workbenches (both global and entity-attached)": "Die Aufbewahrungsrichtlinie wird auf alle Werkbänke angewandt (sowohl globale als auch an Entitäten gebundene)",
-  "The retention policy will be applied on history logs of knowledge entities": "The retention policy will be applied on history logs of knowledge entities",
-  "Knowledge history logs": "Knowledge history logs",
   "The retention policy will be applied on global files (files contained in": "Die Aufbewahrungsrichtlinie wird auf globale Dateien angewendet (Dateien, die in",
   "The retention policy will be applied on global workbenches (workbenches contained in": "Die Aufbewahrungsrichtlinie wird auf globale Werkbänke angewandt (Werkbänke, die in",
   "The retention policy will be applied on history logs of knowledge entities": "Die Aufbewahrungspolitik wird auf Verlaufsprotokolle von Wissenseinheiten angewendet",

@@ -4233,8 +4233,6 @@
   "The reset code you entered is invalid or has expired. You can request a new code.": "The reset code you entered is invalid or has expired. You can request a new code.",
   "The retention policy will be applied on activity logs (administration events such as login, logout, and security actions)": "The retention policy will be applied on activity logs (administration events such as login, logout, and security actions)",
   "The retention policy will be applied on all workbenches (both global and entity-attached)": "The retention policy will be applied on all workbenches (both global and entity-attached)",
-  "The retention policy will be applied on history logs of knowledge entities": "The retention policy will be applied on history logs of knowledge entities",
-  "Knowledge history logs": "Knowledge history logs",
   "The retention policy will be applied on global files (files contained in": "The retention policy will be applied on global files (files contained in",
   "The retention policy will be applied on global workbenches (workbenches contained in": "The retention policy will be applied on global workbenches (workbenches contained in",
   "The retention policy will be applied on history logs of knowledge entities": "The retention policy will be applied on history logs of knowledge entities",
