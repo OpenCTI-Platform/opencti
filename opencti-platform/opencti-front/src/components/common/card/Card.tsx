@@ -9,7 +9,7 @@ import { hasCustomColor } from '../../../utils/theme';
 export interface CardProps extends PropsWithChildren {
   title?: ReactNode;
   action?: ReactNode;
-  padding?: 'none' | 'small' | 'horizontal' | 'default';
+  padding?: 'none' | 'small' | 'medium' | 'horizontal' | 'default';
   sx?: SxProps;
   titleSx?: SxProps;
   titleAlignItems?: StackProps['alignItems'];
@@ -53,6 +53,11 @@ const Card = ({
   } else if (padding === 'small') {
     paddingStyle = {
       padding: theme.spacing(1),
+    };
+  } else if (padding === 'medium') {
+    paddingStyle = {
+      paddingX: theme.spacing(3),
+      paddingY: theme.spacing(2),
     };
   } else if (padding === 'none') {
     paddingStyle = {

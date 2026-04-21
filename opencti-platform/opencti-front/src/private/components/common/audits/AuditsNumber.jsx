@@ -24,8 +24,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import CardNumber from '../../../../components/common/card/CardNumber';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
+import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 
 const auditsNumberNumberQuery = graphql`
   query AuditsNumberNumberSeriesQuery(
@@ -84,7 +84,7 @@ const AuditsNumber = ({
 
   return (
     <WidgetContainer
-      padding="small"
+      padding="medium"
       height={height}
       title={t_i18n('Entities number')}
       variant={variant}
@@ -97,7 +97,7 @@ const AuditsNumber = ({
           if (props && props.auditsNumber) {
             const { total, count } = props.auditsNumber;
             return (
-              <CardNumber
+              <WidgetNumber
                 entityType={entityType}
                 label={translatedTitle}
                 value={total}

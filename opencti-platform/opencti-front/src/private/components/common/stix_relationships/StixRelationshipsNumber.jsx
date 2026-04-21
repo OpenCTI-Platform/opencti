@@ -7,7 +7,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
-import CardNumber from '../../../../components/common/card/CardNumber';
+import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 
 const stixRelationshipsNumberNumberQuery = graphql`
     query StixRelationshipsNumberNumberSeriesQuery(
@@ -80,7 +80,7 @@ const StixRelationshipsNumber = ({
 
   return (
     <WidgetContainer
-      padding="small"
+      padding="medium"
       height={height}
       title={t_i18n('Relationships number')}
       variant={variant}
@@ -100,7 +100,7 @@ const StixRelationshipsNumber = ({
           if (props && props.stixRelationshipsNumber) {
             const { total, count } = props.stixRelationshipsNumber;
             return (
-              <CardNumber
+              <WidgetNumber
                 entityType={entityType}
                 label={translatedTitle}
                 value={total}

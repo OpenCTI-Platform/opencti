@@ -1,5 +1,4 @@
 import { graphql } from 'react-relay';
-import CardNumber from '@common/card/CardNumber';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { dayAgo } from '../../../../utils/Time';
@@ -8,6 +7,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
+import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 
 const stixCoreObjectsNumberNumberQuery = graphql`
     query StixCoreObjectsNumberNumberSeriesQuery(
@@ -62,7 +62,7 @@ const StixCoreObjectsNumber = ({
 
   return (
     <WidgetContainer
-      padding="small"
+      padding="medium"
       height={height}
       title={t_i18n('Entities number')}
       variant={variant}
@@ -81,7 +81,7 @@ const StixCoreObjectsNumber = ({
           if (props && props.stixCoreObjectsNumber) {
             const { total, count } = props.stixCoreObjectsNumber;
             return (
-              <CardNumber
+              <WidgetNumber
                 entityType={entityType}
                 label={translatedTitle}
                 value={total}

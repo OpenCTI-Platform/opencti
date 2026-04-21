@@ -1,5 +1,4 @@
 import React, { memo, ReactNode } from 'react';
-import { Box } from '@mui/material';
 import AuditsNumber from '@components/common/audits/AuditsNumber';
 import AuditsList from '@components/common/audits/AuditsList';
 import AuditsDistributionList from '@components/common/audits/AuditsDistributionList';
@@ -64,7 +63,7 @@ const DashboardAuditsViz = ({
           dataSelection={dataSelection}
           entityType={undefined} // because calling js component in ts
           parameters={widget.parameters as object} // because calling js component in ts
-          popover={<Box mr={-2}>{popover}</Box>}
+          popover={popover}
         />
       );
     case 'list':
