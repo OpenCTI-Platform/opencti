@@ -56,13 +56,12 @@ export const getCustomViewByIdForDisplay = async (
   user: AuthUser,
   customViewId: string,
 ) => {
-  const entity = await storeLoadById<BasicStoreEntityCustomView>(
+  return storeLoadById<BasicStoreEntityCustomView>(
     context,
     user,
     customViewId,
     ENTITY_TYPE_CUSTOM_VIEW,
   );
-  return entity;
 };
 
 export const getCustomViewsDisplayContext = async (context: AuthContext, user: AuthUser) => {
