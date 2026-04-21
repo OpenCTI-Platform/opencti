@@ -30,6 +30,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 
 const countryMutation = graphql`
   mutation CountryCreationMutation($input: CountryAddInput!) {
@@ -45,6 +46,16 @@ const countryMutation = graphql`
       entity_type
       parent_types
       ...CountryLine_node
+    }
+  }
+`;
+
+const countryCreationDescriptionPatchMutation = graphql`
+  mutation CountryCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    countryEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
     }
   }
 `;
@@ -100,6 +111,27 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Country')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(countryCreationDescriptionPatchMutation);
+  const patchCountryDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    CountryCreationMutation['response'],
+    CountryAddInput
+  >({
+    getCreatedId: (response) => response?.countryAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchCountryDescription,
+  });
   const {
     bulkCommit,
     bulkCount,
@@ -141,6 +173,22 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
 
     bulkCommit({
       variables,
+      commit: (args) => {
+        const mutationVariables = args.variables as CountryCreationMutation$variables;
+        commit({
+          ...args,
+          variables: mutationVariables,
+          onCompleted: (response, errors) => {
+            runAfterStoringTempImagesForEntity(response, {
+              ...values,
+              description: mutationVariables.input.description ?? '',
+            }, {
+              onSuccess: () => args.onCompleted?.(response, errors),
+              onError: () => args.onCompleted?.(response, errors),
+            });
+          },
+        });
+      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -220,6 +268,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
+              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
             />
             <ConfidenceField
               entityType="Country"

@@ -31,6 +31,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 
 const administrativeAreaMutation = graphql`
   mutation AdministrativeAreaCreationMutation(
@@ -48,6 +49,14 @@ const administrativeAreaMutation = graphql`
       entity_type
       parent_types
       ...AdministrativeAreaLine_node
+    }
+  }
+`;
+
+const administrativeAreaCreationDescriptionPatchMutation = graphql`
+  mutation AdministrativeAreaCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    administrativeAreaFieldPatch(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -110,6 +119,27 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
     undefined,
     { successMessage: `${t_i18n('entity_Administrative-Area')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(administrativeAreaCreationDescriptionPatchMutation);
+  const patchAdministrativeAreaDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    AdministrativeAreaCreationMutation['response'],
+    AdministrativeAreaAddInput
+  >({
+    getCreatedId: (response) => response?.administrativeAreaAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchAdministrativeAreaDescription,
+  });
   const {
     bulkCommit,
     bulkCount,
@@ -153,6 +183,22 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
 
     bulkCommit({
       variables,
+      commit: (args) => {
+        const mutationVariables = args.variables as AdministrativeAreaCreationMutation$variables;
+        commit({
+          ...args,
+          variables: mutationVariables,
+          onCompleted: (response, errors) => {
+            runAfterStoringTempImagesForEntity(response, {
+              ...values,
+              description: mutationVariables.input.description ?? '',
+            }, {
+              onSuccess: () => args.onCompleted?.(response, errors),
+              onError: () => args.onCompleted?.(response, errors),
+            });
+          },
+        });
+      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -237,6 +283,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               multiline={true}
               rows={4}
               style={fieldSpacingContainerStyle}
+              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
             />
             <ConfidenceField
               entityType="Administrative-Area"

@@ -264,6 +264,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            uploadEntityId={city.id}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }

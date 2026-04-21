@@ -31,6 +31,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 
 const cityMutation = graphql`
   mutation CityCreationMutation($input: CityAddInput!) {
@@ -46,6 +47,16 @@ const cityMutation = graphql`
       confidence
       parent_types
       ...CityLine_node
+    }
+  }
+`;
+
+const cityCreationDescriptionPatchMutation = graphql`
+  mutation CityCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    cityEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
     }
   }
 `;
@@ -108,6 +119,27 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_City')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(cityCreationDescriptionPatchMutation);
+  const patchCityDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    CityCreationMutation['response'],
+    CityAddInput
+  >({
+    getCreatedId: (response) => response?.cityAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchCityDescription,
+  });
   const {
     bulkCommit,
     bulkCount,
@@ -151,6 +183,22 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
 
     bulkCommit({
       variables,
+      commit: (args) => {
+        const mutationVariables = args.variables as CityCreationMutation$variables;
+        commit({
+          ...args,
+          variables: mutationVariables,
+          onCompleted: (response, errors) => {
+            runAfterStoringTempImagesForEntity(response, {
+              ...values,
+              description: mutationVariables.input.description ?? '',
+            }, {
+              onSuccess: () => args.onCompleted?.(response, errors),
+              onError: () => args.onCompleted?.(response, errors),
+            });
+          },
+        });
+      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -231,6 +279,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               multiline={true}
               rows={4}
               style={fieldSpacingContainerStyle}
+              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
             />
             <ConfidenceField
               entityType="City"

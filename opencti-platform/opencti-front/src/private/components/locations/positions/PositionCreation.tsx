@@ -31,6 +31,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 
 const positionMutation = graphql`
   mutation PositionCreationMutation($input: PositionAddInput!) {
@@ -46,6 +47,16 @@ const positionMutation = graphql`
       entity_type
       parent_types
       ...PositionLine_node
+    }
+  }
+`;
+
+const positionCreationDescriptionPatchMutation = graphql`
+  mutation PositionCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    positionEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
     }
   }
 `;
@@ -143,6 +154,27 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Position')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(positionCreationDescriptionPatchMutation);
+  const patchPositionDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    PositionCreationMutation['response'],
+    PositionAddInput
+  >({
+    getCreatedId: (response) => response?.positionAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchPositionDescription,
+  });
   const {
     bulkCommit,
     bulkCount,
@@ -188,6 +220,22 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
 
     bulkCommit({
       variables,
+      commit: (args) => {
+        const mutationVariables = args.variables as PositionCreationMutation$variables;
+        commit({
+          ...args,
+          variables: mutationVariables,
+          onCompleted: (response, errors) => {
+            runAfterStoringTempImagesForEntity(response, {
+              ...values,
+              description: mutationVariables.input.description ?? '',
+            }, {
+              onSuccess: () => args.onCompleted?.(response, errors),
+              onError: () => args.onCompleted?.(response, errors),
+            });
+          },
+        });
+      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -271,6 +319,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
               multiline={true}
               rows={4}
               style={fieldSpacingContainerStyle}
+              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
             />
             <ConfidenceField
               entityType="Position"
