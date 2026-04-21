@@ -133,6 +133,83 @@ const removeDraftDeleteLinkedRelations = async (
   await completeDeleteElementsFromDraft(context, user, deleteLinkedRelationsInstances);
 };
 
+const elRemoveUpdateLinkedElementFromDraft = async (context: AuthContext, user: AuthUser, element: BasicStoreCommon): Promise<void> => {
+  if (element.draft_change?.draft_operation !== DRAFT_OPERATION_UPDATE_LINKED) {
+    return;
+  }
+
+  const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, SYSTEM_USER, [element], { includeDeletedInDraft: true });
+
+  // 1. Handle draft-created relations: remove them and clean denormalized refs on other endpoints
+  const draftCreatedRelations = relations.filter((f) => f.draft_change && f.draft_change.draft_operation === DRAFT_OPERATION_CREATE);
+  if (draftCreatedRelations.length > 0) {
+    const draftRelationsElementsImpact = await computeDeleteElementsImpacts(draftCreatedRelations, [element.internal_id], relationsToRemoveMap);
+    await elRemoveRelationConnection(context, user, draftRelationsElementsImpact);
+    await elDeleteInstances(draftCreatedRelations);
+  }
+
+  // 2. Handle draft delete_linked relations: restore them by removing from draft and re-applying denormalized refs
+  const draftDeleteLinkedRelations = relations.filter((f) => isDraftIndex(f._index) && f.draft_change && f.draft_change.draft_operation === DRAFT_OPERATION_DELETE_LINKED);
+  let hasDeleteLinkedRelationsToKeep = false;
+  if (draftDeleteLinkedRelations.length > 0) {
+    const draftDeleteLinkedRelationsIds = draftDeleteLinkedRelations.map((r) => r.internal_id);
+    // Get the "other endpoint" of each delete_linked relation (not the current element)
+    const draftDeleteLinkedRelationsTargetsIds = draftDeleteLinkedRelations.map((r) => {
+      const { fromId, toId } = r;
+      if (!draftDeleteLinkedRelationsIds.includes(fromId) && fromId !== element.internal_id) {
+        return fromId;
+      }
+      if (!draftDeleteLinkedRelationsIds.includes(toId) && toId !== element.internal_id) {
+        return toId;
+      }
+      return undefined;
+    }).filter((i) => i) as string[];
+
+    const draftDeleteDependenciesRaw = await elFindByIds(context, user, draftDeleteLinkedRelationsTargetsIds, { includeDeletedInDraft: true }) as BasicStoreCommon[];
+    const draftDeleteDependencies = draftDeleteDependenciesRaw.filter((d) => isDraftIndex(d._index));
+
+    const deleteLinkedRelationsToRemove: { rel: any; dep: any }[] = [];
+    const deleteLinkedRelationsWithNoDraftDep: BasicStoreCommon[] = [];
+
+    for (let i = 0; i < draftDeleteLinkedRelations.length; i += 1) {
+      const { fromId, toId } = draftDeleteLinkedRelations[i];
+      const fromDependency = draftDeleteDependencies.find((e) => e.internal_id === fromId);
+      const toDependency = draftDeleteDependencies.find((e) => e.internal_id === toId);
+      if (fromDependency) {
+        if (fromDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE || fromDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE_LINKED) {
+          hasDeleteLinkedRelationsToKeep = true;
+        } else {
+          deleteLinkedRelationsToRemove.push({ rel: draftDeleteLinkedRelations[i], dep: fromDependency });
+        }
+      } else if (toDependency) {
+        if (toDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE || toDependency.draft_change?.draft_operation === DRAFT_OPERATION_DELETE_LINKED) {
+          hasDeleteLinkedRelationsToKeep = true;
+        } else {
+          deleteLinkedRelationsToRemove.push({ rel: draftDeleteLinkedRelations[i], dep: toDependency });
+        }
+      } else {
+        // Other endpoint is not in draft - live copy still has original denormalized refs, just clean up the draft relation
+        deleteLinkedRelationsWithNoDraftDep.push(draftDeleteLinkedRelations[i]);
+      }
+    }
+
+    if (deleteLinkedRelationsToRemove.length > 0) {
+      await removeDraftDeleteLinkedRelations(context, user, deleteLinkedRelationsToRemove);
+    }
+    if (deleteLinkedRelationsWithNoDraftDep.length > 0) {
+      await completeDeleteElementsFromDraft(context, user, deleteLinkedRelationsWithNoDraftDep);
+    }
+  }
+
+  // 3. Check if there are remaining DELETE or unremovable DELETE_LINKED relations
+  const draftDeleteRelations = relations.filter((f) => f.draft_change && f.draft_change.draft_operation === DRAFT_OPERATION_DELETE);
+  if (draftDeleteRelations.length > 0 || hasDeleteLinkedRelationsToKeep) {
+    // Element still needs to be in draft because of explicit delete operations on its relations
+  } else {
+    await completeDeleteElementsFromDraft(context, user, [element]);
+  }
+};
+
 const elRemoveDeleteElementFromDraft = async (context: AuthContext, user: AuthUser, element: BasicStoreCommon) => {
   if (element.draft_change?.draft_operation !== DRAFT_OPERATION_DELETE) {
     return;
@@ -217,6 +294,7 @@ export const elRemoveElementFromDraft = async (context: AuthContext, user: AuthU
     case DRAFT_OPERATION_DELETE:
       return elRemoveDeleteElementFromDraft(context, user, element);
     case DRAFT_OPERATION_UPDATE_LINKED:
+      return elRemoveUpdateLinkedElementFromDraft(context, user, element);
     case DRAFT_OPERATION_DELETE_LINKED:
       throw UnsupportedError('Cannot remove linked elements from draft', { id: element.id });
     default:
