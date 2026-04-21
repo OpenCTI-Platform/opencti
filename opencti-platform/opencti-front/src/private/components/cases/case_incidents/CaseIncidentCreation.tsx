@@ -26,6 +26,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import Security from '../../../../utils/Security';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -54,6 +55,16 @@ const caseIncidentMutation = graphql`
       description
       response_types
       ...CaseIncidentsLineCase_node
+    }
+  }
+`;
+
+const caseIncidentCreationDescriptionPatchMutation = graphql`
+  mutation CaseIncidentCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    stixDomainObjectEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
     }
   }
 `;
@@ -131,6 +142,27 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Case-Incident')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(caseIncidentCreationDescriptionPatchMutation);
+  const patchCaseIncidentDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    CaseIncidentCreationCaseMutation['response'],
+    FormikCaseIncidentAddInput
+  >({
+    getCreatedId: (response) => response?.caseIncidentAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchCaseIncidentDescription,
+  });
   const onSubmit: FormikConfig<FormikCaseIncidentAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
@@ -174,16 +206,32 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
         setSubmitting(false);
       },
       onCompleted: (response) => {
-        setSubmitting(false);
-        resetForm();
-        if (onClose) {
-          onClose();
-        }
-        if (mapAfter) {
-          navigate(
-            `/dashboard/cases/incidents/${response.caseIncidentAdd?.id}/content/mapping`,
-          );
-        }
+        runAfterStoringTempImagesForEntity(response, values, {
+          onSuccess: () => {
+            setSubmitting(false);
+            resetForm();
+            if (onClose) {
+              onClose();
+            }
+            if (mapAfter) {
+              navigate(
+                `/dashboard/cases/incidents/${response.caseIncidentAdd?.id}/content/mapping`,
+              );
+            }
+          },
+          onError: () => {
+            setSubmitting(false);
+            resetForm();
+            if (onClose) {
+              onClose();
+            }
+            if (mapAfter) {
+              navigate(
+                `/dashboard/cases/incidents/${response.caseIncidentAdd?.id}/content/mapping`,
+              );
+            }
+          },
+        });
       },
     });
   };
@@ -288,6 +336,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             rows="4"
             style={fieldSpacingContainerStyle}
             askAi={true}
+            {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
           />
           <Field
             component={RichTextField}

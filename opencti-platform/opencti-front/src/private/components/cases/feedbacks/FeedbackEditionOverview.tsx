@@ -278,6 +278,7 @@ const FeedbackEditionOverviewComponent: FunctionComponent<
             style={fieldSpacingContainerStyle}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            uploadEntityId={feedbackData.id}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }

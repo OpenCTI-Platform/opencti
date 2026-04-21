@@ -26,6 +26,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import Security from '../../../../utils/Security';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -53,6 +54,16 @@ const caseRfiMutation = graphql`
       }
       description
       ...CaseRfisLineCase_node
+    }
+  }
+`;
+
+const caseRfiCreationDescriptionPatchMutation = graphql`
+  mutation CaseRfiCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    stixDomainObjectEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
     }
   }
 `;
@@ -129,6 +140,27 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Case-Rfi')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(caseRfiCreationDescriptionPatchMutation);
+  const patchCaseRfiDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    CaseRfiCreationCaseMutation['response'],
+    FormikCaseRfiAddInput
+  >({
+    getCreatedId: (response) => response?.caseRfiAdd?.id,
+    getInitialValue: (values) => values.description,
+    patchField: patchCaseRfiDescription,
+  });
   const onSubmit: FormikConfig<FormikCaseRfiAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
@@ -172,16 +204,32 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
         setSubmitting(false);
       },
       onCompleted: (response) => {
-        setSubmitting(false);
-        resetForm();
-        if (onClose) {
-          onClose();
-        }
-        if (mapAfter) {
-          navigate(
-            `/dashboard/cases/rfis/${response.caseRfiAdd?.id}/content/mapping`,
-          );
-        }
+        runAfterStoringTempImagesForEntity(response, values, {
+          onSuccess: () => {
+            setSubmitting(false);
+            resetForm();
+            if (onClose) {
+              onClose();
+            }
+            if (mapAfter) {
+              navigate(
+                `/dashboard/cases/rfis/${response.caseRfiAdd?.id}/content/mapping`,
+              );
+            }
+          },
+          onError: () => {
+            setSubmitting(false);
+            resetForm();
+            if (onClose) {
+              onClose();
+            }
+            if (mapAfter) {
+              navigate(
+                `/dashboard/cases/rfis/${response.caseRfiAdd?.id}/content/mapping`,
+              );
+            }
+          },
+        });
       },
     });
   };
@@ -283,6 +331,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             rows="4"
             style={fieldSpacingContainerStyle}
             askAi={true}
+            {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
           />
           <Field
             component={RichTextField}

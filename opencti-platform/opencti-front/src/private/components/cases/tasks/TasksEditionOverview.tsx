@@ -262,6 +262,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
             style={fieldSpacingContainerStyle}
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
+            uploadEntityId={taskData.id}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
             }

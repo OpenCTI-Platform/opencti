@@ -16,6 +16,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -38,6 +39,16 @@ const taskAddMutation = graphql`
             }
           }
         }
+      }
+    }
+  }
+`;
+
+const taskCreationDescriptionPatchMutation = graphql`
+  mutation TaskCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
+    stixDomainObjectEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
       }
     }
   }
@@ -90,6 +101,27 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Task')} ${t_i18n('successfully created')}` },
   );
+  const [commitDescriptionPatch] = useApiMutation(taskCreationDescriptionPatchMutation);
+  const patchTaskDescription = (id: string, description: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      commitDescriptionPatch({
+        variables: {
+          id,
+          input: [{ key: 'description', value: description }],
+        },
+        onCompleted: () => resolve(),
+        onError: reject,
+      });
+    });
+  };
+  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
+    TaskCreationMutation['response'],
+    FormikTaskAddInput
+  >({
+    getCreatedId: (response) => response?.taskAdd?.id,
+    getInitialValue: (values) => values.description ?? '',
+    patchField: patchTaskDescription,
+  });
 
   const initialValues: FormikTaskAddInput = {
     name: inputValue ?? '',
@@ -124,9 +156,17 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
+      onCompleted: (response) => {
+        runAfterStoringTempImagesForEntity(response, values, {
+          onSuccess: () => {
+            setSubmitting(false);
+            resetForm();
+          },
+          onError: () => {
+            setSubmitting(false);
+            resetForm();
+          },
+        });
       },
     });
   };
@@ -137,7 +177,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
       onReset={onClose}
       validationSchema={validator}
     >
-      {({ isSubmitting, handleReset, submitForm, setFieldValue }) => (
+      {({ isSubmitting, handleReset, submitForm, setFieldValue, values }) => (
         <Form>
           <Field
             style={{ marginBottom: 20 }}
@@ -183,6 +223,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
             multiline
             rows="4"
             style={fieldSpacingContainerStyle}
+            {...getTempImageFieldProps((values.objectMarking ?? []).map(({ value }) => value))}
           />
           <FormButtonContainer>
             <Button

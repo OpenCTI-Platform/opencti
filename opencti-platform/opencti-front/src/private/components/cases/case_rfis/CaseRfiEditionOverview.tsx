@@ -373,6 +373,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             style={fieldSpacingContainerStyle}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
+            uploadEntityId={caseData.id}
             askAi={true}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
