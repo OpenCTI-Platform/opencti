@@ -17,3 +17,14 @@ interface Window {
     getWorker(workerId: string, label: string): Worker;
   };
 }
+
+// import.meta.env — provided by Vite at runtime and replaced via esbuild `define` in prod.
+// Declaring it here avoids TypeScript errors in files that read import.meta.env.DEV.
+interface ImportMeta {
+  readonly env?: {
+    readonly DEV: boolean;
+    readonly PROD: boolean;
+    readonly MODE: string;
+  };
+}
+

@@ -8,6 +8,23 @@ const keep = process.argv.slice(2).includes('--keep');
 const buildPath = "./builder/prod/build";
 
 (async () => {
+  // Build Monaco web workers as separate bundles (required for GraphiQL schema completion)
+  await esbuild.build({
+      logLevel: "info",
+      entryPoints: [
+        "src/public/workers/editor.worker.ts",
+        "src/public/workers/json.worker.ts",
+        "src/public/workers/graphql.worker.ts",
+      ],
+      bundle: true,
+      format: "iife",
+      minify: true,
+      target: ["chrome58"],
+      outdir: `${buildPath}/static/workers`,
+      entryNames: "[name]",
+      loader: { ".js": "jsx" },
+    });
+
   await esbuild.build({
       logLevel: "info",
       plugins: [RelayPlugin],
@@ -22,6 +39,12 @@ const buildPath = "./builder/prod/build";
         ".woff2": "dataurl",
         ".ttf": "dataurl",
         ".eot": "dataurl",
+      },
+      define: {
+        // Allows setupMonacoWorkers.ts to detect prod vs dev at build time.
+        // The DEV branch (new Worker(new URL(..., import.meta.url))) is dead code
+        // eliminated by esbuild so import.meta.url is never processed in IIFE mode.
+        'import.meta.env': JSON.stringify({ DEV: false, PROD: true, MODE: 'production' }),
       },
       assetNames: keep ? "[dir]/[name]" : "[dir]/[name]-[hash]",
       entryNames: keep ? "static/[ext]/[name]" : "static/[ext]/[name]-[hash]",
