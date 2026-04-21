@@ -29,7 +29,7 @@ coverage:
         paths:
           - client-python
 
-flags:
+flag_management:
   opencti-front-e2e:
       paths:
         - opencti-platform/opencti-front/src/
