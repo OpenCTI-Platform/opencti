@@ -88,6 +88,10 @@ export const defaultKey = (n: any) => {
   return null;
 };
 
+export const getRelationshipMainRepresentative = (from: any, to: any, truncateLimit = 20) => {
+  return `${truncate(getMainRepresentative(from), truncateLimit)} ➡️ ${truncate(getMainRepresentative(to), truncateLimit)}`;
+};
+
 // equivalent to querying representative.main
 export const getMainRepresentative = (n: any, fallback = 'Unknown') => {
   if (!n) return '';
@@ -129,12 +133,9 @@ export const getMainRepresentative = (n: any, fallback = 'Unknown') => {
         || getMainRepresentative((R.head(n.objects?.edges ?? []) as any)?.node)
         || (n.from
           && n.to
-          && `${truncate(getMainRepresentative(n.from), 20)} ➡️ ${truncate(
-            getMainRepresentative(n.to),
-            20,
-          )}`)
-          || n.main_entity_name
-          || fallback;
+          && getRelationshipMainRepresentative(n.from, n.to))
+        || n.main_entity_name
+        || fallback;
   return n.x_mitre_id ? `[${n.x_mitre_id}] ${mainValue}` : mainValue;
 };
 
