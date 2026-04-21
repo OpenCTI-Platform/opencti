@@ -67,6 +67,7 @@ export const TELEMETRY_FORM_INTAKE_DELETED = 'formIntakeDeletedCount';
 export const TELEMETRY_FORM_INTAKE_SUBMITTED = 'formIntakeSubmittedCount';
 export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 export const TELEMETRY_GAUGE_DECAY_RULE_CREATION = 'decayRuleCreationCount';
+export const TELEMETRY_RETENTION_HISTORY = 'retentionHistoryCreationCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 
@@ -157,6 +158,10 @@ export const addCustomViewCreatedCount = () => {
 export const addCustomViewEnabledCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED, 1)
     .catch((reason) => logApp.warn('Error adding custom view enabled count to telemetry', { reason }));
+};
+
+export const addRetentionHistoryCreationCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_RETENTION_HISTORY, 1);
 };
 
 // End Region user event counters
@@ -350,6 +355,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setFormIntakeSubmittedCount(formIntakeSubmittedCountInRedis);
     const decayRuleCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DECAY_RULE_CREATION);
     manager.setDecayRuleCreationCount(decayRuleCreationCountInRedis);
+    const retentionHistoryCreationCountInRedis = await redisGetTelemetry(TELEMETRY_RETENTION_HISTORY);
+    manager.setRetentionHistoryCreationCount(retentionHistoryCreationCountInRedis);
     const customViewCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);

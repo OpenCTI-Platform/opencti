@@ -74,6 +74,9 @@ export class TelemetryMeterManager {
   // Number of connectors deployed
   connectorDeployedCount = 0;
 
+  // Number of retention rules created with scope history
+  retentionHistoryCreationCount = 0;
+
   // +1 when a user that login into application, does not count token authentication
   userLoginCount = 0;
 
@@ -271,6 +274,10 @@ export class TelemetryMeterManager {
     this.connectorDeployedCount = n;
   }
 
+  setRetentionHistoryCreationCount(n: number) {
+    this.retentionHistoryCreationCount = n;
+  }
+
   setUserLoginCount(n: number) {
     this.userLoginCount = n;
   }
@@ -349,6 +356,7 @@ export class TelemetryMeterManager {
     this.registerGauge('forgot_password_count', 'Number of clicks on Forgot Password', 'forgotPasswordCount');
     this.registerGauge('pir_count', 'number of PIRs', 'pirCount');
     this.registerGauge('connector_deployed_count', 'Number of connectors deployed via composer', 'connectorDeployedCount');
+    this.registerGauge('retention_history_creation_count', 'Number of retention rules created with scope history', 'retentionHistoryCreationCount');
     this.registerGauge('user_login_count', 'Number of user that logs-in into application', 'userLoginCount');
     this.registerGauge('form_intake_created_count', 'Number of form intakes created', 'formIntakeCreatedCount');
     this.registerGauge('form_intake_updated_count', 'Number of form intakes updated', 'formIntakeUpdatedCount');
