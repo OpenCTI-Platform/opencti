@@ -631,6 +631,39 @@ const convertStoreToStixWithResolvedFiles = async (
   version = Version.Stix_2_1,
 ): Promise<S.StixObject | S2.StixObject> => {
   const allowedMimeTypes = new Set(ALLOWED_EMBEDDED_IMAGE_MIME_TYPES);
+  const EMBEDDED_IMAGE_EXPORT_FETCH_ATTEMPTS = 3;
+  const EMBEDDED_IMAGE_EXPORT_RETRY_DELAY_MS = 150;
+
+  const encodeStoragePath = (storagePath: string): string => {
+    return storagePath
+      .split('/')
+      .map((segment) => encodeURIComponent(segment))
+      .join('/');
+  };
+
+  const resolveEmbeddedImageBase64 = async (storagePath: string): Promise<string | null> => {
+    const candidatePaths = R.uniq([storagePath, encodeStoragePath(storagePath)]);
+    for (let attempt = 0; attempt < EMBEDDED_IMAGE_EXPORT_FETCH_ATTEMPTS; attempt += 1) {
+      for (let i = 0; i < candidatePaths.length; i += 1) {
+        const candidatePath = candidatePaths[i];
+        try {
+          const base64Data = await getFileContent(candidatePath, 'base64');
+          if (isNotEmptyField(base64Data)) {
+            return String(base64Data);
+          }
+        } catch {
+          // Keep trying with fallback path and next attempts.
+        }
+      }
+
+      if (attempt < EMBEDDED_IMAGE_EXPORT_FETCH_ATTEMPTS - 1) {
+        await Bluebird.delay(EMBEDDED_IMAGE_EXPORT_RETRY_DELAY_MS);
+      }
+    }
+
+    return null;
+  };
+
   const resolveEmbeddedImagesInMarkdownDescription = async (markdown: string): Promise<string> => {
     const embeddedReferences = extractMarkdownImageReferences(markdown)
       .filter((reference) => reference.isEmbeddedStorage && reference.embeddedStoragePath);
@@ -644,25 +677,27 @@ const convertStoreToStixWithResolvedFiles = async (
 
     for (let i = 0; i < uniqueStoragePaths.length; i += 1) {
       const storagePath = uniqueStoragePaths[i];
-      try {
-        const detectedMime = mime.lookup(storagePath);
-        if (!detectedMime || !allowedMimeTypes.has(detectedMime as typeof ALLOWED_EMBEDDED_IMAGE_MIME_TYPES[number])) {
-          logApp.warn('[OPENCTI] Unsupported embedded markdown image mime type during STIX export, keeping original URI', {
-            storagePath,
-            mimeType: detectedMime || null,
-          });
-          uriByStoragePath.set(storagePath, null);
-          continue;
-        }
-        const base64Data = await getFileContent(storagePath, 'base64');
-        uriByStoragePath.set(storagePath, `data:${detectedMime};base64,${base64Data}`);
-      } catch (error) {
-        logApp.warn('[OPENCTI] Unable to resolve embedded markdown image during STIX export, keeping original URI', {
+      const detectedMime = mime.lookup(storagePath);
+      if (!detectedMime || !allowedMimeTypes.has(detectedMime as typeof ALLOWED_EMBEDDED_IMAGE_MIME_TYPES[number])) {
+        logApp.warn('[OPENCTI] Unsupported embedded markdown image mime type during STIX export, keeping original URI', {
           storagePath,
-          error,
+          mimeType: detectedMime || null,
         });
         uriByStoragePath.set(storagePath, null);
+        continue;
       }
+
+      const base64Data = await resolveEmbeddedImageBase64(storagePath);
+      if (!base64Data) {
+        logApp.warn('[OPENCTI] Unable to resolve embedded markdown image during STIX export after retries, keeping original URI', {
+          storagePath,
+          attempts: EMBEDDED_IMAGE_EXPORT_FETCH_ATTEMPTS,
+        });
+        uriByStoragePath.set(storagePath, null);
+        continue;
+      }
+
+      uriByStoragePath.set(storagePath, `data:${detectedMime};base64,${base64Data}`);
     }
 
     const { markdown: rewrittenMarkdown } = rewriteMarkdownImageUrls(markdown, (reference) => {
