@@ -25,6 +25,7 @@ export const EXPECTED_USER_AGENT = {
   x_opencti_external_references: [],
   value: 'Mozilla/5.0',
   labels: [],
+  score: 50,
   external_references: [],
 };
 

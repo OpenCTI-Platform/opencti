@@ -25,6 +25,7 @@ export const EXPECTED_CREDENTIAL = {
   x_opencti_external_references: [],
   value: 'test password',
   labels: [],
+  score: 50,
   external_references: [],
 };
 

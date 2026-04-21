@@ -25,6 +25,7 @@ export const EXPECTED_IMEI = {
   x_opencti_external_references: [],
   value: '111111111111111',
   labels: [],
+  score: 50,
   external_references: [],
 };
 
