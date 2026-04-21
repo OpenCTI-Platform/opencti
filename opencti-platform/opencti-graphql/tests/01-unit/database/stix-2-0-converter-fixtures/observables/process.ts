@@ -1,0 +1,45 @@
+import type { StoreCyberObservable } from '../../../../../src/types/store';
+
+export const PROCESS_INSTANCE = {
+  id: '10000000-0000-4000-8000-000000000037',
+  standard_id: 'process--20000000-0000-4000-8000-000000000037',
+  entity_type: 'Process',
+  defanged: false,
+  pid: 1234,
+  is_hidden: false,
+  command_line: 'cmd.exe /c whoami',
+  cwd: 'C:\\Windows\\System32',
+  created_time: '2026-01-01T00:00:00.000Z',
+  aslr_enabled: true,
+  dep_enabled: true,
+  priority: 'NORMAL',
+  owner_sid: 'S-1-5-21-123456789',
+  objectMarking: [],
+} as unknown as StoreCyberObservable;
+
+export const EXPECTED_PROCESS = {
+  id: 'process--20000000-0000-4000-8000-000000000037',
+  type: 'process',
+  spec_version: '2.0',
+  x_opencti_id: '10000000-0000-4000-8000-000000000037',
+  x_opencti_type: 'Process',
+  x_opencti_granted_refs: [],
+  x_opencti_files: [],
+  defanged: false,
+  object_marking_refs: [],
+  x_opencti_labels: [],
+  x_opencti_external_references: [],
+  pid: 1234,
+  is_hidden: false,
+  command_line: 'cmd.exe /c whoami',
+  cwd: 'C:\\Windows\\System32',
+  created_time: '2026-01-01T00:00:00.000Z',
+  opened_connection_refs: [],
+  child_refs: [],
+  aslr_enabled: true,
+  dep_enabled: true,
+  priority: 'NORMAL',
+  owner_sid: 'S-1-5-21-123456789',
+  service_dll_refs: [],
+};
+
