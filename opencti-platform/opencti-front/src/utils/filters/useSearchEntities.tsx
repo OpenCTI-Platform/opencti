@@ -973,7 +973,7 @@ const useSearchEntities = ({
                   label: t_i18n('Unknown'),
                   value: 'Unknown',
                   type: 'Unknown',
-                })
+                });
               }
               unionSetEntities(
                 filterKey,
