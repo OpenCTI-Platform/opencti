@@ -1122,7 +1122,7 @@ const fetchMembersWithOrgaRestriction = async (
     const platformSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
     // case 1.1. no orga restriction on user visibility
-    if (userCanViewAllUsers || !platformSettings.platform_organization || platformSettings.view_all_users) {
+    if (userCanViewAllUsers || (!platformSettings.platform_organization && platformSettings.view_all_users)) {
       return membersFetchFunction(context, user, types, args);
     }
 
