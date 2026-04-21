@@ -21,7 +21,7 @@ const SubTypeMenu = ({ entityType, tabs }: SubTypeMenuProps) => {
 
   return (
     <Tabs
-      value={currentTab ?? 'workflow'}
+      value={currentTab || false}
       sx={{ paddingBottom: 2 }}
     >
       {tabs.workflow && (
