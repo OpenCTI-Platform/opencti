@@ -15,6 +15,7 @@ import { BASE_TYPE_ENTITY } from '../../schema/general';
 import { getParentTypes } from '../../schema/schemaUtils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, QueryRetentionRulesArgs, RetentionRuleAddInput } from '../../generated/graphql';
+import { ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
 
 export const checkRetentionRule = async (context: AuthContext, input: RetentionRuleAddInput) => {
   const { filters, max_retention: maxDays, scope, retention_unit: unit } = input;
@@ -36,7 +37,7 @@ export const checkRetentionRule = async (context: AuthContext, input: RetentionR
   } else if (scope === 'history') {
     const jsonFilters = filters ? JSON.parse(filters) : null;
     const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
-    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: ['History'], first: 1 });
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: [ENTITY_TYPE_HISTORY], first: 1 });
     return result.pageInfo.globalCount;
   } else {
     logApp.error('[Retention manager] Scope not existing for Retention Rule.', { scope });

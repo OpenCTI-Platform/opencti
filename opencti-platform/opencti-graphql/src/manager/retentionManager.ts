@@ -19,6 +19,7 @@ import { deleteFile } from '../database/file-storage';
 import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import type { BasicNodeEdge, StoreObject } from '../types/store';
 import { ALREADY_DELETED_ERROR } from '../config/errors';
+import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
 const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled', true);
@@ -48,7 +49,7 @@ export const deleteElement = async (context: AuthContext, scope: string, nodeId:
     // forceDelete: true to clean up orphan ES entries even if S3 file doesn't exist
     await deleteFile(context, RETENTION_MANAGER_USER, nodeId, { forceDelete: true });
   } else if (scope === 'history') {
-    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, 'History', { forceDelete: true });
+    await deleteElementById(context, RETENTION_MANAGER_USER, nodeId, ENTITY_TYPE_HISTORY, { forceDelete: true });
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
@@ -68,7 +69,7 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
   } else if (scope === 'history') {
     const jsonFilters = filters ? JSON.parse(filters) : null;
     const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
-    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: ['History'], first: RETENTION_BATCH_SIZE }) as any;
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: [ENTITY_TYPE_HISTORY], first: RETENTION_BATCH_SIZE }) as any;
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
   }
