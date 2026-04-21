@@ -28,3 +28,9 @@ coverage:
         informational: true
         paths:
           - client-python
+
+flags:
+  opencti-front-e2e:
+      paths:
+        - opencti-platform/opencti-front/src
+      carryforward: false
