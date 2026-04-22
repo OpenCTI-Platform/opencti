@@ -199,7 +199,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
       inits.draftObjectParticipant = parsedSchema.draftDefaults.objectParticipant.defaults || [];
     }
 
-    if (parsedSchema.draftDefaults?.author?.isEditable) {
+    if (parsedSchema.draftDefaults?.author?.type === 'static' && parsedSchema.draftDefaults.author.defaultValue) {
+      inits.draftAuthor = {
+        value: parsedSchema.draftDefaults.author.defaultValue,
+        label: parsedSchema.draftDefaults.author.defaultValueLabel || parsedSchema.draftDefaults.author.defaultValue,
+        type: parsedSchema.draftDefaults.author.defaultValueType,
+      };
+    } else if (parsedSchema.draftDefaults?.author?.isEditable) {
       inits.draftAuthor = null;
     }
 
