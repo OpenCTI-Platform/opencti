@@ -90,7 +90,7 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
   const elements = result.edges;
   let deletedCount = elements.length;
   // Collect deleted history entries details for audit log
-  const deletedHistoryEntries: Array<{ id: string; timestamp: string; event_type: string }> = [];
+  const deletedHistoryEntries: Array<{ id: string; timestamp: string }> = [];
   if (elements.length > 0) {
     logApp.debug(`[OPENCTI] Retention manager clearing ${elements.length} elements`);
     const start = new Date().getTime();
@@ -108,7 +108,6 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
             deletedHistoryEntries.push({
               id: node.id,
               timestamp: (node as any).timestamp ?? up,
-              event_type: (node as any).event_type ?? 'unknown',
             });
           }
         } else {
