@@ -5,7 +5,9 @@ set -euo pipefail
 # Configuration
 # ─────────────────────────────────────────────
 SKIP_INSTALL=false
-SNYK_VERSION="1.1291.0"  # Pin Snyk version for reproducibility
+SNYK_VERSION="1.1291.0"
+PYTHON_MIN_MAJOR=3
+PYTHON_MIN_MINOR=9
 
 usage() {
   echo "Usage: $0 [--skip-install] [<branch>]"
@@ -49,37 +51,101 @@ trap cleanup EXIT
 # ─────────────────────────────────────────────
 # Functions
 # ─────────────────────────────────────────────
-log() { echo -e "\n\033[1;34m>>> $*\033[0m"; }
-err() { echo -e "\033[1;31m[ERROR] $*\033[0m" >&2; exit 1; }
+log()  { echo -e "\n\033[1;34m>>> $*\033[0m"; }
+warn() { echo -e "\033[1;33m[WARN] $*\033[0m" >&2; }
+err()  { echo -e "\033[1;31m[ERROR] $*\033[0m" >&2; exit 1; }
 
 sanitize_branch() {
-  # Replace any character that is unsafe in a filename
   echo "$1" | tr -s '/~^:? ' '-' | sed 's/[^a-zA-Z0-9._-]/-/g'
 }
 
-install_deps() {
-  log "Installing dependencies..."
+# ─────────────────────────────────────────────
+# Python helpers
+# ─────────────────────────────────────────────
 
+# Resolve a python3 binary that meets the minimum version requirement.
+# Sets the global PYTHON variable.
+resolve_python() {
+  local candidates=("python3" "python3.12" "python3.11" "python3.10" "python3.9")
+  for candidate in "${candidates[@]}"; do
+    if command -v "$candidate" &>/dev/null; then
+      local version
+      version="$("$candidate" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
+      local major minor
+      major="${version%%.*}"
+      minor="${version##*.}"
+      if [[ "$major" -ge "$PYTHON_MIN_MAJOR" && "$minor" -ge "$PYTHON_MIN_MINOR" ]]; then
+        PYTHON="$candidate"
+        log "Using Python: $(command -v "$candidate") ($version)"
+        return 0
+      fi
+    fi
+  done
+  err "No suitable Python >= ${PYTHON_MIN_MAJOR}.${PYTHON_MIN_MINOR} found. Install it and retry."
+}
+
+# Create (or reuse) a venv at $1, upgrade pip inside it,
+# install requirements from $2, then deactivate.
+pip_install_in_venv() {
+  local venv_dir="$1"
+  local requirements_file="$2"
+
+  if [ ! -f "$requirements_file" ]; then
+    err "requirements file not found: $requirements_file"
+  fi
+
+  log "Setting up venv: $venv_dir"
+  "$PYTHON" -m venv "$venv_dir"
+
+  local pip_bin="${venv_dir}/bin/pip"
+
+  log "Upgrading pip in venv..."
+  "$pip_bin" install --quiet --upgrade pip
+
+  log "Installing from $requirements_file..."
+  "$pip_bin" install \
+    --require-virtualenv \
+    --no-cache-dir \
+    -r "$requirements_file"
+}
+
+# ─────────────────────────────────────────────
+# Dependency installation
+# ─────────────────────────────────────────────
+install_deps() {
+
+  log "Installing [root] dependencies..."
   cd "$REPO_ROOT"
   yarn install
 
+  log "Installing [opencti-graphql] dependencies..."
   cd "$REPO_ROOT/opencti-platform/opencti-graphql"
   yarn install
   yarn install:python
 
+  log "Installing [opencti-front] dependencies..."
   cd "$REPO_ROOT/opencti-platform/opencti-front"
   yarn install
 
-  cd "$REPO_ROOT/opencti-worker/src"
-  python3 -m pip install -r requirements.txt
+  log "Installing [opencti-worker] dependencies..."
+  pip_install_in_venv \
+    "$REPO_ROOT/opencti-worker/src/.venv" \
+    "$REPO_ROOT/opencti-worker/src/requirements.txt"
 
-  cd "$REPO_ROOT/docs"
-  pip install -r requirements.txt
+  log "Installing [docs] dependencies..."
+  pip_install_in_venv \
+    "$REPO_ROOT/docs/.venv" \
+    "$REPO_ROOT/docs/requirements.txt"
 
-  cd "$REPO_ROOT/client-python"
-  pip install -r requirements.txt
+  log "Installing [client-python] dependencies..."
+  pip_install_in_venv \
+    "$REPO_ROOT/client-python/.venv" \
+    "$REPO_ROOT/client-python/requirements.txt"
 }
 
+# ─────────────────────────────────────────────
+# Snyk
+# ─────────────────────────────────────────────
 check_snyk_auth() {
   log "Checking Snyk authentication..."
   if ! npx "snyk@${SNYK_VERSION}" whoami &>/dev/null; then
@@ -91,7 +157,6 @@ run_snyk() {
   log "Running Snyk scan (branch: $BRANCH, sha: $CURRENT_SHA)..."
   cd "$REPO_ROOT"
 
-  # Separate exit code from output: exit 1 = vulns found, exit 2 = scan error
   set +e
   npx "snyk@${SNYK_VERSION}" test --all-projects 2>&1 | tee "$REPORT_FILE"
   SNYK_EXIT="${PIPESTATUS[0]}"
@@ -112,7 +177,8 @@ run_snyk() {
 # ─────────────────────────────────────────────
 cd "$REPO_ROOT"
 
-# Stash — include untracked files to get a clean working tree
+resolve_python
+
 if ! git diff --quiet || ! git diff --cached --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
   log "Stashing local changes (including untracked files)..."
   git stash push --include-untracked -m "snyk-compare-stash"
@@ -123,10 +189,9 @@ log "Switching to branch: $BRANCH"
 git checkout "$BRANCH" || err "Failed to checkout branch '$BRANCH'"
 
 if ! git pull --ff-only 2>/dev/null; then
-  log "Could not fast-forward — scanning local state of $(git rev-parse --short HEAD)"
+  warn "Could not fast-forward — scanning local state of $(git rev-parse --short HEAD)"
 fi
 
-# Resolve SHA and report path after checkout
 CURRENT_SHA="$(git rev-parse --short HEAD)"
 SAFE_BRANCH="$(sanitize_branch "$BRANCH")"
 REPORT_FILE="${REPO_ROOT}/.snyk-reports/snyk-${SAFE_BRANCH}-${CURRENT_SHA}.txt"
