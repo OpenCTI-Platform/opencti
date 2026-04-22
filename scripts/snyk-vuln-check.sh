@@ -55,13 +55,10 @@ log()  { echo -e "\n\033[1;34m>>> $*\033[0m"; }
 warn() { echo -e "\033[1;33m[WARN] $*\033[0m" >&2; }
 err()  { echo -e "\033[1;31m[ERROR] $*\033[0m" >&2; exit 1; }
 
+# Sanitize branch name for use in filenames (replace problematic characters with '-').
 sanitize_branch() {
   echo "$1" | tr -s '/~^:? ' '-' | sed 's/[^a-zA-Z0-9._-]/-/g'
 }
-
-# ─────────────────────────────────────────────
-# Python helpers
-# ─────────────────────────────────────────────
 
 # Resolve a python3 binary that meets the minimum version requirement.
 # Sets the global PYTHON variable.
@@ -84,63 +81,13 @@ resolve_python() {
   err "No suitable Python >= ${PYTHON_MIN_MAJOR}.${PYTHON_MIN_MINOR} found. Install it and retry."
 }
 
-# Create (or reuse) a venv at $1, upgrade pip inside it,
-# install requirements from $2, then deactivate.
-pip_install_in_venv() {
-  local venv_dir="$1"
-  local requirements_file="$2"
-
-  if [ ! -f "$requirements_file" ]; then
-    err "requirements file not found: $requirements_file"
-  fi
-
-  log "Setting up venv: $venv_dir"
-  "$PYTHON" -m venv "$venv_dir"
-
-  local pip_bin="${venv_dir}/bin/pip"
-
-  log "Upgrading pip in venv..."
-  "$pip_bin" install --quiet --upgrade pip
-
-  log "Installing from $requirements_file..."
-  "$pip_bin" install \
-    --require-virtualenv \
-    --no-cache-dir \
-    -r "$requirements_file"
-}
-
 # ─────────────────────────────────────────────
 # Dependency installation
 # ─────────────────────────────────────────────
 install_deps() {
-
-  log "Installing [root] dependencies..."
-  cd "$REPO_ROOT"
-  yarn install
-
-  log "Installing [opencti-graphql] dependencies..."
-  cd "$REPO_ROOT/opencti-platform/opencti-graphql"
-  yarn install
-  yarn install:python
-
-  log "Installing [opencti-front] dependencies..."
-  cd "$REPO_ROOT/opencti-platform/opencti-front"
-  yarn install
-
-  log "Installing [opencti-worker] dependencies..."
-  pip_install_in_venv \
-    "$REPO_ROOT/opencti-worker/src/.venv" \
-    "$REPO_ROOT/opencti-worker/src/requirements.txt"
-
-  log "Installing [docs] dependencies..."
-  pip_install_in_venv \
-    "$REPO_ROOT/docs/.venv" \
-    "$REPO_ROOT/docs/requirements.txt"
-
-  log "Installing [client-python] dependencies..."
-  pip_install_in_venv \
-    "$REPO_ROOT/client-python/.venv" \
-    "$REPO_ROOT/client-python/requirements.txt"
+  log "Installing dependencies..."
+  # using Nx's install
+  yarn deps
 }
 
 # ─────────────────────────────────────────────
