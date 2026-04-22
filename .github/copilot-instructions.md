@@ -4,6 +4,7 @@
 > - [Backend Architecture (opencti-graphql)](instructions/backend.instructions.md)
 > - [Frontend Architecture (opencti-front)](instructions/frontend.instructions.md)
 > - [Python Client & Worker](instructions/python.instructions.md)
+> - [Documentation Authoring (docs)](instructions/docs.instructions.md)
 > - [Code Review Guidelines](instructions/code-review.instructions.md)
 
 > **Copilot Skills** (`.github/skills/`) — procedural playbooks, load the relevant one before starting the task:
