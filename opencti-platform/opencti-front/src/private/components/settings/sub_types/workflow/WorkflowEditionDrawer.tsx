@@ -46,7 +46,6 @@ const WorkflowEditionDrawer = ({ open, selectedElement, onClose }: WorkflowEditi
           {({ submitForm, isSubmitting }) => (
             <Form style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               {isStatus ? (<StatusForm />) : (<TransitionForm />)}
-
               <FormButtonContainer>
                 <Button variant="secondary" onClick={onDelete} disabled={isSubmitting}>
                   {isNewStatus ? t_i18n('Cancel') : t_i18n('Delete')}
