@@ -114,7 +114,7 @@ describe('resolveDraftFieldDefaults', () => {
     expect(resolved.finalDraftDescription).toBe('Default desc');
   });
 
-  it('should not apply description default when user has no explicit value and field is not in submission', () => {
+  it('should apply description default when user has no explicit value and field is absent from submission', () => {
     // draftDescription key is absent from values (not submitted) — default should apply
     const resolved = resolveDraftFieldDefaults(
       'Form',
