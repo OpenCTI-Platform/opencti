@@ -4,11 +4,12 @@ import { executionContext, SYSTEM_USER } from '../../../utils/access';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { internalFindByIds } from '../../../database/middleware-loader';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organization-types';
-import { isBundleElementInScope } from '../playbook-utils';
+import { filterBundleElements, isBundleElementInScope } from '../playbook-utils';
 
 export interface SharingConfiguration {
   organizations: string[] | { label: string; value: string }[];
   applyToElements: PlaybookBundleElementsToApply;
+  applyWithFilters?: string;
 }
 const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = {
   type: 'object',
@@ -30,6 +31,11 @@ const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = 
         { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
       ],
     },
+    applyWithFilters: {
+      type: 'string',
+      nullable: true,
+      default: '',
+    },
   },
   required: ['organizations', 'applyToElements'],
 };
@@ -45,7 +51,7 @@ export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration>
   schema: async () => PLAYBOOK_SHARING_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
-    const { organizations, applyToElements } = playbookNode.configuration;
+    const { organizations, applyToElements, applyWithFilters } = playbookNode.configuration;
     const organizationsValues = organizations.map((o) => (typeof o !== 'string' ? o.value : o));
     const organizationsByIds = await internalFindByIds<BasicStoreEntityOrganization>(context, SYSTEM_USER, organizationsValues, {
       type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
@@ -57,7 +63,8 @@ export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration>
       return { output_port: 'out', bundle }; // nothing to do since organizations are empty
     }
 
-    const bundleElementsToApply = bundle.objects.filter((object) => isBundleElementInScope(object, applyToElements, dataInstanceId));
+    const inScopeElements = bundle.objects.filter((object) => isBundleElementInScope(object, applyToElements, dataInstanceId));
+    const bundleElementsToApply = await filterBundleElements(context, inScopeElements, applyWithFilters);
 
     const organizationIds = organizationsByIds.map((o) => o.standard_id);
     for (let index = 0; index < bundleElementsToApply.length; index += 1) {
