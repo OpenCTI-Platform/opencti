@@ -227,7 +227,7 @@
     "json5": "2.2.3",
     "lodash-es@npm:4.17.21": "4.17.23",
     "react": "19.2.5",
-    "webpack": "5.106.0"
+    "webpack": "5.106.2"
   },
   "dependenciesMeta": {
     "canvas": {
