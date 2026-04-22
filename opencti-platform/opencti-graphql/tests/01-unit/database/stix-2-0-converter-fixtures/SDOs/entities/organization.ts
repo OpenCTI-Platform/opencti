@@ -1,4 +1,4 @@
-import type { StoreEntityOrganization } from '../../../../../../src/modules/organization/organization-types';
+import type { StoreEntityOrganization } from '../../../../../../../src/modules/organization/organization-types';
 
 export const ORGANIZATION_INSTANCE = {
   id: '10000000-0000-4000-8000-000000000004',

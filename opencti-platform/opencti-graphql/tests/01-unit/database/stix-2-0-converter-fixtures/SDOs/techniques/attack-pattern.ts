@@ -1,4 +1,4 @@
-import type { StoreEntity } from '../../../../../../src/types/store';
+import type { StoreEntity } from '../../../../../../../src/types/store';
 
 export const ATTACK_PATTERN_INSTANCE = {
   id: '737e0a89-31dc-4fb0-a224-2e8b91b3816a',

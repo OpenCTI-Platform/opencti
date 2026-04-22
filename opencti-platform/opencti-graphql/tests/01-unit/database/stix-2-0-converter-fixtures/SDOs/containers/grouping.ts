@@ -1,4 +1,4 @@
-import type { StoreEntityGrouping } from '../../../../../../src/modules/grouping/grouping-types';
+import type { StoreEntityGrouping } from '../../../../../../../src/modules/grouping/grouping-types';
 
 export const GROUPING_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',

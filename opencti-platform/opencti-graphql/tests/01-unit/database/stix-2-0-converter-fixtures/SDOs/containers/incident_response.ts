@@ -1,4 +1,4 @@
-import type { StoreEntityCaseIncident } from '../../../../../../src/modules/case/case-incident/case-incident-types';
+import type { StoreEntityCaseIncident } from '../../../../../../../src/modules/case/case-incident/case-incident-types';
 
 export const INCIDENT_RESPONSE_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',

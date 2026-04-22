@@ -1,4 +1,4 @@
-import type { StoreEntityThreatActorIndividual } from '../../../../../src/modules/threatActorIndividual/threatActorIndividual-types';
+import type { StoreEntityThreatActorIndividual } from '../../../../../../src/modules/threatActorIndividual/threatActorIndividual-types';
 
 export const THREAT_ACTOR_INDIVIDUAL_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',

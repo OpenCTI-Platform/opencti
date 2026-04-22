@@ -1,4 +1,4 @@
-import type { StoreEntityDataSource } from '../../../../../../src/modules/dataSource/dataSource-types';
+import type { StoreEntityDataSource } from '../../../../../../../src/modules/dataSource/dataSource-types';
 
 export const DATA_SOURCE_INSTANCE = {
   id: '968d2b6f-85fc-4e5e-8546-4ac4fff10b7e',

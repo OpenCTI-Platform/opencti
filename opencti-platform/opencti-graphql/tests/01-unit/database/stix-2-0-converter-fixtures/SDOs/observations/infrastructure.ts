@@ -1,4 +1,4 @@
-import type { StoreEntity } from '../../../../../src/types/store';
+import type { StoreEntity } from '../../../../../../src/types/store';
 
 export const INFRASTRUCTURE_INSTANCE = {
   id: 'b2c3d4e5-f6a7-8901-bcde-f12345678901',

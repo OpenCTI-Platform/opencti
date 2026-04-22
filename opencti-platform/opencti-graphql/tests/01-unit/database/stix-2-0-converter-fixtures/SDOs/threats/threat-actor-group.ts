@@ -1,4 +1,4 @@
-import type { StoreEntity } from '../../../../../src/types/store';
+import type { StoreEntity } from '../../../../../../src/types/store';
 
 export const THREAT_ACTOR_GROUP_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',

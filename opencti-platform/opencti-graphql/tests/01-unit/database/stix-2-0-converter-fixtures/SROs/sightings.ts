@@ -1,4 +1,4 @@
-import type { StoreRelation } from '../../../../../src/types/store';
+import type { StoreRelation } from '../../../../../../src/types/store';
 
 export const SIGHTING_INSTANCE = {
   _index: 'opencti_stix_sighting_relationships-000001',

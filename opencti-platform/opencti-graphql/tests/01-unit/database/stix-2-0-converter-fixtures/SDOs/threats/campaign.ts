@@ -1,4 +1,4 @@
-import type { StoreEntity } from '../../../../../src/types/store';
+import type { StoreEntity } from '../../../../../../src/types/store';
 
 export const CAMPAIGN_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',
