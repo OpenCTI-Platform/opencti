@@ -1170,8 +1170,9 @@ export const formSubmit = async (
       const hasExplicitDraftAuthor = Object.hasOwn(values, 'draftAuthor');
       if (canOverrideDraftAuthor && values.draftAuthor) {
         createdBy = normalizeOptionId(values.draftAuthor) || null;
-      } else if (canOverrideDraftAuthor && hasExplicitDraftAuthor && !isAuthorRequired) {
+      } else if (canOverrideDraftAuthor && hasExplicitDraftAuthor && !isAuthorRequired && schema.draftDefaults?.author?.type !== 'main_entity_author') {
         // User explicitly cleared the field; it's editable and not required → honour the opt-out
+        // Exception: main_entity_author type — empty means "inherit from main entity", not opt-out
         createdBy = null;
       } else if (schema.draftDefaults?.author) {
         if (schema.draftDefaults.author.type === 'static') {
