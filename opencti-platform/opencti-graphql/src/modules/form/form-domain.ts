@@ -751,8 +751,9 @@ export const formSubmit = async (
         let mainEntity = { entity_type: mainEntityType } as StoreEntity;
         for (let i = 0; i < mainEntityFields.length; i += 1) {
           const field = mainEntityFields[i];
-          if (field.isReadOnly && !isBypass) continue;
-          const fieldValue = values.mainEntityGroups[index][field.name];
+          const fieldValue = (field.isReadOnly && !isBypass)
+            ? field.defaultValue
+            : values.mainEntityGroups[index][field.name];
           // Convert the field value to the correct type
           const convertedValue = convertFieldType(fieldValue, field);
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -797,8 +798,9 @@ export const formSubmit = async (
           const additionalMainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
           for (let i = 0; i < additionalMainEntityFields.length; i += 1) {
             const field = additionalMainEntityFields[i];
-            if (field.isReadOnly && !isBypass) continue;
-            const fieldValue = values.mainEntityFields[field.attributeMapping.attributeName];
+            const fieldValue = (field.isReadOnly && !isBypass)
+              ? field.defaultValue
+              : values.mainEntityFields[field.attributeMapping.attributeName];
             if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
               // Convert the field value to the correct type
               const convertedValue = convertFieldType(fieldValue, field);
@@ -834,8 +836,9 @@ export const formSubmit = async (
       let mainEntity = { entity_type: mainEntityType } as StoreEntity;
       for (let i = 0; i < mainEntityFields.length; i += 1) {
         const field = mainEntityFields[i];
-        if (field.isReadOnly && !isBypass) continue;
-        const fieldValue = values[field.name];
+        const fieldValue = (field.isReadOnly && !isBypass)
+          ? field.defaultValue
+          : values[field.name];
         // Convert the field value to the correct type
         const convertedValue = convertFieldType(fieldValue, field);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -889,8 +892,9 @@ export const formSubmit = async (
               let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
               for (let i = 0; i < additionalEntityFields.length; i += 1) {
                 const field = additionalEntityFields[i];
-                if (field.isReadOnly && !isBypass) continue;
-                const fieldValue = values[`additional_${additionalEntity.id}_groups`][index2][field.name];
+                const fieldValue = (field.isReadOnly && !isBypass)
+                  ? field.defaultValue
+                  : values[`additional_${additionalEntity.id}_groups`][index2][field.name];
                 // Convert the field value to the correct type
                 const convertedValue = convertFieldType(fieldValue, field);
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -941,8 +945,9 @@ export const formSubmit = async (
               if (values[`additional_${additionalEntity.id}_fields`]) {
                 for (let i = 0; i < additionalEntityFields.length; i += 1) {
                   const field = additionalEntityFields[i];
-                  if (field.isReadOnly && !isBypass) continue;
-                  const fieldValue = values[`additional_${additionalEntity.id}_fields`][field.attributeMapping.attributeName];
+                  const fieldValue = (field.isReadOnly && !isBypass)
+                    ? field.defaultValue
+                    : values[`additional_${additionalEntity.id}_fields`][field.attributeMapping.attributeName];
                   if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
                     // Convert the field value to the correct type
                     const convertedValue = convertFieldType(fieldValue, field);
@@ -996,8 +1001,9 @@ export const formSubmit = async (
               let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
               for (let i = 0; i < additionalEntityFields.length; i += 1) {
                 const field = additionalEntityFields[i];
-                if (field.isReadOnly && !isBypass) continue;
-                const fieldValue = entityData[field.name];
+                const fieldValue = (field.isReadOnly && !isBypass)
+                  ? field.defaultValue
+                  : entityData[field.name];
 
                 if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
                   // Convert the field value to the correct type
