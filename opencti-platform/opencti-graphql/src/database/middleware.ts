@@ -2906,6 +2906,39 @@ export const updateAttribute = async <T extends StoreObject>(
   }
   return data;
 };
+
+// Lock-first variant used by relation patch flows to avoid stale preloaded snapshots.
+// It acquires the resource lock before loading refs, then delegates to the existing update pipeline.
+export const updateAttributeLockFirst = async <T extends StoreObject>(
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  type: string,
+  inputs: EditInput[],
+  opts: { noEnrich?: boolean } & UpdateAttributeOpts = {},
+) => {
+  const draftId = getDraftContext(context, user);
+  let lock;
+  try {
+    lock = await lockResources([id], { draftId });
+    const initial = await storeLoadByIdWithRefs<T>(context, user, id, { ...opts, type });
+    if (!initial) {
+      throw FunctionalError('Cant find element to update', { id, type });
+    }
+    const lockScopedIds = getInstanceIds(initial);
+    const mergedOpts = { ...opts, locks: R.uniq([...(opts.locks ?? []), ...lockScopedIds]) };
+    const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, inputs, mergedOpts);
+    if (!opts.noEnrich && data.event) {
+      await triggerEntityUpdateAutoEnrichment(context, user, data.element as BasicStoreBase);
+    }
+    return data;
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
+};
+
 type PatchAttributeOpts = UpdateAttributeOpts & {
   operations?: Record<string, undefined | 'add' | 'remove' | 'replace'>;
 };

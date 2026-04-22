@@ -4,7 +4,7 @@ import { type EntityOptions, storeLoadById } from '../database/middleware-loader
 import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { isStixRefRelationship, RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { pageEntitiesOrRelationsConnection, storeLoadByIdWithRefs, transformPatchToInput, updateAttributeFromLoadedWithRefs, validateCreatedBy } from '../database/middleware';
+import { pageEntitiesOrRelationsConnection, transformPatchToInput, updateAttributeLockFirst, validateCreatedBy } from '../database/middleware';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -35,7 +35,7 @@ const patchElementWithRefRelationships = async (
   operation: 'add' | 'remove',
   opts = {},
 ) => {
-  const initial = await storeLoadByIdWithRefs(context, user, stixObjectOrRelationshipId, { type });
+  const initial = await storeLoadById(context, user, stixObjectOrRelationshipId, type);
   if (!initial) {
     throw FunctionalError('Element can not be loaded', { stixObjectOrRelationshipId });
   }
@@ -44,7 +44,7 @@ const patchElementWithRefRelationships = async (
     throw UnsupportedError('This relationship type is not supported', { relationship_type });
   }
   const inputs = transformPatchToInput({ [fieldName]: targets }, { [fieldName]: operation });
-  const { element: patchedFrom } = await updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
+  const { element: patchedFrom } = await updateAttributeLockFirst(context, user, stixObjectOrRelationshipId, type, inputs, opts);
   return patchedFrom;
 };
 
