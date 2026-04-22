@@ -24,8 +24,8 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetAccessDenied from '../../../../components/dashboard/WidgetAccessDenied';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import CardNumber from '../../../../components/common/card/CardNumber';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
+import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 
 const auditsNumberNumberQuery = graphql`
   query AuditsNumberNumberSeriesQuery(
@@ -57,13 +57,15 @@ const AuditsNumber = ({
   parameters = {},
   entityType,
   popover,
+  variant,
+  height,
 }) => {
   const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  const title = parameters.title ?? t_i18n('Entities number');
+  const title = parameters.title ?? t_i18n('Audits number');
   const translatedTitle = translateEntityType(title);
 
   if (!isGrantedToSettings || !isEnterpriseEdition) {
@@ -81,37 +83,36 @@ const AuditsNumber = ({
   );
 
   return (
-    <QueryRenderer
-      query={auditsNumberNumberQuery}
-      variables={{ types, filters, startDate, endDate: dayAgo() }}
-      render={({ props }) => {
-        if (props && props.auditsNumber) {
-          const { total, count } = props.auditsNumber;
-          return (
-            <CardNumber
-              entityType={entityType}
-              label={translatedTitle}
-              value={total}
-              diffLabel={t_i18n('24 hours')}
-              diffValue={total - count}
-              action={popover}
-            />
-          );
-        }
-        if (props) {
-          return (
-            <WidgetContainer title={title}>
-              <WidgetNoData />
-            </WidgetContainer>
-          );
-        }
-        return (
-          <WidgetContainer title={title}>
-            <Loader variant={LoaderVariant.inElement} />
-          </WidgetContainer>
-        );
-      }}
-    />
+    <WidgetContainer
+      padding="medium"
+      height={height}
+      title={t_i18n('Entities number')}
+      variant={variant}
+      action={popover}
+    >
+      <QueryRenderer
+        query={auditsNumberNumberQuery}
+        variables={{ types, filters, startDate, endDate: dayAgo() }}
+        render={({ props }) => {
+          if (props && props.auditsNumber) {
+            const { total, count } = props.auditsNumber;
+            return (
+              <WidgetNumber
+                entityType={entityType}
+                label={translatedTitle}
+                value={total}
+                diffLabel={t_i18n('24 hours')}
+                diffValue={total - count}
+              />
+            );
+          }
+          if (props) {
+            return <WidgetNoData />;
+          }
+          return <Loader variant={LoaderVariant.inElement} />;
+        }}
+      />
+    </WidgetContainer>
   );
 };
 

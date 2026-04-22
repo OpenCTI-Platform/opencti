@@ -1,5 +1,4 @@
 import React, { memo, ReactNode } from 'react';
-import { Box } from '@mui/material';
 import StixRelationshipsNumber from '@components/common/stix_relationships/StixRelationshipsNumber';
 import StixRelationshipsList from '@components/common/stix_relationships/StixRelationshipsList';
 import StixRelationshipsDistributionList from '@components/common/stix_relationships/StixRelationshipsDistributionList';
@@ -60,12 +59,14 @@ const DashboardRelationshipsViz = ({
     case 'number':
       return (
         <StixRelationshipsNumber
+          variant={undefined}
+          height={undefined}
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
           entityType={undefined} // because calling js component in ts
           parameters={widget.parameters as object} // because calling js component in ts
-          popover={<Box mr={-2}>{popover}</Box>}
+          popover={popover}
         />
       );
     case 'list':
