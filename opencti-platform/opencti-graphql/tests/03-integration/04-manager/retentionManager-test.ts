@@ -393,7 +393,7 @@ describe('Retention Manager tests ', () => {
         input: {
           name: '[Test] History processing rule',
           max_retention: 1,
-          retention_unit: 'days',
+          retention_unit: 'minutes',
           scope: 'history',
           filters: emptyStringFilters,
         },
@@ -401,8 +401,8 @@ describe('Retention Manager tests ', () => {
     });
     const rule = ruleQuery.data?.retentionRuleAdd;
     expect(rule).toBeDefined();
-    // Ensure there are history entries to delete (older than 1 day → use utcDate())
-    const before = utcDate();
+    // Ensure there are history entries older than 1
+    const before = utcDate().subtract(1, 'minutes');
     const historyElements = await getElementsToDelete(context, 'history', before);
     expect(historyElements.edges.length).toBeGreaterThan(0);
     // Run executeProcessing for this rule
@@ -411,7 +411,7 @@ describe('Retention Manager tests ', () => {
       name: rule.name,
       scope: 'history',
       max_retention: 1,
-      retention_unit: 'days',
+      retention_unit: 'minutes',
       filters: emptyStringFilters,
     } as any);
     // The rule should have been patched with last_execution_date and last_deleted_count
