@@ -82,12 +82,12 @@ import { convertAdministrativeAreaToStix_2_0 } from '../../../src/modules/admini
 import { convertIndicatorToStix_2_0 } from '../../../src/modules/indicator/indicator-converter';
 import { INDICATOR_INSTANCE, EXPECTED_INDICATOR } from './stix-2-0-converter-fixtures/SDOs/observations/indicator';
 import { INFRASTRUCTURE_INSTANCE, EXPECTED_INFRASTRUCTURE } from './stix-2-0-converter-fixtures/SDOs/observations/infrastructure';
-import { IPV4_INSTANCE, EXPECTED_IPV4 } from './stix-2-0-converter-fixtures/observables/ipv4-addr';
-import { DOMAIN_NAME_INSTANCE, EXPECTED_DOMAIN_NAME } from './stix-2-0-converter-fixtures/observables/domain-name';
-import { URL_INSTANCE, EXPECTED_URL } from './stix-2-0-converter-fixtures/observables/url';
-import { EMAIL_ADDR_INSTANCE, EXPECTED_EMAIL_ADDR } from './stix-2-0-converter-fixtures/observables/email-addr';
-import { FILE_INSTANCE, EXPECTED_FILE } from './stix-2-0-converter-fixtures/observables/file';
-import { AUTONOMOUS_SYSTEM_INSTANCE, EXPECTED_AUTONOMOUS_SYSTEM } from './stix-2-0-converter-fixtures/observables/autonomous-system';
+import { IPV4_INSTANCE, EXPECTED_IPV4 } from './stix-2-0-converter-fixtures/SCOs/ipv4-addr';
+import { DOMAIN_NAME_INSTANCE, EXPECTED_DOMAIN_NAME } from './stix-2-0-converter-fixtures/SCOs/domain-name';
+import { URL_INSTANCE, EXPECTED_URL } from './stix-2-0-converter-fixtures/SCOs/url';
+import { EMAIL_ADDR_INSTANCE, EXPECTED_EMAIL_ADDR } from './stix-2-0-converter-fixtures/SCOs/email-addr';
+import { FILE_INSTANCE, EXPECTED_FILE } from './stix-2-0-converter-fixtures/SCOs/file';
+import { AUTONOMOUS_SYSTEM_INSTANCE, EXPECTED_AUTONOMOUS_SYSTEM } from './stix-2-0-converter-fixtures/SCOs/autonomous-system';
 import {
   convertIPv4AddressToStix,
   convertDomainNameToStix,
@@ -127,16 +127,16 @@ import {
   convertICCIDToStix,
   convertIMSIToStix,
 } from '../../../src/database/stix-2-0-converter';
-import { IPV6_INSTANCE, EXPECTED_IPV6 } from './stix-2-0-converter-fixtures/observables/ipv6-addr';
-import { MAC_ADDR_INSTANCE, EXPECTED_MAC_ADDR } from './stix-2-0-converter-fixtures/observables/mac-addr';
-import { MUTEX_INSTANCE, EXPECTED_MUTEX } from './stix-2-0-converter-fixtures/observables/mutex';
-import { DIRECTORY_INSTANCE, EXPECTED_DIRECTORY } from './stix-2-0-converter-fixtures/observables/directory';
-import { SOFTWARE_INSTANCE, EXPECTED_SOFTWARE } from './stix-2-0-converter-fixtures/observables/software';
-import { USER_ACCOUNT_INSTANCE, EXPECTED_USER_ACCOUNT } from './stix-2-0-converter-fixtures/observables/user-account';
-import { NETWORK_TRAFFIC_INSTANCE, EXPECTED_NETWORK_TRAFFIC } from './stix-2-0-converter-fixtures/observables/network-traffic';
-import { PROCESS_INSTANCE, EXPECTED_PROCESS } from './stix-2-0-converter-fixtures/observables/process';
-import { ARTIFACT_INSTANCE, EXPECTED_ARTIFACT } from './stix-2-0-converter-fixtures/observables/artifact';
-import { X509_INSTANCE, EXPECTED_X509 } from './stix-2-0-converter-fixtures/observables/x509-certificate';
+import { IPV6_INSTANCE, EXPECTED_IPV6 } from './stix-2-0-converter-fixtures/SCOs/ipv6-addr';
+import { MAC_ADDR_INSTANCE, EXPECTED_MAC_ADDR } from './stix-2-0-converter-fixtures/SCOs/mac-addr';
+import { MUTEX_INSTANCE, EXPECTED_MUTEX } from './stix-2-0-converter-fixtures/SCOs/mutex';
+import { DIRECTORY_INSTANCE, EXPECTED_DIRECTORY } from './stix-2-0-converter-fixtures/SCOs/directory';
+import { SOFTWARE_INSTANCE, EXPECTED_SOFTWARE } from './stix-2-0-converter-fixtures/SCOs/software';
+import { USER_ACCOUNT_INSTANCE, EXPECTED_USER_ACCOUNT } from './stix-2-0-converter-fixtures/SCOs/user-account';
+import { NETWORK_TRAFFIC_INSTANCE, EXPECTED_NETWORK_TRAFFIC } from './stix-2-0-converter-fixtures/SCOs/network-traffic';
+import { PROCESS_INSTANCE, EXPECTED_PROCESS } from './stix-2-0-converter-fixtures/SCOs/process';
+import { ARTIFACT_INSTANCE, EXPECTED_ARTIFACT } from './stix-2-0-converter-fixtures/SCOs/artifact';
+import { X509_INSTANCE, EXPECTED_X509 } from './stix-2-0-converter-fixtures/SCOs/x509-certificate';
 import {
   HOSTNAME_INSTANCE,
   EXPECTED_HOSTNAME,
@@ -148,23 +148,23 @@ import {
   EXPECTED_PHONE_NUMBER,
   PERSONA_INSTANCE,
   EXPECTED_PERSONA,
-} from './stix-2-0-converter-fixtures/observables/custom-observables';
-import { EMAIL_MESSAGE_INSTANCE, EXPECTED_EMAIL_MESSAGE } from './stix-2-0-converter-fixtures/observables/email-message';
-import { WINDOWS_REGISTRY_KEY_INSTANCE, EXPECTED_WINDOWS_REGISTRY_KEY } from './stix-2-0-converter-fixtures/observables/windows-registry-key';
-import { WINDOWS_REGISTRY_VALUE_INSTANCE, EXPECTED_WINDOWS_REGISTRY_VALUE } from './stix-2-0-converter-fixtures/observables/windows-registry-value';
-import { CREDENTIAL_INSTANCE, EXPECTED_CREDENTIAL } from './stix-2-0-converter-fixtures/observables/credential';
-import { TEXT_INSTANCE, EXPECTED_TEXT } from './stix-2-0-converter-fixtures/observables/text';
-import { USER_AGENT_INSTANCE, EXPECTED_USER_AGENT } from './stix-2-0-converter-fixtures/observables/user-agent';
-import { TRACKING_NUMBER_INSTANCE, EXPECTED_TRACKING_NUMBER } from './stix-2-0-converter-fixtures/observables/tracking-number';
-import { MEDIA_CONTENT_INSTANCE, EXPECTED_MEDIA_CONTENT } from './stix-2-0-converter-fixtures/observables/media-content';
-import { SSH_KEY_INSTANCE, EXPECTED_SSH_KEY } from './stix-2-0-converter-fixtures/observables/ssh-key';
-import { CRYPTOGRAPHIC_KEY_INSTANCE, EXPECTED_CRYPTOGRAPHIC_KEY } from './stix-2-0-converter-fixtures/observables/cryptographic-key';
-import { IMEI_INSTANCE, EXPECTED_IMEI } from './stix-2-0-converter-fixtures/observables/imei';
-import { PAYMENT_CARD_INSTANCE, EXPECTED_PAYMENT_CARD } from './stix-2-0-converter-fixtures/observables/payment-card';
-import { AI_PROMPT_INSTANCE, EXPECTED_AI_PROMPT } from './stix-2-0-converter-fixtures/observables/ai-prompt';
-import { ICCID_INSTANCE, EXPECTED_ICCID } from './stix-2-0-converter-fixtures/observables/iccid';
-import { IMSI_INSTANCE, EXPECTED_IMSI } from './stix-2-0-converter-fixtures/observables/imsi';
-import { EMAIL_MIME_PART_INSTANCE, EXPECTED_EMAIL_MIME_PART } from './stix-2-0-converter-fixtures/observables/email-mime-part';
+} from './stix-2-0-converter-fixtures/SCOs/custom-observables';
+import { EMAIL_MESSAGE_INSTANCE, EXPECTED_EMAIL_MESSAGE } from './stix-2-0-converter-fixtures/SCOs/email-message';
+import { WINDOWS_REGISTRY_KEY_INSTANCE, EXPECTED_WINDOWS_REGISTRY_KEY } from './stix-2-0-converter-fixtures/SCOs/windows-registry-key';
+import { WINDOWS_REGISTRY_VALUE_INSTANCE, EXPECTED_WINDOWS_REGISTRY_VALUE } from './stix-2-0-converter-fixtures/SCOs/windows-registry-value';
+import { CREDENTIAL_INSTANCE, EXPECTED_CREDENTIAL } from './stix-2-0-converter-fixtures/SCOs/credential';
+import { TEXT_INSTANCE, EXPECTED_TEXT } from './stix-2-0-converter-fixtures/SCOs/text';
+import { USER_AGENT_INSTANCE, EXPECTED_USER_AGENT } from './stix-2-0-converter-fixtures/SCOs/user-agent';
+import { TRACKING_NUMBER_INSTANCE, EXPECTED_TRACKING_NUMBER } from './stix-2-0-converter-fixtures/SCOs/tracking-number';
+import { MEDIA_CONTENT_INSTANCE, EXPECTED_MEDIA_CONTENT } from './stix-2-0-converter-fixtures/SCOs/media-content';
+import { SSH_KEY_INSTANCE, EXPECTED_SSH_KEY } from './stix-2-0-converter-fixtures/SCOs/ssh-key';
+import { CRYPTOGRAPHIC_KEY_INSTANCE, EXPECTED_CRYPTOGRAPHIC_KEY } from './stix-2-0-converter-fixtures/SCOs/cryptographic-key';
+import { IMEI_INSTANCE, EXPECTED_IMEI } from './stix-2-0-converter-fixtures/SCOs/imei';
+import { PAYMENT_CARD_INSTANCE, EXPECTED_PAYMENT_CARD } from './stix-2-0-converter-fixtures/SCOs/payment-card';
+import { AI_PROMPT_INSTANCE, EXPECTED_AI_PROMPT } from './stix-2-0-converter-fixtures/SCOs/ai-prompt';
+import { ICCID_INSTANCE, EXPECTED_ICCID } from './stix-2-0-converter-fixtures/SCOs/iccid';
+import { IMSI_INSTANCE, EXPECTED_IMSI } from './stix-2-0-converter-fixtures/SCOs/imsi';
+import { EMAIL_MIME_PART_INSTANCE, EXPECTED_EMAIL_MIME_PART } from './stix-2-0-converter-fixtures/SCOs/email-mime-part';
 
 describe('Stix 2.0 opencti converter', () => {
   // SDOs
