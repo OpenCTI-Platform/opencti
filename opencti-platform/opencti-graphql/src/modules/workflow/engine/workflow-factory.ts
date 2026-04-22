@@ -1,62 +1,116 @@
 import { ActionRegistry } from '../registry/workflow-actions';
-import { ConditionRegistry } from '../registry/workflow-conditions';
-import type { ActionConfig, ConditionConfig, WorkflowSchema } from './workflow-schema';
+import type { ActionConfig, WorkflowSchema } from './workflow-schema';
 import type { ConditionValidator, Context, SideEffect } from '../types/workflow-types';
 import { WorkflowDefinition } from './workflow-definition';
 import { WorkflowInstance } from './workflow-instance';
+import { FilterMode, FilterOperator, type Filter, type FilterGroup } from '../../../generated/graphql';
 
 /**
  * Utility factory to create workflow definitions and instances from various sources.
  * Handles the mapping between JSON configuration (schemas) and executable logic.
  */
 export class WorkflowFactory {
-  // Helper to access nested properties: "user.role" -> ctx.user.role
-  private static getNestedValue(obj: any, path: string): any {
-    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+  // Helper to access nested properties: "workflow_role" -> ctx.user.role
+  private static getNestedValue(ctx: any, key: string): string | string[] {
+    if (key === 'workflow_group') {
+      return ((ctx as any)?.user?.groups || []).map((g: any) => g.id);
+    } else if (key === 'workflow_organization') {
+      return ((ctx as any)?.user?.organizations || []).map((o: any) => o.id);
+    } else if (key === 'workflow_role') {
+      return ((ctx as any)?.user?.roles || []).map((r: any) => r.name);
+    } else if (key === 'workflow_user') {
+      return ((ctx as any)?.user?.id || ((ctx as any)?.user?.internal_id) || null);
+    } else if (key === 'name') {
+      return ctx.entity.name;
+    } else {
+      return key.split('.').reduce((acc, part) => acc && acc[part], ctx);
+    }
   }
 
   /**
    * Translates a list of condition configurations into executable validator functions.
    */
-  public static createConditions<TContext extends Context>(configs?: ConditionConfig[]): ConditionValidator<TContext>[] {
-    if (!configs || configs.length === 0) return [];
+  public static createConditions<TContext extends Context>(configs?: { filters: FilterGroup }): ConditionValidator<TContext>[] {
+    const { filters } = configs || {};
+    if (!filters) return [];
 
-    return configs.map((config) => {
-      // 1. Check if it's a named condition from registry
-      if (config.type) {
-        const conditionFn = ConditionRegistry[config.type];
-        if (!conditionFn) {
-          // eslint-disable-next-line no-console
-          console.warn(`Condition type '${config.type}' not found in registry.`);
-          return () => true; // Default to true if not found to avoid blocking
-        }
-        return (ctx: TContext) => conditionFn(ctx, config.params);
+    // We return a single validator that evaluates the entire recursive tree
+    const rootValidator = async (ctx: TContext): Promise<boolean> => {
+      return this.evaluateFilterGroup(ctx, filters);
+    };
+
+    return [rootValidator];
+  }
+
+  private static evaluateFilterGroup<TContext extends Context>(ctx: TContext, group: FilterGroup): boolean {
+    const { mode, filters, filterGroups } = group;
+
+    // Evaluate individual filters in this group
+    const filterResults = filters.map((f) => this.evaluateFilter(ctx, f));
+
+    // Recursively evaluate nested filter groups
+    const groupResults = filterGroups.map((g) => this.evaluateFilterGroup(ctx, g));
+
+    const allResults = [...filterResults, ...groupResults];
+
+    if (allResults.length === 0) return true;
+
+    return mode === FilterMode.And
+      ? allResults.every((res) => res === true)
+      : allResults.some((res) => res === true);
+  }
+
+  private static evaluateFilter<TContext extends Context>(ctx: TContext, filter: Filter): boolean {
+    const { key, operator, values, mode } = filter;
+    // OpenCTI filters usually use the first element of the key array as the field path
+    if (!key || !operator) return true;
+
+    const actualValue: string | string[] = Array.isArray(key)
+      ? key.flatMap((k) => this.getNestedValue(ctx, k))
+      : this.getNestedValue(ctx, key);
+
+    // Evaluate each value against the operator
+    const results = values.map((expectedValue) => {
+      switch (operator) {
+        case FilterOperator.Eq:
+          // If actualValue is an array, check if any element matches
+          if (Array.isArray(actualValue)) {
+            return actualValue.includes(expectedValue);
+          }
+          return actualValue == expectedValue;
+        case FilterOperator.NotEq:
+          if (Array.isArray(actualValue)) {
+            return !actualValue.includes(expectedValue);
+          }
+          return actualValue != expectedValue;
+        case FilterOperator.Gt:
+          return actualValue > expectedValue;
+        case FilterOperator.Gte:
+          return actualValue >= expectedValue;
+        case FilterOperator.Lt:
+          return actualValue < expectedValue;
+        case FilterOperator.Lte:
+          return actualValue <= expectedValue;
+        case FilterOperator.Nil:
+          return actualValue === null || actualValue === undefined || actualValue === '';
+        case FilterOperator.NotNil:
+          return actualValue !== null && actualValue !== undefined && actualValue !== '';
+        case FilterOperator.Contains:
+          return Array.isArray(actualValue)
+            ? actualValue.includes(expectedValue)
+            : String(actualValue).toLowerCase().includes(String(expectedValue).toLowerCase());
+        case FilterOperator.StartsWith:
+          return String(actualValue).toLowerCase().startsWith(String(expectedValue).toLowerCase());
+        default:
+          console.warn(`Operator '${operator}' not yet implemented in engine, defaulting to false.`);
+          return false;
       }
-
-      // 2. Otherwise it's a field comparison
-      return (ctx: TContext) => {
-        if (!config.field || !config.operator) return true;
-
-        const actualValue = this.getNestedValue(ctx, config.field);
-
-        switch (config.operator) {
-          case 'eq': return actualValue == config.value;
-          case 'neq': return actualValue != config.value;
-          case 'gt': return actualValue > config.value;
-          case 'gte': return actualValue >= config.value;
-          case 'lt': return actualValue < config.value;
-          case 'lte': return actualValue <= config.value;
-          case 'contains':
-            return Array.isArray(actualValue)
-              ? actualValue.includes(config.value)
-              : String(actualValue).includes(String(config.value));
-          default:
-            // eslint-disable-next-line no-console
-            console.error(`Unknown operator '${config.operator}'`);
-            return false;
-        }
-      };
     });
+
+    // Combine results based on filter mode: AND or OR
+    return mode === FilterMode.And
+      ? results.every((res) => res === true)
+      : results.some((res) => res === true);
   }
 
   /**
@@ -68,7 +122,6 @@ export class WorkflowFactory {
     return configs.map((config) => {
       const actionFn = ActionRegistry[config.type];
       if (!actionFn) {
-        // eslint-disable-next-line no-console
         console.warn(`Action type '${config.type}' not found in registry.`);
         return async () => {};
       }
@@ -77,7 +130,7 @@ export class WorkflowFactory {
         if (config.mode === 'async') {
           // Fire and forget
           Promise.resolve(actionFn(ctx, config.params)).catch((err: any) =>
-            // eslint-disable-next-line no-console
+
             console.error(`Async action '${config.type}' failed`, err),
           );
         } else {

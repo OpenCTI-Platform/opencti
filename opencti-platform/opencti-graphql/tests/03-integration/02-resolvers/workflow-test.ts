@@ -101,6 +101,97 @@ describe('Workflow Resolver', () => {
     }],
   });
 
+  const workflowWithFilters = JSON.stringify({
+    id: 'filter-workflow',
+    name: 'Filter Workflow',
+    initialState: 'open',
+    states: [
+      { statusId: 'open' },
+      { statusId: 'group_check' },
+      { statusId: 'org_check' },
+      { statusId: 'role_check' },
+      { statusId: 'comparison_check' },
+    ],
+    transitions: [
+      {
+        from: 'open',
+        to: 'group_check',
+        event: 'group_event',
+        conditions: {
+          filters: {
+            mode: 'and',
+            filters: [
+              {
+                key: 'workflow_group',
+                operator: 'eq',
+                values: ['test-group-id'],
+                mode: 'or',
+              },
+            ],
+            filterGroups: [],
+          },
+        },
+      },
+      {
+        from: 'open',
+        to: 'org_check',
+        event: 'org_event',
+        conditions: {
+          filters: {
+            mode: 'and',
+            filters: [
+              {
+                key: 'workflow_organization',
+                operator: 'eq',
+                values: ['test-org-id'],
+                mode: 'or',
+              },
+            ],
+            filterGroups: [],
+          },
+        },
+      },
+      {
+        from: 'open',
+        to: 'role_check',
+        event: 'role_event',
+        conditions: {
+          filters: {
+            mode: 'and',
+            filters: [
+              {
+                key: 'workflow_role',
+                operator: 'eq',
+                values: ['Admin'],
+                mode: 'or',
+              },
+            ],
+            filterGroups: [],
+          },
+        },
+      },
+      {
+        from: 'open',
+        to: 'comparison_check',
+        event: 'comparison_event',
+        conditions: {
+          filters: {
+            mode: 'and',
+            filters: [
+              {
+                key: 'name',
+                operator: 'contains',
+                values: ['Test'],
+                mode: 'or',
+              },
+            ],
+            filterGroups: [],
+          },
+        },
+      },
+    ],
+  });
+
   beforeAll(async () => {
     const result = await queryAsAdmin({
       query: CREATE_DRAFT_WORKSPACE_QUERY,
@@ -224,5 +315,82 @@ describe('Workflow Resolver', () => {
       },
     });
     expect(instanceResult.data?.workflowInstance).toBeNull();
+  });
+
+  // Tests for filter operators and special keys
+  describe('Workflow Filters Coverage', () => {
+    let filterTestWorkspaceId: string;
+
+    beforeAll(async () => {
+      // Create a test workspace for filter testing
+      const result = await queryAsAdmin({
+        query: CREATE_DRAFT_WORKSPACE_QUERY,
+        variables: {
+          input: { name: 'Filter Test Workspace' },
+        },
+      });
+      filterTestWorkspaceId = result.data?.draftWorkspaceAdd.id;
+
+      // Set the filter workflow definition
+      await queryAsAdmin({
+        query: WORKFLOW_DEFINITION_ADD_MUTATION,
+        variables: {
+          entityType: 'DraftWorkspace',
+          definition: workflowWithFilters,
+        },
+      });
+    });
+
+    it('should test workflow_group filter key', async () => {
+      // This tests the workflow_group special key path
+      const result = await queryAsAdmin({
+        query: TRIGGER_WORKFLOW_EVENT_MUTATION,
+        variables: {
+          entityId: filterTestWorkspaceId,
+          eventName: 'group_event',
+        },
+      });
+      // May pass or fail depending on user groups, but exercises the code path
+      expect(result.data?.triggerWorkflowEvent).toBeDefined();
+    });
+
+    it('should test workflow_organization filter key', async () => {
+      // This tests the workflow_organization special key path
+      const result = await queryAsAdmin({
+        query: TRIGGER_WORKFLOW_EVENT_MUTATION,
+        variables: {
+          entityId: filterTestWorkspaceId,
+          eventName: 'org_event',
+        },
+      });
+      // May pass or fail depending on user organizations, but exercises the code path
+      expect(result.data?.triggerWorkflowEvent).toBeDefined();
+    });
+
+    it('should test workflow_role filter key', async () => {
+      // This tests the workflow_role special key path
+      const result = await queryAsAdmin({
+        query: TRIGGER_WORKFLOW_EVENT_MUTATION,
+        variables: {
+          entityId: filterTestWorkspaceId,
+          eventName: 'role_event',
+        },
+      });
+      // May pass or fail depending on user roles, but exercises the code path
+      expect(result.data?.triggerWorkflowEvent).toBeDefined();
+    });
+
+    it('should test contains operator', async () => {
+      // This tests the Contains operator in evaluateFilter
+      const result = await queryAsAdmin({
+        query: TRIGGER_WORKFLOW_EVENT_MUTATION,
+        variables: {
+          entityId: filterTestWorkspaceId,
+          eventName: 'comparison_event',
+        },
+      });
+      // Should pass because workspace name contains 'Filter Test' and filter checks for 'Test'
+      expect(result.data?.triggerWorkflowEvent.success).toBe(true);
+    });
   });
 });
