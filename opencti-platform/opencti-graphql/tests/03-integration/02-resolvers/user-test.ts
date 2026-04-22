@@ -721,8 +721,9 @@ describe('User list members query behavior', () => {
   it('Should user lists all members', async () => {
     const queryResult = await queryAsUser(USER_EDITOR, { query: LIST_MEMBERS_QUERY, variables: {} });
     const usersEdges = queryResult.data?.members.edges as { node: Member }[];
-    expect(usersEdges.length).toEqual(25);
-    expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(TESTING_USERS.length + 1); // +1 = Plus admin user
+    expect(usersEdges.length).toEqual(23);
+    // +1 = Plus admin user minus 2 users in PLATFORM_ORGANIZATION
+    expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(TESTING_USERS.length + 1 - 2);
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(entitiesCounter.Group);
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION).length).toEqual(entitiesCounter.Organization + 1);
   });
