@@ -1,3 +1,4 @@
+import type { FilterGroup } from '../../../generated/graphql';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
 import type { BasicStoreIdentifier, BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../types/store';
 
@@ -121,7 +122,7 @@ export interface WorkflowSerializedTransition {
   to: string;
   event: string;
   actions?: WorkflowActionConfig[];
-  conditions?: WorkflowConditionConfig[];
+  conditions?: FilterGroup;
 }
 
 export interface WorkflowDefinitionData {

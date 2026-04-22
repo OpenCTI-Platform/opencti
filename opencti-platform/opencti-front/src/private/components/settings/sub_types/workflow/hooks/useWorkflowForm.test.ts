@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Node, Edge } from 'reactflow';
 import { FormikHelpers } from 'formik';
 import { useWorkflowForm } from './useWorkflowForm'; // Adjust path
-import { WorkflowNodeType, WorkflowDataType, WorkflowActionType, Action, Condition, NEW_STATUS_NAME } from '../utils';
+import { WorkflowNodeType, WorkflowDataType, WorkflowActionType, Action, NEW_STATUS_NAME } from '../utils';
 import { WorkflowEditionFormValues } from '../WorkflowEditionDrawer';
 
 const mockSetNodes = vi.fn();
@@ -86,8 +86,14 @@ describe('useWorkflowForm', () => {
         result.current.onAddObject(WorkflowDataType.conditions, '', helpers.setFieldValue, mockValues);
       });
 
-      const expectedCondition: Condition = { field: '', operator: 'eq', value: '' };
-      expect(helpers.setFieldValue).toHaveBeenCalledWith(WorkflowDataType.conditions, [expectedCondition]);
+      expect(helpers.setFieldValue).toHaveBeenCalledWith(
+        WorkflowDataType.conditions,
+        expect.objectContaining({
+          filterGroups: [],
+          filters: [],
+          mode: 'and',
+        }),
+      );
     });
 
     it('should add a member update action with params', () => {
