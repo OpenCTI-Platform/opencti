@@ -8,7 +8,7 @@ import {
   storeLoadByIdWithRefs,
   timeSeriesEntities,
   updateAttribute,
-  updateAttributeFromLoadedWithRefs,
+  updateAttributeLockFirst,
   validateCreatedBy,
 } from '../database/middleware';
 import {
@@ -375,7 +375,13 @@ export const stixDomainObjectFileEdit = async (context, user, sdoId, { id, order
     const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
     return nonResolvedFile;
   });
-  const { element: updatedElement } = await updateAttributeFromLoadedWithRefs(context, user, stixDomainObject, { key: 'x_opencti_files', value: nonResolvedFiles });
+  const { element: updatedElement } = await updateAttributeLockFirst(
+    context,
+    user,
+    sdoId,
+    stixDomainObject.entity_type,
+    { key: 'x_opencti_files', value: nonResolvedFiles }
+  );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedElement, user);
 };
 
