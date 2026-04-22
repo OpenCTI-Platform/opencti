@@ -111,7 +111,7 @@
     "dataloader": "2.2.3",
     "ejs": "5.0.1",
     "eventsource": "2.0.2",
-    "eventsource-parser": "3.0.6",
+    "eventsource-parser": "3.0.8",
     "express": "5.2.1",
     "express-rate-limit": "8.3.2",
     "express-session": "1.19.0",
