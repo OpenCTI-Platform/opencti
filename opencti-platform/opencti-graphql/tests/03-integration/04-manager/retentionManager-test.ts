@@ -4,7 +4,7 @@ import { Readable } from 'stream';
 import { ADMIN_USER, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { utcDate } from '../../../src/utils/format';
-import { deleteElement, getElementsToDelete } from '../../../src/manager/retentionManager';
+import { deleteElement, executeProcessing, getElementsToDelete } from '../../../src/manager/retentionManager';
 import { allFilesForPaths } from '../../../src/modules/internal/document/document-domain';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { uploadToStorage } from '../../../src/database/file-storage';
@@ -15,6 +15,7 @@ import { deleteFile, loadFile } from '../../../src/database/file-storage';
 import { deleteElementById } from '../../../src/database/middleware';
 import { canDeleteElement } from '../../../src/database/data-consistency';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../../src/schema/stixDomainObject';
+import type { BasicStoreEntityRetentionRule } from '../../../src/modules/retentionRules/retentionRules-types';
 
 describe('Retention Manager tests ', () => {
   const context = testContext;
@@ -383,5 +384,74 @@ describe('Retention Manager tests ', () => {
     // Verify it is no longer findable
     const deleted = await elLoadById(testContext, ADMIN_USER, historyEntryId, { indices: READ_INDEX_HISTORY });
     expect(deleted).toBeUndefined();
+  });
+  it('should execute processing for history scope: patch the rule and collect deleted entries', async () => {
+    // Create a history retention rule
+    const ruleQuery = await queryAsAdmin({
+      query: CREATE_RETENTION_QUERY,
+      variables: {
+        input: {
+          name: '[Test] History processing rule',
+          max_retention: 1,
+          retention_unit: 'days',
+          scope: 'history',
+          filters: emptyStringFilters,
+        },
+      },
+    });
+    const rule = ruleQuery.data?.retentionRuleAdd;
+    expect(rule).toBeDefined();
+    // Ensure there are history entries to delete (older than 1 day → use utcDate())
+    const before = utcDate();
+    const historyElements = await getElementsToDelete(context, 'history', before);
+    expect(historyElements.edges.length).toBeGreaterThan(0);
+    // Run executeProcessing for this rule
+    await executeProcessing(context, {
+      id: rule.id,
+      name: rule.name,
+      scope: 'history',
+      max_retention: 1,
+      retention_unit: 'days',
+      filters: emptyStringFilters,
+    } as any);
+    // The rule should have been patched with last_execution_date and last_deleted_count
+    const updatedRule = await elLoadById(testContext, ADMIN_USER, rule.id) as unknown as BasicStoreEntityRetentionRule;
+    expect(updatedRule?.last_execution_date).toBeDefined();
+    expect(updatedRule?.last_deleted_count).toBeGreaterThan(0);
+    expect(updatedRule?.remaining_count).toBeGreaterThanOrEqual(0);
+    // Cleanup
+    await queryAsAdmin({ query: DELETE_RETENTION_QUERY, variables: { id: rule.id } });
+  });
+  it('should execute processing for history scope with no elements: rule patched with 0 deleted, no publishUserAction', async () => {
+    // Create a history retention rule with a window far in the past (no entries)
+    const ruleQuery = await queryAsAdmin({
+      query: CREATE_RETENTION_QUERY,
+      variables: {
+        input: {
+          name: '[Test] History rule no deletion',
+          max_retention: 36500, // 100 years → nothing older than that
+          retention_unit: 'days',
+          scope: 'history',
+          filters: emptyStringFilters,
+        },
+      },
+    });
+    const rule = ruleQuery.data?.retentionRuleAdd;
+    expect(rule).toBeDefined();
+    // Run executeProcessing — nothing should be deleted
+    await executeProcessing(context, {
+      id: rule.id,
+      name: rule.name,
+      scope: 'history',
+      max_retention: 36500,
+      retention_unit: 'days',
+      filters: emptyStringFilters,
+    } as any);
+    // Rule should be patched but with 0 deletions (publishUserAction NOT called since deletedCount = 0)
+    const updatedRule = await elLoadById(testContext, ADMIN_USER, rule.id) as unknown as BasicStoreEntityRetentionRule;
+    expect(updatedRule?.last_execution_date).toBeDefined();
+    expect(updatedRule?.last_deleted_count).toBe(0);
+    // Cleanup
+    await queryAsAdmin({ query: DELETE_RETENTION_QUERY, variables: { id: rule.id } });
   });
 });

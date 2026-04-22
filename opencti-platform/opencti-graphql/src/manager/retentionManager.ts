@@ -81,7 +81,7 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
   return result;
 };
 
-const executeProcessing = async (context: AuthContext, retentionRule: RetentionRule) => {
+export const executeProcessing = async (context: AuthContext, retentionRule: RetentionRule) => {
   const { id, name, max_retention: maxNumber, retention_unit: unit, filters, scope } = retentionRule;
   logApp.debug(`[OPENCTI] Executing retention manager rule ${name}`);
   const before = utcDate().subtract(maxNumber, unit ?? 'days');
