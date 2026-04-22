@@ -67,8 +67,6 @@ const PublicStixCoreRelationshipsNumber = ({
   startDate,
   endDate,
   title,
-  variant,
-  height,
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters } = widget;
@@ -85,14 +83,12 @@ const PublicStixCoreRelationshipsNumber = ({
   return (
     <WidgetContainer
       padding="medium"
-      height={height}
-      title={parameters?.title ?? title ?? t_i18n('Relationships number')}
-      variant={variant}
+      title={t_i18n('Relationships number')}
     >
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreRelationshipsNumberComponent
-            title={t_i18n('Relationships number')}
+            title={parameters?.title ?? title ?? t_i18n('Relationships number')}
             queryRef={queryRef}
           />
         </React.Suspense>

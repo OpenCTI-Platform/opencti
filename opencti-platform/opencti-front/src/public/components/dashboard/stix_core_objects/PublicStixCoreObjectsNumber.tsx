@@ -67,8 +67,6 @@ const PublicStixCoreObjectsNumber = ({
   startDate,
   endDate,
   title,
-  height,
-  variant,
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
   const { id, parameters } = widget;
@@ -85,14 +83,12 @@ const PublicStixCoreObjectsNumber = ({
   return (
     <WidgetContainer
       padding="medium"
-      height={height}
-      title={parameters?.title ?? title ?? t_i18n('Entities number')}
-      variant={variant}
+      title={t_i18n('Entities number')}
     >
       {queryRef ? (
         <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <PublicStixCoreObjectsNumberComponent
-            title={t_i18n('Entities number')}
+            title={parameters?.title ?? title ?? t_i18n('Entities number')}
             queryRef={queryRef}
           />
         </Suspense>
