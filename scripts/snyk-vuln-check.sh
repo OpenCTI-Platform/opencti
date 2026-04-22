@@ -5,6 +5,7 @@ set -euo pipefail
 # Configuration
 # ─────────────────────────────────────────────
 SKIP_INSTALL=false
+SNYK_VERSION="1.1291.0"  # Pin Snyk version for reproducibility
 
 usage() {
   echo "Usage: $0 [--skip-install] [<branch>]"
@@ -19,17 +20,42 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-[ -z "${BRANCH:-}" ] && BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+# ─────────────────────────────────────────────
+# Resolve branch — fail explicitly on detached HEAD
+# ─────────────────────────────────────────────
+if [ -z "${BRANCH:-}" ]; then
+  BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" \
+    || { echo "[ERROR] Could not determine current branch (detached HEAD?)" >&2; exit 1; }
+  [ "$BRANCH" = "HEAD" ] \
+    && { echo "[ERROR] Detached HEAD state — please specify a branch explicitly." >&2; exit 1; }
+fi
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
-
 mkdir -p "${REPO_ROOT}/.snyk-reports"
+
+# ─────────────────────────────────────────────
+# Trap — always restore stash on exit
+# ─────────────────────────────────────────────
+STASHED=false
+
+cleanup() {
+  if [ "$STASHED" = true ]; then
+    log "Restoring stashed changes..."
+    git -C "$REPO_ROOT" stash pop || echo "[WARN] Could not pop stash — check 'git stash list'" >&2
+  fi
+}
+trap cleanup EXIT
 
 # ─────────────────────────────────────────────
 # Functions
 # ─────────────────────────────────────────────
 log() { echo -e "\n\033[1;34m>>> $*\033[0m"; }
 err() { echo -e "\033[1;31m[ERROR] $*\033[0m" >&2; exit 1; }
+
+sanitize_branch() {
+  # Replace any character that is unsafe in a filename
+  echo "$1" | tr -s '/~^:? ' '-' | sed 's/[^a-zA-Z0-9._-]/-/g'
+}
 
 install_deps() {
   log "Installing dependencies..."
@@ -45,7 +71,7 @@ install_deps() {
   yarn install
 
   cd "$REPO_ROOT/opencti-worker/src"
-  pip install -r requirements.txt
+  python3 -m pip install -r requirements.txt
 
   cd "$REPO_ROOT/docs"
   pip install -r requirements.txt
@@ -56,15 +82,29 @@ install_deps() {
 
 check_snyk_auth() {
   log "Checking Snyk authentication..."
-  if ! yarn dlx snyk whoami &>/dev/null; then
-    err "Snyk is not authenticated. Please run 'snyk auth' first and try again."
+  if ! npx "snyk@${SNYK_VERSION}" whoami &>/dev/null; then
+    err "Snyk is not authenticated. Run 'npx snyk@${SNYK_VERSION} auth' and try again."
   fi
 }
 
 run_snyk() {
-  log "Running Snyk scan..."
+  log "Running Snyk scan (branch: $BRANCH, sha: $CURRENT_SHA)..."
   cd "$REPO_ROOT"
-  yarn dlx snyk test --all-projects 2>&1 | tee "$REPORT_FILE" || true
+
+  # Separate exit code from output: exit 1 = vulns found, exit 2 = scan error
+  set +e
+  npx "snyk@${SNYK_VERSION}" test --all-projects 2>&1 | tee "$REPORT_FILE"
+  SNYK_EXIT="${PIPESTATUS[0]}"
+  set -e
+
+  case "$SNYK_EXIT" in
+    0) log "Snyk: no vulnerabilities found." ;;
+    1) log "Snyk: vulnerabilities found — see report." ;;
+    2) err "Snyk scan failed (tool error, network issue, or bad token). Exit code: 2" ;;
+    *) err "Snyk exited with unexpected code: $SNYK_EXIT" ;;
+  esac
+
+  return "$SNYK_EXIT"
 }
 
 # ─────────────────────────────────────────────
@@ -72,28 +112,42 @@ run_snyk() {
 # ─────────────────────────────────────────────
 cd "$REPO_ROOT"
 
-if ! git diff --quiet || ! git diff --cached --quiet; then
-  log "Stashing local changes..."
-  git stash push -m "snyk-compare-stash"
+# Stash — include untracked files to get a clean working tree
+if ! git diff --quiet || ! git diff --cached --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
+  log "Stashing local changes (including untracked files)..."
+  git stash push --include-untracked -m "snyk-compare-stash"
   STASHED=true
-else
-  STASHED=false
 fi
 
 log "Switching to branch: $BRANCH"
 git checkout "$BRANCH" || err "Failed to checkout branch '$BRANCH'"
-git pull --ff-only 2>/dev/null || log "Could not fast-forward — continuing with local state"
 
-REPORT_FILE="${REPO_ROOT}/.snyk-reports/snyk-${BRANCH//\//-}-$(git rev-parse --short HEAD).txt"
+if ! git pull --ff-only 2>/dev/null; then
+  log "Could not fast-forward — scanning local state of $(git rev-parse --short HEAD)"
+fi
 
-[ "$SKIP_INSTALL" = true ] && log "Skipping dependency installation (--skip-install)" || install_deps
+# Resolve SHA and report path after checkout
+CURRENT_SHA="$(git rev-parse --short HEAD)"
+SAFE_BRANCH="$(sanitize_branch "$BRANCH")"
+REPORT_FILE="${REPO_ROOT}/.snyk-reports/snyk-${SAFE_BRANCH}-${CURRENT_SHA}.txt"
+
+log "Scanning commit: $CURRENT_SHA"
+
+if [ "$SKIP_INSTALL" = true ]; then
+  log "Skipping dependency installation (--skip-install)"
+else
+  install_deps
+fi
 
 check_snyk_auth
 run_snyk
-
-[ "$STASHED" = true ] && { log "Restoring stashed changes..."; git stash pop; }
+SCAN_EXIT=$?
 
 echo ""
 echo "────────────────────────────────────────────"
-echo "  Report saved to: $REPORT_FILE"
+echo "  Branch : $BRANCH"
+echo "  SHA    : $CURRENT_SHA"
+echo "  Report : $REPORT_FILE"
 echo "────────────────────────────────────────────"
+
+exit "$SCAN_EXIT"
