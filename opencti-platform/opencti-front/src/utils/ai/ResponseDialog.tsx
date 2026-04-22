@@ -20,7 +20,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import RichTextEditor from '../../components/RichTextEditor';
 import CKEditor from '../../components/CKEditor';
 import { useFormatter } from '../../components/i18n';
-import MarkdownDisplay from '../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
 import { isNotEmptyField } from '../utils';
 import { ResponseDialogAskAISubscription, ResponseDialogAskAISubscription$data } from './__generated__/ResponseDialogAskAISubscription.graphql';
 import type { AgentAction } from '../../private/components/common/form/TextFieldAskAI';

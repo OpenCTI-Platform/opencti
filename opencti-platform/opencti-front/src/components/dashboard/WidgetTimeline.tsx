@@ -8,7 +8,7 @@ import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
 import Typography from '@mui/material/Typography';
 import { getSecondaryRepresentative, getMainRepresentative } from '../../utils/defaultRepresentatives';
-import MarkdownDisplay from '../MarkdownDisplay';
+import MarkdownDisplay from '../markdownDisplay/MarkdownDisplay';
 import ItemIcon from '../ItemIcon';
 import { itemColor } from '../../utils/Colors';
 import { useFormatter } from '../i18n';

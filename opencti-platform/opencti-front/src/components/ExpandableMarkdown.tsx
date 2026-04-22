@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import IconButton from '@common/button/IconButton';
 import { emptyFilled, truncate } from '../utils/String';
-import MarkdownDisplay from './MarkdownDisplay';
+import MarkdownDisplay from './markdownDisplay/MarkdownDisplay';
 
 interface ExpandableMarkdownProps {
   source?: string | null;

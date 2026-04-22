@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import Grid from '@mui/material/Grid';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';

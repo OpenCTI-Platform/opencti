@@ -18,7 +18,7 @@ import { StixCoreObjectOrStixCoreRelationshipNoteCard_node$key } from './__gener
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 import ItemLikelihood from '../../../../components/ItemLikelihood';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import Card from '../../../../components/common/card/Card';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Label from '../../../../components/common/label/Label';

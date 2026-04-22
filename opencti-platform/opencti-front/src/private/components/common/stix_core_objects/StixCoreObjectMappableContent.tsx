@@ -17,7 +17,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { emptyFilled } from '../../../../utils/String';
 import { isNotEmptyField } from '../../../../utils/utils';
 import HtmlDisplay from '../../../../components/HtmlDisplay';

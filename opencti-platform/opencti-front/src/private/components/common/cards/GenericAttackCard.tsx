@@ -7,7 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import Skeleton from '@mui/material/Skeleton';
 import { CardActions, Stack } from '@mui/material';
 import { useTheme } from '@mui/styles';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { renderCardTitle, toEdgesLocated } from '../../../../utils/Card';
 import { emptyFilled } from '../../../../utils/String';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';

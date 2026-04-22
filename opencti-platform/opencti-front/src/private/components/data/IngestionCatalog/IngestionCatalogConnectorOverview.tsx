@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid2';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
 import { LibraryBooksOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import Card from '../../../../components/common/card/Card';
 import Label from '../../../../components/common/label/Label';
 import { EMPTY_VALUE } from '../../../../utils/String';

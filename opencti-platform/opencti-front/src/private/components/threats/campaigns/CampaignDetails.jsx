@@ -5,7 +5,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import Card from '@common/card/Card';
 import Label from '../../../../components/common/label/Label';
 

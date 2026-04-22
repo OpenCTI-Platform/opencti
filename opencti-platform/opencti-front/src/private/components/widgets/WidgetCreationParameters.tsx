@@ -22,7 +22,7 @@ import { WidgetAttributesInputContainerInstanceQuery$data } from '@components/wi
 import { QueryRenderer } from '../../../relay/environment';
 import { isNotEmptyField } from '../../../utils/utils';
 import { capitalizeFirstLetter } from '../../../utils/String';
-import MarkdownDisplay from '../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
 import { useFormatter } from '../../../components/i18n';
 import { findFiltersFromKeys, getEntityTypeThreeFirstLevelsFilterValues, SELF_ID, SELF_ID_VALUE } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';

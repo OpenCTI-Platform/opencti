@@ -4,24 +4,18 @@ import remarkFlexibleMarkers from 'remark-flexible-markers';
 import { useTheme } from '@mui/styles';
 import React, { FunctionComponent, SyntheticEvent, useCallback, useMemo, useState } from 'react';
 import remarkGfm from 'remark-gfm';
-import type { Theme } from './Theme';
-import { truncate } from '../utils/String';
-import ExternalLinkPopover from './ExternalLinkPopover';
-import FieldOrEmpty from './FieldOrEmpty';
-import { TEMP_IMAGE_SCHEME } from './fields/markdownField/markdownImageTempUtils';
+import type { Theme } from '../Theme';
+import { truncate } from '../../utils/String';
+import ExternalLinkPopover from '../ExternalLinkPopover';
+import FieldOrEmpty from '../FieldOrEmpty';
+import { TEMP_IMAGE_SCHEME } from '../fields/markdownField/markdownImageTempUtils';
+import MarkdownImagePreviewModal from './MarkdownImagePreviewModal';
+import { extractMarkdownPreviewImages, isAllowedUploadedImageUrl } from './markdownPreviewImageUtils';
 
-const STORAGE_IMAGE_PATHS = ['/storage/view', '/storage/get'];
 const markdownStyle: React.CSSProperties = {
   overflowWrap: 'break-word',
   wordBreak: 'break-word',
   hyphens: 'auto',
-};
-
-const isAllowedUploadedImageUrl = (url: string): boolean => {
-  if (!url) return false;
-  if (url.startsWith(TEMP_IMAGE_SCHEME)) return true;
-  if (STORAGE_IMAGE_PATHS.some((path) => url.includes(path))) return true;
-  return defaultUrlTransform(url) !== '';
 };
 
 const transformMarkdownUrl: NonNullable<MarkdownProps['urlTransform']> = (url) => {
@@ -80,11 +74,10 @@ interface MarkdownWithRedirectionWarningProps {
   emptyStringIfUndefined?: boolean;
   disableWarningAtLinkClick?: boolean;
   resolveImageUrl?: (url: string) => string | null;
+  enableImagePreviewModal?: boolean;
 }
 
-const MarkdownDisplay: FunctionComponent<
-  MarkdownWithRedirectionWarningProps
-> = ({
+const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = ({
   content,
   expand,
   limit,
@@ -97,6 +90,7 @@ const MarkdownDisplay: FunctionComponent<
   emptyStringIfUndefined,
   disableWarningAtLinkClick,
   resolveImageUrl,
+  enableImagePreviewModal = false,
 }) => {
   const theme = useTheme<Theme>();
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
@@ -122,6 +116,21 @@ const MarkdownDisplay: FunctionComponent<
     return resolveImageUrl ? resolveImageUrl(url) : url;
   }, [resolveImageUrl]);
 
+  const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(null);
+
+  const markdownContent = useMemo(() => {
+    return limit ? truncate(content, limit) : content;
+  }, [content, limit]);
+
+  const remarkContent = useMemo(() => {
+    return expand || !limit ? content : truncate(content, limit);
+  }, [content, expand, limit]);
+
+  const previewImages = useMemo(() => {
+    const source = (remarkContent ?? markdownContent ?? content ?? '').toString();
+    return extractMarkdownPreviewImages(source, resolveMarkdownImageUrl);
+  }, [content, markdownContent, remarkContent, resolveMarkdownImageUrl]);
+
   const imageComponent = useMemo<MarkdownProps['components']>(() => ({
     img: ({ src, alt, ...imgProps }) => {
       const rawUrl = typeof src === 'string' ? src : '';
@@ -132,6 +141,9 @@ const MarkdownDisplay: FunctionComponent<
         return <span>{alt || ''}</span>;
       }
 
+      const imageIndex = previewImages.findIndex((image) => image.src === resolvedUrl);
+      const canOpenPreview = enableImagePreviewModal && imageIndex >= 0;
+
       return (
         <img
           src={resolvedUrl}
@@ -139,20 +151,20 @@ const MarkdownDisplay: FunctionComponent<
           style={{
             objectFit: 'cover',
             maxHeight: '200px',
+            cursor: canOpenPreview ? 'zoom-in' : undefined,
+          }}
+          onClick={(event) => {
+            if (!canOpenPreview) {
+              return;
+            }
+            event.stopPropagation();
+            setPreviewImageIndex(imageIndex);
           }}
           {...imgProps}
         />
       );
     },
-  }), [resolveMarkdownImageUrl]);
-
-  const markdownContent = useMemo(() => {
-    return limit ? truncate(content, limit) : content;
-  }, [content, limit]);
-
-  const remarkContent = useMemo(() => {
-    return expand || !limit ? content : truncate(content, limit);
-  }, [content, expand, limit]);
+  }), [enableImagePreviewModal, previewImages, resolveMarkdownImageUrl]);
 
   const markdownRender = useMemo(() => {
     if (!remarkGfmPlugin) {
@@ -239,13 +251,13 @@ const MarkdownDisplay: FunctionComponent<
     event: SyntheticEvent<HTMLElement, MouseEvent>,
   ) => {
     if ((event.target as HTMLElement).localName === 'a') {
-      // if the user clicks on a link
       event.stopPropagation();
       event.preventDefault();
       const link = event.target as HTMLLinkElement;
       handleOpenExternalLink(link.href);
     }
   };
+
   let markdownDisplayContent;
   if (disableWarningAtLinkClick || removeLinks || removeLineBreaks) {
     markdownDisplayContent = markdownRender;
@@ -264,7 +276,20 @@ const MarkdownDisplay: FunctionComponent<
       </>
     );
   }
-  return emptyStringIfUndefined ? markdownDisplayContent : <FieldOrEmpty source={content}>{markdownDisplayContent}</FieldOrEmpty>;
+
+  const withModal = (
+    <>
+      {markdownDisplayContent}
+      <MarkdownImagePreviewModal
+        open={previewImageIndex !== null}
+        images={previewImages}
+        initialIndex={previewImageIndex ?? 0}
+        onClose={() => setPreviewImageIndex(null)}
+      />
+    </>
+  );
+
+  return emptyStringIfUndefined ? withModal : <FieldOrEmpty source={content}>{withModal}</FieldOrEmpty>;
 };
 
 export default MarkdownDisplay;

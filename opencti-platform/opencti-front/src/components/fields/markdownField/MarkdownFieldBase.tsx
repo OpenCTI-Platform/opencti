@@ -9,7 +9,7 @@ import { MESSAGING$ } from '../../../relay/environment';
 import useAI from '../../../utils/hooks/useAI';
 import TextFieldAskAI from '../../../private/components/common/form/TextFieldAskAI';
 import { useFormatter } from '../../i18n';
-import MarkdownDisplay from '../../MarkdownDisplay';
+import MarkdownDisplay from '../../markdownDisplay/MarkdownDisplay';
 import {
   cleanupRemovedTempAttachments,
   extractEmbeddedStoragePathsFromMarkdown,
@@ -220,36 +220,34 @@ const MarkdownFieldBase = ({
   }, [insertImagesAtCursor]);
 
   const handleUploadButtonClick = useCallback(() => {
-    if (disabled) {
+    if (disabled || activeTab !== 'write') {
       return;
     }
     fileInputRef.current?.click();
-  }, [disabled]);
+  }, [activeTab, disabled]);
 
   const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
     dragDepthRef.current = 0;
     setIsFileDragOverWrite(false);
-    if (disabled) {
+    if (disabled || activeTab !== 'write') {
       return;
     }
     insertImagesAtCursor(getImageFilesFromDataTransfer(event.dataTransfer));
-  }, [disabled, insertImagesAtCursor]);
+  }, [activeTab, disabled, insertImagesAtCursor]);
 
   const handleDragEnter = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    if (disabled || !hasFilePayload(event.dataTransfer)) {
+    if (disabled || activeTab !== 'write' || !hasFilePayload(event.dataTransfer)) {
       return;
     }
     event.preventDefault();
     dragDepthRef.current += 1;
-    if (activeTab === 'write') {
-      setIsFileDragOverWrite(true);
-    }
+    setIsFileDragOverWrite(true);
   }, [activeTab, disabled]);
 
   const handleDragLeave = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    if (disabled || !hasFilePayload(event.dataTransfer)) {
+    if (disabled || activeTab !== 'write' || !hasFilePayload(event.dataTransfer)) {
       return;
     }
     event.preventDefault();
@@ -257,17 +255,17 @@ const MarkdownFieldBase = ({
     if (dragDepthRef.current === 0) {
       setIsFileDragOverWrite(false);
     }
-  }, [disabled]);
+  }, [activeTab, disabled]);
 
   const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    if (!disabled && hasFilePayload(event.dataTransfer) && activeTab === 'write') {
+    if (!disabled && activeTab === 'write' && hasFilePayload(event.dataTransfer)) {
       setIsFileDragOverWrite(true);
     }
   }, [activeTab, disabled]);
 
   const handlePaste = useCallback((event: React.ClipboardEvent<HTMLDivElement>) => {
-    if (disabled) {
+    if (disabled || activeTab !== 'write') {
       return;
     }
 
@@ -278,7 +276,7 @@ const MarkdownFieldBase = ({
 
     event.preventDefault();
     insertImagesAtCursor(files);
-  }, [disabled, insertImagesAtCursor]);
+  }, [activeTab, disabled, insertImagesAtCursor]);
 
   const internalOnFocus = (event: FocusEvent<HTMLDivElement>) => {
     isFieldFocusedRef.current = true;
@@ -406,6 +404,7 @@ const MarkdownFieldBase = ({
               remarkGfmPlugin={true}
               commonmark={true}
               resolveImageUrl={markdownPreviewResolver}
+              enableImagePreviewModal={true}
             />
           </div>,
         )}
@@ -433,17 +432,19 @@ const MarkdownFieldBase = ({
         minPreviewHeight={140}
       />
 
-      <Button
-        variant="tertiary"
-        size="small"
-        type="button"
-        onClick={handleUploadButtonClick}
-        disabled={disabled}
-        startIcon={<AddPhotoAlternateOutlined fontSize="small" />}
-        sx={{ marginTop: '4px' }}
-      >
-        {t_i18n('Paste, drop, or click to add images')}
-      </Button>
+      {activeTab === 'write' && (
+        <Button
+          variant="tertiary"
+          size="small"
+          type="button"
+          onClick={handleUploadButtonClick}
+          disabled={disabled}
+          startIcon={<AddPhotoAlternateOutlined fontSize="small" />}
+          sx={{ marginTop: '4px' }}
+        >
+          {t_i18n('Paste, drop, or click to add images')}
+        </Button>
+      )}
 
       {showError && <FormHelperText error={true}>{errorMessage}</FormHelperText>}
 

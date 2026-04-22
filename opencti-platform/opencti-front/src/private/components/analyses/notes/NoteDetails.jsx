@@ -7,7 +7,7 @@ import Grid from '@mui/material/Grid';
 import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ItemLikelihood from '../../../../components/ItemLikelihood';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Label from '../../../../components/common/label/Label';
 import Tag from '@common/tag/Tag';

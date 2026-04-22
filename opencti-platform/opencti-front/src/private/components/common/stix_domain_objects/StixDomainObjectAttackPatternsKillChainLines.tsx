@@ -18,7 +18,7 @@ import { ListItemButton } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import { useFormatter } from '../../../../components/i18n';
 
 interface StixDomainObjectAttackPatternsKillChainLinesProps {

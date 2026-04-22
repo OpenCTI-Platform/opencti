@@ -5,7 +5,7 @@ import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import * as R from 'ramda';
 import { useFormatter } from './i18n';
-import MarkdownDisplay from './MarkdownDisplay';
+import MarkdownDisplay from './markdownDisplay/MarkdownDisplay';
 
 const MarkdownField = (props) => {
   const {
