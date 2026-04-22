@@ -88,7 +88,7 @@
     "@tiptap/suggestion": "3.20.0",
     "analytics": "0.8.19",
     "apexcharts": "4.4.0",
-    "axios": "1.15.0",
+    "axios": "1.15.1",
     "buffer": "6.0.3",
     "ckeditor5": "43.3.1",
     "classnames": "2.5.1",
