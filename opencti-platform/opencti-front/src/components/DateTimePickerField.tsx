@@ -1,12 +1,13 @@
 import React from 'react';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { TextFieldProps } from '@mui/material/TextField';
 import { fieldToDateTimePicker } from 'formik-mui-lab';
-import { useField } from 'formik';
+import { FieldProps, useField } from 'formik';
 import { useIntl } from 'react-intl';
 import { isNil } from 'ramda';
 import { parse } from '../utils/Time';
 
-const dateTimeFormatsMap = {
+const dateTimeFormatsMap: Record<string, string> = {
   'de-de': 'dd.MM.yyyy HH:mm',
   'en-us': 'yyyy-MM-dd hh:mm a',
   'es-es': 'dd/MM/yyyy HH:mm',
@@ -17,7 +18,7 @@ const dateTimeFormatsMap = {
   'zh-cn': 'yyyy-MM-dd hh:mm a',
 };
 
-const dateTimeFormatsMapWithSeconds = {
+const dateTimeFormatsMapWithSeconds: Record<string, string> = {
   'de-de': 'dd.MM.yyyy HH:mm:ss',
   'en-us': 'yyyy-MM-dd hh:mm:ss a',
   'es-es': 'dd/MM/yyyy HH:mm:ss',
@@ -28,7 +29,16 @@ const dateTimeFormatsMapWithSeconds = {
   'zh-cn': 'yyyy-MM-dd hh:mm:ss a',
 };
 
-const DateTimePickerField = (props) => {
+type DateTimePickerFieldProps = FieldProps<string> & {
+  onFocus?: (name: string) => void;
+  onChange?: (name: string, value: Date | null) => void;
+  onSubmit?: (name: string, value: string | null) => void;
+  textFieldProps: TextFieldProps;
+  withSeconds?: boolean;
+  required?: boolean;
+};
+
+const DateTimePickerField = (props: DateTimePickerFieldProps) => {
   const {
     form: { setFieldValue, setFieldTouched, submitCount },
     field: { name, value },
@@ -43,7 +53,7 @@ const DateTimePickerField = (props) => {
   const [field, meta] = useField(name);
   const parsedValue = typeof value === 'string' ? new Date(value) : value; // Convert string to Date (MUI v6)
   const internalOnAccept = React.useCallback(
-    (date) => {
+    (date: Date) => {
       setFieldTouched(name, true);
       if (typeof onSubmit === 'function') {
         onSubmit(name, date.toISOString());
@@ -52,7 +62,7 @@ const DateTimePickerField = (props) => {
     [setFieldTouched, onSubmit, name],
   );
   const internalOnChange = React.useCallback(
-    (date) => {
+    (date: Date | null) => {
       const defaultEmpty = null;
       setFieldValue(name, date ?? defaultEmpty);
       if (typeof onChange === 'function') {
