@@ -13,9 +13,10 @@ import MarkdownDisplay from '../../markdownDisplay/MarkdownDisplay';
 import {
   cleanupRemovedTempAttachments,
   extractEmbeddedStoragePathsFromMarkdown,
+  getMarkdownImageDragFeedback,
   getImageFiles,
   getImageFilesFromClipboardData,
-  getImageFilesFromDataTransfer,
+  isSvgImageFile,
 } from './markdownImageFieldHelpers';
 import { insertImageAtCursor, MarkdownTempAttachmentRegistry } from './markdownImageTempUtils';
 import useMarkdownImageUpload from './useMarkdownImageUpload';
@@ -78,7 +79,7 @@ const MarkdownFieldBase = ({
   const { fullyActive } = useAI();
   const [selectedTab, setSelectedTab] = useState<MarkdownTab>('write');
   const [draftValue, setDraftValue] = useState(value ?? '');
-  const [isFileDragOverWrite, setIsFileDragOverWrite] = useState(false);
+  const [dragFeedback, setDragFeedback] = useState<'none' | 'valid' | 'invalid'>('none');
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -109,6 +110,9 @@ const MarkdownFieldBase = ({
     }
     return Array.from(dataTransfer.types ?? []).includes('Files');
   };
+
+  const isDragOverWrite = activeTab === 'write' && dragFeedback !== 'none';
+  const isDragInvalid = dragFeedback === 'invalid';
 
   useEffect(() => {
     const next = value ?? '';
@@ -175,6 +179,11 @@ const MarkdownFieldBase = ({
   }, []);
 
   const insertImagesAtCursor = useCallback((files: File[]) => {
+    const containsSvg = files.some((file) => isSvgImageFile(file));
+    if (containsSvg) {
+      MESSAGING$.notifyError(t_i18n('SVG images are not supported'));
+    }
+
     const imageFiles = getImageFiles(files);
     if (imageFiles.length === 0 || disabled) {
       return;
@@ -230,11 +239,12 @@ const MarkdownFieldBase = ({
     event.preventDefault();
     event.stopPropagation();
     dragDepthRef.current = 0;
-    setIsFileDragOverWrite(false);
+    setDragFeedback('none');
     if (disabled || activeTab !== 'write') {
       return;
     }
-    insertImagesAtCursor(getImageFilesFromDataTransfer(event.dataTransfer));
+    const files = event.dataTransfer.files ? Array.from(event.dataTransfer.files) : [];
+    insertImagesAtCursor(files);
   }, [activeTab, disabled, insertImagesAtCursor]);
 
   const handleDragEnter = useCallback((event: React.DragEvent<HTMLDivElement>) => {
@@ -243,7 +253,7 @@ const MarkdownFieldBase = ({
     }
     event.preventDefault();
     dragDepthRef.current += 1;
-    setIsFileDragOverWrite(true);
+    setDragFeedback(getMarkdownImageDragFeedback(event.dataTransfer));
   }, [activeTab, disabled]);
 
   const handleDragLeave = useCallback((event: React.DragEvent<HTMLDivElement>) => {
@@ -253,14 +263,14 @@ const MarkdownFieldBase = ({
     event.preventDefault();
     dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
     if (dragDepthRef.current === 0) {
-      setIsFileDragOverWrite(false);
+      setDragFeedback('none');
     }
   }, [activeTab, disabled]);
 
   const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     if (!disabled && activeTab === 'write' && hasFilePayload(event.dataTransfer)) {
-      setIsFileDragOverWrite(true);
+      setDragFeedback(getMarkdownImageDragFeedback(event.dataTransfer));
     }
   }, [activeTab, disabled]);
 
@@ -336,11 +346,11 @@ const MarkdownFieldBase = ({
   }, []);
 
   useEffect(() => {
-    if (activeTab !== 'write' && isFileDragOverWrite) {
+    if (activeTab !== 'write' && dragFeedback !== 'none') {
       dragDepthRef.current = 0;
-      setIsFileDragOverWrite(false);
+      setDragFeedback('none');
     }
-  }, [activeTab, isFileDragOverWrite]);
+  }, [activeTab, dragFeedback]);
 
   const markdownPreviewResolver = useCallback((url: string) => {
     return registryRef.current.resolvePreviewImageUrl(url);
@@ -368,7 +378,8 @@ const MarkdownFieldBase = ({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/png,image/jpeg,image/gif,image/webp"
+        multiple
         style={{ display: 'none' }}
         onChange={handleFilePickerChange}
       />
@@ -420,9 +431,12 @@ const MarkdownFieldBase = ({
             onSelect: internalOnSelect,
             style: {
               height: height ?? 100,
-              ...(isFileDragOverWrite && activeTab === 'write' && {
-                outline: '2px dashed rgba(127, 127, 127, 0.85)',
+              ...(isDragOverWrite && {
+                outline: isDragInvalid
+                  ? '2px dashed rgba(211, 47, 47, 0.95)'
+                  : '2px dashed rgba(46, 125, 50, 0.95)',
                 outlineOffset: '-2px',
+                cursor: isDragInvalid ? 'not-allowed' : 'copy',
               }),
             },
           },
@@ -444,6 +458,18 @@ const MarkdownFieldBase = ({
         >
           {t_i18n('Paste, drop, or click to add images')}
         </Button>
+      )}
+
+      {activeTab === 'write' && dragFeedback === 'valid' && (
+        <FormHelperText sx={{ marginTop: '2px', color: 'success.main' }}>
+          {t_i18n('Release to upload images')}
+        </FormHelperText>
+      )}
+
+      {activeTab === 'write' && dragFeedback === 'invalid' && (
+        <FormHelperText error={true} sx={{ marginTop: '2px' }}>
+          {t_i18n('SVG files are not supported. Use PNG, JPG, GIF, or WEBP.')}
+        </FormHelperText>
       )}
 
       {showError && <FormHelperText error={true}>{errorMessage}</FormHelperText>}

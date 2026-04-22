@@ -11,7 +11,6 @@ export const ALLOWED_EMBEDDED_IMAGE_MIME_TYPES = [
   'image/jpeg',
   'image/gif',
   'image/webp',
-  'image/svg+xml',
 ] as const;
 
 export const DEFAULT_MAX_EMBEDDED_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;

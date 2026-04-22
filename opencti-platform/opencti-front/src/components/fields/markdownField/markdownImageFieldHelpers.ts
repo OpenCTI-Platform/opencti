@@ -14,6 +14,15 @@ const STORAGE_GET_EMBEDDED_PREFIX = '/storage/get/embedded/';
 const STORAGE_VIEW_EMBEDDED_PREFIX = '/storage/view/embedded/';
 const STORAGE_VIEW_EMBEDDED_PREFIX_ENCODED = '/storage/view/embedded%2F';
 
+const ALLOWED_MARKDOWN_IMAGE_MIME_TYPES = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+]);
+
+export type MarkdownImageDragFeedback = 'none' | 'valid' | 'invalid';
+
 // Extracts the storage path (e.g. "embedded/Report/r-1/image.png") from a markdown
 // image URL if and only if it points to an embedded file in this platform's storage.
 // Three URL forms are supported:
@@ -63,7 +72,50 @@ const extractEmbeddedStoragePathFromUrl = (url: string): string | null => {
   return null;
 };
 
-export const getImageFiles = (files: File[]): File[] => files.filter((file) => file.type.startsWith('image/'));
+export const isSvgImageFile = (file: File): boolean => {
+  if (file.type.toLowerCase() === 'image/svg+xml') {
+    return true;
+  }
+  return file.name.toLowerCase().endsWith('.svg');
+};
+
+export const isAllowedMarkdownImageMimeType = (mimeType: string): boolean => {
+  return ALLOWED_MARKDOWN_IMAGE_MIME_TYPES.has(mimeType.toLowerCase());
+};
+
+export const getImageFiles = (files: File[]): File[] => {
+  return files.filter((file) => {
+    const mimeType = file.type.toLowerCase();
+    return isAllowedMarkdownImageMimeType(mimeType);
+  });
+};
+
+export const getMarkdownImageDragFeedback = (dataTransfer?: DataTransfer | null): MarkdownImageDragFeedback => {
+  if (!dataTransfer) {
+    return 'none';
+  }
+
+  const transferTypes = Array.from(dataTransfer.types ?? []);
+  const hasFilePayload = transferTypes.includes('Files');
+  if (!hasFilePayload) {
+    return 'none';
+  }
+
+  const itemMimeTypes = Array.from(dataTransfer.items ?? [])
+    .filter((item) => item.kind === 'file')
+    .map((item) => item.type.toLowerCase())
+    .filter((type) => type.length > 0);
+
+  // When the browser exposes MIME types during drag-over, use them for instant feedback.
+  if (itemMimeTypes.length > 0) {
+    const hasDisallowedMime = itemMimeTypes.some((type) => !isAllowedMarkdownImageMimeType(type));
+    return hasDisallowedMime ? 'invalid' : 'valid';
+  }
+
+  // Some browsers do not expose dragged file metadata until drop.
+  // Keep the UX permissive during drag-over and validate strictly on drop.
+  return 'valid';
+};
 
 export const getImageFilesFromDataTransfer = (dataTransfer?: DataTransfer | null): File[] => {
   const files = dataTransfer?.files ? Array.from(dataTransfer.files) : [];
@@ -73,9 +125,10 @@ export const getImageFilesFromDataTransfer = (dataTransfer?: DataTransfer | null
 export const getImageFilesFromClipboardData = (clipboardData?: DataTransfer | null): File[] => {
   const items = Array.from(clipboardData?.items ?? []);
   return items
-    .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
+    .filter((item) => item.kind === 'file')
     .map((item) => item.getAsFile())
-    .filter((file): file is File => file !== null);
+    .filter((file): file is File => file !== null)
+    .filter((file) => getImageFiles([file]).length > 0);
 };
 
 export const clearPendingCleanup = (

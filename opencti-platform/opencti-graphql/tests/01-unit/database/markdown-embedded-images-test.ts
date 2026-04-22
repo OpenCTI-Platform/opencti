@@ -66,6 +66,12 @@ describe('markdown-embedded-images utility', () => {
     expect(() => parseDataUriImage(dataUri)).toThrowError('Unsupported data URI image mime type: image/bmp');
   });
 
+  it('should reject svg mime type explicitly', () => {
+    const dataUri = `data:image/svg+xml;base64,${Buffer.from('<svg/>').toString('base64')}`;
+
+    expect(() => parseDataUriImage(dataUri)).toThrowError('Unsupported data URI image mime type: image/svg+xml');
+  });
+
   it('should reject non-base64 image payload', () => {
     expect(() => parseDataUriImage('data:image/png,abcd')).toThrowError('Data URI image payload must be base64 encoded');
   });
