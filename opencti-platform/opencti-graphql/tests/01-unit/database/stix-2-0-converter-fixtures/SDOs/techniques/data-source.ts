@@ -1,0 +1,41 @@
+import type { StoreEntityDataSource } from '../../../../../../src/modules/dataSource/dataSource-types';
+
+export const DATA_SOURCE_INSTANCE = {
+  id: '968d2b6f-85fc-4e5e-8546-4ac4fff10b7e',
+  standard_id: 'data-source--d9ad9c14-1310-53f0-85ad-3654c552cc2d',
+  entity_type: 'Data-Source',
+  created: '2026-03-18T10:06:58.468Z',
+  modified: '2026-03-18T13:14:37.564Z',
+  confidence: 100,
+  revoked: false,
+  name: 'Data Source',
+  description: 'description',
+  x_mitre_platforms: ['android'],
+  collection_layers: ['OSINT'],
+  createdBy: { standard_id: 'identity--c801c762-92e8-58b6-9bcb-6fa805f902cb' },
+  objectLabel: [{ value: 'stix 2.0' }],
+  objectMarking: [{ standard_id: 'marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1' }],
+} as unknown as StoreEntityDataSource;
+
+export const EXPECTED_DATA_SOURCE = {
+  id: 'x-mitre-data-source--d9ad9c14-1310-53f0-85ad-3654c552cc2d',
+  type: 'x-mitre-data-source',
+  spec_version: '2.0',
+  x_opencti_id: '968d2b6f-85fc-4e5e-8546-4ac4fff10b7e',
+  x_opencti_type: 'Data-Source',
+  x_opencti_granted_refs: [],
+  x_opencti_files: [],
+  created: '2026-03-18T10:06:58.468Z',
+  modified: '2026-03-18T13:14:37.564Z',
+  revoked: false,
+  confidence: 100,
+  labels: ['stix 2.0'],
+  object_marking_refs: ['marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1'],
+  created_by_ref: 'identity--c801c762-92e8-58b6-9bcb-6fa805f902cb',
+  external_references: [],
+  name: 'Data Source',
+  description: 'description',
+  aliases: [],
+  x_mitre_platforms: ['android'],
+  x_mitre_collection_layers: ['OSINT'],
+};
