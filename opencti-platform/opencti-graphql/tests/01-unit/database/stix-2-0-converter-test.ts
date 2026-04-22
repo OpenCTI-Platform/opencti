@@ -44,6 +44,7 @@ import {
   convertSightingToStix,
   convertIdentityToStix,
   convertLocationToStix,
+  convertInfrastructureToStix,
 } from '../../../src/database/stix-2-0-converter';
 import {
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -78,6 +79,9 @@ import { CITY_INSTANCE, EXPECTED_CITY } from './stix-2-0-converter-fixtures/loca
 import { POSITION_INSTANCE, EXPECTED_POSITION } from './stix-2-0-converter-fixtures/locations/position';
 import { ADMINISTRATIVE_AREA_INSTANCE, EXPECTED_ADMINISTRATIVE_AREA } from './stix-2-0-converter-fixtures/locations/administrative-area';
 import { convertAdministrativeAreaToStix_2_0 } from '../../../src/modules/administrativeArea/administrativeArea-converter';
+import { convertIndicatorToStix_2_0 } from '../../../src/modules/indicator/indicator-converter';
+import { INDICATOR_INSTANCE, EXPECTED_INDICATOR } from './stix-2-0-converter-fixtures/indicator';
+import { INFRASTRUCTURE_INSTANCE, EXPECTED_INFRASTRUCTURE } from './stix-2-0-converter-fixtures/infrastructure';
 import { IPV4_INSTANCE, EXPECTED_IPV4 } from './stix-2-0-converter-fixtures/observables/ipv4-addr';
 import { DOMAIN_NAME_INSTANCE, EXPECTED_DOMAIN_NAME } from './stix-2-0-converter-fixtures/observables/domain-name';
 import { URL_INSTANCE, EXPECTED_URL } from './stix-2-0-converter-fixtures/observables/url';
@@ -179,6 +183,14 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Vulnerability', async () => {
     const result = convertVulnerabilityToStix(INSTANCE_VULNERABILITY);
     expect(result).toEqual(EXPECTED_VULNERABILITY);
+  });
+  it('should convert Indicator', async () => {
+    const result = convertIndicatorToStix_2_0(INDICATOR_INSTANCE);
+    expect(result).toEqual(EXPECTED_INDICATOR);
+  });
+  it('should convert Infrastructure', async () => {
+    const result = convertInfrastructureToStix(INFRASTRUCTURE_INSTANCE);
+    expect(result).toEqual(EXPECTED_INFRASTRUCTURE);
   });
   it('should convert Incident', async () => {
     const result = convertIncidentToStix(INCIDENT_INSTANCE);

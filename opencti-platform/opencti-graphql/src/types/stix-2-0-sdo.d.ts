@@ -219,3 +219,31 @@ export interface StixOpinion extends StixContainer {
   explanation: string; // optional
   opinion: 'strongly-disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly-agree';
 }
+
+// Indicator Specific Properties
+export interface StixIndicator extends StixDomainObject {
+  name: string;
+  description: string;
+  indicator_types: Array<string>;
+  pattern: string;
+  pattern_type: string;
+  pattern_version: string;
+  valid_from: StixDate;
+  valid_until: StixDate;
+  kill_chain_phases: Array<StixInternalKillChainPhase>;
+  x_opencti_score: number;
+  x_opencti_detection: boolean;
+  x_opencti_main_observable_type: string;
+  x_mitre_platforms: Array<string>;
+}
+
+// Infrastructure Specific Properties
+export interface StixInfrastructure extends StixDomainObject {
+  name: string;
+  description: string;
+  infrastructure_types: Array<string>;
+  aliases: Array<string>;
+  kill_chain_phases: Array<StixInternalKillChainPhase>;
+  first_seen: StixDate;
+  last_seen: StixDate;
+}

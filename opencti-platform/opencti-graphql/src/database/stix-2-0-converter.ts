@@ -45,6 +45,7 @@ import {
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
   ENTITY_TYPE_INCIDENT,
+  ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_LOCATION_CITY,
   ENTITY_TYPE_LOCATION_COUNTRY,
@@ -465,6 +466,20 @@ export const convertVulnerabilityToStix = (instance: StoreEntity): SDO.StixVulne
   };
 };
 
+export const convertInfrastructureToStix = (instance: StoreEntity): SDO.StixInfrastructure => {
+  assertType(ENTITY_TYPE_INFRASTRUCTURE, instance.entity_type);
+  return {
+    ...buildStixDomain(instance),
+    name: instance.name,
+    description: instance.description,
+    infrastructure_types: instance.infrastructure_types,
+    aliases: instance.aliases ?? [],
+    kill_chain_phases: buildKillChainPhases(instance),
+    first_seen: convertToStixDate(instance.first_seen),
+    last_seen: convertToStixDate(instance.last_seen),
+  };
+};
+
 export const convertReportToStix = (instance: StoreEntity): SDO.StixReport => {
   assertType(ENTITY_TYPE_CONTAINER_REPORT, instance.entity_type);
   const report = buildStixDomain(instance);
@@ -568,6 +583,9 @@ const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
     }
     if (ENTITY_TYPE_VULNERABILITY === type) {
       return convertVulnerabilityToStix(basic);
+    }
+    if (ENTITY_TYPE_INFRASTRUCTURE === type) {
+      return convertInfrastructureToStix(basic);
     }
     if (ENTITY_TYPE_CONTAINER_REPORT === type) {
       return convertReportToStix(basic);
