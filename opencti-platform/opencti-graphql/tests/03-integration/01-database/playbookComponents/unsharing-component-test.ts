@@ -7,9 +7,10 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organ
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../src/schema/stixDomainObject';
 import * as middlewareLoader from '../../../../src/database/middleware-loader';
 import * as access from '../../../../src/utils/access';
-import { PLAYBOOK_UNSHARING_COMPONENT } from '../../../../src/modules/playbook/components/unsharing-component';
+import { PLAYBOOK_UNSHARING_COMPONENT, type UnsharingConfiguration } from '../../../../src/modules/playbook/components/unsharing-component';
 import { testBundleObject, testExecutor } from './playbook-components-test-utils';
 import { playbookBundleElementsToApply } from '../../../../src/modules/playbook/playbook-types';
+import type { StixBundle, StixOpenctiExtension } from '../../../../src/types/stix-2-1-common';
 
 describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
   const MAIN_REPORT_ID = 'report--5f78a68b-2c4d-5e6f-beaa-7b987b0e7165';
@@ -374,6 +375,237 @@ describe('PLAYBOOK_UNSHARING_COMPONENT', () => {
 
       const ext = result.bundle.objects[0].extensions[STIX_EXT_OCTI];
       expect(ext.granted_refs).toBeUndefined();
+    });
+  });
+
+  describe('Filter elements manipulated', () => {
+    const filterGrouping = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Grouping"],"mode":"or"}],"filterGroups":[]}';
+    const filterReport = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Report"],"mode":"or"}],"filterGroups":[]}';
+    const filterCampaign = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Campaign"],"mode":"or"}],"filterGroups":[]}';
+    const filterReportMalwareCampaign = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Report", "Malware","Campaign"],"mode":"or"}],"filterGroups":[]}';
+
+    const MALWARE_ID = 'malware--09bd862a-f030-55f2-920a-900c4913d9ff';
+    const CAMPAIGN_ID = 'campaign--6bcf59ca-70c8-55ae-ac7d-a6f9b107a35b';
+    const ORGA_ID = 'orga--6bcf59ca-70c8-55ae-ac7d-a6f9b107b37a';
+
+    const getExtension = (bundle: StixBundle, id: string) => {
+      return bundle.objects.find((o) => o.id === id)?.extensions![STIX_EXT_OCTI];
+    };
+
+    const expectUnshare = (extension?: StixOpenctiExtension) => {
+      expect(extension).toBeDefined();
+      const operation = extension!.opencti_upsert_operations?.[0];
+      expect(operation).toBeDefined();
+      expect(operation.operation).toBe('remove');
+      expect(operation.key).toBe('objectOrganization');
+      expect(operation.value).toContain(ORGA_ID);
+    };
+
+    const expectNoUnshare = (extension?: StixOpenctiExtension) => {
+      expect(extension).toBeDefined();
+      expect(extension?.granted_refs).toContain(ORGA_ID);
+      expect(extension?.opencti_upsert_operations).toBeUndefined();
+    };
+
+    const BUNDLE_OBJECTS = () => [
+      testBundleObject({
+        id: MAIN_REPORT_ID,
+        type: 'Report',
+        octiExtension: {
+          granted_refs: [ORGA_ID],
+        },
+      }),
+      testBundleObject({
+        id: MALWARE_ID,
+        type: 'Malware',
+        octiExtension: {
+          granted_refs: [ORGA_ID],
+        },
+      }),
+      testBundleObject({
+        id: CAMPAIGN_ID,
+        type: 'Campaign',
+        octiExtension: {
+          granted_refs: [ORGA_ID],
+        },
+      }),
+    ];
+
+    const componentConfig = (config?: Partial<UnsharingConfiguration>) => {
+      return {
+        organizations: [ORGA_ID],
+        applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        ...config,
+      };
+    };
+
+    beforeEach(() => {
+      internalFindByIdsSpy.mockResolvedValue([{
+        id: ORGA_ID,
+        standard_id: ORGA_ID,
+      } as unknown as BasicStoreObject]);
+    });
+
+    it('should unshare nothing if no match (only-main)', async () => {
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(testExecutor({
+        mainId: MAIN_REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyWithFilters: filterGrouping,
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        }),
+      }));
+
+      const reportExtension = getExtension(result.bundle, MAIN_REPORT_ID);
+      const malwareExtension = getExtension(result.bundle, MALWARE_ID);
+      const campaignExtension = getExtension(result.bundle, CAMPAIGN_ID);
+      expectNoUnshare(reportExtension);
+      expectNoUnshare(malwareExtension);
+      expectNoUnshare(campaignExtension);
+    });
+
+    it('should unshare only main if match (only-main)', async () => {
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(testExecutor({
+        mainId: MAIN_REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyWithFilters: filterReportMalwareCampaign,
+          applyToElements: playbookBundleElementsToApply.onlyMain.value,
+        }),
+      }));
+
+      const reportExtension = getExtension(result.bundle, MAIN_REPORT_ID);
+      const malwareExtension = getExtension(result.bundle, MALWARE_ID);
+      const campaignExtension = getExtension(result.bundle, CAMPAIGN_ID);
+      expectUnshare(reportExtension);
+      expectNoUnshare(malwareExtension);
+      expectNoUnshare(campaignExtension);
+    });
+
+    it('should unshare nothing if no match (all-elements)', async () => {
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(testExecutor({
+        mainId: MAIN_REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyWithFilters: filterGrouping,
+          applyToElements: playbookBundleElementsToApply.allElements.value,
+        }),
+      }));
+
+      const reportExtension = getExtension(result.bundle, MAIN_REPORT_ID);
+      const malwareExtension = getExtension(result.bundle, MALWARE_ID);
+      const campaignExtension = getExtension(result.bundle, CAMPAIGN_ID);
+      expectNoUnshare(reportExtension);
+      expectNoUnshare(malwareExtension);
+      expectNoUnshare(campaignExtension);
+    });
+
+    it('should unshare only campaign if partial match (all-elements)', async () => {
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(testExecutor({
+        mainId: MAIN_REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyWithFilters: filterCampaign,
+          applyToElements: playbookBundleElementsToApply.allElements.value,
+        }),
+      }));
+
+      const reportExtension = getExtension(result.bundle, MAIN_REPORT_ID);
+      const malwareExtension = getExtension(result.bundle, MALWARE_ID);
+      const campaignExtension = getExtension(result.bundle, CAMPAIGN_ID);
+      expectNoUnshare(reportExtension);
+      expectNoUnshare(malwareExtension);
+      expectUnshare(campaignExtension);
+    });
+
+    it('should unshare all elements if full match (all-elements)', async () => {
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(testExecutor({
+        mainId: MAIN_REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyWithFilters: filterReportMalwareCampaign,
+          applyToElements: playbookBundleElementsToApply.allElements.value,
+        }),
+      }));
+
+      const reportExtension = getExtension(result.bundle, MAIN_REPORT_ID);
+      const malwareExtension = getExtension(result.bundle, MALWARE_ID);
+      const campaignExtension = getExtension(result.bundle, CAMPAIGN_ID);
+      expectUnshare(reportExtension);
+      expectUnshare(malwareExtension);
+      expectUnshare(campaignExtension);
+    });
+
+    it('should unshare nothing if no match (all-except-main)', async () => {
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(testExecutor({
+        mainId: MAIN_REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyWithFilters: filterGrouping,
+          applyToElements: playbookBundleElementsToApply.allExceptMain.value,
+        }),
+      }));
+
+      const reportExtension = getExtension(result.bundle, MAIN_REPORT_ID);
+      const malwareExtension = getExtension(result.bundle, MALWARE_ID);
+      const campaignExtension = getExtension(result.bundle, CAMPAIGN_ID);
+      expectNoUnshare(reportExtension);
+      expectNoUnshare(malwareExtension);
+      expectNoUnshare(campaignExtension);
+    });
+
+    it('should unshare nothing if match only main (all-except-main)', async () => {
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(testExecutor({
+        mainId: MAIN_REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyWithFilters: filterReport,
+          applyToElements: playbookBundleElementsToApply.allExceptMain.value,
+        }),
+      }));
+
+      const reportExtension = getExtension(result.bundle, MAIN_REPORT_ID);
+      const malwareExtension = getExtension(result.bundle, MALWARE_ID);
+      const campaignExtension = getExtension(result.bundle, CAMPAIGN_ID);
+      expectNoUnshare(reportExtension);
+      expectNoUnshare(malwareExtension);
+      expectNoUnshare(campaignExtension);
+    });
+
+    it('should unshare only campaign if partial match (all-except-main)', async () => {
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(testExecutor({
+        mainId: MAIN_REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyWithFilters: filterCampaign,
+          applyToElements: playbookBundleElementsToApply.allExceptMain.value,
+        }),
+      }));
+
+      const reportExtension = getExtension(result.bundle, MAIN_REPORT_ID);
+      const malwareExtension = getExtension(result.bundle, MALWARE_ID);
+      const campaignExtension = getExtension(result.bundle, CAMPAIGN_ID);
+      expectNoUnshare(reportExtension);
+      expectNoUnshare(malwareExtension);
+      expectUnshare(campaignExtension);
+    });
+
+    it('should unshare all elements except main if full match (all-except-main)', async () => {
+      const result = await PLAYBOOK_UNSHARING_COMPONENT.executor(testExecutor({
+        mainId: MAIN_REPORT_ID,
+        bundleObjects: BUNDLE_OBJECTS(),
+        configuration: componentConfig({
+          applyWithFilters: filterReportMalwareCampaign,
+          applyToElements: playbookBundleElementsToApply.allExceptMain.value,
+        }),
+      }));
+
+      const reportExtension = getExtension(result.bundle, MAIN_REPORT_ID);
+      const malwareExtension = getExtension(result.bundle, MALWARE_ID);
+      const campaignExtension = getExtension(result.bundle, CAMPAIGN_ID);
+      expectNoUnshare(reportExtension);
+      expectUnshare(malwareExtension);
+      expectUnshare(campaignExtension);
     });
   });
 });
