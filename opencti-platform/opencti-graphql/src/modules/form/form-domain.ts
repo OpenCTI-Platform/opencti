@@ -501,14 +501,14 @@ const normalizeDraftAuthorizedMemberRule = (rule: unknown): NormalizedDraftAutho
     return null;
   }
 
-  const accessRight = (typeof rule === 'object' && rule !== null && (rule as { accessRight?: string }).accessRight)
+  const accessRight = (typeof rule === 'object' && (rule as { accessRight?: string }).accessRight)
     ? (rule as { accessRight: string }).accessRight
     : 'admin';
 
   return {
     value,
     accessRight,
-    groupsRestrictionIds: typeof rule === 'object' && rule !== null
+    groupsRestrictionIds: typeof rule === 'object'
       ? normalizeGroupsRestrictionIds((rule as { groupsRestriction?: unknown }).groupsRestriction)
       : undefined,
   };
