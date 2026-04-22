@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Tooltip from '@mui/material/Tooltip';
+import Box from '@mui/material/Box';
 import { InformationOutline } from 'mdi-material-ui';
 import DecayChart, { DecayHistory } from '@components/settings/decay/DecayChart';
 import { useParams } from 'react-router-dom';
@@ -131,7 +132,17 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
                   {t_i18n('Decay indicator filter')}
                 </Label>
                 <FieldOrEmpty source={decayRule.decay_filters}>
-                  <FilterIconButton filters={JSON.parse(decayRule.decay_filters)} />
+                  <Box
+                    sx={{
+                      '& > div': {
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '8px',
+                      },
+                    }}
+                  >
+                    <FilterIconButton filters={JSON.parse(decayRule.decay_filters)} />
+                  </Box>
                 </FieldOrEmpty>
               </Grid>
               <Grid item xs={12}>
