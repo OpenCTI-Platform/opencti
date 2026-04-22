@@ -1,5 +1,6 @@
 import { RefObject } from 'react';
 import { MarkdownTempAttachmentRegistry } from './markdownImageTempUtils';
+import { extractMarkdownImageReferences } from './markdownImageParsingUtils';
 
 type CleanupRefs = {
   pendingCleanupTimeoutRef: RefObject<Map<string, ReturnType<typeof setTimeout>>>;
@@ -12,35 +13,6 @@ type CleanupRefs = {
 const STORAGE_GET_EMBEDDED_PREFIX = '/storage/get/embedded/';
 const STORAGE_VIEW_EMBEDDED_PREFIX = '/storage/view/embedded/';
 const STORAGE_VIEW_EMBEDDED_PREFIX_ENCODED = '/storage/view/embedded%2F';
-
-const parseMarkdownImageDestination = (destination: string): string | null => {
-  let index = 0;
-  while (index < destination.length && /\s/.test(destination[index])) {
-    index += 1;
-  }
-
-  if (index >= destination.length) {
-    return null;
-  }
-
-  if (destination[index] === '<') {
-    const closing = destination.indexOf('>', index + 1);
-    if (closing < 0) {
-      return null;
-    }
-    return destination.slice(index + 1, closing);
-  }
-
-  const start = index;
-  while (index < destination.length && !/\s/.test(destination[index])) {
-    index += 1;
-  }
-  if (index <= start) {
-    return null;
-  }
-
-  return destination.slice(start, index);
-};
 
 // Extracts the storage path (e.g. "embedded/Report/r-1/image.png") from a markdown
 // image URL if and only if it points to an embedded file in this platform's storage.
@@ -189,61 +161,16 @@ export const cleanupRemovedTempAttachments = ({
 // Results are deduplicated and paths with ".." are dropped to prevent directory traversal.
 export const extractEmbeddedStoragePathsFromMarkdown = (markdown: string): string[] => {
   const paths = new Set<string>();
-  let cursor = 0;
+  const imageReferences = extractMarkdownImageReferences(markdown, { stopAtLineBreakAtTopLevel: true });
 
-  while (cursor < markdown.length) {
-    const imageStart = markdown.indexOf('![', cursor);
-    if (imageStart < 0) {
-      break;
-    }
-
-    const altEnd = markdown.indexOf(']', imageStart + 2);
-    if (altEnd < 0 || markdown[altEnd + 1] !== '(') {
-      cursor = imageStart + 2;
-      continue;
-    }
-
-    const destinationStart = altEnd + 2;
-    let index = destinationStart;
-    let nestedParentheses = 0;
-    while (index < markdown.length) {
-      const char = markdown[index];
-      if ((char === '\n' || char === '\r') && nestedParentheses === 0) {
-        break;
-      }
-      if (char === '\\') {
-        index += 2;
-        continue;
-      }
-      if (char === '(') {
-        nestedParentheses += 1;
-      } else if (char === ')') {
-        if (nestedParentheses === 0) {
-          break;
-        }
-        nestedParentheses -= 1;
-      }
-      index += 1;
-    }
-
-    if (index >= markdown.length || markdown[index] !== ')') {
-      cursor = imageStart + 2;
-      continue;
-    }
-
-    const destination = markdown.slice(destinationStart, index);
-    const imageUrl = parseMarkdownImageDestination(destination);
-    if (imageUrl) {
-      const embeddedPath = extractEmbeddedStoragePathFromUrl(imageUrl);
-      if (embeddedPath) {
-        const normalized = embeddedPath.trim().replace(/^\/+/, '').split(/[?#]/)[0];
-        if (!normalized.includes('..')) {
-          paths.add(normalized);
-        }
+  for (let i = 0; i < imageReferences.length; i += 1) {
+    const embeddedPath = extractEmbeddedStoragePathFromUrl(imageReferences[i].imageUrl);
+    if (embeddedPath) {
+      const normalized = embeddedPath.trim().replace(/^\/+/, '').split(/[?#]/)[0];
+      if (!normalized.includes('..')) {
+        paths.add(normalized);
       }
     }
-
-    cursor = index + 1;
   }
 
   return Array.from(paths);
