@@ -36,6 +36,9 @@ import {
   REPRESENTATIVE_FILTER,
   TYPE_FILTER,
   WORKFLOW_FILTER,
+  WORKFLOW_GROUP_FILTER,
+  WORKFLOW_ORGANIZATION_FILTER,
+  WORKFLOW_USER_FILTER,
 } from '../utils/filtering/filtering-constants';
 import { ABSTRACT_STIX_CORE_OBJECT, INPUT_GRANTED_REFS, isAbstract } from '../schema/general';
 import { getEntityFromCache } from '../database/cache';
@@ -407,6 +410,31 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       filterKey: MEMBERS_ORGANIZATION_FILTER,
       type: 'id',
       label: 'Organization',
+      multiple: true,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+    });
+    // add workflow filters
+    filterDefinitionsMap.set(WORKFLOW_USER_FILTER, {
+      filterKey: WORKFLOW_USER_FILTER,
+      type: 'id',
+      label: 'User is',
+      multiple: true,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [ENTITY_TYPE_USER],
+    });
+    filterDefinitionsMap.set(WORKFLOW_GROUP_FILTER, {
+      filterKey: WORKFLOW_GROUP_FILTER,
+      type: 'id',
+      label: 'Is in group',
+      multiple: true,
+      subEntityTypes,
+      elementsForFilterValuesSearch: [ENTITY_TYPE_GROUP],
+    });
+    filterDefinitionsMap.set(WORKFLOW_ORGANIZATION_FILTER, {
+      filterKey: WORKFLOW_ORGANIZATION_FILTER,
+      type: 'id',
+      label: 'Is in organization',
       multiple: true,
       subEntityTypes,
       elementsForFilterValuesSearch: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
