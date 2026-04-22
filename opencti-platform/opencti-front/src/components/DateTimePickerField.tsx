@@ -52,6 +52,7 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
   const intl = useIntl();
   const [field, meta] = useField(name);
   const parsedValue = typeof value === 'string' ? new Date(value) : value; // Convert string to Date (MUI v6)
+  const defaultEmpty = null;
   const internalOnAccept = React.useCallback(
     (date: Date) => {
       setFieldTouched(name, true);
@@ -63,7 +64,6 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
   );
   const internalOnChange = React.useCallback(
     (date: Date | null) => {
-      const defaultEmpty = null;
       setFieldValue(name, date ?? defaultEmpty);
       if (typeof onChange === 'function') {
         onChange(name, date ?? defaultEmpty);
@@ -85,6 +85,13 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
 
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
 
+  const internalOnClear = React.useCallback(() => {
+    setFieldValue(name, defaultEmpty);
+    if (typeof onChange === 'function') {
+      onChange(name, defaultEmpty);
+    }
+  }, [setFieldValue, onChange, name]);
+
   if (withSeconds) {
     return (
       <DateTimePicker
@@ -103,6 +110,7 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
           dateTimeFormatsMapWithSeconds[intl.locale] || 'yyyy-MM-dd hh:mm:ss a'
         }
         slotProps={{
+          field: { clearable: true, onClear: internalOnClear },
           textField: {
             ...textFieldProps,
             onFocus: internalOnFocus,
@@ -129,6 +137,7 @@ const DateTimePickerField = (props: DateTimePickerFieldProps) => {
       views={['year', 'month', 'day', 'hours', 'minutes']}
       format={dateTimeFormatsMap[intl.locale] || 'yyyy-MM-dd hh:mm a'}
       slotProps={{
+        field: { clearable: true, onClear: internalOnClear },
         textField: {
           ...textFieldProps,
           onFocus: internalOnFocus,
