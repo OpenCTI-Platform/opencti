@@ -8,11 +8,12 @@ import { internalFindByIds } from '../../../database/middleware-loader';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organization-types';
 import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
-import { applyOperationFieldPatch, isBundleElementInScope } from '../playbook-utils';
+import { applyOperationFieldPatch, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 
 export interface UnsharingConfiguration {
   organizations: string[] | { label: string; value: string }[];
   applyToElements: PlaybookBundleElementsToApply;
+  applyWithFilters?: string;
 }
 const PLAYBOOK_UNSHARING_COMPONENT_SCHEMA: JSONSchemaType<UnsharingConfiguration> = {
   type: 'object',
@@ -34,6 +35,11 @@ const PLAYBOOK_UNSHARING_COMPONENT_SCHEMA: JSONSchemaType<UnsharingConfiguration
         { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
       ],
     },
+    applyWithFilters: {
+      type: 'string',
+      nullable: true,
+      default: '',
+    },
   },
   required: ['organizations', 'applyToElements'],
 };
@@ -49,7 +55,7 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
   schema: async () => PLAYBOOK_UNSHARING_COMPONENT_SCHEMA,
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components', AUTOMATION_MANAGER_USER);
-    const { organizations, applyToElements } = playbookNode.configuration;
+    const { organizations, applyToElements, applyWithFilters } = playbookNode.configuration;
     const organizationsValues = organizations.map((o) => (typeof o !== 'string' ? o.value : o));
     const organizationsByIds = await internalFindByIds<BasicStoreEntityOrganization>(context, SYSTEM_USER, organizationsValues, {
       type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
@@ -59,11 +65,14 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
     if (organizationsByIds.length === 0) {
       return { output_port: 'out', bundle }; // nothing to do since organizations are empty
     }
+
     const organizationIds = organizationsByIds.map((o) => o.standard_id);
     const patchOperations = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
-      if (isBundleElementInScope(element, applyToElements, dataInstanceId)) {
+      const isInScope = isBundleElementInScope(element, applyToElements, dataInstanceId);
+      const isMatchingFilters = await isBundleElementMatchFilters(context, element, applyWithFilters);
+      if (isInScope && isMatchingFilters) {
         const patchValue = {
           op: EditOperation.Remove,
           path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/granted_refs`,
