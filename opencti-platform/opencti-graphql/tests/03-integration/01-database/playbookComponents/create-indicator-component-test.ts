@@ -229,6 +229,8 @@ describe('Create indicator component', () => {
   });
 
   // ------------------------------------------------------------------
+  // Indicates relationships from bundle
+  // ------------------------------------------------------------------
 
   it('should create indicates relationships from related-to relationships in the bundle', async () => {
     const relatedToRelationship = {
@@ -267,5 +269,251 @@ describe('Create indicator component', () => {
     expect(indicatesRels).toHaveLength(1);
     expect(indicatesRels[0].source_ref).toBe(indicators[0].id);
     expect(indicatesRels[0].target_ref).toBe(INTRUSION_SET_ID);
+  });
+
+  describe('when using filters on bundle containing multiple objects', () => {
+    const OBSERVABLE_ID_2 = 'domain-name--a1b2c3d4-0000-0000-0000-000000000002' as StixId;
+    const INTRUSION_SET_ID_2 = 'intrusion-set--2bc15921-bc16-6984-a7f6-b9be2a718f2d' as StixId;
+
+    const filterDomainNames = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Domain-Name"],"mode":"or"}],"filterGroups":[]}';
+    const filterNotMatching = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["IPv4-Addr"],"mode":"or"}],"filterGroups":[]}';
+
+    // -- all-elements + filter matching all observables
+
+    it('should create indicators for all observables when applyToElements = "all-elements" and filter matches all observables', async () => {
+      const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
+        testExecutor({
+          mainId: OBSERVABLE_ID,
+          bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
+          configuration: {
+            applyToElements: playbookBundleElementsToApply.allElements.value,
+            applyWithFilters: filterDomainNames,
+            wrap_in_container: false,
+            types: [],
+          },
+        }),
+      );
+
+      expect(result.output_port).toBe('out');
+
+      const indicators = result.bundle.objects.filter((o) => o.type === 'indicator') as StixIndicator[];
+      expect(indicators).toHaveLength(2);
+
+      const basedOnRels = result.bundle.objects.filter(
+        (o) => o.type === 'relationship' && (o as StixRelation).relationship_type === RELATION_BASED_ON,
+      ) as StixRelation[];
+      expect(basedOnRels).toHaveLength(2);
+      expect(basedOnRels.map((r) => r.target_ref)).toContain(OBSERVABLE_ID);
+      expect(basedOnRels.map((r) => r.target_ref)).toContain(OBSERVABLE_ID_2);
+    });
+
+    // -- all-elements + filter not matching any observable
+
+    it('should not create any indicator when applyToElements = "all-elements" and filter does not match any observable', async () => {
+      const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
+        testExecutor({
+          mainId: OBSERVABLE_ID,
+          bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
+          configuration: {
+            applyToElements: playbookBundleElementsToApply.allElements.value,
+            applyWithFilters: filterNotMatching,
+            wrap_in_container: false,
+            types: [],
+          },
+        }),
+      );
+
+      expect(result.output_port).toBe('unmodified');
+      expect(result.bundle.objects.filter((o) => o.type === 'indicator')).toHaveLength(0);
+      expect(result.bundle.objects.filter(
+        (o) => o.type === 'relationship' && (o as StixRelation).relationship_type === RELATION_BASED_ON,
+      )).toHaveLength(0);
+    });
+
+    // -- only-main + filter matching all observables
+
+    it('should create indicator only for main observable when applyToElements = "only-main" and filter matches all observables', async () => {
+      const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
+        testExecutor({
+          mainId: OBSERVABLE_ID,
+          bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
+          configuration: {
+            applyToElements: playbookBundleElementsToApply.onlyMain.value,
+            applyWithFilters: filterDomainNames,
+            wrap_in_container: false,
+            types: [],
+          },
+        }),
+      );
+
+      // applyToElements restricts to main only, filter matches both but scope wins
+      expect(result.output_port).toBe('out');
+
+      const indicators = result.bundle.objects.filter((o) => o.type === 'indicator') as StixIndicator[];
+      expect(indicators).toHaveLength(1);
+
+      const basedOnRels = result.bundle.objects.filter(
+        (o) => o.type === 'relationship' && (o as StixRelation).relationship_type === RELATION_BASED_ON,
+      ) as StixRelation[];
+      expect(basedOnRels).toHaveLength(1);
+      expect(basedOnRels[0].target_ref).toBe(OBSERVABLE_ID);
+    });
+
+    // -- only-main + filter not matching
+
+    it('should not create any indicator when applyToElements = "only-main" and filter does not match any observable', async () => {
+      const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
+        testExecutor({
+          mainId: OBSERVABLE_ID,
+          bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
+          configuration: {
+            applyToElements: playbookBundleElementsToApply.onlyMain.value,
+            applyWithFilters: filterNotMatching,
+            wrap_in_container: false,
+            types: [],
+          },
+        }),
+      );
+
+      expect(result.output_port).toBe('unmodified');
+      expect(result.bundle.objects.filter((o) => o.type === 'indicator')).toHaveLength(0);
+      expect(result.bundle.objects.filter(
+        (o) => o.type === 'relationship' && (o as StixRelation).relationship_type === RELATION_BASED_ON,
+      )).toHaveLength(0);
+    });
+
+    // -- all-except-main + filter matching all observables
+
+    it('should create indicator only for non-main observable when applyToElements = "all-except-main" and filter matches all observables', async () => {
+      const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
+        testExecutor({
+          mainId: OBSERVABLE_ID,
+          bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
+          configuration: {
+            applyToElements: playbookBundleElementsToApply.allExceptMain.value,
+            applyWithFilters: filterDomainNames,
+            wrap_in_container: false,
+            types: [],
+          },
+        }),
+      );
+
+      // applyToElements excludes main, filter matches both: only second observable processed
+      expect(result.output_port).toBe('out');
+
+      const indicators = result.bundle.objects.filter((o) => o.type === 'indicator') as StixIndicator[];
+      expect(indicators).toHaveLength(1);
+
+      const basedOnRels = result.bundle.objects.filter(
+        (o) => o.type === 'relationship' && (o as StixRelation).relationship_type === RELATION_BASED_ON,
+      ) as StixRelation[];
+      expect(basedOnRels).toHaveLength(1);
+      expect(basedOnRels[0].target_ref).toBe(OBSERVABLE_ID_2);
+    });
+
+    // -- all-except-main + filter not matching
+
+    it('should not create any indicator when applyToElements = "all-except-main" and filter does not match any observable', async () => {
+      const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
+        testExecutor({
+          mainId: OBSERVABLE_ID,
+          bundleObjects: [domainObservable(OBSERVABLE_ID), domainObservable(OBSERVABLE_ID_2)],
+          configuration: {
+            applyToElements: playbookBundleElementsToApply.allExceptMain.value,
+            applyWithFilters: filterNotMatching,
+            wrap_in_container: false,
+            types: [],
+          },
+        }),
+      );
+
+      expect(result.output_port).toBe('unmodified');
+      expect(result.bundle.objects.filter((o) => o.type === 'indicator')).toHaveLength(0);
+      expect(result.bundle.objects.filter(
+        (o) => o.type === 'relationship' && (o as StixRelation).relationship_type === RELATION_BASED_ON,
+      )).toHaveLength(0);
+    });
+
+    // -- all-elements + filter matching partial bundle (observables only, not intrusion-set)
+
+    it('should create indicators only for filtered observables when applyToElements = "all-elements" and filter matches partial bundle', async () => {
+      const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
+        testExecutor({
+          mainId: OBSERVABLE_ID,
+          bundleObjects: [
+            domainObservable(OBSERVABLE_ID),
+            domainObservable(OBSERVABLE_ID_2),
+            testBundleObject({
+              id: INTRUSION_SET_ID_2,
+              type: 'intrusion-set',
+              octiExtension: { type: 'Intrusion-Set', id: '' },
+            }),
+          ],
+          configuration: {
+            applyToElements: playbookBundleElementsToApply.allElements.value,
+            applyWithFilters: filterDomainNames,
+            wrap_in_container: false,
+            types: [],
+          },
+        }),
+      );
+
+      // Only the 2 domain-name observables matched the filter, intrusion-set is ignored
+      expect(result.output_port).toBe('out');
+
+      const indicators = result.bundle.objects.filter((o) => o.type === 'indicator') as StixIndicator[];
+      expect(indicators).toHaveLength(2);
+
+      const basedOnRels = result.bundle.objects.filter(
+        (o) => o.type === 'relationship' && (o as StixRelation).relationship_type === RELATION_BASED_ON,
+      ) as StixRelation[];
+      expect(basedOnRels).toHaveLength(2);
+      expect(basedOnRels.map((r) => r.target_ref)).toContain(OBSERVABLE_ID);
+      expect(basedOnRels.map((r) => r.target_ref)).toContain(OBSERVABLE_ID_2);
+
+      // Intrusion-set did not produce any indicator
+      expect(result.bundle.objects.filter((o) => o.type === 'intrusion-set')).toHaveLength(1);
+    });
+
+    // -- all-except-main + filter matching partial bundle
+
+    it('should create indicator only for non-main filtered observable when applyToElements = "all-except-main" and filter matches partial bundle', async () => {
+      const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
+        testExecutor({
+          mainId: OBSERVABLE_ID,
+          bundleObjects: [
+            domainObservable(OBSERVABLE_ID),
+            domainObservable(OBSERVABLE_ID_2),
+            testBundleObject({
+              id: INTRUSION_SET_ID_2,
+              type: 'intrusion-set',
+              octiExtension: { type: 'Intrusion-Set', id: '' },
+            }),
+          ],
+          configuration: {
+            applyToElements: playbookBundleElementsToApply.allExceptMain.value,
+            applyWithFilters: filterDomainNames,
+            wrap_in_container: false,
+            types: [],
+          },
+        }),
+      );
+
+      // Filter matches both domain-names but applyToElements excludes main:
+      // only OBSERVABLE_ID_2 processed, intrusion-set ignored
+      expect(result.output_port).toBe('out');
+
+      const indicators = result.bundle.objects.filter((o) => o.type === 'indicator') as StixIndicator[];
+      expect(indicators).toHaveLength(1);
+
+      const basedOnRels = result.bundle.objects.filter(
+        (o) => o.type === 'relationship' && (o as StixRelation).relationship_type === RELATION_BASED_ON,
+      ) as StixRelation[];
+      expect(basedOnRels).toHaveLength(1);
+      expect(basedOnRels[0].target_ref).toBe(OBSERVABLE_ID_2);
+
+      // Main observable did not produce any indicator
+      expect(result.bundle.objects.filter((o) => o.type === 'intrusion-set')).toHaveLength(1);
+    });
   });
 });
