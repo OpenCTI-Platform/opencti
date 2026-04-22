@@ -1,4 +1,4 @@
-import type { StoreEntityTask } from '../../../../../../../src/modules/task/task-types';
+import type { StoreEntityTask } from '../../../../../../src/modules/task/task-types';
 
 export const TASK_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',

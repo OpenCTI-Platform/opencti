@@ -1,5 +1,5 @@
-import type { StoreEntity } from '../../../../src/types/store';
-import type { StoreEntityChannel } from '../../../../src/modules/channel/channel-types';
+import type { StoreEntity } from '../../../../../../src/types/store';
+import type { StoreEntityChannel } from '../../../../../../src/modules/channel/channel-types';
 
 export const CHANNEL_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',

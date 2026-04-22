@@ -1,4 +1,4 @@
-import type { StoreEntitySecurityPlatform } from '../../../../../../../src/modules/securityPlatform/securityPlatform-types';
+import type { StoreEntitySecurityPlatform } from '../../../../../../src/modules/securityPlatform/securityPlatform-types';
 
 export const SECURITY_PLATFORM_INSTANCE = {
   id: '10000000-0000-4000-8000-000000000005',

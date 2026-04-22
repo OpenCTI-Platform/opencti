@@ -1,4 +1,4 @@
-import type { StoreEntityNarrative } from '../../../../../../../src/modules/narrative/narrative-types';
+import type { StoreEntityNarrative } from '../../../../../../src/modules/narrative/narrative-types';
 
 export const NARRATIVE_INSTANCE = {
   id: 'a645ba79-46a5-4b4f-b3b7-bcab5b6344bf',

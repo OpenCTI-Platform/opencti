@@ -1,4 +1,4 @@
-import type { StoreEntityDataComponent } from '../../../../../../../src/modules/dataComponent/dataComponent-types';
+import type { StoreEntityDataComponent } from '../../../../../../src/modules/dataComponent/dataComponent-types';
 
 /** Only `standard_id` is read by convertDataComponentToStix_2_0 via INPUT_DATA_SOURCE */
 const DATA_SOURCE_REF = {

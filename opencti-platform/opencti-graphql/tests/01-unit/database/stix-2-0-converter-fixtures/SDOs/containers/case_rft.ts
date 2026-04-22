@@ -1,4 +1,4 @@
-import type { StoreEntityCaseRft } from '../../../../../../../src/modules/case/case-rft/case-rft-types';
+import type { StoreEntityCaseRft } from '../../../../../../src/modules/case/case-rft/case-rft-types';
 
 export const RFT_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',

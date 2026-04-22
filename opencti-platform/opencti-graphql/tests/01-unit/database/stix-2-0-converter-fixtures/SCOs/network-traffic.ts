@@ -1,4 +1,4 @@
-import type { StoreCyberObservable } from '../../../../../../src/types/store';
+import type { StoreCyberObservable } from '../../../../../src/types/store';
 
 export const NETWORK_TRAFFIC_INSTANCE = {
   id: '10000000-0000-4000-8000-000000000036',

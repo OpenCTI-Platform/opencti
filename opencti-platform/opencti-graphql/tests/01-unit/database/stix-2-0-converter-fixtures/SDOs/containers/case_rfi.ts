@@ -1,4 +1,4 @@
-import type { StoreEntityCaseRfi } from '../../../../../../../src/modules/case/case-rfi/case-rfi-types';
+import type { StoreEntityCaseRfi } from '../../../../../../src/modules/case/case-rfi/case-rfi-types';
 
 export const RFI_INSTANCE = {
   _index: 'opencti_stix_domain_objects-000001',

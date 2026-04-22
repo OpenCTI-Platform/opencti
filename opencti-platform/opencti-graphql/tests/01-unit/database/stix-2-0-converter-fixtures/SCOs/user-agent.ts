@@ -1,4 +1,4 @@
-import type { StoreCyberObservable } from '../../../../../../src/types/store';
+import type { StoreCyberObservable } from '../../../../../src/types/store';
 
 export const USER_AGENT_INSTANCE = {
   id: '10000000-0000-4000-8000-000000000055',

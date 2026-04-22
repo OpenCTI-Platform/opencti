@@ -1,4 +1,4 @@
-import type { StoreEntity } from '../../../../../../../src/types/store';
+import type { StoreEntity } from '../../../../../../src/types/store';
 
 export const COURSE_OF_ACTION_INSTANCE = {
   id: 'd61833df-4e18-4d7f-b9de-f85f37c48909',

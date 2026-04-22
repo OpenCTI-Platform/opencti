@@ -1,4 +1,4 @@
-import type { StoreEntityEvent } from '../../../../../../../src/modules/event/event-types';
+import type { StoreEntityEvent } from '../../../../../../src/modules/event/event-types';
 
 export const EVENT_INSTANCE = {
   id: '10000000-0000-4000-8000-000000000006',
