@@ -11,7 +11,7 @@
         "command": "pip install -r requirements.txt"
       },
       "metadata": {
-        "description": "Install the OpenCTI Python client dependencies"
+        "description": "Install the OpenCTI Documentation dependencies"
       }
     }
   }
