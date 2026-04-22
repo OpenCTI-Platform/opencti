@@ -109,7 +109,7 @@
     "cors": "2.8.6",
     "csv-parse": "6.2.1",
     "dataloader": "2.2.3",
-    "ejs": "5.0.1",
+    "ejs": "5.0.2",
     "eventsource": "2.0.2",
     "eventsource-parser": "3.0.6",
     "express": "5.2.1",
