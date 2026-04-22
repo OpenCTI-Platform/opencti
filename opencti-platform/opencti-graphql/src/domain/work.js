@@ -254,6 +254,12 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
   if (createdWork) {
     await redisInitializeWork(createdWork.id, isMultiPartWork);
   }
+  logApp.info('Work initiated', {
+    workId,
+    connector_id: connector.internal_id,
+    connector_name: connector.connector_name,
+    connector_type: connector.connector_type,
+  });
   return createdWork;
 };
 
@@ -310,6 +316,7 @@ export const reportExpectation = async (context, user, workId, errorData) => {
       if (isComplete) {
         await updateWorkTaskToComplete(context, user, currentWork);
       }
+      logApp.info('Work completed via expectation reporting', { workId, hasError: !!errorData });
     } else {
       logApp.warn('The work cannot be found in database, report expectation cannot be updated.', { workId });
     }
@@ -414,6 +421,7 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
   // Remove redis work if needed
   if (isComplete) {
     await redisDeleteWorks([workId]);
+    logApp.info('Work completed', { workId, inError });
   }
   return workId;
 };
