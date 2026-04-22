@@ -548,6 +548,9 @@ const resolveAuthorizedMembersForDraft = (
           const existing = authorizedMembersMap.get(org.internal_id)
             || { id: org.internal_id, access_right: accessRight };
           const currentGroupRestrictions = existing.groups_restriction_ids ?? [];
+          // When groupsRestrictionIds is undefined the rule grants unrestricted access to this org.
+          // We intentionally set undefined (not preserve existing restrictions) so that a later
+          // unrestricted rule always wins — preventing accidental over-restriction from a prior rule.
           const mergedGroupRestrictions = groupsRestrictionIds
             ? Array.from(new Set([...currentGroupRestrictions, ...groupsRestrictionIds]))
             : undefined;
