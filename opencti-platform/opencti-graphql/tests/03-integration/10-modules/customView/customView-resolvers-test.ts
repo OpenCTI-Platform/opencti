@@ -31,12 +31,22 @@ const READ_SETTINGS_QUERY = gql`
   query CustomViewsSettingsTest($entityType: String!) {
     customViewsSettings(entityType: $entityType) {
       canEntityTypeHaveCustomViews
-      customViews {
-        id
-        name
-        description
-        created_at
-        updated_at
+    }
+  }
+`;
+
+const READ_ALL_CUSTOM_VIEWS_QUERY = gql`
+  query CustomViewsTest($entityType: String) {
+    customViews(entityType: $entityType) {
+      edges {
+        node {
+          id
+          name
+          description
+          created_at
+          updated_at
+          targetEntityType
+        }
       }
     }
   }
@@ -45,6 +55,7 @@ const READ_SETTINGS_QUERY = gql`
 describe('CustomView resolvers', () => {
   let customViewId1: string;
   let customViewId2: string;
+  let customViewIdInvalid: string;
   beforeAll(async () => {
     const result1 = await createEntity(
       testContext,
@@ -60,12 +71,13 @@ describe('CustomView resolvers', () => {
       'CustomView',
     );
     customViewId2 = result2.id;
-    await createEntity(
+    const resultInvalid = await createEntity(
       testContext,
       ADMIN_USER,
       CUSTOM_VIEW_ENTITY_INVALID,
       'CustomView',
     );
+    customViewIdInvalid = resultInvalid.id;
   });
   describe('display use cases', () => {
     describe('customViewsDisplayContext', () => {
@@ -115,6 +127,51 @@ describe('CustomView resolvers', () => {
         expect(result.data.customViewDisplay.manifest).toBe(CUSTOM_VIEW_ENTITY_1.manifest);
       });
     });
+
+    describe('customViews', () => {
+      it('should retrieve all custom views', async () => {
+        const result = await queryAsAdminWithSuccess({
+          query: READ_ALL_CUSTOM_VIEWS_QUERY,
+        });
+        const nodes = result.data.customViews.edges.map((e: any) => e.node);
+        expect(nodes).toContainEqual({
+          id: customViewId1,
+          name: CUSTOM_VIEW_ENTITY_1.name,
+          description: CUSTOM_VIEW_ENTITY_1.description,
+          created_at: new Date(CUSTOM_VIEW_ENTITY_1.created_at),
+          updated_at: new Date(CUSTOM_VIEW_ENTITY_1.updated_at),
+          targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+        });
+        expect(nodes).toContainEqual({
+          id: customViewId2,
+          name: CUSTOM_VIEW_ENTITY_2.name,
+          description: CUSTOM_VIEW_ENTITY_2.description,
+          created_at: new Date(CUSTOM_VIEW_ENTITY_2.created_at),
+          updated_at: new Date(CUSTOM_VIEW_ENTITY_2.updated_at),
+          targetEntityType: CUSTOM_VIEW_ENTITY_2.target_entity_type,
+        });
+        expect(nodes).toContainEqual({
+          id: customViewIdInvalid,
+          name: CUSTOM_VIEW_ENTITY_INVALID.name,
+          description: CUSTOM_VIEW_ENTITY_INVALID.description,
+          created_at: new Date(CUSTOM_VIEW_ENTITY_INVALID.created_at),
+          updated_at: new Date(CUSTOM_VIEW_ENTITY_INVALID.updated_at),
+          targetEntityType: CUSTOM_VIEW_ENTITY_INVALID.target_entity_type,
+        });
+      });
+
+      it('should retrieve all custom views of given type', async () => {
+        const result = await queryAsAdminWithSuccess({
+          query: READ_ALL_CUSTOM_VIEWS_QUERY,
+          variables: {
+            entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+          },
+        });
+        const targetEntityTypes = result.data.customViews.edges.map((e: any) => e.node)
+          .map((n: any) => n.targetEntityType);
+        expect(targetEntityTypes).toStrictEqual([CUSTOM_VIEW_ENTITY_1.target_entity_type]);
+      });
+    });
   });
 
   describe('settings use cases', () => {
@@ -128,13 +185,6 @@ describe('CustomView resolvers', () => {
             },
           });
           expect(result.data.customViewsSettings.canEntityTypeHaveCustomViews).toBe(true);
-          expect(result.data.customViewsSettings.customViews).toContainEqual({
-            id: customViewId1,
-            name: CUSTOM_VIEW_ENTITY_1.name,
-            description: CUSTOM_VIEW_ENTITY_1.description,
-            created_at: new Date(CUSTOM_VIEW_ENTITY_1.created_at),
-            updated_at: new Date(CUSTOM_VIEW_ENTITY_1.updated_at),
-          });
         });
 
         it('should retrieve canEntityTypeHaveCustomViews=false for other entity type', async () => {
@@ -145,7 +195,6 @@ describe('CustomView resolvers', () => {
             },
           });
           expect(result.data.customViewsSettings.canEntityTypeHaveCustomViews).toBe(false);
-          expect(result.data.customViewsSettings.customViews).toStrictEqual([]);
         });
       });
 

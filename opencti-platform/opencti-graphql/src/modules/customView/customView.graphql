@@ -20,26 +20,41 @@ type CustomViewsDisplayContext {
     customViews: [CustomView!]!
 }
 
+type CustomViewsEdge {
+    cursor: String!
+    node: CustomView!
+}
+
+type CustomViewsConnection {
+    pageInfo: PageInfo!
+    edges: [CustomViewsEdge!]!
+}
+
+enum CustomViewsOrdering {
+    name
+}
+
 type CustomViewsSettings {
     canEntityTypeHaveCustomViews: Boolean!
-    customViews: [CustomView!]!
 }
 
 # Queries
 type Query {
-    ## Platform user use cases
-    
     # Provides context when browsing to know which custom views are
     # available for which entity types
     customViewsDisplayContext: [CustomViewsDisplayContext!] @auth @ff(flags: ["CUSTOM_VIEW"], softFail: true)
     # Display a custom view
     customViewDisplay(id: ID!): CustomView @auth @ff(flags: ["CUSTOM_VIEW"])
-
-    ## Administration use cases
-
-    # For a given entity type provides whether it is eligible to having custom
-    # views, along with the list of current custom views.
-    # Optionally allows passing pagination/sorting/filtering options.
+    # List all custom views
+    customViews(
+        entityType: String
+        first: Int
+        after: ID
+        orderBy: CustomViewsOrdering
+        search: String
+        orderMode: OrderingMode
+    ): CustomViewsConnection! @auth @ff(flags: ["CUSTOM_VIEW"])
+    # For a given entity type provides whether it is eligible to having custom views
     customViewsSettings(
         entityType: String!
     ): CustomViewsSettings! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])

@@ -1,7 +1,7 @@
-import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView } from './customView-types';
-import { FilterMode } from '../../generated/graphql';
+import { type QueryCustomViewsArgs } from '../../generated/graphql';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -16,6 +16,7 @@ import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types'
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../schema/stixCyberObservable';
+import { addFilter } from '../../utils/filtering/filtering-utils';
 
 /**
  * Exclusion list: entity types not capable of
@@ -92,36 +93,25 @@ export const getCustomViewsDisplayContext = async (context: AuthContext, user: A
   }[]);
 };
 
-// Settings Use Cases (admin users)
-
-export const getCustomViewsSettings = async (
+export const findAllCustomViews = async (
   context: AuthContext,
   user: AuthUser,
-  entityType: string,
+  entityType: string | undefined | null,
+  paginationOptions: Omit<QueryCustomViewsArgs, 'entityType'>,
 ) => {
-  if (!isCustomViewsAvailableForEntityType(entityType)) {
-    return {
-      canEntityTypeHaveCustomViews: false,
-      customViews: [],
-    };
-  }
-  const customViewEntities = await fullEntitiesList<BasicStoreEntityCustomView>(
+  const filters = entityType ? {
+    filters: addFilter(undefined, 'target_entity_type', [entityType]),
+  } : {};
+  return pageEntitiesConnection<BasicStoreEntityCustomView>(
     context,
     user,
     [ENTITY_TYPE_CUSTOM_VIEW],
-    {
-      filters: {
-        filters: [{
-          key: ['target_entity_type'],
-          values: [entityType],
-        }],
-        filterGroups: [],
-        mode: FilterMode.And,
-      },
-    },
+    { ...paginationOptions, ...filters },
   );
-  return {
-    canEntityTypeHaveCustomViews: true,
-    customViews: customViewEntities,
-  };
+};
+
+// Settings Use Cases (admin users)
+
+export const getCustomViewsSettings = (entityType: string) => {
+  return { canEntityTypeHaveCustomViews: isCustomViewsAvailableForEntityType(entityType) };
 };

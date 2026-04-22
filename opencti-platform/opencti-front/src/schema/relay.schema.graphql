@@ -9754,6 +9754,7 @@ type Query {
   authLogHistoryById(id: String!): [AuthLogEntry!]!
   customViewsDisplayContext: [CustomViewsDisplayContext!]
   customViewDisplay(id: ID!): CustomView
+  customViews(entityType: String, first: Int, after: ID, orderBy: CustomViewsOrdering, search: String, orderMode: OrderingMode): CustomViewsConnection!
   customViewsSettings(entityType: String!): CustomViewsSettings!
   taxiiCollection(id: String!): TaxiiCollection
   taxiiCollections(first: Int, after: ID, orderBy: TaxiiCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): TaxiiCollectionConnection
@@ -16138,9 +16139,22 @@ type CustomViewsDisplayContext {
   customViews: [CustomView!]!
 }
 
+type CustomViewsEdge {
+  cursor: String!
+  node: CustomView!
+}
+
+type CustomViewsConnection {
+  pageInfo: PageInfo!
+  edges: [CustomViewsEdge!]!
+}
+
+enum CustomViewsOrdering {
+  name
+}
+
 type CustomViewsSettings {
   canEntityTypeHaveCustomViews: Boolean!
-  customViews: [CustomView!]!
 }
 
 type TaxiiCollection {
