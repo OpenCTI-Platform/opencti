@@ -1,7 +1,7 @@
 import moment, { type Moment } from 'moment';
 import * as R from 'ramda';
 import { listRules as findRetentionRulesToExecute } from '../modules/retentionRules/retentionRules-domain';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, FEATURE_ACTIVITY_HISTORY_RETENTION, isFeatureEnabled, logApp } from '../config/conf';
 import { deleteElementById, patchAttribute } from '../database/middleware';
 import { executionContext, RETENTION_MANAGER_USER } from '../utils/access';
 import { ENTITY_TYPE_RETENTION_RULE } from '../modules/retentionRules/retentionRules-types';
@@ -71,11 +71,11 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
     result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/pending', undefined, { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString(), exact_path: false });
   } else if (scope === 'history') {
     const jsonFilters = filters ? JSON.parse(filters) : null;
-    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
+    const queryOptions = await convertFiltersToQueryOptions(jsonFilters,{ before, field: 'timestamp' });
     result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: [ENTITY_TYPE_HISTORY], first: RETENTION_BATCH_SIZE }) as any;
   } else if (scope === 'activity') {
     const jsonFilters = filters ? JSON.parse(filters) : null;
-    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
+    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before, field: 'timestamp' });
     result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: [ENTITY_TYPE_ACTIVITY], first: RETENTION_BATCH_SIZE }) as any;
   } else {
     throw Error(`[Retention manager] Scope ${scope} not existing for Retention Rule.`);
