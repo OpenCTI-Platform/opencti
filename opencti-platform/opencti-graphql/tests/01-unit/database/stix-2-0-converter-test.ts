@@ -1,19 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import '../../../src/modules/index';
-import { EXPECTED_MALWARE, MALWARE_INSTANCE } from './stix-2-0-converter-fixtures/malware';
-import { EXPECTED_REPORT, REPORT_INSTANCE } from './stix-2-0-converter-fixtures/containers/report';
-import { EXPECTED_OBSERVED_DATA, OBSERVED_DATA_INSTANCE } from './stix-2-0-converter-fixtures/containers/observed-data';
-import { EXPECTED_NOTE, NOTE_INSTANCE } from './stix-2-0-converter-fixtures/containers/note';
-import { EXPECTED_OPINION, OPINION_INSTANCE } from './stix-2-0-converter-fixtures/containers/opinion';
-import { EXPECTED_GROUPING, GROUPING_INSTANCE } from './stix-2-0-converter-fixtures/containers/grouping';
-import { EXPECTED_FEEDBACK, FEEDBACK_INSTANCE } from './stix-2-0-converter-fixtures/containers/feedback';
-import { EXPECTED_TASK, TASK_INSTANCE } from './stix-2-0-converter-fixtures/containers/task';
-import { EXPECTED_IR, INCIDENT_RESPONSE_INSTANCE } from './stix-2-0-converter-fixtures/containers/incident_response';
-import { EXPECTED_RFT, RFT_INSTANCE } from './stix-2-0-converter-fixtures/containers/case_rft';
-import { EXPECTED_RFI, RFI_INSTANCE } from './stix-2-0-converter-fixtures/containers/case_rfi';
-import { EXPECTED_TOOL, TOOL_INSTANCE } from './stix-2-0-converter-fixtures/tool';
-import { EXPECTED_VULNERABILITY, INSTANCE_VULNERABILITY } from './stix-2-0-converter-fixtures/vulnerability';
-import { CHANNEL_INSTANCE, EXPECTED_CHANNEL } from './stix-2-0-converter-fixtures/channel';
+import { EXPECTED_MALWARE, MALWARE_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/arsenal/malware';
+import { EXPECTED_REPORT, REPORT_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/containers/report';
+import { EXPECTED_OBSERVED_DATA, OBSERVED_DATA_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/containers/observed-data';
+import { EXPECTED_NOTE, NOTE_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/containers/note';
+import { EXPECTED_OPINION, OPINION_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/containers/opinion';
+import { EXPECTED_GROUPING, GROUPING_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/containers/grouping';
+import { EXPECTED_FEEDBACK, FEEDBACK_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/containers/feedback';
+import { EXPECTED_TASK, TASK_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/containers/task';
+import { EXPECTED_IR, INCIDENT_RESPONSE_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/containers/incident_response';
+import { EXPECTED_RFT, RFT_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/containers/case_rft';
+import { EXPECTED_RFI, RFI_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/containers/case_rfi';
+import { EXPECTED_TOOL, TOOL_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/arsenal/tool';
+import { EXPECTED_VULNERABILITY, INSTANCE_VULNERABILITY } from './stix-2-0-converter-fixtures/SDOs/arsenal/vulnerability';
+import { CHANNEL_INSTANCE, EXPECTED_CHANNEL } from './stix-2-0-converter-fixtures/SDOs/arsenal/channel';
 import { convertGroupingToStix_2_0 } from '../../../src/modules/grouping/grouping-converter';
 import { convertFeedbackToStix_2_0 } from '../../../src/modules/case/feedback/feedback-converter';
 import { convertTaskToStix_2_0 } from '../../../src/modules/task/task-converter';
@@ -44,6 +44,7 @@ import {
   convertSightingToStix,
   convertIdentityToStix,
   convertLocationToStix,
+  convertInfrastructureToStix,
 } from '../../../src/database/stix-2-0-converter';
 import {
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -54,36 +55,39 @@ import {
   ENTITY_TYPE_LOCATION_CITY,
   ENTITY_TYPE_LOCATION_POSITION,
 } from '../../../src/schema/stixDomainObject';
-import { CAMPAIGN_INSTANCE, EXPECTED_CAMPAIGN } from './stix-2-0-converter-fixtures/SDOs/campaign';
-import { EXPECTED_INCIDENT, INCIDENT_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/incident';
-import { EXPECTED_INTRUSION_SET, INTRUSION_SET_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/intrusion-set';
-import { EXPECTED_THREAT_ACTOR_GROUP, THREAT_ACTOR_GROUP_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/threat-actor-group';
-import { EXPECTED_THREAT_ACTOR_INDIVIDUAL, THREAT_ACTOR_INDIVIDUAL_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/threat-actor-individual';
-import { EXPECTED_SIGHTING, SIGHTING_INSTANCE } from './stix-2-0-converter-fixtures/sightings';
-import { ATTACK_PATTERN_INSTANCE, EXPECTED_ATTACK_PATTERN } from './stix-2-0-converter-fixtures/techniques/attack-pattern';
-import { EXPECTED_NARRATIVE, NARRATIVE_INSTANCE } from './stix-2-0-converter-fixtures/techniques/narrative';
-import { COURSE_OF_ACTION_INSTANCE, EXPECTED_COURSE_OF_ACTION } from './stix-2-0-converter-fixtures/techniques/course-of-action';
-import { DATA_COMPONENT_INSTANCE, EXPECTED_DATA_COMPONENT } from './stix-2-0-converter-fixtures/techniques/data-component';
-import { DATA_SOURCE_INSTANCE, EXPECTED_DATA_SOURCE } from './stix-2-0-converter-fixtures/techniques/data-source';
-import { INDIVIDUAL_INSTANCE, EXPECTED_INDIVIDUAL } from './stix-2-0-converter-fixtures/identities/individual';
-import { SECTOR_INSTANCE, EXPECTED_SECTOR } from './stix-2-0-converter-fixtures/identities/sector';
-import { SYSTEM_INSTANCE, EXPECTED_SYSTEM } from './stix-2-0-converter-fixtures/identities/system';
-import { ORGANIZATION_INSTANCE, EXPECTED_ORGANIZATION } from './stix-2-0-converter-fixtures/identities/organization';
-import { SECURITY_PLATFORM_INSTANCE, EXPECTED_SECURITY_PLATFORM } from './stix-2-0-converter-fixtures/identities/security-platform';
-import { EVENT_INSTANCE, EXPECTED_EVENT } from './stix-2-0-converter-fixtures/event';
+import { CAMPAIGN_INSTANCE, EXPECTED_CAMPAIGN } from './stix-2-0-converter-fixtures/SDOs/threats/campaign';
+import { EXPECTED_INCIDENT, INCIDENT_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/threats/incident';
+import { EXPECTED_INTRUSION_SET, INTRUSION_SET_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/threats/intrusion-set';
+import { EXPECTED_THREAT_ACTOR_GROUP, THREAT_ACTOR_GROUP_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/threats/threat-actor-group';
+import { EXPECTED_THREAT_ACTOR_INDIVIDUAL, THREAT_ACTOR_INDIVIDUAL_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/threats/threat-actor-individual';
+import { EXPECTED_SIGHTING, SIGHTING_INSTANCE } from './stix-2-0-converter-fixtures/SROs/sightings';
+import { ATTACK_PATTERN_INSTANCE, EXPECTED_ATTACK_PATTERN } from './stix-2-0-converter-fixtures/SDOs/techniques/attack-pattern';
+import { EXPECTED_NARRATIVE, NARRATIVE_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/techniques/narrative';
+import { COURSE_OF_ACTION_INSTANCE, EXPECTED_COURSE_OF_ACTION } from './stix-2-0-converter-fixtures/SDOs/techniques/course-of-action';
+import { DATA_COMPONENT_INSTANCE, EXPECTED_DATA_COMPONENT } from './stix-2-0-converter-fixtures/SDOs/techniques/data-component';
+import { DATA_SOURCE_INSTANCE, EXPECTED_DATA_SOURCE } from './stix-2-0-converter-fixtures/SDOs/techniques/data-source';
+import { INDIVIDUAL_INSTANCE, EXPECTED_INDIVIDUAL } from './stix-2-0-converter-fixtures/SDOs/entities/individual';
+import { SECTOR_INSTANCE, EXPECTED_SECTOR } from './stix-2-0-converter-fixtures/SDOs/entities/sector';
+import { SYSTEM_INSTANCE, EXPECTED_SYSTEM } from './stix-2-0-converter-fixtures/SDOs/entities/system';
+import { ORGANIZATION_INSTANCE, EXPECTED_ORGANIZATION } from './stix-2-0-converter-fixtures/SDOs/entities/organization';
+import { SECURITY_PLATFORM_INSTANCE, EXPECTED_SECURITY_PLATFORM } from './stix-2-0-converter-fixtures/SDOs/entities/security-platform';
+import { EVENT_INSTANCE, EXPECTED_EVENT } from './stix-2-0-converter-fixtures/SDOs/entities/event';
 import { convertEventToStix_2_0 } from '../../../src/modules/event/event-converter';
-import { REGION_INSTANCE, EXPECTED_REGION } from './stix-2-0-converter-fixtures/locations/region';
-import { COUNTRY_INSTANCE, EXPECTED_COUNTRY } from './stix-2-0-converter-fixtures/locations/country';
-import { CITY_INSTANCE, EXPECTED_CITY } from './stix-2-0-converter-fixtures/locations/city';
-import { POSITION_INSTANCE, EXPECTED_POSITION } from './stix-2-0-converter-fixtures/locations/position';
-import { ADMINISTRATIVE_AREA_INSTANCE, EXPECTED_ADMINISTRATIVE_AREA } from './stix-2-0-converter-fixtures/locations/administrative-area';
+import { REGION_INSTANCE, EXPECTED_REGION } from './stix-2-0-converter-fixtures/SDOs/locations/region';
+import { COUNTRY_INSTANCE, EXPECTED_COUNTRY } from './stix-2-0-converter-fixtures/SDOs/locations/country';
+import { CITY_INSTANCE, EXPECTED_CITY } from './stix-2-0-converter-fixtures/SDOs/locations/city';
+import { POSITION_INSTANCE, EXPECTED_POSITION } from './stix-2-0-converter-fixtures/SDOs/locations/position';
+import { ADMINISTRATIVE_AREA_INSTANCE, EXPECTED_ADMINISTRATIVE_AREA } from './stix-2-0-converter-fixtures/SDOs/locations/administrative-area';
 import { convertAdministrativeAreaToStix_2_0 } from '../../../src/modules/administrativeArea/administrativeArea-converter';
-import { IPV4_INSTANCE, EXPECTED_IPV4 } from './stix-2-0-converter-fixtures/observables/ipv4-addr';
-import { DOMAIN_NAME_INSTANCE, EXPECTED_DOMAIN_NAME } from './stix-2-0-converter-fixtures/observables/domain-name';
-import { URL_INSTANCE, EXPECTED_URL } from './stix-2-0-converter-fixtures/observables/url';
-import { EMAIL_ADDR_INSTANCE, EXPECTED_EMAIL_ADDR } from './stix-2-0-converter-fixtures/observables/email-addr';
-import { FILE_INSTANCE, EXPECTED_FILE } from './stix-2-0-converter-fixtures/observables/file';
-import { AUTONOMOUS_SYSTEM_INSTANCE, EXPECTED_AUTONOMOUS_SYSTEM } from './stix-2-0-converter-fixtures/observables/autonomous-system';
+import { convertIndicatorToStix_2_0 } from '../../../src/modules/indicator/indicator-converter';
+import { INDICATOR_INSTANCE, EXPECTED_INDICATOR } from './stix-2-0-converter-fixtures/SDOs/observations/indicator';
+import { INFRASTRUCTURE_INSTANCE, EXPECTED_INFRASTRUCTURE } from './stix-2-0-converter-fixtures/SDOs/observations/infrastructure';
+import { IPV4_INSTANCE, EXPECTED_IPV4 } from './stix-2-0-converter-fixtures/SCOs/ipv4-addr';
+import { DOMAIN_NAME_INSTANCE, EXPECTED_DOMAIN_NAME } from './stix-2-0-converter-fixtures/SCOs/domain-name';
+import { URL_INSTANCE, EXPECTED_URL } from './stix-2-0-converter-fixtures/SCOs/url';
+import { EMAIL_ADDR_INSTANCE, EXPECTED_EMAIL_ADDR } from './stix-2-0-converter-fixtures/SCOs/email-addr';
+import { FILE_INSTANCE, EXPECTED_FILE } from './stix-2-0-converter-fixtures/SCOs/file';
+import { AUTONOMOUS_SYSTEM_INSTANCE, EXPECTED_AUTONOMOUS_SYSTEM } from './stix-2-0-converter-fixtures/SCOs/autonomous-system';
 import {
   convertIPv4AddressToStix,
   convertDomainNameToStix,
@@ -123,16 +127,16 @@ import {
   convertICCIDToStix,
   convertIMSIToStix,
 } from '../../../src/database/stix-2-0-converter';
-import { IPV6_INSTANCE, EXPECTED_IPV6 } from './stix-2-0-converter-fixtures/observables/ipv6-addr';
-import { MAC_ADDR_INSTANCE, EXPECTED_MAC_ADDR } from './stix-2-0-converter-fixtures/observables/mac-addr';
-import { MUTEX_INSTANCE, EXPECTED_MUTEX } from './stix-2-0-converter-fixtures/observables/mutex';
-import { DIRECTORY_INSTANCE, EXPECTED_DIRECTORY } from './stix-2-0-converter-fixtures/observables/directory';
-import { SOFTWARE_INSTANCE, EXPECTED_SOFTWARE } from './stix-2-0-converter-fixtures/observables/software';
-import { USER_ACCOUNT_INSTANCE, EXPECTED_USER_ACCOUNT } from './stix-2-0-converter-fixtures/observables/user-account';
-import { NETWORK_TRAFFIC_INSTANCE, EXPECTED_NETWORK_TRAFFIC } from './stix-2-0-converter-fixtures/observables/network-traffic';
-import { PROCESS_INSTANCE, EXPECTED_PROCESS } from './stix-2-0-converter-fixtures/observables/process';
-import { ARTIFACT_INSTANCE, EXPECTED_ARTIFACT } from './stix-2-0-converter-fixtures/observables/artifact';
-import { X509_INSTANCE, EXPECTED_X509 } from './stix-2-0-converter-fixtures/observables/x509-certificate';
+import { IPV6_INSTANCE, EXPECTED_IPV6 } from './stix-2-0-converter-fixtures/SCOs/ipv6-addr';
+import { MAC_ADDR_INSTANCE, EXPECTED_MAC_ADDR } from './stix-2-0-converter-fixtures/SCOs/mac-addr';
+import { MUTEX_INSTANCE, EXPECTED_MUTEX } from './stix-2-0-converter-fixtures/SCOs/mutex';
+import { DIRECTORY_INSTANCE, EXPECTED_DIRECTORY } from './stix-2-0-converter-fixtures/SCOs/directory';
+import { SOFTWARE_INSTANCE, EXPECTED_SOFTWARE } from './stix-2-0-converter-fixtures/SCOs/software';
+import { USER_ACCOUNT_INSTANCE, EXPECTED_USER_ACCOUNT } from './stix-2-0-converter-fixtures/SCOs/user-account';
+import { NETWORK_TRAFFIC_INSTANCE, EXPECTED_NETWORK_TRAFFIC } from './stix-2-0-converter-fixtures/SCOs/network-traffic';
+import { PROCESS_INSTANCE, EXPECTED_PROCESS } from './stix-2-0-converter-fixtures/SCOs/process';
+import { ARTIFACT_INSTANCE, EXPECTED_ARTIFACT } from './stix-2-0-converter-fixtures/SCOs/artifact';
+import { X509_INSTANCE, EXPECTED_X509 } from './stix-2-0-converter-fixtures/SCOs/x509-certificate';
 import {
   HOSTNAME_INSTANCE,
   EXPECTED_HOSTNAME,
@@ -144,23 +148,23 @@ import {
   EXPECTED_PHONE_NUMBER,
   PERSONA_INSTANCE,
   EXPECTED_PERSONA,
-} from './stix-2-0-converter-fixtures/observables/custom-observables';
-import { EMAIL_MESSAGE_INSTANCE, EXPECTED_EMAIL_MESSAGE } from './stix-2-0-converter-fixtures/observables/email-message';
-import { WINDOWS_REGISTRY_KEY_INSTANCE, EXPECTED_WINDOWS_REGISTRY_KEY } from './stix-2-0-converter-fixtures/observables/windows-registry-key';
-import { WINDOWS_REGISTRY_VALUE_INSTANCE, EXPECTED_WINDOWS_REGISTRY_VALUE } from './stix-2-0-converter-fixtures/observables/windows-registry-value';
-import { CREDENTIAL_INSTANCE, EXPECTED_CREDENTIAL } from './stix-2-0-converter-fixtures/observables/credential';
-import { TEXT_INSTANCE, EXPECTED_TEXT } from './stix-2-0-converter-fixtures/observables/text';
-import { USER_AGENT_INSTANCE, EXPECTED_USER_AGENT } from './stix-2-0-converter-fixtures/observables/user-agent';
-import { TRACKING_NUMBER_INSTANCE, EXPECTED_TRACKING_NUMBER } from './stix-2-0-converter-fixtures/observables/tracking-number';
-import { MEDIA_CONTENT_INSTANCE, EXPECTED_MEDIA_CONTENT } from './stix-2-0-converter-fixtures/observables/media-content';
-import { SSH_KEY_INSTANCE, EXPECTED_SSH_KEY } from './stix-2-0-converter-fixtures/observables/ssh-key';
-import { CRYPTOGRAPHIC_KEY_INSTANCE, EXPECTED_CRYPTOGRAPHIC_KEY } from './stix-2-0-converter-fixtures/observables/cryptographic-key';
-import { IMEI_INSTANCE, EXPECTED_IMEI } from './stix-2-0-converter-fixtures/observables/imei';
-import { PAYMENT_CARD_INSTANCE, EXPECTED_PAYMENT_CARD } from './stix-2-0-converter-fixtures/observables/payment-card';
-import { AI_PROMPT_INSTANCE, EXPECTED_AI_PROMPT } from './stix-2-0-converter-fixtures/observables/ai-prompt';
-import { ICCID_INSTANCE, EXPECTED_ICCID } from './stix-2-0-converter-fixtures/observables/iccid';
-import { IMSI_INSTANCE, EXPECTED_IMSI } from './stix-2-0-converter-fixtures/observables/imsi';
-import { EMAIL_MIME_PART_INSTANCE, EXPECTED_EMAIL_MIME_PART } from './stix-2-0-converter-fixtures/observables/email-mime-part';
+} from './stix-2-0-converter-fixtures/SCOs/custom-observables';
+import { EMAIL_MESSAGE_INSTANCE, EXPECTED_EMAIL_MESSAGE } from './stix-2-0-converter-fixtures/SCOs/email-message';
+import { WINDOWS_REGISTRY_KEY_INSTANCE, EXPECTED_WINDOWS_REGISTRY_KEY } from './stix-2-0-converter-fixtures/SCOs/windows-registry-key';
+import { WINDOWS_REGISTRY_VALUE_INSTANCE, EXPECTED_WINDOWS_REGISTRY_VALUE } from './stix-2-0-converter-fixtures/SCOs/windows-registry-value';
+import { CREDENTIAL_INSTANCE, EXPECTED_CREDENTIAL } from './stix-2-0-converter-fixtures/SCOs/credential';
+import { TEXT_INSTANCE, EXPECTED_TEXT } from './stix-2-0-converter-fixtures/SCOs/text';
+import { USER_AGENT_INSTANCE, EXPECTED_USER_AGENT } from './stix-2-0-converter-fixtures/SCOs/user-agent';
+import { TRACKING_NUMBER_INSTANCE, EXPECTED_TRACKING_NUMBER } from './stix-2-0-converter-fixtures/SCOs/tracking-number';
+import { MEDIA_CONTENT_INSTANCE, EXPECTED_MEDIA_CONTENT } from './stix-2-0-converter-fixtures/SCOs/media-content';
+import { SSH_KEY_INSTANCE, EXPECTED_SSH_KEY } from './stix-2-0-converter-fixtures/SCOs/ssh-key';
+import { CRYPTOGRAPHIC_KEY_INSTANCE, EXPECTED_CRYPTOGRAPHIC_KEY } from './stix-2-0-converter-fixtures/SCOs/cryptographic-key';
+import { IMEI_INSTANCE, EXPECTED_IMEI } from './stix-2-0-converter-fixtures/SCOs/imei';
+import { PAYMENT_CARD_INSTANCE, EXPECTED_PAYMENT_CARD } from './stix-2-0-converter-fixtures/SCOs/payment-card';
+import { AI_PROMPT_INSTANCE, EXPECTED_AI_PROMPT } from './stix-2-0-converter-fixtures/SCOs/ai-prompt';
+import { ICCID_INSTANCE, EXPECTED_ICCID } from './stix-2-0-converter-fixtures/SCOs/iccid';
+import { IMSI_INSTANCE, EXPECTED_IMSI } from './stix-2-0-converter-fixtures/SCOs/imsi';
+import { EMAIL_MIME_PART_INSTANCE, EXPECTED_EMAIL_MIME_PART } from './stix-2-0-converter-fixtures/SCOs/email-mime-part';
 
 describe('Stix 2.0 opencti converter', () => {
   // SDOs
@@ -179,6 +183,14 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Vulnerability', async () => {
     const result = convertVulnerabilityToStix(INSTANCE_VULNERABILITY);
     expect(result).toEqual(EXPECTED_VULNERABILITY);
+  });
+  it('should convert Indicator', async () => {
+    const result = convertIndicatorToStix_2_0(INDICATOR_INSTANCE);
+    expect(result).toEqual(EXPECTED_INDICATOR);
+  });
+  it('should convert Infrastructure', async () => {
+    const result = convertInfrastructureToStix(INFRASTRUCTURE_INSTANCE);
+    expect(result).toEqual(EXPECTED_INFRASTRUCTURE);
   });
   it('should convert Incident', async () => {
     const result = convertIncidentToStix(INCIDENT_INSTANCE);
