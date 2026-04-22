@@ -27,6 +27,7 @@ import { unshiftAll } from '../../utils/arrayUtil';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { convertTypeToStixType } from '../../database/stix-2-1-converter';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
+import { addDecayRuleCreationCount } from '../../manager/telemetryManager';
 
 const DECAY_FACTOR: number = 3.0;
 
@@ -107,7 +108,11 @@ export const addDecayRule = async (context: AuthContext, user: AuthUser, input: 
   }
 
   const decayRuleInput = { ...input, ...defaultOps };
-  return createInternalObject<StoreEntityDecayRule>(context, user, decayRuleInput, ENTITY_TYPE_DECAY_RULE);
+  const created = await createInternalObject<StoreEntityDecayRule>(context, user, decayRuleInput, ENTITY_TYPE_DECAY_RULE);
+  if (!builtIn) {
+    await addDecayRuleCreationCount();
+  }
+  return created;
 };
 
 export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
