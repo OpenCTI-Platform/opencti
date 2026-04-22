@@ -89,6 +89,8 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
   let remainingDeletions = result.pageInfo.globalCount;
   const elements = result.edges;
   let deletedCount = elements.length;
+  // Collect deleted history entries details for audit log
+  const deletedHistoryEntries: Array<{ id: string; timestamp: string; event_type: string }> = [];
   if (elements.length > 0) {
     logApp.debug(`[OPENCTI] Retention manager clearing ${elements.length} elements`);
     const start = new Date().getTime();
@@ -101,6 +103,14 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
           const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
           await deleteElement(context, scope, scope === 'knowledge' ? node.internal_id : node.id, { knowledgeType: node.entity_type });
           logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
+
+          if (scope === 'history') {
+            deletedHistoryEntries.push({
+              id: node.id,
+              timestamp: (node as any).timestamp ?? up,
+              event_type: (node as any).event_type ?? 'unknown',
+            });
+          }
         } else {
           // remove element from counters, since we can't delete it
           remainingDeletions -= 1;
@@ -144,7 +154,14 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
       event_scope: 'delete',
       event_access: 'administration',
       message: `Retention rule \`${name}\` deleted \`${deletedCount}\` history entries`,
-      context_data: { id, entity_type: ENTITY_TYPE_RETENTION_RULE, input: { deleted_count: deletedCount } },
+      context_data: {
+        id,
+        entity_type: ENTITY_TYPE_RETENTION_RULE,
+        input: {
+          deleted_count: deletedCount,
+          deleted_entries: deletedHistoryEntries,
+        },
+      },
     });
   }
 };
