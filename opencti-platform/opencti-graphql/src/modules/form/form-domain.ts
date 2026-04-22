@@ -15,7 +15,7 @@ import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
 import { ConnectorPriorityGroup, ConnectorType, FilterMode, type DraftWorkspaceAddInput, type FormSubmissionInput, type MemberAccessInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
-import { BYPASS, isUserHasCapability, SYSTEM_USER } from '../../utils/access';
+import { BYPASS, isUserHasCapability, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, SYSTEM_USER } from '../../utils/access';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
@@ -1188,9 +1188,10 @@ export const formSubmit = async (
       }
 
       // Apply explicit authorized members from form submission
-      // Only users with BYPASS capability can override authorized members
+      // Bypass users can always override; non-bypass users can override when the field is editable and they have the manage auth members capability
+      const canOverrideAuthorizedMembers = isBypass || (schema.draftDefaults?.authorizedMembers?.isEditable && isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS));
       let authorized_members: MemberAccessInput[] = [];
-      if (isBypass && Array.isArray(values.draftAuthorizedMembers)) {
+      if (canOverrideAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
         authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers);
       } else if (schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
         authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults);

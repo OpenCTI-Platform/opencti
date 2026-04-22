@@ -7,8 +7,8 @@ import * as useGrantedModule from '../../../../../utils/hooks/useGranted';
 
 vi.mock('../../../common/form/AuthorizedMembersField', () => ({
   __esModule: true,
-  default: (props: { disabled?: boolean }) => (
-    <div data-testid="authorized-members-disabled">{String(!!props.disabled)}</div>
+  default: () => (
+    <div data-testid="authorized-members-field" />
   ),
 }));
 
@@ -90,21 +90,35 @@ describe('FormView', () => {
     await resolveAndWait(relayEnv, defaultMockForm);
   });
 
-  it('should render AuthorizedMembers disabled when user lacks BYPASS', async () => {
+  it('should NOT render AuthorizedMembers when user lacks BYPASS and field is not editable', async () => {
     useGrantedSpy.mockImplementation((capabilities: string[]) => {
       if (capabilities.includes(useGrantedModule.BYPASS)) return false;
+      if (capabilities.includes(useGrantedModule.KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)) return false;
       return true;
     });
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
     await resolveAndWait(relayEnv, defaultMockForm);
-    expect(screen.getByTestId('authorized-members-disabled')).toHaveTextContent('true');
+    expect(screen.queryByTestId('authorized-members-field')).toBeNull();
   });
 
-  it('should render AuthorizedMembers enabled when user has BYPASS', async () => {
+  it('should render AuthorizedMembers when user has BYPASS', async () => {
     useGrantedSpy.mockReturnValue(true);
     const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
     await resolveAndWait(relayEnv, defaultMockForm);
-    expect(screen.getByTestId('authorized-members-disabled')).toHaveTextContent('false');
+    expect(screen.getByTestId('authorized-members-field')).toBeTruthy();
+  });
+
+  it('should render AuthorizedMembers when user has KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS and field is editable', async () => {
+    useGrantedSpy.mockImplementation((capabilities: string[]) => {
+      if (capabilities.includes(useGrantedModule.BYPASS)) return false;
+      if (capabilities.includes(useGrantedModule.KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS)) return true;
+      return true;
+    });
+    const { relayEnv } = testRender(<FormView />, { userContext: mockUserContext });
+    await resolveAndWait(relayEnv, makeMockForm({
+      authorizedMembers: { enabled: true, isEditable: true, defaults: [] },
+    }));
+    expect(screen.getByTestId('authorized-members-field')).toBeTruthy();
   });
 
   it('should render draftName field when enabled and editable', async () => {

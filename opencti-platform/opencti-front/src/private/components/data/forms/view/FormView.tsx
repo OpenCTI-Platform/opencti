@@ -25,7 +25,7 @@ import { environment } from '../../../../../relay/environment';
 import { FieldOption } from '../../../../../utils/field';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useEntitySettings from '../../../../../utils/hooks/useEntitySettings';
-import useGranted, { BYPASS, INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
+import useGranted, { BYPASS, INGESTION, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS, MODULES } from '../../../../../utils/hooks/useGranted';
 import useImportAccess from '../../../../../utils/hooks/useImportAccess';
 import AuthorizedMembersField from '../../../common/form/AuthorizedMembersField';
 import CreatedByField from '../../../common/form/CreatedByField';
@@ -150,6 +150,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const isConnectorReader = useGranted([MODULES]);
   const isGrantedIngestion = useGranted([INGESTION]);
   const isBypass = useGranted([BYPASS]);
+  const isManageAuthMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
   const { isForcedImportToDraft } = useImportAccess();
 
   const data = usePreloadedQuery(formViewQuery, queryRef);
@@ -933,7 +934,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     </>
                   );
                 })()}
-                {isDraft && schema.draftDefaults?.name?.enabled && (schema.draftDefaults?.name?.isEditable || isBypass) && (
+                {isDraft && schema.draftDefaults?.name?.enabled && (isBypass || schema.draftDefaults.name.isEditable) && (
                   <div style={{ marginTop: 20 }}>
                     <Field
                       component={TextField}
@@ -944,7 +945,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     />
                   </div>
                 )}
-                {isDraft && schema.draftDefaults?.description?.enabled && (schema.draftDefaults?.description?.isEditable || isBypass) && (
+                {isDraft && schema.draftDefaults?.description?.enabled && (isBypass || schema.draftDefaults.description.isEditable) && (
                   <div style={{ marginTop: 20 }}>
                     <Field
                       component={MarkdownField}
@@ -957,7 +958,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     />
                   </div>
                 )}
-                {isDraft && schema.draftDefaults?.objectAssignee?.enabled && (schema.draftDefaults?.objectAssignee?.isEditable || isBypass) && (
+                {isDraft && schema.draftDefaults?.objectAssignee?.enabled && (isBypass || schema.draftDefaults.objectAssignee.isEditable) && (
                   <div style={{ marginTop: 20 }}>
                     <ObjectAssigneeField
                       name="draftObjectAssignee"
@@ -966,7 +967,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     />
                   </div>
                 )}
-                {isDraft && schema.draftDefaults?.objectParticipant?.enabled && (schema.draftDefaults?.objectParticipant?.isEditable || isBypass) && (
+                {isDraft && schema.draftDefaults?.objectParticipant?.enabled && (isBypass || schema.draftDefaults.objectParticipant.isEditable) && (
                   <div style={{ marginTop: 20 }}>
                     <ObjectParticipantField
                       name="draftObjectParticipant"
@@ -975,7 +976,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     />
                   </div>
                 )}
-                {isDraft && (schema.draftDefaults?.author?.isEditable || isBypass) && (
+                {isDraft && schema.draftDefaults?.author && (isBypass || schema.draftDefaults.author.isEditable) && (
                   <div style={{ marginTop: 20 }}>
                     <CreatedByField
                       name="draftAuthor"
@@ -988,7 +989,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     />
                   </div>
                 )}
-                {isDraft && schema.draftDefaults?.authorizedMembers?.enabled && (
+                {isDraft && schema.draftDefaults?.authorizedMembers?.enabled && (isBypass || (schema.draftDefaults.authorizedMembers.isEditable && isManageAuthMembers)) && (
                   <div style={{ marginTop: 20, marginBottom: 20 }}>
                     <Field
                       component={AuthorizedMembersField}
@@ -996,7 +997,6 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                       label={t_i18n('Authorized Members')}
                       withDynamicKeys={true}
                       allowDynamicGroupsRestriction={true}
-                      disabled={!isBypass}
                     />
                   </div>
                 )}
