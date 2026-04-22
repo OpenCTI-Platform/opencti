@@ -45,8 +45,8 @@ describe('addDraftWorkspace', () => {
       expect.anything(),
       expect.objectContaining({
         authorized_members: expect.arrayContaining([
-            expect.objectContaining({ id: 'user2', access_right: 'view' }), // groups_restriction_ids implicitely removed
-            expect.objectContaining({ id: 'user3', access_right: 'admin', groups_restriction_ids: ['group1'] }),
+          expect.objectContaining({ id: 'user2', access_right: 'view' }), // groups_restriction_ids implicitly removed
+          expect.objectContaining({ id: 'user3', access_right: 'admin', groups_restriction_ids: ['group1'] }),
         ]),
       }),
       expect.anything()
