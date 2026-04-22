@@ -20,6 +20,7 @@ import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../modu
 import type { BasicNodeEdge, StoreObject } from '../types/store';
 import { ALREADY_DELETED_ERROR } from '../config/errors';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
+import { publishUserAction } from '../listener/UserActionListener';
 
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
 const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled', true);
@@ -134,6 +135,18 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
     last_deleted_count: deletedCount,
   };
   await patchAttribute(context, RETENTION_MANAGER_USER, id, ENTITY_TYPE_RETENTION_RULE, patch);
+  // Publish audit log for history scope deletions (History is an internal object and does not
+  // generate stream events automatically via storeDeleteEvent, so we log explicitly here)
+  if (scope === 'history' && deletedCount > 0) {
+    await publishUserAction({
+      user: RETENTION_MANAGER_USER,
+      event_type: 'mutation',
+      event_scope: 'delete',
+      event_access: 'administration',
+      message: `Retention rule \`${name}\` deleted \`${deletedCount}\` history entries`,
+      context_data: { id, entity_type: ENTITY_TYPE_RETENTION_RULE, input: { deleted_count: deletedCount } },
+    });
+  }
 };
 
 const retentionHandler = async (lock: { signal: AbortSignal; extend: () => Promise<void>; unlock: () => Promise<void> }) => {
