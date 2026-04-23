@@ -621,7 +621,9 @@ describe('Report resolver standard behavior', () => {
         };
 
         const firstAdd = await queryAsAdmin({ query: RELATION_ADD_QUERY, variables });
+        const reportAfterFirstAdd = await queryAsAdmin({ query: READ_QUERY, variables: { id: isolatedReportId } });
         const secondAdd = await queryAsAdmin({ query: RELATION_ADD_QUERY, variables });
+        const reportAfterSecondAdd = await queryAsAdmin({ query: READ_QUERY, variables: { id: isolatedReportId } });
         const reportAfterAdds = await queryAsAdmin({ query: REPORT_OBJECTS_QUERY, variables: { id: isolatedReportId } });
         const firstRelationId = firstAdd?.data?.reportEdit?.relationAdd?.id;
         const secondRelationId = secondAdd?.data?.reportEdit?.relationAdd?.id ?? null;
@@ -634,6 +636,8 @@ describe('Report resolver standard behavior', () => {
         if (secondRelationId !== null) {
           expect(secondRelationId).toEqual(firstRelationId);
         }
+        expect(reportAfterSecondAdd.data.report.updated_at).toEqual(reportAfterFirstAdd.data.report.updated_at);
+        expect(reportAfterSecondAdd.data.report.modified).toEqual(reportAfterFirstAdd.data.report.modified);
         expect(matchingTargetEdges).toHaveLength(1);
         expect(reportAfterAdds.data.report.objects.edges).toHaveLength(1);
       } finally {
