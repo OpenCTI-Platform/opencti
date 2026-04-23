@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment/moment';
-import { createStreamProcessor } from '../../database/stream/stream-handler';
+import { createStreamProcessor, fetchStreamInfo } from '../../database/stream/stream-handler';
 import { type StreamProcessor } from '../../database/stream/stream-utils';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
 import { lockResources } from '../../lock/master-lock';
@@ -59,8 +59,17 @@ const CRON_SCHEDULE_TIME = 60000; // 1 minute
 export const getManagerInfo = async () => {
   const isPlaybookManagerActivated = await isModuleActivated('PLAYBOOK_MANAGER');
   const lastEventState = await redisGetManagerEventState(PLAYBOOK_MANAGER_NAME);
+  const lastManagerEventId = lastEventState ? Number(lastEventState.split('-')[0]) : 0;
   const lastEventDate = lastEventState ? utcDate(Number(lastEventState.split('-')[0])).toISOString() : null;
-  return { activated: isPlaybookManagerActivated, lastEventId: lastEventState, lastEventDate };
+
+  const streamProcessorInfo = await fetchStreamInfo();
+  const lastStreamEventId = streamProcessorInfo.lastEventId;
+  const lastStreamEventDate = lastStreamEventId ? utcDate(Number(lastStreamEventId.split('-')[0])).toISOString() : null;
+  const firstStreamEventId = streamProcessorInfo.firstEventId;
+  const firstStreamEventDate = firstStreamEventId ? utcDate(Number(firstStreamEventId.split('-')[0])).toISOString() : null;
+  const middleStreamEventId = (Number(lastStreamEventId.split('-')[0]) + Number(firstStreamEventId.split('-')[0])) / 2;
+  const isManagerLate = lastManagerEventId < middleStreamEventId;
+  return { activated: isPlaybookManagerActivated, lastEventId: lastEventState, lastEventDate, lastStreamEventDate, firstStreamEventDate, managerInGoodHealth: !isManagerLate };
 };
 
 const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEvent>>) => {

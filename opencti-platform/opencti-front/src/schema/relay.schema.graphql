@@ -13465,6 +13465,9 @@ type PlaybookManager {
   activated: Boolean!
   lastEventId: String
   lastEventDate: DateTime
+  lastStreamEventDate: DateTime
+  firstStreamEventDate: DateTime
+  managerInGoodHealth: Boolean
 }
 
 input PlaybookAddInput {

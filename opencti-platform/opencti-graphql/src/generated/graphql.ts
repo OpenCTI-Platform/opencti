@@ -23307,8 +23307,11 @@ export type PlaybookInsertResult = {
 export type PlaybookManager = {
   __typename?: 'PlaybookManager';
   activated: Scalars['Boolean']['output'];
+  firstStreamEventDate?: Maybe<Scalars['DateTime']['output']>;
   lastEventDate?: Maybe<Scalars['DateTime']['output']>;
   lastEventId?: Maybe<Scalars['String']['output']>;
+  lastStreamEventDate?: Maybe<Scalars['DateTime']['output']>;
+  managerInGoodHealth?: Maybe<Scalars['Boolean']['output']>;
 };
 
 export enum PlaybooksOrdering {
@@ -48045,8 +48048,11 @@ export type PlaybookInsertResultResolvers<ContextType = any, ParentType extends 
 
 export type PlaybookManagerResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlaybookManager'] = ResolversParentTypes['PlaybookManager']> = ResolversObject<{
   activated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  firstStreamEventDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   lastEventDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   lastEventId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  lastStreamEventDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  managerInGoodHealth?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
 }>;
 
 export type PositionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Position'] = ResolversParentTypes['Position']> = ResolversObject<{
