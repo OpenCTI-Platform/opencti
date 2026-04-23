@@ -53,6 +53,13 @@ const caseRfiQuery = graphql`
       currentUserAccessRight
       name
       x_opencti_graph_data
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
       ...CaseUtils_case
       ...CaseRfi_caseRfi
       ...CaseRfiKnowledge_case

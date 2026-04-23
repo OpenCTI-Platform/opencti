@@ -53,6 +53,13 @@ const caseIncidentQuery = graphql`
       standard_id
       entity_type
       currentUserAccessRight
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
       creators {
         id
         name

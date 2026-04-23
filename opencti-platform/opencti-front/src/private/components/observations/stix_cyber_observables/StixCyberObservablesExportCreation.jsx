@@ -181,10 +181,10 @@ class StixCyberObservablesExportCreationComponent extends Component {
                       }}
                       data-testid="StixCyberObservablesExportCreationDialog"
                       title={(
-                        <Stack direction="row" alignContent="center" gap={1}>
+                        <Stack direction="row" alignItems="center" gap={1}>
                           {t('Generate an export')}
                           <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
-                            <InfoOutlined color="primary" />
+                            <InfoOutlined fontSize="small" color="primary" />
                           </Tooltip>
                         </Stack>
                       )}

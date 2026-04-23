@@ -52,6 +52,13 @@ const caseRftQuery = graphql`
       currentUserAccessRight
       name
       x_opencti_graph_data
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
       ...CaseUtils_case
       ...CaseRftKnowledge_case
       ...FileImportViewer_entity
