@@ -765,4 +765,97 @@ describe('Create indicator component', () => {
 
     expect(result.output_port).toBe('unmodified');
   });
+
+  // -- Database relationship resolution (no relations found) --
+
+  it('should enter database resolution block when observable has a non-empty internal id', async () => {
+    const obs = domainObservable();
+    obs.extensions[STIX_EXT_OCTI].id = 'fake-internal-id-for-db-lookup';
+
+    const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
+      testExecutor({
+        mainId: OBSERVABLE_ID,
+        bundleObjects: [obs],
+        configuration: { applyToElements: playbookBundleElementsToApply.onlyMain.value, wrap_in_container: false, types: [] },
+      }),
+    );
+
+    expect(result.output_port).toBe('out');
+
+    const indicators = result.bundle.objects.filter((o) => o.type === 'indicator') as StixIndicator[];
+    expect(indicators).toHaveLength(1);
+
+    // No indicates relationships from DB since no relations exist for this fake id
+    const indicatesRels = result.bundle.objects.filter(
+      (o) => o.type === 'relationship' && (o as StixRelation).relationship_type === RELATION_INDICATES,
+    ) as StixRelation[];
+    expect(indicatesRels).toHaveLength(0);
+  });
+
+  // -- Database resolution + bundle related-to combined --
+
+  it('should create indicates relationships from both bundle and database resolution', async () => {
+    const obs = domainObservable();
+    obs.extensions[STIX_EXT_OCTI].id = 'fake-internal-id-for-db-lookup';
+
+    const relatedToRelationship = {
+      id: 'relationship--rel-db-001',
+      type: 'relationship',
+      relationship_type: 'related-to',
+      source_ref: OBSERVABLE_ID,
+      target_ref: INTRUSION_SET_ID,
+      created: new Date().toISOString(),
+      modified: new Date().toISOString(),
+      extensions: {
+        [STIX_EXT_OCTI]: {
+          extension_type: 'property-extension',
+          type: 'stix-core-relationship',
+        },
+      },
+    };
+
+    const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
+      testExecutor({
+        mainId: OBSERVABLE_ID,
+        bundleObjects: [obs, relatedToRelationship as any],
+        configuration: { applyToElements: playbookBundleElementsToApply.onlyMain.value, wrap_in_container: false, types: [] },
+      }),
+    );
+
+    expect(result.output_port).toBe('out');
+
+    // At least the bundle-based indicates relationship should exist
+    const indicatesRels = result.bundle.objects.filter(
+      (o) => o.type === 'relationship' && (o as StixRelation).relationship_type === RELATION_INDICATES,
+    ) as StixRelation[];
+    expect(indicatesRels.length).toBeGreaterThanOrEqual(1);
+    expect(indicatesRels.some((r) => r.target_ref === INTRUSION_SET_ID)).toBe(true);
+  });
+
+  // -- Database resolution with granted_refs propagation --
+
+  it('should propagate granted_refs to indicates relationships from database resolution', async () => {
+    const grantedRefs: StixId[] = ['identity--grant-db-0001'];
+    const obs = domainObservable();
+    obs.extensions[STIX_EXT_OCTI].id = 'fake-internal-id-for-db-lookup';
+    obs.extensions[STIX_EXT_OCTI].granted_refs = grantedRefs;
+
+    const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
+      testExecutor({
+        mainId: OBSERVABLE_ID,
+        bundleObjects: [obs],
+        configuration: { applyToElements: playbookBundleElementsToApply.onlyMain.value, wrap_in_container: false, types: [] },
+      }),
+    );
+
+    expect(result.output_port).toBe('out');
+
+    const indicator = result.bundle.objects.find((o) => o.type === 'indicator') as StixIndicator;
+    expect(indicator.extensions[STIX_EXT_OCTI].granted_refs).toEqual(grantedRefs);
+
+    const basedOn = result.bundle.objects.find(
+      (o) => o.type === 'relationship' && (o as StixRelation).relationship_type === RELATION_BASED_ON,
+    ) as StixRelation;
+    expect(basedOn.extensions[STIX_EXT_OCTI].granted_refs).toEqual(grantedRefs);
+  });
 });
