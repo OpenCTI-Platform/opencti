@@ -34,7 +34,7 @@ import {
   playbookImport,
   playbookDuplicate,
 } from './playbook-domain';
-import { executePlaybookOnEntity, playbookStepExecution } from '../../manager/playbookManager/playbookManager';
+import { executePlaybookOnEntity, playbookStepExecution, getManagerInfo } from '../../manager/playbookManager/playbookManager';
 import { getLastPlaybookExecutions } from '../../database/redis';
 import { getConnectorQueueSize } from '../../database/rabbitmq';
 import { loadCreators } from '../../database/members';
@@ -47,6 +47,7 @@ const playbookResolvers: Resolvers = {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     playbookComponents: (_, __, context) => availableComponents(context),
+    playbookManagerInfo: (_, __, ___) => getManagerInfo(),
   },
   Playbook: {
     creators: async (current, _, context) => loadCreators(context, context.user, current),

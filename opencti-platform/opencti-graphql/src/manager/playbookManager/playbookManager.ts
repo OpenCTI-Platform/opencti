@@ -47,6 +47,7 @@ import { listenPirEvents } from './listenPirEventsUtils';
 import { isValidEventType } from './playbookManagerUtils';
 import { playbookExecutor } from './playbookExecutor';
 import type { BasicConnection, BasicStoreBase } from '../../types/store';
+import { isModuleActivated } from '../../database/cluster-module';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const PLAYBOOK_CRON_KEY = conf.get('playbook_manager:lock_cron_key');
@@ -54,6 +55,13 @@ const PLAYBOOK_CRON_MAX_SIZE = conf.get('playbook_manager:cron_max_size') || 500
 const PLAYBOOK_MANAGER_NAME = 'playbook_manager';
 const STREAM_SCHEDULE_TIME = 10000;
 const CRON_SCHEDULE_TIME = 60000; // 1 minute
+
+export const getManagerInfo = async () => {
+  const isPlaybookManagerActivated = await isModuleActivated('PLAYBOOK_MANAGER');
+  const lastEventState = await redisGetManagerEventState(PLAYBOOK_MANAGER_NAME);
+  const lastEventDate = lastEventState ? utcDate(Number(lastEventState.split('-')[0])).toISOString() : null;
+  return { activated: isPlaybookManagerActivated, lastEventId: lastEventState, lastEventDate };
+};
 
 const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEvent>>) => {
   try {
@@ -186,6 +194,19 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
   return false;
 };
 
+const checkManagerDelay = async (streamProcessor: StreamProcessor) => {
+  const lastManagerEventState = await redisGetManagerEventState(PLAYBOOK_MANAGER_NAME);
+  const lastManagerEventId = lastManagerEventState ? Number(lastManagerEventState.split('-')[0]) : 0;
+  const streamProcessorInfo = await streamProcessor.info() as { firstEventId: string; lastEventId: string };
+  const lastStreamEventId = streamProcessorInfo.lastEventId;
+  const firstStreamEventId = streamProcessorInfo.firstEventId;
+  const middleStreamEventId = (Number(lastStreamEventId.split('-')[0]) + Number(firstStreamEventId.split('-')[0])) / 2;
+  const isManagerLate = lastManagerEventId < middleStreamEventId;
+  if (isManagerLate) {
+    logApp.warn('[OPENCTI-MODULE] Playbook manager is late to process events', { lastManagerEventId, firstStreamEventId, lastStreamEventId });
+  }
+};
+
 const initPlaybookManager = () => {
   const WAIT_TIME_ACTION = 2000;
   let streamScheduler: SetIntervalAsyncTimer<[]>;
@@ -208,9 +229,14 @@ const initPlaybookManager = () => {
       streamProcessor = createStreamProcessor('Playbook manager', playbookStreamHandler, { withInternal: true });
       const lastEventState = await redisGetManagerEventState(PLAYBOOK_MANAGER_NAME);
       await streamProcessor.start(lastEventState ?? 'live');
+      let delayCheckerCounter = 0;
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
         await wait(WAIT_TIME_ACTION);
+        if (++delayCheckerCounter >= 10) {
+          await checkManagerDelay(streamProcessor);
+          delayCheckerCounter = 0;
+        }
       }
       logApp.info('[OPENCTI-MODULE] End of playbook manager processing');
     } catch (e: any) {
