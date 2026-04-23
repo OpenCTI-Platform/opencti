@@ -24,21 +24,36 @@ const smtpOptions = {
   },
 };
 
-const authType = conf.get('smtp:smtp_auth_type') || 'basic';
+export const buildSmtpAuth = (authType, { username, password, oauthUser, oauthClientId, oauthClientSecret, oauthAccessToken }) => {
+  if (authType === 'oauth2') {
+    return {
+      type: 'OAuth2',
+      user: oauthUser,
+      clientId: oauthClientId,
+      clientSecret: oauthClientSecret,
+      accessToken: oauthAccessToken,
+    };
+  }
+  if (username?.length > 0) {
+    return {
+      user: username,
+      pass: password || '',
+    };
+  }
+  return undefined;
+};
 
-if (authType === 'oauth2') {
-  smtpOptions.auth = {
-    type: 'OAuth2',
-    user: conf.get('smtp:oauth_user'),
-    clientId: conf.get('smtp:oauth_client_id'),
-    clientSecret: conf.get('smtp:oauth_client_secret'),
-    accessToken: conf.get('smtp:oauth_access_token'),
-  };
-} else if (conf.get('smtp:username')?.length > 0) {
-  smtpOptions.auth = {
-    user: conf.get('smtp:username'),
-    pass: conf.get('smtp:password') || '',
-  };
+const authType = conf.get('smtp:smtp_auth_type') || 'basic';
+const smtpAuth = buildSmtpAuth(authType, {
+  username: conf.get('smtp:username'),
+  password: conf.get('smtp:password'),
+  oauthUser: conf.get('smtp:oauth_user'),
+  oauthClientId: conf.get('smtp:oauth_client_id'),
+  oauthClientSecret: conf.get('smtp:oauth_client_secret'),
+  oauthAccessToken: conf.get('smtp:oauth_access_token'),
+});
+if (smtpAuth) {
+  smtpOptions.auth = smtpAuth;
 }
 
 export const transporter = nodemailer.createTransport(smtpOptions);
