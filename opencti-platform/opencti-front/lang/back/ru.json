@@ -599,6 +599,7 @@
   "Message": "Сообщение",
   "Message ID": "Идентификатор сообщения",
   "Messages": "Сообщения",
+  "Metadata": "Метаданные",
   "Metadata date": "Дата метаданных",
   "Metric name": "Имя метрики",
   "Metric value": "Значение метрики",
@@ -1062,6 +1063,7 @@
   "Workspace graph data": "Данные графиков рабочей области",
   "Workspace type": "Тип рабочего пространства",
   "X_Aliases": "X_Aliases",
+  "XTM Hub available news feed types": "Доступные типы новостных лент XTM Hub",
   "XTM Hub backend is reachable": "Бэкэнд XTM Hub доступен",
   "XTM Hub last connectivity check": "Последняя проверка подключения концентратора XTM",
   "XTM Hub registration date": "Дата регистрации XTM Hub",
@@ -1074,4 +1076,3 @@
   "XTM One registration manager": "Менеджер регистрации XTM One",
   "XTM1 CGU acceptance status": "Статус принятия XTM1 CGU"
 }
-

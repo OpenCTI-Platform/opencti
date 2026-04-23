@@ -599,6 +599,7 @@
   "Message": "信息",
   "Message ID": "信息 ID",
   "Messages": "信息",
+  "Metadata": "元数据",
   "Metadata date": "元数据日期",
   "Metric name": "度量名称",
   "Metric value": "度量值",
@@ -1062,6 +1063,7 @@
   "Workspace graph data": "工作区图表数据",
   "Workspace type": "工作区类型",
   "X_Aliases": "X_别名",
+  "XTM Hub available news feed types": "XTM Hub 可用的新闻源类型",
   "XTM Hub backend is reachable": "XTM Hub 后端可连接",
   "XTM Hub last connectivity check": "XTM 中枢最后连接检查",
   "XTM Hub registration date": "XTM Hub 注册日期",
@@ -1074,4 +1076,3 @@
   "XTM One registration manager": "XTM One 注册管理器",
   "XTM1 CGU acceptance status": "XTM1 CGU 验收状态"
 }
-

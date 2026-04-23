@@ -599,6 +599,7 @@
   "Message": "Message",
   "Message ID": "ID du message",
   "Messages": "Messages",
+  "Metadata": "Métadonnées",
   "Metadata date": "Date des métadonnées",
   "Metric name": "Nom de la métrique",
   "Metric value": "Valeur de la métrique",
@@ -1062,6 +1063,7 @@
   "Workspace graph data": "Données du graphique de l'espace de travail",
   "Workspace type": "Type d'espace de travail",
   "X_Aliases": "X_Aliases",
+  "XTM Hub available news feed types": "Types de flux d'informations disponibles dans le XTM Hub",
   "XTM Hub backend is reachable": "Le backend du XTM Hub est joignable",
   "XTM Hub last connectivity check": "Dernier contrôle de connectivité du XTM Hub",
   "XTM Hub registration date": "Date d'inscription au XTM Hub",
@@ -1074,4 +1076,3 @@
   "XTM One registration manager": "Gestionnaire d'enregistrement XTM One",
   "XTM1 CGU acceptance status": "XTM1 Statut d'acceptation des CGU"
 }
-

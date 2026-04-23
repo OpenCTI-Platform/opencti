@@ -599,6 +599,7 @@
   "Message": "Nachricht",
   "Message ID": "Nachrichten-ID",
   "Messages": "Meldungen",
+  "Metadata": "Metadaten",
   "Metadata date": "Datum der Metadaten",
   "Metric name": "Name der Metrik",
   "Metric value": "Metrischer Wert",
@@ -1062,6 +1063,7 @@
   "Workspace graph data": "Daten des Arbeitsbereichsdiagramms",
   "Workspace type": "Arbeitsbereichstyp",
   "X_Aliases": "X_Aliases",
+  "XTM Hub available news feed types": "XTM Hub verfügbare Newsfeed-Typen",
   "XTM Hub backend is reachable": "XTM Hub Backend ist erreichbar",
   "XTM Hub last connectivity check": "XTM Hub letzte Konnektivitätsprüfung",
   "XTM Hub registration date": "XTM Hub Registrierungsdatum",
@@ -1074,4 +1076,3 @@
   "XTM One registration manager": "XTM One Registrierungsmanager",
   "XTM1 CGU acceptance status": "XTM1 CGU-Annahmestatus"
 }
-
