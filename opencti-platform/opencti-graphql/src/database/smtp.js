@@ -24,7 +24,17 @@ const smtpOptions = {
   },
 };
 
-if (conf.get('smtp:username') && conf.get('smtp:username').length > 0) {
+const authType = conf.get('smtp:smtp_auth_type') || 'basic';
+
+if (authType === 'oauth2') {
+  smtpOptions.auth = {
+    type: 'OAuth2',
+    user: conf.get('smtp:oauth_user'),
+    clientId: conf.get('smtp:oauth_client_id'),
+    clientSecret: conf.get('smtp:oauth_client_secret'),
+    accessToken: conf.get('smtp:oauth_access_token'),
+  };
+} else if (conf.get('smtp:username')?.length > 0) {
   smtpOptions.auth = {
     user: conf.get('smtp:username'),
     pass: conf.get('smtp:password') || '',
