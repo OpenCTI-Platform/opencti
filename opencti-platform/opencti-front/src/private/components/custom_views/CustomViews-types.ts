@@ -1,7 +1,7 @@
 import type { Widget } from '../../../utils/widget/widget';
-import { RootPrivateQuery$data } from '../../__generated__/RootPrivateQuery.graphql';
+import { useCustomViews_data$data } from './__generated__/useCustomViews_data.graphql';
 
-export type CustomViewsInfo = NonNullable<RootPrivateQuery$data['customViewsDisplayContext']>[number]['customViews'];
+export type CustomView = useCustomViews_data$data['customViews']['edges'][number]['node'];
 
 export interface CustomViewManifestConfig {
   startDate?: string;

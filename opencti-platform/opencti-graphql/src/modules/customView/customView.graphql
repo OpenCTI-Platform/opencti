@@ -15,11 +15,6 @@ type CustomView implements InternalObject & BasicObject {
     targetEntityType: String!
 }
 
-type CustomViewsDisplayContext {
-    entityType: String!
-    customViews: [CustomView!]!
-}
-
 type CustomViewsEdge {
     cursor: String!
     node: CustomView!
@@ -40,9 +35,6 @@ type CustomViewsSettings {
 
 # Queries
 type Query {
-    # Provides context when browsing to know which custom views are
-    # available for which entity types
-    customViewsDisplayContext: [CustomViewsDisplayContext!] @auth @ff(flags: ["CUSTOM_VIEW"], softFail: true)
     # Display a custom view
     customViewDisplay(id: ID!): CustomView @auth @ff(flags: ["CUSTOM_VIEW"])
     # List all custom views

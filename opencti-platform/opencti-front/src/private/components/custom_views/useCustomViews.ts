@@ -1,10 +1,30 @@
+import { graphql } from 'relay-runtime';
 import { getCurrentTab } from '../../../utils/utils';
-import useAuth from '../../../utils/hooks/useAuth';
-import type { CustomViewsInfo } from './CustomViews-types';
+import type { CustomView } from './CustomViews-types';
+import { useCustomViewsData } from './useCustomViewsData';
 
 export const CUSTOM_VIEW_TAB_VALUE = 'custom-view';
 
-function matchPath(customViews: CustomViewsInfo) {
+export const customViewsFragment = graphql`
+  fragment useCustomViews_data on Query
+  @refetchable(queryName: "UseCustomViewsRefetchQuery") {
+    customViews(
+      orderBy: name
+      orderMode: asc
+    ) {
+      edges {
+        node {
+          id
+          name
+          path
+          targetEntityType
+        }
+      }
+    }
+  }
+`;
+
+function matchPath(customViews: CustomView[]) {
   return (fullPath: string, basePath: string) => {
     const current = getCurrentTab(fullPath, basePath);
     if (customViews.find(({ path }) => path === current)) {
@@ -19,19 +39,14 @@ const NO_CUSTOM_VIEWS = {
   getCurrentCustomViewTab: () => undefined,
 };
 
-export const useCustomViews = (targetEntityType: string) => {
-  const { customViews: customViewsContext } = useAuth();
-  const customViewsContextForType = customViewsContext.find(({ entityType }) => entityType === targetEntityType);
-  if (!customViewsContextForType) {
+export const useCustomViews = (entityType: string) => {
+  const { allCustomViews } = useCustomViewsData();
+  const customViews = allCustomViews.filter(
+    ({ targetEntityType }) => targetEntityType === entityType,
+  );
+  if (!customViews) {
     return NO_CUSTOM_VIEWS;
   }
-  const customViews = customViewsContextForType.customViews ?? [];
   const getCurrentCustomViewTab = matchPath(customViews);
-  const sortedCustomViews = [...customViews].sort(
-    (lhs, rhs) => lhs.name.localeCompare(rhs.name),
-  );
-  return {
-    customViews: sortedCustomViews,
-    getCurrentCustomViewTab,
-  };
+  return { customViews, getCurrentCustomViewTab };
 };

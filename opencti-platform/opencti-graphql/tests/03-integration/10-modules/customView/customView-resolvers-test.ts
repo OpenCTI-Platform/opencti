@@ -2,22 +2,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { createEntity } from '../../../../src/database/middleware';
 import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQuery';
-import type { CustomViewsDisplayContext } from '../../../../src/generated/graphql';
 import { queryAsUserWithSuccess, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
 import { CUSTOM_VIEW_ENTITY_1, CUSTOM_VIEW_ENTITY_2, CUSTOM_VIEW_ENTITY_INVALID } from './customView-fixtures';
-
-const READ_CONTEXT_QUERY = gql`
-  query CustomViewsDisplayContextTest {
-    customViewsDisplayContext {
-      entityType
-      customViews {
-        id
-        name
-        path
-      }
-    }
-  }
-`;
 
 const READ_CUSTOM_VIEW_FOR_DISPLAY_QUERY = gql`
   query CustomViewDisplayTest($id: ID!) {

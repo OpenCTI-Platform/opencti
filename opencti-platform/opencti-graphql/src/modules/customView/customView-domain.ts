@@ -1,4 +1,4 @@
-import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView } from './customView-types';
 import { type QueryCustomViewsArgs } from '../../generated/graphql';
@@ -63,34 +63,6 @@ export const getCustomViewByIdForDisplay = async (
     customViewId,
     ENTITY_TYPE_CUSTOM_VIEW,
   );
-};
-
-export const getCustomViewsDisplayContext = async (context: AuthContext, user: AuthUser) => {
-  const allCustomViewEntities = await fullEntitiesList<BasicStoreEntityCustomView>(
-    context,
-    user,
-    [ENTITY_TYPE_CUSTOM_VIEW],
-  );
-  const customViewInfoMap = allCustomViewEntities.reduce((infoMap, customViewEntity) => {
-    const infos = infoMap.get(customViewEntity.target_entity_type) ?? [];
-    infos.push(customViewEntity);
-    infoMap.set(customViewEntity.target_entity_type, infos);
-    return infoMap;
-  }, new Map<string, BasicStoreEntityCustomView[]>());
-  return Array.from(customViewInfoMap.keys()).reduce((acc, targetEntityType) => {
-    if (!isCustomViewsAvailableForEntityType(targetEntityType)) {
-      return acc;
-    }
-    const customViewsInfos = customViewInfoMap.get(targetEntityType) ?? [];
-    acc.push({
-      entityType: targetEntityType,
-      customViews: customViewsInfos,
-    });
-    return acc;
-  }, [] as {
-    customViews: BasicStoreEntityCustomView[];
-    entityType: string;
-  }[]);
 };
 
 export const findAllCustomViews = async (
