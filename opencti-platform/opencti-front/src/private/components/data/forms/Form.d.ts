@@ -95,6 +95,7 @@ export interface FormBuilderData {
     };
     authorizedMembers?: {
       enabled: boolean;
+      isEditable?: boolean;
       isRequired: boolean;
       defaults: AuthorizedMemberOption[];
     };
@@ -170,6 +171,7 @@ export interface FormSchemaDefinition {
     };
     authorizedMembers?: {
       enabled: boolean;
+      isEditable?: boolean;
       isRequired: boolean;
       defaults: AuthorizedMemberOption[];
     };

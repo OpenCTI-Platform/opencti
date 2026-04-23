@@ -129,6 +129,7 @@ export interface FormSchemaDefinition {
     };
     authorizedMembers?: {
       enabled: boolean;
+      isEditable?: boolean;
       isRequired: boolean;
       defaults: Array<any>;
     };
@@ -281,6 +282,7 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
           type: 'object',
           properties: {
             enabled: { type: 'boolean' },
+            isEditable: { type: 'boolean' },
             isRequired: { type: 'boolean' },
             defaults: {
               type: 'array',
