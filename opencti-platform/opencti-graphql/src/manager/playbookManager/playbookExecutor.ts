@@ -68,6 +68,7 @@ type ExecutorFn = {
   externalCallback?: {
     externalStartDate: Date;
   };
+  debugMode?: boolean;
 };
 
 export const playbookExecutor = async ({
@@ -82,6 +83,7 @@ export const playbookExecutor = async ({
   bundle,
   event,
   externalCallback,
+  debugMode = false,
 }: ExecutorFn) => {
   const isExternalCallback = externalCallback !== undefined;
   const start = isExternalCallback ? externalCallback.externalStartDate : utcDate();
@@ -120,6 +122,9 @@ export const playbookExecutor = async ({
         bundle: execution.bundle,
         forceBundleTracking: execution.forceBundleTracking ?? false,
       };
+      if (debugMode) {
+        logApp.info(`[PLAYBOOK MANAGER] Registering step observation for playbook ${playbookId}`, { observation });
+      }
       await registerStepObservation(observation);
     } catch (error) {
       // Error executing the step, register
@@ -143,8 +148,12 @@ export const playbookExecutor = async ({
         error: JSON.stringify(logError, null, 2),
         forceBundleTracking: false,
       };
+      logApp.info(`[PLAYBOOK MANAGER] Registering step observation for playbook ${playbookId}`, { observation });
       await registerStepObservation(observation);
       return;
+    }
+    if (debugMode) {
+      logApp.info(`[PLAYBOOK MANAGER] Looking for next port for playbook ${playbookId}`, { output_port: execution.output_port });
     }
     // Send the result to the next component if needed
     if (execution.output_port) {
