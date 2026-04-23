@@ -2520,9 +2520,12 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   // --- take lock, ensure no one currently create or update this element
   let lock;
   const participantIds = R.uniq(locksIds.filter((e) => !locks.includes(e)));
+  const heldLocks = R.uniq([...(opts.locks ?? []), ...participantIds]);
   try {
     // Try to get the lock in redis
-    lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    if (participantIds.length > 0) {
+      lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
+    }
     // region handle attributes
     // Only for StixCyberObservable
     const lookingEntities: BasicStoreBase[] = [];
@@ -2550,9 +2553,9 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         // Everything ok, let merge
         hashMergeValidation([updated, ...(existingEntities as BasicStoreCommon[])]);
         const sourceEntityIds = existingEntities.map((c) => c.internal_id);
-        const merged = await mergeEntities(context, user, updated.internal_id, sourceEntityIds, { locks: participantIds });
+        const merged = await mergeEntities(context, user, updated.internal_id, sourceEntityIds, { locks: heldLocks });
         // Then apply initial updates on merged result
-        return updateAttributeMetaResolved(context, user, merged, updates, { ...opts, locks: participantIds });
+        return updateAttributeMetaResolved(context, user, merged, updates, { ...opts, locks: heldLocks });
       }
       // noinspection ExceptionCaughtLocallyJS
       throw FunctionalError('This update will produce a duplicate', {
@@ -2918,6 +2921,7 @@ export const updateAttributeLockFirst = async <T extends StoreObject>(
   opts: { noEnrich?: boolean } & UpdateAttributeOpts = {},
 ) => {
   const draftId = getDraftContext(context, user);
+  const acquiredLocks = R.uniq([...(opts.locks ?? []), id]);
   let lock;
   try {
     lock = await lockResources([id], { draftId });
@@ -2928,8 +2932,7 @@ export const updateAttributeLockFirst = async <T extends StoreObject>(
     // Keep validation parity with updateAttribute while preserving lock-first loading.
     const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
     await validateInputUpdate(context, user, initial.entity_type, initial as Record<string, any>, inputs, entitySetting as BasicStoreEntityEntitySetting);
-    const lockScopedIds = getInstanceIds(initial);
-    const mergedOpts = { ...opts, locks: R.uniq([...(opts.locks ?? []), ...lockScopedIds]) };
+    const mergedOpts = { ...opts, locks: acquiredLocks };
     const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, inputs, mergedOpts);
     if (!opts.noEnrich && data.event) {
       await triggerEntityUpdateAutoEnrichment(context, user, data.element as BasicStoreBase);

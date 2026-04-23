@@ -550,6 +550,89 @@ describe('Report resolver standard behavior', () => {
       }
     });
 
+    it('should keep relationAdd idempotent on duplicate lock-first additions', async () => {
+      const CREATE_QUERY = gql`
+        mutation ReportAdd($input: ReportAddInput!) {
+          reportAdd(input: $input) {
+            id
+          }
+        }
+      `;
+      const DELETE_QUERY = gql`
+        mutation reportDelete($id: ID!) {
+          reportEdit(id: $id) {
+            delete
+          }
+        }
+      `;
+      const RELATION_ADD_QUERY = gql`
+        mutation ReportEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
+          reportEdit(id: $id) {
+            relationAdd(input: $input) {
+              id
+            }
+          }
+        }
+      `;
+      const REPORT_OBJECTS_QUERY = gql`
+        query report($id: String!) {
+          report(id: $id) {
+            id
+            objects(first: 200) {
+              edges {
+                node {
+                  ... on BasicObject {
+                    id
+                  }
+                  ... on BasicRelationship {
+                    id
+                  }
+                }
+              }
+            }
+          }
+        }
+      `;
+
+      const isolatedReport = await queryAsAdmin({
+        query: CREATE_QUERY,
+        variables: {
+          input: {
+            stix_id: `report--${randomUUID()}`,
+            name: `Concurrent report relationAdd ${now()}`,
+            description: 'Regression test report for lock-first relationAdd',
+            published: '2020-02-26T00:51:35.000Z',
+          },
+        },
+      });
+      const isolatedReportId = isolatedReport.data.reportAdd.id;
+      const objectToAdd = await addThreatActorIndividual(testContext, ADMIN_USER, {
+        name: `Concurrent lock-first object ${randomUUID()}`,
+        description: 'Temporary object for lock-first duplicate relationAdd regression test',
+      });
+
+      try {
+        const variables = {
+          id: isolatedReportId,
+          input: {
+            toId: objectToAdd.internal_id,
+            relationship_type: 'object',
+          },
+        };
+
+        const firstAdd = await queryAsAdmin({ query: RELATION_ADD_QUERY, variables });
+        const secondAdd = await queryAsAdmin({ query: RELATION_ADD_QUERY, variables });
+        const reportAfterAdds = await queryAsAdmin({ query: REPORT_OBJECTS_QUERY, variables: { id: isolatedReportId } });
+
+        expect(firstAdd.data.reportEdit.relationAdd).not.toBeNull();
+        expect(secondAdd.errors ?? []).toHaveLength(0);
+        expect(reportAfterAdds.data.report.objects.edges).toHaveLength(1);
+      } finally {
+        await stixDomainObjectDelete(testContext, ADMIN_USER, objectToAdd.id, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
+        await queryAsAdmin({ query: DELETE_QUERY, variables: { id: isolatedReportId } });
+      }
+    });
+
     it('should add the observable and update updated_at and modified', async () => {
       const RELATION_ADD_OBSERVABLE_QUERY = gql`
       mutation ReportEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
