@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createRelation, deleteElementById, deleteRelationsByFromAndTo, timeSeriesRelations, updateAttribute } from '../database/middleware';
+import { createRelation, deleteElementById, deleteRelationsByFromAndTo, timeSeriesRelations, updateAttributeLockFirst } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/engine';
@@ -121,7 +121,7 @@ export const stixCoreRelationshipEditField = async (context, user, stixCoreRelat
   if (!stixCoreRelationship) {
     throw FunctionalError('Cannot edit the field, stix-core-relationship cannot be found.', { id: stixCoreRelationshipId });
   }
-  const { element } = await updateAttribute(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP, input, opts);
+  const { element } = await updateAttributeLockFirst(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP, input, opts);
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, element, user);
 };
 
