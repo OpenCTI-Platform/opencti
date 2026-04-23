@@ -1,4 +1,4 @@
-import { deleteElementById, updateAttribute } from '../../database/middleware';
+import { deleteElementById, updateAttribute, updateAttributeLockFirst } from '../../database/middleware';
 import { topEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_RETENTION_RULE, type BasicStoreEntityRetentionRule } from './retentionRules-types';
 import { generateInternalId, generateStandardId } from '../../schema/identifier';
@@ -96,7 +96,7 @@ export const createRetentionRule = async (context: AuthContext, user: AuthUser, 
 };
 
 export const retentionRuleEditField = async (context: AuthContext, user: AuthUser, retentionRuleId: string, input: EditInput[]) => {
-  const { element } = await updateAttribute(context, user, retentionRuleId, ENTITY_TYPE_RETENTION_RULE, input);
+  const { element } = await updateAttributeLockFirst(context, user, retentionRuleId, ENTITY_TYPE_RETENTION_RULE, input);
   const retentionElement = element as unknown as BasicStoreEntityRetentionRule;
   await publishUserAction({
     user,
