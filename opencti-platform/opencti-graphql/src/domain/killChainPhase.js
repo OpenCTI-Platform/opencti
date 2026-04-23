@@ -1,6 +1,6 @@
 import { pipe, assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createEntity, createRelation, deleteElementById, updateAttribute } from '../database/middleware';
+import { createEntity, createRelation, deleteElementById, updateAttributeLockFirst } from '../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
@@ -42,7 +42,7 @@ export const killChainPhaseDeleteRelation = async (context, user, killChainPhase
 };
 
 export const killChainPhaseEditField = async (context, user, killChainPhaseId, input, opts = {}) => {
-  const { element } = await updateAttribute(context, user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE, input, opts);
+  const { element } = await updateAttributeLockFirst(context, user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE, input, opts);
   return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, element, user);
 };
 

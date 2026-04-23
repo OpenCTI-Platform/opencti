@@ -1,7 +1,7 @@
 import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as R from 'ramda';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
-import { createEntity, deleteElementById, internalDeleteElementById, updateAttribute } from '../database/middleware';
+import { createEntity, deleteElementById, internalDeleteElementById, updateAttributeLockFirst } from '../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
 import { findById as findSubTypeById } from './subType';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
@@ -156,7 +156,7 @@ export const createStatus = async (context: AuthContext, user: AuthUser, subType
 };
 export const statusEditField = async (context: AuthContext, user: AuthUser, subTypeId: string, statusId: string, input: EditInput[]) => {
   validateSetting(subTypeId, 'workflow_configuration');
-  const { element } = await updateAttribute(context, user, statusId, ENTITY_TYPE_STATUS, input);
+  const { element } = await updateAttributeLockFirst(context, user, statusId, ENTITY_TYPE_STATUS, input);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -169,7 +169,7 @@ export const statusEditField = async (context: AuthContext, user: AuthUser, subT
   return findSubTypeById(subTypeId);
 };
 export const statusTemplateEditField = async (context: AuthContext, user: AuthUser, statusTemplateId: string, input: EditInput[]) => {
-  const { element } = await updateAttribute<StoreEntity>(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE, input);
+  const { element } = await updateAttributeLockFirst<StoreEntity>(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE, input);
   await publishUserAction({
     user,
     event_type: 'mutation',
