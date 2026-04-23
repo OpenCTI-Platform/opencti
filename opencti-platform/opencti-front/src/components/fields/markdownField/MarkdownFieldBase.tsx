@@ -299,6 +299,16 @@ const MarkdownFieldBase = ({
 
   const internalOnBlur = async (event: FocusEvent<HTMLDivElement>) => {
     if (event.currentTarget.contains(event.relatedTarget)) {
+      const blurTarget = event.target as HTMLElement | null;
+      const nextTarget = event.relatedTarget as HTMLElement | null;
+      const movedFromTextareaToButton = blurTarget?.tagName === 'TEXTAREA' && nextTarget?.tagName === 'BUTTON';
+
+      // Tabbing from editor textarea to internal action buttons should still mark the field
+      // as touched so validation feedback appears immediately.
+      if (movedFromTextareaToButton) {
+        onFlushValue?.(false);
+        onMarkTouched?.(true);
+      }
       return;
     }
 

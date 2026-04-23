@@ -1,6 +1,6 @@
 import { Locator, Page } from '@playwright/test';
 
-type TextFieldPageModelType = 'text' | 'text-area' | 'rich-content' | 'text-no-label';
+type TextFieldPageModelType = 'text' | 'text-area' | 'text-area-direct' | 'rich-content' | 'text-no-label';
 
 export default class TextFieldPageModel {
   private readonly inputLocator: Locator;
@@ -16,6 +16,9 @@ export default class TextFieldPageModel {
     if (type === 'text-area') {
       this.parentLocator = root.getByText(label).locator('../../../..');
       this.inputLocator = this.parentLocator.getByTestId('text-area');
+    } else if (type === 'text-area-direct') {
+      this.parentLocator = root;
+      this.inputLocator = root.getByTestId('text-area');
     } else if (type === 'rich-content') {
       this.parentLocator = root.getByText(label).locator('../..');
       this.inputLocator = this.parentLocator.getByLabel('Editing area: main');

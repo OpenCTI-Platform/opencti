@@ -346,4 +346,36 @@ describe('Component: MarkdownField', () => {
       '![to-finalize.png](/storage/view/import%2Fglobal%2Fuploaded-1)',
     );
   });
+
+  it('shows validation after tabbing from textarea to internal upload button', async () => {
+    testRender(
+      <Formik
+        initialValues={{ description: '' }}
+        validate={(values) => {
+          if (!values.description?.trim()) {
+            return { description: 'Description is required' };
+          }
+          return {};
+        }}
+        onSubmit={() => {}}
+      >
+        <Field
+          name="description"
+          component={MarkdownField}
+          label="Description"
+        />
+      </Formik>,
+    );
+
+    const textArea = await screen.findByRole('textbox');
+    const uploadButton = screen.getByRole('button', { name: 'Paste, drop, or click to add images' });
+
+    fireEvent.focus(textArea);
+    fireEvent.blur(textArea, { relatedTarget: uploadButton });
+    fireEvent.focus(uploadButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Description is required')).toBeInTheDocument();
+    });
+  });
 });

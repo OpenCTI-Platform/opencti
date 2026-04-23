@@ -281,6 +281,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             fullWidth={true}
             multiline={true}
             rows="4"
+            formikSyncMode="immediate"
             style={{ marginTop: 20 }}
             askAi={true}
             {...getTempImageFieldProps(values.objectMarking.map((v) => v.value))}

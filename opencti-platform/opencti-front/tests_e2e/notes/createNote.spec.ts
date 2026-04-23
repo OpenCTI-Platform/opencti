@@ -16,7 +16,7 @@ test('Create a new note', { tag: ['@ce'] }, async ({ page }) => {
   await noteForm.abstractField.fill('Test abstract field e2e');
   await noteForm.contentField.fill('Test Content Field Note e2e');
   await noteForm.submit();
-  // open it
+  // // open it
   await notesPage.getItemFromList('Test abstract field e2e').click();
   await expect(noteDetails.getPage()).toBeVisible();
   await expect(noteDetails.getTitle('Test abstract field e2e')).toBeVisible();
