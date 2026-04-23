@@ -3089,16 +3089,19 @@ const upsertEntityRule = async (
   opts: UpsertEntityRuleOpts,
 ) => {
   const { fromRule } = opts;
+  const resolvedInstance = await storeLoadByIdWithRefs(context, user, instance.internal_id, { type: instance.entity_type });
+  if (!resolvedInstance) {
+    throw FunctionalError('Cant find element to resolve', { id: instance.internal_id });
+  }
   // 01. If relation already have max explanation, don't do anything
   // Strict equals to clean existing element with too many explanations
-  const ruleExplanationsSize = getRuleExplanationsSize(fromRule, instance);
+  const ruleExplanationsSize = getRuleExplanationsSize(fromRule, resolvedInstance);
   if (ruleExplanationsSize === MAX_EXPLANATIONS_PER_RULE) {
-    return instance;
+    return resolvedInstance;
   }
   logApp.debug('Upsert inferred entity', { input });
-  const patch = await createUpsertRulePatch(instance, input, opts);
-  const element = await storeLoadByIdWithRefs(context, user, instance.internal_id, { type: instance.entity_type });
-  return await patchAttributeFromLoadedWithRefs(context, RULE_MANAGER_USER, element, patch, opts);
+  const patch = await createUpsertRulePatch(resolvedInstance, input, opts);
+  return await patchAttributeFromLoadedWithRefs(context, RULE_MANAGER_USER, resolvedInstance, patch, opts);
 };
 const upsertRelationRule = async (
   context: AuthContext,
@@ -3108,24 +3111,27 @@ const upsertRelationRule = async (
   opts: { fromRule: string; fromRuleDeletion?: boolean } & PatchAttributeOpts,
 ) => {
   const { fromRule, fromRuleDeletion = false } = opts;
+  const resolvedInstance = await storeLoadByIdWithRefs(context, user, instance.internal_id, { type: instance.entity_type });
+  if (!resolvedInstance) {
+    throw FunctionalError('Cant find element to resolve', { id: instance.internal_id });
+  }
   // 01. If relation already have max explanation, don't do anything
   // Strict equals to clean existing element with too many explanations
-  const ruleExplanationsSize = getRuleExplanationsSize(fromRule, instance);
+  const ruleExplanationsSize = getRuleExplanationsSize(fromRule, resolvedInstance);
   if (!fromRuleDeletion && ruleExplanationsSize === MAX_EXPLANATIONS_PER_RULE) {
-    return instance;
+    return resolvedInstance;
   }
   logApp.debug('Upsert inferred relation', { input });
   // 02 - Update the rule
   const updatedRule = input[fromRule];
   if (!fromRuleDeletion) {
     const keepRuleHashes = input[fromRule].map((i: any) => i.hash);
-    const instanceRuleToKeep = (instance[fromRule] ?? []).filter((i: any) => !keepRuleHashes.includes(i.hash));
+    const instanceRuleToKeep = (resolvedInstance[fromRule] ?? []).filter((i: any) => !keepRuleHashes.includes(i.hash));
     pushAll(updatedRule, instanceRuleToKeep);
   }
   // 03 - Create the patch
-  const patch = await createUpsertRulePatch(instance, input, opts);
-  const element = await storeLoadByIdWithRefs(context, user, instance.internal_id, { type: instance.entity_type });
-  return await patchAttributeFromLoadedWithRefs(context, RULE_MANAGER_USER, element, patch, opts);
+  const patch = await createUpsertRulePatch(resolvedInstance, input, opts);
+  return await patchAttributeFromLoadedWithRefs(context, RULE_MANAGER_USER, resolvedInstance, patch, opts);
 };
 // endregion
 
@@ -3220,16 +3226,12 @@ const upsertElement = async (
   element: BasicStoreBase,
   type: string,
   basePatch: Record<string, any>,
-  opts: { elementAlreadyResolved?: boolean } & UpdateAttributeMetaResolvedOpts = {},
+  opts: UpdateAttributeMetaResolvedOpts = {},
 ) => {
-  // -- Independent update
-  let resolvedElement = element as StoreObject;
-  if (!opts.elementAlreadyResolved) {
-    const finalResolvedElement = await storeLoadByIdWithRefs(context, user, element?.internal_id, { type });
-    if (!finalResolvedElement) {
-      throw FunctionalError('Cant find element to resolve', { id: element?.internal_id });
-    }
-    resolvedElement = finalResolvedElement;
+  // -- Independent update (load once by id under caller lock context)
+  const resolvedElement = await storeLoadByIdWithRefs(context, user, element?.internal_id, { type });
+  if (!resolvedElement) {
+    throw FunctionalError('Cant find element to resolve', { id: element?.internal_id });
   }
 
   // If a decay exclusion rule is already applied, we must not apply a new decay rule or a new decay exclusion rule
@@ -3434,9 +3436,8 @@ export const createRelationRaw = async (
           fromId: from.internal_id,
         });
       }
-      // TODO Handling merging relation when updating to prevent multiple relations finding
-      // resolve all refs so we can upsert properly
-      existingRelationship = await storeLoadByIdWithRefs(context, user, filteredRelations[0].internal_id);
+      // Keep lightweight element here; full refs will be resolved in the upsert path under the held lock.
+      existingRelationship = filteredRelations[0];
     }
     if (!existingRelationship) {
       // We do not use default values on upsert.
@@ -3452,7 +3453,7 @@ export const createRelationRaw = async (
         return await upsertRelationRule(context, user, existingRelationship, input, { ...opts, fromRule, locks: participantIds });
       }
       // If not upsert the element
-      return upsertElement(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds, elementAlreadyResolved: true });
+      return upsertElement(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds });
     }
     // Check cyclic reference consistency for embedded relationships before creation
     if (isStixRefRelationship(relationshipType)) {
@@ -3768,12 +3769,8 @@ const internalCreateEntityRaw = async (
         return await upsertEntityRule(context, user, filteredEntities[0], input, { ...opts, fromRule, locks: participantIds });
       }
       if (filteredEntities.length === 1) {
-        const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true, elementAlreadyResolved: true };
-        const element = await storeLoadByIdWithRefs(context, user, filteredEntities[0].internal_id, { type });
-        if (!element) {
-          throw FunctionalError('Cant find element to resolve', { id: filteredEntities[0].internal_id });
-        }
-        return upsertElement(context, user, element, type, resolvedInput, upsertEntityOpts);
+        const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true };
+        return upsertElement(context, user, filteredEntities[0], type, resolvedInput, upsertEntityOpts);
       }
       // If creation is not by a reference
       // We can in best effort try to merge a common stix_id
