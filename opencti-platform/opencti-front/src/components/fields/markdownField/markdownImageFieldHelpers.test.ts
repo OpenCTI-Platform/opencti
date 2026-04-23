@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  extractEmbeddedStoragePathsFromMarkdown,
-  getImageFiles,
-  getMarkdownImageDragFeedback,
-  isSvgImageFile,
-} from './markdownImageFieldHelpers';
+import { extractEmbeddedStoragePathsFromMarkdown, getImageFiles, getMarkdownImageDragFeedback, isSvgImageFile } from './markdownImageFieldHelpers';
 
 describe('markdown image field helpers', () => {
   it('extracts embedded storage paths from relative storage/get and storage/view URLs', () => {

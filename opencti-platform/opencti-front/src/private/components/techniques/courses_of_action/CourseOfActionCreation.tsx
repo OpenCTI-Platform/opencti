@@ -166,7 +166,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: (response, errors) => {
+      onCompleted: (response) => {
         runAfterStoringTempImagesForEntity(response, values, {
           onSuccess: () => {
             setSubmitting(false);
