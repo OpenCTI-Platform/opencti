@@ -12,7 +12,7 @@ export default class TextFieldPageModel {
     type: TextFieldPageModelType,
     readonly rootLocator?: Locator,
   ) {
-    const root = rootLocator ?? page;
+    const root = rootLocator ?? page.locator('body');
     if (type === 'text-area') {
       this.parentLocator = root.getByText(label).locator('../../../..');
       this.inputLocator = this.parentLocator.getByTestId('text-area');
