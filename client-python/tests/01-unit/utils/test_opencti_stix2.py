@@ -136,6 +136,42 @@ def test_import_bundle_from_file(opencti_stix2: OpenCTIStix2, caplog) -> None:
     assert "The bundle file does not exist" in caplog.text
 
 
+def test_extract_embedded_storage_path_from_get_path(opencti_stix2: OpenCTIStix2):
+    uri = "/storage/get/embedded/Note/internal-note-id/a.png"
+
+    result = opencti_stix2._extract_embedded_storage_path(uri)
+
+    assert result == "embedded/Note/internal-note-id/a.png"
+
+
+def test_extract_embedded_storage_path_from_absolute_view_path(
+    opencti_stix2: OpenCTIStix2,
+):
+    uri = "https://remote.example/storage/view/embedded/Note/internal-note-id/a.png"
+
+    result = opencti_stix2._extract_embedded_storage_path(uri)
+
+    assert result == "embedded/Note/internal-note-id/a.png"
+
+
+def test_extract_embedded_storage_path_ignores_query_string(
+    opencti_stix2: OpenCTIStix2,
+):
+    uri = "https://remote.example/download?next=/storage/get/embedded/Note/internal-note-id/a.png"
+
+    result = opencti_stix2._extract_embedded_storage_path(uri)
+
+    assert result is None
+
+
+def test_extract_embedded_storage_path_ignores_fragment(opencti_stix2: OpenCTIStix2):
+    uri = "https://remote.example/download#/storage/view/embedded/Note/internal-note-id/a.png"
+
+    result = opencti_stix2._extract_embedded_storage_path(uri)
+
+    assert result is None
+
+
 def test_prepare_export_rewrites_embedded_markdown_image_uri(
     opencti_stix2: OpenCTIStix2, monkeypatch
 ):
@@ -570,5 +606,39 @@ def test_prepare_export_keeps_embedded_non_image_markdown_uri(
     assert (
         result[0]["description"]
         == "desc ![doc](/storage/get/embedded/Note/internal-note-id-4/a.pdf)"
+    )
+    assert len(fetch_calls) == 0
+
+
+def test_prepare_export_keeps_embedded_unknown_mime_markdown_uri_without_fetch(
+    opencti_stix2: OpenCTIStix2, monkeypatch
+):
+    monkeypatch.setattr(
+        opencti_stix2.opencti.stix_nested_ref_relationship,
+        "list",
+        lambda **kwargs: [],
+    )
+
+    fetch_calls = []
+
+    def fake_fetch(url, binary=False, serialize=False):
+        fetch_calls.append((url, binary, serialize))
+        return "Zm9v"
+
+    monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
+
+    entity = {
+        "id": "note--99999999-9999-4999-8999-999999999999",
+        "type": "note",
+        "x_opencti_id": "internal-note-id-9",
+        "description": "desc ![img](/storage/get/embedded/Note/internal-note-id-9/image-without-extension)",
+    }
+
+    result = opencti_stix2.prepare_export(entity=entity, mode="simple")
+
+    assert len(result) == 1
+    assert (
+        result[0]["description"]
+        == "desc ![img](/storage/get/embedded/Note/internal-note-id-9/image-without-extension)"
     )
     assert len(fetch_calls) == 0

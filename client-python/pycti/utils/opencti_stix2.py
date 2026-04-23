@@ -9,7 +9,7 @@ import time
 import traceback
 import uuid
 from typing import Any, Dict, List, Optional, Tuple, Union
-from urllib.parse import quote, unquote, urljoin
+from urllib.parse import quote, unquote, urljoin, urlparse
 
 import datefinder
 import dateutil.parser
@@ -178,18 +178,16 @@ class OpenCTIStix2:
         if not isinstance(uri, str):
             return None
         normalized_uri = unquote(uri)
+        parsed_uri = urlparse(normalized_uri)
+        normalized_path = parsed_uri.path
         storage_prefixes = ["/storage/get/embedded/", "/storage/view/embedded/"]
-        selected_prefix = next(
-            (prefix for prefix in storage_prefixes if prefix in normalized_uri),
-            None,
-        )
-        if selected_prefix is None:
-            return None
-        marker = normalized_uri.find(selected_prefix)
-        storage_root = selected_prefix.split("embedded/", 1)[0]
-        storage_path = normalized_uri[marker + len(storage_root) :]
-        storage_path = storage_path.split("?", 1)[0].split("#", 1)[0]
-        return storage_path if storage_path.startswith("embedded/") else None
+        for prefix in storage_prefixes:
+            if normalized_path.startswith(prefix):
+                storage_root = prefix.split("embedded/", 1)[0]
+                storage_path = normalized_path[len(storage_root) :]
+                return storage_path if storage_path.startswith("embedded/") else None
+
+        return None
 
     def _rewrite_markdown_embedded_storage_images(self, markdown: str) -> str:
         if not isinstance(markdown, str):
@@ -210,6 +208,8 @@ class OpenCTIStix2:
                 return full_match
 
             guessed_mime_type = mimetypes.guess_type(embedded_storage_path)[0]
+            if guessed_mime_type is None:
+                return full_match
             if guessed_mime_type is not None and not guessed_mime_type.startswith(
                 "image/"
             ):
