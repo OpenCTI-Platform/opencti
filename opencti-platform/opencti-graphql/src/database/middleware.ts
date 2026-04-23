@@ -2578,6 +2578,18 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
     // region handle metas
     const relationsToCreate: any[] = [];
     const relationsToDelete: any[] = [];
+    const relationReadCache = new Map<string, BasicStoreRelation[]>();
+    const getCurrentRelations = async (relationType: string, fromId: string, indices?: string[]) => {
+      const cacheKey = `${relationType}:${fromId}:${(indices ?? []).join(',')}`;
+      if (!relationReadCache.has(cacheKey)) {
+        const currentRels = await fullRelationsList(context, user, relationType, {
+          fromId,
+          ...(indices ? { indices } : {}),
+        });
+        relationReadCache.set(cacheKey, currentRels);
+      }
+      return relationReadCache.get(cacheKey) ?? [];
+    };
     const buildInstanceRelTo = (
       to: BasicStoreBase | BasicStoreBase[],
       relType: string | undefined,
@@ -2600,7 +2612,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         if (currentValue?.id !== targetCreated?.internal_id) {
           // Delete the current relation
           if (currentValue?.standard_id) {
-            const currentRels = (await fullRelationsList(context, user, relType, { fromId: initial.id }))
+            const currentRels = (await getCurrentRelations(relType, initial.id))
               .map((rel) => ({
                 ...rel,
                 // we resolve from and to without need of an extra query
@@ -2637,7 +2649,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         }
         if (operation === UPDATE_OPERATION_REPLACE) {
           // Delete all relations
-          const currentRels = await fullRelationsList(context, user, relType, { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, fromId: initial.internal_id });
+          const currentRels = await getCurrentRelations(relType, initial.internal_id, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED);
           const currentRelsToIds = currentRels.map((n: BasicStoreRelation) => n.toId);
           const newTargetsIds = refs.map((n) => n.id);
           if (R.symmetricDifference(newTargetsIds, currentRelsToIds).length > 0) {
@@ -2657,10 +2669,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         if (operation === UPDATE_OPERATION_ADD) {
           // Re-evaluate existing refs from storage while we hold the lock.
           // The loaded instance can be stale when concurrent workers update the same object.
-          const currentRels = await fullRelationsList(context, user, relType, {
-            indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
-            fromId: initial.internal_id,
-          });
+          const currentRels = await getCurrentRelations(relType, initial.internal_id, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED);
           const currentRelToIds = new Set(currentRels.map((rel: BasicStoreRelation) => rel.toId));
           const refsToCreate = refs.filter((r) => !currentRelToIds.has(r.internal_id));
           if (refsToCreate.length > 0) {
@@ -2673,7 +2682,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         }
         if (operation === UPDATE_OPERATION_REMOVE) {
           const targetIds = refs.map((t) => t.internal_id);
-          const currentRels = await fullRelationsList(context, user, relType, { indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, fromId: initial.internal_id });
+          const currentRels = await getCurrentRelations(relType, initial.internal_id, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED);
           const relsToDelete = currentRels.filter((c) => targetIds.includes(c.toId))
             .map((r) => ({
               ...r,
@@ -2693,7 +2702,9 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
     }
     // endregion
     // region build attributes inner information
-    lock.signal.throwIfAborted();
+    if (lock) {
+      lock.signal.throwIfAborted();
+    }
     const impactedKeys: string[] = impactedInputs.map((input) => input.key);
     pushAll(impactedKeys, [...relationsToCreate, ...relationsToDelete].map((rel: any) => {
       if (!updatedInstance.entity_type || !rel.relationship_type) {
