@@ -97,6 +97,8 @@ describe('Component: MarkdownField', () => {
   });
 
   it('shows and clears dashed outline indicator while dragging files over write textarea', async () => {
+    renderMarkdownField('');
+
     const textArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
 
     fireEvent.dragEnter(textArea, {
