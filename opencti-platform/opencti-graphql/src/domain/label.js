@@ -1,6 +1,6 @@
 import { assoc, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createEntity, deleteElementById, updateAttribute } from '../database/middleware';
+import { createEntity, deleteElementById, updateAttributeLockFirst } from '../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
@@ -52,7 +52,7 @@ export const labelDelete = async (context, user, labelId) => {
 };
 
 export const labelEditField = async (context, user, labelId, input, opts = {}) => {
-  const { element } = await updateAttribute(context, user, labelId, ENTITY_TYPE_LABEL, input, opts);
+  const { element } = await updateAttributeLockFirst(context, user, labelId, ENTITY_TYPE_LABEL, input, opts);
   return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, element, user);
 };
 
