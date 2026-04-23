@@ -26,6 +26,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
 import { isWorkAlive } from '../domain/work';
+import { buildRateLimiterOptions } from './httpUtils';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -129,17 +130,8 @@ const createHttpServer = async () => {
   });
   await apolloServer.start();
   // Rate limiter must be first registered so it applies to all requests including /graphql
-  const allowlist = nconf.get('app:rate_protection:ip_allow_list') ?? [];
-  const limiter = rateLimit({
-    windowMs: nconf.get('app:rate_protection:time_window') * 1000,
-    limit: nconf.get('app:rate_protection:max_requests'),
-    handler: (req, res /* , next */) => {
-      logApp.info(`[RATE-LIMIT] over quota for ${req?.ip}`);
-      res.status(429).send({ message: 'Too many requests, please try again later.' });
-    },
-    skip: (req, _res) => allowlist.includes(req.ip),
-  });
-  app.use(limiter);
+  app.use(rateLimit(buildRateLimiterOptions()));
+
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
   app.use(express.json({ limit: requestSizeLimit }));
   app.use(graphqlUploadExpress());

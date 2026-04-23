@@ -1,10 +1,18 @@
-import type Express from 'express';
+import Express from 'express';
 import crypto from 'node:crypto';
 import { booleanConf, logApp } from '../config/conf';
 import { isEmptyField } from '../database/utils';
 import { URL } from 'node:url';
-import { getPublicAuthorizedDomainsFromConfiguration, isDevMode, isUnsecureHttpResourceAllowed } from './httpConfig';
+import {
+  getPublicAuthorizedDomainsFromConfiguration,
+  getRateProtectionIpSkipList,
+  getRateProtectionMaxRequest,
+  getRateProtectionTimeWindowMs,
+  isDevMode,
+  isUnsecureHttpResourceAllowed,
+} from './httpConfig';
 import type { HelmetOptions } from 'helmet';
+import { type Options } from 'express-rate-limit';
 
 export const setCookieError = (res: Express.Response, message: string) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -159,4 +167,18 @@ export const buildDefaultHelmetParameters = () => {
     xFrameOptions: { action: 'deny' },
   };
   return helmetConfiguration;
+};
+
+export const buildRateLimiterOptions = () => {
+  const skipList: string[] = getRateProtectionIpSkipList();
+  const rateLimitOptions: Partial<Options> = {
+    windowMs: getRateProtectionTimeWindowMs(),
+    limit: getRateProtectionMaxRequest(),
+    handler: (req, res /* , next */) => {
+      logApp.debug(`[RATE-LIMIT] over quota for ${req?.ip}`);
+      res.status(429).send({ message: 'Too many requests, please try again later.' });
+    },
+    skip: (req, _res) => req.ip ? skipList.includes(req.ip) : false,
+  };
+  return rateLimitOptions;
 };
