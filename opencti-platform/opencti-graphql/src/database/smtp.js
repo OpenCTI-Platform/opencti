@@ -26,6 +26,9 @@ const smtpOptions = {
 
 export const buildSmtpAuth = (authType, { username, password, oauthUser, oauthClientId, oauthClientSecret, oauthAccessToken }) => {
   if (authType === 'oauth2') {
+    if (!oauthUser || !oauthClientId || !oauthClientSecret || !oauthAccessToken) {
+      throw new Error('SMTP OAuth2 configuration is incomplete: oauth_user, oauth_client_id, oauth_client_secret and oauth_access_token are all required.');
+    }
     return {
       type: 'OAuth2',
       user: oauthUser,
@@ -43,7 +46,7 @@ export const buildSmtpAuth = (authType, { username, password, oauthUser, oauthCl
   return undefined;
 };
 
-const authType = conf.get('smtp:smtp_auth_type') || 'basic';
+const authType = conf.get('smtp:auth_type') || 'basic';
 const smtpAuth = buildSmtpAuth(authType, {
   username: conf.get('smtp:username'),
   password: conf.get('smtp:password'),

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { buildSmtpAuth as buildSmtpAuthImpl } from '../../../src/database/smtp';
 
 type SmtpCredentials = {
@@ -50,15 +50,16 @@ describe('buildSmtpAuth — OAuth2', () => {
     expect(result).not.toHaveProperty('pass');
   });
 
-  it('should return an OAuth2 object even when oauth_* fields are undefined', () => {
-    const result = buildSmtpAuth('oauth2', {});
-    expect(result).toStrictEqual({
-      type: 'OAuth2',
-      user: undefined,
-      clientId: undefined,
-      clientSecret: undefined,
-      accessToken: undefined,
-    });
+  it('should throw an error when oauth_* required fields are missing', () => {
+    expect(() => buildSmtpAuth('oauth2', {})).toThrow(
+      'SMTP OAuth2 configuration is incomplete: oauth_user, oauth_client_id, oauth_client_secret and oauth_access_token are all required.',
+    );
+  });
+
+  it('should throw an error when only some oauth_* fields are provided', () => {
+    expect(() => buildSmtpAuth('oauth2', { oauthUser: 'user@example.com' })).toThrow(
+      'SMTP OAuth2 configuration is incomplete',
+    );
   });
 });
 
