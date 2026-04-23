@@ -62,23 +62,35 @@ describe('Label resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 30 } });
     expect(queryResult.data.labels.edges.length).toEqual(14);
   });
-  it('should update label', async () => {
-    const UPDATE_QUERY = gql`
-      mutation LabelEdit($id: ID!, $input: [EditInput]!) {
-        labelEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-            value
-          }
+  const UPDATE_QUERY = gql`
+    mutation LabelEdit($id: ID!, $input: [EditInput]!) {
+      labelEdit(id: $id) {
+        fieldPatch(input: $input) {
+          id
+          value
         }
       }
-    `;
+    }
+  `;
+
+  it('should update label', async () => {
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: labelInternalId, input: { key: 'value', value: ['State-Sponsored2'] } },
     });
     expect(queryResult.data.labelEdit.fieldPatch.value).toEqual('state-sponsored2');
   });
+
+  it('should reject label update with empty input', async () => {
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: labelInternalId, input: [] },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.errors.length).toEqual(1);
+    expect(queryResult.errors.at(0).message).toEqual('Cannot validate an empty or invalid input');
+  });
+
   it('should context patch label', async () => {
     const CONTEXT_PATCH_QUERY = gql`
       mutation LabelEdit($id: ID!, $input: EditContext) {
