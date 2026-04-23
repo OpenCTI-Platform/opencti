@@ -154,6 +154,7 @@ export const validateWorkflowDefinitionData = async (
 
   const events = new Set<string>();
   let hasValidateDraft = false;
+  const statesWithIncomingTransition = new Set<string>();
 
   for (const transition of transitions) {
     if (transition.from === null || transition.to === null) {
@@ -172,6 +173,9 @@ export const validateWorkflowDefinitionData = async (
     }
     if (transition.to !== '*' && !definedStates.has(transition.to)) {
       stateIdsToCheck.add(transition.to);
+    }
+    if (transition.to !== '*') {
+      statesWithIncomingTransition.add(transition.to);
     }
 
     if (transition.conditions) {
@@ -215,6 +219,17 @@ export const validateWorkflowDefinitionData = async (
 
   if (entityType === 'DraftWorkspace' && !hasValidateDraft) {
     throw ValidationError('DraftWorkspace workflow must contain at least one validateDraft action');
+  }
+
+  // Validate exactly one root state (a state with no incoming transitions) and that it matches initialState
+  if (initialState !== '*' && definedStates.size > 0) {
+    const rootStates = [...definedStates].filter((s) => !statesWithIncomingTransition.has(s));
+    if (rootStates.length > 1) {
+      throw ValidationError(`Workflow must have exactly one root state (a state with no incoming transitions), but found: ${rootStates.join(', ')}`);
+    }
+    if (rootStates.length === 1 && rootStates[0] !== initialState) {
+      throw ValidationError(`The root state '${rootStates[0]}' (no incoming transitions) must match the initialState '${initialState}'`);
+    }
   }
 
   const stateIdsArray = Array.from(stateIdsToCheck);
