@@ -94,14 +94,12 @@ export const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndica
     const { type: baseDataType, id } = baseData.extensions[STIX_EXT_OCTI];
     const isBaseDataAContainer = isStixDomainObjectContainer(baseDataType);
     const objectsToPush: StixObject[] = [];
-
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const observable = bundle.objects[index] as StixCyberObject;
+      let { type } = observable.extensions[STIX_EXT_OCTI];
       const isElementInScope = isBundleElementInScope(observable, applyToElements, dataInstanceId);
       const isFilteredElement = await isBundleElementMatchFilters(context, observable, applyWithFilters);
-
       if (isElementInScope && isFilteredElement) {
-        let { type } = observable.extensions[STIX_EXT_OCTI];
         if (isStixCyberObservable(type) && (isEmptyField(types) || types.includes(type))) {
           const indicatorName = observableValue({ ...observable, entity_type: type });
           const { key, value } = generateKeyValueForIndicator(type, indicatorName, observable);
