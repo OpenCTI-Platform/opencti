@@ -144,12 +144,12 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
     } else if (resolvedElement.decay_applied_rule) {
       // Do not compute decay again when:
       // - base score does not change (indicator is still at its initial score, decay not started yet)
-      const isScoreInUpsertSameAsBaseScore = updatePatch.decay_base_score === resolvedElement.decay_base_score && updatePatch.decay_base_score === resolvedElement.x_opencti_score;
       // - same userId has already updated to the same score previously
-      const hasSameScoreChangedBySameSource = hasSameSourceAlreadyUpdateThisScore(user.id, updatePatch.x_opencti_score, resolvedElement.decay_history);
       // - the live score in the upsert is identical to the current live score (e.g. a Playbook re-ingesting
       //   the indicator bundle without any score change — the bundle carries the current decayed score,
       //   not the original base score, so addIndicator incorrectly computes a new decay start from it)
+      const isScoreInUpsertSameAsBaseScore = updatePatch.decay_base_score === resolvedElement.decay_base_score && updatePatch.decay_base_score === resolvedElement.x_opencti_score;
+      const hasSameScoreChangedBySameSource = hasSameSourceAlreadyUpdateThisScore(user.id, updatePatch.x_opencti_score, resolvedElement.decay_history);
       const isLiveScoreUnchanged = updatePatch.x_opencti_score === resolvedElement.x_opencti_score;
       if (isScoreInUpsertSameAsBaseScore || hasSameScoreChangedBySameSource || isLiveScoreUnchanged) {
         logApp.debug(
