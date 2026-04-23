@@ -1,6 +1,7 @@
 import type { StreamDataEvent, StreamDataEventType } from '../../types/event';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { isStixRelation } from '../../schema/stixRelationship';
+import conf from '../../config/conf';
 
 export enum StreamDataEventTypeEnum {
   UPDATE = 'update',
@@ -14,6 +15,11 @@ interface EventConfig {
   update?: boolean;
   delete?: boolean;
 }
+
+const PLAYBOOK_DEBUG_ID_LIST = conf.get('playbook_manager:debug_id_list') || [];
+export const isDebugPlaybook = (id: string) => {
+  return PLAYBOOK_DEBUG_ID_LIST.includes(id);
+};
 
 export const isValidEventType = (eventType: StreamDataEventType, configuration: EventConfig) => {
   const {

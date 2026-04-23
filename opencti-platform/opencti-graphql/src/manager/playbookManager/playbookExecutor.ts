@@ -9,6 +9,7 @@ import { logApp } from '../../config/conf';
 import { UnsupportedError } from '../../config/errors';
 import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components';
 import type { StreamDataEvent } from '../../types/event';
+import { isDebugPlaybook } from './playbookManagerUtils';
 
 // Only way to force the step_literal checking
 // Don't try to understand, just trust
@@ -68,7 +69,6 @@ type ExecutorFn = {
   externalCallback?: {
     externalStartDate: Date;
   };
-  debugMode?: boolean;
 };
 
 export const playbookExecutor = async ({
@@ -83,8 +83,8 @@ export const playbookExecutor = async ({
   bundle,
   event,
   externalCallback,
-  debugMode = false,
 }: ExecutorFn) => {
+  const currentPlaybookInDebug = isDebugPlaybook(playbookId);
   const isExternalCallback = externalCallback !== undefined;
   const start = isExternalCallback ? externalCallback.externalStartDate : utcDate();
   const instanceWithConfig = { ...nextStep.instance, configuration: JSON.parse(nextStep.instance.configuration ?? '{}') };
@@ -122,7 +122,7 @@ export const playbookExecutor = async ({
         bundle: execution.bundle,
         forceBundleTracking: execution.forceBundleTracking ?? false,
       };
-      if (debugMode) {
+      if (currentPlaybookInDebug) {
         logApp.info(`[PLAYBOOK MANAGER] Registering step observation for playbook ${playbookId}`, { observation });
       }
       await registerStepObservation(observation);
@@ -148,11 +148,13 @@ export const playbookExecutor = async ({
         error: JSON.stringify(logError, null, 2),
         forceBundleTracking: false,
       };
-      logApp.info(`[PLAYBOOK MANAGER] Registering step observation for playbook ${playbookId}`, { observation });
+      if (currentPlaybookInDebug) {
+        logApp.info(`[PLAYBOOK MANAGER] Registering step observation for playbook ${playbookId}`, { observation });
+      }
       await registerStepObservation(observation);
       return;
     }
-    if (debugMode) {
+    if (currentPlaybookInDebug) {
       logApp.info(`[PLAYBOOK MANAGER] Looking for next port for playbook ${playbookId}`, { output_port: execution.output_port });
     }
     // Send the result to the next component if needed

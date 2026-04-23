@@ -44,7 +44,7 @@ import { stixLoadByFilters, stixLoadById } from '../../database/middleware';
 import { convertRelationRefsFilterKeys } from '../../utils/filtering/filtering-utils';
 import { isEnterpriseEdition, isEnterpriseEditionFromSettings } from '../../enterprise-edition/ee';
 import { listenPirEvents } from './listenPirEventsUtils';
-import { isValidEventType } from './playbookManagerUtils';
+import { isDebugPlaybook, isValidEventType } from './playbookManagerUtils';
 import { playbookExecutor } from './playbookExecutor';
 import type { BasicConnection, BasicStoreBase } from '../../types/store';
 
@@ -54,11 +54,6 @@ const PLAYBOOK_CRON_MAX_SIZE = conf.get('playbook_manager:cron_max_size') || 500
 const PLAYBOOK_MANAGER_NAME = 'playbook_manager';
 const STREAM_SCHEDULE_TIME = 10000;
 const CRON_SCHEDULE_TIME = 60000; // 1 minute
-
-const PLAYBOOK_DEBUG_ID_LIST = conf.get('playbook_manager:debug_id_list') || [];
-const isDebugPlaybook = (id: string) => {
-  return PLAYBOOK_DEBUG_ID_LIST.includes(id);
-};
 
 const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEvent>>) => {
   try {
