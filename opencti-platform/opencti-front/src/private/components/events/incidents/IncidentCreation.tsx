@@ -97,7 +97,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
-  const [commit] = useApiMutation(
+  const [commit] = useApiMutation<IncidentCreationMutation>(
     IncidentMutation,
     undefined,
     { successMessage: `${t_i18n('entity_Incident')} ${t_i18n('successfully created')}` },

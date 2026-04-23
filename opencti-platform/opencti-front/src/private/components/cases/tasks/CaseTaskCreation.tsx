@@ -83,7 +83,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
   }, mandatoryAttributes);
   const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
 
-  const [addTask] = useApiMutation(
+  const [addTask] = useApiMutation<CaseTaskCreationMutation>(
     caseTaskAddMutation,
     undefined,
     { successMessage: `${t_i18n('entity_Task')} ${t_i18n('successfully created')}` },
@@ -166,7 +166,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
       validateOnChange={true}
       validateOnBlur={true}
     >
-      {({ isSubmitting, handleReset, submitForm, setFieldValue }) => (
+      {({ values, isSubmitting, handleReset, submitForm, setFieldValue }) => (
         <Form>
           <Field
             style={{ marginBottom: 20 }}
