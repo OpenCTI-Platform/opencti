@@ -10,7 +10,7 @@ import { RETENTION_MANAGER_USER } from '../../utils/access';
 import { convertFiltersToQueryOptions } from '../../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../internal/document/document-domain';
-import { logApp } from '../../config/conf';
+import { FEATURE_ACTIVITY_HISTORY_RETENTION, isFeatureEnabled, logApp } from '../../config/conf';
 import { BASE_TYPE_ENTITY } from '../../schema/general';
 import { getParentTypes } from '../../schema/schemaUtils';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -19,6 +19,9 @@ import { ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
 
 export const checkRetentionRule = async (context: AuthContext, input: RetentionRuleAddInput) => {
   const { filters, max_retention: maxDays, scope, retention_unit: unit } = input;
+  if (scope === 'history' && !isFeatureEnabled(FEATURE_ACTIVITY_HISTORY_RETENTION)) {
+    throw UnsupportedError('The history scope for retention rules is not enabled on this platform');
+  }
   const before = utcDate().subtract(maxDays, unit ?? 'days');
   let result: any = [];
   // knowledge rule

@@ -1,7 +1,7 @@
 import moment, { type Moment } from 'moment';
 import * as R from 'ramda';
 import { listRules as findRetentionRulesToExecute } from '../modules/retentionRules/retentionRules-domain';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, FEATURE_ACTIVITY_HISTORY_RETENTION, isFeatureEnabled, logApp } from '../config/conf';
 import { deleteElementById, patchAttribute } from '../database/middleware';
 import { executionContext, RETENTION_MANAGER_USER } from '../utils/access';
 import { ENTITY_TYPE_RETENTION_RULE } from '../modules/retentionRules/retentionRules-types';
@@ -83,6 +83,9 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
 
 export const executeProcessing = async (context: AuthContext, retentionRule: RetentionRule) => {
   const { id, name, max_retention: maxNumber, retention_unit: unit, filters, scope } = retentionRule;
+  if (scope === 'history' && !isFeatureEnabled(FEATURE_ACTIVITY_HISTORY_RETENTION)) {
+    return;
+  }
   logApp.debug(`[OPENCTI] Executing retention manager rule ${name}`);
   const before = utcDate().subtract(maxNumber, unit ?? 'days');
   const result = await getElementsToDelete(context, scope, before, filters);

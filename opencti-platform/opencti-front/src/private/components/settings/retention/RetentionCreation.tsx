@@ -30,6 +30,7 @@ import type { Theme } from '../../../../components/Theme';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import { useTheme } from '@mui/material/styles';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const useStyles = makeStyles<Theme>(() => ({
   text: {
@@ -78,6 +79,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const { isActivityHistoryRetentionEnable } = useHelper();
 
   const [filters, helpers] = useFiltersState();
   const [verified, setVerified] = useState(false);
@@ -216,7 +218,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 onChange={setFieldValue}
                 options={[
                   { value: 'file', label: t_i18n('File') },
-                  { value: 'history', label: t_i18n('History') },
+                  ...(isActivityHistoryRetentionEnable() ? [{ value: 'history', label: t_i18n('History') }] : []),
                   { value: 'knowledge', label: t_i18n('Knowledge') },
                   { value: 'workbench', label: t_i18n('Workbench') },
                 ]}
