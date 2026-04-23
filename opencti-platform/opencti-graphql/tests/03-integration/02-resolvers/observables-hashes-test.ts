@@ -500,6 +500,7 @@ describe('Observables with hashes: management of other stix ids', () => {
           },
         },
       });
+      expect(mergeSourceResult.errors ?? []).toHaveLength(0);
       mergeSourceId = mergeSourceResult?.data?.stixCyberObservableAdd?.id;
 
       const mergeTargetResult = await queryAsAdmin({
@@ -511,7 +512,11 @@ describe('Observables with hashes: management of other stix ids', () => {
           },
         },
       });
+      expect(mergeTargetResult.errors ?? []).toHaveLength(0);
       mergeTargetId = mergeTargetResult?.data?.stixCyberObservableAdd?.id;
+      expect(mergeSourceId).not.toBeNull();
+      expect(mergeTargetId).not.toBeNull();
+      expect(mergeSourceId).not.toEqual(mergeTargetId);
 
       const mergeViaUpdateResult = await queryAsAdmin({
         query: EDIT_STIX_FILE_QUERY,
@@ -533,6 +538,18 @@ describe('Observables with hashes: management of other stix ids', () => {
         variables: { id: targetMd5StandardId },
       });
       expect(fileByMd5?.data?.stixCyberObservable.standard_id).toEqual(targetMd5StandardId);
+
+      const fileByMergeSourceId = await queryAsAdmin({
+        query: FIND_BY_ID_QUERY,
+        variables: { id: mergeSourceId },
+      });
+      expect(fileByMergeSourceId?.data?.stixCyberObservable.standard_id).toEqual(targetMd5StandardId);
+
+      const fileByMergeTargetId = await queryAsAdmin({
+        query: FIND_BY_ID_QUERY,
+        variables: { id: mergeTargetId },
+      });
+      expect(fileByMergeTargetId?.data?.stixCyberObservable.standard_id).toEqual(targetMd5StandardId);
     } finally {
       const idsToDelete = [...new Set([mergeSourceId, mergeTargetId].filter(Boolean))];
       await Promise.all(idsToDelete.map((id) => queryAsAdmin({
