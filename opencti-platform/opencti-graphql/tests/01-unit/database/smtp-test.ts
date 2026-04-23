@@ -1,4 +1,4 @@
-﻿import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { buildSmtpAuth as buildSmtpAuthImpl } from '../../../src/database/smtp';
 
 type SmtpCredentials = {
