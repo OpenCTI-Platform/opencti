@@ -22,8 +22,6 @@ import {
 } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
-import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../schema/stixCyberObservable';
-import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 
 export const COVERED_ENTITIES_TYPE = [
   ENTITY_TYPE_INTRUSION_SET,
@@ -81,7 +79,7 @@ export const securityCoverageStixBundle = async (context: AuthContext, user: Aut
   };
   await fullRelationsList(context, user, [RELATION_TARGETS, RELATION_USES], {
     fromId: objectCovered.id,
-    toTypes: [ENTITY_TYPE_VULNERABILITY, ENTITY_TYPE_ATTACK_PATTERN, ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_TYPE_INDICATOR],
+    toTypes: [ENTITY_TYPE_VULNERABILITY, ENTITY_TYPE_ATTACK_PATTERN],
     callback: relationsCallback,
   });
   if (targetIds.size > 0) {
