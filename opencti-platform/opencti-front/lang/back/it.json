@@ -98,6 +98,7 @@
   "Built-in": "Integrato",
   "Button display name": "Nome del pulsante di visualizzazione",
   "Can escalate privs": "Può aumentare i privilegi",
+  "canEnrollManually": "Disponibile per l'iscrizione manuale",
   "Capabilities": "Capacità",
   "Capability order": "Ordine delle capacità",
   "Card number": "Numero di carta",
@@ -447,6 +448,7 @@
   "Include inferences": "Includi inferenze",
   "Included IDs": "ID inclusi",
   "Index date": "Data di indicizzazione",
+  "Indicates whether multiple calls to add_expectations are expected for this work": "Indica se per questo lavoro sono previste più chiamate a add_expectations",
   "Indicator decay manager": "Gestore del decadimento degli indicatori",
   "Indicator filters": "Filtri indicatori",
   "Indicator observable types": "Tipi di osservabili degli indicatori",
@@ -459,7 +461,6 @@
   "Inference of targeting via a sighting": "Inferenza di un bersaglio attraverso un avvistamento",
   "Inference weight": "Peso dell'inferenza",
   "Information": "Informazione",
-  "Information types": "Tipi di informazioni",
   "Infrastructure types": "Tipi di infrastrutture",
   "Ingestion running": "Ingestione in esecuzione",
   "Ingestion state": "Stato di ingestione",
@@ -831,6 +832,8 @@
   "Representative": "Rappresentante",
   "Request access data as json field": "Richiesta di dati di accesso come campo json",
   "Request access workflow": "Richiesta del flusso di lavoro di accesso",
+  "Request for information types": "Tipi di richiesta di informazioni",
+  "Request for takedown types": "Tipi di richiesta di rimozione",
   "Resolves to": "Si risolve in",
   "Resource level": "Livello della risorsa",
   "Restrict delete to its own entities": "Limita l'eliminazione alle proprie entità",
@@ -927,7 +930,6 @@
   "SWID": "SWID",
   "Synchronized": "Sincronizzato",
   "Tags": "Tag",
-  "Takedown types": "Tipi di rimozione",
   "Target entity": "Entità target",
   "Target entity type": "Tipo di entità di destinazione",
   "Target type": "Tipo di target",
@@ -1072,3 +1074,4 @@
   "XTM One registration manager": "Gestore delle registrazioni XTM One",
   "XTM1 CGU acceptance status": "XTM1 Stato di accettazione della CGU"
 }
+

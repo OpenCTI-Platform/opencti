@@ -1,0 +1,43 @@
+import type { StoreEntity } from '../../../../../../src/types/store';
+
+export const COURSE_OF_ACTION_INSTANCE = {
+  id: 'd61833df-4e18-4d7f-b9de-f85f37c48909',
+  standard_id: 'course-of-action--dd5e90eb-d8c1-5103-8b57-c3a907ad0850',
+  entity_type: 'Course-Of-Action',
+  created: '2026-03-18T10:06:01.168Z',
+  modified: '2026-03-18T10:22:39.403Z',
+  confidence: 100,
+  revoked: false,
+  name: 'Course of Action STIX 2.0',
+  description: 'description',
+  x_mitre_id: 'externalID',
+  x_opencti_threat_hunting: 'tech',
+  x_opencti_log_sources: ['log'],
+  createdBy: { standard_id: 'identity--c801c762-92e8-58b6-9bcb-6fa805f902cb' },
+  objectLabel: [{ value: 'stix 2.0' }],
+  objectMarking: [{ standard_id: 'marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1' }],
+} as unknown as StoreEntity;
+
+export const EXPECTED_COURSE_OF_ACTION = {
+  id: 'course-of-action--dd5e90eb-d8c1-5103-8b57-c3a907ad0850',
+  type: 'course-of-action',
+  spec_version: '2.0',
+  x_opencti_id: 'd61833df-4e18-4d7f-b9de-f85f37c48909',
+  x_opencti_type: 'Course-Of-Action',
+  x_opencti_granted_refs: [],
+  x_opencti_files: [],
+  created: '2026-03-18T10:06:01.168Z',
+  modified: '2026-03-18T10:22:39.403Z',
+  revoked: false,
+  confidence: 100,
+  labels: ['stix 2.0'],
+  object_marking_refs: ['marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1'],
+  created_by_ref: 'identity--c801c762-92e8-58b6-9bcb-6fa805f902cb',
+  external_references: [],
+  name: 'Course of Action STIX 2.0',
+  description: 'description',
+  x_opencti_aliases: [],
+  x_mitre_id: 'externalID',
+  x_opencti_threat_hunting: 'tech',
+  x_opencti_log_sources: ['log'],
+};

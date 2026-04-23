@@ -98,6 +98,7 @@
   "Built-in": "내장형",
   "Button display name": "버튼 표시 이름",
   "Can escalate privs": "권한 상승 가능",
+  "canEnrollManually": "수동 등록 가능",
   "Capabilities": "기능",
   "Capability order": "기능 순서",
   "Card number": "카드 번호",
@@ -447,6 +448,7 @@
   "Include inferences": "추론 포함",
   "Included IDs": "포함된 ID",
   "Index date": "인덱스 날짜",
+  "Indicates whether multiple calls to add_expectations are expected for this work": "이 작업에 대해 추가_기대치에 대한 여러 호출이 예상되는지 여부를 나타냅니다",
   "Indicator decay manager": "지표 감쇠 관리자",
   "Indicator filters": "표시기 필터",
   "Indicator observable types": "지표 관찰 가능 유형",
@@ -459,7 +461,6 @@
   "Inference of targeting via a sighting": "목격을 통한 타겟팅 추론",
   "Inference weight": "추론 가중치",
   "Information": "정보",
-  "Information types": "정보 유형",
   "Infrastructure types": "인프라 유형",
   "Ingestion running": "데이터 수집 실행 중",
   "Ingestion state": "수집 상태",
@@ -831,6 +832,8 @@
   "Representative": "대표",
   "Request access data as json field": "액세스 데이터를 json 필드로 요청",
   "Request access workflow": "액세스 요청 워크플로",
+  "Request for information types": "정보 요청 유형",
+  "Request for takedown types": "게시 중단 요청 유형",
   "Resolves to": "해결됨",
   "Resource level": "자원 수준",
   "Restrict delete to its own entities": "자체 엔터티로 삭제 제한",
@@ -927,7 +930,6 @@
   "SWID": "SWID",
   "Synchronized": "동기화됨",
   "Tags": "태그",
-  "Takedown types": "삭제 유형",
   "Target entity": "대상 엔터티",
   "Target entity type": "대상 엔티티 유형",
   "Target type": "대상 유형",
@@ -1072,3 +1074,4 @@
   "XTM One registration manager": "XTM One 등록 관리자",
   "XTM1 CGU acceptance status": "XTM1 CGU 승인 상태"
 }
+

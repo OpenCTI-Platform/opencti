@@ -45,6 +45,12 @@ const playbookFragment = graphql`
     description
     playbook_running
     queue_messages
+    created_at
+    updated_at
+    creators {
+      id
+      name
+    }
   }
 `;
 
@@ -152,24 +158,33 @@ const Playbooks: FunctionComponent = () => {
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
       label: 'Name',
-      percentWidth: 25,
+      percentWidth: 20,
     },
     description: {
       label: 'Description',
-      percentWidth: 30,
+      percentWidth: 25,
       isSortable: false,
+    },
+    creator: {
+      percentWidth: 12,
+    },
+    created_at: {
+      percentWidth: 12,
+    },
+    updated_at: {
+      percentWidth: 12,
     },
     messages: {
       id: 'messages',
       label: 'Messages',
-      percentWidth: 20,
+      percentWidth: 8,
       isSortable: false,
       render: ({ queue_messages }) => n(queue_messages),
     },
     playbook_running: {
       id: 'playbook_running',
       label: 'Playbook running',
-      percentWidth: 25,
+      percentWidth: 10,
       isSortable: true,
       render: ({ playbook_running }) => (
         <ItemBoolean

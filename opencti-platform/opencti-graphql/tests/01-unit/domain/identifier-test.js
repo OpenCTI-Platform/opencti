@@ -28,6 +28,7 @@ import {
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY,
 } from '../../../src/schema/stixDomainObject';
+import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_MUTEX, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../../../src/modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../../../src/modules/administrativeArea/administrativeArea-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
@@ -163,6 +164,29 @@ describe('identifier', () => {
     const aliasId = generateAliasesId(['SnowFlake'], { name: 'APT28', entity_type: ENTITY_TYPE_MALWARE }).at(0);
     expect(classicId).toEqual('malware--1bc77052-c136-5258-b95d-fc8117fba3fd');
     expect(classicId).toEqual(aliasId);
+  });
+
+  it('should software id be case-insensitive', () => {
+    // Software names must produce the same standard id regardless of their case
+    const lowerId = generateStandardId(ENTITY_SOFTWARE, { name: 'apache' });
+    const mixedId = generateStandardId(ENTITY_SOFTWARE, { name: 'Apache' });
+    const upperId = generateStandardId(ENTITY_SOFTWARE, { name: 'APACHE' });
+    expect(lowerId).toEqual(mixedId);
+    expect(lowerId).toEqual(upperId);
+    // Other discriminators (vendor, version, ...) must still be taken into account
+    const withVendor = generateStandardId(ENTITY_SOFTWARE, { name: 'Apache', vendor: 'Apache Foundation' });
+    expect(withVendor).not.toEqual(mixedId);
+  });
+
+  it('should file and mutex id remain case-sensitive', () => {
+    // File names must remain case-sensitive (e.g. Linux file systems are case-sensitive)
+    const fileLower = generateStandardId(ENTITY_HASHED_OBSERVABLE_STIX_FILE, { name: 'readme.md' });
+    const fileUpper = generateStandardId(ENTITY_HASHED_OBSERVABLE_STIX_FILE, { name: 'README.MD' });
+    expect(fileLower).not.toEqual(fileUpper);
+    // Mutex keeps its case too
+    const mutexLower = generateStandardId(ENTITY_MUTEX, { name: 'my-mutex' });
+    const mutexUpper = generateStandardId(ENTITY_MUTEX, { name: 'MY-MUTEX' });
+    expect(mutexLower).not.toEqual(mutexUpper);
   });
 
   it('should aliases filtered by rules', () => {

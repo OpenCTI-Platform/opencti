@@ -319,7 +319,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
             }}
           />
           <OpenVocabField
-            label={t_i18n('Information type')}
+            label={t_i18n('Request for information types')}
             type="request_for_information_types_ov"
             name="information_types"
             required={(mandatoryAttributes.includes('information_types'))}

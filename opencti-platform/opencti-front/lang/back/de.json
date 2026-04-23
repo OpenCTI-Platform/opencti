@@ -98,6 +98,7 @@
   "Built-in": "Eingebaut",
   "Button display name": "Anzeigename der Schaltfläche",
   "Can escalate privs": "Kann Privilegien eskalieren",
+  "canEnrollManually": "Verfügbar für manuelle Einschreibung",
   "Capabilities": "Fähigkeiten",
   "Capability order": "Reihenfolge der Fähigkeiten",
   "Card number": "Kartennummer",
@@ -447,6 +448,7 @@
   "Include inferences": "Schlussfolgerungen einbeziehen",
   "Included IDs": "Enthaltene IDs",
   "Index date": "Index Datum",
+  "Indicates whether multiple calls to add_expectations are expected for this work": "Gibt an, ob für diese Arbeit mehrere Aufrufe von add_expectations zu erwarten sind",
   "Indicator decay manager": "Indikator Abklingmanager",
   "Indicator filters": "Indikator-Filter",
   "Indicator observable types": "Indikator beobachtbare Typen",
@@ -459,7 +461,6 @@
   "Inference of targeting via a sighting": "Ableitung von Zielen über eine Sichtung",
   "Inference weight": "Inferenzgewicht",
   "Information": "Informationen",
-  "Information types": "Informationstypen",
   "Infrastructure types": "Arten von Infrastruktur",
   "Ingestion running": "Verschlucken läuft",
   "Ingestion state": "Einnahme-Status",
@@ -831,6 +832,8 @@
   "Representative": "Repräsentativ",
   "Request access data as json field": "Zugangsdaten als json-Feld anfordern",
   "Request access workflow": "Arbeitsablauf zur Beantragung des Zugangs",
+  "Request for information types": "Ersuchen um Informationstypen",
+  "Request for takedown types": "Ersuchen um Aufnahme von Informationen",
   "Resolves to": "Löst sich auf in",
   "Resource level": "Ressourcenniveau",
   "Restrict delete to its own entities": "Löschen auf eigene Entitäten beschränken",
@@ -927,7 +930,6 @@
   "SWID": "SWID",
   "Synchronized": "Synchronisiert",
   "Tags": "Tags",
-  "Takedown types": "Takedown-Typen",
   "Target entity": "Ziel-Entität",
   "Target entity type": "Ziel-Entitätstyp",
   "Target type": "Zieltyp",
@@ -1072,3 +1074,4 @@
   "XTM One registration manager": "XTM One Registrierungsmanager",
   "XTM1 CGU acceptance status": "XTM1 CGU-Annahmestatus"
 }
+

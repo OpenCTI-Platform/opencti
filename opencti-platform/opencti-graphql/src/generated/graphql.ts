@@ -50,6 +50,7 @@ import type { BasicStoreEntityAuthenticationProvider } from '../modules/authenti
 import type { BasicStoreEntityCustomView } from '../modules/customView/customView-types';
 import type { BasicStoreEntityTaxiiCollection } from '../modules/dataSharing/taxiiCollection-types';
 import type { BasicStoreEntityStreamCollection } from '../modules/dataSharing/streamCollection-types';
+import type { BasicStoreEntityRetentionRule } from '../modules/retentionRules/retentionRules-types';
 export type Maybe<T> = T | null | undefined;
 export type InputMaybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -19861,6 +19862,7 @@ export type MutationVulnerabilityEditArgs = {
 export type MutationWorkAddArgs = {
   connectorId: Scalars['String']['input'];
   friendlyName?: InputMaybe<Scalars['String']['input']>;
+  isMultiPartWork?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -23231,6 +23233,8 @@ export type PlayBookExecutionStep = {
 
 export type Playbook = BasicObject & InternalObject & {
   __typename?: 'Playbook';
+  created_at?: Maybe<Scalars['DateTime']['output']>;
+  creators?: Maybe<Array<Creator>>;
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -23243,6 +23247,7 @@ export type Playbook = BasicObject & InternalObject & {
   queue_messages: Scalars['Int']['output'];
   standard_id: Scalars['String']['output'];
   toConfigurationExport: Scalars['String']['output'];
+  updated_at?: Maybe<Scalars['DateTime']['output']>;
 };
 
 export type PlaybookAddInput = {
@@ -23301,8 +23306,10 @@ export type PlaybookInsertResult = {
 
 export enum PlaybooksOrdering {
   Score = '_score',
+  CreatedAt = 'created_at',
   Name = 'name',
-  PlaybookRunning = 'playbook_running'
+  PlaybookRunning = 'playbook_running',
+  UpdatedAt = 'updated_at'
 }
 
 export type Position = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
@@ -39509,11 +39516,11 @@ export type ResolversTypes = ResolversObject<{
   RequestAccessWorkflow: ResolverTypeWrapper<RequestAccessWorkflow>;
   RequestConnectorStatusInput: RequestConnectorStatusInput;
   ResolvedInstanceFilter: ResolverTypeWrapper<ResolvedInstanceFilter>;
-  RetentionRule: ResolverTypeWrapper<RetentionRule>;
+  RetentionRule: ResolverTypeWrapper<BasicStoreEntityRetentionRule>;
   RetentionRuleAddInput: RetentionRuleAddInput;
-  RetentionRuleConnection: ResolverTypeWrapper<RetentionRuleConnection>;
-  RetentionRuleEdge: ResolverTypeWrapper<RetentionRuleEdge>;
-  RetentionRuleEditMutations: ResolverTypeWrapper<RetentionRuleEditMutations>;
+  RetentionRuleConnection: ResolverTypeWrapper<Omit<RetentionRuleConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['RetentionRuleEdge']>>> }>;
+  RetentionRuleEdge: ResolverTypeWrapper<Omit<RetentionRuleEdge, 'node'> & { node: ResolversTypes['RetentionRule'] }>;
+  RetentionRuleEditMutations: ResolverTypeWrapper<Omit<RetentionRuleEditMutations, 'fieldPatch'> & { fieldPatch?: Maybe<ResolversTypes['RetentionRule']> }>;
   RetentionRuleOrdering: RetentionRuleOrdering;
   RetentionRuleScope: RetentionRuleScope;
   RetentionUnit: RetentionUnit;
@@ -40510,11 +40517,11 @@ export type ResolversParentTypes = ResolversObject<{
   RequestAccessWorkflow: RequestAccessWorkflow;
   RequestConnectorStatusInput: RequestConnectorStatusInput;
   ResolvedInstanceFilter: ResolvedInstanceFilter;
-  RetentionRule: RetentionRule;
+  RetentionRule: BasicStoreEntityRetentionRule;
   RetentionRuleAddInput: RetentionRuleAddInput;
-  RetentionRuleConnection: RetentionRuleConnection;
-  RetentionRuleEdge: RetentionRuleEdge;
-  RetentionRuleEditMutations: RetentionRuleEditMutations;
+  RetentionRuleConnection: Omit<RetentionRuleConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['RetentionRuleEdge']>>> };
+  RetentionRuleEdge: Omit<RetentionRuleEdge, 'node'> & { node: ResolversParentTypes['RetentionRule'] };
+  RetentionRuleEditMutations: Omit<RetentionRuleEditMutations, 'fieldPatch'> & { fieldPatch?: Maybe<ResolversParentTypes['RetentionRule']> };
   RfiRequestAccessConfiguration: Omit<RfiRequestAccessConfiguration, 'configuration'> & { configuration?: Maybe<ResolversParentTypes['RequestAccessConfiguration']> };
   Role: Omit<Role, 'capabilities' | 'capabilitiesInDraft' | 'editContext'> & { capabilities?: Maybe<Array<Maybe<ResolversParentTypes['Capability']>>>, capabilitiesInDraft?: Maybe<Array<Maybe<ResolversParentTypes['Capability']>>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>> };
   RoleAddInput: RoleAddInput;
@@ -46911,7 +46918,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   vocabularyFieldPatch?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyFieldPatchArgs, 'id' | 'input'>>;
   vulnerabilityAdd?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, RequireFields<MutationVulnerabilityAddArgs, 'input'>>;
   vulnerabilityEdit?: Resolver<Maybe<ResolversTypes['VulnerabilityEditMutations']>, ParentType, ContextType, RequireFields<MutationVulnerabilityEditArgs, 'id'>>;
-  workAdd?: Resolver<ResolversTypes['Work'], ParentType, ContextType, RequireFields<MutationWorkAddArgs, 'connectorId'>>;
+  workAdd?: Resolver<ResolversTypes['Work'], ParentType, ContextType, RequireFields<MutationWorkAddArgs, 'connectorId' | 'isMultiPartWork'>>;
   workDelete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationWorkDeleteArgs, 'connectorId'>>;
   workEdit?: Resolver<Maybe<ResolversTypes['WorkEditMutations']>, ParentType, ContextType, RequireFields<MutationWorkEditArgs, 'id'>>;
   workspaceAdd?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceAddArgs, 'input'>>;
@@ -47976,6 +47983,8 @@ export type PlayBookExecutionStepResolvers<ContextType = any, ParentType extends
 }>;
 
 export type PlaybookResolvers<ContextType = any, ParentType extends ResolversParentTypes['Playbook'] = ResolversParentTypes['Playbook']> = ResolversObject<{
+  created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -47988,6 +47997,7 @@ export type PlaybookResolvers<ContextType = any, ParentType extends ResolversPar
   queue_messages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

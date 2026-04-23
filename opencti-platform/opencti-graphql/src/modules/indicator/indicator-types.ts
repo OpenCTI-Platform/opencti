@@ -3,6 +3,8 @@ import type { StixKillChainPhase } from '../../types/stix-2-1-smo';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { DecayHistory } from '../decayRule/decayRule-domain';
+import type { StixDomainObject as StixDomainObject2, StixDate as StixDate2 } from '../../types/stix-2-0-common';
+import type { StixInternalKillChainPhase } from '../../types/stix-2-0-smo';
 
 export const ENTITY_TYPE_INDICATOR = 'Indicator';
 
@@ -83,3 +85,21 @@ export interface StoreEntityIndicator extends StoreEntity {
   decay_base_score: number;
   decay_base_score_date: Date;
 }
+
+// region Stix 2.0 type
+export interface Stix2Indicator extends StixDomainObject2 {
+  name: string;
+  description: string;
+  indicator_types: Array<string>;
+  pattern: string;
+  pattern_type: string;
+  pattern_version: string;
+  valid_from: StixDate2;
+  valid_until: StixDate2;
+  kill_chain_phases: Array<StixInternalKillChainPhase>;
+  x_opencti_score: number;
+  x_opencti_detection: boolean;
+  x_opencti_main_observable_type: string;
+  x_mitre_platforms: Array<string>;
+}
+// endregion

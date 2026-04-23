@@ -17,6 +17,7 @@ export const PLAYBOOK_MANAGER = 'PLAYBOOK_MANAGER';
 export const INDICATOR_DECAY_MANAGER = 'INDICATOR_DECAY_MANAGER';
 export const TELEMETRY_MANAGER = 'TELEMETRY_MANAGER';
 export const GARBAGE_COLLECTION_MANAGER = 'GARBAGE_COLLECTION_MANAGER';
+export const TIPTAP_EDITOR = 'TIPTAP_EDITOR';
 
 export interface ModuleHelper {
   isModuleEnable: (id: string) => boolean;
@@ -37,6 +38,7 @@ export interface ModuleHelper {
   generateDisableMessage: (manager: string) => string;
   isRequestAccessEnabled: () => boolean;
   isChatbotAiEnabled: () => boolean;
+  isTiptapEditorEnable: () => boolean;
 }
 
 export const isFeatureEnable = (
@@ -88,6 +90,7 @@ const platformModuleHelper = (
   generateDisableMessage: (id: string) => (!isModuleEnable(settings, id) ? DISABLE_MANAGER_MESSAGE : ''),
   isRequestAccessEnabled: () => settings.request_access_enabled,
   isChatbotAiEnabled: () => settings.filigran_chatbot_ai_cgu_status === 'enabled',
+  isTiptapEditorEnable: () => isFeatureEnable(settings, TIPTAP_EDITOR),
 });
 
 export default platformModuleHelper;

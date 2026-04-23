@@ -37,6 +37,7 @@ import {
 import { executePlaybookOnEntity, playbookStepExecution } from '../../manager/playbookManager/playbookManager';
 import { getLastPlaybookExecutions } from '../../database/redis';
 import { getConnectorQueueSize } from '../../database/rabbitmq';
+import { loadCreators } from '../../database/members';
 
 const playbookResolvers: Resolvers = {
   Query: {
@@ -48,6 +49,7 @@ const playbookResolvers: Resolvers = {
     playbookComponents: (_, __, context) => availableComponents(context),
   },
   Playbook: {
+    creators: async (current, _, context) => loadCreators(context, context.user, current),
     playbook_definition: async (current, _, context) => getPlaybookDefinition(context, current),
     last_executions: async (current) => getLastPlaybookExecutions(current.id),
     queue_messages: async (current, _, context) => getConnectorQueueSize(context, context.user, current.id),

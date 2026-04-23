@@ -98,6 +98,7 @@
   "Built-in": "設定",
   "Button display name": "ボタン表示名",
   "Can escalate privs": "特権をエスカレートできる",
+  "canEnrollManually": "マニュアル登録が可能",
   "Capabilities": "脅威行為者のタイプ",
   "Capability order": "能力順",
   "Card number": "カード番号",
@@ -447,6 +448,7 @@
   "Include inferences": "推論を含む",
   "Included IDs": "含まれるID",
   "Index date": "添付ファイル",
+  "Indicates whether multiple calls to add_expectations are expected for this work": "この作品に複数のadd_expectationsの呼び出しが予想されるかどうかを示す。",
   "Indicator decay manager": "インジケーター・ディケイ・マネージャー",
   "Indicator filters": "インジケーターフィルター",
   "Indicator observable types": "インジケータの観測可能なタイプ",
@@ -459,7 +461,6 @@
   "Inference of targeting via a sighting": "目撃情報によるターゲットの推測",
   "Inference weight": "推論の重み",
   "Information": "最終更新日",
-  "Information types": "テイクダウンの種類",
   "Infrastructure types": "インフラの種類",
   "Ingestion running": "コレクション",
   "Ingestion state": "摂取状態",
@@ -831,6 +832,8 @@
   "Representative": "代表者",
   "Request access data as json field": "アクセスデータをjsonフィールドでリクエスト",
   "Request access workflow": "リクエストアクセスワークフロー",
+  "Request for information types": "資料請求の種類",
+  "Request for takedown types": "削除要請の種類",
   "Resolves to": "に解決する",
   "Resource level": "主な動機",
   "Restrict delete to its own entities": "削除を自身のエンティティに制限する",
@@ -927,7 +930,6 @@
   "SWID": "SWID",
   "Synchronized": "同期",
   "Tags": "調査対象",
-  "Takedown types": "タスク",
   "Target entity": "ターゲットエンティティ",
   "Target entity type": "対象エンティティタイプ",
   "Target type": "ターゲットタイプ",
@@ -1072,3 +1074,4 @@
   "XTM One registration manager": "XTM One登録マネージャー",
   "XTM1 CGU acceptance status": "XTM1 CGU受入状況"
 }
+

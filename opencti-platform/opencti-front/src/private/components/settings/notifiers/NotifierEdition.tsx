@@ -6,7 +6,7 @@ import JsonForm from '@rjsf/mui';
 import type { RJSFSchema } from '@rjsf/utils';
 import { Field, Form, Formik } from 'formik';
 import { FormikHelpers } from 'formik/dist/types';
-import React, { createRef, FunctionComponent, useRef, useState } from 'react';
+import React, { FunctionComponent, useRef, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
@@ -102,7 +102,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const formRef = createRef<CoreForm>();
+  const formRef = useRef<CoreForm>(null);
 
   const [open, setOpen] = useState(false);
 

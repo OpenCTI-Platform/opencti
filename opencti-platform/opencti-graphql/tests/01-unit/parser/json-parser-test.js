@@ -36,14 +36,17 @@ describe('JSON mapper testing', () => {
   it('should cisa correctly parsed', async () => {
     const objects = await jsonMappingExecution(testContext, ADMIN_USER, cisa_data, cisa_mapper);
     const { mapById, mapByType, mapByFromAndTo } = buildMaps(objects);
-    expect(objects.length).toBe(3556);
+    // Note: Software standard_id generation is now case-insensitive on name,
+    // so case-variant duplicates in the CISA fixture collapse into a single
+    // Software entity (hence -2 softwares and -2 relationships vs previous counts).
+    expect(objects.length).toBe(3552);
     expect(mapByType.get('marking-definition').length).toBe(1);
     expect(mapByType.get('identity').length).toBe(1);
-    expect(mapByType.get('software').length).toBe(528);
+    expect(mapByType.get('software').length).toBe(526);
     expect(mapByType.get('vulnerability').length).toBe(1249);
-    expect(mapByType.get('relationship').length).toBe(1777);
-    // Test software binding
-    const software = mapById.get('software--bd1130d6-ada7-594b-b54f-c0db8c814978');
+    expect(mapByType.get('relationship').length).toBe(1775);
+    // Test software binding (id depends on the lower-cased name).
+    const software = mapById.get('software--a71e777c-aa42-5279-ae89-785d9e414693');
     expect(software.name).toBe('Windows');
     expect(software.vendor).toBe('Microsoft');
     // Test vulnerability binding

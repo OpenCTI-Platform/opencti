@@ -90,7 +90,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(INDIVIDUAL_TYPE);
   const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().min(2),
+    name: Yup.string().min(1),
     description: Yup.string()
       .nullable(),
     confidence: Yup.number().nullable(),

@@ -10,6 +10,7 @@ import './static/css/timerange.css';
 import 'ckeditor5/ckeditor5.css';
 import './static/css/CKEditorDark.css';
 import './static/css/CKEditorLight.css';
+import './static/css/TiptapEditor.css';
 import 'react-grid-layout/css/styles.css';
 import 'react-mde/lib/styles/css/react-mde-all.css';
 import '@filigran/chatbot/styles.css';

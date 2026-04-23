@@ -93,6 +93,11 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   let { description, contentField } = containerData;
+  const [draftContent, setDraftContent] = useState(contentField || '');
+  useEffect(() => {
+    // Reset local draft only when switching to another object.
+    setDraftContent(containerData.contentField || '');
+  }, [containerData.id]);
   const [navOpen, setNavOpen] = useState(
     localStorage.getItem('navOpen') === 'true',
   );
@@ -196,7 +201,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
       (match) => `=${suggested ? 'b' : ''}=${matchCase(mappedString, match)}==`,
     );
     const contentRegex = new RegExp(`\\b(${escapedMappedString})\\b`, 'gi');
-    contentField = (contentField || '').replace(
+    contentField = (draftContent || contentField || '').replace(
       contentRegex,
       (match) => `<mark class="${markClass}">${matchCase(mappedString, match)}</mark>`,
     );
@@ -212,7 +217,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
 
   const initialValues = {
     description: description || '',
-    content: contentField || '',
+    content: draftContent || contentField || '',
   };
 
   if (currentMode === 'content') {
@@ -237,12 +242,12 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
             />
           </>
         )}
-        {isNotEmptyField(contentField) && (
+        {isNotEmptyField(draftContent || contentField) && (
           <>
             <Typography variant="h3" gutterBottom={true} style={{ marginTop: isNotEmptyField(description) ? 20 : 0 }}>
               {t_i18n('Content')}
             </Typography>
-            <HtmlDisplay content={contentField} />
+            <HtmlDisplay content={draftContent || contentField || null} />
           </>
         )}
       </div>
@@ -293,6 +298,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
               fullWidth
               onSubmit={handleSubmitField}
               onTextSelection={handleTextSelection}
+              onChange={(_name: string, value: string) => setDraftContent(value)}
               askAi={askAi}
               disabled={!editionMode}
               style={{

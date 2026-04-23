@@ -18,7 +18,6 @@ import StixCoreObjectsWordCloud from '@components/common/stix_core_objects/StixC
 import type { Widget } from '../../../../utils/widget/widget';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../../utils/Time';
 import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
-import { Box } from '@mui/material';
 
 interface DashboardEntitiesVizProps {
   widget: Widget;
@@ -70,12 +69,14 @@ const DashboardEntitiesViz = ({
     case 'number':
       return (
         <StixCoreObjectsNumber
+          variant={undefined}
+          height={undefined}
           endDate={endDate}
           startDate={startDate}
           dataSelection={dataSelection}
           entityType={undefined} // because calling js component in ts
           parameters={widget.parameters as object} // because calling js component in ts
-          popover={<Box mr={-2}>{popover}</Box>}
+          popover={popover}
         />
       );
     case 'list':

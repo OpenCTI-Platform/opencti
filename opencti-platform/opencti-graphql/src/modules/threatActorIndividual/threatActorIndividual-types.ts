@@ -18,7 +18,7 @@ export interface BasicStoreEntityThreatActorIndividual extends BasicStoreEntity 
   goals: string[];
   sophistication: string;
   resource_level: string;
-  primary_motivations: string;
+  primary_motivation: string;
   secondary_motivations: string[];
   personal_motivations: string[];
   date_of_birth: Date;
@@ -44,7 +44,7 @@ export interface StoreEntityThreatActorIndividual extends StoreEntity {
   goals: string[];
   sophistication: string;
   resource_level: string;
-  primary_motivations: string;
+  primary_motivation: string;
   secondary_motivations: string[];
   personal_motivations: string[];
   date_of_birth: Date;
@@ -83,7 +83,7 @@ export interface StixThreatActorIndividual extends StixContainer {
   goals: string[];
   sophistication: string;
   resource_level: string;
-  primary_motivations: string;
+  primary_motivation: string;
   secondary_motivations: string[];
   personal_motivations: string[];
   extensions: {

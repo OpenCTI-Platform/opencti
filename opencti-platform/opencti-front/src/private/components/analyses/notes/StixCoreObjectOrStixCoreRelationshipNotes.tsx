@@ -6,18 +6,13 @@ import StixCoreObjectOrStixCoreRelationshipNotesCards, { stixCoreObjectOrStixCor
 import { NotesOrdering, OrderingMode, StixCoreObjectOrStixCoreRelationshipNotesCardsQuery } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
 import { GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
+import { DefaultMarking } from './../../settings/marking_definitions/markingDefinition.types';
 
 interface StixCoreObjectOrStixCoreRelationshipNotesProps {
   stixCoreObjectOrStixCoreRelationshipId: string;
   marginTop?: number;
   isRelationship?: boolean;
-  readonly defaultMarkings?: readonly {
-    readonly definition: string | null | undefined;
-    readonly definition_type: string | null | undefined;
-    readonly id: string;
-    readonly x_opencti_color: string | null | undefined;
-    readonly x_opencti_order?: number;
-  }[];
+  readonly defaultMarkings?: readonly DefaultMarking[];
 }
 
 const StixCoreObjectOrStixCoreRelationshipNotes: FunctionComponent<StixCoreObjectOrStixCoreRelationshipNotesProps> = ({

@@ -17,6 +17,7 @@ import ReactMde from 'react-mde';
 import { graphql, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 
+import RichTextEditor from '../../components/RichTextEditor';
 import CKEditor from '../../components/CKEditor';
 import { useFormatter } from '../../components/i18n';
 import MarkdownDisplay from '../../components/MarkdownDisplay';
@@ -27,6 +28,7 @@ import type { AgentAction } from '../../private/components/common/form/TextField
 // and in legacy mode ResponseDialog embeds TextFieldAskAI for follow-up actions.
 import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI';
 import useAI from '../hooks/useAI';
+import useHelper from '../hooks/useHelper';
 
 // region types
 
@@ -148,6 +150,8 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const { t_i18n } = useFormatter();
   const [markdownSelectedTab, setMarkdownSelectedTab] = useState<'write' | 'preview' | undefined>('write');
   const { fullyActive } = useAI();
+  const { isTiptapEditorEnable } = useHelper();
+  const tiptapEnabled = isTiptapEditorEnable();
   const isLegacyMode = !agentMode;
 
   // Agent mode state (XTM One path)
@@ -251,10 +255,11 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         markdownFieldRef.current.scrollTop = markdownFieldRef.current.scrollHeight;
       }
     } else if (format === 'html') {
-      const elementCkEditor = document.querySelector(
-        '.ck-content.ck-editor__editable.ck-editor__editable_inline',
-      );
-      elementCkEditor?.lastElementChild?.scrollIntoView();
+      const selector = tiptapEnabled
+        ? '.tiptap-editor-content.ProseMirror'
+        : '.ck-content.ck-editor__editable.ck-editor__editable_inline';
+      const elementEditor = document.querySelector(selector);
+      elementEditor?.lastElementChild?.scrollIntoView();
     }
     return setContent(newContent ?? '');
   };
@@ -355,7 +360,17 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
           } : undefined}
         />
       )}
-      {format === 'html' && (
+      {format === 'html' && tiptapEnabled && (
+        <RichTextEditor
+          id="response-dialog-editor"
+          data={content}
+          onChange={(_, adapter) => {
+            setContent(adapter.getData());
+          }}
+          disabled={effectiveDisabled}
+        />
+      )}
+      {format === 'html' && !tiptapEnabled && (
         <CKEditor
           id="response-dialog-editor"
           data={content}

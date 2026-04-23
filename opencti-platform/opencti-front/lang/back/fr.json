@@ -98,6 +98,7 @@
   "Built-in": "Intégré",
   "Button display name": "Nom d'affichage du bouton",
   "Can escalate privs": "Peut escalader les privilèges",
+  "canEnrollManually": "Disponible pour l'inscription manuelle",
   "Capabilities": "Capacités",
   "Capability order": "Ordre de capacité",
   "Card number": "Numéro de carte",
@@ -447,6 +448,7 @@
   "Include inferences": "Inclure les inférences",
   "Included IDs": "ID inclus",
   "Index date": "Date d'indexation",
+  "Indicates whether multiple calls to add_expectations are expected for this work": "Indique si plusieurs appels à add_expectations sont prévus pour ce travail",
   "Indicator decay manager": "Gestionnaire de la décroissance de l'indicateur",
   "Indicator filters": "Filtres indicateurs",
   "Indicator observable types": "Types d'indicateurs observables",
@@ -459,7 +461,6 @@
   "Inference of targeting via a sighting": "Déduction du ciblage à partir d'une observation",
   "Inference weight": "Poids d'inférence",
   "Information": "Informations",
-  "Information types": "Types d'informations",
   "Infrastructure types": "Types d'infrastructures",
   "Ingestion running": "Ingestion en cours",
   "Ingestion state": "État d'ingestion",
@@ -831,6 +832,8 @@
   "Representative": "Représentant",
   "Request access data as json field": "Demande de données d'accès en tant que champ json",
   "Request access workflow": "Demande d'accès",
+  "Request for information types": "Types de demande d'information",
+  "Request for takedown types": "Types de demande de retrait",
   "Resolves to": "Se résout en",
   "Resource level": "Niveau de ressources",
   "Restrict delete to its own entities": "Restreindre la suppression à ses propres entités",
@@ -927,7 +930,6 @@
   "SWID": "SWID",
   "Synchronized": "Synchronisé",
   "Tags": "Tags",
-  "Takedown types": "Types d'informations",
   "Target entity": "Entité cible",
   "Target entity type": "Type d'entité cible",
   "Target type": "Type cible",
@@ -1072,3 +1074,4 @@
   "XTM One registration manager": "Gestionnaire d'enregistrement XTM One",
   "XTM1 CGU acceptance status": "XTM1 Statut d'acceptation des CGU"
 }
+

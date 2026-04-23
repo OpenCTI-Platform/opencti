@@ -40,6 +40,7 @@ const XtmHubSettingsComponent = () => {
   const { settings: xtmHubSettings } = useLazyLoadQuery<XtmHubSettingsQuery>(
     xtmHubSettingsQuery,
     {},
+    { fetchPolicy: 'network-only' },
   );
   const isGrantedToXtmHub = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const { isXTMHubAccessible } = useContext(UserContext);

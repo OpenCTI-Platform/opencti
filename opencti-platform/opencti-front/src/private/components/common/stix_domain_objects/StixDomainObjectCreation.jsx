@@ -127,12 +127,20 @@ const sharedUpdater = (
   const userProxy = store.get(userId);
   const params = { ...paginationOptions };
   delete params.count;
+  delete params.id;
   const conn = ConnectionHandler.getConnection(
     userProxy,
     paginationKey,
     params,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
+  const pageInfo = conn.getLinkedRecord('pageInfo');
+  if (pageInfo) {
+    const globalCount = pageInfo.getValue('globalCount');
+    if (Number.isInteger(globalCount)) {
+      pageInfo.setValue(globalCount + 1, 'globalCount');
+    }
+  }
 };
 
 const buildEntityTypes = (t, queryData, stixDomainObjectTypes) => {

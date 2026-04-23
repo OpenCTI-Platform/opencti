@@ -311,7 +311,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
             }}
           />
           <OpenVocabField
-            label={t_i18n('Takedown type')}
+            label={t_i18n('Request for takedown types')}
             type="request_for_takedown_types_ov"
             name="takedown_types"
             required={(mandatoryAttributes.includes('takedown_types'))}

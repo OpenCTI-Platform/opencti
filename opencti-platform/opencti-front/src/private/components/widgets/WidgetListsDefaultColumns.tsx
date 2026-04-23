@@ -77,7 +77,7 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   'Case-Rfi': [
     { attribute: 'priority' },
     { attribute: 'severity', label: 'Severity' },
-    { attribute: 'information_types', label: 'Information type' },
+    { attribute: 'information_types', label: 'Request for information types' },
     { attribute: 'objectAssignee' },
     { attribute: 'objectParticipant' },
     { attribute: 'container_content', label: 'Content' },
@@ -85,7 +85,7 @@ const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   'Case-Rft': [
     { attribute: 'priority' },
     { attribute: 'severity', label: 'Severity' },
-    { attribute: 'takedown_types', label: 'Takedown type' },
+    { attribute: 'takedown_types', label: 'Request for takedown types' },
     { attribute: 'objectAssignee' },
     { attribute: 'objectParticipant' },
     { attribute: 'container_content', label: 'Content' },

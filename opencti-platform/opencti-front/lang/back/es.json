@@ -98,6 +98,7 @@
   "Built-in": "Construido en",
   "Button display name": "Nombre de visualización del botón",
   "Can escalate privs": "Puede escalar privilegios",
+  "canEnrollManually": "Disponible para inscripción manual",
   "Capabilities": "Capacidades",
   "Capability order": "Orden de capacidad",
   "Card number": "Número de tarjeta",
@@ -447,6 +448,7 @@
   "Include inferences": "Incluir inferencias",
   "Included IDs": "IDs incluidos",
   "Index date": "Fecha índice",
+  "Indicates whether multiple calls to add_expectations are expected for this work": "Indica si se esperan múltiples llamadas a add_expectations para este trabajo",
   "Indicator decay manager": "Indicador gestor de decaimiento",
   "Indicator filters": "Filtros indicadores",
   "Indicator observable types": "Indicador de tipos observables",
@@ -459,7 +461,6 @@
   "Inference of targeting via a sighting": "Inferencia de objetivos a través de un avistamiento",
   "Inference weight": "Peso de inferencia",
   "Information": "Información",
-  "Information types": "Tipos de información",
   "Infrastructure types": "Tipos de infraestructuras",
   "Ingestion running": "Ingestión en curso",
   "Ingestion state": "Estado de ingestión",
@@ -831,6 +832,8 @@
   "Representative": "Representante",
   "Request access data as json field": "Solicitar datos de acceso como campo json",
   "Request access workflow": "Solicitar flujo de trabajo de acceso",
+  "Request for information types": "Tipos de solicitud de información",
+  "Request for takedown types": "Tipos de solicitud de retirada",
   "Resolves to": "Resuelve a",
   "Resource level": "Nivel de recursos",
   "Restrict delete to its own entities": "Restringir la eliminación a sus propias entidades",
@@ -927,7 +930,6 @@
   "SWID": "SWID",
   "Synchronized": "Sincronizado",
   "Tags": "Etiquetas",
-  "Takedown types": "Tipos de retirada",
   "Target entity": "Entidad de destino",
   "Target entity type": "Tipo de entidad de destino",
   "Target type": "Tipo de destino",
@@ -1072,3 +1074,4 @@
   "XTM One registration manager": "Gestor de inscripciones XTM One",
   "XTM1 CGU acceptance status": "XTM1 Estado de aceptación de la UGC"
 }
+

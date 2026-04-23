@@ -8,6 +8,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 const depsToOptimize = [
   "@analytics/google-analytics",
   "@ckeditor/ckeditor5-react",
+  "@tiptap/react",
   "@hello-pangea/dnd",
   "@mui/icons-material",
   "@mui/icons-material/ArrowForwardIosSharp",
@@ -124,6 +125,9 @@ const depsToOptimize = [
   "ckeditor5/translations/ja.js",
   "ckeditor5/translations/ko.js",
   "ckeditor5/translations/zh.js",
+  "@tiptap/core",
+  "@tiptap/react",
+  "@tiptap/starter-kit",
   "classnames",
   "convert",
   "date-fns",
@@ -168,7 +172,14 @@ const depsToOptimize = [
   "use-analytics",
   "uuid",
   "d3-scale",
-  "react-compound-slider"
+  "react-compound-slider",
+  "graphiql",
+  "@graphiql/toolkit",
+  "monaco-editor",
+  "monaco-graphql",
+  "monaco-editor/esm/vs/editor/editor.worker.js",
+  "monaco-editor/esm/vs/language/json/json.worker.js",
+  "monaco-graphql/esm/graphql.worker.js",
  ];
 
 const logger = createLogger();

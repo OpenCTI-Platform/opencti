@@ -247,15 +247,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value);
     },
   },
-  creators: {
-    id: 'creators',
-    label: 'Creators',
-    percentWidth: 12,
-    render: ({ creators }) => {
-      const value = creators?.map((c: { name: string }) => c.name);
-      return defaultRender(value);
-    },
-  },
   coverage_information: {
     label: 'Coverage',
     percentWidth: 12,
@@ -548,7 +539,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   },
   information_types: {
     id: 'information_types',
-    label: 'Information type',
+    label: 'Request for information types',
     percentWidth: 9,
     isSortable: true,
     render: (
@@ -1128,7 +1119,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   },
   takedown_types: {
     id: 'takedown_types',
-    label: 'Takedown type',
+    label: 'Request for takedown types',
     percentWidth: 9,
     isSortable: true,
     render: (

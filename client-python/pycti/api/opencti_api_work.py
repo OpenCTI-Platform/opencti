@@ -179,28 +179,56 @@ class OpenCTIApiWork:
             except Exception:
                 self.api.app_logger.error("Cannot add draft context")
 
-    def initiate_work(self, connector_id: str, friendly_name: str) -> Optional[str]:
+    def initiate_work(
+        self,
+        connector_id: str,
+        friendly_name: str,
+        is_multipart: bool = False,
+    ) -> Optional[str]:
         """Initiate a new work for a connector.
 
-        :param connector_id: the connector id
-        :type connector_id: str
-        :param friendly_name: the friendly name for the work
-        :type friendly_name: str
-        :return: the work id or None if bundle_send_to_queue is False
+        :param connector_id:    the connector id
+        :type connector_id:     str
+        :param friendly_name:   the friendly name for the work
+        :type friendly_name:    str
+        :param is_multipart:    indicates whether multiple calls to `add_expectations`
+                                are to be expected during the lifetime of the work.
+                                In consequence the work won't automatically
+                                transition to `complete` when the number of calls
+                                to `report_expectation` matches the expectations
+                                but only when an explicit call to `to_processed`
+                                is made.
+                                Should be set to `True` when sending multiple
+                                STIX bundles consecutively via `send_stix2_bundle`
+                                during the work's lifetime.
+                                Defaults to `False`.
+        :type is_multipart:     bool
+        :return:                the work id or None if bundle_send_to_queue is False
         :rtype: str or None
         """
         if self.api.bundle_send_to_queue:
-            self.api.app_logger.info("Initiate work", {"connector_id": connector_id})
+            self.api.app_logger.info(
+                "Initiate work",
+                {
+                    "connector_id": connector_id,
+                    "friendly_name": friendly_name,
+                    "is_multipart": is_multipart,
+                },
+            )
             query = """
-                mutation workAdd($connectorId: String!, $friendlyName: String) {
-                    workAdd(connectorId: $connectorId, friendlyName: $friendlyName) {
+                mutation workAdd($connectorId: String!, $friendlyName: String, $isMultiPartWork: Boolean) {
+                    workAdd(connectorId: $connectorId, friendlyName: $friendlyName, isMultiPartWork: $isMultiPartWork) {
                       id
                     }
                 }
                """
             work = self.api.query(
                 query,
-                {"connectorId": connector_id, "friendlyName": friendly_name},
+                {
+                    "connectorId": connector_id,
+                    "friendlyName": friendly_name,
+                    "isMultiPartWork": is_multipart,
+                },
                 True,
             )
             return work["data"]["workAdd"]["id"]

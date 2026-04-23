@@ -55,3 +55,14 @@ export interface StixRelationshipObject extends StixObject {
   external_references?: Array<StixInternalExternalReference>; // optional
   object_marking_refs?: Array<StixId>; // optional
 }
+
+// SCO
+export interface StixCyberObject extends StixObject {
+  defanged: boolean;
+  object_marking_refs: Array<StixId>;
+  x_opencti_score: number;
+  x_opencti_description: string;
+  x_opencti_labels: Array<string>;
+  x_opencti_created_by_ref: StixId | undefined;
+  x_opencti_external_references: Array<StixInternalExternalReference>;
+}

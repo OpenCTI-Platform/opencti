@@ -60,6 +60,11 @@ In the platform, it is always possible to visualize the list of entities and/or 
 
 ![Entities](assets/entities.png)
 
+When adding entities in a container, instead of selecting existing entities, you can also create them on the fly. This is useful to quickly build a container with all the relevant information.
+Note that when creating an entity within the context of a container, the markings field in the creation form will be automatically pre-populated with the markings of the container.
+
+![Add entities in a container](assets/container-add-entities.png)
+
 As containers can also contain relationships, which are generally linked to the other entities in the container, it is also possible to visualize the container as a graph (`Container > Knowledge`)
 
 ![Graph](assets/graph.png)

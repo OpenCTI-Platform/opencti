@@ -98,6 +98,7 @@
   "Built-in": "Встроенный",
   "Button display name": "Имя отображения кнопки",
   "Can escalate privs": "Может повышать привилегии",
+  "canEnrollManually": "Доступно для ручного зачисления",
   "Capabilities": "Возможности",
   "Capability order": "Порядок возможностей",
   "Card number": "Номер карты",
@@ -447,6 +448,7 @@
   "Include inferences": "Включите умозаключения",
   "Included IDs": "Включенные идентификаторы",
   "Index date": "Дата индекса",
+  "Indicates whether multiple calls to add_expectations are expected for this work": "Указывает, ожидается ли несколько вызовов add_expectations для этой работы",
   "Indicator decay manager": "Менеджер по распаду индикаторов",
   "Indicator filters": "Индикаторные фильтры",
   "Indicator observable types": "Наблюдаемые типы индикаторов",
@@ -459,7 +461,6 @@
   "Inference of targeting via a sighting": "Вывод о целеуказании по наблюдению",
   "Inference weight": "Вес вывода",
   "Information": "Информация",
-  "Information types": "Типы информации",
   "Infrastructure types": "Типы инфраструктуры",
   "Ingestion running": "Приём данных выполняется",
   "Ingestion state": "Состояние приема данных",
@@ -831,6 +832,8 @@
   "Representative": "Представитель",
   "Request access data as json field": "Запрос данных доступа в виде json-поля",
   "Request access workflow": "Рабочий процесс запроса доступа",
+  "Request for information types": "Запрос на информацию",
+  "Request for takedown types": "Типы запросов на отмену",
   "Resolves to": "Разрешается в",
   "Resource level": "Уровень ресурсов",
   "Restrict delete to its own entities": "Ограничить удаление собственными подразделениями",
@@ -927,7 +930,6 @@
   "SWID": "SWID",
   "Synchronized": "Синхронизированный",
   "Tags": "Теги",
-  "Takedown types": "Виды тейкдаунов",
   "Target entity": "Целевая организация",
   "Target entity type": "Тип целевой сущности",
   "Target type": "Тип цели",
@@ -1072,3 +1074,4 @@
   "XTM One registration manager": "Менеджер регистрации XTM One",
   "XTM1 CGU acceptance status": "Статус принятия XTM1 CGU"
 }
+

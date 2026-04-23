@@ -7,53 +7,53 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
-import CardNumber from '../../../../components/common/card/CardNumber';
+import WidgetNumber from '../../../../components/dashboard/WidgetNumber';
 
 const stixRelationshipsNumberNumberQuery = graphql`
-  query StixRelationshipsNumberNumberSeriesQuery(
-    $dateAttribute: String
-    $noDirection: Boolean
-    $endDate: DateTime
-    $onlyInferred: Boolean
-    $fromOrToId: [String]
-    $elementWithTargetTypes: [String]
-    $fromId: [String]
-    $fromRole: String
-    $fromTypes: [String]
-    $toId: [String]
-    $toRole: String
-    $toTypes: [String]
-    $relationship_type: [String]
-    $confidences: [Int]
-    $search: String
-    $filters: FilterGroup
-    $dynamicFrom: FilterGroup
-    $dynamicTo: FilterGroup
-  ) {
-    stixRelationshipsNumber(
-      dateAttribute: $dateAttribute
-      noDirection: $noDirection
-      endDate: $endDate
-      onlyInferred: $onlyInferred
-      fromOrToId: $fromOrToId
-      elementWithTargetTypes: $elementWithTargetTypes
-      fromId: $fromId
-      fromRole: $fromRole
-      fromTypes: $fromTypes
-      toId: $toId
-      toRole: $toRole
-      toTypes: $toTypes
-      relationship_type: $relationship_type
-      confidences: $confidences
-      search: $search
-      filters: $filters
-      dynamicFrom: $dynamicFrom
-      dynamicTo: $dynamicTo
+    query StixRelationshipsNumberNumberSeriesQuery(
+        $dateAttribute: String
+        $noDirection: Boolean
+        $endDate: DateTime
+        $onlyInferred: Boolean
+        $fromOrToId: [String]
+        $elementWithTargetTypes: [String]
+        $fromId: [String]
+        $fromRole: String
+        $fromTypes: [String]
+        $toId: [String]
+        $toRole: String
+        $toTypes: [String]
+        $relationship_type: [String]
+        $confidences: [Int]
+        $search: String
+        $filters: FilterGroup
+        $dynamicFrom: FilterGroup
+        $dynamicTo: FilterGroup
     ) {
-      total
-      count
+        stixRelationshipsNumber(
+            dateAttribute: $dateAttribute
+            noDirection: $noDirection
+            endDate: $endDate
+            onlyInferred: $onlyInferred
+            fromOrToId: $fromOrToId
+            elementWithTargetTypes: $elementWithTargetTypes
+            fromId: $fromId
+            fromRole: $fromRole
+            fromTypes: $fromTypes
+            toId: $toId
+            toRole: $toRole
+            toTypes: $toTypes
+            relationship_type: $relationship_type
+            confidences: $confidences
+            search: $search
+            filters: $filters
+            dynamicFrom: $dynamicFrom
+            dynamicTo: $dynamicTo
+        ) {
+            total
+            count
+        }
     }
-  }
 `;
 
 const StixRelationshipsNumber = ({
@@ -63,6 +63,8 @@ const StixRelationshipsNumber = ({
   parameters = {},
   entityType,
   popover,
+  variant,
+  height,
 }) => {
   const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
@@ -77,44 +79,43 @@ const StixRelationshipsNumber = ({
   const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute, isKnowledgeRelationshipWidget: true });
 
   return (
-    <QueryRenderer
-      query={stixRelationshipsNumberNumberQuery}
-      variables={{
-        filters,
-        startDate,
-        dateAttribute,
-        endDate: dayAgo(),
-        dynamicFrom: selection.dynamicFrom,
-        dynamicTo: selection.dynamicTo,
-      }}
-      render={({ props }) => {
-        if (props && props.stixRelationshipsNumber) {
-          const { total, count } = props.stixRelationshipsNumber;
-          return (
-            <CardNumber
-              entityType={entityType}
-              label={translatedTitle}
-              value={total}
-              diffLabel={t_i18n('24 hours')}
-              diffValue={total - count}
-              action={popover}
-            />
-          );
-        }
-        if (props) {
-          return (
-            <WidgetContainer title={title}>
-              <WidgetNoData />
-            </WidgetContainer>
-          );
-        }
-        return (
-          <WidgetContainer title={title}>
-            <Loader variant={LoaderVariant.inElement} />
-          </WidgetContainer>
-        );
-      }}
-    />
+    <WidgetContainer
+      padding="medium"
+      height={height}
+      title={t_i18n('Relationships number')}
+      variant={variant}
+      action={popover}
+    >
+      <QueryRenderer
+        query={stixRelationshipsNumberNumberQuery}
+        variables={{
+          filters,
+          startDate,
+          dateAttribute,
+          endDate: dayAgo(),
+          dynamicFrom: selection.dynamicFrom,
+          dynamicTo: selection.dynamicTo,
+        }}
+        render={({ props }) => {
+          if (props && props.stixRelationshipsNumber) {
+            const { total, count } = props.stixRelationshipsNumber;
+            return (
+              <WidgetNumber
+                entityType={entityType}
+                label={translatedTitle}
+                value={total}
+                diffLabel={t_i18n('24 hours')}
+                diffValue={total - count}
+              />
+            );
+          }
+          if (props) {
+            return <WidgetNoData />;
+          }
+          return <Loader variant={LoaderVariant.inElement} />;
+        }}
+      />
+    </WidgetContainer>
   );
 };
 

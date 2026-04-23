@@ -1123,7 +1123,6 @@ StixCyberObservableCreation.propTypes = {
   defaultMarkingDefinitions: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
     }),
   ),
   isFromBulkRelation: PropTypes.bool,

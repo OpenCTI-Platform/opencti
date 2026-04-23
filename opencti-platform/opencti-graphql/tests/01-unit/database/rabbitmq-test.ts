@@ -66,7 +66,108 @@ vi.mock('lru-cache', () => {
   return { LRUCache: FakeLRUCache };
 });
 
-import { getConnectorQueueSize } from '../../../src/database/rabbitmq';
+import { getConnectorQueueSize, metrics } from '../../../src/database/rabbitmq';
+
+describe('rabbitmq: metrics', () => {
+  const context = {};
+  const user = {};
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return overview, consumers count and filtered platform queues', async () => {
+    const overviewData = { rabbitmq_version: '3.12.0', cluster_name: 'test' };
+    mockHttpClient.get.mockImplementation((url: string) => {
+      if (url === '/api/overview') {
+        return Promise.resolve({ data: overviewData });
+      }
+      if (url.includes('/api/queues')) {
+        return Promise.resolve({
+          data: [
+            { name: 'opencti_push_connector-abc', messages: 42, consumers: 3 },
+            { name: 'opencti_listen_connector-abc', messages: 5, consumers: 0 },
+            { name: 'other_queue', messages: 100, consumers: 2 },
+          ],
+        });
+      }
+      return Promise.resolve({ data: {} });
+    });
+
+    const result = await metrics(context, user);
+
+    expect(result.overview).toEqual(overviewData);
+    expect(result.consumers).toBe(3);
+    // Only platform queues (starting with 'opencti_') should be included
+    expect(result.queues).toHaveLength(2);
+    expect(result.queues.every((q: { name: string }) => q.name.startsWith('opencti_'))).toBe(true);
+  });
+
+  it('should return consumers as 0 when no push queues have consumers', async () => {
+    mockHttpClient.get.mockImplementation((url: string) => {
+      if (url === '/api/overview') {
+        return Promise.resolve({ data: { rabbitmq_version: '3.12.0' } });
+      }
+      if (url.includes('/api/queues')) {
+        return Promise.resolve({
+          data: [
+            { name: 'opencti_push_connector-abc', messages: 10, consumers: 0 },
+            { name: 'opencti_listen_connector-abc', messages: 5, consumers: 0 },
+          ],
+        });
+      }
+      return Promise.resolve({ data: {} });
+    });
+
+    const result = await metrics(context, user);
+
+    expect(result.consumers).toBe(0);
+  });
+
+  it('should return empty queues when no platform queues exist', async () => {
+    mockHttpClient.get.mockImplementation((url: string) => {
+      if (url === '/api/overview') {
+        return Promise.resolve({ data: { rabbitmq_version: '3.12.0' } });
+      }
+      if (url.includes('/api/queues')) {
+        return Promise.resolve({
+          data: [
+            { name: 'some_other_queue', messages: 100, consumers: 5 },
+          ],
+        });
+      }
+      return Promise.resolve({ data: {} });
+    });
+
+    const result = await metrics(context, user);
+
+    expect(result.overview).toEqual({ rabbitmq_version: '3.12.0' });
+    expect(result.consumers).toBe(0);
+    expect(result.queues).toHaveLength(0);
+  });
+
+  it('should pass a 5 seconds timeout to the GET requests', async () => {
+    mockHttpClient.get.mockImplementation(() => {
+      return Promise.resolve({ data: [] });
+    });
+
+    await metrics(context, user);
+
+    expect(mockHttpClient.get).toHaveBeenCalledTimes(2);
+    expect(mockHttpClient.get).toHaveBeenCalledWith('/api/overview', { timeout: 5000 });
+    expect(mockHttpClient.get).toHaveBeenCalledWith(expect.stringContaining('/api/queues'), { timeout: 5000 });
+  });
+
+  it('should propagate errors from the HTTP client', async () => {
+    mockHttpClient.get.mockRejectedValue(new Error('Connection refused'));
+
+    await expect(metrics(context, user)).rejects.toThrow('Connection refused');
+  });
+});
 
 describe('rabbitmq: getConnectorQueueSize', () => {
   const context = {};

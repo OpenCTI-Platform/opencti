@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
-import { encodeOidcState, decodeOidcState } from '../../../src/http/httpUtils';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { encodeOidcState, decodeOidcState, buildPublicHelmetParameters, buildDefaultHelmetParameters } from '../../../src/http/httpUtils';
+import * as httpConfig from '../../../src/http/httpConfig';
 
 describe('httpUtils: OIDC state encoding/decoding', () => {
   describe('encodeOidcState', () => {
@@ -51,6 +52,134 @@ describe('httpUtils: OIDC state encoding/decoding', () => {
 
     it('should return undefined for malformed base64url', () => {
       expect(decodeOidcState('not!valid@base64')).toBeUndefined();
+    });
+  });
+});
+
+describe('buildHelmetParameters coverage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should most secure option works file', () => {
+    vi.spyOn(httpConfig, 'isDevMode').mockReturnValue(false);
+    vi.spyOn(httpConfig, 'isUnsecureHttpResourceAllowed').mockReturnValue(false);
+    vi.spyOn(httpConfig, 'getPublicAuthorizedDomainsFromConfiguration').mockReturnValue('');
+
+    const publicHelmetParam = buildPublicHelmetParameters();
+    expect(publicHelmetParam).toStrictEqual({
+      contentSecurityPolicy: {
+        directives: {
+          connectSrc: ["'self'", 'wss://*', 'data:', 'https://*'],
+          defaultSrc: ["'self'"],
+          fontSrc: ["'self'", 'data:'],
+          frameAncestors: "'none'",
+          frameSrc: ["'self'"],
+          imgSrc: ["'self'", 'data:', 'https://*'],
+          manifestSrc: ["'self'", 'data:', 'https://*'],
+          objectSrc: ["'self'", 'data:', 'https://*'],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrcAttr: ["'none'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+        },
+        useDefaults: false,
+      },
+      crossOriginEmbedderPolicy: false,
+      crossOriginOpenerPolicy: false,
+      crossOriginResourcePolicy: false,
+      referrerPolicy: {
+        policy: 'unsafe-url',
+      },
+      xFrameOptions: { action: 'deny' },
+    });
+
+    const defaultHelmetParam = buildDefaultHelmetParameters();
+    expect(defaultHelmetParam).toStrictEqual({
+      contentSecurityPolicy: {
+        directives: {
+          connectSrc: ["'self'", 'wss://*', 'data:', 'https://*'],
+          defaultSrc: ["'self'"],
+          fontSrc: ["'self'", 'data:'],
+          frameAncestors: "'none'",
+          imgSrc: ["'self'", 'data:', 'https://*'],
+          manifestSrc: ["'self'", 'data:', 'https://*'],
+          objectSrc: ["'self'", 'data:', 'https://*'],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrcAttr: ["'none'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+        },
+        useDefaults: false,
+      },
+      crossOriginEmbedderPolicy: false,
+      crossOriginOpenerPolicy: false,
+      crossOriginResourcePolicy: false,
+      referrerPolicy: {
+        policy: 'unsafe-url',
+      },
+      xFrameOptions: { action: 'deny' },
+    });
+  });
+
+  it('should less secure options work fine', () => {
+    vi.spyOn(httpConfig, 'isDevMode').mockReturnValue(true);
+    vi.spyOn(httpConfig, 'isUnsecureHttpResourceAllowed').mockReturnValue(true);
+    vi.spyOn(httpConfig, 'getPublicAuthorizedDomainsFromConfiguration').mockReturnValue('https://myctidomain.com');
+
+    const publicHelmetParam = buildPublicHelmetParameters();
+    expect(publicHelmetParam).toStrictEqual({
+      contentSecurityPolicy: {
+        directives: {
+          connectSrc: ["'self'", 'wss://*', 'data:', 'https://*', 'http://*', 'ws://*'],
+          defaultSrc: ["'self'"],
+          fontSrc: ["'self'", 'data:'],
+          frameAncestors: 'https://myctidomain.com',
+          frameSrc: ["'self'"],
+          imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
+          manifestSrc: ["'self'", 'data:', 'https://*', 'http://*'],
+          objectSrc: ["'self'", 'data:', 'https://*', 'http://*'],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          scriptSrcAttr: ["'none'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+        },
+        useDefaults: false,
+      },
+      crossOriginEmbedderPolicy: false,
+      crossOriginOpenerPolicy: false,
+      crossOriginResourcePolicy: false,
+      referrerPolicy: {
+        policy: 'unsafe-url',
+      },
+      xFrameOptions: false,
+    });
+
+    const defaultHelmetParam = buildDefaultHelmetParameters();
+    expect(defaultHelmetParam).toStrictEqual({
+      contentSecurityPolicy: {
+        directives: {
+          connectSrc: ["'self'", 'wss://*', 'data:', 'https://*', 'http://*', 'ws://*'],
+          defaultSrc: ["'self'"],
+          fontSrc: ["'self'", 'data:'],
+          frameAncestors: "'none'",
+          imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
+          manifestSrc: ["'self'", 'data:', 'https://*', 'http://*'],
+          objectSrc: ["'self'", 'data:', 'https://*', 'http://*'],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          scriptSrcAttr: ["'none'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+        },
+        useDefaults: false,
+      },
+      crossOriginEmbedderPolicy: false,
+      crossOriginOpenerPolicy: false,
+      crossOriginResourcePolicy: false,
+      referrerPolicy: {
+        policy: 'unsafe-url',
+      },
+      xFrameOptions: { action: 'deny' },
     });
   });
 });

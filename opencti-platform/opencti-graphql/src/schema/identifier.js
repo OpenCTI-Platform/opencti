@@ -164,6 +164,14 @@ const stixBaseCyberObservableContribution = {
       if (hashes[SSDEEP]) return { [SSDEEP]: hashes[SSDEEP] };
       return undefined;
     },
+    name(value, data) {
+      // Software names are case-insensitive for ID generation only (indexing keeps original case).
+      // File names must stay case-sensitive (Linux file systems), Mutex stays as-is.
+      if (data?.[INNER_TYPE] === C.ENTITY_SOFTWARE) {
+        return R.is(String, value) ? value.toLowerCase() : value;
+      }
+      return value;
+    },
   },
 };
 
@@ -386,7 +394,9 @@ const filteredIdContributions = (contrib, way, data) => {
     const destKey = dest || src;
     const resolver = contrib.resolvers[src];
     if (resolver) {
-      objectData[destKey] = value ? resolver(value) : value;
+      // Pass the full data as a second argument so resolvers can discriminate on the entity type
+      // (available through the INNER_TYPE / opencti_type key injected in generateDataUUID).
+      objectData[destKey] = value ? resolver(value, data) : value;
     } else {
       objectData[destKey] = R.is(String, value) ? value.trim() : value;
     }
