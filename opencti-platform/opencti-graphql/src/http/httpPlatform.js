@@ -11,7 +11,6 @@ import { marked } from 'marked';
 import archiver from 'archiver';
 import validator from 'validator';
 import archiverZipEncrypted from 'archiver-zip-encrypted';
-import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
 import { printSchema } from 'graphql';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
@@ -90,17 +89,8 @@ const publishFileRead = async (executeContext, auth, file) => {
 };
 
 const createApp = async (app, schema) => {
-  const limiter = rateLimit({
-    windowMs: nconf.get('app:rate_protection:time_window') * 1000, // seconds
-    limit: nconf.get('app:rate_protection:max_requests'),
-    handler: (req, res /* , next */) => {
-      res.status(429).send({ message: 'Too many requests, please try again later.' });
-    },
-  });
-
   // Init the http server
   app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
-  app.use(limiter);
   if (DEV_MODE) {
     app.set('json spaces', 2);
   }
