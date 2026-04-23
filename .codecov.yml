@@ -30,7 +30,8 @@ coverage:
           - client-python
 
 flag_management:
-  opencti-front-e2e:
-      paths:
-        - opencti-platform/opencti-front/src/
-      carryforward: false
+  individual_flags:
+    opencti-front-e2e:
+        paths:
+          - opencti-platform/opencti-front/src/
+        carryforward: false
