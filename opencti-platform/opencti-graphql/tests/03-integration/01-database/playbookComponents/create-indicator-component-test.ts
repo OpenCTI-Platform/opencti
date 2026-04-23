@@ -296,7 +296,6 @@ describe('Create indicator component', () => {
       );
 
       expect(result.output_port).toBe('out');
-
       const indicators = result.bundle.objects.filter((o) => o.type === 'indicator') as StixIndicator[];
       expect(indicators).toHaveLength(2);
 
