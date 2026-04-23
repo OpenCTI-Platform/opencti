@@ -12,6 +12,19 @@ let shuttingDown = false;
 let appProcess = null;
 let esbuildProcess = null;
 let graphQLWatchProcess = null;
+let esbuildStdoutBuffer = '';
+
+function tryStartAfterInitialBuild(line) {
+  if (initialBuildDone) {
+    return;
+  }
+
+  if (line.includes('✅ Initial build complete')) {
+    initialBuildDone = true;
+    startAppWatch();
+    startGraphQLSchemaWatch();
+  }
+}
 
 function pipeFormattedOutput(stream, outputStream) {
   if (!stream) {
@@ -83,11 +96,22 @@ function handleEsbuildOutput(data) {
   const output = data.toString();
   process.stdout.write(output);
 
-  if (!initialBuildDone && output.includes('✅ Initial build complete')) {
-    initialBuildDone = true;
-    startAppWatch();
-    startGraphQLSchemaWatch();
+  const text = `${esbuildStdoutBuffer}${output}`;
+  const lines = text.split('\n');
+  esbuildStdoutBuffer = lines.pop() || '';
+
+  for (const line of lines) {
+    tryStartAfterInitialBuild(line);
   }
+}
+
+function flushEsbuildOutputBuffer() {
+  if (esbuildStdoutBuffer.length === 0) {
+    return;
+  }
+
+  tryStartAfterInitialBuild(esbuildStdoutBuffer);
+  esbuildStdoutBuffer = '';
 }
 
 function startGraphQLSchemaWatch() {
@@ -127,6 +151,7 @@ function startEsbuildWatch() {
   });
 
   esbuildProcess.stdout.on('data', handleEsbuildOutput);
+  esbuildProcess.stdout.on('end', flushEsbuildOutputBuffer);
   esbuildProcess.stderr.on('data', (data) => process.stderr.write(data));
 
   esbuildProcess.on('exit', (code) => {

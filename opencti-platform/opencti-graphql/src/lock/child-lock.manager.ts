@@ -60,8 +60,14 @@ initializeOnlyRedisLockClient().then(() => {
   // In development mode, release all locks and exit immediately on SIGTERM/SIGINT
   // This enables instant hot reload without lock conflicts
   const isDevelopment = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'dev';
+  let shutdownInProgress = false;
 
   const quickShutdown = async () => {
+    if (shutdownInProgress) {
+      return;
+    }
+    shutdownInProgress = true;
+
     logApp.info(`[LOCK-MANAGER] Dev mode: releasing ${activeLocks.size} active lock(s)`);
 
     // Release all active locks quickly

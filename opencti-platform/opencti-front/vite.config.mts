@@ -1,7 +1,6 @@
 import react from '@vitejs/plugin-react';
-import { exec } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import * as path from 'node:path';
-import { promisify } from 'node:util';
 import { createLogger, defineConfig } from 'vite';
 import relay from 'vite-plugin-relay';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
@@ -10,8 +9,6 @@ import $monacoEditorPlugin from 'vite-plugin-monaco-editor';
 // Handle ESM/CJS interop for vite-plugin-monaco-editor
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const monacoEditorPlugin = ((($monacoEditorPlugin as any).default ?? $monacoEditorPlugin) as typeof $monacoEditorPlugin);
-
-const execAsync = promisify(exec);
 
 // to avoid multiple reload when discovering new dependencies after a going on a lazy (not precedently) loaded route we pre optmize these dependencies
 const depsToOptimize = [
@@ -208,6 +205,30 @@ const backProxy = (ws = false) => ({
   ws,
 });
 
+const runRelayCompiler = () => new Promise<void>((resolve, reject) => {
+  const relayProcess = spawn('yarn', ['relay'], {
+    cwd: __dirname,
+    shell: false,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env },
+  });
+
+  relayProcess.stdout?.on('data', (chunk) => process.stdout.write(chunk));
+  relayProcess.stderr?.on('data', (chunk) => process.stderr.write(chunk));
+
+  relayProcess.on('error', (error) => {
+    reject(error);
+  });
+
+  relayProcess.on('close', (code) => {
+    if (code === 0) {
+      resolve();
+    } else {
+      reject(new Error(`Relay compiler exited with code ${code}`));
+    }
+  });
+});
+
 const watchGraphQL = process.env.WATCH_GRAPHQL === 'true';
 
 // https://vitejs.dev/config/
@@ -276,7 +297,7 @@ export default defineConfig({
         let isRelayRunning = false;
         
         server.watcher.on('change', async (file) => {
-          if (file === schemaPath) {
+          if (path.resolve(file) === schemaPath) {
             // Skip if relay is already running
             if (isRelayRunning) {
               console.log('⏳ Relay compiler already running, skipping...');
@@ -290,9 +311,7 @@ export default defineConfig({
               console.log('\n🔄 GraphQL schema changed, running relay compiler...');
               isRelayRunning = true;
               try {
-                const { stdout, stderr } = await execAsync('yarn relay', { cwd: __dirname });
-                if (stdout) console.log(stdout);
-                if (stderr) console.error(stderr);
+                await runRelayCompiler();
                 console.log('✅ Relay compiler finished successfully');
                 
                 // Only trigger reload after successful completion

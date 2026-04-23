@@ -35,6 +35,13 @@ export const initLockFork = () => {
     lockProcess.forked.on('message', (msg) => {
       const messageKey = extractMessageKey(msg);
       if (!messageKey) {
+        const shape = (msg && typeof msg === 'object')
+          ? { keys: Object.keys(msg) }
+          : { receivedType: typeof msg };
+        logApp.warn('[LOCKING] Ignoring malformed message from child lock process', {
+          type: msg && typeof msg === 'object' ? msg.type : undefined,
+          ...shape,
+        });
         return;
       }
       if (lockProcess.callbacks.has(messageKey)) {
