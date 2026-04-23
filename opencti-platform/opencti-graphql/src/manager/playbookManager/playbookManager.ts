@@ -121,7 +121,6 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
                     previousStepBundle: null,
                     bundle,
                     event: streamEvent.data,
-                    debugMode: currentPlaybookInDebug,
                   });
                 }
               }
