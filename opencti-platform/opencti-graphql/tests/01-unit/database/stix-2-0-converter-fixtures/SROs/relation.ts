@@ -1,0 +1,52 @@
+import type { StoreRelation } from '../../../../../src/types/store';
+
+export const RELATION_INSTANCE = {
+  id: 'b4ee072e-1b2a-4e8b-bfed-fb34f3011de2',
+  standard_id: 'relationship--5a2da23f-201e-5d8a-8b1f-2a38ca99aa5c',
+  entity_type: 'uses',
+  relationship_type: 'uses',
+  description: 'APT28 uses Mimikatz',
+  start_time: '2020-01-01T00:00:00.000Z',
+  stop_time: '2021-01-01T00:00:00.000Z',
+  created: '2021-03-15T10:00:00.000Z',
+  modified: '2021-03-15T10:00:00.000Z',
+  revoked: false,
+  confidence: 80,
+  from: {
+    standard_id: 'intrusion-set--738e5ee3-6781-5f4c-93b0-d914bbf0c1d3',
+    internal_id: 'f9a9c290-1231-4d34-b9c7-3e0b3bd72a1f',
+    entity_type: 'Intrusion-Set',
+  },
+  to: {
+    standard_id: 'tool--6dabb5b8-a30d-5bd3-ab61-5e1f048a3dc3',
+    internal_id: 'c834b9b5-85e3-4e3f-8c9d-1d2a4fb13245',
+    entity_type: 'Tool',
+  },
+  fromId: 'f9a9c290-1231-4d34-b9c7-3e0b3bd72a1f',
+  fromType: 'Intrusion-Set',
+  toId: 'c834b9b5-85e3-4e3f-8c9d-1d2a4fb13245',
+  toType: 'Tool',
+} as unknown as StoreRelation;
+
+export const EXPECTED_RELATION = {
+  id: 'relationship--5a2da23f-201e-5d8a-8b1f-2a38ca99aa5c',
+  type: 'relationship',
+  spec_version: '2.0',
+  x_opencti_id: 'b4ee072e-1b2a-4e8b-bfed-fb34f3011de2',
+  x_opencti_type: 'uses',
+  x_opencti_granted_refs: [],
+  x_opencti_files: [],
+  created: '2021-03-15T10:00:00.000Z',
+  modified: '2021-03-15T10:00:00.000Z',
+  revoked: false,
+  confidence: 80,
+  labels: [],
+  object_marking_refs: [],
+  external_references: [],
+  relationship_type: 'uses',
+  description: 'APT28 uses Mimikatz',
+  source_ref: 'intrusion-set--738e5ee3-6781-5f4c-93b0-d914bbf0c1d3',
+  target_ref: 'tool--6dabb5b8-a30d-5bd3-ab61-5e1f048a3dc3',
+  start_time: '2020-01-01T00:00:00.000Z',
+  stop_time: '2021-01-01T00:00:00.000Z',
+};
