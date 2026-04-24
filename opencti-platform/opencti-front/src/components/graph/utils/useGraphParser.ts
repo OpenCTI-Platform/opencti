@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { dateFormat, jsDate } from '../../../utils/Time';
 import { isNone, useFormatter } from '../../i18n';
 import { defaultDate, getMainRepresentative } from '../../../utils/defaultRepresentatives';
-import type { OctiGraphPositions, GraphLink, GraphNode } from '../graph.types';
+import { OctiGraphPositions, GraphLink, GraphNode, LibGraphProps } from '../graph.types';
 import { EMPTY_VALUE, truncate, sanitize } from '../../../utils/String';
 import GRAPH_IMAGES from './graphImages';
 import { itemColor } from '../../../utils/Colors';
@@ -323,7 +323,43 @@ const useGraphParser = () => {
     return { links, nodes };
   };
 
-  return { buildGraphData, buildCorrelationData, buildNode, buildLink, buildNestedLinks, isNestedRelationship };
+  /**
+   * Convert a relationship currently displayed as a link into a node in the graph.
+   * This is needed when a relationship becomes the source or target of another relationship
+   * (nested relationship): it can no longer be a simple link and must be represented as a node.
+   * The conversion is done by:
+   * - removing the existing direct link that represented this relationship,
+   * - adding the relationship as a new node,
+   * - creating two connector links: one from its source to the new node, and one from the new node to its target.
+   */
+  const buildGraphDataAfterRelationshipLinkToNodeConversion = (
+    previousGraphData: LibGraphProps['graphData'] | undefined,
+    rawObjects: ObjectToParse[],
+    rawPositions: OctiGraphPositions,
+    relObj: NonNullable<ObjectToParse['from']>,
+  ) => {
+    const nodeIds = previousGraphData?.nodes.map((n) => n.id) ?? [];
+    if (!relObj.relationship_type) return previousGraphData;
+    if (nodeIds.includes(relObj.id)) return previousGraphData;
+
+    const relRaw = rawObjects.find((o) => o.id === relObj.id);
+    if (!relRaw) return previousGraphData;
+
+    const nodeToAdd = buildNode(relRaw, rawPositions);
+    const [linkToRelNode, linkFromRelNode] = buildNestedLinks(relRaw);
+
+    // Defensive: should never filter anything since we already checked nodeIdSet above.
+    const previousNodes = (previousGraphData?.nodes ?? []).filter((n) => n.id !== nodeToAdd.id);
+    // Remove the single link that was representing this relationship
+    const previousLinks = (previousGraphData?.links ?? []).filter((link) => link.id !== relRaw.id);
+
+    return {
+      nodes: [...previousNodes, nodeToAdd],
+      links: [...previousLinks, linkToRelNode, linkFromRelNode],
+    };
+  };
+
+  return { buildGraphData, buildCorrelationData, buildNode, buildLink, buildNestedLinks, isNestedRelationship, buildGraphDataAfterRelationshipLinkToNodeConversion };
 };
 
 export default useGraphParser;
