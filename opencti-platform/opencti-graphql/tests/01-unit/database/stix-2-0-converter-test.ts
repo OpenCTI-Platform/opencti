@@ -43,6 +43,7 @@ import {
   convertIncidentToStix,
   convertSightingToStix,
   convertRelationToStix,
+  convertInPirRelToStix,
   convertIdentityToStix,
   convertLocationToStix,
   convertInfrastructureToStix,
@@ -63,6 +64,7 @@ import { EXPECTED_THREAT_ACTOR_GROUP, THREAT_ACTOR_GROUP_INSTANCE } from './stix
 import { EXPECTED_THREAT_ACTOR_INDIVIDUAL, THREAT_ACTOR_INDIVIDUAL_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/threats/threat-actor-individual';
 import { EXPECTED_SIGHTING, SIGHTING_INSTANCE } from './stix-2-0-converter-fixtures/SROs/sightings';
 import { EXPECTED_RELATION, RELATION_INSTANCE } from './stix-2-0-converter-fixtures/SROs/relation';
+import { EXPECTED_PIR_RELATION, PIR_RELATION_INSTANCE } from './stix-2-0-converter-fixtures/SROs/pir-relation';
 import { ATTACK_PATTERN_INSTANCE, EXPECTED_ATTACK_PATTERN } from './stix-2-0-converter-fixtures/SDOs/techniques/attack-pattern';
 import { EXPECTED_NARRATIVE, NARRATIVE_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/techniques/narrative';
 import { COURSE_OF_ACTION_INSTANCE, EXPECTED_COURSE_OF_ACTION } from './stix-2-0-converter-fixtures/SDOs/techniques/course-of-action';
@@ -284,6 +286,10 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert StixCoreRelationship', async () => {
     const result = convertRelationToStix(RELATION_INSTANCE);
     expect(result).toEqual(EXPECTED_RELATION);
+  });
+  it('should convert InPirRelationship', async () => {
+    const result = convertInPirRelToStix(PIR_RELATION_INSTANCE);
+    expect(result).toEqual(EXPECTED_PIR_RELATION);
   });
   // Identities
   it('should convert Individual', async () => {
