@@ -67,6 +67,7 @@ MARKDOWN_EXPORT_FIELDS: Tuple[str, ...] = (
     "description",
     "x_opencti_description",
     "content",
+    "descriptions",
 )
 
 meter = metrics.get_meter(__name__)
@@ -208,12 +209,6 @@ class OpenCTIStix2:
                 return full_match
 
             guessed_mime_type = mimetypes.guess_type(embedded_storage_path)[0]
-            if guessed_mime_type is None:
-                return full_match
-            if guessed_mime_type is not None and not guessed_mime_type.startswith(
-                "image/"
-            ):
-                return full_match
 
             if embedded_storage_path not in embedded_data_uri_by_path:
                 storage_url = urljoin(
@@ -264,7 +259,17 @@ class OpenCTIStix2:
                 break
 
             rewritten_chunks.append(markdown[cursor:image_start])
-            alt_end = markdown.find("]", image_start + 2)
+            alt_end = -1
+            alt_index = image_start + 2
+            while alt_index < markdown_length:
+                alt_char = markdown[alt_index]
+                if alt_char == "\\":
+                    alt_index += 2
+                    continue
+                if alt_char == "]":
+                    alt_end = alt_index
+                    break
+                alt_index += 1
             if (
                 alt_end == -1
                 or alt_end + 1 >= markdown_length
@@ -313,16 +318,14 @@ class OpenCTIStix2:
             value = entity.get(key)
             if isinstance(value, str):
                 entity[key] = self._rewrite_markdown_embedded_storage_images(value)
-
-        descriptions = entity.get("descriptions")
-        if isinstance(descriptions, list):
-            entity["descriptions"] = [
+            elif isinstance(value, list):
+                entity[key] = [
                 (
-                    self._rewrite_markdown_embedded_storage_images(value)
-                    if isinstance(value, str)
-                    else value
+                        self._rewrite_markdown_embedded_storage_images(item)
+                        if isinstance(item, str)
+                        else item
                 )
-                for value in descriptions
+                    for item in value
             ]
 
     def format_date(self, date: Any = None) -> str:

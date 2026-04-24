@@ -241,6 +241,82 @@ def test_prepare_export_rewrites_embedded_markdown_image_uri_view_path(
     assert fetch_calls[0][2] is True
 
 
+def test_prepare_export_rewrites_embedded_markdown_image_uri_in_descriptions_list(
+    opencti_stix2: OpenCTIStix2, monkeypatch
+):
+    monkeypatch.setattr(
+        opencti_stix2.opencti.stix_nested_ref_relationship,
+        "list",
+        lambda **kwargs: [],
+    )
+
+    fetch_calls = []
+
+    def fake_fetch(url, binary=False, serialize=False):
+        fetch_calls.append((url, binary, serialize))
+        return "Zm9v"
+
+    monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
+
+    entity = {
+        "id": "report--66666666-6666-4666-8666-666666666666",
+        "type": "report",
+        "x_opencti_id": "internal-report-id-6",
+        "descriptions": [
+            "first ![img](/storage/view/embedded/Report/internal-report-id-6/a.png)",
+            "second no image",
+        ],
+    }
+
+    result = opencti_stix2.prepare_export(entity=entity, mode="simple")
+
+    assert len(result) == 1
+    assert "data:image/png;base64,Zm9v" in result[0]["descriptions"][0]
+    assert result[0]["descriptions"][1] == "second no image"
+    assert len(fetch_calls) == 1
+    assert fetch_calls[0][0].endswith(
+        "/storage/get/embedded/Report/internal-report-id-6/a.png"
+    )
+
+
+def test_prepare_export_rewrites_embedded_markdown_image_uri_with_escaped_alt_bracket(
+    opencti_stix2: OpenCTIStix2, monkeypatch
+):
+    monkeypatch.setattr(
+        opencti_stix2.opencti.stix_nested_ref_relationship,
+        "list",
+        lambda **kwargs: [],
+    )
+
+    fetch_calls = []
+
+    def fake_fetch(url, binary=False, serialize=False):
+        fetch_calls.append((url, binary, serialize))
+        return "Zm9v"
+
+    monkeypatch.setattr(opencti_stix2.opencti, "fetch_opencti_file", fake_fetch)
+
+    entity = {
+        "id": "note--12121212-1212-4121-8121-121212121212",
+        "type": "note",
+        "x_opencti_id": "internal-note-id-12",
+        "description": (
+            "desc ![A text like \\[this\\]]"
+            "(/storage/get/embedded/Note/internal-note-id-12/a.png)"
+        ),
+    }
+
+    result = opencti_stix2.prepare_export(entity=entity, mode="simple")
+
+    assert len(result) == 1
+    assert "data:image/png;base64,Zm9v" in result[0]["description"]
+    assert "![A text like \\[this\\]]" in result[0]["description"]
+    assert len(fetch_calls) == 1
+    assert fetch_calls[0][0].endswith(
+        "/storage/get/embedded/Note/internal-note-id-12/a.png"
+    )
+
+
 def test_prepare_export_rewrites_urlencoded_view_embedded_markdown_image_uri(
     opencti_stix2: OpenCTIStix2, monkeypatch
 ):
@@ -607,10 +683,10 @@ def test_prepare_export_keeps_embedded_non_image_markdown_uri(
         result[0]["description"]
         == "desc ![doc](/storage/get/embedded/Note/internal-note-id-4/a.pdf)"
     )
-    assert len(fetch_calls) == 0
+    assert len(fetch_calls) == 1
 
 
-def test_prepare_export_keeps_embedded_unknown_mime_markdown_uri_without_fetch(
+def test_prepare_export_keeps_embedded_unknown_mime_markdown_uri_after_fetch(
     opencti_stix2: OpenCTIStix2, monkeypatch
 ):
     monkeypatch.setattr(
@@ -641,4 +717,4 @@ def test_prepare_export_keeps_embedded_unknown_mime_markdown_uri_without_fetch(
         result[0]["description"]
         == "desc ![img](/storage/get/embedded/Note/internal-note-id-9/image-without-extension)"
     )
-    assert len(fetch_calls) == 0
+    assert len(fetch_calls) == 1
