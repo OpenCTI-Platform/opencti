@@ -26,7 +26,7 @@ const me = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const UserContextValue: any = { me, settings: {}, bannerSettings: {}, entitySettings: {}, platformModuleHelpers: {}, schema: {}, about: {}, themes: {} };
+const UserContextValue: any = { me, settings: {}, bannerSettings: {}, entitySettings: {}, platformModuleHelpers: {}, schema: {}, about: {}, themes: {}, queryData: {} };
 
 describe('App', () => {
   afterEach(cleanup);
