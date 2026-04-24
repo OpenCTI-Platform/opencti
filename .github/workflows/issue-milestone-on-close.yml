@@ -46,30 +46,27 @@ jobs:
             const targetMilestoneTitle = isBug ? 'Bugs backlog' : '1. Now';
             console.log(`Issue #${issue.number} → targeting milestone "${targetMilestoneTitle}"`);
 
-            // ── 2. Find the milestone by title (searches open + closed) ──────────
+            // ── 2. Find the milestone by title (searches only open to avoid pagination ) ──────────
             let milestoneNumber = null;
-            let milestoneState = null;
 
-            for (const state of ['open', 'closed']) {
-              const { data: milestones } = await github.rest.issues.listMilestones({
-                owner,
-                repo,
-                state,
-                per_page: 100,
-              });
+            const { data: milestones } = await github.rest.issues.listMilestones({
+              owner,
+              repo,
+              state: 'open',
+              per_page: 10,
+            });
 
-              const match = milestones.find(
-                m => m.title.toLowerCase() === targetMilestoneTitle.toLowerCase()
-              );
+            const match = milestones.find(
+              m => m.title.toLowerCase() === targetMilestoneTitle.toLowerCase()
+            );
 
-              if (match) {
-                milestoneNumber = match.number;
-                milestoneState = state;
-                console.log(`Found milestone "${match.title}" (number ${milestoneNumber}, state: ${state})`);
-                break;
-              }
+            if (match) {
+              milestoneNumber = match.number;
+              console.log(`Found milestone "${match.title}" (number ${milestoneNumber})`);
             }
+            
 
+            // fail on missing milestone
             if (milestoneNumber === null) {
               core.setFailed(
                 `Milestone "${targetMilestoneTitle}" not found in ${owner}/${repo}.`
