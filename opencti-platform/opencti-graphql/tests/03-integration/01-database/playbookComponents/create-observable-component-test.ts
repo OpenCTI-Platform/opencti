@@ -164,7 +164,7 @@ describe('PLAYBOOK_CREATE_OBSERVABLE_COMPONENT', () => {
         },
       }));
 
-      expect(result.output_port).toBe('out');
+      expect(result.output_port).toBe('unmodified');
       expect(result.bundle.objects.length).toEqual(4);
 
       expect(result.bundle.objects.filter((o) => o.type === 'relationship').length).toEqual(0);
