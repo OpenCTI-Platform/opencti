@@ -184,6 +184,71 @@ describe('CSV ingestion resolver standard behavior', () => {
     expect(createSingleColumnCsvFeedsIngesterQueryResult?.data?.ingestionCsvAdd?.ingestion_running).toBeFalsy();
   });
 
+  it('should create a CSV feeds ingester with bearer authentication and mask the value on read', async () => {
+    const input: IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.Bearer,
+      authentication_value: 'my-secret-bearer-token',
+      name: 'CSV with bearer auth',
+      uri: 'https://lists.blocklist.de/lists/all.txt',
+      csv_mapper_id: singleColumnCsvMapperId,
+      user_id: ADMIN_USER.id,
+    };
+    const createResult = await queryAsAdminWithSuccess({
+      query: gql`
+        mutation createCsvWithBearer($input: IngestionCsvAddInput!) {
+          ingestionCsvAdd(input: $input) {
+            id
+            authentication_type
+            authentication_value
+          }
+        }
+      `,
+      variables: { input },
+    });
+    const created = createResult.data?.ingestionCsvAdd;
+    expect(created.id).toBeDefined();
+    // Value must be masked when returned via GraphQL
+    expect(created.authentication_value).not.toBe('my-secret-bearer-token');
+    expect(created.authentication_value).toMatch(/\*/);
+
+    // Query it back via ingestionCsv query — field resolver must also mask
+    const readResult = await queryAsAdminWithSuccess({
+      query: gql`
+        query readCsvWithBearer($id: String!) {
+          ingestionCsv(id: $id) {
+            id
+            authentication_value
+          }
+        }
+      `,
+      variables: { id: created.id },
+    });
+    expect(readResult.data?.ingestionCsv?.authentication_value).toMatch(/\*/);
+
+    // Patch authentication_value — covers decrypt+re-encrypt path in ingestionCsvEditField
+    const patchResult = await queryAsAdminWithSuccess({
+      query: gql`
+        mutation patchCsvBearer($id: ID!, $input: [EditInput!]!) {
+          ingestionCsvFieldPatch(id: $id, input: $input) {
+            id
+            authentication_value
+          }
+        }
+      `,
+      variables: {
+        id: created.id,
+        input: [{ key: 'authentication_value', value: ['updated-bearer-token'] }],
+      },
+    });
+    expect(patchResult.data?.ingestionCsvFieldPatch?.authentication_value).toMatch(/\*/);
+
+    // Cleanup
+    await queryAsAdmin({
+      query: gql`mutation deleteCsvBearer($id: ID!) { ingestionCsvDelete(id: $id) }`,
+      variables: { id: created.id },
+    });
+  });
+
   it('should start the CSV feeds ingester', async () => {
     const CSV_FEED_INGESTER_TO_START = {
       id: singleColumnCsvFeedIngesterId,

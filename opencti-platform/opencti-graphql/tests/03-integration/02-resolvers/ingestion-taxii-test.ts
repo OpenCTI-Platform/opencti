@@ -295,3 +295,93 @@ describe('TAXII ingestion resolver standard behavior', () => {
     expect(ingesterQueryResult.data?.ingestionTaxiiDelete).toEqual(createdTaxiiIngesterId);
   });
 });
+
+describe('TAXII ingestion resolver — authentication encryption', () => {
+  let taxiiBearerIngestionId: string;
+
+  it('should create a TAXII ingestion with bearer auth and mask value on create response', async () => {
+    const result = await queryAsAdminWithSuccess({
+      query: gql`
+        mutation createTaxiiBearerIngester($input: IngestionTaxiiAddInput!) {
+          ingestionTaxiiAdd(input: $input) {
+            id
+            name
+            authentication_type
+            authentication_value
+          }
+        }
+      `,
+      variables: {
+        input: {
+          authentication_type: IngestionAuthType.Bearer,
+          authentication_value: 'my-secret-taxii-bearer-token',
+          name: 'Taxii bearer auth test',
+          version: TaxiiVersion.V21,
+          collection: 'TaxiCollection',
+          uri: 'http://taxiserver.invalid',
+          user_id: ADMIN_USER.id,
+          scheduling_period: 'PT1H',
+        },
+      },
+    });
+    const created = result.data?.ingestionTaxiiAdd;
+    expect(created.id).toBeDefined();
+    taxiiBearerIngestionId = created.id;
+    // Value must be masked via field resolver — must NOT return plain text
+    expect(created.authentication_value).not.toBe('my-secret-taxii-bearer-token');
+    expect(created.authentication_value).toMatch(/\*/);
+  });
+
+  it('should read a TAXII ingestion and return masked authentication_value via field resolver', async () => {
+    const result = await queryAsAdminWithSuccess({
+      query: gql`
+        query readTaxiiIngestionAuth($id: String!) {
+          ingestionTaxii(id: $id) {
+            id
+            authentication_type
+            authentication_value
+          }
+        }
+      `,
+      variables: { id: taxiiBearerIngestionId },
+    });
+    const ingestion = result.data?.ingestionTaxii;
+    expect(ingestion.id).toBe(taxiiBearerIngestionId);
+    expect(ingestion.authentication_type).toBe(IngestionAuthType.Bearer);
+    // Field resolver must decrypt then mask
+    expect(ingestion.authentication_value).toMatch(/\*/);
+  });
+
+  it('should patch authentication_value and return masked value', async () => {
+    const result = await queryAsAdminWithSuccess({
+      query: gql`
+        mutation patchTaxiiIngestionAuth($id: ID!, $input: [EditInput!]!) {
+          ingestionTaxiiFieldPatch(id: $id, input: $input) {
+            id
+            authentication_value
+          }
+        }
+      `,
+      variables: {
+        id: taxiiBearerIngestionId,
+        input: [{ key: 'authentication_value', value: ['updated-taxii-bearer-token'] }],
+      },
+    });
+    const patched = result.data?.ingestionTaxiiFieldPatch;
+    expect(patched.id).toBe(taxiiBearerIngestionId);
+    expect(patched.authentication_value).toMatch(/\*/);
+    expect(patched.authentication_value).not.toBe('updated-taxii-bearer-token');
+  });
+
+  it('should delete the TAXII bearer ingestion', async () => {
+    const result = await queryAsAdminWithSuccess({
+      query: gql`
+        mutation deleteTaxiiBearerIngester($id: ID!) {
+          ingestionTaxiiDelete(id: $id)
+        }
+      `,
+      variables: { id: taxiiBearerIngestionId },
+    });
+    expect(result.data?.ingestionTaxiiDelete).toEqual(taxiiBearerIngestionId);
+  });
+});
