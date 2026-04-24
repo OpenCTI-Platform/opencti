@@ -1528,7 +1528,9 @@ export const sessionLogin = async (context, input) => {
     }
   }
   if (loggedUser) {
-    return loggedUser.api_token;
+    // [SECURITY] api_token plaintext is no longer returned from the login mutation.
+    // The session has been created above; the token value must not be exposed via this endpoint.
+    return null;
   } else {
     deferredErrors.forEach((d) => d());
   }
