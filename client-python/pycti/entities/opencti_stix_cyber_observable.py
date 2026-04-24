@@ -6,35 +6,27 @@ import os
 
 import magic
 
+from .base import Entity
 from .indicator.opencti_indicator_properties import INDICATOR_PROPERTIES
+from .mixins import ListFilesMixin
 from .stix_cyber_observable.opencti_stix_cyber_observable_deprecated import (
     StixCyberObservableDeprecatedMixin,
 )
 from .stix_cyber_observable.opencti_stix_cyber_observable_properties import (
+    SCO_FILES_PROPERTIES,
     SCO_PROPERTIES,
-    SCO_PROPERTIES_WITH_FILES,
 )
 
 
-class StixCyberObservable(StixCyberObservableDeprecatedMixin):
+class StixCyberObservable(StixCyberObservableDeprecatedMixin, ListFilesMixin, Entity):
     """Main StixCyberObservable class for OpenCTI
 
     Manages STIX cyber observables (indicators of compromise) in the OpenCTI platform.
     Note: Deprecated methods are available through StixCyberObservableDeprecatedMixin.
-
-    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the StixCyberObservable instance.
-
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = SCO_PROPERTIES
-        self.properties_with_files = SCO_PROPERTIES_WITH_FILES
+    PROPERTIES = SCO_PROPERTIES
+    FILES_PROPERTIES = SCO_FILES_PROPERTIES
 
     def list(self, **kwargs):
         """List StixCyberObservable objects.
@@ -87,11 +79,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                             edges {
                                 node {
                                     """
-            + (
-                custom_attributes
-                if custom_attributes is not None
-                else (self.properties_with_files if with_files else self.properties)
-            )
+            + (custom_attributes if custom_attributes is not None else self.properties)
+            + (self.files_properties if with_files else "")
             + """
                         }
                     }
@@ -149,57 +138,6 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             return self.opencti.process_multiple(
                 result["data"]["stixCyberObservables"], with_pagination
             )
-
-    def read(self, **kwargs):
-        """Read a StixCyberObservable object.
-
-        :param id: the id of the StixCyberObservable
-        :type id: str
-        :param filters: the filters to apply if no id provided
-        :type filters: dict
-        :param customAttributes: custom attributes to return
-        :type customAttributes: str
-        :param withFiles: whether to include files
-        :type withFiles: bool
-        :return: StixCyberObservable object
-        :rtype: dict or None
-        """
-        id = kwargs.get("id", None)
-        filters = kwargs.get("filters", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        with_files = kwargs.get("withFiles", False)
-        if id is not None:
-            self.opencti.app_logger.info("Reading StixCyberObservable", {"id": id})
-            query = (
-                """
-                        query StixCyberObservable($id: String!) {
-                            stixCyberObservable(id: $id) {
-                                """
-                + (
-                    custom_attributes
-                    if custom_attributes is not None
-                    else (self.properties_with_files if with_files else self.properties)
-                )
-                + """
-                    }
-                }
-             """
-            )
-            result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(
-                result["data"]["stixCyberObservable"]
-            )
-        elif filters is not None:
-            result = self.list(filters=filters, customAttributes=custom_attributes)
-            if len(result) > 0:
-                return result[0]
-            else:
-                return None
-        else:
-            self.opencti.app_logger.error(
-                "[opencti_stix_cyber_observable] Missing parameters: id or filters"
-            )
-            return None
 
     def add_file(self, **kwargs):
         """Upload a file in this Observable.
@@ -704,10 +642,10 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     )
                     is not None
                 ):
-                    observable_data["x_opencti_additional_names"] = (
-                        self.opencti.get_attribute_in_extension(
-                            "additional_names", observable_data
-                        )
+                    observable_data[
+                        "x_opencti_additional_names"
+                    ] = self.opencti.get_attribute_in_extension(
+                        "additional_names", observable_data
                     )
                 input_variables["Artifact"] = {
                     "hashes": hashes if len(hashes) > 0 else None,
@@ -745,10 +683,10 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     )
                     is not None
                 ):
-                    observable_data["x_opencti_additional_names"] = (
-                        self.opencti.get_attribute_in_extension(
-                            "additional_names", observable_data
-                        )
+                    observable_data[
+                        "x_opencti_additional_names"
+                    ] = self.opencti.get_attribute_in_extension(
+                        "additional_names", observable_data
                     )
                 input_variables["StixFile"] = {
                     "hashes": hashes if len(hashes) > 0 else None,
@@ -1120,10 +1058,10 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     )
                     is not None
                 ):
-                    observable_data["x_opencti_product"] = (
-                        self.opencti.get_attribute_in_extension(
-                            "x_opencti_product", observable_data
-                        )
+                    observable_data[
+                        "x_opencti_product"
+                    ] = self.opencti.get_attribute_in_extension(
+                        "x_opencti_product", observable_data
                     )
                 input_variables["Software"] = {
                     "name": (

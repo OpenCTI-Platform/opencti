@@ -1,7 +1,9 @@
 from typing import Dict, Optional
 
+from pycti.entities.base import Entity
 
-class Settings:
+
+class Settings(Entity):
     """Represents the Settings object in OpenCTI
 
     These are the properties which are viewable in the customization and
@@ -10,138 +12,131 @@ class Settings:
 
     See the properties attribute to understand which properties are fetched by
     default on graphql queries.
-
-    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the Settings instance.
-
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = """
+    PROPERTIES = """
+        id
+        standard_id
+        entity_type
+        parent_types
+        platform_organization {
+            id, name, description
+        }
+        platform_title
+        platform_favicon
+        platform_email
+        platform_url
+        platform_language
+        platform_cluster {
+            instances_number
+        }
+        platform_modules {
+            id, enable, warning
+        }
+        platform_providers {
+            name, type, strategy, provider
+        }
+        platform_user_statuses {
+            status, message
+        }
+        platform_theme {
             id
             standard_id
             entity_type
             parent_types
-            platform_organization {
-                id, name, description
-            }
-            platform_title
-            platform_favicon
-            platform_email
-            platform_url
-            platform_language
-            platform_cluster {
-                instances_number
-            }
-            platform_modules {
-                id, enable, warning
-            }
-            platform_providers {
-                name, type, strategy, provider
-            }
-            platform_user_statuses {
-                status, message
-            }
-            platform_theme {
-                id
-                standard_id
-                entity_type
-                parent_types
-                name
-                theme_background
-                theme_paper
-                theme_nav
-                theme_primary
-                theme_secondary
-                theme_accent
-                theme_logo
-                theme_logo_collapsed
-                theme_logo_login
-                theme_text_color
-                built_in
-            }
-            platform_map_tile_server_dark
-            platform_map_tile_server_light
-            platform_ai_enabled
-            platform_openaev_url
-            platform_opengrc_url
-            platform_ai_type
-            platform_ai_model
-            platform_ai_has_token
-            platform_login_message
-            platform_consent_message
-            platform_consent_confirm_text
-            platform_banner_text
-            platform_banner_level
-            platform_session_idle_timeout
-            platform_session_timeout
-            platform_whitemark
-            platform_demo
-            platform_reference_attachment
-            platform_feature_flags {
-                id, enable, warning
-            }
-            platform_critical_alerts {
-                message, type
-                details {
-                    groups {
-                        id, name, description
-                    }
-                }
-            }
-            platform_trash_enabled
-            platform_protected_sensitive_config {
-                enabled
-                markings {
-                    enabled, protected_ids
-                }
+            name
+            theme_background
+            theme_paper
+            theme_nav
+            theme_primary
+            theme_secondary
+            theme_accent
+            theme_logo
+            theme_logo_collapsed
+            theme_logo_login
+            theme_text_color
+            built_in
+        }
+        platform_map_tile_server_dark
+        platform_map_tile_server_light
+        platform_ai_enabled
+        platform_openaev_url
+        platform_opengrc_url
+        platform_ai_type
+        platform_ai_model
+        platform_ai_has_token
+        platform_login_message
+        platform_consent_message
+        platform_consent_confirm_text
+        platform_banner_text
+        platform_banner_level
+        platform_session_idle_timeout
+        platform_session_timeout
+        platform_whitemark
+        platform_demo
+        platform_reference_attachment
+        platform_feature_flags {
+            id, enable, warning
+        }
+        platform_critical_alerts {
+            message, type
+            details {
                 groups {
-                    enabled, protected_ids
-                }
-                roles {
-                    enabled, protected_ids
-                }
-                rules {
-                    enabled, protected_ids
-                }
-                ce_ee_toggle {
-                    enabled, protected_ids
-                }
-                file_indexing {
-                    enabled, protected_ids
-                }
-                platform_organization {
-                    enabled, protected_ids
+                    id, name, description
                 }
             }
-            created_at
-            updated_at
-            platform_enterprise_edition {
-                license_enterprise
-                license_by_configuration
-                license_customer
-                license_validated
-                license_valid_cert
-                license_expired
-                license_expiration_prevention
-                license_start_date
-                license_expiration_date
-                license_platform
-                license_type
-                license_platform_match
-                license_creator
-                license_global
+        }
+        platform_trash_enabled
+        platform_protected_sensitive_config {
+            enabled
+            markings {
+                enabled, protected_ids
             }
-            analytics_google_analytics_v4
-            activity_listeners {
-                id, name, entity_type
+            groups {
+                enabled, protected_ids
             }
-        """
+            roles {
+                enabled, protected_ids
+            }
+            rules {
+                enabled, protected_ids
+            }
+            ce_ee_toggle {
+                enabled, protected_ids
+            }
+            file_indexing {
+                enabled, protected_ids
+            }
+            platform_organization {
+                enabled, protected_ids
+            }
+        }
+        created_at
+        updated_at
+        platform_enterprise_edition {
+            license_enterprise
+            license_by_configuration
+            license_customer
+            license_validated
+            license_valid_cert
+            license_expired
+            license_expiration_prevention
+            license_start_date
+            license_expiration_date
+            license_platform
+            license_type
+            license_platform_match
+            license_creator
+            license_global
+        }
+        analytics_google_analytics_v4
+        activity_listeners {
+            id, name, entity_type
+        }
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.messages_properties = """
             entity_type
             platform_messages {
@@ -168,7 +163,8 @@ class Settings:
             password_policy_min_uppercase
         """
 
-        self.editable_properties = """
+        self.editable_properties = (
+            """
             id
             platform_organization {
                 id
@@ -184,7 +180,9 @@ class Settings:
             platform_banner_level
             platform_whitemark
             analytics_google_analytics_v4
-        """ + self.password_policy_properties
+        """
+            + self.password_policy_properties
+        )
 
     def read(self, **kwargs) -> Dict:
         """Reads settings from the platform
@@ -220,6 +218,9 @@ class Settings:
         )
         result = self.opencti.query(query)
         return self.opencti.process_multiple_fields(result["data"]["settings"])
+
+    def list(self, **kwargs):
+        raise NotImplementedError("List not supported for Settings")
 
     def update_field(self, **kwargs) -> Optional[Dict]:
         """Update settings using input to fieldPatch

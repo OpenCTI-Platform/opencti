@@ -1,493 +1,270 @@
 import datetime
-import json
 import uuid
 
-from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.entities.base import Entity
+from pycti.entities.mixins import (
+    GetByStixIdOrNameMixin,
+    ListFilesMixin,
+    ListObjectsMixin,
+    StixObjectOrRelationshipMixin,
+)
 
-class CaseRfi:
+
+class CaseRfi(
+    ListObjectsMixin,
+    ListFilesMixin,
+    StixObjectOrRelationshipMixin,
+    GetByStixIdOrNameMixin,
+    Entity,
+):
     """Main CaseRfi (Request for Information) class for OpenCTI
 
     Manages RFI cases in the OpenCTI platform.
-
-    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the CaseRfi instance.
+    PROPERTIES = """
+        id
+        standard_id
+        entity_type
+        parent_types
+        spec_version
+        created_at
+        updated_at
+        status {
+            id
+            template {
+              id
+              name
+              color
+            }
+        }
+        createdBy {
+            ... on Identity {
+                id
+                standard_id
+                entity_type
+                parent_types
+                spec_version
+                identity_class
+                name
+                description
+                roles
+                contact_information
+                x_opencti_aliases
+                created
+                modified
+                objectLabel {
+                    id
+                    value
+                    color
+                }
+            }
+            ... on Organization {
+                x_opencti_organization_type
+                x_opencti_reliability
+            }
+            ... on Individual {
+                x_opencti_firstname
+                x_opencti_lastname
+            }
+        }
+        objectOrganization {
+            id
+            standard_id
+            name
+        }
+        objectMarking {
+            id
+            standard_id
+            entity_type
+            definition_type
+            definition
+            created
+            modified
+            x_opencti_order
+            x_opencti_color
+        }
+        objectLabel {
+            id
+            value
+            color
+        }
+        externalReferences {
+            edges {
+                node {
+                    id
+                    standard_id
+                    entity_type
+                    source_name
+                    description
+                    url
+                    hash
+                    external_id
+                    created
+                    modified
+                }
+            }
+        }
+        revoked
+        confidence
+        created
+        modified
+        name
+        description
+        information_types
+        severity
+        priority
+        tasks {
+            edges {
+                node {
+                    name
+                    description
+                    due_date
+                    status {
+                      id
+                      template {
+                        id
+                        name
+                        color
+                      }
+                    }
+                }
+            }
+        }
+    """
 
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = """
+    OBJECTS_PROPERTIES = """
+        ... on BasicObject {
             id
-            standard_id
             entity_type
             parent_types
+        }
+        ... on BasicRelationship {
+            id
+            entity_type
+            parent_types
+        }
+        ... on StixObject {
+            standard_id
             spec_version
             created_at
             updated_at
-            status {
-                id
-                template {
-                  id
-                  name
-                  color
-                }
-            }
-            createdBy {
-                ... on Identity {
-                    id
-                    standard_id
-                    entity_type
-                    parent_types
-                    spec_version
-                    identity_class
-                    name
-                    description
-                    roles
-                    contact_information
-                    x_opencti_aliases
-                    created
-                    modified
-                    objectLabel {
-                        id
-                        value
-                        color
-                    }
-                }
-                ... on Organization {
-                    x_opencti_organization_type
-                    x_opencti_reliability
-                }
-                ... on Individual {
-                    x_opencti_firstname
-                    x_opencti_lastname
-                }
-            }
-            objectOrganization {
-                id
-                standard_id
-                name
-            }
-            objectMarking {
-                id
-                standard_id
-                entity_type
-                definition_type
-                definition
-                created
-                modified
-                x_opencti_order
-                x_opencti_color
-            }
-            objectLabel {
-                id
-                value
-                color
-            }
-            externalReferences {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
-                        created
-                        modified
-                    }
-                }
-            }
-            revoked
-            confidence
-            created
-            modified
+        }
+        ... on AttackPattern {
             name
-            description
-            information_types
-            severity
-            priority
-            tasks {
-                edges {
-                    node {
-                        name
-                        description
-                        due_date
-                        status {
-                          id
-                          template {
-                            id
-                            name
-                            color
-                          }
-                        }
-                    }
-                }
-            }
-            objects(all: true) {
-                edges {
-                    node {
-                        ... on BasicObject {
-                            id
-                            entity_type
-                            parent_types
-                        }
-                        ... on BasicRelationship {
-                            id
-                            entity_type
-                            parent_types
-                        }
-                        ... on StixObject {
-                            standard_id
-                            spec_version
-                            created_at
-                            updated_at
-                        }
-                        ... on AttackPattern {
-                            name
-                        }
-                        ... on Campaign {
-                            name
-                        }
-                        ... on CourseOfAction {
-                            name
-                        }
-                        ... on Individual {
-                            name
-                        }
-                        ... on Organization {
-                            name
-                        }
-                        ... on Sector {
-                            name
-                        }
-                        ... on System {
-                            name
-                        }
-                        ... on Indicator {
-                            name
-                        }
-                        ... on Infrastructure {
-                            name
-                        }
-                        ... on IntrusionSet {
-                            name
-                        }
-                        ... on Position {
-                            name
-                        }
-                        ... on City {
-                            name
-                        }
-                        ... on Country {
-                            name
-                        }
-                        ... on Region {
-                            name
-                        }
-                        ... on Malware {
-                            name
-                        }
-                        ... on ThreatActor {
-                            name
-                        }
-                        ... on Tool {
-                            name
-                        }
-                        ... on Vulnerability {
-                            name
-                        }
-                        ... on Incident {
-                            name
-                        }
-                        ... on Event {
-                            name
-                        }
-                        ... on Channel {
-                            name
-                        }
-                        ... on Narrative {
-                            name
-                        }
-                        ... on Language {
-                            name
-                        }
-                        ... on DataComponent {
-                            name
-                        }
-                        ... on DataSource {
-                            name
-                        }
-                        ... on StixCyberObservable {
-                            observable_value
-                        }
-                        ... on StixCoreRelationship {
-                            standard_id
-                            spec_version
-                            created_at
-                            updated_at
-                            relationship_type
-                        }
-                       ... on StixSightingRelationship {
-                            standard_id
-                            spec_version
-                            created_at
-                            updated_at
-                        }
-                    }
-                }
-            }
-        """
-        self.properties_with_files = """
-            id
+        }
+        ... on Campaign {
+            name
+        }
+        ... on CourseOfAction {
+            name
+        }
+        ... on Individual {
+            name
+        }
+        ... on Organization {
+            name
+        }
+        ... on Sector {
+            name
+        }
+        ... on System {
+            name
+        }
+        ... on Indicator {
+            name
+        }
+        ... on Infrastructure {
+            name
+        }
+        ... on IntrusionSet {
+            name
+        }
+        ... on Position {
+            name
+        }
+        ... on City {
+            name
+        }
+        ... on Country {
+            name
+        }
+        ... on Region {
+            name
+        }
+        ... on Malware {
+            name
+        }
+        ... on ThreatActor {
+            name
+        }
+        ... on Tool {
+            name
+        }
+        ... on Vulnerability {
+            name
+        }
+        ... on Incident {
+            name
+        }
+        ... on Event {
+            name
+        }
+        ... on Channel {
+            name
+        }
+        ... on Narrative {
+            name
+        }
+        ... on Language {
+            name
+        }
+        ... on DataComponent {
+            name
+        }
+        ... on DataSource {
+            name
+        }
+        ... on StixCyberObservable {
+            observable_value
+        }
+        ... on StixCoreRelationship {
             standard_id
-            entity_type
-            parent_types
             spec_version
             created_at
             updated_at
-            status {
-                id
-                template {
-                  id
-                  name
-                  color
-                }
-            }
-            createdBy {
-                ... on Identity {
-                    id
-                    standard_id
-                    entity_type
-                    parent_types
-                    spec_version
-                    identity_class
-                    name
-                    description
-                    roles
-                    contact_information
-                    x_opencti_aliases
-                    created
-                    modified
-                    objectLabel {
-                        id
-                        value
-                        color
-                    }
-                }
-                ... on Organization {
-                    x_opencti_organization_type
-                    x_opencti_reliability
-                }
-                ... on Individual {
-                    x_opencti_firstname
-                    x_opencti_lastname
-                }
-            }
-            objectOrganization {
-                id
-                standard_id
-                name
-            }
-            objectMarking {
-                id
-                standard_id
-                entity_type
-                definition_type
-                definition
-                created
-                modified
-                x_opencti_order
-                x_opencti_color
-            }
-            objectLabel {
-                id
-                value
-                color
-            }
-            externalReferences {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
-                        created
-                        modified
-                        importFiles {
-                            edges {
-                                node {
-                                    id
-                                    name
-                                    size
-                                    metaData {
-                                        mimetype
-                                        version
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            revoked
-            confidence
+            relationship_type
+        }
+        ... on StixSightingRelationship {
+            standard_id
+            spec_version
+            created_at
+            updated_at
+        }
+    """
+
+    FILES_PROPERTIES = """
+        id
+        name
+        size
+        metaData {
+            mimetype
+            version
+        }
+        objectMarking {
+            id
+            standard_id
+            entity_type
+            definition_type
+            definition
             created
             modified
-            name
-            description
-            severity
-            priority
-            information_types
-            objects(all: true) {
-                edges {
-                    node {
-                        ... on BasicObject {
-                            id
-                            entity_type
-                            parent_types
-                        }
-                        ... on BasicRelationship {
-                            id
-                            entity_type
-                            parent_types
-                        }
-                        ... on StixObject {
-                            standard_id
-                            spec_version
-                            created_at
-                            updated_at
-                        }
-                        ... on AttackPattern {
-                            name
-                        }
-                        ... on Campaign {
-                            name
-                        }
-                        ... on CourseOfAction {
-                            name
-                        }
-                        ... on Individual {
-                            name
-                        }
-                        ... on Organization {
-                            name
-                        }
-                        ... on Sector {
-                            name
-                        }
-                        ... on System {
-                            name
-                        }
-                        ... on Indicator {
-                            name
-                        }
-                        ... on Infrastructure {
-                            name
-                        }
-                        ... on IntrusionSet {
-                            name
-                        }
-                        ... on Position {
-                            name
-                        }
-                        ... on City {
-                            name
-                        }
-                        ... on Country {
-                            name
-                        }
-                        ... on Region {
-                            name
-                        }
-                        ... on Malware {
-                            name
-                        }
-                        ... on ThreatActor {
-                            name
-                        }
-                        ... on Tool {
-                            name
-                        }
-                        ... on Vulnerability {
-                            name
-                        }
-                        ... on Incident {
-                            name
-                        }
-                        ... on Event {
-                            name
-                        }
-                        ... on Channel {
-                            name
-                        }
-                        ... on Narrative {
-                            name
-                        }
-                        ... on Language {
-                            name
-                        }
-                        ... on DataComponent {
-                            name
-                        }
-                        ... on DataSource {
-                            name
-                        }
-                        ... on StixCyberObservable {
-                            observable_value
-                        }
-                        ... on StixCoreRelationship {
-                            standard_id
-                            spec_version
-                            created_at
-                            updated_at
-                            relationship_type
-                        }
-                       ... on StixSightingRelationship {
-                            standard_id
-                            spec_version
-                            created_at
-                            updated_at
-                        }
-                    }
-                }
-            }
-            importFiles {
-                edges {
-                    node {
-                        id
-                        name
-                        size
-                        metaData {
-                            mimetype
-                            version
-                        }
-                        objectMarking {
-                            id
-                            standard_id
-                            entity_type
-                            definition_type
-                            definition
-                            created
-                            modified
-                            x_opencti_order
-                            x_opencti_color
-                        }
-                    }
-                }
-            }
-        """
+            x_opencti_order
+            x_opencti_color
+        }
+    """
 
     @staticmethod
     def generate_id(name, created):
@@ -518,228 +295,6 @@ class CaseRfi:
         :rtype: str
         """
         return CaseRfi.generate_id(data["name"], data["created"])
-
-    def list(self, **kwargs):
-        """List Case RFI objects.
-
-        :param filters: the filters to apply
-        :type filters: dict
-        :param search: the search keyword
-        :type search: str
-        :param first: return the first n rows from the after ID (or the beginning if not set)
-        :type first: int
-        :param after: ID of the first row for pagination
-        :type after: str
-        :param orderBy: field to order results by
-        :type orderBy: str
-        :param orderMode: ordering mode (asc/desc)
-        :type orderMode: str
-        :param customAttributes: custom attributes to return
-        :type customAttributes: str
-        :param getAll: whether to retrieve all results
-        :type getAll: bool
-        :param withPagination: whether to include pagination info
-        :type withPagination: bool
-        :param withFiles: whether to include files
-        :type withFiles: bool
-        :return: List of Case RFI objects
-        :rtype: list
-        """
-        filters = kwargs.get("filters", None)
-        search = kwargs.get("search", None)
-        first = kwargs.get("first", 500)
-        after = kwargs.get("after", None)
-        order_by = kwargs.get("orderBy", None)
-        order_mode = kwargs.get("orderMode", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        get_all = kwargs.get("getAll", False)
-        with_pagination = kwargs.get("withPagination", False)
-        with_files = kwargs.get("withFiles", False)
-
-        self.opencti.app_logger.info(
-            "Listing Case Rfis with filters", {"filters": json.dumps(filters)}
-        )
-        query = (
-            """
-                    query CaseRfis($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: CaseRfisOrdering, $orderMode: OrderingMode) {
-                        caseRfis(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
-                            edges {
-                                node {
-                                    """
-            + (
-                custom_attributes
-                if custom_attributes is not None
-                else (self.properties_with_files if with_files else self.properties)
-            )
-            + """
-                        }
-                    }
-                    pageInfo {
-                        startCursor
-                        endCursor
-                        hasNextPage
-                        hasPreviousPage
-                        globalCount
-                    }
-                }
-            }
-        """
-        )
-        result = self.opencti.query(
-            query,
-            {
-                "filters": filters,
-                "search": search,
-                "first": first,
-                "after": after,
-                "orderBy": order_by,
-                "orderMode": order_mode,
-            },
-        )
-        if get_all:
-            final_data = []
-            data = self.opencti.process_multiple(result["data"]["caseRfis"])
-            final_data = final_data + data
-            while result["data"]["caseRfis"]["pageInfo"]["hasNextPage"]:
-                after = result["data"]["caseRfis"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.debug("Listing Case Rfis", {"after": after})
-                result = self.opencti.query(
-                    query,
-                    {
-                        "filters": filters,
-                        "search": search,
-                        "first": first,
-                        "after": after,
-                        "orderBy": order_by,
-                        "orderMode": order_mode,
-                    },
-                )
-                data = self.opencti.process_multiple(result["data"]["caseRfis"])
-                final_data = final_data + data
-            return final_data
-        else:
-            return self.opencti.process_multiple(
-                result["data"]["caseRfis"], with_pagination
-            )
-
-    def read(self, **kwargs):
-        """Read a Case RFI object.
-
-        :param id: the id of the Case RFI
-        :type id: str
-        :param filters: the filters to apply if no id provided
-        :type filters: dict
-        :param customAttributes: custom attributes to return
-        :type customAttributes: str
-        :param withFiles: whether to include files
-        :type withFiles: bool
-        :return: Case RFI object
-        :rtype: dict or None
-        """
-        id = kwargs.get("id", None)
-        filters = kwargs.get("filters", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        with_files = kwargs.get("withFiles", False)
-        if id is not None:
-            self.opencti.app_logger.info("Reading Case Rfi", {"id": id})
-            query = (
-                """
-                        query CaseRfi($id: String!) {
-                            caseRfi(id: $id) {
-                                """
-                + (
-                    custom_attributes
-                    if custom_attributes is not None
-                    else (self.properties_with_files if with_files else self.properties)
-                )
-                + """
-                    }
-                }
-            """
-            )
-            result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(result["data"]["caseRfi"])
-        elif filters is not None:
-            result = self.list(filters=filters)
-            if len(result) > 0:
-                return result[0]
-            else:
-                return None
-
-    def get_by_stix_id_or_name(self, **kwargs):
-        """Read a Case RFI object by stix_id or name.
-
-        :param stix_id: the STIX ID of the Case RFI
-        :type stix_id: str
-        :param name: the name of the Case RFI
-        :type name: str
-        :param created: the creation date of the Case RFI
-        :type created: str
-        :return: Case RFI object
-        :rtype: dict or None
-        """
-        stix_id = kwargs.get("stix_id", None)
-        name = kwargs.get("name", None)
-        created = kwargs.get("created", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        object_result = None
-        if stix_id is not None:
-            object_result = self.read(id=stix_id, customAttributes=custom_attributes)
-        if object_result is None and name is not None and created is not None:
-            created_final = parse(created).strftime("%Y-%m-%d")
-            object_result = self.read(
-                filters={
-                    "mode": "and",
-                    "filters": [
-                        {"key": "name", "values": [name]},
-                        {"key": "created_day", "values": [created_final]},
-                    ],
-                    "filterGroups": [],
-                },
-                customAttributes=custom_attributes,
-            )
-        return object_result
-
-    def contains_stix_object_or_stix_relationship(self, **kwargs):
-        """Check if a Case RFI already contains a STIX Object or Relationship.
-
-        :param id: the id of the Case RFI
-        :type id: str
-        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :type stixObjectOrStixRelationshipId: str
-        :return: Boolean indicating if the entity is contained
-        :rtype: bool or None
-        """
-        id = kwargs.get("id", None)
-        stix_object_or_stix_relationship_id = kwargs.get(
-            "stixObjectOrStixRelationshipId", None
-        )
-        if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.app_logger.info(
-                "Checking StixObjectOrStixRelationship in CaseRfi",
-                {
-                    "stix_object_or_stix_relationship_id": stix_object_or_stix_relationship_id,
-                    "id": id,
-                },
-            )
-            query = """
-                query CaseRfiContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
-                    caseRfiContainsStixObjectOrStixRelationship(id: $id, stixObjectOrStixRelationshipId: $stixObjectOrStixRelationshipId)
-                }
-            """
-            result = self.opencti.query(
-                query,
-                {
-                    "id": id,
-                    "stixObjectOrStixRelationshipId": stix_object_or_stix_relationship_id,
-                },
-            )
-            return result["data"]["caseRfiContainsStixObjectOrStixRelationship"]
-        else:
-            self.opencti.app_logger.error(
-                "[opencti_case_rfi] Missing parameters: id or stixObjectOrStixRelationshipId"
-            )
-            return None
 
     def create(self, **kwargs):
         """Create a Case RFI (Request for Information) object.
@@ -878,100 +433,6 @@ class CaseRfi:
             self.opencti.app_logger.error("[opencti_case_rfi] Missing parameters: name")
             return None
 
-    def add_stix_object_or_stix_relationship(self, **kwargs):
-        """Add a Stix-Entity object to Case RFI object (object_refs).
-
-        :param id: the id of the Case RFI
-        :type id: str
-        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :type stixObjectOrStixRelationshipId: str
-        :return: Boolean indicating success
-        :rtype: bool
-        """
-        id = kwargs.get("id", None)
-        stix_object_or_stix_relationship_id = kwargs.get(
-            "stixObjectOrStixRelationshipId", None
-        )
-        if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.app_logger.info(
-                "Adding StixObjectOrStixRelationship in CaseRfi",
-                {
-                    "stix_object_or_stix_relationship_id": stix_object_or_stix_relationship_id,
-                    "id": id,
-                },
-            )
-            query = """
-               mutation CaseRfiEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
-                   stixDomainObjectEdit(id: $id) {
-                        relationAdd(input: $input) {
-                            id
-                        }
-                   }
-               }
-            """
-            self.opencti.query(
-                query,
-                {
-                    "id": id,
-                    "input": {
-                        "toId": stix_object_or_stix_relationship_id,
-                        "relationship_type": "object",
-                    },
-                },
-            )
-            return True
-        else:
-            self.opencti.app_logger.error(
-                "[opencti_case_rfi] Missing parameters: id and stixObjectOrStixRelationshipId"
-            )
-            return False
-
-    def remove_stix_object_or_stix_relationship(self, **kwargs):
-        """Remove a Stix-Entity object from Case RFI object (object_refs).
-
-        :param id: the id of the Case RFI
-        :type id: str
-        :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
-        :type stixObjectOrStixRelationshipId: str
-        :return: Boolean indicating success
-        :rtype: bool
-        """
-        id = kwargs.get("id", None)
-        stix_object_or_stix_relationship_id = kwargs.get(
-            "stixObjectOrStixRelationshipId", None
-        )
-        if id is not None and stix_object_or_stix_relationship_id is not None:
-            self.opencti.app_logger.info(
-                "Removing StixObjectOrStixRelationship in CaseRfi",
-                {
-                    "stix_object_or_stix_relationship_id": stix_object_or_stix_relationship_id,
-                    "id": id,
-                },
-            )
-            query = """
-               mutation CaseRfiEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
-                   stixDomainObjectEdit(id: $id) {
-                        relationDelete(toId: $toId, relationship_type: $relationship_type) {
-                            id
-                        }
-                   }
-               }
-            """
-            self.opencti.query(
-                query,
-                {
-                    "id": id,
-                    "toId": stix_object_or_stix_relationship_id,
-                    "relationship_type": "object",
-                },
-            )
-            return True
-        else:
-            self.opencti.app_logger.error(
-                "[opencti_case_rfi] Missing parameters: id and stixObjectOrStixRelationshipId"
-            )
-            return False
-
     def import_from_stix2(self, **kwargs):
         """Import a Case RFI object from a STIX2 object.
 
@@ -990,21 +451,21 @@ class CaseRfi:
         if stix_object is not None:
             # Search in extensions
             if "x_opencti_stix_ids" not in stix_object:
-                stix_object["x_opencti_stix_ids"] = (
-                    self.opencti.get_attribute_in_extension("stix_ids", stix_object)
-                )
+                stix_object[
+                    "x_opencti_stix_ids"
+                ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
             if "x_opencti_granted_refs" not in stix_object:
-                stix_object["x_opencti_granted_refs"] = (
-                    self.opencti.get_attribute_in_extension("granted_refs", stix_object)
-                )
+                stix_object[
+                    "x_opencti_granted_refs"
+                ] = self.opencti.get_attribute_in_extension("granted_refs", stix_object)
             if "x_opencti_workflow_id" not in stix_object:
-                stix_object["x_opencti_workflow_id"] = (
-                    self.opencti.get_attribute_in_extension("workflow_id", stix_object)
-                )
+                stix_object[
+                    "x_opencti_workflow_id"
+                ] = self.opencti.get_attribute_in_extension("workflow_id", stix_object)
             if "x_opencti_assignee_ids" not in stix_object:
-                stix_object["x_opencti_assignee_ids"] = (
-                    self.opencti.get_attribute_in_extension("assignee_ids", stix_object)
-                )
+                stix_object[
+                    "x_opencti_assignee_ids"
+                ] = self.opencti.get_attribute_in_extension("assignee_ids", stix_object)
             if "x_opencti_content" not in stix_object or "content" not in stix_object:
                 stix_object["content"] = self.opencti.get_attribute_in_extension(
                     "content", stix_object
@@ -1013,20 +474,20 @@ class CaseRfi:
                 stix_object["content"] = stix_object["x_opencti_content"]
 
             if "x_opencti_participant_ids" not in stix_object:
-                stix_object["x_opencti_participant_ids"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "participant_ids", stix_object
-                    )
+                stix_object[
+                    "x_opencti_participant_ids"
+                ] = self.opencti.get_attribute_in_extension(
+                    "participant_ids", stix_object
                 )
             if "x_opencti_modified_at" not in stix_object:
-                stix_object["x_opencti_modified_at"] = (
-                    self.opencti.get_attribute_in_extension("modified_at", stix_object)
-                )
+                stix_object[
+                    "x_opencti_modified_at"
+                ] = self.opencti.get_attribute_in_extension("modified_at", stix_object)
             if "opencti_upsert_operations" not in stix_object:
-                stix_object["opencti_upsert_operations"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "opencti_upsert_operations", stix_object
-                    )
+                stix_object[
+                    "opencti_upsert_operations"
+                ] = self.opencti.get_attribute_in_extension(
+                    "opencti_upsert_operations", stix_object
                 )
 
             return self.create(

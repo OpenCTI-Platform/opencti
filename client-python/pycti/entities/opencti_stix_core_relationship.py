@@ -5,8 +5,10 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.entities.base import Entity
 
-class StixCoreRelationship:
+
+class StixCoreRelationship(Entity):
     """Main StixCoreRelationship class for OpenCTI
 
     Manages STIX relationships between entities in the OpenCTI platform.
@@ -15,339 +17,332 @@ class StixCoreRelationship:
     :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the StixCoreRelationship instance.
-
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = """
+    PROPERTIES = """
+        id
+        entity_type
+        parent_types
+        spec_version
+        created_at
+        updated_at
+        standard_id
+        relationship_type
+        description
+        start_time
+        stop_time
+        revoked
+        confidence
+        lang
+        created
+        modified
+        status {
             id
-            entity_type
-            parent_types
-            spec_version
-            created_at
-            updated_at
-            standard_id
-            relationship_type
-            description
-            start_time
-            stop_time
-            revoked
-            confidence
-            lang
-            created
-            modified
-            status {
-                id
-                template {
-                  id
-                  name
-                  color
-                }
+            template {
+              id
+              name
+              color
             }
-            createdBy {
-                ... on Identity {
-                    id
-                    standard_id
-                    entity_type
-                    parent_types
-                    spec_version
-                    identity_class
-                    name
-                    description
-                    roles
-                    contact_information
-                    x_opencti_aliases
-                    created
-                    modified
-                    objectLabel {
-                        id
-                        value
-                        color
-                    }
-                }
-                ... on Organization {
-                    x_opencti_organization_type
-                    x_opencti_reliability
-                }
-                ... on Individual {
-                    x_opencti_firstname
-                    x_opencti_lastname
-                }
-            }
-            objectMarking {
+        }
+        createdBy {
+            ... on Identity {
                 id
                 standard_id
                 entity_type
-                definition_type
-                definition
+                parent_types
+                spec_version
+                identity_class
+                name
+                description
+                roles
+                contact_information
+                x_opencti_aliases
                 created
                 modified
-                x_opencti_order
-                x_opencti_color
+                objectLabel {
+                    id
+                    value
+                    color
+                }
             }
-            objectOrganization {
-                id
-                standard_id
-                name
+            ... on Organization {
+                x_opencti_organization_type
+                x_opencti_reliability
             }
-            objectLabel {
-                id
-                value
-                color
+            ... on Individual {
+                x_opencti_firstname
+                x_opencti_lastname
             }
-            externalReferences {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
-                        created
-                        modified
-                        importFiles {
-                            edges {
-                                node {
-                                    id
-                                    name
-                                    size
-                                    metaData {
-                                        mimetype
-                                        version
-                                    }
+        }
+        objectMarking {
+            id
+            standard_id
+            entity_type
+            definition_type
+            definition
+            created
+            modified
+            x_opencti_order
+            x_opencti_color
+        }
+        objectOrganization {
+            id
+            standard_id
+            name
+        }
+        objectLabel {
+            id
+            value
+            color
+        }
+        externalReferences {
+            edges {
+                node {
+                    id
+                    standard_id
+                    entity_type
+                    source_name
+                    description
+                    url
+                    hash
+                    external_id
+                    created
+                    modified
+                    importFiles {
+                        edges {
+                            node {
+                                id
+                                name
+                                size
+                                metaData {
+                                    mimetype
+                                    version
                                 }
                             }
                         }
                     }
                 }
             }
-            from {
-                ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on StixObject {
-                    standard_id
-                    spec_version
-                    created_at
-                    updated_at
-                }
-                ... on AttackPattern {
-                    name
-                }
-                ... on Campaign {
-                    name
-                }
-                ... on CourseOfAction {
-                    name
-                }
-                ... on Individual {
-                    name
-                }
-                ... on Organization {
-                    name
-                }
-                ... on Sector {
-                    name
-                }
-                ... on System {
-                    name
-                }
-                ... on Indicator {
-                    name
-                }
-                ... on Infrastructure {
-                    name
-                }
-                ... on IntrusionSet {
-                    name
-                }
-                ... on Position {
-                    name
-                }
-                ... on City {
-                    name
-                }
-                ... on Country {
-                    name
-                }
-                ... on Region {
-                    name
-                }
-                ... on Malware {
-                    name
-                }
-                ... on ThreatActor {
-                    name
-                }
-                ... on Tool {
-                    name
-                }
-                ... on Vulnerability {
-                    name
-                }
-                ... on Incident {
-                    name
-                }
-                ... on Event {
-                    name
-                    description
-                }
-                ... on Channel {
-                    name
-                    description
-                }
-                ... on Narrative {
-                    name
-                    description
-                }
-                ... on Language {
-                    name
-                }
-                ... on DataComponent {
-                    name
-                    description
-                }
-                ... on DataSource {
-                    name
-                    description
-                }
-                ... on Case {
-                    name
-                }
-                ... on StixCyberObservable {
-                    observable_value
-                }
-                ... on StixCoreRelationship {
-                    standard_id
-                    spec_version
-                    created_at
-                    updated_at
-                }
+        }
+        from {
+            ... on BasicObject {
+                id
+                entity_type
+                parent_types
             }
-            to {
-                ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on StixObject {
-                    standard_id
-                    spec_version
-                    created_at
-                    updated_at
-                }
-                ... on AttackPattern {
-                    name
-                }
-                ... on Campaign {
-                    name
-                }
-                ... on CourseOfAction {
-                    name
-                }
-                ... on Individual {
-                    name
-                }
-                ... on Organization {
-                    name
-                }
-                ... on Sector {
-                    name
-                }
-                ... on System {
-                    name
-                }
-                ... on Indicator {
-                    name
-                }
-                ... on Infrastructure {
-                    name
-                }
-                ... on IntrusionSet {
-                    name
-                }
-                ... on Position {
-                    name
-                }
-                ... on City {
-                    name
-                }
-                ... on Country {
-                    name
-                }
-                ... on Region {
-                    name
-                }
-                ... on Malware {
-                    name
-                }
-                ... on ThreatActor {
-                    name
-                }
-                ... on Tool {
-                    name
-                }
-                ... on Vulnerability {
-                    name
-                }
-                ... on Incident {
-                    name
-                }
-                ... on Event {
-                    name
-                    description
-                }
-                ... on Channel {
-                    name
-                    description
-                }
-                ... on Narrative {
-                    name
-                    description
-                }
-                ... on Language {
-                    name
-                }
-                ... on DataComponent {
-                    name
-                    description
-                }
-                ... on DataSource {
-                    name
-                    description
-                }
-                ... on Case {
-                    name
-                }
-                ... on StixCyberObservable {
-                    observable_value
-                }
-                ... on StixCoreRelationship {
-                    standard_id
-                    spec_version
-                    created_at
-                    updated_at
-                }
+            ... on BasicRelationship {
+                id
+                entity_type
+                parent_types
             }
-        """
+            ... on StixObject {
+                standard_id
+                spec_version
+                created_at
+                updated_at
+            }
+            ... on AttackPattern {
+                name
+            }
+            ... on Campaign {
+                name
+            }
+            ... on CourseOfAction {
+                name
+            }
+            ... on Individual {
+                name
+            }
+            ... on Organization {
+                name
+            }
+            ... on Sector {
+                name
+            }
+            ... on System {
+                name
+            }
+            ... on Indicator {
+                name
+            }
+            ... on Infrastructure {
+                name
+            }
+            ... on IntrusionSet {
+                name
+            }
+            ... on Position {
+                name
+            }
+            ... on City {
+                name
+            }
+            ... on Country {
+                name
+            }
+            ... on Region {
+                name
+            }
+            ... on Malware {
+                name
+            }
+            ... on ThreatActor {
+                name
+            }
+            ... on Tool {
+                name
+            }
+            ... on Vulnerability {
+                name
+            }
+            ... on Incident {
+                name
+            }
+            ... on Event {
+                name
+                description
+            }
+            ... on Channel {
+                name
+                description
+            }
+            ... on Narrative {
+                name
+                description
+            }
+            ... on Language {
+                name
+            }
+            ... on DataComponent {
+                name
+                description
+            }
+            ... on DataSource {
+                name
+                description
+            }
+            ... on Case {
+                name
+            }
+            ... on StixCyberObservable {
+                observable_value
+            }
+            ... on StixCoreRelationship {
+                standard_id
+                spec_version
+                created_at
+                updated_at
+            }
+        }
+        to {
+            ... on BasicObject {
+                id
+                entity_type
+                parent_types
+            }
+            ... on BasicRelationship {
+                id
+                entity_type
+                parent_types
+            }
+            ... on StixObject {
+                standard_id
+                spec_version
+                created_at
+                updated_at
+            }
+            ... on AttackPattern {
+                name
+            }
+            ... on Campaign {
+                name
+            }
+            ... on CourseOfAction {
+                name
+            }
+            ... on Individual {
+                name
+            }
+            ... on Organization {
+                name
+            }
+            ... on Sector {
+                name
+            }
+            ... on System {
+                name
+            }
+            ... on Indicator {
+                name
+            }
+            ... on Infrastructure {
+                name
+            }
+            ... on IntrusionSet {
+                name
+            }
+            ... on Position {
+                name
+            }
+            ... on City {
+                name
+            }
+            ... on Country {
+                name
+            }
+            ... on Region {
+                name
+            }
+            ... on Malware {
+                name
+            }
+            ... on ThreatActor {
+                name
+            }
+            ... on Tool {
+                name
+            }
+            ... on Vulnerability {
+                name
+            }
+            ... on Incident {
+                name
+            }
+            ... on Event {
+                name
+                description
+            }
+            ... on Channel {
+                name
+                description
+            }
+            ... on Narrative {
+                name
+                description
+            }
+            ... on Language {
+                name
+            }
+            ... on DataComponent {
+                name
+                description
+            }
+            ... on DataSource {
+                name
+                description
+            }
+            ... on Case {
+                name
+            }
+            ... on StixCyberObservable {
+                observable_value
+            }
+            ... on StixCoreRelationship {
+                standard_id
+                spec_version
+                created_at
+                updated_at
+            }
+        }
+    """
 
     @staticmethod
     def generate_id(
@@ -1352,32 +1347,32 @@ class StixCoreRelationship:
         if stix_relation is not None:
             # Search in extensions
             if "x_opencti_stix_ids" not in stix_relation:
-                stix_relation["x_opencti_stix_ids"] = (
-                    self.opencti.get_attribute_in_extension("stix_ids", stix_relation)
-                )
+                stix_relation[
+                    "x_opencti_stix_ids"
+                ] = self.opencti.get_attribute_in_extension("stix_ids", stix_relation)
             if "x_opencti_granted_refs" not in stix_relation:
-                stix_relation["x_opencti_granted_refs"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "granted_refs", stix_relation
-                    )
+                stix_relation[
+                    "x_opencti_granted_refs"
+                ] = self.opencti.get_attribute_in_extension(
+                    "granted_refs", stix_relation
                 )
             if "x_opencti_workflow_id" not in stix_relation:
-                stix_relation["x_opencti_workflow_id"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "workflow_id", stix_relation
-                    )
+                stix_relation[
+                    "x_opencti_workflow_id"
+                ] = self.opencti.get_attribute_in_extension(
+                    "workflow_id", stix_relation
                 )
             if "x_opencti_modified_at" not in stix_relation:
-                stix_relation["x_opencti_modified_at"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "modified_at", stix_relation
-                    )
+                stix_relation[
+                    "x_opencti_modified_at"
+                ] = self.opencti.get_attribute_in_extension(
+                    "modified_at", stix_relation
                 )
             if "opencti_upsert_operations" not in stix_relation:
-                stix_relation["opencti_upsert_operations"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "opencti_upsert_operations", stix_relation
-                    )
+                stix_relation[
+                    "opencti_upsert_operations"
+                ] = self.opencti.get_attribute_in_extension(
+                    "opencti_upsert_operations", stix_relation
                 )
 
             raw_coverages = (

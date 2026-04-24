@@ -1,7 +1,9 @@
 from typing import Dict, List, Optional
 
+from pycti.entities.base import Entity
 
-class Role:
+
+class Role(Entity):
     """Representation of a role in OpenCTI
 
     Roles can have capabilities. Groups have roles, and the combined
@@ -10,41 +12,42 @@ class Role:
 
     Check the properties attribute of the class to understand what default
     properties are fetched.
-
-    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the Role instance.
-
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = """
+    PROPERTIES = """
+        id
+        standard_id
+        entity_type
+        parent_types
+        name
+        description
+        created_at
+        updated_at
+        capabilities {
             id
-            standard_id
-            entity_type
-            parent_types
             name
             description
-            created_at
-            updated_at
-            capabilities {
-                id
-                name
-                description
-            }
-            capabilitiesInDraft {
-                id
-                name
-                description
-            }
-            can_manage_sensitive_config
-        """
+        }
+        capabilitiesInDraft {
+            id
+            name
+            description
+        }
+        can_manage_sensitive_config
+    """
 
-    def list(self, **kwargs) -> List[Dict]:
+    def list(
+        self,
+        search: str = None,
+        first: int = 500,
+        after: str = None,
+        order_by: str = None,
+        order_mode: str = None,
+        custom_attributes: str = None,
+        get_all: bool = False,
+        with_pagination: bool = False,
+        **kwargs,
+    ) -> List[Dict]:
         """Search or list the roles on the server.
 
         :param search:
@@ -76,14 +79,11 @@ class Role:
         :return: List of Python dictionaries with the properties of the role.
         :rtype: List[Dict]
         """
-        search = kwargs.get("search", None)
-        first = kwargs.get("first", 500)
-        after = kwargs.get("after", None)
-        order_by = kwargs.get("orderBy", None)
-        order_mode = kwargs.get("orderMode", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        get_all = kwargs.get("getAll", False)
-        with_pagination = kwargs.get("withPagination", False)
+        order_by = order_by or kwargs.get("orderBy", None)
+        order_mode = order_mode or kwargs.get("orderMode", None)
+        custom_attributes = custom_attributes or kwargs.get("customAttributes", None)
+        get_all = get_all or kwargs.get("getAll", False)
+        with_pagination = with_pagination or kwargs.get("withPagination", False)
 
         self.opencti.admin_logger.info(
             "Searching roles matching search term", {"search": search}
@@ -148,7 +148,13 @@ class Role:
                 result["data"]["roles"], with_pagination
             )
 
-    def read(self, **kwargs) -> Optional[Dict]:
+    def read(
+        self,
+        id: str = None,
+        search: str = None,
+        custom_attributes: str = None,
+        **kwargs,
+    ) -> Optional[Dict]:
         """Get a role given its ID or a search term
 
         One of id or search must be provided.
@@ -157,15 +163,14 @@ class Role:
         :type id: str, optional
         :param search: Search term for a role, e.g. its name
         :type search: str, optional
-        :param customAttributes: Custom attributes on the role to return
-        :type customAttributes: str, optional
+        :param custom_attributes: Custom attributes on the role to return
+        :type custom_attributes: str, optional
 
         :return: Representation of the role
         :rtype: Optional[Dict]
         """
-        id = kwargs.get("id", None)
-        search = kwargs.get("search", None)
-        custom_attributes = kwargs.get("customAttributes", None)
+        assert id or search, "One of id or search must be provided"
+        custom_attributes = custom_attributes or kwargs.get("customAttributes", None)
 
         if id is not None:
             self.opencti.admin_logger.info("Reading role", {"id": id})

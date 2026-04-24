@@ -2,165 +2,167 @@
 
 import json
 import uuid
+from functools import lru_cache
 from typing import Union
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.entities.base import Entity
+from pycti.entities.mixins import ListFilesMixin
 
-class ThreatActorIndividual:
+
+class ThreatActorIndividual(ListFilesMixin, Entity):
     """Main ThreatActorIndividual class for OpenCTI
 
     Manages individual threat actor entities in the OpenCTI platform.
-
-    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the ThreatActorIndividual instance.
-
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = """
+    PROPERTIES = """
+        id
+        standard_id
+        entity_type
+        parent_types
+        spec_version
+        created_at
+        updated_at
+        status {
             id
-            standard_id
-            entity_type
-            parent_types
-            spec_version
-            created_at
-            updated_at
-            status {
-                id
-                template {
-                  id
-                  name
-                  color
-                }
+            template {
+              id
+              name
+              color
             }
-            createdBy {
-                ... on Identity {
-                    id
-                    standard_id
-                    entity_type
-                    parent_types
-                    spec_version
-                    identity_class
-                    name
-                    description
-                    roles
-                    contact_information
-                    x_opencti_aliases
-                    created
-                    modified
-                    objectLabel {
-                        id
-                        value
-                        color
-                    }
-                }
-                ... on Organization {
-                    x_opencti_organization_type
-                    x_opencti_reliability
-                }
-                ... on Individual {
-                    x_opencti_firstname
-                    x_opencti_lastname
-                }
-            }
-            objectOrganization {
-                id
-                standard_id
-                name
-            }
-            objectMarking {
+        }
+        createdBy {
+            ... on Identity {
                 id
                 standard_id
                 entity_type
-                definition_type
-                definition
+                parent_types
+                spec_version
+                identity_class
+                name
+                description
+                roles
+                contact_information
+                x_opencti_aliases
                 created
                 modified
-                x_opencti_order
-                x_opencti_color
+                objectLabel {
+                    id
+                    value
+                    color
+                }
             }
-            objectLabel {
-                id
-                value
-                color
+            ... on Organization {
+                x_opencti_organization_type
+                x_opencti_reliability
             }
-            externalReferences {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
-                        created
-                        modified
-                        importFiles {
-                            edges {
-                                node {
-                                    id
-                                    name
-                                    size
-                                    metaData {
-                                        mimetype
-                                        version
-                                    }
+            ... on Individual {
+                x_opencti_firstname
+                x_opencti_lastname
+            }
+        }
+        objectOrganization {
+            id
+            standard_id
+            name
+        }
+        objectMarking {
+            id
+            standard_id
+            entity_type
+            definition_type
+            definition
+            created
+            modified
+            x_opencti_order
+            x_opencti_color
+        }
+        objectLabel {
+            id
+            value
+            color
+        }
+        externalReferences {
+            edges {
+                node {
+                    id
+                    standard_id
+                    entity_type
+                    source_name
+                    description
+                    url
+                    hash
+                    external_id
+                    created
+                    modified
+                    importFiles {
+                        edges {
+                            node {
+                                id
+                                name
+                                size
+                                metaData {
+                                    mimetype
+                                    version
                                 }
                             }
                         }
                     }
                 }
             }
-            revoked
-            confidence
+        }
+        revoked
+        confidence
+        created
+        modified
+        name
+        description
+        aliases
+        threat_actor_types
+        first_seen
+        last_seen
+        roles
+        goals
+        sophistication
+        resource_level
+        primary_motivation
+        secondary_motivations
+        personal_motivations
+    """
+
+    FILES_PROPERTIES = """
+        id
+        name
+        size
+        metaData {
+            mimetype
+            version
+        }
+        objectMarking {
+            id
+            standard_id
+            entity_type
+            definition_type
+            definition
             created
             modified
-            name
-            description
-            aliases
-            threat_actor_types
-            first_seen
-            last_seen
-            roles
-            goals
-            sophistication
-            resource_level
-            primary_motivation
-            secondary_motivations
-            personal_motivations
-            importFiles {
-                edges {
-                    node {
-                        id
-                        name
-                        size
-                        metaData {
-                            mimetype
-                            version
-                        }
-                        objectMarking {
-                            id
-                            standard_id
-                            entity_type
-                            definition_type
-                            definition
-                            created
-                            modified
-                            x_opencti_order
-                            x_opencti_color
-                        }
-                    }
-                }
-            }
-        """
+            x_opencti_order
+            x_opencti_color
+        }
+    """
+
+    OVERRIDES = {
+        "ordering": "ThreatActorsIndividualOrdering",
+    }
+
+    @lru_cache(maxsize=2)
+    def name(self, plural: bool = False) -> str:
+        name = self.__class__.__name__
+        if plural:
+            return "ThreatActorsIndividuals"
+        return name
 
     @staticmethod
     def generate_id(name):
@@ -187,163 +189,6 @@ class ThreatActorIndividual:
         :rtype: str
         """
         return ThreatActorIndividual.generate_id(data["name"])
-
-    def list(self, **kwargs) -> dict:
-        """List Threat-Actor-Individual objects
-
-        The list method accepts the following kwargs:
-
-        :param filters: (optional) the filters to apply
-        :type filters: list
-        :param search: (optional) a search keyword to apply for the listing
-        :type search: str
-        :param first: (optional) return the first n rows from the `after` ID
-                            or the beginning if not set
-        :type first: int
-        :param after: (optional) OpenCTI object ID of the first row for pagination
-        :type after: str
-        :param orderBy: (optional) the field to order the response on
-        :type orderBy: str
-        :param orderMode: (optional) either "`asc`" or "`desc`"
-        :type orderMode: str
-        :param withPagination: (optional) switch to use pagination
-        :type withPagination: bool
-        :return: List of Threat-Actor-Individual objects
-        :rtype: list
-        """
-
-        filters = kwargs.get("filters", None)
-        search = kwargs.get("search", None)
-        first = kwargs.get("first", 500)
-        after = kwargs.get("after", None)
-        order_by = kwargs.get("orderBy", None)
-        order_mode = kwargs.get("orderMode", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        get_all = kwargs.get("getAll", False)
-        with_pagination = kwargs.get("withPagination", False)
-
-        self.opencti.app_logger.info(
-            "Listing Threat-Actors-Individual with filters",
-            {"filters": json.dumps(filters)},
-        )
-        query = (
-            """
-                query ThreatActorsIndividual($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: ThreatActorsIndividualOrdering, $orderMode: OrderingMode) {
-                    threatActorsIndividuals(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
-                        edges {
-                            node {
-                                """
-            + (custom_attributes if custom_attributes is not None else self.properties)
-            + """
-                        }
-                    }
-                    pageInfo {
-                        startCursor
-                        endCursor
-                        hasNextPage
-                        hasPreviousPage
-                        globalCount
-                    }
-                }
-            }
-        """
-        )
-        result = self.opencti.query(
-            query,
-            {
-                "filters": filters,
-                "search": search,
-                "first": first,
-                "after": after,
-                "orderBy": order_by,
-                "orderMode": order_mode,
-            },
-        )
-        if get_all:
-            final_data = []
-            data = self.opencti.process_multiple(
-                result["data"]["threatActorsIndividuals"]
-            )
-            final_data = final_data + data
-            while result["data"]["threatActorsIndividuals"]["pageInfo"]["hasNextPage"]:
-                after = result["data"]["threatActorsIndividuals"]["pageInfo"][
-                    "endCursor"
-                ]
-                self.opencti.app_logger.debug(
-                    "Listing threatActorsIndividuals", {"after": after}
-                )
-                result = self.opencti.query(
-                    query,
-                    {
-                        "filters": filters,
-                        "search": search,
-                        "first": first,
-                        "after": after,
-                        "orderBy": order_by,
-                        "orderMode": order_mode,
-                    },
-                )
-                data = self.opencti.process_multiple(
-                    result["data"]["threatActorsIndividuals"]
-                )
-                final_data = final_data + data
-            return final_data
-        else:
-            return self.opencti.process_multiple(
-                result["data"]["threatActorsIndividuals"], with_pagination
-            )
-
-    def read(self, **kwargs) -> Union[dict, None]:
-        """Read a Threat-Actor-Individual object
-
-        read can be either used with a known OpenCTI entity `id` or by using a
-        valid filter to search and return a single Threat-Actor-Individual entity or None.
-
-        Note: either `id` or `filters` is required.
-
-        :param id: the id of the Threat-Actor-Individual
-        :type id: str
-        :param filters: the filters to apply if no id provided
-        :type filters: list
-        :return: Threat-Actor-Individual object
-        :rtype: dict or None
-        """
-
-        id = kwargs.get("id", None)
-        filters = kwargs.get("filters", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        if id is not None:
-            self.opencti.app_logger.info("Reading Threat-Actor-Individual", {"id": id})
-            query = (
-                """
-                    query ThreatActorIndividual($id: String!) {
-                        threatActorIndividual(id: $id) {
-                            """
-                + (
-                    custom_attributes
-                    if custom_attributes is not None
-                    else self.properties
-                )
-                + """
-                    }
-                }
-             """
-            )
-            result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(
-                result["data"]["threatActorIndividual"]
-            )
-        elif filters is not None:
-            result = self.list(filters=filters)
-            if len(result) > 0:
-                return result[0]
-            else:
-                return None
-        else:
-            self.opencti.app_logger.error(
-                "[opencti_threat_actor_individual] Missing parameters: id or filters"
-            )
-            return None
 
     def create(self, **kwargs):
         """Create a Threat-Actor-Individual object
@@ -522,26 +367,26 @@ class ThreatActorIndividual:
         if stix_object is not None:
             # Search in extensions
             if "x_opencti_stix_ids" not in stix_object:
-                stix_object["x_opencti_stix_ids"] = (
-                    self.opencti.get_attribute_in_extension("stix_ids", stix_object)
-                )
+                stix_object[
+                    "x_opencti_stix_ids"
+                ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
             if "x_opencti_granted_refs" not in stix_object:
-                stix_object["x_opencti_granted_refs"] = (
-                    self.opencti.get_attribute_in_extension("granted_refs", stix_object)
-                )
+                stix_object[
+                    "x_opencti_granted_refs"
+                ] = self.opencti.get_attribute_in_extension("granted_refs", stix_object)
             if "x_opencti_workflow_id" not in stix_object:
-                stix_object["x_opencti_workflow_id"] = (
-                    self.opencti.get_attribute_in_extension("workflow_id", stix_object)
-                )
+                stix_object[
+                    "x_opencti_workflow_id"
+                ] = self.opencti.get_attribute_in_extension("workflow_id", stix_object)
             if "x_opencti_modified_at" not in stix_object:
-                stix_object["x_opencti_modified_at"] = (
-                    self.opencti.get_attribute_in_extension("modified_at", stix_object)
-                )
+                stix_object[
+                    "x_opencti_modified_at"
+                ] = self.opencti.get_attribute_in_extension("modified_at", stix_object)
             if "opencti_upsert_operations" not in stix_object:
-                stix_object["opencti_upsert_operations"] = (
-                    self.opencti.get_attribute_in_extension(
-                        "opencti_upsert_operations", stix_object
-                    )
+                stix_object[
+                    "opencti_upsert_operations"
+                ] = self.opencti.get_attribute_in_extension(
+                    "opencti_upsert_operations", stix_object
                 )
             return self.create(
                 stix_id=stix_object["id"],

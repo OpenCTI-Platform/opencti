@@ -1,83 +1,57 @@
 # coding: utf-8
 
-import json
 import os
 import uuid
 
 import magic
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.entities import mixins
+from pycti.entities.base import Entity
 
-class ExternalReference:
+
+class ExternalReference(mixins.ListFilesMixin, Entity):
     """Main ExternalReference class for OpenCTI
 
     Manages external references and citations in the OpenCTI platform.
-
-    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the ExternalReference instance.
+    PROPERTIES = """
+        id
+        standard_id
+        entity_type
+        parent_types
+        created_at
+        updated_at
+        created
+        modified
+        source_name
+        description
+        url
+        hash
+        external_id
+    """
 
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = """
+    FILES_PROPERTIES = """
+        id
+        name
+        size
+        metaData {
+            mimetype
+            version
+        }
+        objectMarking {
             id
             standard_id
             entity_type
-            parent_types
-            created_at
-            updated_at
+            definition_type
+            definition
             created
             modified
-            source_name
-            description
-            url
-            hash
-            external_id
-        """
-        self.properties_with_files = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            created_at
-            updated_at
-            created
-            modified
-            source_name
-            description
-            url
-            hash
-            external_id
-            importFiles {
-                edges {
-                    node {
-                        id
-                        name
-                        size
-                        metaData {
-                            mimetype
-                            version
-                        }
-                        objectMarking {
-                            id
-                            standard_id
-                            entity_type
-                            definition_type
-                            definition
-                            created
-                            modified
-                            x_opencti_order
-                            x_opencti_color
-                        }
-                    }
-                }
-            }
-        """
+            x_opencti_order
+            x_opencti_color
+        }
+    """
 
     @staticmethod
     def generate_id(url=None, source_name=None, external_id=None):
@@ -114,149 +88,6 @@ class ExternalReference:
         return ExternalReference.generate_id(
             data.get("url"), data.get("source_name"), data.get("external_id")
         )
-
-    def list(self, **kwargs):
-        """List External-Reference objects.
-
-        :param filters: the filters to apply
-        :type filters: dict
-        :param first: return the first n rows from the after ID (or the beginning if not set)
-        :type first: int
-        :param after: ID of the first row for pagination
-        :type after: str
-        :param orderBy: field to order results by
-        :type orderBy: str
-        :param orderMode: ordering mode (asc/desc)
-        :type orderMode: str
-        :param customAttributes: custom attributes to return
-        :type customAttributes: list
-        :param getAll: whether to retrieve all results
-        :type getAll: bool
-        :param withPagination: whether to include pagination info
-        :type withPagination: bool
-        :param withFiles: whether to include files
-        :type withFiles: bool
-        :return: List of External-Reference objects
-        :rtype: list
-        """
-        filters = kwargs.get("filters", None)
-        first = kwargs.get("first", 500)
-        after = kwargs.get("after", None)
-        order_by = kwargs.get("orderBy", None)
-        order_mode = kwargs.get("orderMode", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        get_all = kwargs.get("getAll", False)
-        with_pagination = kwargs.get("withPagination", False)
-        with_files = kwargs.get("withFiles", False)
-
-        self.opencti.app_logger.info(
-            "Listing External-Reference with filters", {"filters": json.dumps(filters)}
-        )
-        query = (
-            """
-            query ExternalReferences($filters: FilterGroup, $first: Int, $after: ID, $orderBy: ExternalReferencesOrdering, $orderMode: OrderingMode) {
-                externalReferences(filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
-                    edges {
-                        node {
-                            """
-            + (
-                custom_attributes
-                if custom_attributes is not None
-                else (self.properties_with_files if with_files else self.properties)
-            )
-            + """
-                        }
-                    }
-                    pageInfo {
-                        startCursor
-                        endCursor
-                        hasNextPage
-                        hasPreviousPage
-                        globalCount
-                    }
-                }
-            }
-        """
-        )
-        result = self.opencti.query(
-            query,
-            {
-                "filters": filters,
-                "first": first,
-                "after": after,
-                "orderBy": order_by,
-                "orderMode": order_mode,
-            },
-        )
-        if get_all:
-            final_data = []
-            data = self.opencti.process_multiple(result["data"]["externalReferences"])
-            final_data = final_data + data
-            while result["data"]["externalReferences"]["pageInfo"]["hasNextPage"]:
-                after = result["data"]["externalReferences"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.debug(
-                    "Listing External-References", {"after": after}
-                )
-                result = self.opencti.query(
-                    query,
-                    {
-                        "filters": filters,
-                        "first": first,
-                        "after": after,
-                        "orderBy": order_by,
-                        "orderMode": order_mode,
-                    },
-                )
-                data = self.opencti.process_multiple(
-                    result["data"]["externalReferences"]
-                )
-                final_data = final_data + data
-            return final_data
-        else:
-            return self.opencti.process_multiple(
-                result["data"]["externalReferences"], with_pagination
-            )
-
-    def read(self, **kwargs):
-        """Read an External-Reference object.
-
-        :param id: the id of the External-Reference
-        :type id: str
-        :param filters: the filters to apply if no id provided
-        :type filters: dict
-        :return: External-Reference object
-        :rtype: dict or None
-        """
-        id = kwargs.get("id", None)
-        filters = kwargs.get("filters", None)
-        if id is not None:
-            self.opencti.app_logger.info("Reading External-Reference", {"id": id})
-            query = (
-                """
-                query ExternalReference($id: String!) {
-                    externalReference(id: $id) {
-                        """
-                + self.properties
-                + """
-                    }
-                }
-            """
-            )
-            result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(
-                result["data"]["externalReference"]
-            )
-        elif filters is not None:
-            result = self.list(filters=filters)
-            if len(result) > 0:
-                return result[0]
-            else:
-                return None
-        else:
-            self.opencti.app_logger.error(
-                "[opencti_external_reference] Missing parameters: id or filters"
-            )
-            return None
 
     def create(self, **kwargs):
         """Create an External Reference object.
@@ -462,38 +293,3 @@ class ExternalReference:
              }
          """
         self.opencti.query(query, {"id": id})
-
-    def list_files(self, **kwargs):
-        """List files attached to an External-Reference.
-
-        :param id: the id of the External-Reference
-        :type id: str
-        :return: List of files
-        :rtype: list
-        """
-        id = kwargs.get("id", None)
-        self.opencti.app_logger.debug("Listing files of External-Reference", {"id": id})
-        query = """
-            query externalReference($id: String!) {
-                externalReference(id: $id) {
-                    importFiles {
-                        edges {
-                            node {
-                                id
-                                name
-                                size
-                                metaData {
-                                    mimetype
-                                    version
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        """
-        result = self.opencti.query(query, {"id": id})
-        entity = self.opencti.process_multiple_fields(
-            result["data"]["externalReference"]
-        )
-        return entity["importFiles"]

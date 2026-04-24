@@ -5,8 +5,10 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.entities.base import Entity
 
-class SecurityCoverage:
+
+class SecurityCoverage(Entity):
     """Main SecurityCoverage class for OpenCTI
 
     Manages security coverage entities in the OpenCTI platform.
@@ -15,40 +17,33 @@ class SecurityCoverage:
     :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the SecurityCoverage instance.
-
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = """
+    PROPERTIES = """
+        id
+        standard_id
+        entity_type
+        parent_types
+        spec_version
+        created_at
+        updated_at
+        external_uri
+        objectCovered {
+            __typename
+            ... on StixCoreObject {
+              id
+            }
+        }
+        objectMarking {
             id
             standard_id
             entity_type
-            parent_types
-            spec_version
-            created_at
-            updated_at
-            external_uri
-            objectCovered {
-                __typename
-                ... on StixCoreObject {
-                  id
-                }
-            }
-            objectMarking {
-                id
-                standard_id
-                entity_type
-                definition_type
-                definition
-                created
-                modified
-                x_opencti_order
-                x_opencti_color
-            }
-        """
+            definition_type
+            definition
+            created
+            modified
+            x_opencti_order
+            x_opencti_color
+        }
+    """
 
     @staticmethod
     def generate_id(covered_ref):
@@ -74,141 +69,6 @@ class SecurityCoverage:
         :rtype: str
         """
         return SecurityCoverage.generate_id(data["covered_ref"])
-
-    def list(self, **kwargs):
-        """List SecurityCoverage objects.
-
-        :param filters: the filters to apply
-        :param search: the search keyword
-        :param first: return the first n rows from the after ID (or the beginning if not set)
-        :param after: ID of the first row for pagination
-        :return: List of SecurityCoverage objects
-        :rtype: list
-        """
-        filters = kwargs.get("filters", None)
-        search = kwargs.get("search", None)
-        first = kwargs.get("first", 100)
-        after = kwargs.get("after", None)
-        order_by = kwargs.get("orderBy", None)
-        order_mode = kwargs.get("orderMode", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        get_all = kwargs.get("getAll", False)
-        with_pagination = kwargs.get("withPagination", False)
-
-        self.opencti.app_logger.info(
-            "Listing SecurityCoverage with filters", {"filters": json.dumps(filters)}
-        )
-        query = (
-            """
-                query SecurityCoverage($filters: FilterGroup, $search: String, $first: Int, $after: ID, $orderBy: SecurityCoverageOrdering, $orderMode: OrderingMode) {
-                    securityCoverages(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
-                        edges {
-                            node {
-                                """
-            + (custom_attributes if custom_attributes is not None else self.properties)
-            + """
-                        }
-                    }
-                    pageInfo {
-                        startCursor
-                        endCursor
-                        hasNextPage
-                        hasPreviousPage
-                        globalCount
-                    }
-                }
-            }
-        """
-        )
-        result = self.opencti.query(
-            query,
-            {
-                "filters": filters,
-                "search": search,
-                "first": first,
-                "after": after,
-                "orderBy": order_by,
-                "orderMode": order_mode,
-            },
-        )
-
-        if get_all:
-            final_data = []
-            data = self.opencti.process_multiple(result["data"]["securityCoverages"])
-            final_data = final_data + data
-            while result["data"]["securityCoverages"]["pageInfo"]["hasNextPage"]:
-                after = result["data"]["securityCoverages"]["pageInfo"]["endCursor"]
-                self.opencti.app_logger.info(
-                    "Listing SecurityCoverage", {"after": after}
-                )
-                result = self.opencti.query(
-                    query,
-                    {
-                        "filters": filters,
-                        "search": search,
-                        "first": first,
-                        "after": after,
-                        "orderBy": order_by,
-                        "orderMode": order_mode,
-                    },
-                )
-                data = self.opencti.process_multiple(
-                    result["data"]["securityCoverages"]
-                )
-                final_data = final_data + data
-            return final_data
-        else:
-            return self.opencti.process_multiple(
-                result["data"]["securityCoverages"], with_pagination
-            )
-
-    def read(self, **kwargs):
-        """Read a SecurityCoverage object.
-
-        :param id: the id of the SecurityCoverage
-        :type id: str
-        :param filters: the filters to apply if no id provided
-        :type filters: dict
-        :param customAttributes: custom attributes to return
-        :type customAttributes: str
-        :return: SecurityCoverage object
-        :rtype: dict or None
-        """
-        id = kwargs.get("id", None)
-        filters = kwargs.get("filters", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        if id is not None:
-            self.opencti.app_logger.info("Reading SecurityCoverage", {"id": id})
-            query = (
-                """
-                    query SecurityCoverage($id: String!) {
-                        securityCoverage(id: $id) {
-                            """
-                + (
-                    custom_attributes
-                    if custom_attributes is not None
-                    else self.properties
-                )
-                + """
-                    }
-                }
-             """
-            )
-            result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(
-                result["data"]["securityCoverage"]
-            )
-        elif filters is not None:
-            result = self.list(filters=filters)
-            if len(result) > 0:
-                return result[0]
-            else:
-                return None
-        else:
-            self.opencti.app_logger.error(
-                "[opencti_security_coverage] Missing parameters: id or filters"
-            )
-            return None
 
     def create(self, **kwargs):
         """Create a Security coverage object.
@@ -349,13 +209,13 @@ class SecurityCoverage:
         if stix_object is not None:
             # Search in extensions
             if "x_opencti_stix_ids" not in stix_object:
-                stix_object["x_opencti_stix_ids"] = (
-                    self.opencti.get_attribute_in_extension("stix_ids", stix_object)
-                )
+                stix_object[
+                    "x_opencti_stix_ids"
+                ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
             if "x_opencti_granted_refs" not in stix_object:
-                stix_object["x_opencti_granted_refs"] = (
-                    self.opencti.get_attribute_in_extension("granted_refs", stix_object)
-                )
+                stix_object[
+                    "x_opencti_granted_refs"
+                ] = self.opencti.get_attribute_in_extension("granted_refs", stix_object)
 
             raw_coverages = stix_object["coverage"] if "coverage" in stix_object else []
             coverage_information = list(

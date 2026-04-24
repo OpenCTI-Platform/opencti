@@ -5,37 +5,29 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.entities.base import Entity
 
-class MarkingDefinition:
+
+class MarkingDefinition(Entity):
     """Main MarkingDefinition class for OpenCTI
 
     Manages marking definitions (TLP, statements) in the OpenCTI platform.
-
-    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the MarkingDefinition instance.
-
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-            created
-            modified
-            created_at
-            updated_at
-        """
+    PROPERTIES = """
+        id
+        standard_id
+        entity_type
+        parent_types
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+        created
+        modified
+        created_at
+        updated_at
+    """
 
     @staticmethod
     def generate_id(definition_type, definition):
@@ -78,114 +70,6 @@ class MarkingDefinition:
         return MarkingDefinition.generate_id(
             data["definition_type"], data["definition"]
         )
-
-    def list(self, **kwargs):
-        """List Marking-Definition objects.
-
-        :param filters: the filters to apply
-        :type filters: dict
-        :param first: return the first n rows from the after ID (or the beginning if not set)
-        :type first: int
-        :param after: ID of the first row for pagination
-        :type after: str
-        :param orderBy: field to order results by
-        :type orderBy: str
-        :param orderMode: ordering mode (asc/desc)
-        :type orderMode: str
-        :param customAttributes: custom attributes to return
-        :type customAttributes: list
-        :param withPagination: whether to include pagination info
-        :type withPagination: bool
-        :return: List of Marking-Definition objects
-        :rtype: list
-        """
-        filters = kwargs.get("filters", None)
-        first = kwargs.get("first", 500)
-        after = kwargs.get("after", None)
-        order_by = kwargs.get("orderBy", None)
-        order_mode = kwargs.get("orderMode", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        with_pagination = kwargs.get("withPagination", False)
-
-        self.opencti.app_logger.info(
-            "Listing Marking-Definitions with filters", {"filters": json.dumps(filters)}
-        )
-        query = (
-            """
-            query MarkingDefinitions($filters: FilterGroup, $first: Int, $after: ID, $orderBy: MarkingDefinitionsOrdering, $orderMode: OrderingMode) {
-                markingDefinitions(filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
-                    edges {
-                        node {
-                            """
-            + (custom_attributes if custom_attributes is not None else self.properties)
-            + """
-                        }
-                    }
-                    pageInfo {
-                        startCursor
-                        endCursor
-                        hasNextPage
-                        hasPreviousPage
-                        globalCount
-                    }
-                }
-            }
-        """
-        )
-        result = self.opencti.query(
-            query,
-            {
-                "filters": filters,
-                "first": first,
-                "after": after,
-                "orderBy": order_by,
-                "orderMode": order_mode,
-            },
-        )
-        return self.opencti.process_multiple(
-            result["data"]["markingDefinitions"], with_pagination
-        )
-
-    def read(self, **kwargs):
-        """Read a Marking-Definition object.
-
-        :param id: the id of the Marking-Definition
-        :type id: str
-        :param filters: the filters to apply if no id provided
-        :type filters: dict
-        :return: Marking-Definition object
-        :rtype: dict or None
-        """
-        id = kwargs.get("id", None)
-        filters = kwargs.get("filters", None)
-        if id is not None:
-            self.opencti.app_logger.info("Reading Marking-Definition", {"id": id})
-            query = (
-                """
-                query MarkingDefinition($id: String!) {
-                    markingDefinition(id: $id) {
-                        """
-                + self.properties
-                + """
-                    }
-                }
-            """
-            )
-            result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(
-                result["data"]["markingDefinition"]
-            )
-        elif filters is not None:
-            result = self.list(filters=filters)
-            if len(result) > 0:
-                return result[0]
-            else:
-                return None
-        else:
-            self.opencti.app_logger.error(
-                "[opencti_marking_definition] Missing parameters: id or filters"
-            )
-            return None
 
     def create(self, **kwargs):
         """Create a Marking-Definition object.
@@ -366,17 +250,17 @@ class MarkingDefinition:
                 and self.opencti.get_attribute_in_extension("order", stix_object)
                 is not None
             ):
-                stix_object["x_opencti_order"] = (
-                    self.opencti.get_attribute_in_extension("order", stix_object)
-                )
+                stix_object[
+                    "x_opencti_order"
+                ] = self.opencti.get_attribute_in_extension("order", stix_object)
             if "x_opencti_color" not in stix_object:
-                stix_object["x_opencti_color"] = (
-                    self.opencti.get_attribute_in_extension("color", stix_object)
-                )
+                stix_object[
+                    "x_opencti_color"
+                ] = self.opencti.get_attribute_in_extension("color", stix_object)
             if "x_opencti_stix_ids" not in stix_object:
-                stix_object["x_opencti_stix_ids"] = (
-                    self.opencti.get_attribute_in_extension("stix_ids", stix_object)
-                )
+                stix_object[
+                    "x_opencti_stix_ids"
+                ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
 
             return self.create(
                 stix_id=stix_object["id"],

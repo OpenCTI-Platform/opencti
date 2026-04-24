@@ -5,282 +5,274 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.entities.base import Entity
 
-class StixSightingRelationship:
+
+class StixSightingRelationship(Entity):
     """Main StixSightingRelationship class for OpenCTI
 
     Manages STIX sighting relationships in the OpenCTI platform.
-
-    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the StixSightingRelationship instance.
-
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = """
+    PROPERTIES = """
+        id
+        entity_type
+        parent_types
+        spec_version
+        created_at
+        updated_at
+        standard_id
+        description
+        first_seen
+        last_seen
+        attribute_count
+        x_opencti_negative
+        created
+        modified
+        confidence
+        status {
             id
-            entity_type
-            parent_types
-            spec_version
-            created_at
-            updated_at
-            standard_id
-            description
-            first_seen
-            last_seen
-            attribute_count
-            x_opencti_negative
-            created
-            modified
-            confidence
-            status {
-                id
-                template {
-                  id
-                  name
-                  color
-                }
+            template {
+              id
+              name
+              color
             }
-            createdBy {
-                ... on Identity {
-                    id
-                    standard_id
-                    entity_type
-                    parent_types
-                    identity_class
-                    name
-                    description
-                    roles
-                    contact_information
-                    x_opencti_aliases
-                    created
-                    modified
-                    objectLabel {
-                        id
-                        value
-                        color
-                    }
-                }
-                ... on Organization {
-                    x_opencti_organization_type
-                    x_opencti_reliability
-                }
-                ... on Individual {
-                    x_opencti_firstname
-                    x_opencti_lastname
-                }
-            }
-            objectMarking {
+        }
+        createdBy {
+            ... on Identity {
                 id
                 standard_id
                 entity_type
-                definition_type
-                definition
+                parent_types
+                identity_class
+                name
+                description
+                roles
+                contact_information
+                x_opencti_aliases
                 created
                 modified
-                x_opencti_order
-                x_opencti_color
+                objectLabel {
+                    id
+                    value
+                    color
+                }
             }
-            objectOrganization {
+            ... on Organization {
+                x_opencti_organization_type
+                x_opencti_reliability
+            }
+            ... on Individual {
+                x_opencti_firstname
+                x_opencti_lastname
+            }
+        }
+        objectMarking {
+            id
+            standard_id
+            entity_type
+            definition_type
+            definition
+            created
+            modified
+            x_opencti_order
+            x_opencti_color
+        }
+        objectOrganization {
+            id
+            standard_id
+            name
+        }
+        objectLabel {
+            id
+            value
+            color
+        }
+        externalReferences {
+            edges {
+                node {
+                    id
+                    standard_id
+                    entity_type
+                    source_name
+                    description
+                    url
+                    hash
+                    external_id
+                    created
+                    modified
+                }
+            }
+        }
+        from {
+            ... on BasicObject {
                 id
+                entity_type
+                parent_types
+            }
+            ... on BasicRelationship {
+                id
+                entity_type
+                parent_types
+            }
+            ... on StixObject {
                 standard_id
+                spec_version
+                created_at
+                updated_at
+            }
+            ... on AttackPattern {
                 name
             }
-            objectLabel {
+            ... on Campaign {
+                name
+            }
+            ... on CourseOfAction {
+                name
+            }
+            ... on Individual {
+                name
+            }
+            ... on Organization {
+                name
+            }
+            ... on Sector {
+                name
+            }
+             ... on System {
+                name
+            }
+            ... on Indicator {
+                name
+            }
+            ... on Infrastructure {
+                name
+            }
+            ... on IntrusionSet {
+                name
+            }
+            ... on Position {
+                name
+            }
+            ... on City {
+                name
+            }
+            ... on Country {
+                name
+            }
+            ... on Region {
+                name
+            }
+            ... on Malware {
+                name
+            }
+            ... on ThreatActor {
+                name
+            }
+            ... on Tool {
+                name
+            }
+            ... on Vulnerability {
+                name
+            }
+            ... on Incident {
+                name
+            }
+            ... on StixCyberObservable {
+                observable_value
+            }
+            ... on StixCoreRelationship {
+                standard_id
+                spec_version
+                created_at
+                updated_at
+            }
+        }
+        to {
+            ... on BasicObject {
                 id
-                value
-                color
+                entity_type
+                parent_types
             }
-            externalReferences {
-                edges {
-                    node {
-                        id
-                        standard_id
-                        entity_type
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
-                        created
-                        modified
-                    }
-                }
+            ... on BasicRelationship {
+                id
+                entity_type
+                parent_types
             }
-            from {
-                ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on StixObject {
-                    standard_id
-                    spec_version
-                    created_at
-                    updated_at
-                }
-                ... on AttackPattern {
-                    name
-                }
-                ... on Campaign {
-                    name
-                }
-                ... on CourseOfAction {
-                    name
-                }
-                ... on Individual {
-                    name
-                }
-                ... on Organization {
-                    name
-                }
-                ... on Sector {
-                    name
-                }
-                 ... on System {
-                    name
-                }
-                ... on Indicator {
-                    name
-                }
-                ... on Infrastructure {
-                    name
-                }
-                ... on IntrusionSet {
-                    name
-                }
-                ... on Position {
-                    name
-                }
-                ... on City {
-                    name
-                }
-                ... on Country {
-                    name
-                }
-                ... on Region {
-                    name
-                }
-                ... on Malware {
-                    name
-                }
-                ... on ThreatActor {
-                    name
-                }
-                ... on Tool {
-                    name
-                }
-                ... on Vulnerability {
-                    name
-                }
-                ... on Incident {
-                    name
-                }
-                ... on StixCyberObservable {
-                    observable_value
-                }
-                ... on StixCoreRelationship {
-                    standard_id
-                    spec_version
-                    created_at
-                    updated_at
-                }
+            ... on StixObject {
+                standard_id
+                spec_version
+                created_at
+                updated_at
             }
-            to {
-                ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on StixObject {
-                    standard_id
-                    spec_version
-                    created_at
-                    updated_at
-                }
-                ... on AttackPattern {
-                    name
-                }
-                ... on Campaign {
-                    name
-                }
-                ... on CourseOfAction {
-                    name
-                }
-                ... on Individual {
-                    name
-                }
-                ... on Organization {
-                    name
-                }
-                ... on Sector {
-                    name
-                }
-                ... on System {
-                    name
-                }
-                ... on Indicator {
-                    name
-                }
-                ... on Infrastructure {
-                    name
-                }
-                ... on IntrusionSet {
-                    name
-                }
-                ... on Position {
-                    name
-                }
-                ... on City {
-                    name
-                }
-                ... on Country {
-                    name
-                }
-                ... on Region {
-                    name
-                }
-                ... on Malware {
-                    name
-                }
-                ... on ThreatActor {
-                    name
-                }
-                ... on Tool {
-                    name
-                }
-                ... on Vulnerability {
-                    name
-                }
-                ... on Incident {
-                    name
-                }
-                ... on StixCyberObservable {
-                    observable_value
-                }
-                ... on StixCoreRelationship {
-                    standard_id
-                    spec_version
-                    created_at
-                    updated_at
-                }
+            ... on AttackPattern {
+                name
             }
-        """
+            ... on Campaign {
+                name
+            }
+            ... on CourseOfAction {
+                name
+            }
+            ... on Individual {
+                name
+            }
+            ... on Organization {
+                name
+            }
+            ... on Sector {
+                name
+            }
+            ... on System {
+                name
+            }
+            ... on Indicator {
+                name
+            }
+            ... on Infrastructure {
+                name
+            }
+            ... on IntrusionSet {
+                name
+            }
+            ... on Position {
+                name
+            }
+            ... on City {
+                name
+            }
+            ... on Country {
+                name
+            }
+            ... on Region {
+                name
+            }
+            ... on Malware {
+                name
+            }
+            ... on ThreatActor {
+                name
+            }
+            ... on Tool {
+                name
+            }
+            ... on Vulnerability {
+                name
+            }
+            ... on Incident {
+                name
+            }
+            ... on StixCyberObservable {
+                observable_value
+            }
+            ... on StixCoreRelationship {
+                standard_id
+                spec_version
+                created_at
+                updated_at
+            }
+        }
+    """
 
     @staticmethod
     def generate_id(
@@ -348,158 +340,6 @@ class StixSightingRelationship:
             data.get("last_seen"),
         )
 
-    def list(self, **kwargs):
-        """List stix_sighting_relationship objects.
-
-        :param fromOrToId: the id of an entity (source or target)
-        :type fromOrToId: str
-        :param fromId: the id of the source entity of the relation
-        :type fromId: str
-        :param fromTypes: filter by source entity types
-        :type fromTypes: list
-        :param toId: the id of the target entity of the relation
-        :type toId: str
-        :param toTypes: filter by target entity types
-        :type toTypes: list
-        :param firstSeenStart: the first_seen date start filter
-        :type firstSeenStart: str
-        :param firstSeenStop: the first_seen date stop filter
-        :type firstSeenStop: str
-        :param lastSeenStart: the last_seen date start filter
-        :type lastSeenStart: str
-        :param lastSeenStop: the last_seen date stop filter
-        :type lastSeenStop: str
-        :param filters: additional filters to apply
-        :type filters: dict
-        :param first: return the first n rows from the after ID (or the beginning if not set)
-        :type first: int
-        :param after: ID of the first row for pagination
-        :type after: str
-        :param orderBy: field to order results by
-        :type orderBy: str
-        :param orderMode: ordering mode (asc/desc)
-        :type orderMode: str
-        :param customAttributes: custom attributes to return
-        :type customAttributes: str
-        :param getAll: whether to retrieve all results
-        :type getAll: bool
-        :param withPagination: whether to include pagination info
-        :type withPagination: bool
-        :param search: search keyword
-        :type search: str
-        :return: List of stix_sighting_relationship objects
-        :rtype: list
-        """
-        from_or_to_id = kwargs.get("fromOrToId", None)
-        from_id = kwargs.get("fromId", None)
-        from_types = kwargs.get("fromTypes", None)
-        to_id = kwargs.get("toId", None)
-        to_types = kwargs.get("toTypes", None)
-        first_seen_start = kwargs.get("firstSeenStart", None)
-        first_seen_stop = kwargs.get("firstSeenStop", None)
-        last_seen_start = kwargs.get("lastSeenStart", None)
-        last_seen_stop = kwargs.get("lastSeenStop", None)
-        filters = kwargs.get("filters", None)
-        first = kwargs.get("first", 100)
-        after = kwargs.get("after", None)
-        order_by = kwargs.get("orderBy", None)
-        order_mode = kwargs.get("orderMode", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        get_all = kwargs.get("getAll", False)
-        with_pagination = kwargs.get("withPagination", False)
-        search = kwargs.get("search", None)
-
-        self.opencti.app_logger.info(
-            "Listing stix_sighting with {type: stix_sighting}",
-            {"from_id": from_id, "to_id": to_id},
-        )
-        query = (
-            """
-                query StixSightingRelationships($fromOrToId: String, $fromId: StixRef, $fromTypes: [String], $toId: StixRef, $toTypes: [String], $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $filters: FilterGroup, $first: Int, $after: ID, $orderBy: StixSightingRelationshipsOrdering, $orderMode: OrderingMode, $search: String) {
-                    stixSightingRelationships(fromOrToId: $fromOrToId, fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode, search: $search) {
-                        edges {
-                            node {
-                                """
-            + (custom_attributes if custom_attributes is not None else self.properties)
-            + """
-                        }
-                    }
-                    pageInfo {
-                        startCursor
-                        endCursor
-                        hasNextPage
-                        hasPreviousPage
-                        globalCount
-                    }
-                }
-            }
-         """
-        )
-        result = self.opencti.query(
-            query,
-            {
-                "fromOrToId": from_or_to_id,
-                "fromId": from_id,
-                "fromTypes": from_types,
-                "toId": to_id,
-                "toTypes": to_types,
-                "firstSeenStart": first_seen_start,
-                "firstSeenStop": first_seen_stop,
-                "lastSeenStart": last_seen_start,
-                "lastSeenStop": last_seen_stop,
-                "filters": filters,
-                "first": first,
-                "after": after,
-                "orderBy": order_by,
-                "orderMode": order_mode,
-                "search": search,
-            },
-        )
-        if get_all:
-            final_data = []
-            data = self.opencti.process_multiple(
-                result["data"]["stixSightingRelationships"]
-            )
-            final_data = final_data + data
-            while result["data"]["stixSightingRelationships"]["pageInfo"][
-                "hasNextPage"
-            ]:
-                after = result["data"]["stixSightingRelationships"]["pageInfo"][
-                    "endCursor"
-                ]
-                self.opencti.app_logger.debug(
-                    "Listing StixSightingRelationships", {"after": after}
-                )
-                result = self.opencti.query(
-                    query,
-                    {
-                        "fromOrToId": from_or_to_id,
-                        "fromId": from_id,
-                        "fromTypes": from_types,
-                        "toId": to_id,
-                        "toTypes": to_types,
-                        "firstSeenStart": first_seen_start,
-                        "firstSeenStop": first_seen_stop,
-                        "lastSeenStart": last_seen_start,
-                        "lastSeenStop": last_seen_stop,
-                        "filters": filters,
-                        "first": first,
-                        "after": after,
-                        "orderBy": order_by,
-                        "orderMode": order_mode,
-                        "search": search,
-                    },
-                )
-                data = self.opencti.process_multiple(
-                    result["data"]["stixSightingRelationships"]
-                )
-                final_data = final_data + data
-            return final_data
-        else:
-            return self.opencti.process_multiple(
-                result["data"]["stixSightingRelationships"], with_pagination
-            )
-
     def read(self, **kwargs):
         """Read a stix_sighting_relationship object.
 
@@ -526,60 +366,28 @@ class StixSightingRelationship:
         :return: stix_sighting_relationship object
         :rtype: dict or None
         """
-        id = kwargs.get("id", None)
-        from_or_to_id = kwargs.get("fromOrToId", None)
-        from_id = kwargs.get("fromId", None)
-        to_id = kwargs.get("toId", None)
-        first_seen_start = kwargs.get("firstSeenStart", None)
-        first_seen_stop = kwargs.get("firstSeenStop", None)
-        last_seen_start = kwargs.get("lastSeenStart", None)
-        last_seen_stop = kwargs.get("lastSeenStop", None)
-        custom_attributes = kwargs.get("customAttributes", None)
-        filters = kwargs.get("filters", None)
-        if id is not None:
-            self.opencti.app_logger.info("Reading stix_sighting", {"id": id})
-            query = (
-                """
-                    query StixSightingRelationship($id: String!) {
-                        stixSightingRelationship(id: $id) {
-                            """
-                + (
-                    custom_attributes
-                    if custom_attributes is not None
-                    else self.properties
-                )
-                + """
-                    }
-                }
-             """
-            )
-            result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(
-                result["data"]["stixSightingRelationship"]
-            )
-        elif filters is not None:
-            result = self.list(filters=filters)
-            if len(result) > 0:
-                return result[0]
-            else:
+        if (
+            kwargs.get("id", None) is not None
+            or kwargs.get("filters", None) is not None
+        ):
+            return super().read(**kwargs)
+
+        if (
+            kwargs.get("from_id", None) is not None
+            and kwargs.get("to_id", None) is not None
+        ):
+            result = self.list(**kwargs)
+            if len(result) == 0:
                 return None
-        elif from_id is not None and to_id is not None:
-            result = self.list(
-                fromOrToId=from_or_to_id,
-                fromId=from_id,
-                toId=to_id,
-                firstSeenStart=first_seen_start,
-                firstSeenStop=first_seen_stop,
-                lastSeenStart=last_seen_start,
-                lastSeenStop=last_seen_stop,
-            )
-            if len(result) > 0:
+            if len(result) == 1:
                 return result[0]
-            else:
-                return None
-        else:
-            self.opencti.app_logger.error("Missing parameters: id or from_id and to_id")
-            return None
+            self.opencti.app_logger.warning(
+                "Multiple stix_sighting_relationships found; returning the first one."
+            )
+            return result[0]
+
+        self.opencti.app_logger.error("Missing parameters: id or from_id and to_id")
+        return None
 
     def create(self, **kwargs):
         """Create a stix_sighting_relationship object.
@@ -1032,3 +840,58 @@ class StixSightingRelationship:
                 "[opencti_stix_sighting] Missing parameters: id"
             )
             return None
+
+
+StixSightingRelationship.list.__doc__ = """List stix_sighting_relationship objects.
+
+:param fromOrToId: the id of an entity (source or target)
+:type fromOrToId: str
+:param fromId: the id of the source entity of the relation
+:type fromId: str
+:param fromTypes: filter by source entity types
+:type fromTypes: list
+:param toId: the id of the target entity of the relation
+:type toId: str
+:param toTypes: filter by target entity types
+:type toTypes: list
+:param firstSeenStart: the first_seen date start filter
+:type firstSeenStart: str
+:param firstSeenStop: the first_seen date stop filter
+:type firstSeenStop: str
+:param lastSeenStart: the last_seen date start filter
+:type lastSeenStart: str
+:param lastSeenStop: the last_seen date stop filter
+:type lastSeenStop: str
+:param filters: the filters to apply
+:type filters: dict
+:param search: the search keyword
+:type search: str
+:param first: return the first n rows from the after ID (or the beginning if not set)
+:type first: int
+:param after: ID of the first row for pagination
+:type after: str
+:param order_by: field to order results by
+:type order_by: str
+:param order_mode: ordering mode (asc/desc)
+:type order_mode: str
+:param get_all: whether to retrieve all results
+:type get_all: bool
+:param with_pagination: whether to include pagination info
+:type with_pagination: bool
+:param custom_attributes: custom attributes to return
+:type custom_attributes: str
+:param with_objects: whether to include stix sighting relationship objects
+:type with_objects: bool
+:param custom_objects_attributes: custom objects attributes to return
+:type custom_objects_attributes: str
+:param with_files: whether to include files
+:type with_files: bool
+:param custom_files_attributes: custom file attributes to return
+:type custom_files_attributes: str
+:param kwargs: snakecase variables passed in as camelcase will be translated to
+    snakecase. the rest of the kwargs are passed, as is, as variables to the
+    call to `query()`.
+:type kwargs: dict
+:return: list of stix sighting relationship objects
+:rtype: List[StixSightingRelationship]
+"""

@@ -1,8 +1,10 @@
 import secrets
 from typing import Dict, List, Optional
 
+from pycti.entities.base import Entity
 
-class User:
+
+class User(Entity):
     """Representation of a user on the OpenCTI platform
 
     Users can be member of multiple groups, from which its permissions
@@ -15,76 +17,76 @@ class User:
     You can view the properties, session_properties, and
     me_properties attributes of a User object to view what attributes will be
     present in a User or MeUser object.
-
-    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the User instance.
-
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = """
-            id
-            standard_id
-            individual_id
-            user_email
-            firstname
-            lastname
-            name
-            description
-            language
-            theme
-            unit_system
-            external
-            restrict_delete
-            account_status
-            account_lock_after_date
-            entity_type
-            parent_types
-            created_at
-            updated_at
-            unit_system
-            submenu_show_icons
-            submenu_auto_collapse
-            monochrome_labels
-            roles {
-                id, name, description
-                capabilities {
-                    id, name
-                }
-                capabilitiesInDraft {
-                    id, name
+    PROPERTIES = """
+        id
+        standard_id
+        individual_id
+        user_email
+        firstname
+        lastname
+        name
+        description
+        language
+        theme
+        unit_system
+        external
+        restrict_delete
+        account_status
+        account_lock_after_date
+        entity_type
+        parent_types
+        created_at
+        updated_at
+        unit_system
+        submenu_show_icons
+        submenu_auto_collapse
+        monochrome_labels
+        roles {
+            id, name, description
+            capabilities {
+                id, name
+            }
+            capabilitiesInDraft {
+                id, name
+            }
+        }
+        groups {
+            edges {
+                node {
+                    id, name, description
                 }
             }
-            groups {
-                edges {
-                    node {
-                        id, name, description
+        }
+        objectOrganization {
+            edges {
+                node {
+                    id, is_inferred, name, description
+                }
+            }
+        }
+        administrated_organizations {
+            id, name, description
+        }
+        user_confidence_level {
+            max_confidence
+            overrides {
+                entity_type, max_confidence
+            }
+        }
+        effective_confidence_level {
+            max_confidence
+            source {
+                type
+                object {
+                    ... on Group {
+                        id, name
                     }
                 }
             }
-            objectOrganization {
-                edges {
-                    node {
-                        id, is_inferred, name, description
-                    }
-                }
-            }
-            administrated_organizations {
-                id, name, description
-            }
-            user_confidence_level {
-                max_confidence
-                overrides {
-                    entity_type, max_confidence
-                }
-            }
-            effective_confidence_level {
-                max_confidence
+            overrides {
+                entity_type, max_confidence
                 source {
                     type
                     object {
@@ -93,20 +95,12 @@ class User:
                         }
                     }
                 }
-                overrides {
-                    entity_type, max_confidence
-                    source {
-                        type
-                        object {
-                            ... on Group {
-                                id, name
-                            }
-                        }
-                    }
-                }
             }
-        """
+        }
+    """
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.tokens_properties = """
             api_tokens {
                 id

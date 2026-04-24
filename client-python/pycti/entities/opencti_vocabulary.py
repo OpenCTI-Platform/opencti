@@ -3,33 +3,25 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.entities.base import Entity
 
-class Vocabulary:
+
+class Vocabulary(Entity):
     """Main Vocabulary class for OpenCTI
 
     Manages vocabularies and controlled vocabularies in the OpenCTI platform.
-
-    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
-    :type opencti: OpenCTIApiClient
     """
 
-    def __init__(self, opencti):
-        """Initialize the Vocabulary instance.
-
-        :param opencti: OpenCTI API client instance
-        :type opencti: OpenCTIApiClient
-        """
-        self.opencti = opencti
-        self.properties = """
-            id
-            name
-            category {
+    PROPERTIES = """
+        id
+        name
+        category {
+            key
+            fields {
                 key
-                fields {
-                    key
-                }
             }
-        """
+        }
+    """
 
     @staticmethod
     def generate_id(name, category):
