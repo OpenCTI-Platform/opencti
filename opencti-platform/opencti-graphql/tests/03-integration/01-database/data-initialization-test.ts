@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { fullEntitiesList } from '../../../src/database/middleware-loader';
+import { fullEntitiesList, fullEntitiesThroughRelationsFromList } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import { loadEntity } from '../../../src/database/middleware';
 import { setPlatformId } from '../../../src/database/data-initialization';
 import { entitiesCounter } from '../../02-dataInjection/01-dataCount/entityCountHelper';
+import { generateStandardId } from '../../../src/schema/identifier';
+import { RELATION_HAS_CAPABILITY } from '../../../src/schema/internalRelationship';
 
 describe('Data initialization test', () => {
   it('should have a specific platform_id from config file', async () => {
@@ -99,6 +101,21 @@ describe('Data initialization test', () => {
     for (let i = 0; i < allExpectedRoles.length; i += 1) {
       expect(allRolesNames, `${allExpectedRoles[i]} Role is missing from initialization`).toContain(allExpectedRoles[i]);
     }
+  });
+
+  it('should not grant ingestion management to Connector role on initialization', async () => {
+    const connectorRoleId = generateStandardId(ENTITY_TYPE_ROLE, { name: 'Connector' });
+    const connectorCapabilities = await fullEntitiesThroughRelationsFromList<BasicStoreEntity>(
+      testContext,
+      ADMIN_USER,
+      connectorRoleId,
+      RELATION_HAS_CAPABILITY,
+      ENTITY_TYPE_CAPABILITY,
+    );
+    const connectorCapabilityNames = connectorCapabilities.map((capability) => capability.name);
+
+    expect(connectorCapabilityNames).not.toContain('INGESTION');
+    expect(connectorCapabilityNames).not.toContain('INGESTION_SETINGESTIONS');
   });
 
   it('should create all initial Groups', async () => {
