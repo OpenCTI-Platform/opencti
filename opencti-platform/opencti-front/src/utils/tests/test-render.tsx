@@ -20,7 +20,7 @@ interface CreateUserContextOptions {
   platformModuleHelpers?: unknown;
   schema?: unknown;
   themes?: unknown;
-  customViews?: UserContextType['customViews'];
+  queryData?: unknown;
 }
 
 /**
@@ -39,7 +39,7 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
     platformModuleHelpers,
     schema,
     themes,
-    customViews,
+    queryData,
   } = options ?? {};
 
   return {
@@ -69,7 +69,7 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
       version: '6.7.17',
     },
     themes: (themes ?? {}) as UserContextType['themes'],
-    customViews: customViews ?? [],
+    queryData: (queryData ?? {}) as UserContextType['queryData'],
   };
 };
 

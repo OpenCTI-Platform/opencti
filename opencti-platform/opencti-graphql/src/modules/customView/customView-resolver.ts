@@ -1,13 +1,26 @@
 import type { Resolvers } from '../../generated/graphql';
-import { getCustomViewsSettings, getCustomViewByIdForDisplay, getCustomViewsDisplayContext } from './customView-domain';
+import { getCustomViewsSettings, getCustomViewByIdForDisplay, computeCustomViewPath, findAllCustomViews } from './customView-domain';
 
 const customViewResolver: Resolvers = {
   Query: {
-    customViewDisplay: (_parent, { id }, context) => getCustomViewByIdForDisplay(context, context.user, id),
-    customViewsDisplayContext: (_parent, _args, context) => getCustomViewsDisplayContext(context, context.user),
-    customViewsSettings: (_parent, { entityType }, context) => getCustomViewsSettings(context, context.user, entityType),
+    customViewDisplay: (_parent, { id }, context) => {
+      return getCustomViewByIdForDisplay(context, context.user, id);
+    },
+    customViewsSettings: (_parent, { entityType }) => {
+      return getCustomViewsSettings(entityType);
+    },
+    customViews: (_parent, { entityType, ...paginationOptions }, context) => {
+      return findAllCustomViews(context, context.user, entityType, paginationOptions);
+    },
   },
-  CustomView: {},
+  CustomView: {
+    path: (customView) => {
+      return computeCustomViewPath(customView);
+    },
+    targetEntityType: (customView) => {
+      return customView.target_entity_type;
+    },
+  },
   Mutation: {},
 };
 

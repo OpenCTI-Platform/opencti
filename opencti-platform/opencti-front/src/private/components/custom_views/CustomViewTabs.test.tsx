@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Link } from 'react-router-dom';
 import MenuItem from '@mui/material/MenuItem';
 import Tabs from '@mui/material/Tabs';
@@ -8,6 +8,14 @@ import testRender, { createMockUserContext } from '../../../utils/tests/test-ren
 import useCustomViewTabs from './useCustomViewTabs';
 import { CUSTOM_VIEW_TAB_VALUE } from './useCustomViews';
 import { DropDownMenu, TabWithDropDownMenu } from '../../../components/TabWithDropDownMenu';
+import { useCustomViewsData } from './useCustomViewsData';
+
+vi.mock('./useCustomViewsData', () => ({
+  useCustomViewsData: vi.fn().mockImplementation(() => ({
+    allCustomViews: [],
+    refetchCustomViews: () => ({ dispose: () => {} }),
+  })),
+}));
 
 interface TestWrapperProps {
   entityType: string;
@@ -80,7 +88,19 @@ const TestWrapper = ({ entityType, basePath }: TestWrapperProps) => {
 };
 
 describe('useCustomViewTabs', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
   it('renders another tab when custom view available', () => {
+    vi.mocked(useCustomViewsData).mockImplementation(() => ({
+      allCustomViews: [{
+        id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
+        name: customViewDisplayName,
+        path: customViewPath,
+        targetEntityType: 'Intrusion-Set',
+      }],
+      refetchCustomViews: () => ({ dispose: () => {} }),
+    }));
     const customViewDisplayName = 'My custom view';
     const customViewPath = 'some-path';
     testRender(
@@ -93,14 +113,6 @@ describe('useCustomViewTabs', () => {
               enable: true,
             }],
           },
-          customViews: [{
-            entity_type: 'Intrusion-Set',
-            custom_views_info: [{
-              id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
-              name: customViewDisplayName,
-              path: customViewPath,
-            }],
-          }],
         }),
       },
     );
@@ -113,6 +125,20 @@ describe('useCustomViewTabs', () => {
   });
 
   it('renders a "Custom view" tab when multiple custom views available', async () => {
+    vi.mocked(useCustomViewsData).mockImplementation(() => ({
+      allCustomViews: [{
+        id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
+        name: 'My first custom view',
+        path: 'some-path',
+        targetEntityType: 'Intrusion-Set',
+      }, {
+        id: '90ebf22f-2c36-4836-b21a-e114ed4ca2ab',
+        name: 'My second custom view',
+        path: 'some-other-path',
+        targetEntityType: 'Intrusion-Set',
+      }],
+      refetchCustomViews: () => ({ dispose: () => {} }),
+    }));
     const { user } = testRender(
       <TestWrapper entityType="Intrusion-Set" basePath="" />,
       {
@@ -123,18 +149,6 @@ describe('useCustomViewTabs', () => {
               enable: true,
             }],
           },
-          customViews: [{
-            entity_type: 'Intrusion-Set',
-            custom_views_info: [{
-              id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
-              name: 'My first custom view',
-              path: 'some-path',
-            }, {
-              id: '90ebf22f-2c36-4836-b21a-e114ed4ca2ab',
-              name: 'My second custom view',
-              path: 'some-other-path',
-            }],
-          }],
         }),
       },
     );
@@ -156,6 +170,15 @@ describe('useCustomViewTabs', () => {
   it('does not renders another tab when custom view available but for other entity type', () => {
     const customViewDisplayName = 'My custom view';
     const customViewPath = 'some-path';
+    vi.mocked(useCustomViewsData).mockImplementation(() => ({
+      allCustomViews: [{
+        id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
+        name: customViewDisplayName,
+        path: customViewPath,
+        targetEntityType: 'Intrusion-Set',
+      }],
+      refetchCustomViews: () => ({ dispose: () => {} }),
+    }));
     testRender(
       <TestWrapper entityType="Case-Rft" basePath="" />,
       {
@@ -166,14 +189,6 @@ describe('useCustomViewTabs', () => {
               enable: true,
             }],
           },
-          customViews: [{
-            entity_type: 'Intrusion-Set',
-            custom_views_info: [{
-              id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
-              name: customViewDisplayName,
-              path: customViewPath,
-            }],
-          }],
         }),
       },
     );
