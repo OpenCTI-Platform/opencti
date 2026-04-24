@@ -10928,6 +10928,7 @@ __metadata:
     rate-limiter-flexible: "npm:11.0.1"
     semver: "npm:7.7.4"
     set-interval-async: "npm:3.0.3"
+    slug: "npm:11.0.1"
     source-map: "npm:0.7.6"
     tough-cookie: "npm:6.0.1"
     turndown: "npm:7.2.4"
@@ -12263,6 +12264,15 @@ __metadata:
   version: 1.1.6
   resolution: "slide@npm:1.1.6"
   checksum: 10c0/f3bde70fd4c0a2ba6c23c674f010849865ddfacbc0ae3a57522d7ce88e4cc6c186d627943c34004d4f009a3fb477c03307b247ab69a266de4b3c72b271a6a03a
+  languageName: node
+  linkType: hard
+
+"slug@npm:11.0.1":
+  version: 11.0.1
+  resolution: "slug@npm:11.0.1"
+  bin:
+    slug: cli.js
+  checksum: 10c0/96e89626de676d069ffed91bde3400d2bf8e6c344e20be2f33cc192d0b90dc59b4b0b22d6a048a43c665518a5ffecc92fe8b954f9390c69c8adee8894f3782a8
   languageName: node
   linkType: hard
 
