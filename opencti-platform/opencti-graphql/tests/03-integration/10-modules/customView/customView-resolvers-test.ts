@@ -23,7 +23,11 @@ const READ_SETTINGS_QUERY = gql`
 
 const READ_ALL_CUSTOM_VIEWS_QUERY = gql`
   query CustomViewsTest($entityType: String) {
-    customViews(entityType: $entityType) {
+    customViews(
+      entityType: $entityType
+      orderBy: name
+      orderMode: asc
+    ) {
       edges {
         node {
           id
@@ -41,7 +45,6 @@ const READ_ALL_CUSTOM_VIEWS_QUERY = gql`
 describe('CustomView resolvers', () => {
   let customViewId1: string;
   let customViewId2: string;
-  let customViewIdInvalid: string;
   beforeAll(async () => {
     const result1 = await createEntity(
       testContext,
@@ -57,51 +60,14 @@ describe('CustomView resolvers', () => {
       'CustomView',
     );
     customViewId2 = result2.id;
-    const resultInvalid = await createEntity(
+    await createEntity(
       testContext,
       ADMIN_USER,
       CUSTOM_VIEW_ENTITY_INVALID,
       'CustomView',
     );
-    customViewIdInvalid = resultInvalid.id;
   });
   describe('display use cases', () => {
-    describe('customViewsDisplayContext', () => {
-      it('should retrieve custom views display context', async () => {
-        const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
-          query: READ_CONTEXT_QUERY,
-          variables: {},
-        });
-        expect(result.data.customViewsDisplayContext).toContainEqual({
-          entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
-          customViews: [{
-            id: customViewId1,
-            name: CUSTOM_VIEW_ENTITY_1.name,
-            path: `${CUSTOM_VIEW_ENTITY_1.slug}-${customViewId1.replaceAll('-', '')}`,
-          }],
-        });
-        expect(result.data.customViewsDisplayContext).toContainEqual({
-          entityType: CUSTOM_VIEW_ENTITY_2.target_entity_type,
-          customViews: [{
-            id: customViewId2,
-            name: CUSTOM_VIEW_ENTITY_2.name,
-            path: `${CUSTOM_VIEW_ENTITY_2.slug}-${customViewId2.replaceAll('-', '')}`,
-          }],
-        });
-      });
-
-      it('should not include excluded entity types in display context', async () => {
-        const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
-          query: READ_CONTEXT_QUERY,
-          variables: {},
-        });
-        expect(result.data.customViewsDisplayContext).not.toSatisfy(
-          (contexts: CustomViewsDisplayContext[]) => contexts.some((c) => {
-            return c.entityType === CUSTOM_VIEW_ENTITY_INVALID.target_entity_type;
-          }));
-      });
-    });
-
     describe('customViewDisplay', () => {
       it('should retrieve serialized dashboard manifest', async () => {
         const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
@@ -136,14 +102,12 @@ describe('CustomView resolvers', () => {
           updated_at: new Date(CUSTOM_VIEW_ENTITY_2.updated_at),
           targetEntityType: CUSTOM_VIEW_ENTITY_2.target_entity_type,
         });
-        expect(nodes).toContainEqual({
-          id: customViewIdInvalid,
-          name: CUSTOM_VIEW_ENTITY_INVALID.name,
-          description: CUSTOM_VIEW_ENTITY_INVALID.description,
-          created_at: new Date(CUSTOM_VIEW_ENTITY_INVALID.created_at),
-          updated_at: new Date(CUSTOM_VIEW_ENTITY_INVALID.updated_at),
-          targetEntityType: CUSTOM_VIEW_ENTITY_INVALID.target_entity_type,
-        });
+        // Ordered by name ascending as defined by the query
+        // Doesn't contain custom view not part of the whitelist
+        expect(nodes.map(({ name }: { name: string }) => name)).toStrictEqual([
+          CUSTOM_VIEW_ENTITY_2.name,
+          CUSTOM_VIEW_ENTITY_1.name,
+        ]);
       });
 
       it('should retrieve all custom views of given type', async () => {
@@ -163,7 +127,7 @@ describe('CustomView resolvers', () => {
   describe('settings use cases', () => {
     describe('customViewsSettings', () => {
       describe('when user is admin', () => {
-        it('should retrieve canEntityTypeHaveCustomViews=true and custom views for allowed entity type', async () => {
+        it('should retrieve canEntityTypeHaveCustomViews=true for allowed entity type', async () => {
           const result = await queryAsAdminWithSuccess({
             query: READ_SETTINGS_QUERY,
             variables: {

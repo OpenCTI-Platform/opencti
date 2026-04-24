@@ -34,21 +34,33 @@ const ENTITY_TYPES_WITHOUT_CUSTOM_VIEWS = [
   ENTITY_TYPE_SECURITY_COVERAGE,
 ];
 
-function isCustomViewsAvailableForEntityType(entityType: string) {
-  const candidateTypes = [
-    ...schemaTypesDefinition
-      .get(ABSTRACT_STIX_DOMAIN_OBJECT),
-    ABSTRACT_STIX_CORE_RELATIONSHIP,
-    ABSTRACT_STIX_CYBER_OBSERVABLE,
-    ENTITY_HASHED_OBSERVABLE_ARTIFACT,
-  ];
-  return candidateTypes.includes(entityType)
-    && !ENTITY_TYPES_WITHOUT_CUSTOM_VIEWS.includes(entityType);
-}
+/**
+ * The cached whitelist
+ */
+let entityTypesCandidateToCustomViews: string[] | undefined = undefined;
 
-export function computeCustomViewPath({ slug, id }: BasicStoreEntityCustomView) {
+const getEntityTypesCandidateToCustomViews = () => {
+  if (!entityTypesCandidateToCustomViews) {
+    const candidateTypes = [
+      ...schemaTypesDefinition
+        .get(ABSTRACT_STIX_DOMAIN_OBJECT),
+      ABSTRACT_STIX_CORE_RELATIONSHIP,
+      ABSTRACT_STIX_CYBER_OBSERVABLE,
+      ENTITY_HASHED_OBSERVABLE_ARTIFACT,
+    ];
+    entityTypesCandidateToCustomViews = candidateTypes
+      .filter((entityType) => !ENTITY_TYPES_WITHOUT_CUSTOM_VIEWS.includes(entityType));
+  }
+  return entityTypesCandidateToCustomViews;
+};
+
+const isCustomViewsAvailableForEntityType = (entityType: string) => {
+  return getEntityTypesCandidateToCustomViews().includes(entityType);
+};
+
+export const computeCustomViewPath = ({ slug, id }: BasicStoreEntityCustomView) => {
   return `${slug}-${id.replaceAll('-', '')}`;
-}
+};
 
 // View Use Cases (all authed users)
 
@@ -71,14 +83,18 @@ export const findAllCustomViews = async (
   entityType: string | undefined | null,
   paginationOptions: Omit<QueryCustomViewsArgs, 'entityType'>,
 ) => {
-  const filters = entityType ? {
-    filters: addFilter(undefined, 'target_entity_type', [entityType]),
-  } : {};
   return pageEntitiesConnection<BasicStoreEntityCustomView>(
     context,
     user,
     [ENTITY_TYPE_CUSTOM_VIEW],
-    { ...paginationOptions, ...filters },
+    {
+      ...paginationOptions,
+      filters: addFilter(
+        undefined,
+        'target_entity_type',
+        entityType ? [entityType] : getEntityTypesCandidateToCustomViews(),
+      ),
+    },
   );
 };
 
