@@ -33,7 +33,6 @@ const syncManagerInstance = (syncId) => {
   let lastEventDate; // Track the last saved event date (ISO string) for reconnection
   let running = false;
   let abortController = null;
-
   // Async generator that yields SSE events from a raw HTTP stream.
   // Backpressure is natural: when the consumer is busy processing an event,
   // the generator is suspended, bytes are not read from the socket,
@@ -93,13 +92,10 @@ const syncManagerInstance = (syncId) => {
   return {
     id: syncId,
     stop: () => {
-      const startTime = new Date().getTime();
       logApp.info(`[OPENCTI] Sync ${syncId}: stopping manager`);
       running = false;
-      waitLoopTimer.interrupt();
       if (abortController) abortController.abort();
       clearSyncConsumerMetrics(syncId).catch(() => {});
-      logApp.info(`[OPENCTI] Sync ${syncId}: manager stopped in ${new Date().getTime() - startTime} ms`);
     },
     start: async (context) => {
       running = true;
@@ -197,7 +193,6 @@ const initSyncManager = () => {
   let scheduler;
   let syncListening = true;
   let managerRunning = false;
-
   const syncManagers = new Map();
   const processStep = async () => {
     // Get syncs definition
@@ -280,13 +275,12 @@ const initSyncManager = () => {
       };
     },
     shutdown: async () => {
-      const startTime = new Date().getTime();
       logApp.info('[OPENCTI-MODULE] Stopping Sync manager');
       syncListening = false;
+      waitLoopTimer.interrupt();
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }
-      logApp.info(`[OPENCTI-MODULE] Stopping Sync manager ${new Date().getTime() - startTime} ms`);
       return true;
     },
   };

@@ -13,7 +13,7 @@ export class InterruptibleTimer {
   private resolve: (() => void) | null = null;
 
   interrupt() {
-    if (this.timeoutId) {
+    if (this.timeoutId !== null) {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;
     }
