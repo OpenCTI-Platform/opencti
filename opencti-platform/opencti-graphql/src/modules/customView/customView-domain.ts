@@ -1,7 +1,7 @@
-import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
+import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView } from './customView-types';
-import { type CustomViewsDisplayContext, type CustomViewDisplayContext, FilterMode } from '../../generated/graphql';
+import { type QueryCustomViewsArgs } from '../../generated/graphql';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -16,6 +16,7 @@ import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types'
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../schema/stixCyberObservable';
+import { addFilter } from '../../utils/filtering/filtering-utils';
 
 /**
  * Exclusion list: entity types not capable of
@@ -33,17 +34,33 @@ const ENTITY_TYPES_WITHOUT_CUSTOM_VIEWS = [
   ENTITY_TYPE_SECURITY_COVERAGE,
 ];
 
-function isCustomViewsAvailableForEntityType(entityType: string) {
-  const candidateTypes = [
-    ...schemaTypesDefinition
-      .get(ABSTRACT_STIX_DOMAIN_OBJECT),
-    ABSTRACT_STIX_CORE_RELATIONSHIP,
-    ABSTRACT_STIX_CYBER_OBSERVABLE,
-    ENTITY_HASHED_OBSERVABLE_ARTIFACT,
-  ];
-  return candidateTypes.includes(entityType)
-    && !ENTITY_TYPES_WITHOUT_CUSTOM_VIEWS.includes(entityType);
-}
+/**
+ * The cached whitelist
+ */
+let entityTypesCandidateToCustomViews: string[] | undefined = undefined;
+
+const getEntityTypesCandidateToCustomViews = () => {
+  if (!entityTypesCandidateToCustomViews) {
+    const candidateTypes = [
+      ...schemaTypesDefinition
+        .get(ABSTRACT_STIX_DOMAIN_OBJECT),
+      ABSTRACT_STIX_CORE_RELATIONSHIP,
+      ABSTRACT_STIX_CYBER_OBSERVABLE,
+      ENTITY_HASHED_OBSERVABLE_ARTIFACT,
+    ];
+    entityTypesCandidateToCustomViews = candidateTypes
+      .filter((entityType) => !ENTITY_TYPES_WITHOUT_CUSTOM_VIEWS.includes(entityType));
+  }
+  return entityTypesCandidateToCustomViews;
+};
+
+const isCustomViewsAvailableForEntityType = (entityType: string) => {
+  return getEntityTypesCandidateToCustomViews().includes(entityType);
+};
+
+export const computeCustomViewPath = ({ slug, id }: BasicStoreEntityCustomView) => {
+  return `${slug}-${id.replaceAll('-', '')}`;
+};
 
 // View Use Cases (all authed users)
 
@@ -60,71 +77,29 @@ export const getCustomViewByIdForDisplay = async (
   );
 };
 
-export const getCustomViewsDisplayContext = async (context: AuthContext, user: AuthUser) => {
-  const allCustomViewEntities = await fullEntitiesList<BasicStoreEntityCustomView>(
-    context,
-    user,
-    [ENTITY_TYPE_CUSTOM_VIEW],
-  );
-  const customViewInfoMap = allCustomViewEntities.reduce((infoMap, customViewEntity) => {
-    const { id, name, slug, target_entity_type: targetEntityType } = customViewEntity;
-    const infos = infoMap.get(targetEntityType) ?? [];
-    // Build the relative path from the slug and the id
-    const path = `${slug}-${id.replaceAll('-', '')}`;
-    infos.push({ id, path, name });
-    infoMap.set(targetEntityType, infos);
-    return infoMap;
-  }, new Map<string, CustomViewDisplayContext[]>());
-  return Array.from(customViewInfoMap.keys()).reduce((acc, targetEntityType) => {
-    if (!isCustomViewsAvailableForEntityType(targetEntityType)) {
-      return acc;
-    }
-    const customViewsInfos = customViewInfoMap.get(targetEntityType) ?? [];
-    acc.push({
-      entity_type: targetEntityType,
-      custom_views_info: customViewsInfos,
-    });
-    return acc;
-  }, [] as CustomViewsDisplayContext[]);
-};
-
-// Settings Use Cases (admin users)
-
-export const getCustomViewsSettings = async (
+export const findAllCustomViews = async (
   context: AuthContext,
   user: AuthUser,
-  entityType: string,
+  entityType: string | undefined | null,
+  paginationOptions: Omit<QueryCustomViewsArgs, 'entityType'>,
 ) => {
-  if (!isCustomViewsAvailableForEntityType(entityType)) {
-    return {
-      canEntityTypeHaveCustomViews: false,
-      customViews: [],
-    };
-  }
-  const customViewEntities = await fullEntitiesList<BasicStoreEntityCustomView>(
+  return pageEntitiesConnection<BasicStoreEntityCustomView>(
     context,
     user,
     [ENTITY_TYPE_CUSTOM_VIEW],
     {
-      filters: {
-        filters: [{
-          key: ['target_entity_type'],
-          values: [entityType],
-        }],
-        filterGroups: [],
-        mode: FilterMode.And,
-      },
+      ...paginationOptions,
+      filters: addFilter(
+        undefined,
+        'target_entity_type',
+        entityType ? [entityType] : getEntityTypesCandidateToCustomViews(),
+      ),
     },
   );
-  return {
-    canEntityTypeHaveCustomViews: true,
-    customViews: customViewEntities.map(
-      ({ id, name, description, created_at, updated_at }) => ({
-        id,
-        name,
-        description,
-        updated_at,
-        created_at,
-      })),
-  };
+};
+
+// Settings Use Cases (admin users)
+
+export const getCustomViewsSettings = (entityType: string) => {
+  return { canEntityTypeHaveCustomViews: isCustomViewsAvailableForEntityType(entityType) };
 };

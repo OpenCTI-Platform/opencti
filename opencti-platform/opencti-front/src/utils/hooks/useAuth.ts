@@ -51,7 +51,6 @@ export interface UserContextType {
   settings: RootSettings$data | undefined;
   bannerSettings: BannerSettings | undefined;
   entitySettings: RootPrivateQuery$data['entitySettings'] | undefined;
-  customViews: NonNullable<RootPrivateQuery$data['customViewsDisplayContext']>;
   platformModuleHelpers: ModuleHelper | undefined;
   schema: SchemaType | undefined;
   isXTMHubAccessible: boolean | null | undefined;
@@ -60,12 +59,12 @@ export interface UserContextType {
   unitSystem: string;
   locale: PlatformLang;
   tz: string;
+  queryData: RootPrivateQuery$data | undefined;
 }
 
 const defaultContext = {
   me: undefined,
   settings: undefined,
-  customViews: [],
   bannerSettings: undefined,
   entitySettings: undefined,
   platformModuleHelpers: undefined,
@@ -76,6 +75,7 @@ const defaultContext = {
   locale: defaultLang,
   unitSystem: 'Metric',
   tz: 'UTC',
+  queryData: undefined,
 };
 export const UserContext = React.createContext<UserContextType>(defaultContext);
 
@@ -83,7 +83,6 @@ const useAuth = () => {
   const {
     me,
     settings,
-    customViews,
     bannerSettings,
     entitySettings,
     platformModuleHelpers,
@@ -94,15 +93,15 @@ const useAuth = () => {
     unitSystem,
     locale,
     tz,
+    queryData,
   } = useContext(UserContext);
-  if (!me || !settings || !bannerSettings || !entitySettings || !platformModuleHelpers || !schema || !about || !themes) {
+  if (!me || !settings || !bannerSettings || !entitySettings || !platformModuleHelpers || !schema || !about || !themes || !queryData) {
     throw new Error('Invalid user context !');
   }
   return {
     me,
     settings,
     bannerSettings,
-    customViews,
     entitySettings,
     platformModuleHelpers,
     schema,
@@ -112,6 +111,7 @@ const useAuth = () => {
     locale,
     tz,
     unitSystem,
+    queryData,
   };
 };
 

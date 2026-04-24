@@ -49,6 +49,7 @@ describe('Hook: useAuth', () => {
           theme: 'b9e9766f-467c-4b1e-a4cd-dbf600e139be',
         },
       },
+    queryData: {},
   } as unknown as UserContextType;
 
   it('should throw an error if "me" undefined', () => {

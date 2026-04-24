@@ -1,15 +1,75 @@
-import DataTableWithoutFragment from '../../../../../components/dataGrid/DataTableWithoutFragment';
+import { graphql } from 'relay-runtime';
+import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
+import DataTable from '../../../../../components/dataGrid/DataTable';
 import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTypes';
-import { useDataTableLocalSort } from '../../../../../components/dataGrid/dataTableHooks';
 import { useFormatter } from '../../../../../components/i18n';
-import type { CustomViewsSettings_customViews$data } from './__generated__/CustomViewsSettings_customViews.graphql';
-
-type CustomViewsSettingsEntry = CustomViewsSettings_customViews$data['customViews'][number];
+import DrawOutlinedIcon from '@mui/icons-material/DrawOutlined';
+import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
+import type { CustomViewsSettingsDataTablePaginationQuery } from './__generated__/CustomViewsSettingsDataTablePaginationQuery.graphql';
+import type { CustomViewsSettingsDataTable_data$data } from './__generated__/CustomViewsSettingsDataTable_data.graphql';
+import type { CustomViewsSettingsDataTable_node$data } from './__generated__/CustomViewsSettingsDataTable_node.graphql';
 
 interface CustomViewsSettingsDataTableProps {
-  customViews: Readonly<CustomViewsSettingsEntry[]>;
   targetType: string;
 }
+
+const customViewFragment = graphql`
+  fragment CustomViewsSettingsDataTable_node on CustomView {
+    id
+    name
+    description
+  }
+`;
+
+const customViewsLinesQuery = graphql`
+  query CustomViewsSettingsDataTablePaginationQuery(
+    $count: Int
+    $cursor: ID
+    $orderBy: CustomViewsOrdering
+    $orderMode: OrderingMode
+    $entityType: String!
+  ) {
+    ...CustomViewsSettingsDataTable_data
+    @arguments(
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      entityType: $entityType
+    )
+  }
+`;
+
+const customViewsLinesFragment = graphql`
+  fragment CustomViewsSettingsDataTable_data on Query
+  @argumentDefinitions(
+    cursor: { type: "ID" }
+    count: { type: "Int" }
+    orderBy: { type: "CustomViewsOrdering" }
+    orderMode: { type: "OrderingMode" }
+    entityType: { type: "String!" }
+  ) @refetchable(queryName: "CustomViewsSettingsDataTableRefetchQuery") {
+    customViews(
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      entityType: $entityType
+    ) @connection(key: "Pagination_customViews") {
+      edges {
+        node {
+          id
+          ...CustomViewsSettingsDataTable_node
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 const DATA_COLUMNS = {
   name: { percentWidth: 40, isSortable: true },
@@ -21,29 +81,55 @@ const DEFAULT_SORT_CONFIG = {
   orderAsc: true,
 } as const;
 
+const resolvePath = (d: CustomViewsSettingsDataTable_data$data) =>
+  (d.customViews?.edges ?? []).map((e) => e.node);
+
 const CustomViewsSettingsDataTable = ({
-  customViews,
   targetType,
 }: CustomViewsSettingsDataTableProps) => {
   const { t_i18n } = useFormatter();
-  const getCustomViewLink = (entry: CustomViewsSettingsEntry) => `custom-views/${entry.id}`;
+  const getCustomViewLink = (entry: CustomViewsSettingsDataTable_node$data) => `custom-views/${entry.id}`;
   const storageKey = `custom-views-${targetType}`;
-  const { sortedData: sortedCustomViews } = useDataTableLocalSort({
-    data: customViews,
+
+  const { paginationOptions } = usePaginationLocalStorage<typeof DEFAULT_SORT_CONFIG>(
     storageKey,
-    initialValues: DEFAULT_SORT_CONFIG,
-  });
+    DEFAULT_SORT_CONFIG,
+  );
+
+  const queryRef = useQueryLoading<CustomViewsSettingsDataTablePaginationQuery>(
+    customViewsLinesQuery,
+    {
+      entityType: targetType,
+      ...paginationOptions,
+    },
+  );
+
+  if (!queryRef) {
+    return null;
+  }
+
+  const preloadedPaginationProps = {
+    linesQuery: customViewsLinesQuery,
+    linesFragment: customViewsLinesFragment,
+    queryRef,
+    nodePath: ['customViews', 'pageInfo', 'globalCount'],
+  };
 
   return (
-    <DataTableWithoutFragment
+    <DataTable
+      icon={() => <DrawOutlinedIcon color="secondary" />}
       initialValues={DEFAULT_SORT_CONFIG}
       dataColumns={DATA_COLUMNS}
       storageKey={storageKey}
-      globalCount={sortedCustomViews.length}
-      data={sortedCustomViews}
       variant={DataTableVariant.inline}
       getComputeLink={getCustomViewLink}
       emptyStateMessage={t_i18n('No entries yet')}
+      resolvePath={resolvePath}
+      preloadedPaginationProps={preloadedPaginationProps}
+      lineFragment={customViewFragment}
+      hideSearch={true}
+      hideFilters={true}
+      disableLineSelection={true}
     />
   );
 };

@@ -1,4 +1,4 @@
-import { SubTypeQuery } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
+import type { SubTypeQuery } from './__generated__/SubTypeQuery.graphql';
 import { Box, Stack } from '@mui/material';
 import React, { Suspense } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
@@ -17,6 +17,7 @@ import EntitySettingSettings from './entity_setting/EntitySettingSettings';
 import { entitySettingsOverviewLayoutCustomizationFragment } from './entity_setting/EntitySettingsOverviewLayoutCustomization';
 import { EntitySettingsOverviewLayoutCustomization_entitySetting$key } from './entity_setting/__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
 import { SubTypeTabs } from './SubTypeOutletContext';
+import { useProvideCustomViewsSettingsContext } from './custom_views/CustomViewsSettingsContext';
 
 export const subTypeQuery = graphql`
   query SubTypeQuery($id: String!){
@@ -39,10 +40,7 @@ export const subTypeQuery = graphql`
       ...GlobalWorkflowSettings_global
       ...RequestAccessSettings_requestAccess
     }
-    customViewsSettings(entityType: $id) {
-      canEntityTypeHaveCustomViews
-      ...CustomViewsSettings_customViews
-    }
+    ...CustomViewsSettingsContext_data @arguments(entityType: $id)
   }
 `;
 
@@ -55,7 +53,9 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const { typesWithFintelTemplates } = useAttributes();
   const { isFeatureEnable } = useHelper();
 
-  const { subType, customViewsSettings } = usePreloadedQuery(subTypeQuery, queryRef);
+  const data = usePreloadedQuery(subTypeQuery, queryRef);
+  const { isCustomViewsEnabled } = useProvideCustomViewsSettingsContext({ data });
+  const { subType } = data;
 
   const entitySetting = useFragment(
     entitySettingsOverviewLayoutCustomizationFragment,
@@ -79,10 +79,6 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const isAttributesConfigurationEnabled = !!subType.settings?.availableSettings.includes('attributes_configuration');
 
   const isCustomOverviewLayoutEnabled = !!entitySetting?.overview_layout_customization;
-
-  const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
-  const isCustomViewsEnabled = customViewsSettings.canEntityTypeHaveCustomViews
-    && isCustomViewFeatureEnabled;
 
   const tabs: SubTypeTabs = {
     workflow: isWorkflowConfigurationEnabled,
@@ -119,11 +115,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
       <Box sx={{ minHeight: '240px' }}>
         <ErrorBoundary>
           <Outlet
-            context={{
-              subType,
-              tabs,
-              customViewsSettings,
-            }}
+            context={{ subType, tabs }}
           />
         </ErrorBoundary>
       </Box>

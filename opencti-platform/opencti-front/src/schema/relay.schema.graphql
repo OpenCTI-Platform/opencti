@@ -9757,8 +9757,8 @@ type Query {
   Auth log history by provider id: internal_id for DB providers, or static id for singletons (Headers, Cert).
   """
   authLogHistoryById(id: String!): [AuthLogEntry!]!
-  customViewsDisplayContext: [CustomViewsDisplayContext!]
-  customViewDisplay(id: String!): CustomViewDisplay
+  customViewDisplay(id: ID!): CustomView
+  customViews(entityType: String, first: Int, after: ID, orderBy: CustomViewsOrdering, search: String, orderMode: OrderingMode): CustomViewsConnection!
   customViewsSettings(entityType: String!): CustomViewsSettings!
   taxiiCollection(id: String!): TaxiiCollection
   taxiiCollections(first: Int, after: ID, orderBy: TaxiiCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): TaxiiCollectionConnection
@@ -16151,36 +16151,26 @@ type CustomView implements InternalObject & BasicObject {
   description: String
   slug: String!
   manifest: String
-  target_entity_type: String!
-  authorizedMembers: [MemberAccess!]!
-}
-
-type CustomViewDisplay {
-  manifest: String
-}
-
-type CustomViewDisplayContext {
-  id: ID!
-  name: String!
   path: String!
+  targetEntityType: String!
 }
 
-type CustomViewsDisplayContext {
-  entity_type: String!
-  custom_views_info: [CustomViewDisplayContext!]!
+type CustomViewsEdge {
+  cursor: String!
+  node: CustomView!
 }
 
-type CustomViewInfoForSettings {
-  id: ID!
-  name: String!
-  description: String!
-  created_at: DateTime!
-  updated_at: DateTime!
+type CustomViewsConnection {
+  pageInfo: PageInfo!
+  edges: [CustomViewsEdge!]!
+}
+
+enum CustomViewsOrdering {
+  name
 }
 
 type CustomViewsSettings {
   canEntityTypeHaveCustomViews: Boolean!
-  customViews: [CustomViewInfoForSettings!]!
 }
 
 type TaxiiCollection {

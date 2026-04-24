@@ -1,10 +1,30 @@
+import { graphql } from 'relay-runtime';
 import { getCurrentTab } from '../../../utils/utils';
-import useAuth from '../../../utils/hooks/useAuth';
-import type { CustomViewsInfo } from './CustomViews-types';
+import type { CustomView } from './CustomViews-types';
+import { useCustomViewsData } from './useCustomViewsData';
 
 export const CUSTOM_VIEW_TAB_VALUE = 'custom-view';
 
-function matchPath(customViews: CustomViewsInfo) {
+export const customViewsFragment = graphql`
+  fragment useCustomViews_data on Query
+  @refetchable(queryName: "UseCustomViewsRefetchQuery") {
+    customViews(
+      orderBy: name
+      orderMode: asc
+    ) {
+      edges {
+        node {
+          id
+          name
+          path
+          targetEntityType
+        }
+      }
+    }
+  }
+`;
+
+function matchPath(customViews: CustomView[]) {
   return (fullPath: string, basePath: string) => {
     const current = getCurrentTab(fullPath, basePath);
     if (customViews.find(({ path }) => path === current)) {
@@ -20,15 +40,13 @@ const NO_CUSTOM_VIEWS = {
 };
 
 export const useCustomViews = (entityType: string) => {
-  const { customViews: customViewsContext } = useAuth();
-  const customViewsContextForType = customViewsContext.find(({ entity_type }) => entity_type === entityType);
-  if (!customViewsContextForType) {
+  const { allCustomViews } = useCustomViewsData();
+  const customViews = allCustomViews.filter(
+    ({ targetEntityType }) => targetEntityType === entityType,
+  );
+  if (!customViews) {
     return NO_CUSTOM_VIEWS;
   }
-  const customViews = customViewsContextForType.custom_views_info ?? [];
   const getCurrentCustomViewTab = matchPath(customViews);
-  return {
-    customViews,
-    getCurrentCustomViewTab,
-  };
+  return { customViews, getCurrentCustomViewTab };
 };

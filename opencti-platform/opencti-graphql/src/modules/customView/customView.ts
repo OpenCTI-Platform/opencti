@@ -3,7 +3,6 @@ import { isFeatureEnabled } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
-import { authorizedMembers } from '../../schema/attribute-definition';
 import { ENTITY_TYPE_CUSTOM_VIEW, type StixCustomView, type StoreEntityCustomView } from './customView-types';
 import convertCustomViewToStix from './customView-converter';
 
@@ -30,8 +29,6 @@ export const CUSTOM_VIEW_DEFINITION: ModuleDefinition<StoreEntityCustomView, Sti
     { name: 'manifest', label: 'Manifest', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     /** The entity type for which this custom view applies **/
     { name: 'target_entity_type', label: 'Target entity type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    /** Access restriction management **/
-    authorizedMembers,
   ],
   relations: [],
   relationsRefs: [],
