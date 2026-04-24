@@ -16157,7 +16157,7 @@ input CustomViewAddInput {
   name: String!
   description: String
   manifest: String
-  target_entity_type: String!
+  targetEntityType: String!
 }
 
 type TaxiiCollection {

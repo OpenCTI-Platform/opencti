@@ -37,7 +37,7 @@ input CustomViewAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
     description: String
     manifest: String
-    target_entity_type: String!
+    targetEntityType: String!
 }
 
 # Queries
