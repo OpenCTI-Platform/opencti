@@ -1,33 +1,15 @@
-import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Card from '@common/card/Card';
 import { useFormatter } from '../../../../../components/i18n';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import CustomViewsSettingsDataTable from './CustomViewsSettingsDataTable';
-import { CustomViewsSettings_customViews$key } from './__generated__/CustomViewsSettings_customViews.graphql';
-
-const customViewsFragment = graphql`
-  fragment CustomViewsSettings_customViews on CustomViewsSettings {
-    customViews {
-      id
-      name
-      description
-      created_at
-      updated_at
-    }
-  }
-`;
 
 /**
  * Custom Views settings page.
  */
 const CustomViewsSettings = () => {
   const { t_i18n } = useFormatter();
-  const { customViewsSettings, subType } = useSubTypeOutletContext();
-  const { customViews } = useFragment(
-    customViewsFragment,
-    customViewsSettings as CustomViewsSettings_customViews$key,
-  );
+  const { subType } = useSubTypeOutletContext();
 
   return (
     <Grid item xs={12}>
@@ -39,7 +21,7 @@ const CustomViewsSettings = () => {
           pt: 2,
         }}
       >
-        <CustomViewsSettingsDataTable customViews={customViews} targetType={subType.id} />
+        <CustomViewsSettingsDataTable targetType={subType.id} />
       </Card>
     </Grid>
   );

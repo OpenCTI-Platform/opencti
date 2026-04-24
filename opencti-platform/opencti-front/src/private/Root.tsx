@@ -292,14 +292,7 @@ const rootPrivateQuery = graphql`
         }
       }
     }
-    customViewsDisplayContext {
-      entity_type
-      custom_views_info {
-        id
-        name
-        path
-      }
-    }
+    ...useCustomViews_data
     schemaSCOs: subTypes(type: "Stix-Cyber-Observable") {
       edges {
         node {
@@ -429,7 +422,6 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
     me: meFragment,
     settings: settingsFragment,
     entitySettings,
-    customViewsDisplayContext: customViews,
     schemaSCOs,
     schemaSDOs,
     schemaSMOs,
@@ -494,9 +486,9 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   const contextValue = useMemo(() => ({
+    queryData,
     me,
     settings,
-    customViews: customViews ?? [],
     bannerSettings,
     entitySettings,
     platformModuleHelpers,
