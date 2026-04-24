@@ -38,6 +38,9 @@ const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', tru
 const createHttpServer = async () => {
   logApp.info('[INIT] Configuring HTTP/HTTPS server');
   const app = express();
+  // Rate limiter must be first registered so it applies to all requests including /graphql
+  // Even before session so it avoid creating session on rate limited requests.
+  app.use(rateLimit(buildRateLimiterOptions()));
   app.use(applicationSession.session);
   app.use(passport.initialize({}));
   const { schema, apolloServer } = createApolloServer();
@@ -129,8 +132,6 @@ const createHttpServer = async () => {
     },
   });
   await apolloServer.start();
-  // Rate limiter must be first registered so it applies to all requests including /graphql
-  app.use(rateLimit(buildRateLimiterOptions()));
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
   app.use(express.json({ limit: requestSizeLimit }));

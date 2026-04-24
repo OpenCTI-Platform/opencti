@@ -1,5 +1,6 @@
 import nconf from 'nconf';
 import { booleanConf, DEV_MODE } from '../config/conf';
+import { stringArrayConf } from '../config/conf-utils';
 
 const PUBLIC_AUTH_DOMAINS: string = nconf.get('app:public_dashboard_authorized_domains') ?? '';
 export const getPublicAuthorizedDomainsFromConfiguration = () => {
@@ -15,7 +16,7 @@ export const isDevMode = () => {
   return DEV_MODE;
 };
 
-const RATE_PROTECTION_IP_SKIP_LIST: [] = nconf.get('app:rate_protection:ip_skip_list') ?? [];
+const RATE_PROTECTION_IP_SKIP_LIST: string[] = stringArrayConf('app:rate_protection:ip_skip_list');
 export const getRateProtectionIpSkipList = () => {
   return RATE_PROTECTION_IP_SKIP_LIST;
 };
@@ -26,6 +27,6 @@ export const getRateProtectionTimeWindowMs = () => {
 };
 
 const RATE_PROTECTION_MAX_REQUESTS: number = nconf.get('app:rate_protection:max_requests') ?? 10000;
-export const getRateProtectionMaxRequest = () => {
+export const getRateProtectionMaxRequests = () => {
   return RATE_PROTECTION_MAX_REQUESTS;
 };

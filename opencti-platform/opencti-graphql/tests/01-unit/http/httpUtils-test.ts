@@ -186,6 +186,14 @@ describe('buildHelmetParameters coverage', () => {
 });
 
 describe('httpUtils: buildRateLimiter configuration tests', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('buildRateLimiter with default should be good', () => {
     const rateLimiter = buildRateLimiterOptions();
     expect(rateLimiter.windowMs).toBe(1000);
@@ -194,7 +202,7 @@ describe('httpUtils: buildRateLimiter configuration tests', () => {
   });
 
   it('buildRateLimiter with modified configuration should be good', () => {
-    vi.spyOn(httpConfig, 'getRateProtectionMaxRequest').mockReturnValue(5000);
+    vi.spyOn(httpConfig, 'getRateProtectionMaxRequests').mockReturnValue(5000);
     vi.spyOn(httpConfig, 'getRateProtectionTimeWindowMs').mockReturnValue(5);
     const rateLimiter = buildRateLimiterOptions();
     expect(rateLimiter.windowMs).toBe(5);
