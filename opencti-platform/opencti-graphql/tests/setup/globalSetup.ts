@@ -3,11 +3,11 @@ import '../../src/modules/index';
 // import managers
 import '../../src/manager/index';
 // endregion
-import { storageInit, initializeBucket } from '../../src/database/raw-file-storage';
+import { initializeBucket } from '../../src/database/raw-file-storage';
 import { deleteQueues } from '../../src/domain/connector';
-import { elDeleteIndices, elPlatformIndices, initializeSchema, searchEngineInit } from '../../src/database/engine';
+import { elDeleteIndices, elPlatformIndices, initializeSchema } from '../../src/database/engine';
 import { wait } from '../../src/database/utils';
-import { createRedisClient, initializeRedisClients } from '../../src/database/redis';
+import { createRedisClient } from '../../src/database/redis';
 import { logApp, environment } from '../../src/config/conf';
 import cacheManager from '../../src/manager/cacheManager';
 import { initDefaultNotifiers } from '../../src/modules/notifier/notifier-domain';
@@ -22,6 +22,7 @@ import { ADMIN_USER, createTestUsers, isPlatformAlive, testContext } from '../ut
 import { initializeStreamStack } from '../../src/database/stream/stream-handler';
 import { initializeAuthenticationProviders } from '../../src/modules/authenticationProvider/providers';
 import { initializeAdminUser } from '../../src/domain/user';
+import { checkSystemDependencies } from '../../src/boot-utils';
 
 /**
  * This is run once before all tests (for setup) and after all (for teardown).
@@ -103,10 +104,9 @@ const waitPlatformIsAlive = async (): Promise<true> => {
 };
 
 export async function setup() {
-  await initializeRedisClients();
-  await searchEngineInit();
-  await storageInit();
+  await checkSystemDependencies();
   initLockFork();
+
   // cleanup and setup a seeded platform, with all the tests users, ready to run some tests.
   if (INIT_TEST_PLATFORM) {
     logApp.info('[vitest-global-setup] only running test platform initialization');

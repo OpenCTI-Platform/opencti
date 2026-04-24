@@ -122,6 +122,7 @@ export const storageInit = async () => {
   await initializeFileStorageClient();
   await initializeBucket();
   logApp.info('[CHECK] Storage is alive');
+  return true;
 };
 
 export const isStorageAlive = () => initializeBucket();

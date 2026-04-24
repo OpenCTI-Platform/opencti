@@ -1,9 +1,10 @@
 import { environment, getStoppingState, logApp, setStoppingState } from './config/conf';
-import platformInit, { checkFeatureFlags, checkSystemDependencies } from './initialization';
+import platformInit, { checkFeatureFlags } from './initialization';
 import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
 import { shutdownModules, startModules } from './managers';
 import { initLockFork } from './lock/master-lock';
+import { checkSystemDependencies } from './boot-utils';
 
 // region platform start and stop
 export const platformStart = async () => {

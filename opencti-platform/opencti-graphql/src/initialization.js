@@ -2,18 +2,15 @@
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
-import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema, searchEngineInit } from './database/engine';
-import { storageInit, initializeBucket } from './database/raw-file-storage';
-import { enforceQueuesConsistency, initializeInternalQueues, rabbitMQIsAlive } from './database/rabbitmq';
+import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema } from './database/engine';
+import { initializeBucket } from './database/raw-file-storage';
+import { enforceQueuesConsistency, initializeInternalQueues } from './database/rabbitmq';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
-import { checkPythonAvailability } from './python/pythonBridge';
-import { redisInit } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity } from './database/middleware';
 import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
 import { executionContext, SYSTEM_USER } from './utils/access';
-import { smtpIsAlive } from './database/smtp';
 import { initCreateEntitySettings } from './modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from './modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from './modules/managerConfiguration/managerConfiguration-domain';
@@ -34,21 +31,6 @@ export const checkFeatureFlags = () => {
   if (ENABLED_FEATURE_FLAGS.length > 0) {
     logApp.info(`[FEATURE-FLAG] Activated features still in development: ${ENABLED_FEATURE_FLAGS}`);
   }
-};
-
-// Check every dependency
-export const checkSystemDependencies = async () => {
-  logApp.info('[OPENCTI] Checking dependencies statuses');
-  const context = executionContext('system_dependencies');
-  const checkDependenciesPromises = [];
-  checkDependenciesPromises.push(searchEngineInit());
-  checkDependenciesPromises.push(storageInit());
-  checkDependenciesPromises.push(rabbitMQIsAlive());
-  checkDependenciesPromises.push(redisInit());
-  checkDependenciesPromises.push(smtpIsAlive());
-  checkDependenciesPromises.push(checkPythonAvailability(context, SYSTEM_USER));
-  await Promise.all(checkDependenciesPromises);
-  return true;
 };
 
 const refreshMappingsAndIndices = async () => {
