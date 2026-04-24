@@ -2,6 +2,8 @@ import { graphql } from 'relay-runtime';
 import { getCurrentTab } from '../../../utils/utils';
 import type { CustomView } from './CustomViews-types';
 import { useCustomViewsData } from './useCustomViewsData';
+import { useLazyLoadQuery } from 'react-relay';
+import { useCustomViewsPaginationQuery } from './__generated__/useCustomViewsPaginationQuery.graphql';
 
 export const CUSTOM_VIEW_TAB_VALUE = 'custom-view';
 
@@ -11,6 +13,25 @@ export const customViewsFragment = graphql`
     customViews(
       orderBy: name
       orderMode: asc
+    ) {
+      edges {
+        node {
+          id
+          name
+          path
+          targetEntityType
+        }
+      }
+    }
+  }
+`;
+
+const customViewsQuery = graphql`
+  query useCustomViewsPaginationQuery($entityType: String) {
+    customViews(
+      orderBy: name
+      orderMode: asc
+      entityType: $entityType
     ) {
       edges {
         node {
@@ -40,10 +61,19 @@ const NO_CUSTOM_VIEWS = {
 };
 
 export const useCustomViews = (entityType: string) => {
-  const { allCustomViews } = useCustomViewsData();
-  const customViews = allCustomViews.filter(
-    ({ targetEntityType }) => targetEntityType === entityType,
-  );
+  // const { allCustomViews } = useCustomViewsData();
+  const data = useLazyLoadQuery<useCustomViewsPaginationQuery>(
+    customViewsQuery,
+    {
+      entityType,
+    },
+    {
+      fetchPolicy: 'store-or-network',
+    });
+  const customViews = data?.customViews?.edges.map((e) => e.node) ?? [];
+  // const customViews = allCustomViews.filter(
+  //   ({ targetEntityType }) => targetEntityType === entityType,
+  // );
   if (!customViews) {
     return NO_CUSTOM_VIEWS;
   }
