@@ -1,5 +1,6 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import conf, { booleanConf, logApp } from '../config/conf';
+import { decryptDatabaseValue } from '../utils/platformCrypto';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
@@ -35,7 +36,8 @@ const syncManagerInstance = (syncId) => {
   // the generator is suspended, bytes are not read from the socket,
   // TCP receive buffer fills up, and flow control throttles the server.
   const streamEvents = async function* (sseUri, syncElement) {
-    const { token, ssl_verify: ssl = false } = syncElement;
+    const { ssl_verify: ssl = false } = syncElement;
+    const token = await decryptDatabaseValue(syncElement.token);
     const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
     abortController = new AbortController();
     const streamClient = getHttpClient({ headers, rejectUnauthorized: ssl, responseType: 'stream' });
@@ -99,7 +101,8 @@ const syncManagerInstance = (syncId) => {
       logApp.info(`[OPENCTI] Sync ${syncId}: starting manager`);
       const sync = await storeLoadById(context, SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
       const synchronized = sync.synchronized ?? false;
-      const { token, ssl_verify: ssl = false } = sync;
+      const { ssl_verify: ssl = false } = sync;
+      const token = await decryptDatabaseValue(sync.token);
       const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
       const httpClientOptions = { headers, rejectUnauthorized: ssl, responseType: 'arraybuffer' };
       const httpClient = getHttpClient(httpClientOptions);

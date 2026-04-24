@@ -14,18 +14,24 @@ import {
   ingestionCsvResetState,
   testCsvIngestionMapping,
 } from './ingestion-csv-domain';
+import { removeAuthenticationCredentials } from './ingestion-common';
+import { decryptDatabaseValue } from '../../utils/platformCrypto';
 import { userAlreadyExists } from '../user/user-domain';
 import { loadCreator } from '../../database/members';
 
 const ingestionCsvResolvers: Resolvers = {
   Query: {
-    ingestionCsv: (_, { id }, context) => findById(context, context.user, id, true),
+    ingestionCsv: (_, { id }, context) => findById(context, context.user, id),
     ingestionCsvs: (_, args, context) => findCsvIngestionPaginated(context, context.user, args),
     csvFeedAddInputFromImport: (_, { file }, context) => csvFeedAddInputFromImport(context, context.user, file),
     defaultIngestionGroupCount: (_, __, context) => defaultIngestionGroupsCount(context),
     userAlreadyExists: (_, { name }, context) => userAlreadyExists(context, name),
   },
   IngestionCsv: {
+    authentication_value: async (ingestionCsv) => {
+      const decrypted = await decryptDatabaseValue(ingestionCsv.authentication_value);
+      return removeAuthenticationCredentials(ingestionCsv.authentication_type, decrypted);
+    },
     user: (ingestionCsv, _, context) => loadCreator(context, context.user, ingestionCsv.user_id),
     csvMapper: (ingestionCsv, _, context) => csvFeedGetCsvMapper(context, context.user, ingestionCsv),
     toConfigurationExport: (ingestionCsv, _, context) => csvFeedMapperExport(context, context.user, ingestionCsv),

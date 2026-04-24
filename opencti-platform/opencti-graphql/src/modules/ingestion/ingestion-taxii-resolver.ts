@@ -9,16 +9,22 @@ import {
   taxiiFeedAddInputFromImport,
   taxiiFeedExport,
 } from './ingestion-taxii-domain';
+import { removeAuthenticationCredentials } from './ingestion-common';
 import type { Resolvers } from '../../generated/graphql';
+import { decryptDatabaseValue } from '../../utils/platformCrypto';
 import { loadCreator } from '../../database/members';
 
 const ingestionTaxiiResolvers: Resolvers = {
   Query: {
-    ingestionTaxii: (_, { id }, context) => findById(context, context.user, id, true),
+    ingestionTaxii: (_, { id }, context) => findById(context, context.user, id),
     ingestionTaxiis: (_, args, context) => findTaxiiIngestionPaginated(context, context.user, args),
     taxiiFeedAddInputFromImport: (_, { file }) => taxiiFeedAddInputFromImport(file),
   },
   IngestionTaxii: {
+    authentication_value: async (ingestionTaxii) => {
+      const decrypted = await decryptDatabaseValue(ingestionTaxii.authentication_value);
+      return removeAuthenticationCredentials(ingestionTaxii.authentication_type, decrypted);
+    },
     user: (ingestionTaxii, _, context) => loadCreator(context, context.user, ingestionTaxii.user_id),
     toConfigurationExport: (ingestionTaxii) => taxiiFeedExport(ingestionTaxii),
   },

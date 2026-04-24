@@ -45,6 +45,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { StixIndicator } from '../modules/indicator/indicator-types';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 import { executeJsonQuery, findAllJsonIngestion, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
+import { decryptDatabaseValue } from '../utils/platformCrypto';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -368,16 +369,19 @@ export const prepareTaxiiGetParam = (ingestion: BasicStoreEntityIngestionTaxii) 
 const taxiiHttpGet = async (ingestion: BasicStoreEntityIngestionTaxii): Promise<TaxiiResponseData> => {
   const octiHeaders = new OpenCTIHeaders();
   octiHeaders.Accept = 'application/taxii+json;version=2.1';
+
+  const decryptedAuthValue = await decryptDatabaseValue(ingestion.authentication_value) ?? '';
+
   if (ingestion.authentication_type === IngestionAuthType.Basic) {
-    const auth = Buffer.from(ingestion.authentication_value, 'utf-8').toString('base64');
+    const auth = Buffer.from(decryptedAuthValue, 'utf-8').toString('base64');
     octiHeaders.Authorization = `Basic ${auth}`;
   }
   if (ingestion.authentication_type === IngestionAuthType.Bearer) {
-    octiHeaders.Authorization = `Bearer ${ingestion.authentication_value}`;
+    octiHeaders.Authorization = `Bearer ${decryptedAuthValue}`;
   }
   let certificates;
   if (ingestion.authentication_type === IngestionAuthType.Certificate) {
-    certificates = { cert: ingestion.authentication_value.split(':')[0], key: ingestion.authentication_value.split(':')[1], ca: ingestion.authentication_value.split(':')[2] };
+    certificates = { cert: decryptedAuthValue.split(':')[0], key: decryptedAuthValue.split(':')[1], ca: decryptedAuthValue.split(':')[2] };
   }
 
   const httpClientOptions: GetHttpClient = { headers: octiHeaders, rejectUnauthorized: false, responseType: 'json', certificates };

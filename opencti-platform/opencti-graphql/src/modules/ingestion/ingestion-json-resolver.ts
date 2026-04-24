@@ -25,15 +25,21 @@ import {
   ingestionJsonResetState,
   testJsonIngestionMapping,
 } from './ingestion-json-domain';
+import { removeAuthenticationCredentials } from './ingestion-common';
+import { decryptDatabaseValue } from '../../utils/platformCrypto';
 import { connectorIdFromIngestId } from '../../domain/connector';
 import { loadCreator } from '../../database/members';
 
 const ingestionJsonResolvers: Resolvers = {
   Query: {
-    ingestionJson: (_, { id }, context) => findById(context, context.user, id, true),
+    ingestionJson: (_, { id }, context) => findById(context, context.user, id),
     ingestionJsons: (_, args, context) => findJsonIngestionPaginated(context, context.user, args),
   },
   IngestionJson: {
+    authentication_value: async (ingestionJson) => {
+      const decrypted = await decryptDatabaseValue(ingestionJson.authentication_value);
+      return removeAuthenticationCredentials(ingestionJson.authentication_type, decrypted);
+    },
     user: (ingestionJson, _, context) => loadCreator(context, context.user, ingestionJson.user_id),
     connector_id: (ingestionJson) => connectorIdFromIngestId(ingestionJson.id),
     jsonMapper: (ingestionJson, _, context) => findJsonMapperForIngestionById(context, context.user, ingestionJson.json_mapper_id),

@@ -265,3 +265,22 @@ const createPlatformCrypto = async () => {
 };
 
 export const getPlatformCrypto = memoize(createPlatformCrypto);
+
+const getGeneralKeyPair = memoize(async () => {
+  const factory = await getPlatformCrypto();
+  return factory.deriveAesKey(['general', 'credentials'], 1);
+});
+
+export const encryptDatabaseValue = async (value: string | undefined | null) => {
+  if (!value) return value;
+  const keyPair = await getGeneralKeyPair();
+  const clearDataBuffer = Buffer.from(value);
+  const encryptedBuffer = await keyPair.encrypt(clearDataBuffer);
+  return encryptedBuffer.toString('base64');
+};
+
+export const decryptDatabaseValue = async (value: string | undefined | null) => {
+  if (!value) return value;
+  const keyPair = await getGeneralKeyPair();
+  return (await keyPair.decrypt(Buffer.from(value, 'base64'))).toString();
+};
