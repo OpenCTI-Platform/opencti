@@ -166,6 +166,7 @@
     "rate-limiter-flexible": "11.0.1",
     "semver": "7.7.4",
     "set-interval-async": "3.0.3",
+    "slug": "11.0.1",
     "source-map": "0.7.6",
     "tough-cookie": "6.0.1",
     "turndown": "7.2.4",
