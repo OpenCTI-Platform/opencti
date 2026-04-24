@@ -64,6 +64,7 @@ export interface StixCoreObjectFileExportFormProps {
   connectors: ConnectorOption[];
   templates?: FieldOption[];
   fileOptions?: FileOption[];
+  defaultFileMarkings?: FieldOption[];
   defaultValues?: {
     connector: string;
     format: string;
@@ -107,6 +108,7 @@ const StixCoreObjectFileExportForm = ({
   connectors,
   templates,
   fileOptions,
+  defaultFileMarkings,
   defaultValues,
   scoName,
   handleOpenAskAi,
@@ -116,7 +118,18 @@ const StixCoreObjectFileExportForm = ({
   const isEnterpriseEdition = useEnterpriseEdition();
   const { fullyActive } = useAI();
   const [stepIndex, setStepIndex] = useState(defaultValues?.format ? 1 : 0);
+  const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState<string[]>([]);
   const isBuiltInConnector = (connector?: string) => [BUILT_IN_FROM_TEMPLATE.value, BUILT_IN_HTML_TO_PDF.value].includes(connector ?? '');
+
+  const handleSelectedContentMaxMarkingsChange = (
+    values: FieldOption[] | undefined,
+    setFieldValue: (field: string, value: unknown) => void,
+    fallbackFileMarkings: FieldOption[],
+  ) => {
+    const nextValues = values ?? [];
+    setSelectedContentMaxMarkingsIds(nextValues.map(({ value }) => value));
+    setFieldValue('fileMarkings', nextValues.length > 0 ? nextValues : fallbackFileMarkings);
+  };
 
   const validation = () => Yup.object().shape({
     connector: Yup.object().required(t_i18n('This field is required')),
@@ -160,7 +173,9 @@ const StixCoreObjectFileExportForm = ({
     exportFileName: null,
     contentMaxMarkings: [],
     fintelDesign: null,
-    fileMarkings: defaultFileToExport?.fileMarkings.map(({ id, name }) => ({ label: name, value: id })) ?? [],
+    fileMarkings: defaultFileToExport?.fileMarkings.map(({ id, name }) => ({ label: name, value: id }))
+      ?? defaultFileMarkings
+      ?? [],
   };
   const isConnectorValid = (option: ConnectorOption, selectedFormat: string) => {
     if (!selectedFormat) return true;
@@ -230,6 +245,11 @@ const StixCoreObjectFileExportForm = ({
             );
           }
         }, [values.fileToExport]);
+
+        useEffect(() => {
+          setSelectedContentMaxMarkingsIds((values.contentMaxMarkings ?? []).map(({ value }) => value));
+        }, [values.contentMaxMarkings]);
+
         return (
 
           <Dialog
@@ -441,6 +461,11 @@ const StixCoreObjectFileExportForm = ({
                         <ObjectMarkingField
                           name="contentMaxMarkings"
                           label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
+                          onChange={(_, updatedValues) => handleSelectedContentMaxMarkingsChange(
+                            updatedValues,
+                            setFieldValue,
+                            defaultFileMarkings ?? [],
+                          )}
                           style={fieldSpacingContainerStyle}
                           setFieldValue={setFieldValue}
                           limitToMaxSharing
@@ -450,6 +475,7 @@ const StixCoreObjectFileExportForm = ({
                       <ObjectMarkingField
                         name="fileMarkings"
                         label={t_i18n('File marking definition levels')}
+                        filterTargetIds={selectedContentMaxMarkingsIds}
                         style={fieldSpacingContainerStyle}
                         setFieldValue={setFieldValue}
                       />
