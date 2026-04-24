@@ -132,10 +132,15 @@ const XtmHubSettings: React.FC = () => {
   const [isCheckDone, setIsCheckDone] = useState(false);
 
   useEffect(() => {
-    commitCheckConnectivity({ variables: {},
+    commitCheckConnectivity({
+      variables: {},
       onCompleted: () => {
         setIsCheckDone(true);
-      } });
+      },
+      onError: () => {
+        setIsCheckDone(true);
+      },
+    });
   }, []);
 
   if (!isCheckDone) {

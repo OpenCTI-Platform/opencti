@@ -45,8 +45,12 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
     attributeUpdates.push({ key: 'xtm_hub_registration_status', value: [newRegistrationStatus] });
   }
 
-  const emailAttributeUpdates = await handleLostConnectivityEmail(context, settings, isConnectivityActive);
-  pushAll(attributeUpdates, emailAttributeUpdates);
+  try {
+    const emailAttributeUpdates = await handleLostConnectivityEmail(context, settings, isConnectivityActive);
+    pushAll(attributeUpdates, emailAttributeUpdates);
+  } catch (e) {
+    logApp.warn('[XTMH] Failed to handle lost connectivity email, skipping', { error: e });
+  }
 
   if (isConnectivityActive) {
     attributeUpdates.push({ key: 'xtm_hub_last_connectivity_check', value: [new Date()] });
