@@ -153,7 +153,7 @@ const RetentionEditionContainer = (props) => {
         validationSchema={retentionValidation}
         onSubmit={onSubmit}
       >
-        {({ isSubmitting, submitForm, values }) => (
+        {({ isSubmitting, submitForm, values: formValues, validateForm, setTouched }) => (
           <Form>
             <Field
               component={TextField}
@@ -270,7 +270,13 @@ const RetentionEditionContainer = (props) => {
             <div className={classes.buttons}>
               <Button
                 color="secondary"
-                onClick={() => handleVerify(values)}
+                onClick={async () => {
+                  const errors = await validateForm();
+                  setTouched({ name: true, retention_unit: true, max_retention: true });
+                  if (Object.keys(errors).length === 0) {
+                    handleVerify(formValues);
+                  }
+                }}
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
