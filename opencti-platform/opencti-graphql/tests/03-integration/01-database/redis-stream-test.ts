@@ -26,10 +26,8 @@ describe('Redis stream test coverage', () => {
       console.timeEnd('500ms stop');
     };
 
-    const allPromises = [];
-    allPromises.push(streamTestStart());
-    allPromises.push(streamTestStop());
-    await Promise.all(allPromises);
+    await streamTestStart();
+    await streamTestStop();
 
     // Shudown action should stop stream handler right away
     const totalTime = Date.now() - startTime;
