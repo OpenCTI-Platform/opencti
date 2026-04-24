@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 
 const WORKFLOW_DEFINITION_ADD_MUTATION = gql`
@@ -86,6 +86,12 @@ const WORKFLOW_DEFINITION_DELETE_MUTATION = gql`
   }
 `;
 
+const DELETE_DRAFT_WORKSPACE_QUERY = gql`
+  mutation DraftWorkspaceDelete($id: ID!) {
+    draftWorkspaceDelete(id: $id)
+  }
+`;
+
 describe('Workflow Resolver', () => {
   let draftWorkspaceId: string;
   const workflowDefinition = JSON.stringify({
@@ -97,7 +103,7 @@ describe('Workflow Resolver', () => {
       from: 'open',
       to: 'validated',
       event: 'validate_event',
-      actions: [{ type: 'validateDraft' }],
+      actions: [{ type: 'validateDraft', mode: 'sync' }],
     }],
   });
 
@@ -203,6 +209,13 @@ describe('Workflow Resolver', () => {
       console.error('DraftWorkspaceAdd Error:', JSON.stringify(result.errors, null, 2));
     }
     draftWorkspaceId = result.data?.draftWorkspaceAdd.id;
+  });
+
+  afterAll(async () => {
+    await queryAsAdmin({
+      query: DELETE_DRAFT_WORKSPACE_QUERY,
+      variables: { id: draftWorkspaceId },
+    });
   });
 
   it('should create a workflow definition', async () => {
@@ -338,6 +351,17 @@ describe('Workflow Resolver', () => {
           entityType: 'DraftWorkspace',
           definition: workflowWithFilters,
         },
+      });
+    });
+
+    afterAll(async () => {
+      await queryAsAdmin({
+        query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+        variables: { entityType: 'DraftWorkspace' },
+      });
+      await queryAsAdmin({
+        query: DELETE_DRAFT_WORKSPACE_QUERY,
+        variables: { id: filterTestWorkspaceId },
       });
     });
 

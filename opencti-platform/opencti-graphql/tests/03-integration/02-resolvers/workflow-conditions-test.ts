@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 
 const WORKFLOW_DEFINITION_ADD_MUTATION = gql`
@@ -32,6 +32,21 @@ const TRIGGER_WORKFLOW_EVENT_MUTATION = gql`
   }
 `;
 
+const WORKFLOW_DEFINITION_DELETE_MUTATION = gql`
+  mutation WorkflowDefinitionDelete($entityType: String!) {
+    workflowDefinitionDelete(entityType: $entityType) {
+      id
+      workflow_id
+    }
+  }
+`;
+
+const DELETE_DRAFT_WORKSPACE_QUERY = gql`
+  mutation DraftWorkspaceDelete($id: ID!) {
+    draftWorkspaceDelete(id: $id)
+  }
+`;
+
 describe('Workflow Conditions Resolver', () => {
   let draftWorkspaceId: string;
   const workspaceName = 'Conditions Test Workspace';
@@ -40,7 +55,7 @@ describe('Workflow Conditions Resolver', () => {
     id: 'conditions-workflow',
     name: 'Conditions Workflow',
     initialState: 'open',
-    states: [{ statusId: 'open' }, { statusId: 'step1' }, { statusId: 'step2' }, { statusId: 'done' }],
+    states: [{ statusId: 'open' }, { statusId: 'step1' }, { statusId: 'step2' }, { statusId: 'validated' }],
     transitions: [
       {
         from: 'open',
@@ -75,7 +90,7 @@ describe('Workflow Conditions Resolver', () => {
       },
       {
         from: 'step2',
-        to: 'done',
+        to: 'validated',
         event: 'mixed_conditions_event',
         conditions: {
           filters: {
@@ -93,8 +108,8 @@ describe('Workflow Conditions Resolver', () => {
         },
       },
       {
-        from: 'done',
-        to: 'done',
+        from: 'validated',
+        to: 'validated',
         event: 'validate_requirement_event',
         actions: [{ type: 'validateDraft' }],
       },
@@ -154,6 +169,17 @@ describe('Workflow Conditions Resolver', () => {
       },
     });
     expect(result.data?.triggerWorkflowEvent.success).toBe(true);
-    expect(result.data?.triggerWorkflowEvent.newState).toBe('done');
+    expect(result.data?.triggerWorkflowEvent.newState).toBe('validated');
+  });
+
+  afterAll(async () => {
+    await queryAsAdmin({
+      query: WORKFLOW_DEFINITION_DELETE_MUTATION,
+      variables: { entityType: 'DraftWorkspace' },
+    });
+    await queryAsAdmin({
+      query: DELETE_DRAFT_WORKSPACE_QUERY,
+      variables: { id: draftWorkspaceId },
+    });
   });
 });

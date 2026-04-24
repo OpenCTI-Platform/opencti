@@ -2,23 +2,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
 
 vi.mock('../../../src/database/middleware-loader', () => ({
+  storeLoadById: vi.fn().mockResolvedValue(null),
   storeLoadByIds: vi.fn().mockResolvedValue([{ id: 'existing-state' }]),
   fullEntitiesList: vi.fn().mockResolvedValue([]),
 }));
 
-vi.mock('../../../src/database/engine', async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual as any,
-    elList: vi.fn().mockResolvedValue([]),
-  };
-});
+vi.mock('../../../src/database/engine', () => ({
+  elList: vi.fn().mockResolvedValue([]),
+  elIndexExists: vi.fn().mockResolvedValue(false),
+}));
 
 vi.mock('../../../src/schema/stixCoreObject', () => ({
   isBasicObject: vi.fn((type) => ['Incident', 'Report'].includes(type)),
 }));
 
-vi.mock('../../../src/schema/schema-utils', () => ({
+vi.mock('../../../src/schema/schemaUtils', () => ({
   getParentTypes: vi.fn().mockReturnValue([]),
   getAttributes: vi.fn().mockReturnValue(new Map()),
 }));
