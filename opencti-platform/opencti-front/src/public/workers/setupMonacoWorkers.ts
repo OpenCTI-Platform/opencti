@@ -42,12 +42,22 @@ window.MonacoEnvironment = {
     }
 
     // Production: workers are pre-built to /static/workers/ by prod.js
+    const workerUrl = (workerLabel: string) => `${basePath}/static/workers/${workerLabel}.worker.js`;
+
+    let url: string;
     if (label === 'json') {
-      return new Worker(`${basePath}/static/workers/json.worker.js`);
+      url = workerUrl('json');
+    } else if (label === 'graphql') {
+      url = workerUrl('graphql');
+    } else {
+      url = workerUrl('editor');
     }
-    if (label === 'graphql') {
-      return new Worker(`${basePath}/static/workers/graphql.worker.js`);
-    }
-    return new Worker(`${basePath}/static/workers/editor.worker.js`);
+
+    console.info(`[MonacoEnvironment] Creating worker for label="${label}" url="${url}"`);
+    const worker = new Worker(url);
+    worker.onerror = (e) => {
+      console.error(`[MonacoEnvironment] Worker "${label}" error:`, e);
+    };
+    return worker;
   },
 };
