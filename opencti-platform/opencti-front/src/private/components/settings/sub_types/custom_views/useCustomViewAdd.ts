@@ -2,7 +2,7 @@ import { graphql } from 'react-relay';
 import { useState } from 'react';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { useCustomViewAdd_Mutation } from './__generated__/useCustomViewAdd_Mutation.graphql';
-import { useCustomViewsData } from '../../../custom_views/useCustomViews';
+import { useCustomViewsData } from '../../../custom_views/useCustomViewsData';
 
 const customViewAddMutation = graphql`
   mutation useCustomViewAdd_Mutation($input: CustomViewAddInput!) {
