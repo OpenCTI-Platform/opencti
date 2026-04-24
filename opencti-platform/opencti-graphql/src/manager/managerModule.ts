@@ -154,6 +154,7 @@ const initManager = (manager: ManagerDefinition) => {
       };
     },
     shutdown: async () => {
+      const startTime = new Date().getTime();
       logApp.info(`[OPENCTI-MODULE] Stopping ${manager.label}`);
       shutdown = true;
       if (scheduler) {
@@ -167,6 +168,7 @@ const initManager = (manager: ManagerDefinition) => {
       if (streamScheduler) {
         await clearIntervalAsync(streamScheduler);
       }
+      logApp.info(`[OPENCTI-MODULE] ${manager.label} stopped in ${new Date().getTime() - startTime} ms`);
       return true;
     },
   };
@@ -192,24 +194,34 @@ export const registerManager = (manager: ManagerDefinition) => {
   managersModule.add(managerModule);
 };
 
+export const getAllEnabledManagers = () => {
+  return managersModule.managers
+    .filter((managerModule) => managerModule.manager.enabledToStart());
+};
+
+export const getAllDisabledManagers = () => {
+  return managersModule.managers
+    .filter((managerModule) => !managerModule.manager.enabledToStart());
+};
+
 export const startAllManagers = async () => {
-  for (let i = 0; i < managersModule.managers.length; i += 1) {
-    const managerModule = managersModule.managers[i];
-    if (managerModule.manager.enabledToStart()) {
-      await managerModule.start();
-    } else {
-      logApp.info(`[OPENCTI-MODULE] ${managerModule.manager.label} not started (disabled by configuration)`);
-    }
+  const managersToStart = getAllEnabledManagers();
+  const disabledManagers = getAllDisabledManagers();
+
+  for (let i = 0; i < disabledManagers.length; i += 1) {
+    logApp.info(`[OPENCTI-MODULE] ${disabledManagers[i].manager.label} not started (disabled by configuration)`);
   }
+  await Promise.all(
+    managersToStart.map((managerModule) => managerModule.start()),
+  );
 };
 
 export const shutdownAllManagers = async () => {
-  for (let i = 0; i < managersModule.managers.length; i += 1) {
-    const managerModule = managersModule.managers[i];
-    if (managerModule.manager.enabledToStart()) {
-      await managerModule.shutdown();
-    }
-  }
+  const managersToShutdown = getAllEnabledManagers();
+
+  await Promise.all(
+    managersToShutdown.map((managerModule) => managerModule.shutdown()),
+  );
 };
 
 export const getAllManagersStatuses = (settings: BasicStoreSettings) => {
