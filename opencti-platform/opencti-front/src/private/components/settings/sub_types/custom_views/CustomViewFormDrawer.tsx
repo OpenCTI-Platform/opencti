@@ -53,18 +53,16 @@ const CustomViewFormDrawer = ({
   };
 
   return (
-    <>
-      <Drawer
-        title={createTitle}
-        open={isOpen}
+    <Drawer
+      title={createTitle}
+      open={isOpen}
+      onClose={onClose}
+    >
+      <CustomViewForm
         onClose={onClose}
-      >
-        <CustomViewForm
-          onClose={onClose}
-          onSubmit={onAdd}
-        />
-      </Drawer>
-    </>
+        onSubmit={onAdd}
+      />
+    </Drawer>
   );
 };
 
