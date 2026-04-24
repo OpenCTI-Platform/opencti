@@ -8,7 +8,6 @@ const userSchema = z.object({
   lastname: z.string().optional().catch(undefined),
   user_name: z.string().optional().catch(undefined),
   user_email: z.string().optional().catch(undefined),
-  api_token: z.string().optional().catch(undefined),
   account_status: z.string().optional().catch(undefined),
 });
 

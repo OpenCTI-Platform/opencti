@@ -9,7 +9,6 @@ describe('templateContextSanitizer', () => {
       lastname: 'lastname',
       user_name: 'user_name',
       user_email: 'user_email',
-      api_token: 'api_token',
       account_status: 'account_status',
     };
 
@@ -29,6 +28,13 @@ describe('templateContextSanitizer', () => {
       expect(sanitizeUser({
         ...user,
         whatever: 'whatever',
+      })).toStrictEqual(user);
+    });
+
+    it('strips api_token for security', () => {
+      expect(sanitizeUser({
+        ...user,
+        api_token: 'sensitive-token',
       })).toStrictEqual(user);
     });
   });
@@ -69,7 +75,6 @@ describe('templateContextSanitizer', () => {
         lastname: 'lastname',
         user_name: 'user_name',
         user_email: 'user_email',
-        api_token: 'api_token',
         account_status: 'account_status',
       },
       settings: {
