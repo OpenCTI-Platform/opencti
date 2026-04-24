@@ -552,7 +552,6 @@ const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
       }
       return externalConverter(basic);
     }
-    // TODO add Identity, all SDOs
     if (ENTITY_TYPE_INCIDENT === type) {
       return convertIncidentToStix(basic);
     }
