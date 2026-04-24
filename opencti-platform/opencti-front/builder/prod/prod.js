@@ -23,6 +23,11 @@ const buildPath = "./builder/prod/build";
       outdir: `${buildPath}/static/workers`,
       entryNames: "[name]",
       loader: { ".js": "jsx" },
+      // prettier/parser-graphql does not exist in prettier v3 (replaced by
+      // prettier/plugins/graphql). Marking prettier as external avoids a build
+      // error; doFormat will fail gracefully at runtime but autocompletion is
+      // unaffected because it uses doComplete / doValidation only.
+      external: ["prettier", "prettier/standalone", "prettier/parser-graphql"],
     });
 
   await esbuild.build({
