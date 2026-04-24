@@ -169,9 +169,9 @@ export const buildDefaultHelmetParameters = () => {
   return helmetConfiguration;
 };
 
-export const buildRateLimiterOptions = () => {
+export const buildRateLimiterOptions = (): Options => {
   const skipList: string[] = getRateProtectionIpSkipList();
-  const rateLimitOptions: Partial<Options> = {
+  const rateLimitOptions: Options = {
     windowMs: getRateProtectionTimeWindowMs(),
     limit: getRateProtectionMaxRequest(),
     handler: (req, res /* , next */) => {
