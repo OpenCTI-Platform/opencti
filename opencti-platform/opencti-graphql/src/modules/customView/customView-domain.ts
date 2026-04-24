@@ -113,15 +113,18 @@ export const addCustomView = async (
   user: AuthUser,
   input: CustomViewAddInput,
 ) => {
-  if (!isCustomViewsAvailableForEntityType(input.target_entity_type)) {
+  if (!isCustomViewsAvailableForEntityType(input.targetEntityType)) {
     throw FunctionalError(
       'Custom views cannot be created for given entity type', {
-        entityType: input.target_entity_type,
+        entityType: input.targetEntityType,
       });
   }
   const created_at = now();
   const customViewToCreate = {
-    ...input,
+    description: input.description,
+    manifest: input.manifest,
+    name: input.name,
+    target_entity_type: input.targetEntityType,
     slug: slugify(input.name),
     created_at,
     updated_at: created_at,

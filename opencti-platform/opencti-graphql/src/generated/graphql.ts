@@ -6454,7 +6454,7 @@ export type CustomViewAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   manifest?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
-  target_entity_type: Scalars['String']['input'];
+  targetEntityType: Scalars['String']['input'];
 };
 
 export type CustomViewsConnection = {
