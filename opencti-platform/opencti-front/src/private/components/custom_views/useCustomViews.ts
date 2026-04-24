@@ -1,55 +1,57 @@
-import { graphql } from 'relay-runtime';
+// import { graphql } from 'relay-runtime';
 import { getCurrentTab } from '../../../utils/utils';
 import type { CustomView } from './CustomViews-types';
-import { useCustomViewsData } from './useCustomViewsData';
-import { useLazyLoadQuery } from 'react-relay';
-import { useCustomViewsPaginationQuery } from './__generated__/useCustomViewsPaginationQuery.graphql';
+// import { useCustomViewsData } from './useCustomViewsData';
+import { useFragment, useLazyLoadQuery, usePreloadedQuery } from 'react-relay';
+// import { useCustomViewsPaginationQuery } from './__generated__/useCustomViewsPaginationQuery.graphql';
+// import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { CustomViewsPreloadedQuery, customViewsQuery } from './CustomViewsQueryLoader';
 
 export const DEFAULT_CUSTOM_VIEW_TAB_VALUE = 'default-custom-view';
 
 export const CUSTOM_VIEW_TAB_VALUE = 'custom-view';
 
-export const customViewsFragment = graphql`
-  fragment useCustomViews_data on Query
-  @refetchable(queryName: "UseCustomViewsRefetchQuery") {
-    customViews(
-      orderBy: name
-      orderMode: asc
-    ) {
-      edges {
-        node {
-          id
-          name
-          path
-          targetEntityType
-          enabled
-          default
-        }
-      }
-    }
-  }
-`;
+// export const customViewsFragment = graphql`
+//   fragment useCustomViews_data on Query
+//   @refetchable(queryName: "UseCustomViewsRefetchQuery") {
+//     customViews(
+//       orderBy: name
+//       orderMode: asc
+//     ) {
+//       edges {
+//         node {
+//           id
+//           name
+//           path
+//           targetEntityType
+//           enabled
+//           default
+//         }
+//       }
+//     }
+//   }
+// `;
 
-const customViewsQuery = graphql`
-  query useCustomViewsPaginationQuery($entityType: String) {
-    customViews(
-      orderBy: name
-      orderMode: asc
-      entityType: $entityType
-    ) {
-      edges {
-        node {
-          id
-          name
-          path
-          targetEntityType
-          enabled
-          default
-        }
-      }
-    }
-  }
-`;
+// const customViewsQuery = graphql`
+//   query useCustomViewsPaginationQuery($entityType: String) {
+//     customViews(
+//       orderBy: name
+//       orderMode: asc
+//       entityType: $entityType
+//     ) {
+//       edges {
+//         node {
+//           id
+//           name
+//           path
+//           targetEntityType
+//           enabled
+//           default
+//         }
+//       }
+//     }
+//   }
+// `;
 
 function matchPath(customViews: CustomView[]) {
   return (fullPath: string, basePath: string) => {
@@ -69,20 +71,9 @@ const NO_CUSTOM_VIEWS = {
   getCurrentCustomViewTab: () => undefined,
 };
 
-export const useCustomViews = (entityType: string) => {
-  // const { allCustomViews } = useCustomViewsData();
-  const data = useLazyLoadQuery<useCustomViewsPaginationQuery>(
-    customViewsQuery,
-    {
-      entityType,
-    },
-    {
-      fetchPolicy: 'store-or-network',
-    });
+export const useCustomViews = (queryRef: CustomViewsPreloadedQuery) => {
+  const data = usePreloadedQuery(customViewsQuery, queryRef);
   const customViews = data?.customViews?.edges.map((e) => e.node) ?? [];
-  // const customViews = allCustomViews.filter(
-  //   ({ targetEntityType }) => targetEntityType === entityType,
-  // );
   if (!customViews) {
     return NO_CUSTOM_VIEWS;
   }

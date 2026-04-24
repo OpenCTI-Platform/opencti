@@ -291,7 +291,6 @@ const rootPrivateQuery = graphql`
         }
       }
     }
-    ...useCustomViews_data
     schemaSCOs: subTypes(type: "Stix-Cyber-Observable") {
       edges {
         node {

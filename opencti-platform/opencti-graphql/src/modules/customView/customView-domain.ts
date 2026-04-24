@@ -33,6 +33,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { exportWidget, processImportWidgetConfiguration, sanitizeElementForPublishAction } from '../workspace/workspace-domain';
+import { Promise } from 'bluebird';
 
 /**
  * Exclusion list: entity types not capable of
@@ -99,6 +100,9 @@ export const findAllCustomViews = async (
   entityType: string | undefined | null,
   paginationOptions: Omit<QueryCustomViewsArgs, 'entityType'>,
 ) => {
+  await new Promise((resolve) => setTimeout(() => {
+    resolve();
+  }, 10_000));
   return pageEntitiesConnection<BasicStoreEntityCustomView>(
     context,
     user,

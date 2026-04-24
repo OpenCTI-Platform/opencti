@@ -11,6 +11,7 @@ import useCustomViewTabs from '@components/custom_views/useCustomViewTabs';
 import { OtherCustomViewsTab, DefaultCustomViewTab } from '@components/custom_views/CustomViewTab';
 import CustomViewTabDropDownMenu from '@components/custom_views/CustomViewTabDropDownMenu';
 import { CUSTOM_VIEW_TAB_VALUE, DEFAULT_CUSTOM_VIEW_TAB_VALUE } from '@components/custom_views/useCustomViews';
+import { CustomViewsPreloadedQuery } from '@components/custom_views/CustomViewsQueryLoader';
 
 export type StixDomainObjectTabsBoxTab
   = | 'overview'
@@ -26,9 +27,9 @@ export type StixDomainObjectTabsBoxTab
 
 interface StixDomainObjectTabsBoxProps {
   basePath: string;
-  entityType: string;
   tabs: StixDomainObjectTabsBoxTab[];
   extraActions?: ReactNode;
+  queryRef: CustomViewsPreloadedQuery;
 }
 
 interface TabInfo {
@@ -86,15 +87,15 @@ const TABS_INFO: readonly TabInfo[] = [{
 
 type TabsWithCustomViewsProps = PropsWithChildren<{
   basePath: string;
-  entityType: string;
   currentTab: string;
+  queryRef: CustomViewsPreloadedQuery;
 }>;
 
 const TabsWithCustomViews = ({
   children,
   basePath,
-  entityType,
   currentTab,
+  queryRef,
 }: TabsWithCustomViewsProps) => {
   const {
     defaultCustomView,
@@ -103,7 +104,7 @@ const TabsWithCustomViews = ({
     dropDownMenuState,
     currentCustomViewTab,
     currentCustomViewMenuItem,
-  } = useCustomViewTabs({ basePath, entityType });
+  } = useCustomViewTabs({ basePath, queryRef });
 
   return (
     <>
@@ -138,7 +139,7 @@ const TabsWithCustomViews = ({
  * Applies common logic to display (or not) the "Custom views" tab.
  */
 const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
-  const { basePath, entityType, extraActions, tabs } = props;
+  const { basePath, extraActions, tabs, queryRef } = props;
   const { t_i18n } = useFormatter();
   const location = useLocation();
   const { isFeatureEnable } = useHelper();
@@ -168,8 +169,8 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
       {isCustomViewFeatureEnabled ? (
         <TabsWithCustomViews
           basePath={basePath}
-          entityType={entityType}
           currentTab={currentTab}
+          queryRef={queryRef}
         >
           {staticTabs}
         </TabsWithCustomViews>

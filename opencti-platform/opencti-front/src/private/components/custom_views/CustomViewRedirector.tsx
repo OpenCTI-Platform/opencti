@@ -4,18 +4,19 @@ import { useCustomViews } from './useCustomViews';
 import type { CustomView as CustomViewType } from './CustomViews-types';
 import SlugRedirectHandler, { type SlugRedirectHandlerPageInfo } from '../../../components/SlugRedirectHandler';
 import { Navigate, useParams } from 'react-router-dom';
+import type { CustomViewsPreloadedQuery } from './CustomViewsQueryLoader';
 
 interface CustomViewRedirectorProps {
-  entityType: string;
   Fallback: ReactNode;
   indexFallback: ReactNode;
+  queryRef: CustomViewsPreloadedQuery;
 }
 
 const renderMatch = (info: SlugRedirectHandlerPageInfo) =>
   <CustomView customViewId={(info as CustomViewType).id} />;
 
-const CustomViewRedirector = ({ entityType, Fallback, indexFallback }: CustomViewRedirectorProps) => {
-  const { customViews } = useCustomViews(entityType);
+const CustomViewRedirector = ({ Fallback, indexFallback, queryRef }: CustomViewRedirectorProps) => {
+  const { customViews } = useCustomViews(queryRef);
   const pagesInfo = useMemo(() => customViews.reduce(
     (acc, customViewInfo) => ({
       ...acc,

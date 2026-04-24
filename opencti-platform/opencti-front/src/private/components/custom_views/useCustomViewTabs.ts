@@ -2,12 +2,12 @@ import { useLocation } from 'react-router-dom';
 import { useDropDownMenuState } from '../../../components/TabWithDropDownMenu';
 import { getCurrentTab } from '../../../utils/utils';
 import { useCustomViews } from './useCustomViews';
+import { CustomViewsPreloadedQuery } from './CustomViewsQueryLoader';
 
 interface UseCustomViewTabsParams {
-  /** Entity type being visited **/
-  entityType: string;
   /** Original base path where the <Tabs> are displayed **/
   basePath: string;
+  queryRef: CustomViewsPreloadedQuery;
 }
 
 export interface CustomViewDisplayMode {
@@ -24,9 +24,9 @@ interface UseCustomViewTabsResult {
   currentCustomViewMenuItem: string | undefined;
 }
 
-const useCustomViewTabs = ({ basePath, entityType }: UseCustomViewTabsParams): UseCustomViewTabsResult => {
+const useCustomViewTabs = ({ basePath, queryRef }: UseCustomViewTabsParams): UseCustomViewTabsResult => {
   const location = useLocation();
-  const { customViews, getCurrentCustomViewTab } = useCustomViews(entityType);
+  const { customViews, getCurrentCustomViewTab } = useCustomViews(queryRef);
   const currentCustomViewTab = getCurrentCustomViewTab(location.pathname, basePath);
   const currentCustomViewMenuItem = getCurrentTab(location.pathname, basePath);
   const dropDownMenuState = useDropDownMenuState();

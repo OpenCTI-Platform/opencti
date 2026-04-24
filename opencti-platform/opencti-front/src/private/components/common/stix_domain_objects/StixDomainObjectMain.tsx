@@ -4,6 +4,7 @@ import StixDomainObjectTabsBox, { type StixDomainObjectTabsBoxTab } from './Stix
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CustomViewRedirector from '@components/custom_views/CustomViewRedirector';
 import useHelper from '../../../../utils/hooks/useHelper';
+import CustomViewsQueryLoader from '../../custom_views/CustomViewsQueryLoader';
 
 interface StixDomainObjectMainProps {
   entityType: string;
@@ -25,58 +26,63 @@ const StixDomainObjectMain = ({
   const { isFeatureEnable } = useHelper();
   const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
   return (
-    <>
-      <StixDomainObjectTabsBox
-        entityType={entityType}
-        basePath={basePath}
-        tabs={tabs}
-        extraActions={extraActions}
-      />
-      <Routes>
-        <Route path="/overview" element={pages.overview} />
-        {tabs.includes('result') && (
-          <Route path="/result" element={pages.result} />
-        )}
-        {tabs.includes('knowledge') && (
-          <Route path="/knowledge/*" element={pages.knowledge} />
-        )}
-        {tabs.includes('content') && (
-          <Route path="/content/*" element={pages.content} />
-        )}
-        {tabs.includes('analyses') && (
-          <Route path="/analyses" element={pages.analyses} />
-        )}
-        {tabs.includes('sightings') && (
-          <Route path="/sightings" element={pages.sightings} />
-        )}
-        {tabs.includes('entities') && (
-          <Route path="/entities" element={pages.entities} />
-        )}
-        {tabs.includes('observables') && (
-          <Route path="/observables" element={pages.observables} />
-        )}
-        {tabs.includes('files') && (
-          <Route path="/files" element={pages.files} />
-        )}
-        {tabs.includes('history') && (
-          <Route path="/history" element={pages.history} />
-        )}
-        {extraRoutes}
-        <Route
-          path="*"
-          element={isCustomViewFeatureEnabled
-            ? (
-                <CustomViewRedirector
-                  entityType={entityType}
-                  Fallback={<ErrorNotFound />}
-                  indexFallback={<Navigate to="overview" />}
-                />
-              )
-            : <ErrorNotFound />
-          }
-        />
-      </Routes>
-    </>
+    <CustomViewsQueryLoader
+      entityType={entityType}
+      render={({ queryRef }) => (
+        <>
+          <StixDomainObjectTabsBox
+            basePath={basePath}
+            tabs={tabs}
+            extraActions={extraActions}
+            queryRef={queryRef}
+          />
+          <Routes>
+            <Route path="/overview" element={pages.overview} />
+            {tabs.includes('result') && (
+              <Route path="/result" element={pages.result} />
+            )}
+            {tabs.includes('knowledge') && (
+              <Route path="/knowledge/*" element={pages.knowledge} />
+            )}
+            {tabs.includes('content') && (
+              <Route path="/content/*" element={pages.content} />
+            )}
+            {tabs.includes('analyses') && (
+              <Route path="/analyses" element={pages.analyses} />
+            )}
+            {tabs.includes('sightings') && (
+              <Route path="/sightings" element={pages.sightings} />
+            )}
+            {tabs.includes('entities') && (
+              <Route path="/entities" element={pages.entities} />
+            )}
+            {tabs.includes('observables') && (
+              <Route path="/observables" element={pages.observables} />
+            )}
+            {tabs.includes('files') && (
+              <Route path="/files" element={pages.files} />
+            )}
+            {tabs.includes('history') && (
+              <Route path="/history" element={pages.history} />
+            )}
+            {extraRoutes}
+            <Route
+              path="*"
+              element={isCustomViewFeatureEnabled
+                ? (
+                    <CustomViewRedirector
+                      Fallback={<ErrorNotFound />}
+                      indexFallback={<Navigate to="overview" />}
+                      queryRef={queryRef}
+                    />
+                  )
+                : <ErrorNotFound />
+              }
+            />
+          </Routes>
+        </>
+      )}
+    />
   );
 };
 
