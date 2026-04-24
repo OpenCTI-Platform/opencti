@@ -21,7 +21,7 @@ const CustomViewFormDrawer = ({
   const { t_i18n } = useFormatter();
   const createTitle = t_i18n('Create custom view');
 
-  const [commitAddMutation] = useCustomViewAdd();
+  const commitAddMutation = useCustomViewAdd();
 
   const onAdd: FormikConfig<CustomViewFormInputs>['onSubmit'] = (
     values,
