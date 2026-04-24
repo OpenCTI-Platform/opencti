@@ -5,7 +5,6 @@ set -euo pipefail
 # Configuration
 # ─────────────────────────────────────────────
 SKIP_INSTALL=false
-SNYK_VERSION="1.1291.0"
 PYTHON_MIN_MAJOR=3
 PYTHON_MIN_MINOR=9
 
@@ -95,8 +94,8 @@ install_deps() {
 # ─────────────────────────────────────────────
 check_snyk_auth() {
   log "Checking Snyk authentication..."
-  if ! npx "snyk@${SNYK_VERSION}" whoami &>/dev/null; then
-    err "Snyk is not authenticated. Run 'npx snyk@${SNYK_VERSION} auth' and try again."
+  if ! npx "snyk" whoami &>/dev/null; then
+    err "Snyk is not authenticated. Run 'npx snyk auth' and try again."
   fi
 }
 
@@ -105,7 +104,7 @@ run_snyk() {
   cd "$REPO_ROOT"
 
   set +e
-  npx "snyk@${SNYK_VERSION}" test --all-projects 2>&1 | tee "$REPORT_FILE"
+  npx "snyk" test --all-projects 2>&1 | tee "$REPORT_FILE"
   SNYK_EXIT="${PIPESTATUS[0]}"
   set -e
 
