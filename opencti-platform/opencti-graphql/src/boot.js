@@ -7,6 +7,7 @@ import { initLockFork } from './lock/master-lock';
 
 // region platform start and stop
 export const platformStart = async () => {
+  const startTime = Date.now();
   logApp.info('[OPENCTI] Starting platform', { environment });
   try {
     checkFeatureFlags();
@@ -45,6 +46,7 @@ export const platformStart = async () => {
       logApp.error('[OPENCTI] Modules startup failed', { cause: modulesError });
       throw modulesError;
     }
+    logApp.info(`[OPENCTI] Platform started ${Date.now() - startTime} ms`);
   } catch (_mainError) {
     process.exit(1);
   }
