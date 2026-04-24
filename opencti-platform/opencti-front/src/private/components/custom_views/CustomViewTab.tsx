@@ -18,7 +18,6 @@ const CustomViewTab = ({ customViews, displayMode, dropDownMenuState, value, ...
     return (
       <Tab
         {...tabProps}
-        key="custom-view"
         component={Link}
         to={customViews[0].path}
         value={value}
