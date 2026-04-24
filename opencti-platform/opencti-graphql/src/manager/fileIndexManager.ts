@@ -39,6 +39,7 @@ import { allFilesForPaths, getIndexFromDate } from '../modules/internal/document
 import { buildOptionsFromFileManager } from '../domain/file';
 import { internalLoadById } from '../database/middleware-loader';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
+import { InterruptibleTimer } from './interruptible-timer';
 
 const FILE_INDEX_MANAGER_KEY = conf.get('file_index_manager:lock_key');
 const SCHEDULE_TIME = conf.get('file_index_manager:interval') || 60000; // 1 minute
@@ -143,11 +144,7 @@ const initFileIndexManager = () => {
   let streamProcessor: StreamProcessor;
   let running = false;
   let shutdown = false;
-  const wait = (ms: number) => {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
-  };
+  const waitTimer = new InterruptibleTimer();
   const fileIndexHandler = async () => {
     const context = executionContext(FILE_INDEX_MANAGER_NAME);
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
@@ -194,7 +191,7 @@ const initFileIndexManager = () => {
         await streamProcessor.start(lastEventState ?? 'live');
         while (!shutdown && streamProcessor.running()) {
           lock.signal.throwIfAborted();
-          await wait(WAIT_TIME_ACTION);
+          await waitTimer.start(WAIT_TIME_ACTION);
         }
         logApp.info('[OPENCTI-MODULE] End of file index manager stream handler');
       } catch (e: any) {
@@ -232,6 +229,7 @@ const initFileIndexManager = () => {
     shutdown: async () => {
       logApp.info('[OPENCTI-MODULE] Stopping file index manager');
       shutdown = true;
+      waitTimer.interrupt();
       if (scheduler) await clearIntervalAsync(scheduler);
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
       return true;

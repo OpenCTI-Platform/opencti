@@ -43,6 +43,7 @@ import jsonCanonicalize from 'canonicalize';
 import { v5 as uuidv5 } from 'uuid';
 
 import { pushAll } from '../utils/arrayUtil';
+import { InterruptibleTimer } from './interruptible-timer';
 
 const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 
@@ -296,11 +297,7 @@ const initRuleManager = () => {
   let streamProcessor: StreamProcessor;
   let running = false;
   let shutdown = false;
-  const wait = (ms: number) => {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
-  };
+  const waitTimer = new InterruptibleTimer();
   const ruleHandler = async () => {
     let lock;
     try {
@@ -323,7 +320,7 @@ const initRuleManager = () => {
       await streamProcessor.start(lastEventState ?? 'live');
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
-        await wait(WAIT_TIME_ACTION);
+        await waitTimer.start(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of rule manager processing');
     } catch (e: any) {
@@ -340,6 +337,7 @@ const initRuleManager = () => {
   };
   return {
     start: async () => {
+      logApp.info('[OPENCTI-MODULE] Starting rule engine');
       scheduler = setIntervalAsync(async () => {
         await ruleHandler();
       }, SCHEDULE_TIME);
@@ -354,6 +352,7 @@ const initRuleManager = () => {
     shutdown: async () => {
       logApp.info('[OPENCTI-MODULE] Stopping rule engine');
       shutdown = true;
+      waitTimer.interrupt();
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }
