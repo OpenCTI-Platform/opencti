@@ -228,7 +228,7 @@ const DASHBOARD_MANIFEST = toB64({
 })!;
 
 export const CUSTOM_VIEW_ENTITY_1: BasicStoreEntityCustomViewForTests = {
-  name: 'My first custom view',
+  name: '2 - My first custom view',
   description: 'A custom view used for tests',
   slug: 'first-custom-view',
   manifest: DASHBOARD_MANIFEST,
@@ -238,7 +238,7 @@ export const CUSTOM_VIEW_ENTITY_1: BasicStoreEntityCustomViewForTests = {
 };
 
 export const CUSTOM_VIEW_ENTITY_2: BasicStoreEntityCustomViewForTests = {
-  name: 'My second custom view',
+  name: '1 - My second custom view',
   description: 'Another custom view used for tests',
   slug: 'second-custom-view',
   manifest: DASHBOARD_MANIFEST,

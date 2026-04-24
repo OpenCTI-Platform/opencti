@@ -20,7 +20,7 @@ export const useDropDownMenuState = () => {
   return { anchorEl, onOpen, onClose, isOpen: Boolean(anchorEl) };
 };
 
-type TabWithDropDownMenuProps = Omit<TabProps, 'onClick'> & {
+type TabWithDropDownMenuProps = Omit<TabProps<'div'>, 'onClick'> & {
   isOpen: boolean;
   onOpen: (event: MouseEvent) => void;
 };
@@ -43,11 +43,6 @@ export const TabWithDropDownMenu = ({ isOpen, onOpen, label, ...tabProps }: TabW
       // Compensate horizontal space in ArrowDropUp/ArrowDropDown svg
       paddingLeft: '19px',
       paddingRight: '13px',
-      // Compensate application of the 'inherit' variant instead
-      // of the 'primary' variant to the tab. To be removed when possible.
-      opacity: 1,
-      // Use default text color
-      color: 'text.secondary',
     }}
     label={(
       <>
