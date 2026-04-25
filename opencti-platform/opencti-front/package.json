@@ -97,7 +97,7 @@
     "d3-scale": "4.0.2",
     "d3-timer": "3.0.1",
     "date-fns": "4.1.0",
-    "dompurify": "3.4.0",
+    "dompurify": "3.4.1",
     "extract-files": "13.0.0",
     "filigran-icon": "0.21.0",
     "formik": "2.4.9",
