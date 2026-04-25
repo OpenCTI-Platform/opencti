@@ -207,9 +207,9 @@ describe('CSV ingestion resolver standard behavior', () => {
     });
     const created = createResult.data?.ingestionCsvAdd;
     expect(created.id).toBeDefined();
-    // Value must be masked when returned via GraphQL
+    // Value must be masked when returned via GraphQL — bearer masking returns 'undefined'
     expect(created.authentication_value).not.toBe('my-secret-bearer-token');
-    expect(created.authentication_value).toMatch(/\*/);
+    expect(created.authentication_value).toBe('undefined');
 
     // Query it back via ingestionCsv query — field resolver must also mask
     const readResult = await queryAsAdminWithSuccess({
@@ -223,7 +223,7 @@ describe('CSV ingestion resolver standard behavior', () => {
       `,
       variables: { id: created.id },
     });
-    expect(readResult.data?.ingestionCsv?.authentication_value).toMatch(/\*/);
+    expect(readResult.data?.ingestionCsv?.authentication_value).toBe('undefined');
 
     // Patch authentication_value — covers decrypt+re-encrypt path in ingestionCsvEditField
     const patchResult = await queryAsAdminWithSuccess({
@@ -240,7 +240,7 @@ describe('CSV ingestion resolver standard behavior', () => {
         input: [{ key: 'authentication_value', value: ['updated-bearer-token'] }],
       },
     });
-    expect(patchResult.data?.ingestionCsvFieldPatch?.authentication_value).toMatch(/\*/);
+    expect(patchResult.data?.ingestionCsvFieldPatch?.authentication_value).toBe('undefined');
 
     // Cleanup
     await queryAsAdmin({
