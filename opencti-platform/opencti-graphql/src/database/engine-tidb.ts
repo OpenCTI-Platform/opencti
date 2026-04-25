@@ -14,7 +14,6 @@ import { offsetToCursor, buildPaginationFromEdges } from './utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase, BasicConnection, BasicNodeEdge } from '../types/store';
 import conf, { logApp } from '../config/conf';
-import {isBasicRelationship} from "../schema/stixRelationship";
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -169,9 +168,17 @@ const serializeFiltersForTiDB = (filterGroup: any): string => {
 // HTTP helper
 // ---------------------------------------------------------------------------
 
+interface ApiPageInfo {
+  start_cursor: string;
+  end_cursor: string;
+  has_next_page: boolean;
+  has_previous_page: boolean;
+  global_count: number;
+}
+
 interface ApiListResponse {
   data: Record<string, any>[];
-  total: number;
+  page_info: ApiPageInfo;
 }
 
 const apiGet = async <T>(path: string, token: string): Promise<T | null> => {
@@ -214,6 +221,29 @@ const apiPost = async <T>(path: string, body: Record<string, any>, token: string
       return null;
     }
     throw new Error(`opencti-ng API error ${response.status}: ${bodyText}`);
+  }
+  return response.json() as Promise<T>;
+};
+
+const apiPatch = async <T>(path: string, body: Record<string, any>, token: string): Promise<T | null> => {
+  const url = `${getBaseUrl()}/api/v1/${path}`;
+  logApp.debug('[ENGINE-TIDB] PATCH', { url });
+  const response = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const bodyText = await response.text().catch(() => '');
+    if (response.status === 404) {
+      logApp.error('[ENGINE-TIDB] Entity not found for PATCH', { url, status: response.status, body: bodyText });
+      return null;
+    }
+    throw new Error(`opencti-ng PATCH API error ${response.status}: ${bodyText}`);
   }
   return response.json() as Promise<T>;
 };
@@ -463,16 +493,11 @@ export const elPaginateTiDB = async <T extends BasicStoreBase>(
     ? (Array.isArray(types) ? types : [types])
     : ['Organization'];
 
-  // Decode cursor → offset
-  let offset = 0;
-  if (after) {
-    try {
-      const decoded = JSON.parse(Buffer.from(after, 'base64').toString('utf-8'));
-      offset = typeof decoded === 'number' ? decoded : (Array.isArray(decoded) ? decoded[0] : 0);
-    } catch {
-      offset = 0;
-    }
-  }
+  // The `after` cursor from the GraphQL layer is a Relay offset cursor.
+  // The opencti-ng backend uses keyset cursors (base64 JSON arrays of sort values).
+  // When `after` is provided, it is forwarded directly as the `cursor` query param
+  // to the Rust API, which returns keyset-encoded cursors in page_info.
+  const cursorParam = after || null;
 
   const token = getApiToken();
 
@@ -504,13 +529,18 @@ export const elPaginateTiDB = async <T extends BasicStoreBase>(
 
   const allEntities: Record<string, any>[] = [];
   let totalCount = 0;
+  let lastEndCursor = '';
 
   // Fetch from each API path
   for (const [_, { apiPath, relType }] of Array.from(pathGroups)) {
     const queryParams = new URLSearchParams({
       limit: String(first),
-      offset: String(offset),
     });
+
+    // Forward the keyset cursor to the backend
+    if (cursorParam) {
+      queryParams.set('cursor', cursorParam);
+    }
 
     // For concrete relationship types, add type filter
     if (relType) {
@@ -531,7 +561,8 @@ export const elPaginateTiDB = async <T extends BasicStoreBase>(
     const entities = result.data.map((e) => apiEntityToStoreEntity(e, e.entity_type));
     allEntities.push(...entities);
 
-    totalCount += result.total;
+    totalCount += result.page_info.global_count;
+    lastEndCursor = result.page_info.end_cursor;
   }
 
   const typedEntities = allEntities as T[];
@@ -540,12 +571,12 @@ export const elPaginateTiDB = async <T extends BasicStoreBase>(
     return typedEntities;
   }
 
-  // Build edges with offset-based cursors
+  // Build edges with keyset cursors from the backend.
   // opencti-ng has no inference system — default types to ['manual']
   // so that StixObjectOrStixRelationshipRefEdge.types is never null.
   const edges: BasicNodeEdge<T>[] = typedEntities.map((entity, i) => ({
     node: entity,
-    cursor: offsetToCursor([offset + i]),
+    cursor: i === typedEntities.length - 1 ? lastEndCursor : offsetToCursor([i]),
     types: ['manual'],
   }));
 
@@ -678,8 +709,8 @@ export const elListTiDB = async <T extends BasicStoreBase>(
   } = opts;
 
   if (callback) {
-    // Streaming mode: fetch in batches, pass each to the callback
-    let offset = 0;
+    // Streaming mode: fetch in batches using keyset cursor pagination
+    let cursor: string | null = null;
     let emitted = 0;
     const listing: T[] = [];
 
@@ -687,27 +718,29 @@ export const elListTiDB = async <T extends BasicStoreBase>(
       const batchSize = maxSize !== undefined ? Math.min(first, maxSize - emitted) : first;
       if (batchSize <= 0) break;
 
-      // Encode offset as cursor (base64 JSON array, matching elPaginateTiDB's decoder)
-      const afterCursor = offset > 0 ? offsetToCursor([offset]) : null;
-
-      const batch = await elPaginateTiDB<T>(context, user, _indexName, {
+      // Single fetch in connection mode to get both data and the next cursor
+      const connResult = await elPaginateTiDB<T>(context, user, _indexName, {
         ...opts,
         first: batchSize,
-        after: afterCursor,
-        connectionFormat: false,
-      }) as T[];
+        after: cursor,
+        connectionFormat: true,
+      }) as BasicConnection<T>;
 
+      const batch = (connResult?.edges ?? []).map((edge) => edge.node);
       if (batch.length === 0) break;
 
-      const callbackResult = await callback(batch, 0);
+      const callbackResult = await callback(batch, connResult?.pageInfo?.globalCount ?? 0);
       listing.push(...batch);
       emitted += batch.length;
 
       if (callbackResult === false) break;
       if (maxSize !== undefined && emitted >= maxSize) break;
-
-      offset += batch.length;
       if (batch.length < batchSize) break; // Last page
+
+      const pageInfo = connResult?.pageInfo;
+      if (!pageInfo?.hasNextPage) break;
+      cursor = pageInfo.endCursor ?? null;
+      if (!cursor) break;
     }
     return listing;
   }
@@ -722,4 +755,214 @@ export const elListTiDB = async <T extends BasicStoreBase>(
   }) as T[];
 
   return result;
+};
+
+// ---------------------------------------------------------------------------
+// Public API — elUpdateElement (via opencti-ng PATCH)
+// ---------------------------------------------------------------------------
+
+interface AttributeUpdateInput {
+  key: string;
+  value: any[];
+  operation?: string;
+}
+
+/**
+ * Update an entity in TiDB via the opencti-ng PATCH API.
+ *
+ * Unlike the ES version that receives a flattened partial instance,
+ * this function takes the **explicit** `EditInput[]` from the middleware
+ * so we preserve the real operation semantics (replace / add / remove).
+ *
+ * Call sites:
+ *  - `updateAttributeMetaResolved` → has `impactedInputs: EditInput[]`
+ *  - `mergeEntitiesRaw`           → has `impactedInputs: EditInput[]`
+ *
+ * For raw-object updates (file operations), use `elUpdateElementRawTiDB`.
+ */
+export const elUpdateElementTiDB = async (
+  _context: AuthContext,
+  _user: AuthUser,
+  entityId: string,
+  inputs: AttributeUpdateInput[],
+): Promise<void> => {
+  if (!entityId) {
+    logApp.warn('[ENGINE-TIDB] elUpdateElementTiDB called without an entity ID, skipping');
+    return;
+  }
+  if (inputs.length === 0) {
+    logApp.debug('[ENGINE-TIDB] elUpdateElementTiDB: empty inputs, skipping', { entityId });
+    return;
+  }
+
+  // Map EditInput[] to the Rust PATCH body format
+  const updates = inputs
+    .filter((i) => i.value !== null && i.value !== undefined)
+    .map((i) => ({
+      key: i.key,
+      value: Array.isArray(i.value) ? i.value : [i.value],
+      operation: i.operation ?? 'replace',
+    }));
+
+  if (updates.length === 0) return;
+
+  const token = getApiToken();
+  logApp.debug('[ENGINE-TIDB] elUpdateElementTiDB', {
+    entityId,
+    attributes: updates.map((u) => `${u.operation}:${u.key}`),
+  });
+
+  await apiPatch(
+    `stix/elements/${entityId}`,
+    { updates },
+    token,
+  );
+};
+
+/**
+ * Fields that should be stripped when converting a raw partial object
+ * into PATCH updates (used by file import/delete operations).
+ */
+const RAW_UPDATE_SKIP_FIELDS = new Set([
+  '_index', '_id', 'id', 'internal_id', 'standard_id', 'entity_type',
+  'base_type', 'parent_types', 'spec_version', 'lang',
+  'created_at',
+  'representative',
+  // Relationship structural fields
+  'fromId', 'fromType', 'fromRole', 'toId', 'toType', 'toRole',
+  'from', 'to', 'connections',
+  // Draft fields
+  'draft_ids', 'draft_change',
+  // ES-specific
+  'sort',
+]);
+
+/** Check if a key is a denormalized relationship field. */
+const isRelKey = (key: string): boolean => key.startsWith('rel_');
+
+/**
+ * Update an entity in TiDB from a raw partial object.
+ *
+ * Used by file import/delete operations in stixCoreObject.js where
+ * there is no `EditInput[]` available — just a bag of fields like
+ * `{ internal_id, updated_at, x_opencti_files }`.
+ *
+ * Converts the object fields into `replace` operations and delegates
+ * to `elUpdateElementTiDB`.
+ */
+export const elUpdateElementRawTiDB = async (
+  context: AuthContext,
+  user: AuthUser,
+  instance: BasicStoreBase,
+): Promise<void> => {
+  const entityId = instance.internal_id ?? (instance as any)._id ?? (instance as any).id;
+  if (!entityId) {
+    logApp.warn('[ENGINE-TIDB] elUpdateElementRawTiDB called without an entity ID, skipping');
+    return;
+  }
+
+  const inputs: AttributeUpdateInput[] = [];
+  const record = instance as Record<string, any>;
+
+  for (const [key, value] of Object.entries(record)) {
+    if (RAW_UPDATE_SKIP_FIELDS.has(key)) continue;
+    if (isRelKey(key)) continue;
+    if (value === null || value === undefined) continue;
+
+    inputs.push({
+      key,
+      value: Array.isArray(value) ? value : [value],
+      operation: 'replace',
+    });
+  }
+
+  await elUpdateElementTiDB(context, user, entityId, inputs);
+};
+
+// ---------------------------------------------------------------------------
+// HTTP helper — DELETE
+// ---------------------------------------------------------------------------
+
+const apiDelete = async <T>(path: string, token: string): Promise<T | null> => {
+  const url = `${getBaseUrl()}/api/v1/${path}`;
+  logApp.debug('[ENGINE-TIDB] DELETE', { url });
+  const response = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+    },
+  });
+  if (!response.ok) {
+    const bodyText = await response.text().catch(() => '');
+    if (response.status === 404) {
+      logApp.warn('[ENGINE-TIDB] Entity not found for DELETE', { url });
+      return null;
+    }
+    throw new Error(`opencti-ng DELETE API error ${response.status}: ${bodyText}`);
+  }
+  return response.json() as Promise<T>;
+};
+
+// ---------------------------------------------------------------------------
+// Public API — elDeleteElements (via opencti-ng DELETE)
+// ---------------------------------------------------------------------------
+
+interface DeleteResponse {
+  deleted: number;
+  not_found?: string[];
+}
+
+/**
+ * Delete entities in TiDB via the opencti-ng REST API.
+ *
+ * This is the TiDB equivalent of `elDeleteElements` from engine-search.ts.
+ *
+ * Key differences from the ES version:
+ * - No need to compute `getRelationsToRemove` — the Rust backend handles
+ *   relationship cascade via the background sweeper (Phase 2).
+ * - No `elRemoveRelationConnection` — TiDB has no denormalized connections.
+ * - No reindexing to trash index — trash/restore is an OpenCTI-level concern,
+ *   not a storage-engine concern. The middleware handles trash operations
+ *   before calling this function.
+ *
+ * The function supports both single and batch deletion:
+ * - Single: `DELETE /api/v1/stix/elements/{id}`
+ * - Batch:  `POST /api/v1/stix/elements/delete` with `{ ids: [...] }`
+ */
+export const elDeleteElementsTiDB = async (
+  _context: AuthContext,
+  _user: AuthUser,
+  elements: BasicStoreBase[],
+): Promise<void> => {
+  if (elements.length === 0) return;
+
+  const token = getApiToken();
+
+  // Extract internal IDs from elements
+  const ids = elements
+    .map((e) => e.internal_id ?? (e as any)._id ?? (e as any).id)
+    .filter((id): id is string => !!id);
+
+  if (ids.length === 0) {
+    logApp.warn('[ENGINE-TIDB] elDeleteElementsTiDB called with elements but no extractable IDs');
+    return;
+  }
+
+  if (ids.length === 1) {
+    // Single deletion — use DELETE endpoint
+    logApp.debug('[ENGINE-TIDB] elDeleteElementsTiDB (single)', { entityId: ids[0] });
+    await apiDelete<DeleteResponse>(
+      `stix/elements/${ids[0]}`,
+      token,
+    );
+  } else {
+    // Batch deletion — use POST endpoint
+    logApp.debug('[ENGINE-TIDB] elDeleteElementsTiDB (batch)', { count: ids.length });
+    await apiPost<DeleteResponse>(
+      'stix/elements/delete',
+      { ids },
+      token,
+    );
+  }
 };

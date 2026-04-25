@@ -1,12 +1,12 @@
 /**
  * engine.ts — Search engine router.
  *
- * Thin routing layer that delegates read queries to either:
+ * Thin routing layer that delegates read and write operations to either:
  * - engine-tidb.ts (opencti-ng REST API) for entity types stored in TiDB
  * - engine-search.ts (Elasticsearch/OpenSearch) for everything else
  *
- * All other exports (write operations, index management, constants, etc.)
- * are re-exported from engine-search.ts unchanged.
+ * During migration, write operations (update, delete) are dual-written
+ * to both TiDB and ES to keep both backends in sync.
  */
 
 // Re-export everything from the search engine (Elasticsearch/OpenSearch).
@@ -19,13 +19,15 @@ import {
   elFindByIds as elFindByIdsSearch,
   elLoadById as elLoadByIdSearch,
   elList as elListSearch,
+  elUpdateElement as elUpdateElementSearch,
+  elDeleteElements as elDeleteElementsSearch,
   type PaginateOpts,
   type ElFindByIdsOpts,
   type RepaginateOpts,
 } from './engine-search';
 
 // Import TiDB routing utilities
-import { elPaginateTiDB, elFindByIdsTiDB, elListTiDB } from './engine-tidb';
+import { elPaginateTiDB, elFindByIdsTiDB, elListTiDB, elUpdateElementRawTiDB, elDeleteElementsTiDB } from './engine-tidb';
 
 // Re-export TiDB routing checks for use by middleware-loader (filter decisions)
 export { isTiDBEntityType } from './engine-tidb';
@@ -34,6 +36,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase, BasicConnection } from '../types/store';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalRelationship } from '../schema/internalRelationship';
+import { logApp } from '../config/conf';
 
 // ---------------------------------------------------------------------------
 // Internal type check — internal objects/relationships are NOT in TiDB
@@ -235,4 +238,86 @@ export const elBatchIdsWithRelCount = async <T extends BasicStoreBase>(
   const types = elements.map((e) => e.type);
   const hits = await elFindByIds<T>(context, user, ids, { type: types, baseData: true }) as T[];
   return ids.map((id) => hits.find((h: any) => h.internal_id === id));
+};
+
+// ---------------------------------------------------------------------------
+// Routed: elUpdateElement (dual-write: TiDB + ES)
+// ---------------------------------------------------------------------------
+
+type DeleteElementsOpts = {
+  forceRefresh?: boolean;
+  forceDelete?: boolean;
+};
+
+/**
+ * Update an entity — dual-writes to both TiDB and ES.
+ *
+ * During the migration period, both backends must stay in sync.
+ * Internal types (Settings, MigrationStatus, etc.) go to ES only.
+ */
+export const elUpdateElement = async (
+  context: AuthContext,
+  user: AuthUser,
+  instance: BasicStoreBase,
+) => {
+  // Internal types are ES-only (never stored in TiDB)
+  if (instance.entity_type && isInternalType(instance.entity_type)) {
+    return elUpdateElementSearch(context, user, instance);
+  }
+
+  // Dual-write: TiDB first, then ES
+  // TiDB handles the relational database update
+  try {
+    await elUpdateElementRawTiDB(context, user, instance);
+  } catch (err: any) {
+    logApp.error('[ENGINE] TiDB update failed, ES update will proceed', {
+      entityId: instance.internal_id,
+      entityType: instance.entity_type,
+      error: err.message,
+    });
+  }
+
+  // ES handles index + denormalized connections update
+  return elUpdateElementSearch(context, user, instance);
+};
+
+// ---------------------------------------------------------------------------
+// Routed: elDeleteElements (dual-write: TiDB + ES)
+// ---------------------------------------------------------------------------
+
+/**
+ * Delete entities — dual-writes to both TiDB and ES.
+ *
+ * For non-internal types:
+ *   1. TiDB first — queues Phase 1 (instant unlinking) + Phase 2 (sweeper)
+ *   2. ES second — removes documents, cleans connections, handles trash
+ *
+ * Internal types go to ES only.
+ */
+export const elDeleteElements = async (
+  context: AuthContext,
+  user: AuthUser,
+  elements: BasicStoreBase[],
+  opts: DeleteElementsOpts = {},
+) => {
+  if (elements.length === 0) return;
+
+  // Partition: non-internal elements go to TiDB first
+  const tidbElements = elements.filter(
+    (e) => e.entity_type && !isInternalType(e.entity_type),
+  );
+
+  if (tidbElements.length > 0) {
+    try {
+      await elDeleteElementsTiDB(context, user, tidbElements);
+    } catch (err: any) {
+      logApp.error('[ENGINE] TiDB delete failed, ES delete will proceed', {
+        count: tidbElements.length,
+        error: err.message,
+      });
+    }
+  }
+
+  // ES handles index cleanup, relation connections, trash/restore
+  await elDeleteElementsSearch(context, user, elements, opts);
 };
