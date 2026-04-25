@@ -200,7 +200,6 @@ const XtmOneContainerSummary = ({ isContainer, filters, loading, setLoading, sel
   const { content, loading: streamLoading, error: errorMessage, generatedAt, execute } = useAgentStream({
     transformContent: cleanHtmlTags,
   });
-
   // Sync stream loading state with parent
   useEffect(() => {
     setLoading(streamLoading);
@@ -211,26 +210,32 @@ const XtmOneContainerSummary = ({ isContainer, filters, loading, setLoading, sel
     const idFilter = findFilterFromKey(filters.filters, 'id');
     const objectsFilter = findFilterFromKey(filters.filters, 'objects');
 
+    // Case summarize a specific container
     if (isContainer && idFilter && idFilter.values.length > 0) {
       const containerId = idFilter.values[0];
-      return `Summarize the OpenCTI container with ID: ${containerId}. Language: ${language}.`;
+      return `Summarize the OpenCTI container with ID: ${containerId}. `
+        + `Answer using ${language} language.`;
     }
 
+    // Case containers are related to the current entity
     if (objectsFilter && objectsFilter.values.length > 0) {
       const entityId = objectsFilter.values[0];
       return (
         `Search for the most recent reports and cases related to entity ID: ${entityId}. `
-        + 'Fetch each container using get_opencti_container_full and produce a combined summary. '
-        + `Language: ${language}.`
+        + 'Fetch each result, get the full content and finally produce a combined summary.'
+        + `Answer using ${language} language.`
       );
     }
 
-    return `Summarize the most recent OpenCTI containers. Language: ${language}.`;
+    // Case containers are filtered but no specific filter found (should not happen), fallback to a generic prompt
+    return 'Summarize the most recent OpenCTI containers.'
+      + `Answer using ${language} language.`;
   }, [filters, isContainer, language]);
 
   const executeCall = useCallback(() => {
     if (!selectedAgent) return;
-    execute(selectedAgent.slug, buildPrompt());
+    const prompt = buildPrompt();
+    execute(selectedAgent.slug, prompt);
   }, [selectedAgent, buildPrompt, execute]);
 
   // Auto-execute when agent changes (selected from header) or first load

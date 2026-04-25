@@ -285,7 +285,7 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
 export const postAgentMessageStream = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);
-    if (!context) return;
+    if (!context?.user) return;
 
     const { agent_slug, content } = req.body || {};
     if (!agent_slug || !content) {
@@ -294,7 +294,7 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
     }
 
     const url = `${XTM_ONE_URL}/api/v1/platform/chat/messages`;
-    const jwt = await issueAuthenticationJWT(context.user);
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
     const response = await axios.post(url, {
       agent_slug,
       content,
@@ -383,7 +383,7 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
 export const postImportDocumentAi = async (req: Express.Request, res: Express.Response) => {
   try {
     const context = await authenticateAndVerify(req, res);
-    if (!context) return;
+    if (!context?.user) return;
 
     const {
       entity_id,
@@ -423,7 +423,7 @@ export const postImportDocumentAi = async (req: Express.Request, res: Express.Re
     ].join('\n\n');
 
     const url = `${XTM_ONE_URL}/api/v1/platform/chat/messages`;
-    const jwt = await issueAuthenticationJWT(context.user);
+    const jwt = await issueXtmJwt(context.user, XTM_ONE_URL);
     const response = await axios.post(url, {
       agent_slug,
       content,

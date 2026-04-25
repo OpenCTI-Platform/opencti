@@ -180,9 +180,9 @@ const XtmOneForecast = ({ id, loading, setLoading, selectedAgent }: XtmOneForeca
   const executeCall = useCallback(() => {
     if (!selectedAgent) return;
     const prompt = `Forecast the future activity of the OpenCTI entity with ID: ${id}. `
-      + 'Use the get_opencti_entity_stats tool to retrieve time-series data and the get_opencti_top_related tool for context. '
+      + 'Get ranked distribution of related entities and time-series statistics. '
       + 'Based on current trends, provide a forward-looking assessment of expected activity evolution. '
-      + `Language: ${language}.`;
+      + `Answer using ${language} language.`;
     execute(selectedAgent.slug, prompt);
   }, [selectedAgent, id, language, execute]);
 

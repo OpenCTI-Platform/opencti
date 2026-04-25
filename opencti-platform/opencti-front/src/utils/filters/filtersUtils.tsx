@@ -212,7 +212,8 @@ export const findFilterFromKey = (
 ) => {
   for (const filter of filters) {
     if (filter.key === key) {
-      if (filter.operator === operator) {
+      const filterOperator = filter.operator || 'eq';
+      if (filterOperator === operator) {
         return filter;
       }
     }

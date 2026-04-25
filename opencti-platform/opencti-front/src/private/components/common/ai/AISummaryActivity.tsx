@@ -241,9 +241,9 @@ const XtmOneActivity = ({ id, loading, setLoading, selectedAgent }: XtmOneActivi
   const executeCall = useCallback(() => {
     if (!selectedAgent) return;
     const prompt = `Analyse the activity of the OpenCTI entity with ID: ${id}. `
-      + 'Use the get_opencti_entity_stats tool to retrieve time-series data about indicators, relationships, and sightings. '
-      + 'Evaluate whether the activity trend is increasing, stable, or decreasing. '
-      + `Language: ${language}.`;
+      + 'Get time-series statistics about entity related indicators, relationships and sightings and analyze the trend for each. '
+      + 'Finally evaluate whether the overall activity trend is increasing, stable, or decreasing. '
+      + `Answer using ${language} language.`;
     execute(selectedAgent.slug, prompt);
   }, [selectedAgent, id, language, execute]);
 

@@ -180,9 +180,8 @@ const XtmOneHistory = ({ id, loading, setLoading, selectedAgent }: XtmOneHistory
   const executeCall = useCallback(() => {
     if (!selectedAgent) return;
     const prompt = `Summarize the internal history (audit logs, modifications) of the OpenCTI entity with ID: ${id}. `
-      + 'Use the get_opencti_entity_history tool to retrieve recent audit events. '
-      + 'Provide a chronological summary of significant changes. '
-      + `Language: ${language}.`;
+      + 'Provide a chronological summary of significant changes.'
+      + `Answer using ${language} language.`;
     execute(selectedAgent.slug, prompt);
   }, [selectedAgent, id, language, execute]);
 
