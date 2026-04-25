@@ -47,6 +47,7 @@ vi.mock('../../../src/database/cache', () => ({
 
 vi.mock('../../../src/schema/internalObject', () => ({
   ENTITY_TYPE_SETTINGS: 'Settings',
+  ENTITY_TYPE_USER: 'User',
 }));
 
 vi.mock('../../../src/generated/graphql', () => ({
@@ -60,6 +61,10 @@ vi.mock('../../../src/modules/settings/licensing', () => ({
 
 vi.mock('../../../src/domain/user', () => ({
   issueAuthenticationJWT: vi.fn(),
+}));
+
+vi.mock('../../../src/domain/xtm-auth', () => ({
+  issueXtmJwt: vi.fn(() => Promise.resolve('jwt-token-123')),
 }));
 
 vi.mock('../../../src/http/httpUtils', () => ({
@@ -79,7 +84,6 @@ vi.mock('../../../src/modules/xtm/one/xtm-one-client', () => ({
 import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
 import { getEntityFromCache } from '../../../src/database/cache';
 import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../../../src/modules/settings/licensing';
-import { issueAuthenticationJWT } from '../../../src/domain/user';
 import { postImportDocumentAi } from '../../../src/http/httpChatbotProxy';
 import { postAgentMessageStream } from '../../../src/http/httpChatbotProxy';
 
@@ -108,7 +112,6 @@ const setupAuthenticatedContext = () => {
   vi.mocked(getEntityFromCache).mockResolvedValue({ filigran_chatbot_ai_cgu_status: 'enabled' } as any);
   vi.mocked(getEnterpriseEditionActivePem).mockReturnValue({ pem: 'pem-data' } as any);
   vi.mocked(getEnterpriseEditionInfo).mockReturnValue({ license_validated: true } as any);
-  vi.mocked(issueAuthenticationJWT).mockResolvedValue('jwt-token-123');
 };
 
 // ── Tests ──────────────────────────────────────────────────────────────────
@@ -526,4 +529,3 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
     expect(res.send).toHaveBeenCalledWith({ status: 503, error: 'XTM One is unreachable' });
   });
 });
-
