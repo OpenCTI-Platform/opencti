@@ -162,9 +162,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     setMenuOpen({ open: false, anchorEl: null });
   };
 
-  const handleSearch = (searchKeyword: string, askAI = false) => {
+  const handleSearch = (searchKeyword: string, askAI = false, agentSlug?: string) => {
     if (askAI && isEnterpriseEdition) {
-      nlqSearch(searchKeyword);
+      nlqSearch(searchKeyword, agentSlug);
     } else {
       handleSearchByKeyword(searchKeyword, 'knowledge', navigate);
     }

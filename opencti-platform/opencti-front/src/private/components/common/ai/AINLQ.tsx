@@ -22,7 +22,7 @@ const aiNLQMutation = graphql`
 
 // ── Constants & types ───────────────────────────────────────────────────
 
-const NLQ_INTENT = 'cti.nlq_search';
+export const NLQ_INTENT = 'cti.nlq_search';
 
 interface ParsedNlqResponse {
   filters?: string;
@@ -125,15 +125,14 @@ export const useAINLQ = (callbacks: NLQCallbacks) => {
     });
   };
 
-  const runXtmOneNlq = async (searchKeyword: string): Promise<void> => {
-    const agents = await fetchAgentsForIntent(NLQ_INTENT);
-    if (agents.length === 0) {
+  const runXtmOneNlq = async (searchKeyword: string, agentSlug?: string): Promise<void> => {
+    if (!agentSlug) {
       setIsLoading(false);
       callbacks.onError(t_i18n('No NLQ agent is available'));
       return;
     }
 
-    const response = await callAgent(agents[0].slug, buildNlqPrompt(searchKeyword));
+    const response = await callAgent(agentSlug, buildNlqPrompt(searchKeyword));
     if (response.status === 'error') {
       setIsLoading(false);
       if (response.code === 503) {
@@ -168,10 +167,10 @@ export const useAINLQ = (callbacks: NLQCallbacks) => {
     callbacks.onFiltersResolved(searchKeyword, safeSerializedFilters, parsedResponse.notResolvedValues);
   };
 
-  const search = (searchKeyword: string) => {
+  const search = (searchKeyword: string, agentSlug?: string) => {
     setIsLoading(true);
     if (xtmOneConfigured === true) {
-      runXtmOneNlq(searchKeyword).catch((err) => {
+      runXtmOneNlq(searchKeyword, agentSlug).catch((err) => {
         setIsLoading(false);
         callbacks.onError((err as Error)?.message ?? t_i18n('NLQ call failed'));
       });
