@@ -6,10 +6,9 @@ import { RetentionLineDummy } from './retention/RetentionLine';
 import ListLines from '../../../components/list_lines/ListLines';
 import RetentionLines, { RetentionLinesQuery } from './retention/RetentionLines';
 import RetentionCreation from './retention/RetentionCreation';
-import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../components/i18n';
-import { RETENTION_MANAGER } from '../../../utils/platformModulesHelper';
+import { RETENTION_MANAGER, usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { DataColumns } from '../../../components/list_lines';
@@ -31,7 +30,7 @@ const Retention = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Retention | Customization | Settings'));
-  const { platformModuleHelpers } = useAuth();
+  const { isRetentionManagerEnable, generateDisableMessage } = usePlatformModulesHelper();
   const {
     viewStorage,
     paginationOptions,
@@ -74,11 +73,11 @@ const Retention = () => {
       isSortable: false,
     },
   } as DataColumns;
-  if (!platformModuleHelpers.isRetentionManagerEnable()) {
+  if (!isRetentionManagerEnable()) {
     return (
       <div className={classes.container}>
         <Alert severity="info">
-          {t_i18n(platformModuleHelpers.generateDisableMessage(RETENTION_MANAGER))}
+          {t_i18n(generateDisableMessage(RETENTION_MANAGER))}
         </Alert>
       </div>
     );

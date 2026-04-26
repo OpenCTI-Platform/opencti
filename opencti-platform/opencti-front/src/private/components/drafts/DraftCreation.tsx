@@ -25,7 +25,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../utils/field';
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';
-import useHelper from '../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 
 export const draftCreationMutation = graphql`
     mutation DraftCreationMutation($input: DraftWorkspaceAddInput!) {
@@ -70,7 +70,7 @@ export interface DraftAddInput {
 }
 
 const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onReset }) => {
-  const { isFeatureEnable } = useHelper();
+  const { isFeatureEnable } = usePlatformModulesHelper();
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
   const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);

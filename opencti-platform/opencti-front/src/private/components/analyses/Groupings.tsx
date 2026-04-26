@@ -4,7 +4,7 @@ import { GroupingsLinesPaginationQuery, GroupingsLinesPaginationQuery$variables 
 import { GroupingsLines_data$data } from '@components/analyses/__generated__/GroupingsLines_data.graphql';
 import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import GroupingCreation from './groupings/GroupingCreation';
-import useAuth from '../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
@@ -145,7 +145,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Groupings | Analyses'));
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
 
   const initialValues = {
     filters: {

@@ -13,7 +13,7 @@ import Message from '../components/Message';
 import SystemBanners from '../public/components/SystemBanners';
 import TimeoutLock from './components/TimeoutLock';
 import useAuth from '../utils/hooks/useAuth';
-import useHelper from '../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../utils/platformModulesHelper';
 import SettingsMessagesBanner, { useSettingsMessagesBannerHeight } from './components/settings/settings_messages/SettingsMessagesBanner';
 import type { Theme } from '../components/Theme';
 import { RootSettings$data } from './__generated__/RootSettings.graphql';
@@ -52,7 +52,7 @@ interface IndexProps {
 
 const Index = ({ settings }: IndexProps) => {
   const theme = useTheme<Theme>();
-  const { isTrashEnable } = useHelper();
+  const { isTrashEnable } = usePlatformModulesHelper();
   const {
     bannerSettings: { bannerHeight },
   } = useAuth();

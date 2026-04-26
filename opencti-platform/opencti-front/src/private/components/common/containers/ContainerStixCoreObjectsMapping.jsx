@@ -2,7 +2,7 @@ import React from 'react';
 import { ContainerStixCoreObjectsMappingLineDummy } from './ContainerStixCoreObjectsMappingLine';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixCoreObjectsMappingLines, { containerStixCoreObjectsMappingLinesQuery } from './ContainerStixCoreObjectsMappingLines';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
@@ -14,9 +14,7 @@ const ContainerStixCoreObjectsMapping = ({
   contentMappingCount,
   enableReferences,
 }) => {
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 
   const LOCAL_STORAGE_KEY = `container-${container.id}-stixCoreObjectsMapping`;

@@ -6,7 +6,7 @@ import Tab from '@mui/material/Tab';
 import Stack from '@mui/material/Stack';
 import { getCurrentTab } from '../../../../utils/utils';
 import { useFormatter } from '../../../../components/i18n';
-import useHelper from '../../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import useCustomViewTabs from '@components/custom_views/useCustomViewTabs';
 import CustomViewTab from '@components/custom_views/CustomViewTab';
 import CustomViewTabDropDownMenu from '@components/custom_views/CustomViewTabDropDownMenu';
@@ -133,7 +133,7 @@ const StixDomainObjectTabsBox = (props: StixDomainObjectTabsBoxProps) => {
   const { basePath, entityType, extraActions, tabs } = props;
   const { t_i18n } = useFormatter();
   const location = useLocation();
-  const { isFeatureEnable } = useHelper();
+  const { isFeatureEnable } = usePlatformModulesHelper();
   const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
   const currentTab = getCurrentTab(location.pathname, basePath);
 

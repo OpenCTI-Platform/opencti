@@ -8,7 +8,6 @@ import { availableLanguage, ConnectedIntlProvider } from '../components/AppIntlP
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
 import { FilterDefinition, PlatformLang, UserContext } from '../utils/hooks/useAuth';
-import platformModuleHelper from '../utils/platformModulesHelper';
 import { ONE_SECOND } from '../utils/Time';
 import { isNotEmptyField } from '../utils/utils';
 import Index from './Index';
@@ -357,7 +356,6 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => 
 
   // TODO : Use the hook useHelper when all project is pure function //
   const bannerSettings = computeBannerSettings(settings);
-  const platformModuleHelpers = platformModuleHelper(settings);
   const platformAnalyticsConfiguration = generateAnalyticsConfig(settings);
   const metricsDefinition = Array.from(settings.metrics_definition || []);
 
@@ -382,7 +380,6 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => 
         settings,
         bannerSettings,
         entitySettings,
-        platformModuleHelpers,
         schema,
         isXTMHubAccessible: isReachable,
         about,

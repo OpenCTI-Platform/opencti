@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
-import useAuth from '../../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../../utils/platformModulesHelper';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import ToolBar from '../../../data/ToolBar';
 import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
@@ -63,8 +63,8 @@ const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<
     openExports,
   } = viewStorage;
   const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
-  const { platformModuleHelpers } = useAuth();
-  const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
+  const isRuntimeSort = isRuntimeFieldEnable();
   const isObservables = isStixCyberObservables(stixCoreObjectTypes);
   const dataColumns: DataColumns = {
     entity_type: {

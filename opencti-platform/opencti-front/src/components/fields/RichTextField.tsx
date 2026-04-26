@@ -11,7 +11,7 @@ import { FieldProps, useField } from 'formik';
 import { isNil } from 'ramda';
 import { CSSProperties, useRef, useState } from 'react';
 import useAI from '../../utils/hooks/useAI';
-import useHelper from '../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../utils/platformModulesHelper';
 import { getHtmlTextContent } from '../../utils/html';
 import CKEditor from '../CKEditor';
 import RichTextEditor from '../RichTextEditor';
@@ -49,7 +49,7 @@ const RichTextField = ({
 }: RichTextFieldProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { isTiptapEditorEnable } = useHelper();
+  const { isTiptapEditorEnable } = usePlatformModulesHelper();
   const tiptapEditorRef = useRef<Editor | null>(null);
   const ckEditorRef = useRef<ClassicEditor>(undefined);
   const [fullScreen, setFullScreen] = useState(false);

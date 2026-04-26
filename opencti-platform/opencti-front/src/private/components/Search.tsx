@@ -8,7 +8,7 @@ import {
 import { SearchStixCoreObjectsLines_data$data } from '@components/__generated__/SearchStixCoreObjectsLines_data.graphql';
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
-import useAuth from '../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../utils/platformModulesHelper';
 import { deserializeFilterGroupForFrontend, emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../utils/filters/filtersUtils';
 import { decodeSearchKeyword } from '../../utils/SearchUtils';
 import DataTable from '../../components/dataGrid/DataTable';
@@ -139,9 +139,7 @@ export const searchStixCoreObjectsLinesFragment = graphql`
 `;
 
 const Search = () => {
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Knowledge Search | Advanced Search'));

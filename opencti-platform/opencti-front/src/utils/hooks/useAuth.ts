@@ -1,6 +1,5 @@
 import React, { useContext } from 'react';
 import { PrivateRootPreloadedQuery$data } from '../../private/__generated__/PrivateRootPreloadedQuery.graphql';
-import { ModuleHelper } from '../platformModulesHelper';
 import { RootSettings$data } from '../../private/__generated__/RootSettings.graphql';
 import { RootMe_data$data } from '../../private/__generated__/RootMe_data.graphql';
 
@@ -51,7 +50,6 @@ export interface UserContextType {
   settings: RootSettings$data | undefined;
   bannerSettings: BannerSettings | undefined;
   entitySettings: PrivateRootPreloadedQuery$data['entitySettings'] | undefined;
-  platformModuleHelpers: ModuleHelper | undefined;
   schema: SchemaType | undefined;
   isXTMHubAccessible: boolean | null | undefined;
   about: PrivateRootPreloadedQuery$data['about'] | undefined;
@@ -66,7 +64,6 @@ const defaultContext = {
   settings: undefined,
   bannerSettings: undefined,
   entitySettings: undefined,
-  platformModuleHelpers: undefined,
   schema: undefined,
   isXTMHubAccessible: undefined,
   about: undefined,
@@ -83,7 +80,6 @@ const useAuth = () => {
     settings,
     bannerSettings,
     entitySettings,
-    platformModuleHelpers,
     schema,
     isXTMHubAccessible,
     about,
@@ -92,7 +88,7 @@ const useAuth = () => {
     locale,
     tz,
   } = useContext(UserContext);
-  if (!me || !settings || !bannerSettings || !entitySettings || !platformModuleHelpers || !schema || !about || !themes) {
+  if (!me || !settings || !bannerSettings || !entitySettings || !schema || !about || !themes) {
     throw new Error('Invalid user context !');
   }
   return {
@@ -100,7 +96,6 @@ const useAuth = () => {
     settings,
     bannerSettings,
     entitySettings,
-    platformModuleHelpers,
     schema,
     isXTMHubAccessible,
     about,

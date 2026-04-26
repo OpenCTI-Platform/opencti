@@ -8,7 +8,7 @@ import { CaseIncidentsLinesCases_data$data } from '@components/cases/__generated
 import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import useAuth from '../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import CaseIncidentCreation from './case_incidents/CaseIncidentCreation';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
@@ -133,7 +133,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Incident Responses | Cases'));
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
 
   const initialValues = {
     searchTerm: '',

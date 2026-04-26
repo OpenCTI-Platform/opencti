@@ -4,7 +4,7 @@ import { NotesLines_data$data } from '@components/analyses/__generated__/NotesLi
 import { NotesLinesPaginationQuery, NotesLinesPaginationQuery$variables } from '@components/analyses/__generated__/NotesLinesPaginationQuery.graphql';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import useAuth from '../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import NoteCreation from './notes/NoteCreation';
@@ -143,9 +143,7 @@ const Notes: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Notes | Analyses'));
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
 
   const initialValues = {
     searchTerm: '',

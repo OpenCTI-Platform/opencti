@@ -12,7 +12,7 @@ import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
-import useHelper from '../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import AskArianePanel from './AskArianePanel';
 import ChatbotManager from './ChatbotManager';
 import { useChatbot } from './ChatbotContext';
@@ -20,7 +20,7 @@ import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/S
 
 const AskArianeButton = () => {
   const { t_i18n } = useFormatter();
-  const { isChatbotAiEnabled } = useHelper();
+  const { isChatbotAiEnabled } = usePlatformModulesHelper();
   const { settings: { filigran_chatbot_ai_cgu_status } } = useAuth();
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();

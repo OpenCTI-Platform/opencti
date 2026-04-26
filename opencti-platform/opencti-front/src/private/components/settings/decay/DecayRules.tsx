@@ -13,8 +13,7 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import type { Theme } from '../../../../components/Theme';
 import { DecayRulesLinesPaginationQuery, DecayRulesLinesPaginationQuery$variables } from './__generated__/DecayRulesLinesPaginationQuery.graphql';
 import { DecayRulesLine_node$data } from './__generated__/DecayRulesLine_node.graphql';
-import useAuth from '../../../../utils/hooks/useAuth';
-import { INDICATOR_DECAY_MANAGER } from '../../../../utils/platformModulesHelper';
+import { INDICATOR_DECAY_MANAGER, usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 
 const LOCAL_STORAGE_KEY = 'view-decay-rules';
@@ -92,8 +91,8 @@ const DecayRules = () => {
       },
     };
 
-    const { platformModuleHelpers } = useAuth();
-    if (!platformModuleHelpers.isIndicatorDecayManagerEnable()) {
+    const { isIndicatorDecayManagerEnable, generateDisableMessage } = usePlatformModulesHelper();
+    if (!isIndicatorDecayManagerEnable()) {
       return (
         <div style={{ width: '100%', marginTop: 10 }}>
           <Alert
@@ -102,7 +101,7 @@ const DecayRules = () => {
             style={{ padding: '0px 10px 0px 10px' }}
             classes={{ message: classes.info }}
           >
-            {t_i18n(platformModuleHelpers.generateDisableMessage(INDICATOR_DECAY_MANAGER))}
+            {t_i18n(generateDisableMessage(INDICATOR_DECAY_MANAGER))}
           </Alert>
         </div>
       );

@@ -14,7 +14,7 @@ import StixCoreObjectOrStixCoreRelationshipContainersLines, {
 } from './StixCoreObjectOrStixCoreRelationshipContainersLines';
 import StixCoreObjectOrStixCoreRelationshipContainersGraph, { containersObjectsQuery } from './StixCoreObjectOrStixCoreRelationshipContainersGraph';
 import SearchInput from '../../../../components/SearchInput';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';;
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -49,9 +49,7 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
   useInitCreateRelationshipContext();
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const LOCAL_STORAGE_KEY = `containers${
     authorId

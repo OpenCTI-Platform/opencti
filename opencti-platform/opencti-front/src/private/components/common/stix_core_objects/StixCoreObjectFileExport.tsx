@@ -27,7 +27,7 @@ import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPd
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import useGranted, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import { FieldOption } from '../../../../utils/field';
 
 export const BUILT_IN_HTML_TO_PDF = {
@@ -170,7 +170,7 @@ const StixCoreObjectFileExportComponent = ({
   };
   const { buildFileFromTemplate } = useFileFromTemplate();
   const hasUploadAndExportCapabilities = useGranted([KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT], true);
-  const { isTiptapEditorEnable } = useHelper();
+  const { isTiptapEditorEnable } = usePlatformModulesHelper();
   const tiptapEnabled = isTiptapEditorEnable();
 
   const {

@@ -21,7 +21,7 @@ import { interval } from 'rxjs';
 import Alert from '@mui/material/Alert';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { FILE_INDEX_MANAGER } from '../../../../utils/platformModulesHelper';
+import { FILE_INDEX_MANAGER, usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FileIndexingConfigurationQuery } from './__generated__/FileIndexingConfigurationQuery.graphql';
 import { TEN_SECONDS } from '../../../../utils/Time';
@@ -77,8 +77,8 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('File Indexing | Settings'));
-  const { platformModuleHelpers } = useAuth();
-  const isModuleWarning = platformModuleHelpers.isModuleWarning(FILE_INDEX_MANAGER);
+  const { isModuleWarning } = usePlatformModulesHelper();
+  const fileIndexManagerModuleIsWarning = isModuleWarning(FILE_INDEX_MANAGER);
   const { managerConfigurationByManagerId } = usePreloadedQuery<FileIndexingConfigurationQuery>(
     fileIndexingConfigurationQuery,
     queryRef,
@@ -98,7 +98,7 @@ const FileIndexingComponent: FunctionComponent<FileIndexingComponentProps> = ({
         <EnterpriseEdition feature="File indexing" />
       ) : (
         <>
-          {isModuleWarning ? (
+          {fileIndexManagerModuleIsWarning ? (
             <Alert
               severity="warning"
               variant="outlined"

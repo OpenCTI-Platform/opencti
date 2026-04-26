@@ -24,7 +24,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { DraftsLines_data$data } from './__generated__/DraftsLines_data.graphql';
 import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from './__generated__/DraftsLinesPaginationQuery.graphql';
 import DraftPopover from './DraftPopover';
-import useHelper from '../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 
 const DraftLineFragment = graphql`
     fragment Drafts_node on DraftWorkspace {
@@ -143,7 +143,7 @@ interface DraftsProps {
 }
 
 const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenCreate, emptyStateMessage }) => {
-  const { isFeatureEnable } = useHelper();
+  const { isFeatureEnable } = usePlatformModulesHelper();
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const draftColor = getDraftModeColor(theme);

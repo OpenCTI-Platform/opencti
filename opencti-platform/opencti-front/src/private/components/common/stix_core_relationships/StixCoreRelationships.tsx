@@ -7,7 +7,7 @@ import { useInitCreateRelationshipContext } from '@components/common/stix_core_r
 import { StixCoreRelationshipsLinesPaginationQuery, StixCoreRelationshipsLinesPaginationQuery$variables } from './__generated__/StixCoreRelationshipsLinesPaginationQuery.graphql';
 import { StixCoreRelationshipsLines_data$data } from './__generated__/StixCoreRelationshipsLines_data.graphql';
 import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import DataTable from '../../../../components/dataGrid/DataTable';
@@ -249,9 +249,7 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
   },
 ) => {
   const LOCAL_STORAGE_KEY = `${storageKey}-stix-core-relationships`;
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
   const theme = useTheme<Theme>();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns: DataTableProps['dataColumns'] = {

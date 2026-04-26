@@ -6,7 +6,7 @@ import { DraftEntitiesLines_data$data } from '@components/drafts/__generated__/D
 import StixDomainObjectCreation from '@components/common/stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '@components/observations/stix_cyber_observables/StixCyberObservableCreation';
 import { DraftEntities_node$data } from '@components/drafts/__generated__/DraftEntities_node.graphql';
-import useAuth from '../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -135,7 +135,7 @@ const DraftEntities: FunctionComponent<DraftEntitiesProps> = ({
   const [open, setOpen] = useState(false);
   const [openCreateEntity, setOpenCreateEntity] = useState(false);
   const [openCreateObservable, setOpenCreateObservable] = useState(false);
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
   const handleCloseCreateEntity = () => {
     setOpenCreateEntity(false);
     setOpen(false);

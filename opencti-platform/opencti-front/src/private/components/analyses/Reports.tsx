@@ -6,7 +6,7 @@ import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreOb
 import ReportCreation from './reports/ReportCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import useAuth from '../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -143,7 +143,7 @@ const Reports: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Reports | Analyses'));
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
 
   const initialValues = {
     filters: emptyFilterGroup,

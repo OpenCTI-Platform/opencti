@@ -8,7 +8,6 @@ describe('Hook: useAuth', () => {
     schema: { schema: 'schema' },
     bannerSettings: { bannerSettings: 'bannerSettings' },
     entitySettings: { entitySettings: 'entitySettings' },
-    platformModuleHelpers: { platformModuleHelpers: 'platformModuleHelpers' },
     settings: { settings: 'settings' },
     about: { version: '6.7.17' },
     themes:
@@ -77,7 +76,6 @@ describe('Hook: useAuth', () => {
     expect(data.schema).toEqual({ schema: 'schema' });
     expect(data.bannerSettings).toEqual({ bannerSettings: 'bannerSettings' });
     expect(data.entitySettings).toEqual({ entitySettings: 'entitySettings' });
-    expect(data.platformModuleHelpers).toEqual({ platformModuleHelpers: 'platformModuleHelpers' });
     expect(data.settings).toEqual({ settings: 'settings' });
     expect(data.about.version).toEqual('6.7.17');
   });

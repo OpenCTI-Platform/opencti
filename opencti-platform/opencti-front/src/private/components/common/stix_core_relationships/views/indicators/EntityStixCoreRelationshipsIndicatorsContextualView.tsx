@@ -19,7 +19,7 @@ import {
 } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject.graphql';
 import useEntityToggle from '../../../../../../utils/hooks/useEntityToggle';
 import { EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data } from './__generated__/EntityStixCoreRelationshipsIndicatorsContextualViewLine_node.graphql';
-import useAuth from '../../../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../../../utils/platformModulesHelper';
 import { getMainRepresentative } from '../../../../../../utils/defaultRepresentatives';
 import StixCoreObjectLabels from '../../../stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../../../components/ItemMarkings';
@@ -132,8 +132,8 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
     'containers',
   ];
 
-  const { platformModuleHelpers } = useAuth();
-  const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
+  const isRuntimeSort = isRuntimeFieldEnable();
   const dataColumns: DataColumns = {
     pattern_type: {
       label: 'Type',

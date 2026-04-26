@@ -111,7 +111,7 @@ import useGranted, {
   TAXIIAPI,
   VIRTUAL_ORGANIZATION_ADMIN,
 } from '../../../utils/hooks/useGranted';
-import useHelper from '../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import useImportAccess from '../../../utils/hooks/useImportAccess';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
@@ -368,7 +368,7 @@ const LeftBarComponent = ({ queryRef }) => {
     'Position',
   );
 
-  const { isTrashEnable } = useHelper();
+  const { isTrashEnable } = usePlatformModulesHelper();
 
   const {
     bannerSettings: { bannerHeightNumber },

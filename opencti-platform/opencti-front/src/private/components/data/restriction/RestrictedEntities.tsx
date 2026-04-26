@@ -5,7 +5,7 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { useFormatter } from '../../../../components/i18n';
 import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
@@ -127,9 +127,7 @@ const RestrictedEntities = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Restricted Entities | Restriction | Data'));
 
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
   const isRuntimeSort = isRuntimeFieldEnable();
 
   const isEnterpriseEdition = useEnterpriseEdition();

@@ -5,7 +5,7 @@ import {
   InfrastructuresLinesPaginationQuery,
   InfrastructuresLinesPaginationQuery$variables,
 } from '@components/observations/__generated__/InfrastructuresLinesPaginationQuery.graphql';
-import useAuth from '../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import InfrastructureCreation from './infrastructures/InfrastructureCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -119,9 +119,7 @@ const Infrastructures = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Infrastructures | Observations'));
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
 
   const initialValues = {
     searchTerm: '',

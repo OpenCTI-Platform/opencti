@@ -8,7 +8,7 @@ import {
 import { entitySettingsFragment } from '../../private/components/settings/sub_types/entity_setting/EntitySettingsFragment';
 import useAuth from './useAuth';
 import { useFormatter } from '../../components/i18n';
-import useHelper from './useHelper';
+import { usePlatformModulesHelper } from '../platformModulesHelper';
 
 export type EntitySetting = EntitySettingsFragment_entitySetting$data;
 
@@ -46,7 +46,7 @@ export const useIsEnforceReference = (id: string): boolean => {
 };
 
 export const useIsMandatoryAttribute = (id: string) => {
-  const { isFeatureEnable } = useHelper();
+  const { isFeatureEnable } = usePlatformModulesHelper();
   const isDraftWorkflowFeatureEnabled = isFeatureEnable('DRAFT_WORKFLOW');
   const entitySettings = useEntitySettings(id).at(0);
   if (!entitySettings) {

@@ -24,7 +24,7 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';
-import useHelper from '../../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import { DraftAddInput, DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
@@ -48,7 +48,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   onSuccess,
   isDraftContext = false,
 }) => {
-  const { isFeatureEnable } = useHelper();
+  const { isFeatureEnable } = usePlatformModulesHelper();
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
   const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);

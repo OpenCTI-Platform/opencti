@@ -33,6 +33,7 @@ import { deleteNode } from '../../../utils/store';
 import { EMPTY_VALUE } from '../../../utils/String';
 import { isNotEmptyField } from '../../../utils/utils';
 import { colors, getFirstOperation, iconSelector } from './notifications/notificationUtils';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 
 export const LOCAL_STORAGE_KEY = 'notifiers';
 
@@ -171,10 +172,8 @@ const Notifications: FunctionComponent = () => {
     },
   };
 
-  const {
-    me,
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { me } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
 
   const {
     viewStorage,

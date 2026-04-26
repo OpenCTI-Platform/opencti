@@ -3,7 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useCopy from '../../../../utils/hooks/useCopy';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import ExportContextProvider from '../../../../utils/ExportContextProvider';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
@@ -192,7 +192,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
   ContainerStixCyberObservablesComponentProps
 > = ({ container, enableReferences }) => {
   const LOCAL_STORAGE_KEY = `container-${container.id}-stixCyberObservables`;
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
 
   const initialValues = {
     filters: {

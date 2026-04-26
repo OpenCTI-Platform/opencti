@@ -6,9 +6,9 @@ import ListLines from '../../../components/list_lines/ListLines';
 import SyncLines, { SyncLinesQuery } from './sync/SyncLines';
 import SyncCreation from './sync/SyncCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
+import { UserContext } from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
-import { SYNC_MANAGER } from '../../../utils/platformModulesHelper';
+import { SYNC_MANAGER, usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import IngestionMenu from './IngestionMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Security from '../../../utils/Security';
@@ -25,7 +25,7 @@ const LOCAL_STORAGE_KEY = 'sync';
 const Sync = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  const { platformModuleHelpers } = useAuth();
+  const { isSyncManagerEnable, generateDisableMessage } = usePlatformModulesHelper();
   const { settings, isXTMHubAccessible } = useContext(UserContext);
 
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
@@ -82,7 +82,7 @@ const Sync = () => {
     count: 200,
   } as unknown as SyncLinesPaginationQuery$variables;
 
-  if (!platformModuleHelpers.isSyncManagerEnable()) {
+  if (!isSyncManagerEnable()) {
     return (
       <div style={{
         margin: 0,
@@ -90,7 +90,7 @@ const Sync = () => {
       }}
       >
         <MuiAlert severity="info">
-          {t_i18n(platformModuleHelpers.generateDisableMessage(SYNC_MANAGER))}
+          {t_i18n(generateDisableMessage(SYNC_MANAGER))}
         </MuiAlert>
         <IngestionMenu />
       </div>

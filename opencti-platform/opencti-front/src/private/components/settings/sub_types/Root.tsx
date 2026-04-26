@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { Navigate, Route, Routes, useParams } from 'react-router-dom';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader from '../../../../components/Loader';
-import useHelper from '../../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import FintelTemplate from './fintel_templates/FintelTemplate';
 import EntitySettingAttributesCard from './entity_setting/EntitySettingAttributesCard';
 import EntitySettingCustomOverview from './entity_setting/EntitySettingCustomOverview';
@@ -41,7 +41,7 @@ const SubTypeIndexRedirect = () => {
 
 const RootSubType = () => {
   const { subTypeId } = useParams<{ subTypeId?: string }>();
-  const { isFeatureEnable } = useHelper();
+  const { isFeatureEnable } = usePlatformModulesHelper();
   const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
 
   if (!subTypeId) return <ErrorNotFound />;

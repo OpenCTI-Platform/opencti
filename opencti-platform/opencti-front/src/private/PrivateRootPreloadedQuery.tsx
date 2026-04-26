@@ -5,6 +5,7 @@ import Loader from '../components/Loader';
 import useQueryLoading from '../utils/hooks/useQueryLoading';
 import { PrivateRootPreloadedQuery, PrivateRootPreloadedQuery$data } from './__generated__/PrivateRootPreloadedQuery.graphql';
 import { CustomViewsPreloadedDataContextProvider } from '@components/custom_views/useCustomViewsData';
+import { PlatformModulesHelperPreloadedDataContextProvider } from '../utils/platformModulesHelper';
 
 const privateRootPreloadedQuery = graphql`
   query PrivateRootPreloadedQuery {
@@ -108,6 +109,7 @@ const privateRootPreloadedQuery = graphql`
         }
       }
     }
+    ...platformModulesHelper_settings @alias(as: "platformModulesHelper")
     ...useCustomViews_data @alias(as: "customViews")
   }
 `;
@@ -120,9 +122,11 @@ interface PrivateRootPreloadedQueryDataProps {
 const PrivateRootPreloadedQueryData = ({ queryRef, render }: PrivateRootPreloadedQueryDataProps) => {
   const queryData = usePreloadedQuery(privateRootPreloadedQuery, queryRef);
   return (
-    <CustomViewsPreloadedDataContextProvider customViews={queryData.customViews}>
-      {render({ queryData })}
-    </CustomViewsPreloadedDataContextProvider>
+    <PlatformModulesHelperPreloadedDataContextProvider preloadedData={queryData.platformModulesHelper}>
+      <CustomViewsPreloadedDataContextProvider customViews={queryData.customViews}>
+        {render({ queryData })}
+      </CustomViewsPreloadedDataContextProvider>
+    </PlatformModulesHelperPreloadedDataContextProvider>
   );
 };
 

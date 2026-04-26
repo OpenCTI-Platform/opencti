@@ -1,7 +1,7 @@
 import { useFragment } from 'react-relay';
 import { graphql } from 'relay-runtime';
 import { SubTypeQuery$data } from '../__generated__/SubTypeQuery.graphql';
-import useHelper from '../../../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../../../utils/platformModulesHelper';
 import { CustomViewsSettingsContext_data$key } from './__generated__/CustomViewsSettingsContext_data.graphql';
 
 const fragment = graphql`
@@ -16,7 +16,7 @@ const fragment = graphql`
 export const useProvideCustomViewsSettingsContext = ({
   data,
 }: { data?: SubTypeQuery$data | null | undefined }) => {
-  const { isFeatureEnable } = useHelper();
+  const { isFeatureEnable } = usePlatformModulesHelper();
   const result = useFragment<CustomViewsSettingsContext_data$key>(
     fragment,
     data,

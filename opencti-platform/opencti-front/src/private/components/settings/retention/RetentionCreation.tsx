@@ -30,7 +30,7 @@ import type { Theme } from '../../../../components/Theme';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import { useTheme } from '@mui/material/styles';
-import useHelper from '../../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 
 const useStyles = makeStyles<Theme>(() => ({
   text: {
@@ -79,7 +79,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const { isActivityHistoryRetentionEnable } = useHelper();
+  const { isActivityHistoryRetentionEnable } = usePlatformModulesHelper();
 
   const [filters, helpers] = useFiltersState();
   const [verified, setVerified] = useState(false);

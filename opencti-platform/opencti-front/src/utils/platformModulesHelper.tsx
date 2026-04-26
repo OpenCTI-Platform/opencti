@@ -1,4 +1,6 @@
-import { RootSettings$data } from '../private/__generated__/RootSettings.graphql';
+import { createContext, PropsWithChildren, ReactNode, useContext, useMemo } from 'react';
+import { graphql, useFragment } from 'react-relay';
+import { platformModulesHelper_settings$data, platformModulesHelper_settings$key } from './__generated__/platformModulesHelper_settings.graphql';
 
 export const DISABLE_MANAGER_MESSAGE = 'To use this feature, your platform administrator must enable the according manager in the config.';
 
@@ -45,7 +47,7 @@ export interface ModuleHelper {
 }
 
 export const isFeatureEnable = (
-  settings: RootSettings$data,
+  settings: platformModulesHelper_settings$data['settings'],
   id: string,
 ) => {
   const flags = settings.platform_feature_flags ?? [];
@@ -57,7 +59,7 @@ export const isFeatureEnable = (
 };
 
 const isModuleEnable = (
-  settings: RootSettings$data,
+  settings: platformModulesHelper_settings$data['settings'],
   id: string,
 ) => {
   const modules = settings.platform_modules || [];
@@ -65,7 +67,7 @@ const isModuleEnable = (
 };
 
 const isModuleWarning = (
-  settings: RootSettings$data,
+  settings: platformModulesHelper_settings$data['settings'],
   id: string,
 ) => {
   const modules = settings.platform_modules || [];
@@ -73,7 +75,7 @@ const isModuleWarning = (
 };
 
 const platformModuleHelper = (
-  settings: RootSettings$data,
+  settings: platformModulesHelper_settings$data['settings'],
 ): ModuleHelper => ({
   isModuleEnable: (id: string) => isModuleEnable(settings, id),
   isModuleWarning: (id: string) => isModuleWarning(settings, id),
@@ -96,5 +98,73 @@ const platformModuleHelper = (
   isTiptapEditorEnable: () => isFeatureEnable(settings, TIPTAP_EDITOR),
   isActivityHistoryRetentionEnable: () => isFeatureEnable(settings, ACTIVITY_HISTORY_RETENTION),
 });
+
+const platformModulesHelperFragment = graphql`
+  fragment platformModulesHelper_settings on Query {
+    settings {
+      platform_modules {
+        id
+        enable
+        warning
+      }
+      platform_feature_flags {
+        id
+        enable
+      }
+      platform_trash_enabled
+      playground_enabled
+      request_access_enabled
+      filigran_chatbot_ai_cgu_status
+    }
+  }
+`;
+
+export interface PlatformModulesHelperPreloadedDataContext {
+  preloadedData: platformModulesHelper_settings$key | undefined;
+}
+
+const defaultContext = {
+  preloadedData: undefined,
+};
+
+export const PlatformModulesHelperPreloadedDataContext = createContext<PlatformModulesHelperPreloadedDataContext>(defaultContext);
+
+type PlatformModulesHelperPreloadedDataContextProviderProps = PropsWithChildren<{
+  preloadedData: platformModulesHelper_settings$key;
+}>;
+
+export const PlatformModulesHelperPreloadedDataContextProvider = (
+  { preloadedData, children }: PlatformModulesHelperPreloadedDataContextProviderProps,
+) => {
+  const value = useMemo(() => ({ preloadedData }), [preloadedData]);
+  return (
+    <PlatformModulesHelperPreloadedDataContext.Provider value={value}>
+      {children}
+    </PlatformModulesHelperPreloadedDataContext.Provider>
+  );
+};
+
+interface PlatformModulesHelperPreloadedDataContextConsumerProps {
+  render: (props: ReturnType<typeof usePlatformModulesHelper>) => ReactNode;
+}
+
+/**
+ * @deprecated Should be used only when required (i.e. in Class Components)
+ * Use useSchema instead in Functional Components.
+ */
+export const PlatformModulesHelperPreloadedDataContextConsumer = ({ render }: PlatformModulesHelperPreloadedDataContextConsumerProps) => {
+  return render(usePlatformModulesHelper());
+};
+
+export const usePlatformModulesHelper = () => {
+  const { preloadedData } = useContext(PlatformModulesHelperPreloadedDataContext);
+  const data = useFragment<
+    platformModulesHelper_settings$key
+  >(platformModulesHelperFragment, preloadedData);
+  if (!data) {
+    throw new Error('No data for platformModuleHelper');
+  }
+  return platformModuleHelper(data.settings);
+};
 
 export default platformModuleHelper;

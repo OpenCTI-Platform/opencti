@@ -7,7 +7,7 @@ import FormLines, { formLinesQuery } from '@components/data/forms/FormLines';
 import FormCreationContainer from '@components/data/forms/FormCreationContainer';
 import { FormLineDummy } from '@components/data/forms/FormLine';
 import { useFormatter } from '../../../components/i18n';
-import useAuth from '../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListLines from '../../../components/list_lines/ListLines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -30,7 +30,7 @@ const Forms = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Form intakes | Ingestion | Data'));
-  const { platformModuleHelpers } = useAuth();
+  const { isIngestionManagerEnable } = usePlatformModulesHelper();
   const hasIngestionCapability = useGranted([INGESTION_SETINGESTIONS]);
   const hasKnowledgeUpdateCapability = useGranted([KNOWLEDGE_KNUPDATE]);
 
@@ -132,7 +132,7 @@ const Forms = () => {
     );
   };
 
-  if (!platformModuleHelpers.isIngestionManagerEnable()) {
+  if (!isIngestionManagerEnable()) {
     return (
       <div className={classes.container}>
         <Alert severity="info">

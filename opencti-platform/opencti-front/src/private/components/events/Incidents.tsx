@@ -5,7 +5,7 @@ import { IncidentsLines_data$data } from './incidents/__generated__/IncidentsLin
 import { incidentLineFragment } from './incidents/IncidentLine';
 import { incidentsLinesFragment, incidentsLinesQuery } from './incidents/IncidentsLines';
 import IncidentCreation from './incidents/IncidentCreation';
-import useAuth from '../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
@@ -24,9 +24,7 @@ const Incidents: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Incidents | Events'));
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
 
   const initialValues = {
     filters: {

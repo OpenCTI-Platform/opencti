@@ -8,7 +8,8 @@ import Security from '../../../../utils/Security';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 import { ContainerStixObjectsOrStixRelationshipsLinesQuery$data } from './__generated__/ContainerStixObjectsOrStixRelationshipsLinesQuery.graphql';
 import { ContainerStixObjectsOrStixRelationships_container$data } from './__generated__/ContainerStixObjectsOrStixRelationships_container.graphql';
-import useAuth, { UserContext } from '../../../../utils/hooks/useAuth';
+import { UserContext } from '../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import useGranted, { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { ContainerStixObjectOrStixRelationshipLineDummy } from './ContainerStixObjectOrStixRelationshipLine';
 import Card from '../../../../components/common/card/Card';
@@ -33,9 +34,7 @@ const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<
   if (isSupportParticipation && isContainerOwner) {
     security.push(KNOWLEDGE_KNPARTICIPATE);
   }
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const paginationOptions = {
     id: container?.id ?? null,

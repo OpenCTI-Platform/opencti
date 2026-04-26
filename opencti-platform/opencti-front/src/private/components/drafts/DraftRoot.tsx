@@ -25,7 +25,7 @@ import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGrant
 import useSwitchDraft from './useSwitchDraft';
 import { DraftRootFragment$key } from './__generated__/DraftRootFragment.graphql';
 import DraftOverview from '@components/drafts/DraftOverview';
-import useHelper from '../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -108,7 +108,7 @@ interface RootDraftComponentProps {
 }
 
 const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentProps) => {
-  const { isFeatureEnable } = useHelper();
+  const { isFeatureEnable } = usePlatformModulesHelper();
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();

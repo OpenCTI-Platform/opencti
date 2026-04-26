@@ -27,7 +27,7 @@ import { convertOrganizations } from '../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useGranted, { APIACCESS_USETOKEN, KNOWLEDGE } from '../../../utils/hooks/useGranted';
-import useHelper from '../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import NotifierField from '../common/form/NotifierField';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../common/form/PasswordPolicies';
@@ -204,7 +204,7 @@ const ProfileOverviewComponent = (props) => {
   const { t, me, classes, about, settings, themes } = props;
   const { external, otp_activated: useOtp } = me;
   const { t_i18n } = useFormatter();
-  const { isPlaygroundEnable } = useHelper();
+  const { isPlaygroundEnable } = usePlatformModulesHelper();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Profile'));
   const objectOrganization = convertOrganizations(me);

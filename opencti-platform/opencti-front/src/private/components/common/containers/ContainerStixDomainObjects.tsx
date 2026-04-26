@@ -13,7 +13,7 @@ import ToolBar from '../../data/ToolBar';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../../components/i18n';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
@@ -70,9 +70,7 @@ const ContainerStixDomainObjects = ({ container, enableReferences }: {
 }) => {
   const { t_i18n } = useFormatter();
 
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
   const containerData = useFragment(
     ContainerStixDomainObjectsFragment,
     container,

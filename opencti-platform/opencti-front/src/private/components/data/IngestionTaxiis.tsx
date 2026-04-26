@@ -6,9 +6,9 @@ import ListLines from '../../../components/list_lines/ListLines';
 import IngestionTaxiiLines, { IngestionTaxiiLinesQuery } from './ingestionTaxii/IngestionTaxiiLines';
 import IngestionTaxiiCreation from './ingestionTaxii/IngestionTaxiiCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
+import { UserContext } from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
-import { INGESTION_MANAGER } from '../../../utils/platformModulesHelper';
+import { INGESTION_MANAGER, usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import IngestionMenu from './IngestionMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Security from '../../../utils/Security';
@@ -37,7 +37,7 @@ const IngestionTaxii = () => {
 
   setTitle(t_i18n('TAXII Feeds | Ingestion | Data'));
 
-  const { platformModuleHelpers } = useAuth();
+  const { isIngestionManagerEnable, generateDisableMessage } = usePlatformModulesHelper();
 
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
     ? `${settings.platform_xtmhub_url}/redirect/opencti_integrations?platform_id=${settings.id}`
@@ -86,13 +86,11 @@ const IngestionTaxii = () => {
     },
   };
 
-  if (!platformModuleHelpers.isIngestionManagerEnable()) {
+  if (!isIngestionManagerEnable()) {
     return (
       <div className={classes.container}>
         <Alert severity="info">
-          {t_i18n(
-            platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER),
-          )}
+          {t_i18n(generateDisableMessage(INGESTION_MANAGER))}
         </Alert>
         <IngestionMenu />
       </div>

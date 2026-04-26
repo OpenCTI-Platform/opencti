@@ -30,7 +30,7 @@ import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 import { useFormatter } from '../../../../components/i18n';
@@ -190,9 +190,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
     queryPaginationOptions,
   );
 
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 
   const dataColumns: DataTableProps['dataColumns'] = {

@@ -28,7 +28,7 @@ import CKEditor from '../../../../components/CKEditor';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import HtmlDisplay from '../../../../components/HtmlDisplay';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import useHelper from '../../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.mjs`;
 
@@ -960,7 +960,7 @@ const withAttributes = (Component) => {
 
 const withHelperFF = (Component) => {
   const WithHelperFF = (props) => {
-    const { isTiptapEditorEnable } = useHelper();
+    const { isTiptapEditorEnable } = usePlatformModulesHelper();
     return <Component {...props} isTiptapEditorEnable={isTiptapEditorEnable()} />;
   };
   WithHelperFF.displayName = `WithHelperFF(${Component.displayName || Component.name || 'Component'})`;

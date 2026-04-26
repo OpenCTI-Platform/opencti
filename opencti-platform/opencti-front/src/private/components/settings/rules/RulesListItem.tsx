@@ -8,7 +8,7 @@ import { ArrowRightAlt } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import { Rule, Task } from './RulesList';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import RuleListItemProgressBar from './RulesListItemProgressBar';
 import type { Theme } from '../../../../components/Theme';
 import { RuleTag } from './RulesListItemTag';
@@ -24,8 +24,8 @@ interface RulesListItemProps {
 const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { platformModuleHelpers } = useAuth();
-  const isEngineEnabled = platformModuleHelpers.isRuleEngineEnable();
+  const { isRuleEngineEnable } = usePlatformModulesHelper();
+  const isEngineEnabled = isRuleEngineEnable();
 
   const ruleStatus = isEngineEnabled && rule.activated ? t_i18n('Enabled') : t_i18n('Disabled');
   const taskWork = task?.work;

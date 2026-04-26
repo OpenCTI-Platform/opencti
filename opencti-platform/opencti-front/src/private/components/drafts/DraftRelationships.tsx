@@ -6,7 +6,7 @@ import {
   DraftRelationshipsLinesPaginationQuery,
   DraftRelationshipsLinesPaginationQuery$variables,
 } from '@components/drafts/__generated__/DraftRelationshipsLinesPaginationQuery.graphql';
-import useAuth from '../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
@@ -197,9 +197,7 @@ interface DraftRelationshipsProps {
 const DraftRelationships: FunctionComponent<DraftRelationshipsProps> = ({ isReadOnly }) => {
   const computeLink = useComputeLink();
   const { draftId } = useParams() as { draftId: string };
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
   const initialValues = {
     filters: {
       ...emptyFilterGroup,

@@ -4,7 +4,7 @@ import parse from 'html-react-parser';
 import { truncate } from '../utils/String';
 import FieldOrEmpty from './FieldOrEmpty';
 import { isEmptyField } from '../utils/utils';
-import useHelper from '../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../utils/platformModulesHelper';
 
 interface HtmlDisplayProps {
   content: string | null;
@@ -17,7 +17,7 @@ const SANITIZE_CONFIG = {
 };
 
 const HtmlDisplay: FunctionComponent<HtmlDisplayProps> = ({ content, limit }) => {
-  const { isTiptapEditorEnable } = useHelper();
+  const { isTiptapEditorEnable } = usePlatformModulesHelper();
   const tiptapEnabled = isTiptapEditorEnable();
 
   if (isEmptyField(content)) {

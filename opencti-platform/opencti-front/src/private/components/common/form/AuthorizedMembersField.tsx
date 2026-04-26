@@ -21,7 +21,7 @@ import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { OPENCTI_ADMIN_UUID } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 
 /**
  * Returns true if the authorized member option is generic.
@@ -103,7 +103,7 @@ const AuthorizedMembersField = ({
   const { me } = useAuth();
   const draftContext = useDraftContext();
   const isDisabledInDraft = !!draftContext && !isDraftEntity; // Disable if in draft mode and not the draft entity itself
-  const { isFeatureEnable } = useHelper();
+  const { isFeatureEnable } = usePlatformModulesHelper();
   const featureFlagAccessRestriction = isFeatureEnable('ACCESS_RESTRICTION_CAN_USE');
 
   // Value in sync with internal Formik field 'applyAccesses'.

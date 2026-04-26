@@ -18,7 +18,7 @@ import MarkdownField from '../../../../../components/fields/markdownField/Markdo
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';
-import useHelper from '../../../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../../../utils/platformModulesHelper';
 import { useIsMandatoryAttribute } from '../../../../../utils/hooks/useEntitySettings';
 import { DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 
@@ -31,7 +31,7 @@ const ImportFilesOptions = ({
   optionsFormikContext,
   draftContext,
 }: ImportFilesOptionsProps) => {
-  const { isFeatureEnable } = useHelper();
+  const { isFeatureEnable } = usePlatformModulesHelper();
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
   const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);

@@ -32,7 +32,7 @@ import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapper
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useAuth from '../../../../utils/hooks/useAuth';
 import AuthorizedMembersField from '../form/AuthorizedMembersField';
-import useHelper from '../../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import { DRAFTWORKSPACE_TYPE } from '@components/drafts/DraftCreation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
@@ -146,7 +146,7 @@ const StixCoreObjectFilesAndHistory = ({
   withoutRelations,
   bypassEntityId,
 }) => {
-  const { isFeatureEnable } = useHelper();
+  const { isFeatureEnable } = usePlatformModulesHelper();
   const { t_i18n } = useFormatter();
   const { me: owner, settings } = useAuth();
   const { mandatoryAttributes } = useIsMandatoryAttribute(DRAFTWORKSPACE_TYPE);

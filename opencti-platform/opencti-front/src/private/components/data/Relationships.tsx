@@ -8,7 +8,7 @@ import { RelationshipsStixCoreRelationshipsLines_data$data } from '@components/d
 import { AutoFix } from 'mdi-material-ui';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import { useTheme } from '@mui/styles';
-import useAuth from '../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
@@ -246,9 +246,7 @@ const Relationships = () => {
   const { setTitle } = useConnectedDocumentModifier();
   const theme = useTheme<Theme>();
   setTitle(t_i18n('Relationships | Data'));
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
 
   const initialValues = {
     filters: {

@@ -12,7 +12,7 @@ import {
   StixCyberObservablesLinesPaginationQuery,
   StixCyberObservablesLinesPaginationQuery$variables,
 } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesPaginationQuery.graphql';
-import useAuth from '../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
@@ -31,9 +31,7 @@ const StixCyberObservables: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Observables | Observations'));
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
 
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 

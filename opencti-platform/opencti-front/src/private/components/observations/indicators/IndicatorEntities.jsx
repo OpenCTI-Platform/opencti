@@ -1,5 +1,5 @@
 import React from 'react';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import IndicatorEntitiesLines, { indicatorEntitiesLinesQuery } from './IndicatorEntitiesLines';
@@ -40,9 +40,7 @@ const IndicatorEntities = ({ indicatorId, relationshipType, defaultStartTime, de
     relationship_type: relationshipType || 'stix-core-relationship',
   };
 
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
 
   const renderLines = () => {
     const link = `/dashboard/observations/indicators/${indicatorId}/knowledge`;

@@ -13,7 +13,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import Drawer from '../drawer/Drawer';
@@ -79,9 +79,7 @@ const ContainerAddStixCoreObjects = (props) => {
   const [openCreateObservable, setOpenCreateObservable] = useState(false);
 
   const { stixDomainObjectTypes, stixCyberObservableTypes } = useAttributes();
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
 
   const isTypeDomainObject = (types) => {
     return !types

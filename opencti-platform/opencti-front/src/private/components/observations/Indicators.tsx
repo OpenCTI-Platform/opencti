@@ -7,7 +7,7 @@ import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreOb
 import IndicatorCreation from './indicators/IndicatorCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
-import useAuth from '../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
@@ -123,9 +123,7 @@ const Indicators = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Indicators | Observations'));
 
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
   const isRuntimeSort = isRuntimeFieldEnable();
 
   const initialValues = {

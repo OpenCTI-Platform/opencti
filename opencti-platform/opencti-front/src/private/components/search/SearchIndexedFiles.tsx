@@ -26,7 +26,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { useFormatter } from '../../../components/i18n';
 import ItemEntityType from '../../../components/ItemEntityType';
 import ItemMarkings from '../../../components/ItemMarkings';
-import useAuth from '../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import { decodeSearchKeyword } from '../../../utils/SearchUtils';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useManagerConfiguration from '../../../utils/hooks/useManagerConfiguration';
@@ -122,9 +122,7 @@ const SearchIndexedFilesComponent = () => {
   const { fd, t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Files Search | Advanced Search'));
-  const {
-    platformModuleHelpers: { isFileIndexManagerEnable },
-  } = useAuth();
+  const { isFileIndexManagerEnable } = usePlatformModulesHelper();
   const isGrantedToFiles = useGranted([KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]);
 
   const managerConfiguration = useManagerConfiguration();

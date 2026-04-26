@@ -9,7 +9,7 @@ import { identitySearchIdentitiesSearchQuery } from '../identities/IdentitySearc
 import ItemIcon from '../../../../components/ItemIcon';
 import { canUse } from '../../../../utils/authorizedMembers';
 import { useFormatter } from '../../../../components/i18n';
-import useHelper from '../../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 
 const useStyles = makeStyles((theme) => ({
   icon: {
@@ -42,7 +42,7 @@ const CreatedByField = (props) => {
   } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
+  const { isFeatureEnable } = usePlatformModulesHelper();
   const featureFlagAccessRestriction = isFeatureEnable('ACCESS_RESTRICTION_CAN_USE');
   const [identityCreation, setIdentityCreation] = useState(false);
   const [keyword, setKeyword] = useState('');

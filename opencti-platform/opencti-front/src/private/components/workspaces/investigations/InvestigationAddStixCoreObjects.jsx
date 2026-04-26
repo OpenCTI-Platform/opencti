@@ -6,7 +6,7 @@ import InvestigationAddStixCoreObjectsLines, { investigationAddStixCoreObjectsLi
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import Drawer from '../../common/drawer/Drawer';
@@ -103,9 +103,7 @@ const InvestigationAddStixCoreObjects = (props) => {
 
   const containerRef = useRef(null);
 
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
   const buildColumns = () => {
     return {
       entity_type: {

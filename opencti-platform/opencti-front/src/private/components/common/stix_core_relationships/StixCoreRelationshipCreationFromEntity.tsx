@@ -31,10 +31,9 @@ import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { formatDate } from '../../../../utils/Time';
 import { FieldOption } from '../../../../utils/field';
 import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
-import { UserContext } from '../../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { ModuleHelper } from '../../../../utils/platformModulesHelper';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import { insertNode } from '../../../../utils/store';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
 import {
@@ -679,8 +678,10 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     setTargetEntities(newTargetEntities);
   }, [selectedElements]);
 
-  const buildColumns = (platformModuleHelpers: ModuleHelper | undefined) => {
-    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
+
+  const buildColumns = () => {
+    const isRuntimeSort = isRuntimeFieldEnable();
     return {
       entity_type: {
         label: 'Type',
@@ -742,55 +743,49 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
         }}
       >
         <div data-testid="stixCoreRelationshipCreationFromEntity-component" className={classes.container}>
-          <UserContext.Consumer>
-            {({ platformModuleHelpers }) => (
-              <>
-                {queryRef && (
-                  <div style={{ height: '100%' }} ref={setTableRootRef}>
-                    <DataTable
-                      disableToolBar
-                      removeSelectAll
-                      disableNavigation
-                      selectOnLineClick
-                      variant={DataTableVariant.inline}
-                      rootRef={tableRootRef ?? undefined}
-                      dataColumns={buildColumns(platformModuleHelpers)}
-                      resolvePath={(data: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
-                      storageKey={LOCAL_STORAGE_KEY}
-                      lineFragment={stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment}
-                      initialValues={{}}
-                      contextFilters={contextFilters}
-                      preloadedPaginationProps={preloadedPaginationProps}
-                      entityTypes={virtualEntityTypes}
-                      availableEntityTypes={virtualEntityTypes}
-                      additionalHeaderButtons={[(
-                        <BulkRelationDialogContainer
-                          targetObjectTypes={[...targetStixDomainObjectTypes, ...targetStixCyberObservableTypes]}
-                          paginationOptions={searchPaginationOptions}
-                          paginationKey="Pagination_stixCoreObjects"
-                          key="BulkRelationDialogContainer"
-                          stixDomainObjectId={entityId}
-                          stixDomainObjectName={name}
-                          stixDomainObjectType={entity_type}
-                          defaultRelationshipType={allowedRelationshipTypes?.[0]}
-                          selectedEntities={targetEntities}
-                          onBulkCreate={handleClose}
-                        />
-                      ), (
-                        <StixCoreRelationshipCreationHeaderButtons
-                          key="headerButton"
-                          showSDOs={!isOnlySDOs}
-                          showSCOs={!isOnlySCOs}
-                          actualTypeFilterValues={actualTypeFilterValues}
-                          searchPaginationOptions={searchPaginationOptions}
-                        />
-                      )]}
-                    />
-                  </div>
-                )}
-              </>
-            )}
-          </UserContext.Consumer>
+          {queryRef && (
+            <div style={{ height: '100%' }} ref={setTableRootRef}>
+              <DataTable
+                disableToolBar
+                removeSelectAll
+                disableNavigation
+                selectOnLineClick
+                variant={DataTableVariant.inline}
+                rootRef={tableRootRef ?? undefined}
+                dataColumns={buildColumns()}
+                resolvePath={(data: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
+                storageKey={LOCAL_STORAGE_KEY}
+                lineFragment={stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment}
+                initialValues={{}}
+                contextFilters={contextFilters}
+                preloadedPaginationProps={preloadedPaginationProps}
+                entityTypes={virtualEntityTypes}
+                availableEntityTypes={virtualEntityTypes}
+                additionalHeaderButtons={[(
+                  <BulkRelationDialogContainer
+                    targetObjectTypes={[...targetStixDomainObjectTypes, ...targetStixCyberObservableTypes]}
+                    paginationOptions={searchPaginationOptions}
+                    paginationKey="Pagination_stixCoreObjects"
+                    key="BulkRelationDialogContainer"
+                    stixDomainObjectId={entityId}
+                    stixDomainObjectName={name}
+                    stixDomainObjectType={entity_type}
+                    defaultRelationshipType={allowedRelationshipTypes?.[0]}
+                    selectedEntities={targetEntities}
+                    onBulkCreate={handleClose}
+                  />
+                ), (
+                  <StixCoreRelationshipCreationHeaderButtons
+                    key="headerButton"
+                    showSDOs={!isOnlySDOs}
+                    showSCOs={!isOnlySCOs}
+                    actualTypeFilterValues={actualTypeFilterValues}
+                    searchPaginationOptions={searchPaginationOptions}
+                  />
+                )]}
+              />
+            </div>
+          )}
           <Button
             disabled={targetEntities.length < 1}
             onClick={handleNextStep}

@@ -28,7 +28,7 @@ import type { AgentAction } from '../../private/components/common/form/TextField
 // and in legacy mode ResponseDialog embeds TextFieldAskAI for follow-up actions.
 import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI';
 import useAI from '../hooks/useAI';
-import useHelper from '../hooks/useHelper';
+import { usePlatformModulesHelper } from '../platformModulesHelper';
 
 // region types
 
@@ -150,7 +150,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const { t_i18n } = useFormatter();
   const [markdownSelectedTab, setMarkdownSelectedTab] = useState<'write' | 'preview' | undefined>('write');
   const { fullyActive } = useAI();
-  const { isTiptapEditorEnable } = useHelper();
+  const { isTiptapEditorEnable } = usePlatformModulesHelper();
   const tiptapEnabled = isTiptapEditorEnable();
   const isLegacyMode = !agentMode;
 

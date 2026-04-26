@@ -5,7 +5,7 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
-import useAuth from '../../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../../utils/platformModulesHelper';
 import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
 import EntityStixCoreRelationshipsContextualViewLines from './EntityStixCoreRelationshipsContextualViewLines';
 import { useFormatter } from '../../../../../components/i18n';
@@ -119,8 +119,8 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
     'containers',
   ];
 
-  const { platformModuleHelpers } = useAuth();
-  const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
+  const isRuntimeSort = isRuntimeFieldEnable();
   const isObservables = isStixCyberObservables(stixCoreObjectTypes);
   const dataColumns: DataColumns = {
     entity_type: {

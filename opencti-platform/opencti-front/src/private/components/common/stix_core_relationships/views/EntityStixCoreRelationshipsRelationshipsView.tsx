@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
-import useAuth from '../../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../../utils/platformModulesHelper';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import { QueryRenderer } from '../../../../../relay/environment';
 import EntityStixCoreRelationshipsLinesAll, { entityStixCoreRelationshipsLinesAllQuery } from '../EntityStixCoreRelationshipsLinesAll';
@@ -70,9 +70,9 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   } = viewStorage;
   const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
 
-  const { platformModuleHelpers } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
   const isObservables = isStixCyberObservables(stixCoreObjectTypes);
-  const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
+  const isRuntimeSort = isRuntimeFieldEnable();
   const dataColumns: DataColumns = isCoverage ? {
     [isObservables ? 'observable_value' : 'name']: {
       label: isObservables ? 'Value' : 'Name',

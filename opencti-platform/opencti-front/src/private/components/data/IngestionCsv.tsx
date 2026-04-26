@@ -8,9 +8,9 @@ import { IngestionCsvLineDummy } from '@components/data/ingestionCsv/IngestionCs
 import { IngestionCsvCreationContainer } from '@components/data/ingestionCsv/IngestionCsvCreation';
 import IngestionCsvImport from '@components/data/ingestionCsv/IngestionCsvImport';
 import { useFormatter } from '../../../components/i18n';
-import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
+import { UserContext } from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { INGESTION_MANAGER } from '../../../utils/platformModulesHelper';
+import { INGESTION_MANAGER, usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import ListLines from '../../../components/list_lines/ListLines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
@@ -41,7 +41,7 @@ const IngestionCsv = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('CSV Feeds | Ingestion | Data'));
-  const { platformModuleHelpers } = useAuth();
+  const { isIngestionManagerEnable, generateDisableMessage } = usePlatformModulesHelper();
   const {
     viewStorage,
     paginationOptions,
@@ -157,11 +157,11 @@ const IngestionCsv = () => {
       </ListLines>
     );
   };
-  if (!platformModuleHelpers.isIngestionManagerEnable()) {
+  if (!isIngestionManagerEnable()) {
     return (
       <div className={classes.container}>
         <Alert severity="info">
-          {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
+          {t_i18n(generateDisableMessage(INGESTION_MANAGER))}
         </Alert>
         <IngestionMenu />
       </div>

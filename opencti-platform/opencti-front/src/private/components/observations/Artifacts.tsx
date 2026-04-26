@@ -4,7 +4,7 @@ import { ArtifactsLinesPaginationQuery, ArtifactsLinesPaginationQuery$variables 
 import { ArtifactsLines_data$data } from '@components/observations/__generated__/ArtifactsLines_data.graphql';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import useAuth from '../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import ArtifactCreation from './artifacts/ArtifactCreation';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -133,9 +133,7 @@ const Artifacts: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Artifacts | Observations'));
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 
   const initialValues = {

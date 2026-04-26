@@ -22,7 +22,7 @@ import { PirAnalyses_ContainersFragment$data } from './__generated__/PirAnalyses
 import { emptyFilterGroup, getFilterKeyValues, sanitizeFilterGroupKeysForBackend, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { PirAnalysesFragment$key } from './__generated__/PirAnalysesFragment.graphql';
@@ -211,9 +211,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
     queryPaginationOptions,
   );
 
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 
   const dataColumns: DataTableProps['dataColumns'] = {

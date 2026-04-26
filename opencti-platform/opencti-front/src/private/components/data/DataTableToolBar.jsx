@@ -83,6 +83,7 @@ import {
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
   SETTINGS_SETACCESSES,
 } from '../../../utils/hooks/useGranted';
+import { PlatformModulesHelperPreloadedDataContextConsumer } from '../../../utils/platformModulesHelper';
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import Drawer from '../common/drawer/Drawer';
 import EETooltip from '../common/entreprise_edition/EETooltip';

@@ -5,8 +5,7 @@ import RulesHeader from './RulesHeader';
 import { RulesQuery } from './__generated__/RulesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import useAuth from '../../../../utils/hooks/useAuth';
-import { RULE_ENGINE } from '../../../../utils/platformModulesHelper';
+import { RULE_ENGINE, usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import { dayAgo, FIVE_SECONDS, yearsAgo } from '../../../../utils/Time';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import RulesList from './RulesList';
@@ -37,11 +36,11 @@ const RulesComponent = ({ queryRef }: RulesComponentProps) => {
 
 const Rules = () => {
   const { t_i18n } = useFormatter();
-  const { platformModuleHelpers } = useAuth();
+  const { isRuleEngineEnable, generateDisableMessage } = usePlatformModulesHelper();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Rules Engine | Customization | Settings'));
 
-  const ruleEngineEnabled = platformModuleHelpers.isRuleEngineEnable();
+  const ruleEngineEnabled = isRuleEngineEnable();
 
   const breadcrumb = [
     { label: t_i18n('Settings') },
@@ -69,7 +68,7 @@ const Rules = () => {
 
       {!ruleEngineEnabled && (
         <Alert severity="info">
-          {t_i18n(platformModuleHelpers.generateDisableMessage(RULE_ENGINE))}
+          {t_i18n(generateDisableMessage(RULE_ENGINE))}
         </Alert>
       )}
 

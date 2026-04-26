@@ -10,7 +10,7 @@ import { useTheme } from '@mui/styles';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { useFormatter } from '../../../components/i18n';
 import { decodeSearchKeyword } from '../../../utils/SearchUtils';
-import useAuth from '../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import { SearchContainerQueryFilesCountQuery } from './__generated__/SearchContainerQueryFilesCountQuery.graphql';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import type { Theme } from '../../../components/Theme';
@@ -99,9 +99,7 @@ interface SearchContainerQueryProps {
 }
 
 const SearchContainerQuery = ({ children }: SearchContainerQueryProps) => {
-  const {
-    platformModuleHelpers: { isFileIndexManagerEnable },
-  } = useAuth();
+  const { isFileIndexManagerEnable } = usePlatformModulesHelper();
   const fileSearchEnabled = isFileIndexManagerEnable();
   const { keyword } = useParams() as { keyword: string };
   const searchTerm = decodeSearchKeyword(keyword);

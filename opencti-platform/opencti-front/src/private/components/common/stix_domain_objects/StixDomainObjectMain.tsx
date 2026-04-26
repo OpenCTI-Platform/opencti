@@ -3,7 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import StixDomainObjectTabsBox, { type StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CustomViewRedirector from '@components/custom_views/CustomViewRedirector';
-import useHelper from '../../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 
 interface StixDomainObjectMainProps {
   entityType: string;
@@ -21,7 +21,7 @@ const StixDomainObjectMain = ({
   extraRoutes,
 }: StixDomainObjectMainProps) => {
   const tabs = Object.keys(pages) as StixDomainObjectTabsBoxTab[];
-  const { isFeatureEnable } = useHelper();
+  const { isFeatureEnable } = usePlatformModulesHelper();
   const isCustomViewFeatureEnabled = isFeatureEnable('CUSTOM_VIEW');
   return (
     <>

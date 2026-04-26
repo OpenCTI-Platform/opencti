@@ -17,7 +17,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../../../utils/hooks/useGranted';
 import StixCoreRelationshipCreationFromEntity from '../../StixCoreRelationshipCreationFromEntity';
 import { PaginationLocalStorage, usePaginationLocalStorage } from '../../../../../../utils/hooks/useLocalStorage';
 import { PaginationOptions } from '../../../../../../components/list_lines';
-import useAuth from '../../../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../../../utils/platformModulesHelper';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../../../utils/filters/filtersHelpers-types';
 import DataTable from '../../../../../../components/dataGrid/DataTable';
@@ -137,8 +137,8 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     openExports,
   } = viewStorage;
   const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
-  const { platformModuleHelpers } = useAuth();
-  const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
+  const isRuntimeSort = isRuntimeFieldEnable();
   const dataColumns = {
     pattern_type: { percentWidth: 10 },
     name: { percentWidth: 30 },

@@ -8,8 +8,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import useHelper from '../../../utils/hooks/useHelper';
-import { GARBAGE_COLLECTION_MANAGER } from '../../../utils/platformModulesHelper';
+import { GARBAGE_COLLECTION_MANAGER, usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { graphql } from 'react-relay';
@@ -129,7 +128,7 @@ const Trash: React.FC = () => {
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('DeleteOperation', filters);
 
-  const { isRuntimeFieldEnable, isModuleEnable } = useHelper();
+  const { isRuntimeFieldEnable, isModuleEnable } = usePlatformModulesHelper();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 
   const queryRef = useQueryLoading<TrashDeleteOperationsLinesPaginationQuery>(

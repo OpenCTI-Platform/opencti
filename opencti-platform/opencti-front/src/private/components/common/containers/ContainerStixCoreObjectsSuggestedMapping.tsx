@@ -10,7 +10,7 @@ import {
   ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data,
 } from '@components/common/containers/__generated__/ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity.graphql';
 import ListLines from '../../../../components/list_lines/ListLines';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
@@ -64,9 +64,7 @@ const ContainerStixCoreObjectsSuggestedMapping: FunctionComponent<
   askingSuggestion,
   handleRemoveSuggestedMappingLine,
 }) => {
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 
   // The container ref is not defined on first render, causing infinite scroll issue in the ListLinesContent

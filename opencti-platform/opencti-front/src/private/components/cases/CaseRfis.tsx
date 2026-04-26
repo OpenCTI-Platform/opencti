@@ -5,7 +5,7 @@ import { CaseRfisLinesCases_data$data } from '@components/cases/__generated__/Ca
 import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import useAuth from '../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import CaseRfiCreation from './case_rfis/CaseRfiCreation';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
@@ -128,7 +128,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Requests for Information | Cases'));
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
 
   const initialValues = {
     searchTerm: '',

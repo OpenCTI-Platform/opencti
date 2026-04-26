@@ -7,7 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import { PaginationLocalStorage, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { removeEmptyFields } from '../../../../utils/utils';
@@ -136,9 +136,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
   knowledgeGraph = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { isRuntimeFieldEnable } = usePlatformModulesHelper();
 
   const showSDOCreation = targetStixCoreObjectTypes.includes('Stix-Domain-Object');
   const showSCOCreation = targetStixCoreObjectTypes.includes('Stix-Cyber-Observable');

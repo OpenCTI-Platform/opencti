@@ -15,7 +15,7 @@ import ItemBoolean from '../../../../components/ItemBoolean';
 import { parse } from '../../../../utils/Time';
 import { areaChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import Card from '../../../../components/common/card/Card';
 import CardNumber from '../../../../components/common/card/CardNumber';
 import CardStatistic from '../../../../components/common/card/CardStatistic';
@@ -76,7 +76,7 @@ interface RulesHeaderProps {
 
 const RulesHeader = ({ data }: RulesHeaderProps) => {
   const theme = useTheme<Theme>();
-  const { platformModuleHelpers } = useAuth();
+  const { isRuleEngineEnable } = usePlatformModulesHelper();
   const { t_i18n, nsdt, md } = useFormatter();
   const { viewStorage, helpers } = usePaginationLocalStorage(RULES_LOCAL_STORAGE_KEY, {});
 
@@ -92,7 +92,7 @@ const RulesHeader = ({ data }: RulesHeaderProps) => {
   const differenceRelations = totalRelations - (stixRelationshipsNumber?.count ?? 0);
   const totalEntities = stixDomainObjectsNumber?.total ?? 0;
   const differenceEntities = totalEntities - (stixDomainObjectsNumber?.count ?? 0);
-  const isEngineEnabled = platformModuleHelpers.isRuleEngineEnable();
+  const isEngineEnabled = isRuleEngineEnable();
   const lastEventTimestamp = parseInt((ruleManagerInfo?.lastEventId ?? '-').split('-')[0], 10);
 
   const chartDataEntities = (stixDomainObjectsTimeSeries ?? []).flatMap((entry) => {

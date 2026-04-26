@@ -8,7 +8,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import FintelTemplatePreviewForm, { FintelTemplatePreviewFormInputs } from './FintelTemplatePreviewForm';
 import useFileFromTemplate from '../../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { htmlToPdfReport } from '../../../../../utils/htmlToPdf/htmlToPdf';
-import useHelper from '../../../../../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../../../../../utils/platformModulesHelper';
 import PdfViewer from '../../../../../components/PdfViewer';
 import { FintelTemplatePreview_template$key } from './__generated__/FintelTemplatePreview_template.graphql';
 import Card from '../../../../../components/common/card/Card';
@@ -57,7 +57,7 @@ const FintelTemplatePreview = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { buildFileFromTemplate } = useFileFromTemplate();
-  const { isTiptapEditorEnable } = useHelper();
+  const { isTiptapEditorEnable } = usePlatformModulesHelper();
   const tiptapEnabled = isTiptapEditorEnable();
   const { editorValue } = useFintelTemplateContext();
 

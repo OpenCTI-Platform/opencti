@@ -10,7 +10,7 @@ import { MESSAGING$ } from '../relay/environment';
 import { useFormatter } from './i18n';
 import type { Theme } from './Theme';
 import RequestAccessDialog from './RequestAccessDialog';
-import useHelper from '../utils/hooks/useHelper';
+import { usePlatformModulesHelper } from '../utils/platformModulesHelper';
 import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
 
 type FullError = {
@@ -39,7 +39,7 @@ const Message = () => {
   try {
     // if you move anything oustide of this try/catch, please check that /public/graphql is still working.
     isEnterpriseEdition = useEnterpriseEdition();
-    const { isRequestAccessEnabled } = useHelper();
+    const { isRequestAccessEnabled } = usePlatformModulesHelper();
     isRequestAccessFeatureEnabled = isRequestAccessEnabled() && isEnterpriseEdition;
   } catch (_e) {
     // When called being unauthenticated there is no useAuth()

@@ -5,8 +5,7 @@ import { useFormatter } from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import TasksList, { tasksListQuery } from './tasks/TasksList';
 import Loader from '../../../components/Loader';
-import useAuth from '../../../utils/hooks/useAuth';
-import { TASK_MANAGER } from '../../../utils/platformModulesHelper';
+import { TASK_MANAGER, usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import ProcessingMenu from './ProcessingMenu';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
@@ -25,18 +24,18 @@ const Tasks = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Tasks | Processing | Data'));
   const classes = useStyles();
-  const { platformModuleHelpers } = useAuth();
+  const { isTasksManagerEnable, generateDisableMessage } = usePlatformModulesHelper();
   const optionsInTasks = {
     count: 100,
     orderBy: 'created_at',
     orderMode: 'desc',
     includeAuthorities: true,
   };
-  if (!platformModuleHelpers.isTasksManagerEnable()) {
+  if (!isTasksManagerEnable()) {
     return (
       <div className={classes.container}>
         <Alert severity="info">
-          {t_i18n(platformModuleHelpers.generateDisableMessage(TASK_MANAGER))}
+          {t_i18n(generateDisableMessage(TASK_MANAGER))}
         </Alert>
         <ProcessingMenu />
       </div>
