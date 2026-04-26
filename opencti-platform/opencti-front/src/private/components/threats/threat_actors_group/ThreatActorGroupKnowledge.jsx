@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
@@ -34,7 +34,7 @@ const ThreatActorGroupKnowledgeComponent = ({
   );
   const location = useLocation();
   const link = `/dashboard/threats/threat_actors_group/${threatActorGroup.id}/knowledge`;
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(threatActorGroup.entity_type, schema);
   return (
     <div data-testid="threat-actor-group-knowledge">

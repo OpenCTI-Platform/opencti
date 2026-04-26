@@ -4,7 +4,8 @@ import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import React from 'react';
 import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
-import useAuth, { FilterDefinition } from '../hooks/useAuth';
+import useAuth from '../hooks/useAuth';
+import { type FilterDefinition, useSchema } from '../schema/useSchema';
 import { capitalizeFirstLetter, displayEntityTypeForTranslation, isValidDate } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
 import { isEmptyField, uniqueArray } from '../utils';
@@ -827,7 +828,7 @@ export const useFetchFilterKeysSchema = () => {
   let filterKeysSchema: Map<string, Map<string, FilterDefinition>>;
 
   try {
-    filterKeysSchema = useAuth().schema.filterKeysSchema;
+    filterKeysSchema = useSchema().schema.filterKeysSchema;
   } catch (_e) {
     filterKeysSchema = new Map();
   }
@@ -835,7 +836,7 @@ export const useFetchFilterKeysSchema = () => {
 };
 
 export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Object']): Map<string, FilterDefinition> => {
-  const { filterKeysSchema } = useAuth().schema;
+  const { filterKeysSchema } = useSchema().schema;
   // 1. case one entity type
   if (entityTypes.length === 1) {
     return filterKeysSchema.get(entityTypes[0]) ?? new Map();

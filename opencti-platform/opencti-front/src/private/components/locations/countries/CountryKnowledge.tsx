@@ -10,7 +10,7 @@ import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreR
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import { CountryKnowledge_country$key } from './__generated__/CountryKnowledge_country.graphql';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
 const countryKnowledgeFragment = graphql`
@@ -33,7 +33,7 @@ const CountryKnowledgeComponent = ({
   );
   const location = useLocation();
   const link = `/dashboard/locations/countries/${country.id}/knowledge`;
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(country.entity_type, schema);
   return (
     <div data-testid="country-knowledge">

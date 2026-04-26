@@ -1,5 +1,5 @@
 import { append, includes, uniq } from 'ramda';
-import { type SchemaType } from './hooks/useAuth';
+import { type SchemaType } from './schema/useSchema';
 
 // related-to is always possible
 const DEFAULT_RELATION = 'related-to';

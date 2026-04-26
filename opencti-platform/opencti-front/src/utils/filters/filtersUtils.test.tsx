@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   buildFiltersAndOptionsForWidgets,
   emptyFilterGroup,
@@ -12,30 +12,38 @@ import {
   useBuildEntityTypeBasedFilterContext,
   useBuildFilterKeysMapFromEntityType,
 } from './filtersUtils';
-import { createMockUserContext, testRenderHook } from '../tests/test-render';
+import { testRenderHook } from '../tests/test-render';
 import filterKeysSchema from '../tests/FilterUtilsConstants';
 import { FilterGroup } from './filtersHelpers-types';
+import { useSchema } from '../schema/useSchema';
+import { afterEach } from 'node:test';
+
+vi.mock('../utils/schema/useSchema', () => ({
+  useSchema: vi.fn(),
+}));
 
 describe('Filters utils', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   describe('useBuildFilterKeysMapFromEntityType', () => {
     it('should list filter definitions by given entity types attributes', () => {
+      vi.mocked(useSchema).mockReturnValue({
+        schema: {
+          scos: [{ id: '', label: '' }],
+          sdos: [{ id: '', label: '' }],
+          smos: [{ id: '', label: '' }],
+          scrs: [{ id: '', label: '' }],
+          schemaRelationsTypesMapping: new Map<string, readonly string[]>(),
+          schemaRelationsRefTypesMapping: new Map<string, readonly { name: string; toTypes: string[] }[]>(),
+          filterKeysSchema,
+        },
+      } as unknown as ReturnType<typeof useSchema>);
       const stixCoreObjectKey = 'Stix-Core-Object';
       const entityTypes = [stixCoreObjectKey];
       const { hook } = testRenderHook(
         () => useBuildFilterKeysMapFromEntityType(entityTypes),
-        {
-          userContext: createMockUserContext({
-            schema: {
-              scos: [{ id: '', label: '' }],
-              sdos: [{ id: '', label: '' }],
-              smos: [{ id: '', label: '' }],
-              scrs: [{ id: '', label: '' }],
-              schemaRelationsTypesMapping: new Map<string, readonly string[]>(),
-              schemaRelationsRefTypesMapping: new Map<string, readonly { name: string; toTypes: string[] }[]>(),
-              filterKeysSchema,
-            },
-          }),
-        },
       );
       expect(hook.result.current).toStrictEqual(filterKeysSchema.get(stixCoreObjectKey));
     });
@@ -493,7 +501,7 @@ describe('Filters utils', () => {
   });
 
   describe('useBuildEntityTypeBasedFilterContext', () => {
-    const userContext = createMockUserContext({
+    vi.mocked(useSchema).mockReturnValue({
       schema: {
         scos: [{ id: '', label: '' }],
         sdos: [{ id: '', label: '' }],
@@ -503,7 +511,7 @@ describe('Filters utils', () => {
         schemaRelationsRefTypesMapping: new Map<string, readonly { name: string; toTypes: string[] }[]>(),
         filterKeysSchema,
       },
-    });
+    } as unknown as ReturnType<typeof useSchema>);
     it('should return filters with added entity type context', () => {
       const filters: FilterGroup = {
         mode: 'and',
@@ -519,7 +527,6 @@ describe('Filters utils', () => {
       };
       const { hook } = testRenderHook(
         () => useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters),
-        { userContext },
       );
       expect(hook.result.current).toEqual(contextFilters);
     });
@@ -566,7 +573,6 @@ describe('Filters utils', () => {
       };
       const { hook } = testRenderHook(
         () => useBuildEntityTypeBasedFilterContext(['Stix-Core-Object'], filters, { excludedEntityTypesParam: ['Report'], draftId }),
-        { userContext },
       );
       expect(hook.result.current).toEqual(contextFilters);
     });

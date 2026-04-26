@@ -48,7 +48,7 @@ import { convertAuthorizedMembers, convertUser } from '../../../../utils/edition
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import { useTheme } from '@mui/material/styles';
 import { getRelationshipTypesForEntityType, getTargetTypesForRelationship } from '../../../../utils/Relation';
 
@@ -163,7 +163,7 @@ const FeedEditionContainer = (props) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const { ignoredAttributesInFeeds } = useAttributes();
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
 
   const [selectedTypes, setSelectedTypes] = useState(feed.feed_types);

@@ -20,7 +20,7 @@ import {
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
 import type { FormFieldAttribute, AdditionalEntity, EntityRelationship, FormBuilderData, RelationshipTypeOption } from './Form.d';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -103,7 +103,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const [currentTab, setCurrentTab] = useState(0);
 
   const entityTypes = useMemo(() => {

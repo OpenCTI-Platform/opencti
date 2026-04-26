@@ -1,5 +1,6 @@
 import useVocabularyCategory from './useVocabularyCategory';
 import useAuth from './useAuth';
+import { useSchema } from '../schema/useSchema';
 
 const ignoredAttributes = [
   'id',
@@ -244,7 +245,8 @@ export const typesWithNoAnalysesTab = [
 
 const useAttributes = () => {
   const vocabularies = useVocabularyCategory();
-  const { settings, schema } = useAuth();
+  const { schema } = useSchema();
+  const { settings } = useAuth();
 
   const { metrics_definition } = settings;
 

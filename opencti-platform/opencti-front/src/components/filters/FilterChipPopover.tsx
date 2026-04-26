@@ -28,7 +28,7 @@ import {
 import { getOptionsFromEntities } from '../../utils/filters/SearchEntitiesUtil';
 import useSearchEntities from '../../utils/filters/useSearchEntities';
 import useAttributes from '../../utils/hooks/useAttributes';
-import { FilterDefinition } from '../../utils/hooks/useAuth';
+import { type FilterDefinition } from '../../utils/schema/useSchema';
 import { useFormatter } from '../i18n';
 import ItemIcon from '../ItemIcon';
 import BasicFilterInput from './BasicFilterInput';

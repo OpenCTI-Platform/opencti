@@ -14,7 +14,7 @@ import { CsvMapperRepresentationAttributeFormData } from '@components/data/csvMa
 import { CsvMapperRepresentationFormData } from '@components/data/csvMapper/representations/Representation';
 import { SchemaAttribute } from '@components/data/csvMapper/representations/attributes/CsvMapperRepresentationAttributesForm';
 import { isEmptyField } from '../../../../../../utils/utils';
-import useAuth from '../../../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../../../utils/schema/useSchema';
 import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isStixCoreObjects, isStixCoreRelationships } from '../../../../../../utils/stixTypeUtils';
@@ -76,7 +76,7 @@ const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
 
   const multiple = schemaAttribute.multiple ?? false;
 
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const { schemaRelationsTypesMapping, schemaRelationsRefTypesMapping } = schema;
 
   const filterOptions = (representationsOptions: CsvMapperRepresentationFormData[]) => {

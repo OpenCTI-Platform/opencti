@@ -16,7 +16,7 @@ import { csvFeedCsvMapperToFormData } from '@components/data/ingestionCsv/Ingest
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/fields/SwitchField';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import { representationInitialization } from '../csvMapper/representations/RepresentationUtils';
 import { CsvMapperAddInput, formDataToCsvMapper } from '../csvMapper/CsvMapperUtils';
 
@@ -46,7 +46,7 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
   const csvMapperFormData = csvMapper ? csvFeedCsvMapperToFormData(csvMapper) : defaultCsvMapperValue;
   const { t_i18n } = useFormatter();
   // extracting available entities and relationships types from schema
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const [availableEntityTypes, setAvailableEntityTypes] = useState<
     RepresentationFormEntityOption[]
   >([]);

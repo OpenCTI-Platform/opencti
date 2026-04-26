@@ -7,7 +7,7 @@ import { LICENSE_OPTION_TRIAL } from '@components/LicenseBanner';
 import { availableLanguage, ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { SYSTEM_BANNER_HEIGHT } from '../public/components/SystemBanners';
-import { FilterDefinition, PlatformLang, UserContext } from '../utils/hooks/useAuth';
+import { PlatformLang, UserContext } from '../utils/hooks/useAuth';
 import { ONE_SECOND } from '../utils/Time';
 import { isNotEmptyField } from '../utils/utils';
 import Index from './Index';
@@ -313,13 +313,6 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => 
     me: meFragment,
     settings: settingsFragment,
     entitySettings,
-    schemaSCOs,
-    schemaSDOs,
-    schemaSMOs,
-    schemaSCRs,
-    schemaRelationsTypesMapping,
-    schemaRelationsRefTypesMapping,
-    filterKeysSchema,
     about,
     themes,
   } = queryData;
@@ -340,19 +333,6 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => 
     [me.id],
   );
   useSubscription(subConfig);
-
-  const schema = {
-    scos: schemaSCOs.edges.map((sco) => sco.node),
-    sdos: schemaSDOs.edges.map((sco) => sco.node),
-    smos: schemaSMOs.edges.map((smo) => smo.node),
-    scrs: schemaSCRs.edges.map((scr) => scr.node),
-    schemaRelationsTypesMapping: new Map(schemaRelationsTypesMapping.map((n) => [n.key, n.values])),
-    schemaRelationsRefTypesMapping: new Map(schemaRelationsRefTypesMapping.map((n) => [n.key, n.values])),
-    filterKeysSchema: new Map(filterKeysSchema.map((n) => {
-      const filtersSchema = new Map(n.filters_schema.map((o) => [o.filterKey, o.filterDefinition as FilterDefinition]));
-      return [n.entity_type, filtersSchema];
-    })),
-  };
 
   // TODO : Use the hook useHelper when all project is pure function //
   const bannerSettings = computeBannerSettings(settings);
@@ -380,7 +360,6 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => 
         settings,
         bannerSettings,
         entitySettings,
-        schema,
         isXTMHubAccessible: isReachable,
         about,
         themes,

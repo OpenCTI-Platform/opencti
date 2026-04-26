@@ -15,6 +15,7 @@ import { useTheme } from '@mui/styles';
 import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
@@ -127,7 +128,8 @@ const StixCoreObjectKnowledgeBar = ({
 }: StixCoreObjectKnowledgeBarProps) => {
   const theme = useTheme<Theme>();
   const draftContext = useDraftContext();
-  const { bannerSettings, schema } = useAuth();
+  const { bannerSettings } = useAuth();
+  const { schema } = useSchema();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const {
     relationshipsWithoutRelatedToDistribution,

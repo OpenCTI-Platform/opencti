@@ -6,7 +6,7 @@ import { InformationOutline } from 'mdi-material-ui';
 import { filterValue, SELF_ID_VALUE } from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
 import { useFormatter } from './i18n';
-import { FilterDefinition } from '../utils/hooks/useAuth';
+import { type FilterDefinition } from '../utils/schema/useSchema';
 import useAttributes from '../utils/hooks/useAttributes';
 
 export const filterValuesContentQuery = graphql`

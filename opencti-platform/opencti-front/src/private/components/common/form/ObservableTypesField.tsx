@@ -6,7 +6,7 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -40,7 +40,7 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
 
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const { scos } = schema;
   const allObservableTypes = scos.map((sco) => sco.id);
 

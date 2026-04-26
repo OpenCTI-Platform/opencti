@@ -35,6 +35,7 @@ import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { usePlatformModulesHelper } from '../../../../utils/platformModulesHelper';
 import { insertNode } from '../../../../utils/store';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
 import {
   type StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery as StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType,
@@ -803,6 +804,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     );
   };
 
+  const { schema } = useSchema();
+
   const renderForm = (sourceEntity: TargetEntity) => {
     let fromEntities = [sourceEntity];
     let toEntities = targetEntities;
@@ -810,38 +813,32 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
       fromEntities = targetEntities;
       toEntities = [sourceEntity];
     }
+    const relationshipTypes = R.uniq(resolveRelationsTypes(
+      fromEntities[0].entity_type,
+      toEntities[0].entity_type,
+      schema?.schemaRelationsTypesMapping ?? new Map(),
+    ).filter(
+      (n) => R.isNil(allowedRelationshipTypes)
+        || allowedRelationshipTypes.length === 0
+        || allowedRelationshipTypes.includes('stix-core-relationship')
+        || allowedRelationshipTypes.includes(n),
+    ));
     return (
-      <UserContext.Consumer>
-        {({ schema }) => {
-          const relationshipTypes = R.uniq(resolveRelationsTypes(
-            fromEntities[0].entity_type,
-            toEntities[0].entity_type,
-            schema?.schemaRelationsTypesMapping ?? new Map(),
-          ).filter(
-            (n) => R.isNil(allowedRelationshipTypes)
-              || allowedRelationshipTypes.length === 0
-              || allowedRelationshipTypes.includes('stix-core-relationship')
-              || allowedRelationshipTypes.includes(n),
-          ));
-          return (
-            <StixCoreRelationshipCreationForm
-              fromEntities={fromEntities}
-              toEntities={toEntities}
-              relationshipTypes={relationshipTypes}
-              handleReverseRelation={handleReverseRelation}
-              handleResetSelection={handleResetSelection}
-              onSubmit={onSubmit}
-              handleClose={handleClose}
-              defaultStartTime={defaultStartTime}
-              defaultStopTime={defaultStopTime}
-              defaultConfidence={undefined}
-              defaultCreatedBy={undefined}
-              defaultMarkingDefinitions={undefined}
-              isCoverage={isCoverage}
-            />
-          );
-        }}
-      </UserContext.Consumer>
+      <StixCoreRelationshipCreationForm
+        fromEntities={fromEntities}
+        toEntities={toEntities}
+        relationshipTypes={relationshipTypes}
+        handleReverseRelation={handleReverseRelation}
+        handleResetSelection={handleResetSelection}
+        onSubmit={onSubmit}
+        handleClose={handleClose}
+        defaultStartTime={defaultStartTime}
+        defaultStopTime={defaultStopTime}
+        defaultConfidence={undefined}
+        defaultCreatedBy={undefined}
+        defaultMarkingDefinitions={undefined}
+        isCoverage={isCoverage}
+      />
     );
   };
 

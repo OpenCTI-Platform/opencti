@@ -6,6 +6,7 @@ import useQueryLoading from '../utils/hooks/useQueryLoading';
 import { PrivateRootPreloadedQuery, PrivateRootPreloadedQuery$data } from './__generated__/PrivateRootPreloadedQuery.graphql';
 import { CustomViewsPreloadedDataContextProvider } from '@components/custom_views/useCustomViewsData';
 import { PlatformModulesHelperPreloadedDataContextProvider } from '../utils/platformModulesHelper';
+import { SchemaPreloadedDataContextProvider } from '../utils/schema/SchemaPreloadedContext';
 
 const privateRootPreloadedQuery = graphql`
   query PrivateRootPreloadedQuery {
@@ -23,71 +24,6 @@ const privateRootPreloadedQuery = graphql`
         node {
           id
           ...EntitySettingsFragment_entitySetting
-        }
-      }
-    }
-    schemaSCOs: subTypes(type: "Stix-Cyber-Observable") {
-      edges {
-        node {
-          id
-          label
-        }
-      }
-    }
-    schemaSDOs: subTypes(type: "Stix-Domain-Object") {
-      edges {
-        node {
-          id
-          label
-        }
-      }
-    }
-    schemaSMOs: subTypes(type: "Stix-Meta-Object") {
-      edges {
-        node {
-          id
-          label
-        }
-      }
-    }
-    schemaSCRs: subTypes(type: "stix-core-relationship") {
-      edges {
-        node {
-          id
-          label
-        }
-      }
-    }
-    schemaRelationsTypesMapping {
-      key
-      values
-    }
-    schemaRelationsRefTypesMapping {
-      key
-      values {
-        name
-        toTypes
-      }
-    }
-    filterKeysSchema {
-      entity_type
-      filters_schema {
-        filterKey
-        filterDefinition {
-          filterKey
-          label
-          type
-          multiple
-          subEntityTypes
-          elementsForFilterValuesSearch
-          subFilters {
-            filterKey
-            label
-            type
-            multiple
-            subEntityTypes
-            elementsForFilterValuesSearch
-          }
         }
       }
     }
@@ -110,6 +46,7 @@ const privateRootPreloadedQuery = graphql`
       }
     }
     ...platformModulesHelper_settings @alias(as: "platformModulesHelper")
+    ...useSchema_data @alias(as: "schema")
     ...useCustomViews_data @alias(as: "customViews")
   }
 `;
@@ -123,9 +60,11 @@ const PrivateRootPreloadedQueryData = ({ queryRef, render }: PrivateRootPreloade
   const queryData = usePreloadedQuery(privateRootPreloadedQuery, queryRef);
   return (
     <PlatformModulesHelperPreloadedDataContextProvider preloadedData={queryData.platformModulesHelper}>
-      <CustomViewsPreloadedDataContextProvider customViews={queryData.customViews}>
-        {render({ queryData })}
-      </CustomViewsPreloadedDataContextProvider>
+      <SchemaPreloadedDataContextProvider preloadedData={queryData.schema}>
+        <CustomViewsPreloadedDataContextProvider customViews={queryData.customViews}>
+          {render({ queryData })}
+        </CustomViewsPreloadedDataContextProvider>
+      </SchemaPreloadedDataContextProvider>
     </PlatformModulesHelperPreloadedDataContextProvider>
   );
 };

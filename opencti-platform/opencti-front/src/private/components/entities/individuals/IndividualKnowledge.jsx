@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
@@ -28,7 +28,7 @@ const IndividualKnowledgeComponent = ({
   );
   const location = useLocation();
   const link = `/dashboard/entities/individuals/${individual.id}/knowledge`;
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(individual.entity_type, schema);
   return (
     <div data-testid="individual-knowledge">

@@ -5,7 +5,6 @@ import useAuth, { UserContextType } from './useAuth';
 describe('Hook: useAuth', () => {
   const baseUserContext = {
     me: { me: 'me' },
-    schema: { schema: 'schema' },
     bannerSettings: { bannerSettings: 'bannerSettings' },
     entitySettings: { entitySettings: 'entitySettings' },
     settings: { settings: 'settings' },
@@ -73,7 +72,6 @@ describe('Hook: useAuth', () => {
     );
     const data = hook.result.current;
     expect(data.me).toEqual({ me: 'me' });
-    expect(data.schema).toEqual({ schema: 'schema' });
     expect(data.bannerSettings).toEqual({ bannerSettings: 'bannerSettings' });
     expect(data.entitySettings).toEqual({ entitySettings: 'entitySettings' });
     expect(data.settings).toEqual({ settings: 'settings' });

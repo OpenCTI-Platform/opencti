@@ -12,7 +12,7 @@ import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/Sti
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import StixSightingRelationship from '../stix_sighting_relationships/StixSightingRelationship';
 import { IncidentKnowledge_incident$key } from './__generated__/IncidentKnowledge_incident.graphql';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
 const IncidentKnowledgeFragment = graphql`
@@ -37,7 +37,7 @@ const IncidentKnowledge = ({
   );
   const location = useLocation();
   const link = `/dashboard/events/incidents/${incident.id}/knowledge`;
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(incident.entity_type, schema);
   return (
     <div data-testid="incident-knowledge">

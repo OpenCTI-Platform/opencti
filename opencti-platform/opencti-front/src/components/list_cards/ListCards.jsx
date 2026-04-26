@@ -11,7 +11,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { ArrowDownward, ArrowUpward, FileDownloadOutlined, ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
-import { UserContext } from '../../utils/hooks/useAuth';
+import { SchemaPreloadedDataContextConsumer } from '../../utils/schema/SchemaPreloadedContext';
 import Filters from '../../private/components/common/lists/Filters';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
@@ -84,8 +84,8 @@ class ListCards extends Component {
     const exportDisabled = numberOfElements && numberOfElements.number > export_max_size;
     const entityType = exportContext?.entity_type;
     return (
-      <UserContext.Consumer>
-        {({ schema }) => {
+      <SchemaPreloadedDataContextConsumer
+        render={({ schema }) => {
           const filterKeysMap = schema.filterKeysSchema.get(entityType) ?? new Map();
           const availableFilterKeys = Array.from(filterKeysMap.keys());
           return (
@@ -262,7 +262,7 @@ class ListCards extends Component {
             </>
           );
         }}
-      </UserContext.Consumer>
+      />
     );
   }
 }

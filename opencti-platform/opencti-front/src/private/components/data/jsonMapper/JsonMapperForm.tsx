@@ -15,7 +15,7 @@ import JsonMapperTestDialog from '@components/data/jsonMapper/JsonMapperTestDial
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import { representationInitialization } from './representations/RepresentationUtils';
 import {
   JsonMapperRepresentationAttributesForm_allSchemaAttributes$data,
@@ -60,7 +60,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
   const [open, setOpen] = useState(false);
 
   // extracting available entities and relationships types from schema
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const [availableEntityTypes, setAvailableEntityTypes] = useState<
     RepresentationFormEntityOption[]
   >([]);

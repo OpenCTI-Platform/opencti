@@ -19,7 +19,7 @@ import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/fields/SwitchField';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import { representationInitialization } from './representations/RepresentationUtils';
 import CsvMapperTestDialog from './CsvMapperTestDialog';
 import FormButtonContainer from '@common/form/FormButtonContainer';
@@ -64,7 +64,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
   const [open, setOpen] = useState(false);
 
   // extracting available entities and relationships types from schema
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const [availableEntityTypes, setAvailableEntityTypes] = useState<
     RepresentationFormEntityOption[]
   >([]);

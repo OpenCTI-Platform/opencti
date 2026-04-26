@@ -19,7 +19,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
-import { UserContext } from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import ProgressBar from '../../../../components/ProgressBar';
 import { useFormatter } from '../../../../components/i18n';
 import { GraphLink, GraphNode } from '../../../../components/graph/graph.types';
@@ -298,6 +298,7 @@ const StixCoreRelationshipCreation = ({
   const classes = useStyles();
   const { t_i18n, fsd } = useFormatter();
   const theme = useTheme<Theme>();
+  const { schema } = useSchema();
 
   const [step, setStep] = useState(0);
   const [existingRelations, setExistingRelations] = useState<NonNullable<StixCoreRelationshipCreationQuery$data['stixCoreRelationships']>['edges']>([]);
@@ -419,44 +420,38 @@ const StixCoreRelationshipCreation = ({
   };
 
   const renderForm = () => {
+    const relationshipTypes = R.uniq(resolveRelationsTypes(
+      fromObjects[0].entity_type,
+      toObjects[0].entity_type,
+      schema?.schemaRelationsTypesMapping ?? new Map(),
+    ));
     return (
-      <UserContext.Consumer>
-        {({ schema }) => {
-          const relationshipTypes = R.uniq(resolveRelationsTypes(
-            fromObjects[0].entity_type,
-            toObjects[0].entity_type,
-            schema?.schemaRelationsTypesMapping ?? new Map(),
-          ));
-          return (
-            <>
-              <div className={classes.header}>
-                <IconButton
-                  aria-label="Close"
-                  className={classes.closeButton}
-                  onClick={handleClose}
-                >
-                  <Close fontSize="small" color="primary" />
-                </IconButton>
-                <Typography variant="h6">{t_i18n('Create a relationship')}</Typography>
-              </div>
-              <StixCoreRelationshipCreationForm
-                fromEntities={fromObjects}
-                toEntities={toObjects}
-                relationshipTypes={relationshipTypes}
-                handleReverseRelation={handleReverseRelation}
-                onSubmit={onSubmit}
-                handleClose={handleClose}
-                defaultConfidence={confidence}
-                defaultStartTime={startTime}
-                defaultStopTime={stopTime}
-                defaultCreatedBy={defaultCreatedBy}
-                defaultMarkingDefinitions={defaultMarkingDefinitions}
-                handleResetSelection={undefined}
-              />
-            </>
-          );
-        }}
-      </UserContext.Consumer>
+      <>
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose}
+          >
+            <Close fontSize="small" color="primary" />
+          </IconButton>
+          <Typography variant="h6">{t_i18n('Create a relationship')}</Typography>
+        </div>
+        <StixCoreRelationshipCreationForm
+          fromEntities={fromObjects}
+          toEntities={toObjects}
+          relationshipTypes={relationshipTypes}
+          handleReverseRelation={handleReverseRelation}
+          onSubmit={onSubmit}
+          handleClose={handleClose}
+          defaultConfidence={confidence}
+          defaultStartTime={startTime}
+          defaultStopTime={stopTime}
+          defaultCreatedBy={defaultCreatedBy}
+          defaultMarkingDefinitions={defaultMarkingDefinitions}
+          handleResetSelection={undefined}
+        />
+      </>
     );
   };
 

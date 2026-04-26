@@ -7,7 +7,7 @@ import FiltersElement, { FilterElementsInputValue } from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import { Filter, FilterGroup, handleFilterHelpers } from '../../../../utils/filters/filtersHelpers-types';
 
 interface FiltersProps {
@@ -66,7 +66,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
     setIsOpen(false);
     setAnchorEl(null);
   };
-  const { filterKeysSchema } = useAuth().schema;
+  const { filterKeysSchema } = useSchema().schema;
   const defaultHandleAddFilter = handleAddFilter
     || ((key, id, operator = 'eq', event = undefined) => {
       if (event) {

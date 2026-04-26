@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
@@ -29,7 +29,7 @@ const ChannelKnowledgeComponent = ({
   );
   const location = useLocation();
   const link = `/dashboard/arsenal/channels/${channel.id}/knowledge`;
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(channel.entity_type, schema);
   return (
     <div data-testid="channel-knowledge">

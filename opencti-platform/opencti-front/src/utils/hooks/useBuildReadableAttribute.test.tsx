@@ -1,9 +1,8 @@
 import { afterAll, beforeAll, describe, it, vi, expect } from 'vitest';
-import React from 'react';
 import * as filterUtils from '../filters/filtersUtils';
 import { testRenderHook } from '../tests/test-render';
 import useBuildReadableAttribute from './useBuildReadableAttribute';
-import { FilterDefinition } from './useAuth';
+import type { FilterDefinition } from '../schema/useSchema';
 
 describe('Hook: useBuildReadableAttribute', () => {
   beforeAll(() => {

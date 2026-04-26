@@ -17,7 +17,7 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import { useFormatter } from '../../../../components/i18n';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import useSchema from '../../../../utils/hooks/useSchema';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import { now } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';

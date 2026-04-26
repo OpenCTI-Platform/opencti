@@ -19,10 +19,10 @@ import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/env
 import { ExportContext } from '../../../../utils/ExportContextProvider';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { emptyFilterGroup, removeIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
-import { UserContext } from '../../../../utils/hooks/useAuth';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
 import ObjectMarkingField from '../form/ObjectMarkingField';
+import { SchemaPreloadedDataContextConsumer } from 'src/utils/schema/SchemaPreloadedContext';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -129,8 +129,8 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
     const isExportActive = (format) => exportConnsPerFormat[format].filter((x) => x.data.active).length > 0;
 
     return (
-      <UserContext.Consumer>
-        {({ schema }) => {
+      <SchemaPreloadedDataContextConsumer
+        render={({ schema }) => {
           const availableFilterKeys = Array.from(schema.filterKeysSchema.get('stix-core-relationship')?.keys() ?? []).concat(['entity_type']);
           return (
             <ExportContext.Consumer>
@@ -241,7 +241,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
             </ExportContext.Consumer>
           );
         }}
-      </UserContext.Consumer>
+      />
     );
   }
 }

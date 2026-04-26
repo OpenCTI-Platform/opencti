@@ -12,7 +12,7 @@ import { isDateIntervalTranslatable, translateDateInterval, truncate } from '../
 import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
 import { Filter } from '../../utils/filters/filtersHelpers-types';
-import useSchema from '../../utils/hooks/useSchema';
+import { useSchema } from '../../utils/schema/useSchema';
 import FilterValuesForDynamicSubKey from './FilterValuesForDynamicSubKey';
 import { useTheme } from '@mui/material/styles';
 import { Stack } from '@mui/material';

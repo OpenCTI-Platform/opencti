@@ -9,7 +9,7 @@ import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDoma
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import { RegionKnowledge_region$key } from './__generated__/RegionKnowledge_region.graphql';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
 const regionKnowledgeFragment = graphql`
@@ -32,7 +32,7 @@ const RegionKnowledgeComponent = ({
   );
   const location = useLocation();
   const link = `/dashboard/locations/regions/${region.id}/knowledge`;
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(region.entity_type, schema);
   return (
     <div data-testid="region-knowledge">

@@ -14,7 +14,7 @@ import { JsonMapperRepresentationFormData } from '@components/data/jsonMapper/re
 import { SchemaAttribute } from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributesForm';
 import { useTheme } from '@mui/styles';
 import { isEmptyField } from '../../../../../../utils/utils';
-import useAuth from '../../../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../../../utils/schema/useSchema';
 import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isStixCoreObjects } from '../../../../../../utils/stixTypeUtils';
@@ -73,7 +73,7 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
     'to',
   );
 
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const { schemaRelationsTypesMapping, schemaRelationsRefTypesMapping } = schema;
 
   const filterOptions = (representationsOptions: JsonMapperRepresentationFormData[]) => {

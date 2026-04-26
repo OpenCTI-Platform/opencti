@@ -11,7 +11,7 @@ import {
 import { handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { formatDate } from '../../../../utils/Time';
-import { UserContext } from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
 import { CreateRelationshipContext } from './CreateRelationshipContextProvider';
@@ -42,6 +42,7 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
   handleClose,
 }) => {
   const stixCoreObject = useFragment(fragment, data);
+  const { schema } = useSchema();
 
   const { state: {
     relationshipTypes: allowedRelationshipTypes,
@@ -130,40 +131,33 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
       }
     }
   };
-
+  const relationshipTypes = resolveRelationsTypes(
+    fromEntities[0].entity_type,
+    toEntities[0].entity_type,
+    schema?.schemaRelationsTypesMapping ?? new Map(),
+  ).filter( // Unique filter
+    (value, index, self) => self.indexOf(value) === index,
+  ).filter(
+    (n) => !allowedRelationshipTypes
+      || allowedRelationshipTypes.length === 0
+      || allowedRelationshipTypes.includes('stix-core-relationship')
+      || allowedRelationshipTypes.includes(n),
+  );
   return (
-    <UserContext.Consumer>
-      {({ schema }) => {
-        const relationshipTypes = resolveRelationsTypes(
-          fromEntities[0].entity_type,
-          toEntities[0].entity_type,
-          schema?.schemaRelationsTypesMapping ?? new Map(),
-        ).filter( // Unique filter
-          (value, index, self) => self.indexOf(value) === index,
-        ).filter(
-          (n) => !allowedRelationshipTypes
-            || allowedRelationshipTypes.length === 0
-            || allowedRelationshipTypes.includes('stix-core-relationship')
-            || allowedRelationshipTypes.includes(n),
-        );
-        return (
-          <StixCoreRelationshipCreationForm
-            fromEntities={fromEntities}
-            toEntities={toEntities}
-            relationshipTypes={relationshipTypes}
-            handleReverseRelation={handleReverseRelation}
-            handleResetSelection={handleResetSelection}
-            onSubmit={onSubmit}
-            handleClose={handleClose}
-            defaultStartTime={(new Date()).toISOString()}
-            defaultStopTime={(new Date()).toISOString()}
-            defaultConfidence={undefined}
-            defaultCreatedBy={undefined}
-            defaultMarkingDefinitions={undefined}
-          />
-        );
-      }}
-    </UserContext.Consumer>
+    <StixCoreRelationshipCreationForm
+      fromEntities={fromEntities}
+      toEntities={toEntities}
+      relationshipTypes={relationshipTypes}
+      handleReverseRelation={handleReverseRelation}
+      handleResetSelection={handleResetSelection}
+      onSubmit={onSubmit}
+      handleClose={handleClose}
+      defaultStartTime={(new Date()).toISOString()}
+      defaultStopTime={(new Date()).toISOString()}
+      defaultConfidence={undefined}
+      defaultCreatedBy={undefined}
+      defaultMarkingDefinitions={undefined}
+    />
   );
 };
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
@@ -33,7 +33,7 @@ const IntrusionSetKnowledgeComponent = ({
   );
   const location = useLocation();
   const link = `/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`;
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(intrusionSet.entity_type, schema);
 
   return (

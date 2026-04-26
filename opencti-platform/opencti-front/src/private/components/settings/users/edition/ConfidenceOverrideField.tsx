@@ -19,7 +19,7 @@ import DeleteDialog from '../../../../../components/DeleteDialog';
 import ItemIcon from '../../../../../components/ItemIcon';
 import type { Theme } from '../../../../../components/Theme';
 import { isEmptyField } from '../../../../../utils/utils';
-import useSchema, { AvailableEntityOption } from '../../../../../utils/hooks/useSchema';
+import { type AvailableEntityOption, useSchema } from '../../../../../utils/schema/useSchema';
 
 interface UserConfidenceOverridesFieldComponentProps
   extends FieldProps<OverrideFormData> {

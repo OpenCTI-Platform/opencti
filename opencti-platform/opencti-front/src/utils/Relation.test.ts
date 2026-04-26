@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getRelationsFromOneEntityToAny, resolveRelationsTypes, resolveTypesForRelationshipRef } from './Relation';
-import { type SchemaType } from './hooks/useAuth';
+import { type SchemaType } from './schema/useSchema';
 
 // Subset of schemas to tests utilities
 // Feel free to add more

@@ -9,7 +9,7 @@ import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDoma
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import { AdministrativeAreaKnowledge_administrativeArea$key } from './__generated__/AdministrativeAreaKnowledge_administrativeArea.graphql';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
 const administrativeAreaKnowledgeFragment = graphql`
@@ -32,7 +32,7 @@ const AdministrativeAreaKnowledge = ({
   );
   const location = useLocation();
   const link = `/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge`;
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(administrativeArea.entity_type, schema);
   return (
     <div data-testid="administrative-area-knowledge">

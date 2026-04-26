@@ -29,7 +29,8 @@ import { TriggersQueriesSearchQuery$data } from '@components/profile/triggers/__
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { toolBarUsersLinesSearchQuery } from '@components/data/DataTableToolBar';
 import { DataTableToolBarUsersLinesSearchQuery$data } from '@components/data/__generated__/DataTableToolBarUsersLinesSearchQuery.graphql';
-import useAuth, { FilterDefinition } from '../hooks/useAuth';
+import useAuth from '../hooks/useAuth';
+import { type FilterDefinition, useSchema } from '../schema/useSchema';
 import { useSearchEntitiesStixCoreObjectsSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import { useFormatter } from '../../components/i18n';
 import { getMainRepresentative } from '../defaultRepresentatives';
@@ -286,7 +287,8 @@ const useSearchEntities = ({
 }) => {
   const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
   const { t_i18n } = useFormatter();
-  const { schema, me } = useAuth();
+  const { schema } = useSchema();
+  const { me } = useAuth();
   const { stixCoreObjectTypes } = useAttributes();
   const theme = useTheme() as Theme;
   const canDisplayAllUsers = useGranted([SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]);

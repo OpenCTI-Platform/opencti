@@ -10,7 +10,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$ } from '../../../../relay/environment';
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import useAuth, { FilterDefinition, UserContext } from '../../../../utils/hooks/useAuth';
+import { UserContext } from '../../../../utils/hooks/useAuth';
+import { type FilterDefinition, useSchema } from '../../../../utils/schema/useSchema';
 import { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { Stack } from '@mui/material';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
@@ -54,7 +55,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
   handleSwitchFilterLocalMode,
   handleSwitchFilterGlobalMode,
 }) => {
-  const { filterKeysSchema } = useAuth().schema;
+  const { filterKeysSchema } = useSchema().schema;
   const classes = useStyles();
   const draftContext = useDraftContext();
   const { t_i18n } = useFormatter();

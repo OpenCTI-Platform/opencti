@@ -1,6 +1,6 @@
 import { ConnectorsStateQuery$data } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 import { stixFilters, useAvailableFilterKeysForEntityTypes } from './filters/filtersUtils';
-import useSchema from './hooks/useSchema';
+import { useSchema } from './schema/useSchema';
 
 export interface Connector {
   name: string;

@@ -1,7 +1,7 @@
 import React, { ReactNode, createContext, useContext } from 'react';
 import { MetricsDefinition } from 'src/components/dataGrid/dataTableUtils';
 import { resolveLink } from '../Entity';
-import useSchema from './useSchema';
+import { useSchema } from '../schema/useSchema';
 
 export type ComputeLinkNode = {
   id: string;

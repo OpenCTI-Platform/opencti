@@ -17,8 +17,6 @@ interface CreateUserContextOptions {
   settings?: unknown;
   bannerSettings?: unknown;
   entitySettings?: unknown;
-  platformModuleHelpers?: unknown;
-  schema?: unknown;
   themes?: unknown;
 }
 
@@ -35,8 +33,6 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
     settings,
     bannerSettings,
     entitySettings,
-    platformModuleHelpers,
-    schema,
     themes,
   } = options ?? {};
 
@@ -60,8 +56,6 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
     settings: (settings ?? {}) as UserContextType['settings'],
     bannerSettings: (bannerSettings ?? {}) as UserContextType['bannerSettings'],
     entitySettings: (entitySettings ?? {}) as UserContextType['entitySettings'],
-    platformModuleHelpers: (platformModuleHelpers ?? {}) as UserContextType['platformModuleHelpers'],
-    schema: (schema ?? {}) as UserContextType['schema'],
     isXTMHubAccessible: true,
     about: {
       version: '6.7.17',

@@ -56,7 +56,7 @@ import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGra
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import { PaginationOptions } from '../../../../components/list_lines';
-import useAuth, { FilterDefinition } from '../../../../utils/hooks/useAuth';
+import { type FilterDefinition, useSchema } from '../../../../utils/schema/useSchema';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import { useTheme } from '@mui/material/styles';
@@ -174,7 +174,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const isGrantedToSetAccesses = useGranted([SETTINGS_SETACCESSES]);
 
   const [selectedTypes, setSelectedTypes] = useState(feed?.feed_types ?? []);

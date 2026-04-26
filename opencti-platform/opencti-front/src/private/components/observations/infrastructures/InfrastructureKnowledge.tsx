@@ -13,7 +13,7 @@ import StixSightingRelationship from '../../events/stix_sighting_relationships/S
 import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 import { InfrastructureKnowledge_infrastructure$key } from './__generated__/InfrastructureKnowledge_infrastructure.graphql';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
 const infrastructureKnowledgeFragment = graphql`
@@ -35,7 +35,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
   );
   const location = useLocation();
   const link = `/dashboard/observations/infrastructures/${infrastructureData.id}/knowledge`;
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(infrastructureData.entity_type, schema);
   return (
     <div data-testid="infrastructure-knowledge">

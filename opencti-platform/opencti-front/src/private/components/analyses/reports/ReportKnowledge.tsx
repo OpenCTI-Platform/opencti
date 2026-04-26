@@ -13,7 +13,7 @@ import ReportKnowledgeTimeLine, { reportKnowledgeTimeLineQuery } from './ReportK
 import { constructHandleAddFilter, constructHandleRemoveFilter, emptyFilterGroup, filtersAfterSwitchLocalMode } from '../../../../utils/filters/filtersUtils';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import investigationAddFromContainer from '../../../../utils/InvestigationUtils';
-import type { FilterDefinition } from '../../../../utils/hooks/useAuth';
+import type { FilterDefinition } from '../../../../utils/schema/useSchema';
 import type { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import type { ReportKnowledgeGraphQuery$data } from './__generated__/ReportKnowledgeGraphQuery.graphql';
 import type { ReportKnowledgeTimeLineQuery$data } from './__generated__/ReportKnowledgeTimeLineQuery.graphql';

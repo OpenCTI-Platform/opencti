@@ -98,6 +98,7 @@ import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import UserEmailSend from '../settings/users/UserEmailSend';
 import PromoteDrawer from './drawers/PromoteDrawer';
+import { SchemaPreloadedDataContext, SchemaPreloadedDataContextConsumer } from '../../../utils/schema/SchemaPreloadedContext';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -2160,541 +2161,479 @@ class DataTableToolBar extends Component {
     if (taskScope === 'INVESTIGATION') deleteCapability = INVESTIGATION_INUPDATE_INDELETE;
 
     return (
-      <UserContext.Consumer>
-        {({ schema, settings, me }) => {
-          const isAdmin = me.capabilities.map((o) => o.name).filter((o) => [SETTINGS_SETACCESSES, BYPASS].includes(o)).length > 0;
-          const isInDraft = me.draftContext;
-          const stixCyberObservableSubTypes = schema.scos.map((sco) => sco.id);
-          const stixDomainObjectSubTypes = schema.sdos.map((sdo) => sdo.id);
-          const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes(stixCyberObservableSubTypes, stixDomainObjectSubTypes);
-          // Some filter types are high level, we do not want to check them as "Different"
-          // We might need to add some other types here before refactoring the toolbar
-          const elementsTypes = selectedElementsList.length > 0
-            ? R.uniq(selectedElementsList.map((e) => e.entity_type))
-            : selectedTypes;
-          const typesAreDifferent = elementsTypes.filter((type) => !['Stix-Core-Object', 'Stix-Domain-Object', 'stix-core-relationship', 'Stix-Cyber-Observable'].includes(type)).length > 1;
-          const preventMerge = selectedTypes.at(0) === 'Vocabulary'
-            && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
-          // region update
-          const typesAreNotUpdatable = notUpdatableTypes.includes(selectedTypes[0])
-            || (entityTypeFilterValues.length === 1
-              && notUpdatableTypes.includes(entityTypeFilterValues[0]));
-          // endregion
-          // region rules
-          const typesAreNotScannable = notScannableTypes.includes(selectedTypes[0])
-            || (entityTypeFilterValues.length === 1
-              && notScannableTypes.includes(entityTypeFilterValues[0]));
-          // endregion
-          // region enrich
-          const isManualEnrichSelect = !selectAll && (selectedTypes.filter((st) => !['Stix-Cyber-Observable', 'Stix-Domain-Object'].includes(st))).length === 1;
-          const isAllEnrichSelect = selectAll
-            && entityTypeFilterValues.length === 1
-            && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
-            && entityTypeFilterValues[0] !== 'Stix-Domain-Object';
-          const enrichDisable = notEnrichableTypes.includes(selectedTypes[0])
-            || (entityTypeFilterValues.length === 1
-              && notEnrichableTypes.includes(entityTypeFilterValues[0]))
-            || (!isManualEnrichSelect && !isAllEnrichSelect);
-          // endregion
-          // region orgaSharing
-          const isShareableType = !notShareableTypes.includes(selectedTypes[0]);
-          // endregion
-          // region merge
-          const typesAreNotMergable = notMergableTypes.includes(selectedTypes[0]);
-          const enableMerge = !typesAreNotMergable && !mergeDisable;
-          const typesAreNotAddableInContainer = notAddableTypes.includes(selectedTypes[0])
-            || (entityTypeFilterValues.length === 1
-              && notScannableTypes.includes(entityTypeFilterValues[0]));
-          const titleCopy = this.titleCopy();
-          let keptElement = null;
-          let newAliases = [];
-          if (!typesAreNotMergable && !typesAreDifferent) {
-            keptElement = keptEntityId
-              ? selectedElementsList.find((o) => o.id === keptEntityId)
-              : selectedElementsList[0];
-            if (keptElement) {
-              const names = selectedElementsList
-                .map((el) => el.name)
-                .filter((name) => name !== keptElement.name);
-              const aliases = keptElement.aliases !== null
-                ? selectedElementsList
-                    .map((el) => el.aliases)
-                    .flat()
-                    .filter((alias) => alias !== null && alias !== undefined)
-                : selectedElementsList
-                    .map((el) => el.x_opencti_aliases)
-                    .flat()
-                    .filter((alias) => alias !== null && alias !== undefined);
+      <SchemaPreloadedDataContextConsumer
+        render={() => (
+          <UserContext.Consumer>
+            {({ schema, settings, me }) => {
+              const isAdmin = me.capabilities.map((o) => o.name).filter((o) => [SETTINGS_SETACCESSES, BYPASS].includes(o)).length > 0;
+              const isInDraft = me.draftContext;
+              const stixCyberObservableSubTypes = schema.scos.map((sco) => sco.id);
+              const stixDomainObjectSubTypes = schema.sdos.map((sdo) => sdo.id);
+              const { entityTypeFilterValues, selectedElementsList, selectedTypes } = this.getSelectedTypes(stixCyberObservableSubTypes, stixDomainObjectSubTypes);
+              // Some filter types are high level, we do not want to check them as "Different"
+              // We might need to add some other types here before refactoring the toolbar
+              const elementsTypes = selectedElementsList.length > 0
+                ? R.uniq(selectedElementsList.map((e) => e.entity_type))
+                : selectedTypes;
+              const typesAreDifferent = elementsTypes.filter((type) => !['Stix-Core-Object', 'Stix-Domain-Object', 'stix-core-relationship', 'Stix-Cyber-Observable'].includes(type)).length > 1;
+              const preventMerge = selectedTypes.at(0) === 'Vocabulary'
+                && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
+              // region update
+              const typesAreNotUpdatable = notUpdatableTypes.includes(selectedTypes[0])
+                || (entityTypeFilterValues.length === 1
+                  && notUpdatableTypes.includes(entityTypeFilterValues[0]));
+              // endregion
+              // region rules
+              const typesAreNotScannable = notScannableTypes.includes(selectedTypes[0])
+                || (entityTypeFilterValues.length === 1
+                  && notScannableTypes.includes(entityTypeFilterValues[0]));
+              // endregion
+              // region enrich
+              const isManualEnrichSelect = !selectAll && (selectedTypes.filter((st) => !['Stix-Cyber-Observable', 'Stix-Domain-Object'].includes(st))).length === 1;
+              const isAllEnrichSelect = selectAll
+                && entityTypeFilterValues.length === 1
+                && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
+                && entityTypeFilterValues[0] !== 'Stix-Domain-Object';
+              const enrichDisable = notEnrichableTypes.includes(selectedTypes[0])
+                || (entityTypeFilterValues.length === 1
+                  && notEnrichableTypes.includes(entityTypeFilterValues[0]))
+                || (!isManualEnrichSelect && !isAllEnrichSelect);
+              // endregion
+              // region orgaSharing
+              const isShareableType = !notShareableTypes.includes(selectedTypes[0]);
+              // endregion
+              // region merge
+              const typesAreNotMergable = notMergableTypes.includes(selectedTypes[0]);
+              const enableMerge = !typesAreNotMergable && !mergeDisable;
+              const typesAreNotAddableInContainer = notAddableTypes.includes(selectedTypes[0])
+                || (entityTypeFilterValues.length === 1
+                  && notScannableTypes.includes(entityTypeFilterValues[0]));
+              const titleCopy = this.titleCopy();
+              let keptElement = null;
+              let newAliases = [];
+              if (!typesAreNotMergable && !typesAreDifferent) {
+                keptElement = keptEntityId
+                  ? selectedElementsList.find((o) => o.id === keptEntityId)
+                  : selectedElementsList[0];
+                if (keptElement) {
+                  const names = selectedElementsList
+                    .map((el) => el.name)
+                    .filter((name) => name !== keptElement.name);
+                  const aliases = keptElement.aliases !== null
+                    ? selectedElementsList
+                        .map((el) => el.aliases)
+                        .flat()
+                        .filter((alias) => alias !== null && alias !== undefined)
+                    : selectedElementsList
+                        .map((el) => el.x_opencti_aliases)
+                        .flat()
+                        .filter((alias) => alias !== null && alias !== undefined);
 
-              newAliases = names.concat(aliases).filter((o) => o && o.length > 0);
-            }
-          }
-          // endregion
-          // region EE
-          const isEnterpriseEdition = settings.platform_enterprise_edition.license_validated;
-          // endregion
-          // region promote filters
-          const stixCyberObservableTypes = schema.scos.map((sco) => sco.id).concat('Stix-Cyber-Observable');
-          const promotionTypes = stixCyberObservableTypes.concat(['Indicator']);
+                  newAliases = names.concat(aliases).filter((o) => o && o.length > 0);
+                }
+              }
+              // endregion
+              // region EE
+              const isEnterpriseEdition = settings.platform_enterprise_edition.license_validated;
+              // endregion
+              // region promote filters
+              const stixCyberObservableTypes = schema.scos.map((sco) => sco.id).concat('Stix-Cyber-Observable');
+              const promotionTypes = stixCyberObservableTypes.concat(['Indicator']);
 
-          const isOnlyStixCyberObservablesTypes = entityTypeFilterValues.length > 0
-            && entityTypeFilterValues.every((id) => stixCyberObservableTypes.includes(id));
+              const isOnlyStixCyberObservablesTypes = entityTypeFilterValues.length > 0
+                && entityTypeFilterValues.every((id) => stixCyberObservableTypes.includes(id));
 
-          const promotionTypesFiltered = entityTypeFilterValues.length > 0
-            && entityTypeFilterValues.every((id) => promotionTypes.includes(id));
+              const promotionTypesFiltered = entityTypeFilterValues.length > 0
+                && entityTypeFilterValues.every((id) => promotionTypes.includes(id));
 
-          const cleanedSelectedTypes = selectedTypes.filter((type) => type !== 'Stix-Domain-Object' && type !== 'Stix-Core-Object');
+              const cleanedSelectedTypes = selectedTypes.filter((type) => type !== 'Stix-Domain-Object' && type !== 'Stix-Core-Object');
 
-          const isManualPromoteSelect = !selectAll
-            && cleanedSelectedTypes.length > 0
-            && cleanedSelectedTypes.every((type) => promotionTypes.includes(type));
+              const isManualPromoteSelect = !selectAll
+                && cleanedSelectedTypes.length > 0
+                && cleanedSelectedTypes.every((type) => promotionTypes.includes(type));
 
-          const promoteEnabled = isManualPromoteSelect || promotionTypesFiltered;
+              const promoteEnabled = isManualPromoteSelect || promotionTypesFiltered;
 
-          const entityTypes = selectedTypes.length > 0 ? selectedTypes : [this.props.type ?? 'Stix-Core-Object'];
-          const filterKeysMap = new Map();
-          entityTypes.forEach((entityType) => {
-            const currentMap = schema.filterKeysSchema.get(entityType);
-            currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
-          });
-          const availableFilterKeys = Array.from(filterKeysMap.keys()).concat(['entity_type']);
-          const isContainer = !!container?.id;
-          // endregion
-          return (
-            <>
-              <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 8 }} data-testid="opencti-toolbar">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <Typography
-                    className={classes.title}
-                    color="inherit"
-                    variant="subtitle1"
-                  >
-                    <strong>{numberOfSelectedElements}</strong> {t('selected')}{' '}
-                  </Typography>
-                  <IconButton
-                    aria-label="clear"
-                    disabled={
-                      numberOfSelectedElements === 0 || this.state.processing
-                    }
-                    onClick={handleClearSelectedElements.bind(this)}
-                  >
-                    <ClearOutlined />
-                  </IconButton>
-                </div>
-                {displayEditButtons && (
-                  <div>
-                    {markAsReadEnabled && (
-                      <>
-                        <Tooltip title={t('Mark as read')}>
-                          <span>
-                            <IconButton
-                              aria-label={t('Mark as read')}
-                              disabled={numberOfSelectedElements === 0 || this.state.processing}
-                              onClick={this.handleLaunchRead.bind(this, true)}
-                              color="success"
-                              size="small"
-                            >
-                              <CheckCircleOutlined />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                        <Tooltip title={t('Mark as unread')}>
-                          <span>
-                            <IconButton
-                              aria-label={t('Mark as unread')}
-                              disabled={numberOfSelectedElements === 0 || this.state.processing}
-                              onClick={this.handleLaunchRead.bind(this, false)}
-                              color="error"
-                              size="small"
-                            >
-                              <UnpublishedOutlined />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      </>
-                    )}
-                    {removeAuthMembersEnabled && (
-                      <Security needs={[BYPASS]}>
-                        <Tooltip title={t('Remove access restriction')}>
-                          <IconButton
-                            color="primary"
-                            aria-label="input"
-                            data-testid="remove-auth-members-button"
-                            onClick={this.handleLaunchRemoveAuthMembers.bind(this)}
-                            size="small"
-                            disabled={
-                              numberOfSelectedElements === 0
-                              || this.state.processing
-                            }
-                          >
-                            <LockOpenOutlined />
-                          </IconButton>
-                        </Tooltip>
-                      </Security>
-                    )}
-                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                      {!typesAreNotUpdatable && !removeAuthMembersEnabled && (
-                        <Tooltip title={t('Update')}>
-                          <span>
-                            <IconButton
-                              aria-label="update"
-                              disabled={
-                                numberOfSelectedElements === 0
-                                || this.state.processing
-                              }
-                              onClick={this.handleOpenUpdate.bind(this)}
-                              size="small"
-                            >
-                              <BrushOutlined />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      )}
-                      {isUserDatatable && isEnterpriseEdition && (
-                        <UserEmailSend
-                          isOpen={this.state.displaySendEmail}
-                          onClose={this.handleCloseSendEmail.bind(this)}
-                          onSubmit={this.handleSubmitEmailTemplate.bind(this)}
-                        />
-                      )}
-                      {!removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
-                        <UserContext.Consumer>
-                          {({ platformModuleHelpers }) => {
-                            const label = platformModuleHelpers.isRuleEngineEnable()
-                              ? 'Rule rescan'
-                              : 'Rule rescan (engine is disabled)';
-                            const buttonDisable = typesAreNotScannable
-                              || !platformModuleHelpers.isRuleEngineEnable()
-                              || numberOfSelectedElements === 0
-                              || this.state.processing;
-                            return typesAreNotScannable ? undefined : (
-                              <Tooltip title={t(label)}>
-                                <span>
-                                  <IconButton
-                                    aria-label="update"
-                                    disabled={buttonDisable}
-                                    onClick={this.handleOpenRescan.bind(this)}
-                                    size="small"
-                                  >
-                                    <AutoFixHighOutlined />
-                                  </IconButton>
-                                </span>
-                              </Tooltip>
-                            );
-                          }}
-                        </UserContext.Consumer>
-                      )}
-                      {this.props.handleCopy && (
-                        <Tooltip title={titleCopy}>
-                          <span>
-                            <IconButton
-                              aria-label="copy"
-                              disabled={
-                                numberOfSelectedElements
-                                > maxNumberOfObservablesToCopy
-                              }
-                              onClick={this.props.handleCopy}
-                              size="small"
-                            >
-                              <ContentCopyOutlined />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      )}
-                      {!removeAuthMembersEnabled && !isUserDatatable && (
-                        <Tooltip title={t('Enrichment')}>
-                          <span>
-                            <IconButton
-                              aria-label="enrichment"
-                              disabled={this.state.processing || enrichDisable}
-                              onClick={this.handleOpenEnrichment.bind(this, stixCyberObservableSubTypes, stixDomainObjectSubTypes)}
-                              size="small"
-                            >
-                              <CloudRefreshOutline fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      )}
-                      {promoteEnabled && (
-                        <Tooltip title={t('Indicators/observables generation')}>
-                          <span>
-                            <IconButton
-                              aria-label="promote"
-                              disabled={this.state.processing}
-                              onClick={this.handleOpenPromote.bind(this)}
-                              size="small"
-                            >
-                              <TransformOutlined fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      )}
-                    </Security>
-                    <Security needs={[KNOWLEDGE_KNUPDATE_KNMERGE]}>
-                      {enableMerge && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
-                        <Tooltip title={t('Merge')}>
-                          <span>
-                            <IconButton
-                              aria-label="merge"
-                              disabled={
-                                typesAreDifferent
-                                || numberOfSelectedElements < 2
-                                || numberOfSelectedElements > 4
-                                || preventMerge
-                                || selectAll
-                                || this.state.processing
-                              }
-                              onClick={this.handleOpenMerge.bind(this)}
-                              size="small"
-                            >
-                              <MergeOutlined fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      )}
-                    </Security>
-                    {!typesAreNotAddableInContainer && !removeAuthMembersEnabled && !isUserDatatable && (
-                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                        <Tooltip title={t('Add in container')}>
-                          <span>
-                            <IconButton
-                              aria-label="input"
-                              disabled={
-                                numberOfSelectedElements === 0
-                                || this.state.processing
-                              }
-                              onClick={this.handleOpenAddInContainer.bind(this)}
-                              size="small"
-                            >
-                              <MoveToInboxOutlined fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      </Security>
-                    )}
-                    {container && (
-                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                        <Tooltip title={t('Remove from the container')}>
-                          <span>
-                            <IconButton
-                              aria-label="remove"
-                              disabled={
-                                numberOfSelectedElements === 0
-                                || this.state.processing
-                              }
-                              onClick={this.handleLaunchRemove.bind(this)}
-                              size="small"
-                            >
-                              <LinkOffOutlined fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      </Security>
-                    )}
-                    {!trashOperationsEnabled && isShareableType && !removeAuthMembersEnabled && !isUserDatatable && (
-                      <>
-                        <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                          <EETooltip title={t('Share with organizations')}>
-                            <IconButton
-                              aria-label="input"
-                              onClick={isEnterpriseEdition ? this.handleOpenShare.bind(this) : null}
-                              size="small"
-                              disabled={
-                                numberOfSelectedElements === 0
-                                || this.state.processing
-                              }
-                            >
-                              <BankPlus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
-                            </IconButton>
-                          </EETooltip>
-                        </Security>
-                        <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                          <EETooltip title={t('Unshare with organizations')}>
-                            <IconButton
-                              aria-label="input"
-                              onClick={isEnterpriseEdition ? this.handleOpenUnshare.bind(this) : null}
-                              size="small"
-                              disabled={
-                                numberOfSelectedElements === 0
-                                || this.state.processing
-                              }
-                            >
-                              <BankMinus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
-                            </IconButton>
-                          </EETooltip>
-                        </Security>
-                      </>
-                    )}
-                    {deleteDisable !== true && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isUserDatatable && (
-                      <Security needs={[deleteCapability]}>
-                        <Tooltip title={warningMessage || t('Delete')}>
-                          <span>
-                            <IconButton
-                              aria-label="delete"
-                              disabled={
-                                numberOfSelectedElements === 0
-                                || this.state.processing
-                                || selectedElementsList.find((element) => element.currentUserAccessRight === 'view')
-                              }
-                              onClick={this.handleLaunchDelete.bind(this)}
-                              color={warning ? 'error' : 'primary'}
-                              size="small"
-                            >
-                              <DeleteOutlined fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      </Security>
-                    )}
-                    {removeFromDraftEnabled && (
-                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                        <Tooltip title={t('Remove from draft')}>
-                          <IconButton
-                            color="primary"
-                            aria-label="input"
-                            onClick={this.handleLaunchRemoveFromDraft.bind(this)}
-                            size="small"
-                            disabled={
-                              numberOfSelectedElements === 0
-                              || this.state.processing
-                            }
-                          >
-                            <DeleteSweepOutlined fontSize="small" color="primary" />
-                          </IconButton>
-                        </Tooltip>
-                      </Security>
-                    )}
-                    {trashOperationsEnabled && (
-                      <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                        <Tooltip title={warningMessage || t('Restore')}>
-                          <span>
-                            <IconButton
-                              aria-label="restore"
-                              disabled={
-                                numberOfSelectedElements === 0
-                                || this.state.processing
-                              }
-                              onClick={this.handleLaunchRestore.bind(this)}
-                              color={warning ? 'error' : 'primary'}
-                              size="small"
-                            >
-                              <RestoreOutlined fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                        <Tooltip title={warningMessage || t('Confirm delete')}>
-                          <span>
-                            <IconButton
-                              aria-label="completeDelete"
-                              disabled={
-                                numberOfSelectedElements === 0
-                                || this.state.processing
-                              }
-                              onClick={this.handleLaunchCompleteDelete.bind(this)}
-                              color={warning ? 'error' : 'primary'}
-                              size="small"
-                            >
-                              <DeleteOutlined fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      </Security>
-                    )}
-                  </div>
-                )}
-              </Toolbar>
-              <Dialog
-                open={this.state.displayTask}
-                onClose={this.handleCloseTask.bind(this)}
-                data-testid="background-task-popup"
-                title={t('Launch a background task')}
-              >
-                <DialogContentText>
-                  {`${n(numberOfSelectedElements)} ${t('selected element(s)')}`}
-                </DialogContentText>
-                {numberOfSelectedElements > 1000 && (
-                  <Alert severity="warning">
-                    {t(
-                      'You\'re targeting more than 1000 entities with this background task, be sure of what you\'re doing!',
-                    )}
-                  </Alert>
-                )}
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>#</TableCell>
-                        <TableCell>{t('Step')}</TableCell>
-                        <TableCell>{t('Field')}</TableCell>
-                        <TableCell>{t('Values')}</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>
-                          {' '}
-                          <span
-                            style={{
-                              padding: '2px 5px 2px 5px',
-                              marginRight: 5,
-                              color:
-                                  theme.palette.mode === 'dark'
-                                    ? '#000000'
-                                    : '#ffffff',
-                              backgroundColor: theme.palette.primary.main,
-                            }}
-                          >
-                            1
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Chip style={{ borderRadius: 4 }} label="SCOPE" />
-                        </TableCell>
-                        <TableCell>{t('N/A')}</TableCell>
-                        <TableCell>
-                          {selectAll ? (
-                            <div className={classes.filters}>
-                              {search && search.length > 0 && (
-                                <span>
-                                  <Chip
-                                    classes={{ root: classes.filter }}
-                                    label={(
-                                      <div>
-                                        <strong>{t('Search')}</strong>: {search}
-                                      </div>
-                                    )}
-                                  />
-                                  {filters.filters.length > 0 && (
-                                    <Chip
-                                      classes={{ root: classes.operator }}
-                                      label={t('AND')}
-                                    />
-                                  )}
-                                </span>
-                              )}
-                              <TasksFilterValueContainer filters={filters} entityTypes={entityTypes} />
-                            </div>
-                          ) : (
-                            <span>
-                              {mergingElement
-                                ? truncate(
-                                    R.join(', ', [
-                                      getMainRepresentative(mergingElement),
-                                    ]),
-                                    80,
-                                  )
-                                : truncate(
-                                    selectedElementsList.map((o) => getMainRepresentative(o)).join(', '),
-                                    80,
-                                  )}
-                            </span>
+              const entityTypes = selectedTypes.length > 0 ? selectedTypes : [this.props.type ?? 'Stix-Core-Object'];
+              const filterKeysMap = new Map();
+              entityTypes.forEach((entityType) => {
+                const currentMap = schema.filterKeysSchema.get(entityType);
+                currentMap?.forEach((value, key) => filterKeysMap.set(key, value));
+              });
+              const availableFilterKeys = Array.from(filterKeysMap.keys()).concat(['entity_type']);
+              const isContainer = !!container?.id;
+              // endregion
+              return (
+                <>
+                  <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 8 }} data-testid="opencti-toolbar">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Typography
+                        className={classes.title}
+                        color="inherit"
+                        variant="subtitle1"
+                      >
+                        <strong>{numberOfSelectedElements}</strong> {t('selected')}{' '}
+                      </Typography>
+                      <IconButton
+                        aria-label="clear"
+                        disabled={
+                          numberOfSelectedElements === 0 || this.state.processing
+                        }
+                        onClick={handleClearSelectedElements.bind(this)}
+                      >
+                        <ClearOutlined />
+                      </IconButton>
+                    </div>
+                    {displayEditButtons && (
+                      <div>
+                        {markAsReadEnabled && (
+                          <>
+                            <Tooltip title={t('Mark as read')}>
+                              <span>
+                                <IconButton
+                                  aria-label={t('Mark as read')}
+                                  disabled={numberOfSelectedElements === 0 || this.state.processing}
+                                  onClick={this.handleLaunchRead.bind(this, true)}
+                                  color="success"
+                                  size="small"
+                                >
+                                  <CheckCircleOutlined />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                            <Tooltip title={t('Mark as unread')}>
+                              <span>
+                                <IconButton
+                                  aria-label={t('Mark as unread')}
+                                  disabled={numberOfSelectedElements === 0 || this.state.processing}
+                                  onClick={this.handleLaunchRead.bind(this, false)}
+                                  color="error"
+                                  size="small"
+                                >
+                                  <UnpublishedOutlined />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          </>
+                        )}
+                        {removeAuthMembersEnabled && (
+                          <Security needs={[BYPASS]}>
+                            <Tooltip title={t('Remove access restriction')}>
+                              <IconButton
+                                color="primary"
+                                aria-label="input"
+                                data-testid="remove-auth-members-button"
+                                onClick={this.handleLaunchRemoveAuthMembers.bind(this)}
+                                size="small"
+                                disabled={
+                                  numberOfSelectedElements === 0
+                                  || this.state.processing
+                                }
+                              >
+                                <LockOpenOutlined />
+                              </IconButton>
+                            </Tooltip>
+                          </Security>
+                        )}
+                        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                          {!typesAreNotUpdatable && !removeAuthMembersEnabled && (
+                            <Tooltip title={t('Update')}>
+                              <span>
+                                <IconButton
+                                  aria-label="update"
+                                  disabled={
+                                    numberOfSelectedElements === 0
+                                    || this.state.processing
+                                  }
+                                  onClick={this.handleOpenUpdate.bind(this)}
+                                  size="small"
+                                >
+                                  <BrushOutlined />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
                           )}
-                        </TableCell>
-                      </TableRow>
-                      {R.map((o) => {
-                        const number = actions.indexOf(o);
-                        return (
-                          <TableRow key={o.type}>
+                          {isUserDatatable && isEnterpriseEdition && (
+                            <UserEmailSend
+                              isOpen={this.state.displaySendEmail}
+                              onClose={this.handleCloseSendEmail.bind(this)}
+                              onSubmit={this.handleSubmitEmailTemplate.bind(this)}
+                            />
+                          )}
+                          {!removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
+                            <UserContext.Consumer>
+                              {({ platformModuleHelpers }) => {
+                                const label = platformModuleHelpers.isRuleEngineEnable()
+                                  ? 'Rule rescan'
+                                  : 'Rule rescan (engine is disabled)';
+                                const buttonDisable = typesAreNotScannable
+                                  || !platformModuleHelpers.isRuleEngineEnable()
+                                  || numberOfSelectedElements === 0
+                                  || this.state.processing;
+                                return typesAreNotScannable ? undefined : (
+                                  <Tooltip title={t(label)}>
+                                    <span>
+                                      <IconButton
+                                        aria-label="update"
+                                        disabled={buttonDisable}
+                                        onClick={this.handleOpenRescan.bind(this)}
+                                        size="small"
+                                      >
+                                        <AutoFixHighOutlined />
+                                      </IconButton>
+                                    </span>
+                                  </Tooltip>
+                                );
+                              }}
+                            </UserContext.Consumer>
+                          )}
+                          {this.props.handleCopy && (
+                            <Tooltip title={titleCopy}>
+                              <span>
+                                <IconButton
+                                  aria-label="copy"
+                                  disabled={
+                                    numberOfSelectedElements
+                                    > maxNumberOfObservablesToCopy
+                                  }
+                                  onClick={this.props.handleCopy}
+                                  size="small"
+                                >
+                                  <ContentCopyOutlined />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          )}
+                          {!removeAuthMembersEnabled && !isUserDatatable && (
+                            <Tooltip title={t('Enrichment')}>
+                              <span>
+                                <IconButton
+                                  aria-label="enrichment"
+                                  disabled={this.state.processing || enrichDisable}
+                                  onClick={this.handleOpenEnrichment.bind(this, stixCyberObservableSubTypes, stixDomainObjectSubTypes)}
+                                  size="small"
+                                >
+                                  <CloudRefreshOutline fontSize="small" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          )}
+                          {promoteEnabled && (
+                            <Tooltip title={t('Indicators/observables generation')}>
+                              <span>
+                                <IconButton
+                                  aria-label="promote"
+                                  disabled={this.state.processing}
+                                  onClick={this.handleOpenPromote.bind(this)}
+                                  size="small"
+                                >
+                                  <TransformOutlined fontSize="small" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          )}
+                        </Security>
+                        <Security needs={[KNOWLEDGE_KNUPDATE_KNMERGE]}>
+                          {enableMerge && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
+                            <Tooltip title={t('Merge')}>
+                              <span>
+                                <IconButton
+                                  aria-label="merge"
+                                  disabled={
+                                    typesAreDifferent
+                                    || numberOfSelectedElements < 2
+                                    || numberOfSelectedElements > 4
+                                    || preventMerge
+                                    || selectAll
+                                    || this.state.processing
+                                  }
+                                  onClick={this.handleOpenMerge.bind(this)}
+                                  size="small"
+                                >
+                                  <MergeOutlined fontSize="small" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          )}
+                        </Security>
+                        {!typesAreNotAddableInContainer && !removeAuthMembersEnabled && !isUserDatatable && (
+                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <Tooltip title={t('Add in container')}>
+                              <span>
+                                <IconButton
+                                  aria-label="input"
+                                  disabled={
+                                    numberOfSelectedElements === 0
+                                    || this.state.processing
+                                  }
+                                  onClick={this.handleOpenAddInContainer.bind(this)}
+                                  size="small"
+                                >
+                                  <MoveToInboxOutlined fontSize="small" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          </Security>
+                        )}
+                        {container && (
+                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <Tooltip title={t('Remove from the container')}>
+                              <span>
+                                <IconButton
+                                  aria-label="remove"
+                                  disabled={
+                                    numberOfSelectedElements === 0
+                                    || this.state.processing
+                                  }
+                                  onClick={this.handleLaunchRemove.bind(this)}
+                                  size="small"
+                                >
+                                  <LinkOffOutlined fontSize="small" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          </Security>
+                        )}
+                        {!trashOperationsEnabled && isShareableType && !removeAuthMembersEnabled && !isUserDatatable && (
+                          <>
+                            <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                              <EETooltip title={t('Share with organizations')}>
+                                <IconButton
+                                  aria-label="input"
+                                  onClick={isEnterpriseEdition ? this.handleOpenShare.bind(this) : null}
+                                  size="small"
+                                  disabled={
+                                    numberOfSelectedElements === 0
+                                    || this.state.processing
+                                  }
+                                >
+                                  <BankPlus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
+                                </IconButton>
+                              </EETooltip>
+                            </Security>
+                            <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                              <EETooltip title={t('Unshare with organizations')}>
+                                <IconButton
+                                  aria-label="input"
+                                  onClick={isEnterpriseEdition ? this.handleOpenUnshare.bind(this) : null}
+                                  size="small"
+                                  disabled={
+                                    numberOfSelectedElements === 0
+                                    || this.state.processing
+                                  }
+                                >
+                                  <BankMinus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
+                                </IconButton>
+                              </EETooltip>
+                            </Security>
+                          </>
+                        )}
+                        {deleteDisable !== true && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isUserDatatable && (
+                          <Security needs={[deleteCapability]}>
+                            <Tooltip title={warningMessage || t('Delete')}>
+                              <span>
+                                <IconButton
+                                  aria-label="delete"
+                                  disabled={
+                                    numberOfSelectedElements === 0
+                                    || this.state.processing
+                                    || selectedElementsList.find((element) => element.currentUserAccessRight === 'view')
+                                  }
+                                  onClick={this.handleLaunchDelete.bind(this)}
+                                  color={warning ? 'error' : 'primary'}
+                                  size="small"
+                                >
+                                  <DeleteOutlined fontSize="small" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          </Security>
+                        )}
+                        {removeFromDraftEnabled && (
+                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                            <Tooltip title={t('Remove from draft')}>
+                              <IconButton
+                                color="primary"
+                                aria-label="input"
+                                onClick={this.handleLaunchRemoveFromDraft.bind(this)}
+                                size="small"
+                                disabled={
+                                  numberOfSelectedElements === 0
+                                  || this.state.processing
+                                }
+                              >
+                                <DeleteSweepOutlined fontSize="small" color="primary" />
+                              </IconButton>
+                            </Tooltip>
+                          </Security>
+                        )}
+                        {trashOperationsEnabled && (
+                          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                            <Tooltip title={warningMessage || t('Restore')}>
+                              <span>
+                                <IconButton
+                                  aria-label="restore"
+                                  disabled={
+                                    numberOfSelectedElements === 0
+                                    || this.state.processing
+                                  }
+                                  onClick={this.handleLaunchRestore.bind(this)}
+                                  color={warning ? 'error' : 'primary'}
+                                  size="small"
+                                >
+                                  <RestoreOutlined fontSize="small" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                            <Tooltip title={warningMessage || t('Confirm delete')}>
+                              <span>
+                                <IconButton
+                                  aria-label="completeDelete"
+                                  disabled={
+                                    numberOfSelectedElements === 0
+                                    || this.state.processing
+                                  }
+                                  onClick={this.handleLaunchCompleteDelete.bind(this)}
+                                  color={warning ? 'error' : 'primary'}
+                                  size="small"
+                                >
+                                  <DeleteOutlined fontSize="small" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          </Security>
+                        )}
+                      </div>
+                    )}
+                  </Toolbar>
+                  <Dialog
+                    open={this.state.displayTask}
+                    onClose={this.handleCloseTask.bind(this)}
+                    data-testid="background-task-popup"
+                    title={t('Launch a background task')}
+                  >
+                    <DialogContentText>
+                      {`${n(numberOfSelectedElements)} ${t('selected element(s)')}`}
+                    </DialogContentText>
+                    {numberOfSelectedElements > 1000 && (
+                      <Alert severity="warning">
+                        {t(
+                          'You\'re targeting more than 1000 entities with this background task, be sure of what you\'re doing!',
+                        )}
+                      </Alert>
+                    )}
+                    <TableContainer>
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>#</TableCell>
+                            <TableCell>{t('Step')}</TableCell>
+                            <TableCell>{t('Field')}</TableCell>
+                            <TableCell>{t('Values')}</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          <TableRow>
                             <TableCell>
                               {' '}
                               <span
@@ -2702,637 +2641,703 @@ class DataTableToolBar extends Component {
                                   padding: '2px 5px 2px 5px',
                                   marginRight: 5,
                                   color:
-                                      theme.palette.mode === 'dark'
-                                        ? '#000000'
-                                        : '#ffffff',
+                                  theme.palette.mode === 'dark'
+                                    ? '#000000'
+                                    : '#ffffff',
                                   backgroundColor: theme.palette.primary.main,
                                 }}
                               >
-                                {number + 2}
+                                1
                               </span>
                             </TableCell>
                             <TableCell>
-                              <Chip label={o.type} />
+                              <Chip style={{ borderRadius: 4 }} label="SCOPE" />
                             </TableCell>
+                            <TableCell>{t('N/A')}</TableCell>
                             <TableCell>
-                              {R.pathOr(t('N/A'), ['context', 'field'], o)}
-                            </TableCell>
-                            <TableCell>
-                              {truncate(
-                                R.join(
-                                  ', ',
-                                  R.map(
-                                    (p) => (typeof p === 'string'
-                                      ? p
-                                      : getMainRepresentative(p)),
-                                    R.pathOr([], ['context', 'values'], o),
-                                  ),
-                                ),
-                                80,
+                              {selectAll ? (
+                                <div className={classes.filters}>
+                                  {search && search.length > 0 && (
+                                    <span>
+                                      <Chip
+                                        classes={{ root: classes.filter }}
+                                        label={(
+                                          <div>
+                                            <strong>{t('Search')}</strong>: {search}
+                                          </div>
+                                        )}
+                                      />
+                                      {filters.filters.length > 0 && (
+                                        <Chip
+                                          classes={{ root: classes.operator }}
+                                          label={t('AND')}
+                                        />
+                                      )}
+                                    </span>
+                                  )}
+                                  <TasksFilterValueContainer filters={filters} entityTypes={entityTypes} />
+                                </div>
+                              ) : (
+                                <span>
+                                  {mergingElement
+                                    ? truncate(
+                                        R.join(', ', [
+                                          getMainRepresentative(mergingElement),
+                                        ]),
+                                        80,
+                                      )
+                                    : truncate(
+                                        selectedElementsList.map((o) => getMainRepresentative(o)).join(', '),
+                                        80,
+                                      )}
+                                </span>
                               )}
                             </TableCell>
                           </TableRow>
-                        );
-                      }, actions)}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                <DialogActions>
-                  <Button
-                    variant="secondary"
-                    onClick={this.handleCloseTask.bind(this)}
-                    disabled={this.state.processing}
+                          {R.map((o) => {
+                            const number = actions.indexOf(o);
+                            return (
+                              <TableRow key={o.type}>
+                                <TableCell>
+                                  {' '}
+                                  <span
+                                    style={{
+                                      padding: '2px 5px 2px 5px',
+                                      marginRight: 5,
+                                      color:
+                                      theme.palette.mode === 'dark'
+                                        ? '#000000'
+                                        : '#ffffff',
+                                      backgroundColor: theme.palette.primary.main,
+                                    }}
+                                  >
+                                    {number + 2}
+                                  </span>
+                                </TableCell>
+                                <TableCell>
+                                  <Chip label={o.type} />
+                                </TableCell>
+                                <TableCell>
+                                  {R.pathOr(t('N/A'), ['context', 'field'], o)}
+                                </TableCell>
+                                <TableCell>
+                                  {truncate(
+                                    R.join(
+                                      ', ',
+                                      R.map(
+                                        (p) => (typeof p === 'string'
+                                          ? p
+                                          : getMainRepresentative(p)),
+                                        R.pathOr([], ['context', 'values'], o),
+                                      ),
+                                    ),
+                                    80,
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            );
+                          }, actions)}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                    <DialogActions>
+                      <Button
+                        variant="secondary"
+                        onClick={this.handleCloseTask.bind(this)}
+                        disabled={this.state.processing}
+                      >
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        onClick={this.submitTask.bind(this, availableFilterKeys, isInDraft)}
+                        disabled={this.state.processing}
+                      >
+                        {t('Launch')}
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                  <Drawer
+                    title={t('Update entities')}
+                    open={this.state.displayUpdate}
+                    onClose={this.handleCloseUpdate.bind(this)}
                   >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    onClick={this.submitTask.bind(this, availableFilterKeys, isInDraft)}
-                    disabled={this.state.processing}
-                  >
-                    {t('Launch')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-              <Drawer
-                title={t('Update entities')}
-                open={this.state.displayUpdate}
-                onClose={this.handleCloseUpdate.bind(this)}
-              >
-                <div>
-                  {Array(actionsInputs.length)
-                    .fill(0)
-                    .map((item, i) => (
-                      <div key={i} className={classes.step}>
+                    <div>
+                      {Array(actionsInputs.length)
+                        .fill(0)
+                        .map((item, i) => (
+                          <div key={i} className={classes.step}>
+                            <IconButton
+                              disabled={actionsInputs.length === 1}
+                              aria-label="Delete"
+                              className={classes.stepCloseButton}
+                              onClick={this.handleRemoveStep.bind(this, i)}
+                              size="small"
+                            >
+                              <CancelOutlined fontSize="small" />
+                            </IconButton>
+                            <Grid container={true} spacing={3}>
+                              <Grid item xs={3}>
+                                <FormControl className={classes.formControl}>
+                                  <InputLabel>{t('Action type')}</InputLabel>
+                                  <Select
+                                    variant="standard"
+                                    value={actionsInputs[i]?.type}
+                                    onChange={this.handleChangeActionInput.bind(
+                                      this,
+                                      i,
+                                      'type',
+                                    )}
+                                  >
+                                    <MenuItem value="ADD">{t('Add')}</MenuItem>
+                                    <MenuItem value="REPLACE">
+                                      {t('Replace')}
+                                    </MenuItem>
+                                    <MenuItem value="REMOVE">{t('Remove')}</MenuItem>
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                              <Grid item xs={3}>
+                                <FormControl className={classes.formControl}>
+                                  <InputLabel>{t('Field')}</InputLabel>
+                                  {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin)}
+                                </FormControl>
+                              </Grid>
+                              <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column-reverse' }}>
+                                {this.renderValuesOptions(i, selectedTypes, settings.platform_user_statuses)}
+                              </Grid>
+                            </Grid>
+                          </div>
+                        ))}
+                      <div className={classes.add}>
                         <IconButton
-                          disabled={actionsInputs.length === 1}
-                          aria-label="Delete"
-                          className={classes.stepCloseButton}
-                          onClick={this.handleRemoveStep.bind(this, i)}
+                          disabled={!this.areStepValid()}
+                          variant="secondary"
                           size="small"
+                          onClick={this.handleAddStep.bind(this)}
+                          classes={{ root: classes.buttonAdd }}
                         >
-                          <CancelOutlined fontSize="small" />
+                          <AddOutlined fontSize="small" />
                         </IconButton>
-                        <Grid container={true} spacing={3}>
-                          <Grid item xs={3}>
-                            <FormControl className={classes.formControl}>
-                              <InputLabel>{t('Action type')}</InputLabel>
-                              <Select
-                                variant="standard"
-                                value={actionsInputs[i]?.type}
-                                onChange={this.handleChangeActionInput.bind(
-                                  this,
-                                  i,
-                                  'type',
-                                )}
-                              >
-                                <MenuItem value="ADD">{t('Add')}</MenuItem>
-                                <MenuItem value="REPLACE">
-                                  {t('Replace')}
-                                </MenuItem>
-                                <MenuItem value="REMOVE">{t('Remove')}</MenuItem>
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                          <Grid item xs={3}>
-                            <FormControl className={classes.formControl}>
-                              <InputLabel>{t('Field')}</InputLabel>
-                              {this.renderFieldOptions(i, selectedTypes, entityTypeFilterValues, isAdmin)}
-                            </FormControl>
-                          </Grid>
-                          <Grid item xs={6} style={{ display: 'flex', flexDirection: 'column-reverse' }}>
-                            {this.renderValuesOptions(i, selectedTypes, settings.platform_user_statuses)}
-                          </Grid>
-                        </Grid>
                       </div>
-                    ))}
-                  <div className={classes.add}>
-                    <IconButton
-                      disabled={!this.areStepValid()}
-                      variant="secondary"
-                      size="small"
-                      onClick={this.handleAddStep.bind(this)}
-                      classes={{ root: classes.buttonAdd }}
-                    >
-                      <AddOutlined fontSize="small" />
-                    </IconButton>
-                  </div>
-                  <FormButtonContainer>
-                    <Button
-                      disabled={!this.areStepValid()}
-                      onClick={this.handleLaunchUpdate.bind(this)}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Update')}
-                    </Button>
-                  </FormButtonContainer>
-                </div>
-              </Drawer>
-              <Drawer
-                title={t('Merge entities')}
-                open={this.state.displayMerge}
-                onClose={this.handleCloseMerge.bind(this)}
-              >
-                <div>
-                  <Typography
-                    variant="h4"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
+                      <FormButtonContainer>
+                        <Button
+                          disabled={!this.areStepValid()}
+                          onClick={this.handleLaunchUpdate.bind(this)}
+                          classes={{ root: classes.button }}
+                        >
+                          {t('Update')}
+                        </Button>
+                      </FormButtonContainer>
+                    </div>
+                  </Drawer>
+                  <Drawer
+                    title={t('Merge entities')}
+                    open={this.state.displayMerge}
+                    onClose={this.handleCloseMerge.bind(this)}
                   >
-                    {t('Selected entities')}
-                  </Typography>
-                  <List>
-                    {selectedElementsList.map((element) => (
-                      <ListItem
-                        key={element.id}
-                        dense={true}
-                        divider={true}
-                        secondaryAction={(
-                          <Radio
-                            checked={
-                              keptEntityId
-                                ? keptEntityId === element.id
-                                : R.head(selectedElementsList).id === element.id
-                            }
-                            onChange={this.handleChangeKeptEntityId.bind(
-                              this,
-                              element.id,
+                    <div>
+                      <Typography
+                        variant="h4"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}
+                      >
+                        {t('Selected entities')}
+                      </Typography>
+                      <List>
+                        {selectedElementsList.map((element) => (
+                          <ListItem
+                            key={element.id}
+                            dense={true}
+                            divider={true}
+                            secondaryAction={(
+                              <Radio
+                                checked={
+                                  keptEntityId
+                                    ? keptEntityId === element.id
+                                    : R.head(selectedElementsList).id === element.id
+                                }
+                                onChange={this.handleChangeKeptEntityId.bind(
+                                  this,
+                                  element.id,
+                                )}
+                                value={element.id}
+                                name="keptEntityID"
+                                inputProps={{ 'aria-label': 'keptEntityID' }}
+                              />
                             )}
-                            value={element.id}
-                            name="keptEntityID"
-                            inputProps={{ 'aria-label': 'keptEntityID' }}
-                          />
-                        )}
+                          >
+                            <ListItemIcon>
+                              <ItemIcon type={element.entity_type} />
+                            </ListItemIcon>
+                            <ListItemText
+                              sx={{
+                                '.MuiListItemText-primary': {
+                                  overflowX: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                },
+                              }}
+                              primary={getMainRepresentative(element)}
+                              secondary={truncate(
+                                element.description
+                                || element.x_opencti_description
+                                || '',
+                                60,
+                              )}
+                            />
+                            <div style={{ marginRight: 50 }}>
+                              {element.createdBy?.name ?? EMPTY_VALUE}
+                            </div>
+                            <div style={{ marginRight: 50 }}>
+                              <ItemMarkings
+                                variant="inList"
+                                markingDefinitions={element.objectMarking ?? []}
+                              />
+                            </div>
+                          </ListItem>
+                        ))}
+                      </List>
+                      <Typography
+                        variant="h4"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}
                       >
-                        <ListItemIcon>
-                          <ItemIcon type={element.entity_type} />
-                        </ListItemIcon>
-                        <ListItemText
-                          sx={{
-                            '.MuiListItemText-primary': {
-                              overflowX: 'hidden',
-                              textOverflow: 'ellipsis',
-                            },
-                          }}
-                          primary={getMainRepresentative(element)}
-                          secondary={truncate(
-                            element.description
-                            || element.x_opencti_description
-                            || '',
-                            60,
-                          )}
+                        {t('Merged entity')}
+                      </Typography>
+                      <Typography
+                        variant="h3"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}
+                      >
+                        {t('Name')}
+                      </Typography>
+                      <div style={{ overflowX: 'hidden', textOverflow: 'ellipsis' }}>
+                        {getMainRepresentative(keptElement)}
+                      </div>
+                      <Typography
+                        variant="h3"
+                        gutterBottom={true}
+                        style={{ marginTop: 20 }}
+                      >
+                        {t('Aliases')}
+                      </Typography>
+                      {newAliases.map((label) => (label.length > 0 ? (
+                        <Chip
+                          key={label}
+                          classes={{ root: classes.aliases }}
+                          label={label}
                         />
-                        <div style={{ marginRight: 50 }}>
-                          {element.createdBy?.name ?? EMPTY_VALUE}
-                        </div>
-                        <div style={{ marginRight: 50 }}>
+                      ) : (
+                        ''
+                      )))}
+                      {noAuthor !== true && (
+                        <>
+                          <Typography
+                            variant="h3"
+                            gutterBottom={true}
+                            style={{ marginTop: 20 }}
+                          >
+                            {t('Author')}
+                          </Typography>
+                          {keptElement?.createdBy?.name ?? EMPTY_VALUE}
+                        </>
+                      )}
+                      {noMarking !== true && (
+                        <>
+                          <Typography
+                            variant="h3"
+                            gutterBottom={true}
+                            style={{ marginTop: 20 }}
+                          >
+                            {t('Marking')}
+                          </Typography>
                           <ItemMarkings
-                            variant="inList"
-                            markingDefinitions={element.objectMarking ?? []}
+                            markingDefinitions={keptElement?.objectMarking || []}
                           />
-                        </div>
-                      </ListItem>
-                    ))}
-                  </List>
-                  <Typography
-                    variant="h4"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
+                        </>
+                      )}
+                      {noWarning !== true && (
+                        <>
+                          <Alert severity="warning" style={{ marginTop: 20 }}>
+                            {t(
+                              'The relations attached to selected entities will be copied to the merged entity.',
+                            )}
+                          </Alert>
+                        </>
+                      )}
+                      <FormButtonContainer>
+                        <Button
+                          onClick={this.handleLaunchMerge.bind(this)}
+                        >
+                          {t('Merge')}
+                        </Button>
+                      </FormButtonContainer>
+                    </div>
+                  </Drawer>
+                  <Drawer
+                    title={t('Entity enrichment')}
+                    open={this.state.displayEnrichment}
+                    onClose={this.handleCloseEnrichment.bind(this)}
                   >
-                    {t('Merged entity')}
-                  </Typography>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Name')}
-                  </Typography>
-                  <div style={{ overflowX: 'hidden', textOverflow: 'ellipsis' }}>
-                    {getMainRepresentative(keptElement)}
-                  </div>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Aliases')}
-                  </Typography>
-                  {newAliases.map((label) => (label.length > 0 ? (
-                    <Chip
-                      key={label}
-                      classes={{ root: classes.aliases }}
-                      label={label}
-                    />
-                  ) : (
-                    ''
-                  )))}
-                  {noAuthor !== true && (
-                    <>
+                    <div>
                       <Typography
-                        variant="h3"
+                        variant="h4"
                         gutterBottom={true}
                         style={{ marginTop: 20 }}
                       >
-                        {t('Author')}
+                        {t('Selected connectors')}
                       </Typography>
-                      {keptElement?.createdBy?.name ?? EMPTY_VALUE}
-                    </>
-                  )}
-                  {noMarking !== true && (
-                    <>
+                      <List>
+                        {this.state.enrichConnectors.length === 0 && (
+                          <Alert severity="warning">
+                            {t('No connector available for the selected entities.')}
+                          </Alert>
+                        )}
+                        {this.state.enrichConnectors.map((connector) => (
+                          <ListItem
+                            key={connector.id}
+                            dense={true}
+                            divider={true}
+                            secondaryAction={(
+                              <MuiSwitch
+                                checked={this.state.enrichSelected.includes(
+                                  connector.id,
+                                )}
+                                onChange={this.handleChangeEnrichSelected.bind(
+                                  this,
+                                  connector.id,
+                                )}
+                                inputProps={{ 'aria-label': 'controlled' }}
+                              />
+                            )}
+                          >
+                            <ListItemIcon>
+                              <CloudRefreshOutline />
+                            </ListItemIcon>
+                            <ListItemText primary={connector.name} />
+                          </ListItem>
+                        ))}
+                      </List>
+                      <FormButtonContainer>
+                        <Button
+                          disabled={
+                            this.state.enrichConnectors.length === 0
+                            || this.state.enrichSelected.length === 0
+                          }
+                          onClick={this.handleLaunchEnrichment.bind(this)}
+                        >
+                          {t('Enrich')}
+                        </Button>
+                      </FormButtonContainer>
+                    </div>
+                  </Drawer>
+                  <PromoteDrawer
+                    isOpen={this.state.displayPromote}
+                    onClose={this.handleClosePromote.bind(this)}
+                    isOnlyStixCyberObservablesTypes={isOnlyStixCyberObservablesTypes}
+                    onSubmit={this.handleLaunchPromote.bind(this)}
+                    isContainer={isContainer}
+                    promoteToContainer={promoteToContainer}
+                    togglePromoteToContainer={this.togglePromoteToContainer.bind(this)}
+                  />
+                  <Drawer
+                    title={t('Rule entity rescan')}
+                    open={this.state.displayRescan}
+                    onClose={this.handleCloseRescan.bind(this)}
+                  >
+                    <div>
                       <Typography
-                        variant="h3"
+                        variant="h4"
                         gutterBottom={true}
                         style={{ marginTop: 20 }}
                       >
-                        {t('Marking')}
+                        {t('Selected rules')}
                       </Typography>
-                      <ItemMarkings
-                        markingDefinitions={keptElement?.objectMarking || []}
-                      />
-                    </>
-                  )}
-                  {noWarning !== true && (
-                    <>
                       <Alert severity="warning" style={{ marginTop: 20 }}>
                         {t(
-                          'The relations attached to selected entities will be copied to the merged entity.',
+                          'Element will be rescan with all compatible activated rules',
                         )}
                       </Alert>
-                    </>
-                  )}
-                  <FormButtonContainer>
-                    <Button
-                      onClick={this.handleLaunchMerge.bind(this)}
-                    >
-                      {t('Merge')}
-                    </Button>
-                  </FormButtonContainer>
-                </div>
-              </Drawer>
-              <Drawer
-                title={t('Entity enrichment')}
-                open={this.state.displayEnrichment}
-                onClose={this.handleCloseEnrichment.bind(this)}
-              >
-                <div>
-                  <Typography
-                    variant="h4"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
+                      <FormButtonContainer>
+                        <Button
+                          onClick={this.handleLaunchRescan.bind(this)}
+                        >
+                          {t('Rescan')}
+                        </Button>
+                      </FormButtonContainer>
+                    </div>
+                  </Drawer>
+                  <Dialog
+                    open={this.state.displayAddInContainer}
+                    onClose={() => this.setState({ displayAddInContainer: false })}
+                    title={t('Add in container')}
                   >
-                    {t('Selected connectors')}
-                  </Typography>
-                  <List>
-                    {this.state.enrichConnectors.length === 0 && (
-                      <Alert severity="warning">
-                        {t('No connector available for the selected entities.')}
-                      </Alert>
-                    )}
-                    {this.state.enrichConnectors.map((connector) => (
-                      <ListItem
-                        key={connector.id}
-                        dense={true}
-                        divider={true}
-                        secondaryAction={(
-                          <MuiSwitch
-                            checked={this.state.enrichSelected.includes(
-                              connector.id,
-                            )}
-                            onChange={this.handleChangeEnrichSelected.bind(
-                              this,
-                              connector.id,
-                            )}
-                            inputProps={{ 'aria-label': 'controlled' }}
-                          />
-                        )}
-                      >
-                        <ListItemIcon>
-                          <CloudRefreshOutline />
-                        </ListItemIcon>
-                        <ListItemText primary={connector.name} />
-                      </ListItem>
-                    ))}
-                  </List>
-                  <FormButtonContainer>
-                    <Button
-                      disabled={
-                        this.state.enrichConnectors.length === 0
-                        || this.state.enrichSelected.length === 0
+                    <StixDomainObjectCreation
+                      inputValue={actionsInputs[0]?.inputValue || ''}
+                      open={this.state.containerCreation}
+                      display={true}
+                      speeddial={true}
+                      stixDomainObjectTypes={['Container']}
+                      handleClose={() => this.setState({ containerCreation: false })
                       }
-                      onClick={this.handleLaunchEnrichment.bind(this)}
-                    >
-                      {t('Enrich')}
-                    </Button>
-                  </FormButtonContainer>
-                </div>
-              </Drawer>
-              <PromoteDrawer
-                isOpen={this.state.displayPromote}
-                onClose={this.handleClosePromote.bind(this)}
-                isOnlyStixCyberObservablesTypes={isOnlyStixCyberObservablesTypes}
-                onSubmit={this.handleLaunchPromote.bind(this)}
-                isContainer={isContainer}
-                promoteToContainer={promoteToContainer}
-                togglePromoteToContainer={this.togglePromoteToContainer.bind(this)}
-              />
-              <Drawer
-                title={t('Rule entity rescan')}
-                open={this.state.displayRescan}
-                onClose={this.handleCloseRescan.bind(this)}
-              >
-                <div>
-                  <Typography
-                    variant="h4"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Selected rules')}
-                  </Typography>
-                  <Alert severity="warning" style={{ marginTop: 20 }}>
-                    {t(
-                      'Element will be rescan with all compatible activated rules',
-                    )}
-                  </Alert>
-                  <FormButtonContainer>
-                    <Button
-                      onClick={this.handleLaunchRescan.bind(this)}
-                    >
-                      {t('Rescan')}
-                    </Button>
-                  </FormButtonContainer>
-                </div>
-              </Drawer>
-              <Dialog
-                open={this.state.displayAddInContainer}
-                onClose={() => this.setState({ displayAddInContainer: false })}
-                title={t('Add in container')}
-              >
-                <StixDomainObjectCreation
-                  inputValue={actionsInputs[0]?.inputValue || ''}
-                  open={this.state.containerCreation}
-                  display={true}
-                  speeddial={true}
-                  stixDomainObjectTypes={['Container']}
-                  handleClose={() => this.setState({ containerCreation: false })
-                  }
-                  creationCallback={(data) => {
-                    const element = {
-                      label: data.name,
-                      value: data.id,
-                      type: data.entity_type,
-                    };
-                    this.setState(({ containers }) => ({
-                      containers: [...(containers ?? []), element],
-                    }));
-                    this.handleChangeActionInputValues(0, null, [
-                      ...(actionsInputs[0]?.values ?? []),
-                      element,
-                    ]);
-                  }}
-                />
-                <Autocomplete
-                  size="small"
-                  fullWidth={true}
-                  selectOnFocus={true}
-                  autoHighlight={true}
-                  getOptionLabel={(option) => (option.label ? option.label : '')}
-                  value={actionsInputs[0]?.values || []}
-                  multiple={true}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="standard"
-                      label={t('Values')}
-                      fullWidth={true}
-                      onFocus={this.searchContainers.bind(this, 0)}
-                      style={{ marginTop: 3 }}
+                      creationCallback={(data) => {
+                        const element = {
+                          label: data.name,
+                          value: data.id,
+                          type: data.entity_type,
+                        };
+                        this.setState(({ containers }) => ({
+                          containers: [...(containers ?? []), element],
+                        }));
+                        this.handleChangeActionInputValues(0, null, [
+                          ...(actionsInputs[0]?.values ?? []),
+                          element,
+                        ]);
+                      }}
                     />
-                  )}
-                  noOptionsText={t('No available options')}
-                  options={this.state.containers}
-                  onInputChange={this.searchContainers.bind(this, 0)}
-                  inputValue={actionsInputs[0]?.inputValue || ''}
-                  onChange={this.handleChangeActionInputValues.bind(this, 0)}
-                  renderOption={(props, option) => (
-                    <li {...props}>
-                      <div className={classes.icon}>
-                        <ItemIcon type={option.type} />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
-                    </li>
-                  )}
-                  disableClearable
-                />
-                <FormControlLabel
-                  style={{ marginTop: 20 }}
-                  control={(
-                    <Checkbox
-                      checked={
-                        actionsInputs[0]?.options?.includeNeighbours || false
-                      }
-                      onChange={this.handleChangeActionInputOptions.bind(
-                        this,
-                        0,
-                        'includeNeighbours',
+                    <Autocomplete
+                      size="small"
+                      fullWidth={true}
+                      selectOnFocus={true}
+                      autoHighlight={true}
+                      getOptionLabel={(option) => (option.label ? option.label : '')}
+                      value={actionsInputs[0]?.values || []}
+                      multiple={true}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          variant="standard"
+                          label={t('Values')}
+                          fullWidth={true}
+                          onFocus={this.searchContainers.bind(this, 0)}
+                          style={{ marginTop: 3 }}
+                        />
                       )}
+                      noOptionsText={t('No available options')}
+                      options={this.state.containers}
+                      onInputChange={this.searchContainers.bind(this, 0)}
+                      inputValue={actionsInputs[0]?.inputValue || ''}
+                      onChange={this.handleChangeActionInputValues.bind(this, 0)}
+                      renderOption={(props, option) => (
+                        <li {...props}>
+                          <div className={classes.icon}>
+                            <ItemIcon type={option.type} />
+                          </div>
+                          <div className={classes.text}>{option.label}</div>
+                        </li>
+                      )}
+                      disableClearable
                     />
-                  )}
-                  label={t('Also include first neighbours')}
-                />
-                <IconButton
-                  onClick={() => this.setState({ containerCreation: true })}
-                  edge="end"
-                  style={{ position: 'absolute', top: 80, right: 50 }}
-                >
-                  <AddOutlined />
-                </IconButton>
+                    <FormControlLabel
+                      style={{ marginTop: 20 }}
+                      control={(
+                        <Checkbox
+                          checked={
+                            actionsInputs[0]?.options?.includeNeighbours || false
+                          }
+                          onChange={this.handleChangeActionInputOptions.bind(
+                            this,
+                            0,
+                            'includeNeighbours',
+                          )}
+                        />
+                      )}
+                      label={t('Also include first neighbours')}
+                    />
+                    <IconButton
+                      onClick={() => this.setState({ containerCreation: true })}
+                      edge="end"
+                      style={{ position: 'absolute', top: 80, right: 50 }}
+                    >
+                      <AddOutlined />
+                    </IconButton>
 
-                <DialogActions>
-                  <Button
-                    variant="secondary"
-                    onClick={() => this.setState({ displayAddInContainer: false })
-                    }
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      this.setState(
-                        {
-                          displayAddInContainer: false,
-                          actionsInputs: [
+                    <DialogActions>
+                      <Button
+                        variant="secondary"
+                        onClick={() => this.setState({ displayAddInContainer: false })
+                        }
+                      >
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          this.setState(
                             {
-                              ...actionsInputs[0],
-                              type: 'ADD',
-                              fieldType: 'ATTRIBUTE',
-                              field: 'container-object',
+                              displayAddInContainer: false,
+                              actionsInputs: [
+                                {
+                                  ...actionsInputs[0],
+                                  type: 'ADD',
+                                  fieldType: 'ATTRIBUTE',
+                                  field: 'container-object',
+                                },
+                              ],
                             },
-                          ],
-                        },
-                        this.handleLaunchUpdate.bind(this),
-                      );
-                    }}
+                            this.handleLaunchUpdate.bind(this),
+                          );
+                        }}
+                      >
+                        {t('Add')}
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                  <Dialog
+                    open={this.state.displayShare}
+                    onClose={() => this.setState({ displayShare: false })}
+                    title={t('Share with organizations')}
                   >
-                    {t('Add')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-              <Dialog
-                open={this.state.displayShare}
-                onClose={() => this.setState({ displayShare: false })}
-                title={t('Share with organizations')}
-              >
-                <StixDomainObjectCreation
-                  inputValue={this.state.organizationInput}
-                  open={this.state.organizationCreation}
-                  display={true}
-                  speeddial={true}
-                  stixDomainObjectTypes={['Organization']}
-                  handleClose={() => this.setState({ organizationCreation: false })}
-                  creationCallback={(data) => {
-                    const element = {
-                      label: data.name,
-                      value: data.id,
-                      type: data.entity_type,
-                    };
-                    this.setState(({ organizations }) => ({
-                      organizations: [...(organizations ?? []), element],
-                    }));
-                    this.setState({ shareOrganizations: [...this.state.shareOrganizations, element] });
-                  }}
-                />
-                <Autocomplete
-                  size="small"
-                  fullWidth={true}
-                  selectOnFocus={true}
-                  autoHighlight={true}
-                  getOptionLabel={(option) => (option.label ? option.label : '')}
-                  value={this.state.shareOrganizations}
-                  multiple={true}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="standard"
-                      label={t('Values')}
-                      fullWidth={true}
-                      onFocus={this.searchOrganizations.bind(this)}
-                      style={{ marginTop: 3 }}
+                    <StixDomainObjectCreation
+                      inputValue={this.state.organizationInput}
+                      open={this.state.organizationCreation}
+                      display={true}
+                      speeddial={true}
+                      stixDomainObjectTypes={['Organization']}
+                      handleClose={() => this.setState({ organizationCreation: false })}
+                      creationCallback={(data) => {
+                        const element = {
+                          label: data.name,
+                          value: data.id,
+                          type: data.entity_type,
+                        };
+                        this.setState(({ organizations }) => ({
+                          organizations: [...(organizations ?? []), element],
+                        }));
+                        this.setState({ shareOrganizations: [...this.state.shareOrganizations, element] });
+                      }}
                     />
-                  )}
-                  noOptionsText={t('No available options')}
-                  options={this.state.organizations}
-                  onInputChange={this.searchOrganizations.bind(this)}
-                  inputValue={this.state.organizationInput}
-                  onChange={(_, value) => this.setState({ shareOrganizations: value })}
-                  renderOption={(props, option) => (
-                    <li {...props}>
-                      <div className={classes.icon}>
-                        <ItemIcon type={option.type} />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
-                    </li>
-                  )}
-                  disableClearable
-                />
-                <IconButton
-                  onClick={() => this.setState({ organizationCreation: true })}
-                  edge="end"
-                  style={{ position: 'absolute', top: 80, right: 50 }}
-                >
-                  <AddOutlined />
-                </IconButton>
-                <DialogActions>
-                  <Button
-                    variant="secondary"
-                    onClick={this.handleCloseShare.bind(this)}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      const shareActions = [
-                        { type: 'SHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
-                      ];
-                      const orgaNames = this.state.shareOrganizations.map((o) => o.label).join('|');
-                      const sharingDescription = `SHARE with organizations ${orgaNames}`;
-                      this.setState({ description: sharingDescription, actions: shareActions }, () => {
-                        this.handleCloseShare();
-                        this.handleOpenTask();
-                      });
-                    }}
-                  >
-                    {t('Share')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-              <Dialog
-                open={this.state.displayUnshare}
-                onClose={() => this.setState({ displayUnshare: false })}
-                title={t('Unshare with organizations')}
-              >
-                <Autocomplete
-                  size="small"
-                  fullWidth={true}
-                  selectOnFocus={true}
-                  autoHighlight={true}
-                  getOptionLabel={(option) => (option.label ? option.label : '')}
-                  value={this.state.shareOrganizations}
-                  multiple={true}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      variant="standard"
-                      label={t('Values')}
+                    <Autocomplete
+                      size="small"
                       fullWidth={true}
-                      onFocus={this.searchOrganizations.bind(this)}
-                      style={{ marginTop: 3 }}
+                      selectOnFocus={true}
+                      autoHighlight={true}
+                      getOptionLabel={(option) => (option.label ? option.label : '')}
+                      value={this.state.shareOrganizations}
+                      multiple={true}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          variant="standard"
+                          label={t('Values')}
+                          fullWidth={true}
+                          onFocus={this.searchOrganizations.bind(this)}
+                          style={{ marginTop: 3 }}
+                        />
+                      )}
+                      noOptionsText={t('No available options')}
+                      options={this.state.organizations}
+                      onInputChange={this.searchOrganizations.bind(this)}
+                      inputValue={this.state.organizationInput}
+                      onChange={(_, value) => this.setState({ shareOrganizations: value })}
+                      renderOption={(props, option) => (
+                        <li {...props}>
+                          <div className={classes.icon}>
+                            <ItemIcon type={option.type} />
+                          </div>
+                          <div className={classes.text}>{option.label}</div>
+                        </li>
+                      )}
+                      disableClearable
                     />
-                  )}
-                  noOptionsText={t('No available options')}
-                  options={this.state.organizations}
-                  onInputChange={this.searchOrganizations.bind(this)}
-                  inputValue={this.state.organizationInput}
-                  onChange={(_, value) => this.setState({ shareOrganizations: value })}
-                  renderOption={(props, option) => (
-                    <li {...props}>
-                      <div className={classes.icon}>
-                        <ItemIcon type={option.type} />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
-                    </li>
-                  )}
-                  disableClearable
-                />
-                <DialogActions>
-                  <Button
-                    variant="secondary"
-                    onClick={this.handleCloseUnshare.bind(this)}
+                    <IconButton
+                      onClick={() => this.setState({ organizationCreation: true })}
+                      edge="end"
+                      style={{ position: 'absolute', top: 80, right: 50 }}
+                    >
+                      <AddOutlined />
+                    </IconButton>
+                    <DialogActions>
+                      <Button
+                        variant="secondary"
+                        onClick={this.handleCloseShare.bind(this)}
+                      >
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          const shareActions = [
+                            { type: 'SHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
+                          ];
+                          const orgaNames = this.state.shareOrganizations.map((o) => o.label).join('|');
+                          const sharingDescription = `SHARE with organizations ${orgaNames}`;
+                          this.setState({ description: sharingDescription, actions: shareActions }, () => {
+                            this.handleCloseShare();
+                            this.handleOpenTask();
+                          });
+                        }}
+                      >
+                        {t('Share')}
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                  <Dialog
+                    open={this.state.displayUnshare}
+                    onClose={() => this.setState({ displayUnshare: false })}
+                    title={t('Unshare with organizations')}
                   >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    color="secondary"
-                    onClick={() => {
-                      const shareActions = [
-                        { type: 'UNSHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
-                      ];
-                      const orgaNames = this.state.shareOrganizations.map((o) => o.label).join('|');
-                      const sharingDescription = `UNSHARE with organizations ${orgaNames}`;
-                      this.setState({ description: sharingDescription, actions: shareActions }, () => {
-                        this.handleCloseUnshare();
-                        this.handleOpenTask();
-                      });
-                    }}
-                  >
-                    {t('Unshare')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            </>
-          );
-        }}
-      </UserContext.Consumer>
+                    <Autocomplete
+                      size="small"
+                      fullWidth={true}
+                      selectOnFocus={true}
+                      autoHighlight={true}
+                      getOptionLabel={(option) => (option.label ? option.label : '')}
+                      value={this.state.shareOrganizations}
+                      multiple={true}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          variant="standard"
+                          label={t('Values')}
+                          fullWidth={true}
+                          onFocus={this.searchOrganizations.bind(this)}
+                          style={{ marginTop: 3 }}
+                        />
+                      )}
+                      noOptionsText={t('No available options')}
+                      options={this.state.organizations}
+                      onInputChange={this.searchOrganizations.bind(this)}
+                      inputValue={this.state.organizationInput}
+                      onChange={(_, value) => this.setState({ shareOrganizations: value })}
+                      renderOption={(props, option) => (
+                        <li {...props}>
+                          <div className={classes.icon}>
+                            <ItemIcon type={option.type} />
+                          </div>
+                          <div className={classes.text}>{option.label}</div>
+                        </li>
+                      )}
+                      disableClearable
+                    />
+                    <DialogActions>
+                      <Button
+                        variant="secondary"
+                        onClick={this.handleCloseUnshare.bind(this)}
+                      >
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        color="secondary"
+                        onClick={() => {
+                          const shareActions = [
+                            { type: 'UNSHARE_MULTIPLE', context: { values: this.state.shareOrganizations } },
+                          ];
+                          const orgaNames = this.state.shareOrganizations.map((o) => o.label).join('|');
+                          const sharingDescription = `UNSHARE with organizations ${orgaNames}`;
+                          this.setState({ description: sharingDescription, actions: shareActions }, () => {
+                            this.handleCloseUnshare();
+                            this.handleOpenTask();
+                          });
+                        }}
+                      >
+                        {t('Unshare')}
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                </>
+              );
+            }}
+          </UserContext.Consumer>
+        )}
+      />
     );
   }
 }

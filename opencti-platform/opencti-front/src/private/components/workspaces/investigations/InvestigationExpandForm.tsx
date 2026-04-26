@@ -11,7 +11,7 @@ import { GraphLink, GraphNode } from '../../../../components/graph/graph.types';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { FieldOption } from '../../../../utils/field';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import { InvestigationExpandFormRelDistributionQuery } from './__generated__/InvestigationExpandFormRelDistributionQuery.graphql';
 import { InvestigationExpandFormTargetsDistributionFromQuery } from './__generated__/InvestigationExpandFormTargetsDistributionFromQuery.graphql';
 import { InvestigationExpandFormTargetsDistributionToQuery } from './__generated__/InvestigationExpandFormTargetsDistributionToQuery.graphql';
@@ -110,7 +110,7 @@ const InvestigationExpandFormContent = ({
   distributionToQueryRef,
 }: InvestigationExpandFormContentProps) => {
   const { t_i18n } = useFormatter();
-  const { schema } = useAuth();
+  const { schema } = useSchema();
 
   const distributionRel = usePreloadedQuery(
     investigationExpandFormRelDistributionQuery,

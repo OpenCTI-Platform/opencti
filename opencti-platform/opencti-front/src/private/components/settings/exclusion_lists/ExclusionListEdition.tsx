@@ -19,7 +19,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
-import useSchema from '../../../../utils/hooks/useSchema';
+import { useSchema } from '../../../../utils/schema/useSchema';
 
 const MAX_FILE_SIZE = 1000000;
 

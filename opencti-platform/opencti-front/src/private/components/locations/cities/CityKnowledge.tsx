@@ -9,7 +9,7 @@ import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDoma
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import { CityKnowledge_city$key } from './__generated__/CityKnowledge_city.graphql';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
 const cityKnowledgeFragment = graphql`
@@ -28,7 +28,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
   );
   const location = useLocation();
   const link = `/dashboard/locations/cities/${city.id}/knowledge`;
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(city.entity_type, schema);
   return (
     <div data-testid="city-knowledge">

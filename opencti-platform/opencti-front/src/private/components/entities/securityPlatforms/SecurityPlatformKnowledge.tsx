@@ -7,7 +7,7 @@ import EntityStixCoreRelationships from '../../common/stix_core_relationships/En
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 
 const securityPlatformKnowledgeFragment = graphql`
   fragment SecurityPlatformKnowledge_securityPlatform on SecurityPlatform {
@@ -31,7 +31,7 @@ const SecurityPlatformKnowledgeComponent = ({
   );
   const location = useLocation();
   const link = `/dashboard/entities/security_platforms/${securityPlatform.id}/knowledge`;
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(securityPlatform.entity_type, schema);
   return (
     <div data-testid="security-platform-knowledge">

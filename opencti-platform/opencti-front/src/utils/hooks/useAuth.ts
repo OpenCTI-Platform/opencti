@@ -12,26 +12,6 @@ export interface BannerSettings {
   bannerHeightNumber: number;
 }
 
-export type FilterDefinition = {
-  filterKey: string;
-  label: string;
-  type: string; // boolean, date, integer, float, id, string, text, or object
-  multiple: boolean;
-  subEntityTypes: string[];
-  elementsForFilterValuesSearch: string[]; // not empty if type = 'id', type = 'enum' or type = 'vocabulary'
-  subFilters?: FilterDefinition[] | null;
-};
-
-export type SchemaType = {
-  scos: { id: string; label: string }[];
-  sdos: { id: string; label: string }[];
-  smos: { id: string; label: string }[];
-  scrs: { id: string; label: string }[];
-  schemaRelationsTypesMapping: Map<string, readonly string[]>;
-  schemaRelationsRefTypesMapping: Map<string, readonly { readonly name: string; readonly toTypes: readonly string[] }[]>;
-  filterKeysSchema: Map<string, Map<string, FilterDefinition>>;
-};
-
 export type PlatformLang
   = | 'de-de'
     | 'en-us'
@@ -50,7 +30,6 @@ export interface UserContextType {
   settings: RootSettings$data | undefined;
   bannerSettings: BannerSettings | undefined;
   entitySettings: PrivateRootPreloadedQuery$data['entitySettings'] | undefined;
-  schema: SchemaType | undefined;
   isXTMHubAccessible: boolean | null | undefined;
   about: PrivateRootPreloadedQuery$data['about'] | undefined;
   themes: PrivateRootPreloadedQuery$data['themes'] | undefined;
@@ -80,7 +59,6 @@ const useAuth = () => {
     settings,
     bannerSettings,
     entitySettings,
-    schema,
     isXTMHubAccessible,
     about,
     themes,
@@ -88,7 +66,7 @@ const useAuth = () => {
     locale,
     tz,
   } = useContext(UserContext);
-  if (!me || !settings || !bannerSettings || !entitySettings || !schema || !about || !themes) {
+  if (!me || !settings || !bannerSettings || !entitySettings || !about || !themes) {
     throw new Error('Invalid user context !');
   }
   return {
@@ -96,7 +74,6 @@ const useAuth = () => {
     settings,
     bannerSettings,
     entitySettings,
-    schema,
     isXTMHubAccessible,
     about,
     themes,

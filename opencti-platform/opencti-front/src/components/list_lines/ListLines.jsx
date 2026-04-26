@@ -31,7 +31,7 @@ import StixDomainObjectsExports from '../../private/components/common/stix_domai
 import StixCyberObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
 import { ExportContext } from '../../utils/ExportContextProvider';
 import Security from '../../utils/Security';
-import { UserContext } from '../../utils/hooks/useAuth';
+import { SchemaPreloadedDataContextConsumer } from '../../utils/schema/SchemaPreloadedContext';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import { export_max_size } from '../../utils/utils';
 import FilterIconButton from '../FilterIconButton';
@@ -594,8 +594,8 @@ class ListLines extends Component {
     const { disableExport, exportContext, additionalFilterKeys } = this.props;
     const entityTypes = this.props.entityTypes ?? (exportContext?.entity_type ? [exportContext?.entity_type] : undefined);
     return (
-      <UserContext.Consumer>
-        {({ schema }) => {
+      <SchemaPreloadedDataContextConsumer
+        render={({ schema }) => {
           let availableFilterKeys = this.props.availableFilterKeys ?? [];
           if (availableFilterKeys.length === 0 && entityTypes) {
             const filterKeysMap = new Map();
@@ -617,7 +617,7 @@ class ListLines extends Component {
             </ExportContext.Consumer>
           );
         }}
-      </UserContext.Consumer>
+      />
     );
   }
 }

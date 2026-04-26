@@ -10,7 +10,7 @@ import { stixCoreRelationshipCreationFromEntityFromMutation, TargetEntity } from
 import { commitMutation, fetchQuery, MESSAGING$ } from 'src/relay/environment';
 import Typography from '@mui/material/Typography';
 import { useFormatter } from 'src/components/i18n';
-import useAuth from 'src/utils/hooks/useAuth';
+import { useSchema } from 'src/utils/schema/useSchema';
 import { ArrowRightAlt } from '@mui/icons-material';
 import MenuItem from '@mui/material/MenuItem';
 import { Select, SelectChangeEvent } from '@mui/material';
@@ -193,7 +193,7 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
     return () => clearTimeout(timeoutId);
   }, [textAreaValue, 500]);
 
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const scoLabelList = schema.scos.map(({ label }) => label);
   const resolvedRelations: RelationsDataFromEntity = getRelationsFromOneEntityToAny(stixDomainObjectType, schema);
   const entityList = resolvedRelations.allRelationsToEntity;

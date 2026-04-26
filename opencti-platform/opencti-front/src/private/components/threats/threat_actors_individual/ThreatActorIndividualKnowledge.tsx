@@ -15,7 +15,7 @@ import { ThreatActorIndividualKnowledge_ThreatActorIndividual$key } from './__ge
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
-import useAuth from '../../../../utils/hooks/useAuth';
+import { useSchema } from '../../../../utils/schema/useSchema';
 
 const threatActorIndividualKnowledgeFragment = graphql`
   fragment ThreatActorIndividualKnowledge_ThreatActorIndividual on ThreatActorIndividual {
@@ -41,7 +41,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
   );
   const location = useLocation();
   const link = `/dashboard/threats/threat_actors_individual/${threatActorIndividual.id}/knowledge`;
-  const { schema } = useAuth();
+  const { schema } = useSchema();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(threatActorIndividual.entity_type, schema);
   return (
     <div data-testid="threat-actor-individual-knowledge">

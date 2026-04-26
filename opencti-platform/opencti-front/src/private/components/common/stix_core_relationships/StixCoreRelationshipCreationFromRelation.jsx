@@ -27,7 +27,7 @@ import StixCoreRelationshipCreationFromRelationStixCyberObservablesLines, {
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import SearchInput from '../../../../components/SearchInput';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
-import { UserContext } from '../../../../utils/hooks/useAuth';
+import { SchemaPreloadedDataContextConsumer } from '../../../../utils/schema/SchemaPreloadedContext';
 import Drawer from '../drawer/Drawer';
 import { Stack } from '@mui/material';
 
@@ -479,8 +479,8 @@ class StixCoreRelationshipCreationFromRelation extends Component {
     }
 
     return (
-      <UserContext.Consumer>
-        {({ schema }) => {
+      <SchemaPreloadedDataContextConsumer
+        render={({ schema }) => {
           const relationshipTypes = R.uniq(resolveRelationsTypes(
             fromEntity.parent_types.includes('Stix-Cyber-Observable')
               ? 'observable'
@@ -515,7 +515,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             </>
           );
         }}
-      </UserContext.Consumer>
+      />
     );
   }
 
