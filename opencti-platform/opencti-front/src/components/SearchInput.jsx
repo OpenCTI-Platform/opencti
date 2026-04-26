@@ -314,11 +314,11 @@ const SearchInput = (props) => {
   const getPlaceholder = () => {
     if (isNLQActivated) {
       return selectedAgent
-        ? `${t_i18n('Ask your question')} (${selectedAgent.name})...`
+        ? `${t_i18n('Ask your question')} - ${selectedAgent.name}`
         : `${t_i18n('Ask your question')}...`;
     }
     if (mode === MODE_BULK) {
-      return `${t_i18n('Keywords separated by commas')}...`;
+      return `${t_i18n('One keyword by line or separated by commas')}...`;
     }
     return placeholder;
   };
@@ -511,8 +511,8 @@ const SearchInput = (props) => {
           {fullyActive && (
             <Tooltip
               title={isNLQActivated && selectedAgent
-                ? `${t_i18n('NLQ')}: ${selectedAgent.name}${selectedAgent.description ? ` — ${selectedAgent.description}` : ''}`
-                : t_i18n('Natural language query')}
+                ? `${t_i18n('Ask AI')}: ${selectedAgent.name}${selectedAgent.description ? ` — ${selectedAgent.description}` : ''}`
+                : t_i18n('Ask AI')}
             >
               <ToggleButton
                 value={mode}
@@ -572,7 +572,6 @@ const SearchInput = (props) => {
               <ListItemIcon>
                 <CircularProgress size={18} />
               </ListItemIcon>
-              <ListItemText primary={t_i18n('Loading agents...')} />
             </MenuItem>
           )}
           {!nlqAgentsLoading && nlqAgents.length === 0 && nlqAgentsFetched && (

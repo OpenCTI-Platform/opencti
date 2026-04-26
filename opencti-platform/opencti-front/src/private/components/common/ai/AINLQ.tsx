@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { graphql } from 'react-relay';
 import { isFilterGroupFormatCorrect } from '../../../../utils/filters/filtersUtils';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { callAgent, fetchAgentsForIntent } from '../../../../utils/ai/agentApi';
+import { callAgent } from '../../../../utils/ai/agentApi';
 import { useChatbot } from '../../chatbox/ChatbotContext';
 import { RelayError } from '../../../../relay/relayTypes';
 import { extractJsonContent } from '../../../../utils/String';
