@@ -8,6 +8,8 @@ OpenCTI playbooks are automated data processing flows that allow platform admini
 
 Playbooks operate on **STIX 2.1 bundles** and can be fully customised to implement intelligence workflows such as enrichment, qualification, normalisation, routing, or automated response.
 
+![playbook data processing flow](assets/playbook_data_flow_example.png)
+
 Playbook automation is accessible from **Data ▸ Processing ▸ Automation**.
 
 !!! note "Required capability"
@@ -50,9 +52,6 @@ Playbooks can be used to assist in a variety of use cases such as:
 - Support Vulnerability Management use cases, from triage to investigation and response
 - Data quality review to assess the unique and value of different data feeds
 - Automate the tracking of specific threat groups infrastructure through enrichment automation
-
-[placeholder for image of playbooks]
-
 
 ### Manually enrolling an entity in a playbook
 
