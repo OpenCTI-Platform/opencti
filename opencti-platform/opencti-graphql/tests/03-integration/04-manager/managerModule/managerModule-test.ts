@@ -4,8 +4,6 @@ import { getSettings } from '../../../../src/domain/settings';
 import { testContext } from '../../../utils/testQuery';
 import type { BasicStoreSettings } from '../../../../src/types/settings';
 
-// Enable testManager to run
-import './testManager';
 import { TEST_MANAGER_DEFINITION } from './testManager';
 import { wait } from '../../../../src/database/utils';
 
