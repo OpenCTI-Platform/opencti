@@ -203,6 +203,18 @@ export const loadAndSaveLatestNewsFeed = async (context: AuthContext, user: Auth
     news_feed_items: newsFeedItems,
     available_news_feed_types: availableNewsFeedTypes,
   } = await xtmHubClient.consumeProvisionedNewsFeedItems(settings.id, settings.xtm_hub_token);
+
+  await updateAttribute(
+    context,
+    user,
+    settings.id,
+    ENTITY_TYPE_SETTINGS,
+    [{ key: 'xtm_hub_available_news_feed_types', value: availableNewsFeedTypes }],
+  );
+
+  const updatedSettings = await getSettings(context);
+  await notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, HUB_REGISTRATION_MANAGER_USER);
+
   if (newsFeedItems.length === 0) {
     return;
   }
@@ -218,17 +230,6 @@ export const loadAndSaveLatestNewsFeed = async (context: AuthContext, user: Auth
       }
     }
   }
-
-  await updateAttribute(
-    context,
-    user,
-    settings.id,
-    ENTITY_TYPE_SETTINGS,
-    [{ key: 'xtm_hub_available_news_feed_types', value: availableNewsFeedTypes }],
-  );
-
-  const updatedSettings = await getSettings(context);
-  await notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, HUB_REGISTRATION_MANAGER_USER);
 };
 
 export const contactUsXtmHub = async (context: AuthContext, user: AuthUser, message: string): Promise<{ success: boolean }> => {

@@ -431,16 +431,22 @@ describe('XTM hub', () => {
       expect(addNewsFeedSpy).not.toBeCalled();
     });
 
-    it('should do nothing when there are no news feed items', async () => {
+    it('should update xtm_hub_available_news_feed_types in settings even when there are no news feed items', async () => {
       consumeProvisionedNewsFeedItemsSpy.mockResolvedValue({
         news_feed_items: [],
-        available_news_feed_types: [],
+        available_news_feed_types: ['type-1', 'type-2'],
       });
 
       await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
 
       expect(addNewsFeedSpy).not.toBeCalled();
-      expect(updateAttributeSpy).not.toBeCalled();
+      expect(updateAttributeSpy).toBeCalledWith(
+        testContext,
+        HUB_REGISTRATION_MANAGER_USER,
+        'settings_id',
+        ENTITY_TYPE_SETTINGS,
+        [{ key: 'xtm_hub_available_news_feed_types', value: ['type-1', 'type-2'] }],
+      );
     });
 
     it('should call loadProvisionedNewsFeedItems with correct platform credentials', async () => {
@@ -464,7 +470,7 @@ describe('XTM hub', () => {
       }
     });
 
-    it('should update available_news_feed_types in settings after processing', async () => {
+    it('should update xtm_hub_available_news_feed_types in settings after processing', async () => {
       await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
 
       expect(updateAttributeSpy).toBeCalledWith(
