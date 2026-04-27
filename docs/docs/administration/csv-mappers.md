@@ -2,7 +2,7 @@
 
 In OpenCTI, CSV Mappers allow to parse CSV files in a STIX 2.1 Object. The mappers are created and configured by users with the Manage data mappers capability. Then, they are available to users who import CSV files, for instance inside a report or in the global import view.
 
-## Principles
+## Principles test
 
 The mapper contains __representations__ of STIX 2.1 entities and relationships, in order for the parser to properly extract them. One mapper is dedicated to parsing a specific CSV file structure, and thus dedicated mappers should be created for every specific CSV structure you might need to ingest in the platform.
 
