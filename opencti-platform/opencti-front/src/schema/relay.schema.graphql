@@ -10696,6 +10696,7 @@ type Mutation {
   ldapProviderAdd(input: LdapInput!): AuthenticationProvider
   ldapProviderEdit(id: ID!, input: LdapInput!): AuthenticationProvider
   ldapProviderDelete(id: ID!): ID
+  customViewAdd(input: CustomViewAddInput!): CustomView!
   taxiiCollectionAdd(input: TaxiiCollectionAddInput!): TaxiiCollection
   taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations
   feedAdd(input: FeedAddInput!): Feed
@@ -16149,6 +16150,14 @@ enum CustomViewsOrdering {
 
 type CustomViewsSettings {
   canEntityTypeHaveCustomViews: Boolean!
+}
+
+input CustomViewAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  manifest: String
+  targetEntityType: String!
 }
 
 type TaxiiCollection {

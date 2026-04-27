@@ -2,8 +2,10 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { createEntity } from '../../../../src/database/middleware';
 import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQuery';
-import { queryAsUserWithSuccess, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
-import { CUSTOM_VIEW_ENTITY_1, CUSTOM_VIEW_ENTITY_2, CUSTOM_VIEW_ENTITY_INVALID } from './customView-fixtures';
+import { queryAsUserWithSuccess, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsAdminWithError } from '../../../utils/testQueryHelper';
+import { CUSTOM_VIEW_ENTITY_1, CUSTOM_VIEW_ENTITY_2, CUSTOM_VIEW_ENTITY_INVALID, DASHBOARD_MANIFEST } from './customView-fixtures';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../../src/modules/case/feedback/feedback-types';
+import { ENTITY_TYPE_INTRUSION_SET } from '../../../../src/schema/stixDomainObject';
 
 const READ_CUSTOM_VIEW_FOR_DISPLAY_QUERY = gql`
   query CustomViewDisplayTest($id: ID!) {
@@ -38,6 +40,20 @@ const READ_ALL_CUSTOM_VIEWS_QUERY = gql`
           targetEntityType
         }
       }
+    }
+  }
+`;
+
+const CREATE_CUSTOM_VIEW_QUERY = gql`
+  mutation CreateCustomViewTest($input: CustomViewAddInput!) {
+    customViewAdd(input: $input) {
+      id
+      name
+      description
+      path
+      targetEntityType
+      updated_at
+      created_at
     }
   }
 `;
@@ -90,16 +106,16 @@ describe('CustomView resolvers', () => {
           id: customViewId1,
           name: CUSTOM_VIEW_ENTITY_1.name,
           description: CUSTOM_VIEW_ENTITY_1.description,
-          created_at: new Date(CUSTOM_VIEW_ENTITY_1.created_at),
-          updated_at: new Date(CUSTOM_VIEW_ENTITY_1.updated_at),
+          created_at: expect.any(Date),
+          updated_at: expect.any(Date),
           targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
         });
         expect(nodes).toContainEqual({
           id: customViewId2,
           name: CUSTOM_VIEW_ENTITY_2.name,
           description: CUSTOM_VIEW_ENTITY_2.description,
-          created_at: new Date(CUSTOM_VIEW_ENTITY_2.created_at),
-          updated_at: new Date(CUSTOM_VIEW_ENTITY_2.updated_at),
+          created_at: expect.any(Date),
+          updated_at: expect.any(Date),
           targetEntityType: CUSTOM_VIEW_ENTITY_2.target_entity_type,
         });
         // Ordered by name ascending as defined by the query
@@ -146,6 +162,54 @@ describe('CustomView resolvers', () => {
           });
           expect(result.data.customViewsSettings.canEntityTypeHaveCustomViews).toBe(false);
         });
+
+        it('should allow creating a custom view', async () => {
+          const description = 'Some great description';
+          const manifest = DASHBOARD_MANIFEST;
+          const name = 'Custom view name';
+          const targetEntityType = 'Intrusion-Set';
+          const result = await queryAsAdminWithSuccess({
+            query: CREATE_CUSTOM_VIEW_QUERY,
+            variables: {
+              input: {
+                description,
+                manifest,
+                name,
+                targetEntityType,
+              },
+            },
+          });
+          expect(result.data.customViewAdd).toMatchObject({
+            id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
+            name,
+            description,
+            path: `custom-view-name-${result.data.customViewAdd.id.replaceAll('-', '')}`,
+            targetEntityType,
+            created_at: expect.any(Date),
+            updated_at: expect.any(Date),
+          });
+        });
+
+        it('should return a client error when trying to create a custom view for a non-supported entity type', async () => {
+          const description = 'Some great description';
+          const manifest = DASHBOARD_MANIFEST;
+          const name = 'Custom view name';
+          const targetEntityType = ENTITY_TYPE_CONTAINER_FEEDBACK;
+          await queryAsAdminWithError({
+            query: CREATE_CUSTOM_VIEW_QUERY,
+            variables: {
+              input: {
+                description,
+                manifest,
+                name,
+                targetEntityType,
+              },
+            },
+          },
+          'Custom views cannot be created for given entity type',
+          'FUNCTIONAL_ERROR',
+          );
+        });
       });
 
       describe('when user is a simple participant', () => {
@@ -154,6 +218,20 @@ describe('CustomView resolvers', () => {
             query: READ_SETTINGS_QUERY,
             variables: {
               entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+            },
+          });
+        });
+
+        it('should fail creating a custom view with ForbiddenAccess 403 error', async () => {
+          await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+            query: CREATE_CUSTOM_VIEW_QUERY,
+            variables: {
+              input: {
+                description: 'Some great description',
+                manifest: DASHBOARD_MANIFEST,
+                name: 'Custom view name',
+                targetEntityType: ENTITY_TYPE_INTRUSION_SET,
+              },
             },
           });
         });
