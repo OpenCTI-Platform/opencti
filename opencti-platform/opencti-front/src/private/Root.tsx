@@ -1,6 +1,6 @@
 import { StyledEngineProvider } from '@mui/material/styles';
-import React, { FunctionComponent, useMemo } from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useSubscription } from 'react-relay';
+import { FunctionComponent, useMemo } from 'react';
+import { graphql, useFragment, useSubscription } from 'react-relay';
 import { AnalyticsProvider } from 'use-analytics';
 import Analytics from 'analytics';
 import { LICENSE_OPTION_TRIAL } from '@components/LicenseBanner';
@@ -12,11 +12,8 @@ import platformModuleHelper from '../utils/platformModulesHelper';
 import { ONE_SECOND } from '../utils/Time';
 import { isNotEmptyField } from '../utils/utils';
 import Index from './Index';
-import useQueryLoading from '../utils/hooks/useQueryLoading';
-import Loader from '../components/Loader';
 import generateAnalyticsConfig from './Analytics';
 import { RootMe_data$key } from './__generated__/RootMe_data.graphql';
-import { RootPrivateQuery } from './__generated__/RootPrivateQuery.graphql';
 import { RootSettings$data, RootSettings$key } from './__generated__/RootSettings.graphql';
 import useNetworkCheck from '../utils/hooks/useCheckNetwork';
 import { useBaseHrefAbsolute } from '../utils/hooks/useDocumentModifier';
@@ -24,6 +21,8 @@ import useActiveTheme from '../utils/hooks/useActiveTheme';
 import { AppDataProvider } from '../utils/hooks/useAppData';
 import { TOP_BANNER_HEIGHT } from '../components/TopBanner';
 import defaultBrowserLang, { LANGUAGES } from '../utils/BrowserLanguage';
+import { PrivateRootPreloadedQueryLoader } from './PrivateRootPreloadedQuery';
+import { PrivateRootPreloadedQuery$data } from './__generated__/PrivateRootPreloadedQuery.graphql';
 
 const rootSettingsFragment = graphql`
   fragment RootSettings on Settings {
@@ -272,112 +271,6 @@ const subscription = graphql`
   }
 `;
 
-const rootPrivateQuery = graphql`
-  query RootPrivateQuery {
-    me {
-      ...RootMe_data
-    }
-    settings {
-      ...RootSettings
-    }
-    about {
-      version
-    }
-    entitySettings {
-      edges {
-        node {
-          id
-          ...EntitySettingsFragment_entitySetting
-        }
-      }
-    }
-    ...useCustomViews_data
-    schemaSCOs: subTypes(type: "Stix-Cyber-Observable") {
-      edges {
-        node {
-          id
-          label
-        }
-      }
-    }
-    schemaSDOs: subTypes(type: "Stix-Domain-Object") {
-      edges {
-        node {
-          id
-          label
-        }
-      }
-    }
-    schemaSMOs: subTypes(type: "Stix-Meta-Object") {
-      edges {
-        node {
-          id
-          label
-        }
-      }
-    }
-    schemaSCRs: subTypes(type: "stix-core-relationship") {
-      edges {
-        node {
-          id
-          label
-        }
-      }
-    }
-    schemaRelationsTypesMapping {
-      key
-      values
-    }
-    schemaRelationsRefTypesMapping {
-      key
-      values {
-        name
-        toTypes
-      }
-    }
-    filterKeysSchema {
-      entity_type
-      filters_schema {
-        filterKey
-        filterDefinition {
-          filterKey
-          label
-          type
-          multiple
-          subEntityTypes
-          elementsForFilterValuesSearch
-          subFilters {
-            filterKey
-            label
-            type
-            multiple
-            subEntityTypes
-            elementsForFilterValuesSearch
-          }
-        }
-      }
-    }
-    themes(orderBy: created_at, orderMode: desc) {
-      edges {
-        node {
-          id
-          name
-          theme_background
-          theme_accent
-          theme_paper
-          theme_nav
-          theme_primary
-          theme_secondary
-          theme_text_color
-          theme_logo
-          theme_logo_collapsed
-          theme_logo_login
-        }
-      }
-    }
-  }
-`;
-
 const displayTopBanner = (settings: RootSettings$data) => {
   const displayTrialBanner = isNotEmptyField(settings?.platform_xtmhub_url) && settings.platform_demo;
 
@@ -411,12 +304,12 @@ const computeBannerSettings = (settings: RootSettings$data) => {
     sessionLimit,
   };
 };
+
 interface RootComponentProps {
-  queryRef: PreloadedQuery<RootPrivateQuery>;
+  queryData: PrivateRootPreloadedQuery$data;
 }
 
-const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
-  const queryData = usePreloadedQuery(rootPrivateQuery, queryRef);
+const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => {
   const {
     me: meFragment,
     settings: settingsFragment,
@@ -485,7 +378,6 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   return (
     <UserContext.Provider
       value={{
-        queryData,
         me,
         settings,
         bannerSettings,
@@ -522,15 +414,11 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
 };
 
 const Root = () => {
-  const queryRef = useQueryLoading<RootPrivateQuery>(rootPrivateQuery, {});
   return (
-    <>
-      {queryRef && (
-        <React.Suspense fallback={<Loader />}>
-          <RootComponent queryRef={queryRef} />
-        </React.Suspense>
-      )}
-    </>
+    <PrivateRootPreloadedQueryLoader render={({ queryData }) => (
+      <RootComponent queryData={queryData} />
+    )}
+    />
   );
 };
 
