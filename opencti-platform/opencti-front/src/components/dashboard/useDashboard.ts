@@ -2,14 +2,14 @@ import { v4 as uuid } from 'uuid';
 import * as R from 'ramda';
 import { useEffect, useMemo, useState } from 'react';
 import fileDownload from 'js-file-download';
-import type { WidgetLayout } from '../../utils/widget/widget';
+import type { Widget, WidgetLayout } from '../../utils/widget/widget';
 import { deserializeDashboardManifestForFrontend, prepareManifest, serializeDashboardManifestForBackend } from './dashboard-utils';
 import type { DashboardLike, DashboardManifest, DashboardWidget } from './dashboard-types';
 
 interface useDashboardProps {
   entity: DashboardLike | undefined | null;
   onSave?: (entityId: string, newSerializedManifest: string, noRefresh: boolean, onCompleted: () => void) => void;
-  onImportWidget?: (entityId: string, widgetConfig: unknown, serializedManifest: string) => void;
+  onImportWidget?: (entityId: string, widgetConfigFile: File, serializedManifest: string) => void;
   onExportWidget?: (entityId: string, widget: { id: string; type: string }) => Promise<string>;
 }
 
@@ -71,14 +71,14 @@ function useDashboard({
     }
   };
 
-  const handleDateChange = (type: string, value: unknown) => {
+  const handleDateChange = (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => {
     let newManifest = {
       ...manifest,
       config: {
         ...manifest.config,
         [type]: value === 'none' ? null : value,
       },
-    };
+    } satisfies DashboardManifest;
     if (type === 'relativeDate' && value !== 'none') {
       newManifest = {
         ...newManifest,
@@ -87,7 +87,7 @@ function useDashboard({
           startDate: null,
           endDate: null,
         },
-      };
+      } satisfies DashboardManifest;
     }
     saveManifest(newManifest);
   };
@@ -99,13 +99,13 @@ function useDashboard({
     }, 0);
   };
 
-  const handleImportWidget = (widgetConfig: unknown) => {
+  const handleImportWidget = (widgetConfigFile: File) => {
     const preparedManifest = prepareManifest(manifest, widgetsLayouts);
     const manifestEncoded = serializeDashboardManifestForBackend(preparedManifest);
-    onImportWidget?.(entity?.id ?? '', widgetConfig, manifestEncoded);
+    onImportWidget?.(entity?.id ?? '', widgetConfigFile, manifestEncoded);
   };
 
-  const handleExportWidget = async (id: string, widget: { id: string; type: string }) => {
+  const handleExportWidget = (id: string, widget: { id: string; type: string }) => {
     if (!onExportWidget) {
       return;
     }
@@ -125,7 +125,7 @@ function useDashboard({
       });
   };
 
-  const handleAddWidget = (widgetConfig: DashboardWidget) => {
+  const handleAddWidget = (widgetConfig: Widget) => {
     saveManifest({
       ...manifest,
       widgets: {

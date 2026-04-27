@@ -19,6 +19,7 @@ import Button from '@common/button/Button';
 import WorkspaceEditionContainer from '@components/workspaces/WorkspaceEditionContainer';
 import { WorkspaceHeaderFragment$key } from '@components/workspaces/workspaceHeader/__generated__/WorkspaceHeaderFragment.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import type { Widget } from 'src/utils/widget/widget';
 
 const workspaceHeaderFragment = graphql`
   fragment WorkspaceHeaderFragment on Workspace {
@@ -50,7 +51,7 @@ type WorkspaceHeaderProps = {
     endDate: string | null;
     relativeDate: string | null;
   };
-  handleAddWidget?: () => void;
+  handleAddWidget?: (widget: Widget) => void;
   handleImportWidget?: (widgetFile: File) => void;
 };
 

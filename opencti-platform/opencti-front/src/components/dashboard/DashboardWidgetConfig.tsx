@@ -4,12 +4,12 @@ import MenuItem from '@mui/material/MenuItem';
 import VisuallyHiddenInput from '../../private/components/common/VisuallyHiddenInput';
 import WidgetConfig from '../../private/components/widgets/WidgetConfig';
 import { useFormatter } from '../i18n';
-import type { DashboardWidget } from './dashboard-types';
+import type { Widget } from '../../utils/widget/widget';
 
 type WorkspaceWidgetConfigProps = {
   handleImportWidget: (widgetFile: File) => void;
-  widget?: DashboardWidget;
-  onComplete: (value: DashboardWidget, variableName?: string) => void;
+  widget?: Widget;
+  onComplete: (value: Widget, variableName?: string) => void;
   closeMenu?: () => void;
 };
 
@@ -67,7 +67,7 @@ const DashboardWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
         </MenuItem>
       )}
       <WidgetConfig
-        onComplete={(widget, variableName) => onComplete(widget as DashboardWidget, variableName)}
+        onComplete={(widget, variableName) => onComplete(widget, variableName)}
         widget={widget}
         onClose={handleCloseWidgetConfig}
         open={isWidgetConfigOpen}
