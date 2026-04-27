@@ -28,7 +28,7 @@ With playbooks, you can for example:
 
 A playbook can be considered as a **STIX 2.1 bundle processing pipeline**.
 
-A playbook starts with an **event source** that listens to a specific data stream (for example knowledge creation, updates, or manual triggers). Each component then receives a STIX bundle, processes it, and forwards the resulting bundle to the next component.
+A playbook starts with an **event source** that listens to a specific data stream (for example knowledge creation, updates, or manual triggers). Each component then receives a STIX bundle, processes it, and forwards the resulting bundle to the next component. For details of the available components see [**playbook components**](playbook-components).
 
 Components can:
 
@@ -74,7 +74,7 @@ For details on how event sources and filters work, see **Playbook Creation**.
 
 Playbooks are built by chaining **components**, each responsible for a specific operation (filtering, manipulation, enrichment, routing, or execution).
 
-The **Playbook Creation** page explains:
+The [**playbook creation**](playbook-creation.md) page explains:
 
 - how to create a playbook,
 - how event source / trigger components work,
