@@ -35,7 +35,7 @@ Audit logs help you answer "who did what, where, and when?" within your data wit
 
 ### Playbooks and automation
 
-OpenCTI playbooks are flexible automation scenarios which can be fully customized and enabled by platform administrators to enrich, filter and modify the data created or updated in the platform. Please read [Playbook automation page](../usage/automation.md) to get all information.
+OpenCTI playbooks are flexible automation scenarios which can be fully customized and enabled by platform administrators to enrich, filter and modify the data created or updated in the platform. Please read [Playbook automation page](../usage/playbook-automation.md) to get all information.
 
 ### Organizations management and segregation
 
