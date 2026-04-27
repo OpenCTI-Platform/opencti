@@ -37,7 +37,7 @@ const useStyles = makeStyles(() => createStyles({
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
 export const dashboardSettingsDashboardsQuery = graphql`
-  query DashboardSettingsDashboardsQuery(
+  query HomeDashboardSettingsDashboardsQuery(
     $count: Int!
     $orderBy: WorkspacesOrdering
     $orderMode: OrderingMode
@@ -60,9 +60,9 @@ export const dashboardSettingsDashboardsQuery = graphql`
 `;
 
 const dashboardSettingsMutation = graphql`
-  mutation DashboardSettingsMutation($input: [EditInput]!) {
+  mutation HomeDashboardSettingsMutation($input: [EditInput]!) {
     meEdit(input: $input) {
-      ...DashboardMeFragment
+      ...HomeDashboardMeFragment
     }
   }
 `;
