@@ -56,7 +56,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
         <>
           <Button
             variant="secondary"
-            sx={{ marginLeft: 2, marginRight: 2 }}
+            sx={{ marginInlineStart: 2, marginInlineEnd: 2 }}
             onClick={() => onUpdateWidget(widgetSelfInstance)}
           >
             {t_i18n('', {
@@ -78,7 +78,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
 
       <Button
         variant="secondary"
-        sx={{ marginLeft: 2, marginRight: 2, marginTop: 2 }}
+        sx={{ marginInlineStart: 2, marginInlineEnd: 2, marginTop: 2 }}
         onClick={onCreateWidget}
       >
         {t_i18n('Add related data')}
@@ -86,7 +86,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
 
       <List>
         {widgetsNoSelf.length === 0 && (
-          <Typography sx={{ marginLeft: 2, marginTop: 1 }} variant="body2">
+          <Typography sx={{ marginInlineStart: 2, marginTop: 1 }} variant="body2">
             {t_i18n('No related data added yet')}
           </Typography>
         )}

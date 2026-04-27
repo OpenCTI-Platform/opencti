@@ -165,7 +165,7 @@ const MarkingDefinitions = () => {
   } as UsePreloadedPaginationFragment<MarkingDefinitionsLinesPaginationQuery>;
 
   return (
-    <div style={{ paddingRight: '200px' }} data-testid="marking-settings-page">
+    <div style={{ paddingInlineEnd: '200px' }} data-testid="marking-settings-page">
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Security') },

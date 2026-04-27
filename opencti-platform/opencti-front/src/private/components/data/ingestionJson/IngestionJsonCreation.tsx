@@ -349,7 +349,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
               <FormControlLabel
                 control={<Switch />}
-                style={{ marginLeft: 1 }}
+                style={{ marginInlineStart: 1 }}
                 name="pagination_with_sub_page"
                 onChange={(_, checked) => setFieldValue('pagination_with_sub_page', checked)}
                 label={t_i18n('Sub pagination')}

@@ -132,7 +132,7 @@ const DetailPanel: React.FC = () => {
         minWidth: 280,
         borderRight: '1px solid',
         borderColor: 'divider',
-        paddingRight: 3,
+        paddingInlineEnd: 3,
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -288,7 +288,7 @@ const TTPNetworkGraphSection: React.FC = () => {
 
           <Typography
             variant="h6"
-            sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingRight: 4 }}
+            sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingInlineEnd: 4 }}
           >
             {t_i18n('TTP Network Graph')}
           </Typography>

@@ -64,8 +64,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
       theme.palette.mode === 'dark'
         ? 'rgba(255, 255, 255, .1)'
         : 'rgba(0, 0, 0, .1)',
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
+    borderStartStartRadius: 0,
+    borderStartEndRadius: 0,
     '&:hover': {
       backgroundColor:
         theme.palette.mode === 'dark'
@@ -334,7 +334,7 @@ const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<
                               sx={{
                                 '&.MuiListItemButton-root': {
                                   // corresponds to button container width with some spacing
-                                  paddingRight: `${BUTTON_CONTAINER_WIDTH}px`,
+                                  paddingInlineEnd: `${BUTTON_CONTAINER_WIDTH}px`,
                                 },
                               }}
                             >

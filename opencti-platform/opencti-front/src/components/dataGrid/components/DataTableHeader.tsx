@@ -35,8 +35,8 @@ const useStyles = makeStyles<MuiTheme, { column: DataTableColumn }>((theme) => c
     },
   },
   label: {
-    paddingLeft: theme.spacing(1),
-    paddingRight: theme.spacing(1),
+    paddingInlineStart: theme.spacing(1),
+    paddingInlineEnd: theme.spacing(1),
     display: 'flex',
     alignItems: 'center',
     whiteSpace: 'nowrap',
@@ -51,8 +51,8 @@ const useStyles = makeStyles<MuiTheme, { column: DataTableColumn }>((theme) => c
     right: 3,
     height: theme.spacing(4),
     width: 10,
-    paddingLeft: 4,
-    paddingRight: 4,
+    paddingInlineStart: 4,
+    paddingInlineEnd: 4,
     backgroundClip: 'content-box',
     borderRadius: 2,
     cursor: 'col-resize',
@@ -123,7 +123,7 @@ const DataTableHeader: FunctionComponent<DataTableHeaderProps> = ({
             visibility: isActive ? 'visible' : undefined,
           }}
           sx={{
-            marginRight: 1,
+            marginInlineEnd: 1,
             opacity: 0.5,
             width: 24,
             '&:hover': {

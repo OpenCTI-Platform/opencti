@@ -134,7 +134,7 @@ const MetricChartCard: React.FC<MetricChartCardProps> = ({
             fontWeight: 600,
             color: 'text.primary',
             fontSize: '0.9rem',
-            paddingRight: 3,
+            paddingInlineEnd: 3,
           }}
         >
           {t_i18n(title)}

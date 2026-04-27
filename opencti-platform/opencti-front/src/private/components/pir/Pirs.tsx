@@ -162,7 +162,7 @@ const Pirs = () => {
       label: 'Filters',
       percentWidth: 13,
       render: ({ pir_filters }: Pirs_PirFragment$data) => (
-        <div style={{ marginLeft: theme.spacing(-0.5) }}>
+        <div style={{ marginInlineStart: theme.spacing(-0.5) }}>
           <FilterIconButton
             key={pir_filters}
             filters={JSON.parse(pir_filters)}

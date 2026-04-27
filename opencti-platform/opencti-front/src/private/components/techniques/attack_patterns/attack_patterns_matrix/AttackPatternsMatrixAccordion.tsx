@@ -143,8 +143,8 @@ const AccordionAttackPattern = ({
         )}
         sx={{
           minHeight: 0,
-          paddingLeft: 0,
-          paddingRight: 1.25,
+          paddingInlineStart: 0,
+          paddingInlineEnd: 1.25,
           backgroundColor,
           whiteSpace: 'wrap',
           flexDirection: 'row-reverse',
@@ -159,7 +159,7 @@ const AccordionAttackPattern = ({
         </Typography>
 
         {isCoverage && attackPattern.isCovered && (
-          <Box sx={{ marginLeft: 'auto' }}>
+          <Box sx={{ marginInlineStart: 'auto' }}>
             <SecurityCoverageInformation
               coverage_information={coverage || null}
               variant="matrix"

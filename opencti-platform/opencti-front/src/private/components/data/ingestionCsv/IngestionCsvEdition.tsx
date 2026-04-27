@@ -688,11 +688,11 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 </Alert>
               </Box>
             </Box>
-            <div style={{ marginTop: 20, textAlign: 'right' }}>
+            <div style={{ marginTop: 20, textAlign: 'end' }}>
               <Button
                 color="secondary"
                 onClick={() => setOpen(true)}
-                style={{ marginLeft: theme.spacing(2) }}
+                style={{ marginInlineStart: theme.spacing(2) }}
                 disabled={!(values.uri && (values.csv_mapper_id || values.csv_mapper))}
               >
                 {t_i18n('Verify')}

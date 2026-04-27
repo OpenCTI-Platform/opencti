@@ -181,7 +181,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
             <Checkbox
               checked={
                 entitySettingsEntityType.indexOf(platformHiddenType.target_type) > -1}
-              style={{ marginLeft: 10 }}
+              style={{ marginInlineStart: 10 }}
             />
             {t_i18n(`entity_${platformHiddenType.target_type}`)}
             <Security needs={[SETTINGS_SETACCESSES]}>

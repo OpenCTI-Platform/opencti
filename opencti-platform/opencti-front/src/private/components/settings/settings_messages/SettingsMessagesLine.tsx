@@ -18,7 +18,7 @@ import SettingsMessagesPopover from './SettingsMessagesPopover';
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
-    paddingLeft: theme.spacing(1),
+    paddingInlineStart: theme.spacing(1),
     height: 50,
   },
   itemIcon: {
@@ -30,7 +30,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: theme.spacing(1),
+    paddingInlineEnd: theme.spacing(1),
     alignItems: 'center',
     minWidth: 0,
     width: '100%',

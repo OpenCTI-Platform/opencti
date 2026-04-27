@@ -167,7 +167,7 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
                   <div style={{
                     display: 'inline-block',
                     flexGrow: 1,
-                    marginLeft: 10,
+                    marginInlineStart: 10,
                   }}
                   >
                     {t_i18n(`entity_${option.label}`)}
@@ -183,7 +183,7 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
                 onSubmit={handleSubmitConfidence}
               />
             )}
-            <div style={{ textAlign: 'right', marginTop: '20px' }}>
+            <div style={{ textAlign: 'end', marginTop: '20px' }}>
               <Button
                 color="error"
                 onClick={handleOpenDelete}

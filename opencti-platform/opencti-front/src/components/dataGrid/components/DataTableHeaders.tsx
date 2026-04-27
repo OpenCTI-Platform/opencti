@@ -81,9 +81,9 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
             <Checkbox
               checked={selectAll}
               sx={{
-                marginRight: 1,
+                marginInlineEnd: 1,
                 flex: '0 0 auto',
-                paddingLeft: 0,
+                paddingInlineStart: 0,
                 '&:hover': {
                   background: 'transparent',
                 },
@@ -94,9 +94,9 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
           )}
           {startsWithIcon && (
             <Box sx={{
-              marginRight: 1,
+              marginInlineEnd: 1,
               flex: '0 0 auto',
-              paddingLeft: 0,
+              paddingInlineStart: 0,
             }}
             />
           ) }

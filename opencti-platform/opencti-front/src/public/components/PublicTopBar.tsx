@@ -24,7 +24,7 @@ const PublicTopBar = ({ title }: { title: string }) => {
           alt="logo"
           height={35}
         />
-        <div style={{ marginLeft: '30px' }}>
+        <div style={{ marginInlineStart: '30px' }}>
           <Button
             variant="contained"
             size="small"

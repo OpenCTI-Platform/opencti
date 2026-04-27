@@ -13,7 +13,7 @@ import Label from '../../../../components/common/label/Label';
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
   killChainPhaseItem: {
-    paddingLeft: 0,
+    paddingInlineStart: 0,
     transition: 'background-color 0.1s ease',
     '&:hover': {
       background: 'rgba(0, 0, 0, 0.1)',

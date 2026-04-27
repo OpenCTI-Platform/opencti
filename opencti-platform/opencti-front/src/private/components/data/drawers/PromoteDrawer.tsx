@@ -59,11 +59,11 @@ const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSub
         {renderPromoteToContainerCheckBox()}
         <div style={{
           marginTop: 20,
-          textAlign: 'right',
+          textAlign: 'end',
         }}
         >
           <Button
-            sx={{ marginLeft: theme.spacing(2) }}
+            sx={{ marginInlineStart: theme.spacing(2) }}
             color="secondary"
             onClick={onSubmit}
           >

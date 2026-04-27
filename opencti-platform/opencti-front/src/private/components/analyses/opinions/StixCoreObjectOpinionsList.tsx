@@ -104,14 +104,14 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                   sx={{
                     flex: 'none',
                     width: '400px',
-                    marginRight: '50px',
+                    marginInlineEnd: '50px',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                   }}
                 />
                 <Tooltip title={opinion?.createdBy?.name ?? EMPTY_VALUE}>
                   <div style={{
-                    marginRight: 50,
+                    marginInlineEnd: 50,
                     width: '200px',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
@@ -121,7 +121,7 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                     {opinion?.createdBy?.name ?? EMPTY_VALUE}
                   </div>
                 </Tooltip>
-                <div style={{ marginRight: 50 }}>
+                <div style={{ marginInlineEnd: 50 }}>
                   <ItemMarkings
                     markingDefinitions={opinion?.objectMarking ?? []}
                     limit={1}

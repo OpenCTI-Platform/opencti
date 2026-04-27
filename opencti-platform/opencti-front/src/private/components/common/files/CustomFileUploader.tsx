@@ -60,7 +60,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     color: theme.palette.error.main,
   },
   span: {
-    marginLeft: 5,
+    marginInlineStart: 5,
     verticalAlign: 'bottom',
   },
 }));

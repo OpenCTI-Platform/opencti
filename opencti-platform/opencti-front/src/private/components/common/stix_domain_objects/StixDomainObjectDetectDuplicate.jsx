@@ -130,10 +130,10 @@ class StixDomainObjectDetectDuplicate extends Component {
                     primary={element.node.name}
                     secondary={truncate(element.node.description, 60)}
                   />
-                  <div style={{ marginRight: 50 }}>
+                  <div style={{ marginInlineEnd: 50 }}>
                     {element.node.createdBy?.name ?? EMPTY_VALUE}
                   </div>
-                  <div style={{ marginRight: 50 }}>
+                  <div style={{ marginInlineEnd: 50 }}>
                     <ItemMarkings
                       variant="inList"
                       markingDefinitions={element.node.objectMarking ?? []}

@@ -134,7 +134,7 @@ const NationalRiskScoreCard: React.FC = () => {
             fontWeight: 600,
             color: 'text.primary',
             fontSize: '1rem',
-            paddingRight: 4,
+            paddingInlineEnd: 4,
           }}
         >
           {t_i18n('National Risk Score')}
@@ -315,7 +315,7 @@ const MttdCard: React.FC = () => {
 
         <Typography
           variant="h6"
-          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingRight: 4 }}
+          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingInlineEnd: 4 }}
         >
           {t_i18n('National Mean Time to Detect (MTTD)')}
         </Typography>
@@ -478,7 +478,7 @@ const MtcrCard: React.FC = () => {
 
         <Typography
           variant="h6"
-          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingRight: 4 }}
+          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingInlineEnd: 4 }}
         >
           {t_i18n('Mean Time to Coordinate Response (MTCR)')}
         </Typography>

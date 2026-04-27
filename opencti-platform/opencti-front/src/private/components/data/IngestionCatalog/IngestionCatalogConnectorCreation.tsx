@@ -420,7 +420,7 @@ const IngestionCatalogConnectorCreation = ({
                   )}
                 </fieldset>
 
-                <div style={{ textAlign: 'right', marginTop: theme.spacing(2) }}>
+                <div style={{ textAlign: 'end', marginTop: theme.spacing(2) }}>
                   <Button
                     variant="secondary"
                     onClick={() => {
@@ -433,7 +433,7 @@ const IngestionCatalogConnectorCreation = ({
                     hasActiveManagers && (
                       <Button
                         // color="secondary"
-                        style={{ marginLeft: theme.spacing(2) }}
+                        style={{ marginInlineStart: theme.spacing(2) }}
                         onClick={() => {
                           submitConnectorManagementCreation(values, {
                             setSubmitting,

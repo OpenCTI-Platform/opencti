@@ -23,19 +23,19 @@ const useStyles = makeStyles((theme) => ({
     height: 50,
     minHeight: 50,
     maxHeight: 50,
-    paddingRight: 0,
+    paddingInlineEnd: 0,
   },
   bodyItem: {
     height: 25,
     fontSize: 13,
-    float: 'left',
+    float: 'inline-start',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 10,
+    paddingInlineEnd: 10,
   },
   itemIcon: {
-    marginRight: 0,
+    marginInlineEnd: 0,
     color: theme.palette.primary.main,
   },
 }));

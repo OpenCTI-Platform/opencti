@@ -30,7 +30,7 @@ const LOCAL_STORAGE_KEY_JSON_MAPPERS = 'jsonMappers';
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
   container: {
-    paddingRight: '200px',
+    paddingInlineEnd: '200px',
   },
 }));
 

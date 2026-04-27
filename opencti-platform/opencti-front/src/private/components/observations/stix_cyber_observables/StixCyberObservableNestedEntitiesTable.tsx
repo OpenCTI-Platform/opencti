@@ -369,7 +369,7 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
           icon={(data: StixCyberObservableNestedEntitiesTable_node$data) => <ItemIcon type={data.to?.entity_type} />}
           actions={(data: StixCyberObservableNestedEntitiesTable_node$data) => {
             return (
-              <div style={{ marginLeft: -10 }} onClick={(e) => stopEvent(e)}>
+              <div style={{ marginInlineStart: -10 }} onClick={(e) => stopEvent(e)}>
                 <StixNestedRefRelationshipPopover
                   stixNestedRefRelationshipId={data.id}
                   paginationOptions={{

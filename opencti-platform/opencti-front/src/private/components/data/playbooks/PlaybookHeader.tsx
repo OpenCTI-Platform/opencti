@@ -146,7 +146,7 @@ const PlaybookHeaderComponent = ({
                   onClick={() => setOpenExecution(openExecution ? null : lastExecution.id)
                   }
                 >
-                  <ListItemIcon style={{ marginLeft: 10 }}>
+                  <ListItemIcon style={{ marginInlineStart: 10 }}>
                     <ItemIcon type="Playbook" color={theme.palette.primary.main} />
                   </ListItemIcon>
                   <ListItemText

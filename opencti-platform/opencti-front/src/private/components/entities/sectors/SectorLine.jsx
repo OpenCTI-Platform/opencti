@@ -17,7 +17,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 const styles = (theme) => ({
   item: {},
   itemNested: {
-    paddingLeft: theme.spacing(4),
+    paddingInlineStart: theme.spacing(4),
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -25,7 +25,7 @@ const styles = (theme) => ({
   name: {
     width: '20%',
     lineHeight: '28px',
-    float: 'left',
+    float: 'inline-start',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -33,7 +33,7 @@ const styles = (theme) => ({
   description: {
     width: '70%',
     lineHeight: '28px',
-    float: 'left',
+    float: 'inline-start',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',

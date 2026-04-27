@@ -168,7 +168,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
           {connector && (
             <Box
               sx={{
-                paddingLeft: '15px',
+                paddingInlineStart: '15px',
                 '& .MuiGrid-root': {
                   flexDirection: 'column',
                   paddingTop: '16px',

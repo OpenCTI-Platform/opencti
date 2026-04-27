@@ -17,7 +17,7 @@ import NotifierPopover from './NotifierPopover';
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
-    paddingLeft: 10,
+    paddingInlineStart: 10,
     height: 50,
   },
   itemIcon: {
@@ -26,11 +26,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
   bodyItem: {
     height: 25,
     fontSize: 13,
-    float: 'left',
+    float: 'inline-start',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 5,
+    paddingInlineEnd: 5,
 
     display: 'flex',
     alignItems: 'center',

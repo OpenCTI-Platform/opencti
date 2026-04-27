@@ -66,7 +66,7 @@ const VocabularyCategories = () => {
   };
 
   return (
-    <div style={{ paddingRight: 200 }} data-testid="vocabularies-page">
+    <div style={{ paddingInlineEnd: 200 }} data-testid="vocabularies-page">
       <Breadcrumbs
         elements={[
           { label: t_i18n('Settings') },

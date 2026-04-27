@@ -175,7 +175,7 @@ const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) => {
                     variant="caption"
                     sx={{
                       color: 'text.secondary',
-                      marginLeft: 1,
+                      marginInlineStart: 1,
                     }}
                   >
                     {filter.values.length}
@@ -184,7 +184,7 @@ const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) => {
               </Box>
 
               <Collapse in={expandedGroups[filter.key]}>
-                <Box sx={{ paddingLeft: 3, paddingY: 1 }}>
+                <Box sx={{ paddingInlineStart: 3, paddingY: 1 }}>
                   {filter.values.length > 0 && (
                     <FormControlLabel
                       control={
@@ -241,7 +241,7 @@ const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) => {
                       }
                       sx={{
                         display: 'flex',
-                        marginLeft: 0,
+                        marginInlineStart: 0,
                         marginBottom: 0.5,
                       }}
                     />

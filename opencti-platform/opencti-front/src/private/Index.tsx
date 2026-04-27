@@ -81,7 +81,7 @@ const Index = ({ settings }: IndexProps) => {
     overflowY: 'hidden',
     height: '100vh',
     paddingTop: `calc(16px + 64px + ${settingsMessagesBannerHeight ?? 0}px)`,
-    marginRight: 'var(--chatbot-sidebar-width, 0px)',
+    marginInlineEnd: 'var(--chatbot-sidebar-width, 0px)',
   };
 
   const boxSx: SxProps = {

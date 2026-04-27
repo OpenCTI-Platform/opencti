@@ -165,7 +165,7 @@ const Vocabularies = () => {
   } as UsePreloadedPaginationFragment<VocabulariesLinesPaginationQuery>;
 
   return (
-    <div style={{ marginRight: 200 }}>
+    <div style={{ marginInlineEnd: 200 }}>
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Taxonomies') },

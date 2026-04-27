@@ -1078,7 +1078,7 @@ const StixCyberObservableCreation = ({
               {!isFromBulkRelation && status.type
                 ? (
                     <BulkTextModalButton
-                      sx={{ marginRight: 0 }}
+                      sx={{ marginInlineEnd: 0 }}
                       onClick={() => setBulkOpen(true)}
                       title={t_i18n('Create multiple observables')}
                       disabled={!bulkConf}

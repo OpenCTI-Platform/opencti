@@ -179,7 +179,7 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
         {/* Home Link - left aligned */}
         <Box
           sx={{
-            marginRight: 'auto',
+            marginInlineEnd: 'auto',
             color: 'text.secondary',
             fontWeight: 500,
             cursor: 'pointer',
@@ -259,7 +259,7 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
             minWidth: 'auto',
             whiteSpace: 'nowrap',
             '& .MuiButton-startIcon': {
-              marginRight: 0.5,
+              marginInlineEnd: 0.5,
             },
           }}
         >
@@ -277,7 +277,7 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
             minWidth: 'auto',
             whiteSpace: 'nowrap',
             '& .MuiButton-startIcon': {
-              marginRight: 0.5,
+              marginInlineEnd: 0.5,
             },
           }}
         >

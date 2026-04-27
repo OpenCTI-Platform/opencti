@@ -786,7 +786,7 @@ const StixDomainPanel = ({
           {!isFromBulkRelation && (
             <BulkTextModalButton
               onClick={() => setBulkOpen(true)}
-              sx={{ marginRight: 0 }}
+              sx={{ marginInlineEnd: 0 }}
               disabled={!BULK_ENTITIES.includes(type)}
             />
           )}

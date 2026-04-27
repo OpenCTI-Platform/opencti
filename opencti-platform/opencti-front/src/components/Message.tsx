@@ -107,7 +107,7 @@ const Message = () => {
                   variant="tertiary"
                   size="small"
                   intent="destructive"
-                  sx={{ marginLeft: 2 }}
+                  sx={{ marginInlineStart: 2 }}
                   onClick={handleDialogOpen}
                 >
                   {t_i18n('Request Access')}

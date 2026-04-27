@@ -114,7 +114,7 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
             label={t_i18n('Show suggested mapping')}
           />
         </FormGroup>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', marginLeft: 'auto' }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', marginInlineStart: 'auto' }}>
           {!hasConnectorsAvailable && (
             <Tooltip
               title={t_i18n('An analysis connector needs to be available to ask for a mapping suggestion.')}

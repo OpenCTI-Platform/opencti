@@ -28,8 +28,8 @@ import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocument
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
   root: {
-    marginRight: -20,
-    paddingRight: 20,
+    marginInlineEnd: -20,
+    paddingInlineEnd: 20,
     paddingBottom: 30,
   },
 }));

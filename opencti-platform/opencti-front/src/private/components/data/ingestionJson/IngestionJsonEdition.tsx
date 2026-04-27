@@ -386,7 +386,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
               <FormControlLabel
                 control={<Switch defaultChecked={!!values.pagination_with_sub_page} />}
-                style={{ marginLeft: 1 }}
+                style={{ marginInlineStart: 1 }}
                 name="pagination_with_sub_page"
                 onChange={(_, checked) => setFieldValue('pagination_with_sub_page', checked)}
                 label={t_i18n('Sub pagination')}
@@ -542,19 +542,19 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
               {t_i18n('Only successful tests allow the ingestion edition.')}
             </Alert>
           </Box>
-          <div style={{ marginTop: 20, textAlign: 'right' }}>
+          <div style={{ marginTop: 20, textAlign: 'end' }}>
             <Button
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              style={{ marginLeft: theme.spacing(2) }}
+              style={{ marginInlineStart: theme.spacing(2) }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               color="secondary"
               onClick={() => setOpen(true)}
-              style={{ marginLeft: theme.spacing(2) }}
+              style={{ marginInlineStart: theme.spacing(2) }}
               disabled={!(values.uri && values.json_mapper_id)}
             >
               {t_i18n('Verify')}
@@ -563,7 +563,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
               color="secondary"
               onClick={submitForm}
               disabled={isSubmitting || isCreateDisabled}
-              style={{ marginLeft: theme.spacing(2) }}
+              style={{ marginInlineStart: theme.spacing(2) }}
             >
               {t_i18n('Save')}
             </Button>

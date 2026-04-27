@@ -53,7 +53,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
           color: 'text.primary',
           borderColor: 'divider',
           '& .MuiButton-endIcon': {
-            marginLeft: 0.5,
+            marginInlineStart: 0.5,
           },
           '&:hover': {
             borderColor: 'primary.main',

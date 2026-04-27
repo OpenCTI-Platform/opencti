@@ -488,7 +488,7 @@ const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
         </DialogTitle>
         <DialogContent id="container" sx={{ display: 'flex', overflow: 'hidden', height: '40vh', paddingTop: '20px' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Typography sx={{ height: '25px', paddingLeft: '10px' }}>{t_i18n('relationship_from')}</Typography>
+            <Typography sx={{ height: '25px', paddingInlineStart: '10px' }}>{t_i18n('relationship_from')}</Typography>
             <Box sx={{ display: 'flex' }}>
               <Box id="entityCard" sx={{ display: 'flex', justifyContent: 'center', padding: '0 10px', flexDirection: 'column' }}>
                 <EntityRelationshipCard

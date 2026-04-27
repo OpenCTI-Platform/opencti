@@ -19,7 +19,7 @@ const ConfidenceTooltip: React.FC<GroupConfidenceLevelProps> = ({ confidenceLeve
 
   return overrides.length > 0 ? (
     <Tooltip
-      sx={{ marginLeft: 1 }}
+      sx={{ marginInlineStart: 1 }}
       title={<GroupConfidenceOverrides overrides={overrides} />}
     >
       <InformationOutline fontSize="small" color="info" />

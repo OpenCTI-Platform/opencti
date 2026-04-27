@@ -25,8 +25,8 @@ const TimeRangeTooltip = ({
     transform: 'translate(-50%, -40px)',
     background: theme.palette.background.paper,
     padding: theme.spacing(1),
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
+    paddingInlineStart: theme.spacing(2),
+    paddingInlineEnd: theme.spacing(2),
     borderRadius: theme.spacing(0.5),
     display: 'flex',
     gap: theme.spacing(1),
@@ -51,8 +51,8 @@ const GraphToolbarTimeRange = () => {
     <div style={{
       position: 'relative',
       height: 80,
-      marginLeft: theme.spacing(2),
-      marginRight: theme.spacing(2),
+      marginInlineStart: theme.spacing(2),
+      marginInlineEnd: theme.spacing(2),
     }}
     >
       <ResponsiveContainer width="100%" height={60}>

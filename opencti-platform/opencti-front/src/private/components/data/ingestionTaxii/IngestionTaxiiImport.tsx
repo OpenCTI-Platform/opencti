@@ -90,7 +90,7 @@ const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ pa
       <ToggleButton
         value="import"
         size="small"
-        sx={{ marginLeft: 1 }}
+        sx={{ marginInlineStart: 1 }}
         title={t_i18n('Import a Taxii Feed')}
         onClick={() => inputFileRef?.current?.click()}
       >

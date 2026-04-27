@@ -145,7 +145,7 @@ const KillChainPhases = () => {
   };
 
   return (
-    <div style={{ marginRight: 200 }} data-testid="kill-chain-phases-page">
+    <div style={{ marginInlineEnd: 200 }} data-testid="kill-chain-phases-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Kill chain phases'), current: true }]} />
       {queryRef && (
         <DataTable

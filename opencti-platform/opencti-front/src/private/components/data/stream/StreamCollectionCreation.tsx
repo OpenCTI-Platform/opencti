@@ -170,7 +170,7 @@ const StreamCollectionCreationForm = ({
                     disabled={!isGrantedToSetAccesses}
                   />
                 )}
-                style={{ marginLeft: 1 }}
+                style={{ marginInlineStart: 1 }}
                 label={t_i18n('Public stream')}
               />
               {!values.stream_public && (

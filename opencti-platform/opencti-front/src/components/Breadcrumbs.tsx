@@ -25,8 +25,8 @@ const Breadcrumbs: FunctionComponent<BreadcrumbsProps> = ({ elements, noMargin =
     <div
       style={{
         display: show ? 'none' : 'unset',
-        marginLeft: theme.spacing(1),
-        marginRight: theme.spacing(1),
+        marginInlineStart: theme.spacing(1),
+        marginInlineEnd: theme.spacing(1),
       }}
     >/
     </div>

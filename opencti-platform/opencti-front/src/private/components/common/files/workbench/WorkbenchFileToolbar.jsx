@@ -55,10 +55,10 @@ const styles = (theme) => ({
   },
   buttons: {
     marginTop: 20,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   button: {
-    marginLeft: theme.spacing(2),
+    marginInlineStart: theme.spacing(2),
   },
   buttonAdd: {
     width: '100%',
@@ -90,7 +90,7 @@ const styles = (theme) => ({
   text: {
     display: 'inline-block',
     flexGrow: 1,
-    marginLeft: 10,
+    marginInlineStart: 10,
   },
   autoCompleteIndicator: {
     display: 'none',
@@ -173,7 +173,7 @@ class WorkbenchFileToolbar extends Component {
               variant: 'elevation',
               elevation: 1,
               style: {
-                paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+                paddingInlineStart: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
                 bottom: bannerSettings.bannerHeightNumber,
               },
             }}
@@ -187,7 +187,7 @@ class WorkbenchFileToolbar extends Component {
                 <span
                   style={{
                     padding: '2px 5px 2px 5px',
-                    marginRight: 5,
+                    marginInlineEnd: 5,
                     backgroundColor: theme.palette.secondary.main,
                     color: '#ffffff',
                   }}

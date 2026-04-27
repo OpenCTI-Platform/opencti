@@ -93,7 +93,7 @@ const KillChainPhasesField = ({
             style={{
               display: 'inline-block',
               flexGrow: 1,
-              marginLeft: 10,
+              marginInlineStart: 10,
             }}
           >{option.label}
           </div>

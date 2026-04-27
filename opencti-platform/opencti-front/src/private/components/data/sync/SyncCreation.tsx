@@ -369,7 +369,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                   <div style={{
                     width: '100%',
                     marginTop: 20,
-                    textAlign: 'right',
+                    textAlign: 'end',
                   }}
                   >
                     {streams.length === 0 && (
@@ -379,7 +379,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                         }
                         disabled={isSubmitting}
                         style={{
-                          marginLeft: 10,
+                          marginInlineStart: 10,
                         }}
                       >
                         {t_i18n('Validate')}
@@ -394,7 +394,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                         }}
                         disabled={isSubmitting}
                         style={{
-                          marginLeft: 10,
+                          marginInlineStart: 10,
                         }}
                       >
                         {t_i18n('Reset')}
@@ -463,7 +463,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
                     <Field
                       component={SwitchField}
                       type="checkbox"
-                      containerstyle={{ marginLeft: 2 }}
+                      containerstyle={{ marginInlineStart: 2 }}
                       name="synchronized"
                       label={t_i18n('Use perfect synchronization')}
                     />

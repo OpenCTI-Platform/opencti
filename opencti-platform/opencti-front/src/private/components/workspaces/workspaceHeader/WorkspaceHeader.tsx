@@ -93,7 +93,7 @@ const WorkspaceHeader = ({
             <Typography
               variant="h1"
               sx={{ margin: 0 }}
-              style={{ marginRight: canEdit ? 0 : 10 }}
+              style={{ marginInlineEnd: canEdit ? 0 : 10 }}
             >
               {truncate(workspace.name, 40)}
             </Typography>

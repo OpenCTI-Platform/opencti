@@ -37,7 +37,7 @@ export const HeaderFieldAdd: FunctionComponent<HeaderFieldAddProps> = ({
                 >
                   <div
                     style={{
-                      paddingRight: 50,
+                      paddingInlineEnd: 50,
                       display: 'grid',
                       gap: 20,
                       gridTemplateColumns: 'repeat(2, 1fr)',

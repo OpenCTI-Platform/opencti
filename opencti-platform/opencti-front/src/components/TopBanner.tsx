@@ -57,14 +57,14 @@ const TopBanner = ({ bannerText, bannerColor = 'gradient_blue', buttonText, onBu
         <Button
           onClick={onButtonClick}
           sx={{
-            marginLeft: 1,
+            marginInlineStart: 1,
             height: '24px',
             backgroundColor: '#ffffff',
             color: '#000000',
             padding: '1px 6px',
             textTransform: 'none',
             '& .MuiButton-endIcon': {
-              marginLeft: '2px',
+              marginInlineStart: '2px',
             },
             ...buttonSx,
           }}

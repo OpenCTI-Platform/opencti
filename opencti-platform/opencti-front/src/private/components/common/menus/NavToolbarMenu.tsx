@@ -110,7 +110,7 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }
               to={entry.path}
               selected={isSelected}
               dense={false}
-              sx={{ paddingRight: 0 }}
+              sx={{ paddingInlineEnd: 0 }}
             >
               {entry.icon && (
                 <ListItemIcon

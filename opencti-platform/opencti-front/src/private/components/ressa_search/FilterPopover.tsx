@@ -99,7 +99,7 @@ const FilterPopover = ({
                     minHeight: 36,
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', marginRight: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', marginInlineEnd: 1 }}>
                     <FilterList fontSize="small" sx={{ color: 'text.secondary' }} />
                   </Box>
                   <Box sx={{ flex: 1, minWidth: 0 }}>

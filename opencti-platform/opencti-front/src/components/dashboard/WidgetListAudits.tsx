@@ -25,11 +25,11 @@ const WidgetListAudits = ({ data }: WidgetListAuditsProps) => {
   const bodyItemStyle: React.CSSProperties = {
     height: 20,
     fontSize: 13,
-    float: 'left',
+    float: 'inline-start',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 10,
+    paddingInlineEnd: 10,
   };
 
   return (
@@ -66,7 +66,7 @@ const WidgetListAudits = ({ data }: WidgetListAuditsProps) => {
                 height: 50,
                 minHeight: 50,
                 maxHeight: 50,
-                paddingRight: 0,
+                paddingInlineEnd: 0,
               }}
               divider={true}
               component={link ? Link : 'div'}

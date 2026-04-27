@@ -39,7 +39,7 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
 
   return (
     <FintelTemplateProvider>
-      <div style={{ marginRight: FINTEL_TEMPLATE_SIDEBAR_WIDTH }}>
+      <div style={{ marginInlineEnd: FINTEL_TEMPLATE_SIDEBAR_WIDTH }}>
         <FintelTemplateHeader
           entitySettingId={entitySettingByType.id}
           data={fintelTemplate}

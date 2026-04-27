@@ -21,10 +21,10 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
     marginTop: theme.spacing(2),
-    textAlign: 'right',
+    textAlign: 'end',
   },
   button: {
-    marginLeft: theme.spacing(2),
+    marginInlineStart: theme.spacing(2),
   },
 }));
 

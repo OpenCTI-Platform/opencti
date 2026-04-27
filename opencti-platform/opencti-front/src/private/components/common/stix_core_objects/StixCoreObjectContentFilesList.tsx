@@ -185,7 +185,7 @@ const StixCoreObjectContentFilesList = ({
                         overflowX: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
-                        marginRight: '20px',
+                        marginInlineEnd: '20px',
                       },
                     }}
                     primary={file.name}

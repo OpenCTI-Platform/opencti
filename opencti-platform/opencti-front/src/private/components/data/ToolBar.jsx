@@ -94,7 +94,7 @@ const ToolBar = (props) => {
             variant: 'elevation',
             elevation: 1,
             style: {
-              marginLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+              marginInlineStart: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
               bottom: (bannerSettings?.bannerHeightNumber ?? 0) + posBottom,
               zIndex: theme.zIndex.appBar - 2,
             },

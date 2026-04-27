@@ -61,7 +61,7 @@ const AddPersonaThreatActorIndividualComponent: FunctionComponent<
               paginationOptions={paginationOptions}
               paginationKey="Pagination_tai_stixCyberObservables"
               controlledDialStyles={{
-                marginLeft: '10px',
+                marginInlineStart: '10px',
                 marginTop: '5px',
               }}
               inputValue=""

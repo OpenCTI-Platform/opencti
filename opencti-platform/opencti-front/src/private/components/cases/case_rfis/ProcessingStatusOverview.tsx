@@ -91,7 +91,7 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
             <div>
               <Button
                 disabled
-                style={{ marginRight: 10 }}
+                style={{ marginInlineEnd: 10 }}
               >
                 {t_i18n('Validate')}
               </Button>
@@ -107,7 +107,7 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
           <div>
             <Button
               variant="secondary"
-              style={{ marginRight: 10, color: approvedButtonColor, borderColor: approvedButtonColor }}
+              style={{ marginInlineEnd: 10, color: approvedButtonColor, borderColor: approvedButtonColor }}
               onClick={onSubmitValidateRequestAccess}
             >
               {t_i18n('Validate')}

@@ -18,12 +18,12 @@ import Drawer from '../../common/drawer/Drawer';
 
 const styles = () => ({
   createButton: {
-    float: 'right',
+    float: 'inline-end',
     marginTop: -15,
   },
   search: {
-    marginLeft: 'auto',
-    marginRight: ' 20px',
+    marginInlineStart: 'auto',
+    marginInlineEnd: ' 20px',
   },
 });
 

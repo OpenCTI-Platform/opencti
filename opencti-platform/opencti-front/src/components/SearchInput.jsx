@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
   searchRootTopBar: {
     borderRadius: 4,
     padding: '1px 10px 0 10px',
-    marginRight: 5,
+    marginInlineEnd: 5,
     minWidth: 550,
     width: '50%',
   },

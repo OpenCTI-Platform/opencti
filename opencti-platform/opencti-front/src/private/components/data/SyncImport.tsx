@@ -90,7 +90,7 @@ const SyncImport: FunctionComponent<SyncImportProps> = ({ paginationOptions }) =
       <ToggleButton
         value="import"
         size="small"
-        sx={{ marginLeft: 1 }}
+        sx={{ marginInlineStart: 1 }}
         title={t_i18n('Import an OpenCTI Stream')}
         onClick={() => inputFileRef?.current?.click()}
       >

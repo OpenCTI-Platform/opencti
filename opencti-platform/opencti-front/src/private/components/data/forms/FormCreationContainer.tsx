@@ -100,7 +100,7 @@ const CreateFormControlledDial = (props: CreateFormControlledDialProps) => {
         value="import"
         size="small"
         onClick={() => inputRef.current?.click()}
-        sx={{ marginLeft: theme.spacing(1) }}
+        sx={{ marginInlineStart: theme.spacing(1) }}
         title={t_i18n('Import form intake')}
       >
         <FileUploadOutlined fontSize="small" color="primary" />

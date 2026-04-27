@@ -152,7 +152,7 @@ const IncidentResponseTimeCard: React.FC = () => {
 
         <Typography
           variant="h6"
-          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingRight: 4 }}
+          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingInlineEnd: 4 }}
         >
           {t_i18n('Incident Response Time Index')}
         </Typography>
@@ -356,7 +356,7 @@ const GeographicalEffectivenessCard: React.FC = () => {
 
         <Typography
           variant="h6"
-          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingRight: 4 }}
+          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingInlineEnd: 4 }}
         >
           {t_i18n('Geographical Effectiveness Chart')}
         </Typography>

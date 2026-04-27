@@ -109,7 +109,7 @@ const ThreatActorsGroup = () => {
         {queryRef && (
           <React.Suspense
             fallback={(
-              <Grid container={true} spacing={3} style={{ paddingLeft: 17 }}>
+              <Grid container={true} spacing={3} style={{ paddingInlineStart: 17 }}>
                 {Array(20)
                   .fill(0)
                   .map((_, idx) => (

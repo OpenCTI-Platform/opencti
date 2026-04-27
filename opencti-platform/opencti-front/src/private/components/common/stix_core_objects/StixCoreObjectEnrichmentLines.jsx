@@ -71,7 +71,7 @@ const styles = (theme) => ({
     marginBottom: 20,
   },
   nested: {
-    paddingLeft: theme.spacing(4),
+    paddingInlineStart: theme.spacing(4),
   },
   tooltip: {
     maxWidth: 600,
@@ -261,7 +261,7 @@ const StixCoreObjectEnrichment = ({
                               <CircularProgress
                                 size={20}
                                 thickness={2}
-                                style={{ marginRight: 10 }}
+                                style={{ marginInlineEnd: 10 }}
                               />
                             )}
                           </ListItemIcon>

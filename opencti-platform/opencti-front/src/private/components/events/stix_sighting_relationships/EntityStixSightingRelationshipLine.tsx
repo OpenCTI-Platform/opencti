@@ -31,7 +31,7 @@ import { alpha } from '@mui/material/styles';
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
-    paddingLeft: 10,
+    paddingInlineStart: 10,
     height: 50,
   },
   positive: {
@@ -58,11 +58,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
   bodyItem: {
     height: 25,
     fontSize: 13,
-    float: 'left',
+    float: 'inline-start',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 10,
+    paddingInlineEnd: 10,
   },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
@@ -272,7 +272,7 @@ export const EntityStixSightingRelationshipLine: FunctionComponent<EntityStixSig
                 ${R.head(data.x_opencti_inferences ?? [])?.rule.name ?? ''}`
           }
         >
-          <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
+          <AutoFix fontSize="small" style={{ marginInlineStart: -30 }} />
         </Tooltip>
       ) : (
         <StixSightingRelationshipPopover

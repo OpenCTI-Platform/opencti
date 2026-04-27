@@ -284,7 +284,7 @@ const SearchIndexedFilesComponent = () => {
                   size="small"
                   to="/dashboard/settings/file_indexing"
                   variant="secondary"
-                  sx={{ marginLeft: 1 }}
+                  sx={{ marginInlineStart: 1 }}
                 >
                   {t_i18n('Configure file indexing')}
                 </Button>

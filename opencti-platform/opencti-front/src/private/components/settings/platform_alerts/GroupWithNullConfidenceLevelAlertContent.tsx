@@ -55,7 +55,7 @@ const GroupWithNullConfidenceLevelAlertContent: React.FC<GroupWithNullConfidence
             </Fragment>
           ))}
           { restCount > 0 && (
-            <Box component="span" sx={{ marginLeft: 0.5 }}>
+            <Box component="span" sx={{ marginInlineStart: 0.5 }}>
               { t_i18n('', { id: 'and ... more', values: { count: restCount } }) }
             </Box>
           )}

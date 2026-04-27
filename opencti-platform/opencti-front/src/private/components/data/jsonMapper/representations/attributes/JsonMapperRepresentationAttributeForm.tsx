@@ -38,7 +38,7 @@ const JsonMapperRepresentationAttributeForm: FunctionComponent<
     },
     redStar: {
       color: theme.palette.designSystem.tertiary.red[400],
-      marginLeft: '5px',
+      marginInlineStart: '5px',
     },
   }));
   const classes = useStyles();

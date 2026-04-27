@@ -41,7 +41,7 @@ import Card from '../../../../components/common/card/Card';
 const useStyles = makeStyles<Theme>((theme) => ({
   icon: {
     paddingTop: 4,
-    paddingRight: 4,
+    paddingInlineEnd: 4,
     display: 'inline-block',
     color: theme.palette.primary.main,
   },

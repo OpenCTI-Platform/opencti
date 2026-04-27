@@ -77,7 +77,7 @@ const AttackPatternCoursesOfActionComponent = ({ attackPattern }) => {
                 <ListItemButton
                   component={Link}
                   to={`/dashboard/techniques/courses_of_action/${courseOfAction.id}`}
-                  sx={{ paddingLeft: 0 }}
+                  sx={{ paddingInlineStart: 0 }}
                 >
                   <ListItemText primary={courseOfAction.name} />
                 </ListItemButton>

@@ -44,3 +44,15 @@ export const useDocumentThemeModifier = (theme: string) => {
     document.body.setAttribute('data-theme', theme);
   }, []);
 };
+
+export const useDocumentDirectionModifier = (direction: 'rtl' | 'ltr') => {
+  useEffect(() => {
+    const prevDir = document.documentElement.dir;
+    if (prevDir !== direction) {
+      document.documentElement.dir = direction;
+    }
+    return () => {
+      document.documentElement.dir = prevDir;
+    };
+  }, [direction]);
+};

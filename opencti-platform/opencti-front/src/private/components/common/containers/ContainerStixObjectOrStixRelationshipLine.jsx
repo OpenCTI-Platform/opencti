@@ -26,7 +26,7 @@ import { EMPTY_VALUE } from '../../../../utils/String';
 // Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   item: {
-    paddingLeft: 15,
+    paddingInlineStart: 15,
     height: 50,
   },
   itemIcon: {
@@ -35,11 +35,11 @@ const useStyles = makeStyles((theme) => ({
   bodyItem: {
     height: 25,
     fontSize: 13,
-    float: 'left',
+    float: 'inline-start',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 10,
+    paddingInlineEnd: 10,
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],

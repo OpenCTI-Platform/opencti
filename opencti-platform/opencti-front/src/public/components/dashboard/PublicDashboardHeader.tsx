@@ -38,7 +38,7 @@ const PublicDashboardHeader = ({
       <Typography
         variant="h1"
         gutterBottom={true}
-        sx={{ marginRight: '12px' }}
+        sx={{ marginInlineEnd: '12px' }}
       >
         {title}
       </Typography>

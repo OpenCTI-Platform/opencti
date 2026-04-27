@@ -41,9 +41,9 @@ const AlertCreation: FunctionComponent<TriggerCreationProps> = ({
     setOpenDigest(true);
   };
   return (
-    <div style={{ marginLeft: theme.spacing(1) }}>
+    <div style={{ marginInlineStart: theme.spacing(1) }}>
       <Button
-        sx={{ marginRight: theme.spacing(1) }}
+        sx={{ marginInlineEnd: theme.spacing(1) }}
         onClick={handleOpenCreateDigest}
       >
         {t_i18n('', {

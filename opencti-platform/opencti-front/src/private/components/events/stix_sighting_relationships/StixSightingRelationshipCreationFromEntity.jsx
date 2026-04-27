@@ -402,7 +402,7 @@ const StixSightingRelationshipCreationFromEntity = ({
             color="secondary"
             aria-label="Label"
             onClick={handleOpen}
-            style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+            style={{ float: 'inline-start', margin: '-15px 0 0 -2px' }}
           >
             <Add fontSize="small" />
           </IconButton>
@@ -435,7 +435,7 @@ const StixSightingRelationshipCreationFromEntity = ({
             inputValue={search}
             paginationOptions={stixDomainObjectsPaginationOptions}
             stixDomainObjectTypes={stixCoreObjectTypes}
-            controlledDialStyles={{ float: 'right' }}
+            controlledDialStyles={{ float: 'inline-end' }}
             controlledDialSize="small"
           />
         )}

@@ -580,19 +580,19 @@ const LdapProviderForm = ({
           )}
           {currentTab === 1 && <AuthProviderGroupsFields />}
           {currentTab === 2 && <AuthProviderOrganizationsFields />}
-          <div style={{ marginTop: 20, textAlign: 'right' }}>
+          <div style={{ marginTop: 20, textAlign: 'end' }}>
             <Button
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              style={{ marginLeft: theme.spacing(1) }}
+              style={{ marginInlineStart: theme.spacing(1) }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={submitForm}
               disabled={isSubmitting || !dirty}
-              style={{ marginLeft: theme.spacing(1) }}
+              style={{ marginInlineStart: theme.spacing(1) }}
             >
               {t_i18n(isEditing ? 'Update' : 'Create')}
             </Button>

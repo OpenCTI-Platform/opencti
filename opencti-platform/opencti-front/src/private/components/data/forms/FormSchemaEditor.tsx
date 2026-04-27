@@ -837,7 +837,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 <Typography variant="body2" color="textSecondary" style={{ marginTop: 5 }}>
                   {t_i18n('This field uses predefined vocabulary values.')}
                 </Typography>
-                <Box style={{ marginTop: 10, paddingLeft: 10 }}>
+                <Box style={{ marginTop: 10, paddingInlineStart: 10 }}>
                   {attribute.defaultValues?.map((value: { id: string; name: string }) => (
                     <Typography key={value.id} variant="body2" style={{ marginTop: 5 }}>
                       • {value.name}
@@ -863,7 +863,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                       newOptions[optIndex] = { ...option, label: e.target.value };
                       handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
                     }}
-                    style={{ flex: 1, marginRight: 10 }}
+                    style={{ flex: 1, marginInlineEnd: 10 }}
                   />
                   <TextField
                     variant="standard"
@@ -874,7 +874,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                       newOptions[optIndex] = { ...option, value: e.target.value };
                       handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
                     }}
-                    style={{ flex: 1, marginRight: 10 }}
+                    style={{ flex: 1, marginInlineEnd: 10 }}
                   />
                   <IconButton
                     size="small"
@@ -1095,7 +1095,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               />
             )}
             label={t_i18n('Disable on-the-fly entity creation')}
-            style={{ marginTop: 10, marginLeft: 20, display: 'block' }}
+            style={{ marginTop: 10, marginInlineStart: 20, display: 'block' }}
           />
         )}
 
@@ -1529,7 +1529,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 />
               )}
               label={t_i18n('Disable on-the-fly entity creation')}
-              style={{ marginTop: 10, marginLeft: 20, display: 'block' }}
+              style={{ marginTop: 10, marginInlineStart: 20, display: 'block' }}
             />
           )}
 

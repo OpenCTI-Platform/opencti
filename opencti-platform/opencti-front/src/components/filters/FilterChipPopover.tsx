@@ -557,7 +557,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
                     <div style={{
                       color: theme.palette.text.disabled,
                       borderLeft: '0.5px solid',
-                      marginLeft: '10px',
+                      marginInlineStart: '10px',
                       marginTop: '10px',
                       marginBottom: '10px',
                     }}

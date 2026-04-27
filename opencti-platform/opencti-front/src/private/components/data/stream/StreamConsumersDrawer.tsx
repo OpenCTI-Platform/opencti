@@ -212,7 +212,7 @@ const StreamConsumersDrawer: FunctionComponent<StreamConsumersDrawerProps> = ({
               justifyContent: 'space-between',
               alignItems: 'center',
               width: '100%',
-              paddingRight: theme.spacing(1),
+              paddingInlineEnd: theme.spacing(1),
             }}
           >
             <Box>

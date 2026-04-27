@@ -56,7 +56,7 @@ class StixCoreRelationship extends Component {
 
 StixCoreRelationship.propTypes = {
   entityId: PropTypes.string,
-  paddingRight: PropTypes.bool,
+  paddingInlineEnd: PropTypes.bool,
   classes: PropTypes.object,
   t: PropTypes.func,
   match: PropTypes.object,

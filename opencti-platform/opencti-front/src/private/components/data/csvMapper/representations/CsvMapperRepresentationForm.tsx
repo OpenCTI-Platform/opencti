@@ -34,7 +34,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   text: {
     display: 'inline-block',
     flexGrow: 1,
-    marginLeft: 10,
+    marginInlineStart: 10,
   },
   container: {
     display: 'inline-flex',
@@ -198,7 +198,7 @@ const CsvMapperRepresentationForm: FunctionComponent<
                 representationName={name}
               />
             </div>
-            <div style={{ textAlign: 'right', marginTop: '20px' }}>
+            <div style={{ textAlign: 'end', marginTop: '20px' }}>
               <Button
                 color="error"
                 onClick={handleOpenDelete}

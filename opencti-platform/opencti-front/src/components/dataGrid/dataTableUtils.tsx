@@ -42,7 +42,7 @@ const chipStyle: CSSProperties = {
   fontSize: '12px',
   lineHeight: '12px',
   height: '20px',
-  marginRight: '7px',
+  marginInlineEnd: '7px',
   borderRadius: '4px',
   textTransform: 'uppercase',
 };
@@ -185,7 +185,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
               width: 20,
               display: 'inline-flex',
               borderRadius: 20,
-              marginRight: 5,
+              marginInlineEnd: 5,
             }}
           />
           <Truncate>{color}</Truncate>
@@ -1362,7 +1362,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
               width: 20,
               display: 'inline-flex',
               borderRadius: 20,
-              marginRight: 5,
+              marginInlineEnd: 5,
             }}
           />
           <Truncate>{x_opencti_color}</Truncate>

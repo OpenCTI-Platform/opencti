@@ -40,7 +40,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   titleNumber: {
     padding: '2px 5px 2px 5px',
-    marginRight: 5,
+    marginInlineEnd: 5,
     backgroundColor: theme.palette.secondary.main,
     color: '#ffffff',
   },
@@ -173,7 +173,7 @@ const ToolBar: FunctionComponent<{
         variant: 'elevation',
         elevation: 1,
         style: {
-          paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+          paddingInlineStart: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
           bottom: bannerHeightNumber,
         },
       }}

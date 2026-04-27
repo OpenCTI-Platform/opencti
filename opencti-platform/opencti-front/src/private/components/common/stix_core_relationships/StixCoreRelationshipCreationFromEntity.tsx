@@ -456,7 +456,7 @@ interface StixCoreRelationshipCreationFromEntityProps {
   defaultStopTime?: string;
   paginationOptions: Record<string, unknown>;
   connectionKey?: string;
-  paddingRight: number;
+  paddingInlineEnd: number;
   variant?: string;
   targetEntities?: TargetEntity[];
   onCreate?: () => void;

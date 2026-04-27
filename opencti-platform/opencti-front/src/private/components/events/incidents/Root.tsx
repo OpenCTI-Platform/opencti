@@ -141,7 +141,7 @@ const RootIncidentComponent = ({ queryRef }) => {
             />
           </Routes>
           <div
-            style={{ paddingRight: paddingRightValue() }}
+            style={{ paddingInlineEnd: paddingRightValue() }}
           >
             <Breadcrumbs elements={[
               { label: t_i18n('Events') },

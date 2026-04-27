@@ -14,8 +14,8 @@ import { insertNode } from '../../../../utils/store';
 
 const styles = () => ({
   search: {
-    marginLeft: 'auto',
-    marginRight: ' 20px',
+    marginInlineStart: 'auto',
+    marginInlineEnd: ' 20px',
   },
 });
 

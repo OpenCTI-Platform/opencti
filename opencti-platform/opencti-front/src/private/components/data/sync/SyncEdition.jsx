@@ -32,10 +32,10 @@ import { EMPTY_VALUE } from '../../../../utils/String';
 const useStyles = makeStyles((theme) => ({
   buttons: {
     marginTop: 20,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   button: {
-    marginLeft: theme.spacing(2),
+    marginInlineStart: theme.spacing(2),
   },
   alert: {
     width: '100%',
@@ -189,11 +189,11 @@ const SyncEditionContainer = ({ synchronizer }) => {
               &nbsp;&nbsp;{t_i18n('Remote OpenCTI configuration')}{' '}
               {isStreamAccessible ? (
                 <CheckCircleOutlined
-                  style={{ fontSize: 22, color: theme.palette.success.main, float: 'left' }}
+                  style={{ fontSize: 22, color: theme.palette.success.main, float: 'inline-start' }}
                 />
               ) : (
                 <WarningOutlined
-                  style={{ fontSize: 22, color: theme.palette.error.main, float: 'left' }}
+                  style={{ fontSize: 22, color: theme.palette.error.main, float: 'inline-start' }}
                 />
               )}
             </AlertTitle>
@@ -308,7 +308,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
               <Field
                 component={SwitchField}
                 type="checkbox"
-                containerstyle={{ marginLeft: 2 }}
+                containerstyle={{ marginInlineStart: 2 }}
                 name="synchronized"
                 label={t_i18n('Use perfect synchronization')}
                 onChange={handleSubmitField}

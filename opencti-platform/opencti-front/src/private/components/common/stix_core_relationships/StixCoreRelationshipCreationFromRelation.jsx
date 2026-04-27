@@ -55,10 +55,10 @@ const styles = (theme) => ({
     zIndex: 1001,
   },
   title: {
-    float: 'left',
+    float: 'inline-start',
   },
   search: {
-    float: 'right',
+    float: 'inline-end',
   },
   header: {
     backgroundColor: theme.palette.background.nav,
@@ -612,7 +612,7 @@ StixCoreRelationshipCreationFromRelation.propTypes = {
   fsd: PropTypes.func,
   variant: PropTypes.string,
   onCreate: PropTypes.func,
-  paddingRight: PropTypes.bool,
+  paddingInlineEnd: PropTypes.bool,
 };
 
 export default R.compose(

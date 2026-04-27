@@ -8,7 +8,7 @@ import GeoThreatSection from './GeoThreatSection';
 
 const DashboardMetrics: React.FC = () => {
   return (
-    <Box sx={{ paddingTop: 3, paddingBottom: 3, paddingLeft: 0, paddingRight: 0 }}>
+    <Box sx={{ paddingTop: 3, paddingBottom: 3, paddingInlineStart: 0, paddingInlineEnd: 0 }}>
       {/* National Metrics Section (Risk Score, MTTD, MTCR) */}
       <NationalMetricsSection />
 

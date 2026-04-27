@@ -90,7 +90,7 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                     marginTop: index === 0 ? 10 : 20,
                     width: '100%',
                     position: 'relative',
-                    paddingRight: 50,
+                    paddingInlineEnd: 50,
                   }}
                 >
                   <div
@@ -194,7 +194,7 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                     marginTop: index === 0 ? 10 : 20,
                     width: '100%',
                     position: 'relative',
-                    paddingRight: 50,
+                    paddingInlineEnd: 50,
                   }}
                 >
                   <div style={{ display: 'grid', gap: 20, gridTemplateColumns: '1fr 1fr' }}>

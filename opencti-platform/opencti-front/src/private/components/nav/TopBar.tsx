@@ -210,7 +210,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
       position="fixed"
       elevation={0}
       sx={{
-        marginLeft: navOpen ? `${OPEN_BAR_WIDTH}px` : `${SMALL_BAR_WIDTH}px`,
+        marginInlineStart: navOpen ? `${OPEN_BAR_WIDTH}px` : `${SMALL_BAR_WIDTH}px`,
         width: navOpen ? `calc(100% - ${OPEN_BAR_WIDTH}px)` : `calc(100% - ${SMALL_BAR_WIDTH}px)`,
         backgroundColor: 'transparent',
         backdropFilter: 'blur(4px)',
@@ -223,8 +223,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           marginTop: bannerHeightNumber + settingsMessagesBannerHeight,
           height: '100%',
           minHeight: 68,
-          paddingLeft: theme.spacing(3),
-          paddingRight: theme.spacing(3),
+          paddingInlineStart: theme.spacing(3),
+          paddingInlineEnd: theme.spacing(3),
           display: 'flex',
           justifyContent: 'space-between',
           background: `linear-gradient(90deg, ${appBarGradient} 100%)`,

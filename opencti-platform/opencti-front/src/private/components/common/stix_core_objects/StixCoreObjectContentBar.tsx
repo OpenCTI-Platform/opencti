@@ -79,13 +79,13 @@ const StixCoreObjectContentBar: FunctionComponent<
           width: '100%',
           height: 54,
           paddingTop: 3,
-          paddingLeft: 24,
+          paddingInlineStart: 24,
         }}
       >
         <div
           style={{
-            float: 'left',
-            marginLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+            float: 'inline-start',
+            marginInlineStart: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
             height: '100%',
             display: 'flex',
           }}

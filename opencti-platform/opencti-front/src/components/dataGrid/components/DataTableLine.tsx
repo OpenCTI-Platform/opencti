@@ -29,8 +29,8 @@ const DataTableLineDummy = () => {
         <div
           key={column.id}
           style={{
-            paddingLeft: theme.spacing(0.5),
-            paddingRight: theme.spacing(1),
+            paddingInlineStart: theme.spacing(0.5),
+            paddingInlineEnd: theme.spacing(1),
             flex: '0 0 auto',
             width: column.percentWidth
               ? Math.round(tableWidth * (column.percentWidth / 100))
@@ -62,8 +62,8 @@ const DataTableCell = ({
 
   const cellStyle: CSSProperties = {
     display: 'flex',
-    paddingLeft: theme.spacing(1),
-    paddingRight: theme.spacing(1),
+    paddingInlineStart: theme.spacing(1),
+    paddingInlineEnd: theme.spacing(1),
     width: '100%',
     alignItems: 'center',
     gap: theme.spacing(0.5),
@@ -204,9 +204,9 @@ const DataTableLine = ({
               <Checkbox
                 onClick={handleSelectLine}
                 sx={{
-                  marginRight: 1,
+                  marginInlineEnd: 1,
                   flex: '0 0 auto',
-                  paddingLeft: 0,
+                  paddingInlineStart: 0,
                   '&:hover': {
                     background: 'transparent',
                   },
@@ -219,7 +219,7 @@ const DataTableLine = ({
               />
             )}
             {(startsWithIcon && icon) && (
-              <div style={{ display: 'flex', paddingLeft: 10 }}>
+              <div style={{ display: 'flex', paddingInlineStart: 10 }}>
                 {icon(data)}
               </div>
             )}

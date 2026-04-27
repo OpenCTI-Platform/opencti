@@ -164,7 +164,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
             </AlertTitle>
             <FormControlLabel
               control={<Switch checked={!!values.stream_public} disabled={!isGrantedToSetAccesses} />}
-              style={{ marginLeft: 1 }}
+              style={{ marginInlineStart: 1 }}
               onChange={(_, checked) => {
                 setFieldValue('stream_public', checked);
                 if (!checked) {

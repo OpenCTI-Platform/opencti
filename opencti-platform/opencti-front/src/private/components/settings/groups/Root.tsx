@@ -94,7 +94,7 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
           <TitleMainEntity sx={{ flex: 1 }}>
             {group.name}
           </TitleMainEntity>
-          <div style={{ marginRight: theme.spacing(0.5) }}>
+          <div style={{ marginInlineEnd: theme.spacing(0.5) }}>
             {canDelete && (
               <PopoverMenu>
                 {({ closeMenu }) => (

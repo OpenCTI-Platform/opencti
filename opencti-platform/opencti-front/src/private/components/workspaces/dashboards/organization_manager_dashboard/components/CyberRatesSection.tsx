@@ -105,7 +105,7 @@ const RankedOrgItem: React.FC<RankedOrgItemProps> = ({
             color: 'text.primary',
             fontSize: '0.8rem',
             fontWeight: 700,
-            marginLeft: 1,
+            marginInlineStart: 1,
           }}
         >
           {percentage}%
@@ -240,7 +240,7 @@ const RateCard: React.FC<RateCardProps> = ({
             fontWeight: 600,
             color: 'text.primary',
             fontSize: '1rem',
-            paddingRight: 4,
+            paddingInlineEnd: 4,
           }}
         >
           {t_i18n(title)}

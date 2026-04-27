@@ -92,7 +92,7 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
         <Security needs={[INGESTION_SETINGESTIONS]}>
           {
             isEnterpriseEdition ? (
-              <Button onClick={onClickDeploy} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
+              <Button onClick={onClickDeploy} style={{ marginInlineStart: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
             ) : (
               <EnterpriseEditionButton title="Deploy" />
             )

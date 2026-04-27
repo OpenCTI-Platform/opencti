@@ -141,7 +141,7 @@ const WidgetCreationDataSelection = () => {
                       <InformationOutline
                         fontSize="small"
                         color="primary"
-                        style={{ marginRight: 5, marginTop: 20 }}
+                        style={{ marginInlineEnd: 5, marginTop: 20 }}
                       />
                     </Tooltip>
                   )
@@ -187,7 +187,7 @@ const WidgetCreationDataSelection = () => {
               width: '100%',
               height: 20,
               flex: 1,
-              marginRight: 20,
+              marginInlineEnd: 20,
             }}
           >
             <AddOutlined fontSize="small" /> {t_i18n('Relationships')}

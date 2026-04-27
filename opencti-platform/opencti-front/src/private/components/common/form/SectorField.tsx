@@ -82,7 +82,7 @@ const SectorField = ({
       ) => (
         <ListItem {...props}>
           <ItemIcon type={option.type} />
-          <ListItemText primary={option.label} sx={{ marginLeft: 2 }} />
+          <ListItemText primary={option.label} sx={{ marginInlineStart: 2 }} />
         </ListItem>
       )}
     />

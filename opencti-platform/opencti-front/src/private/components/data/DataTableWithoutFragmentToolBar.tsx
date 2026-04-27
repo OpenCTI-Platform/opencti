@@ -29,7 +29,7 @@ const DataTableWithoutFragmentToolBar = ({
   const numberOfElements = selectedValues.length;
   return (
     <>
-      <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 8 }} data-testid="opencti-toolbar">
+      <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingInlineEnd: 12, paddingInlineStart: 8 }} data-testid="opencti-toolbar">
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <Typography
             style={{

@@ -38,7 +38,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 10,
+    paddingInlineEnd: 10,
     display: 'flex',
     alignItems: 'center',
     minWidth: 0,

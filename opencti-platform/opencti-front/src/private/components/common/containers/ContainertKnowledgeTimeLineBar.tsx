@@ -88,7 +88,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
               variant: 'elevation',
               elevation: 1,
               style: {
-                paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+                paddingInlineStart: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
                 bottom: (bannerSettings?.bannerHeightNumber ?? 0) + posBottom,
               },
             },
@@ -99,7 +99,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
               height: 'auto',
               maxHeight: 108,
               transition: 'min-height 0.2s linear',
-              paddingLeft: 8,
+              paddingInlineStart: 8,
             }}
           >
             <Stack

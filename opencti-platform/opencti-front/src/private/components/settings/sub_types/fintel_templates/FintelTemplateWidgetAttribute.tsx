@@ -41,7 +41,7 @@ const FintelTemplateWidgetAttribute = ({
       value={variableName}
       sx={{
         borderBottom: `1px solid ${theme.palette.divider}`,
-        paddingRight: 1,
+        paddingInlineEnd: 1,
         gap: 0,
         flexDirection: 'column',
         alignItems: 'stretch',
@@ -83,7 +83,7 @@ const FintelTemplateWidgetAttribute = ({
         </div>
       </div>
 
-      <div style={{ paddingLeft: theme.spacing(3.5) }}>
+      <div style={{ paddingInlineStart: theme.spacing(3.5) }}>
         {columns.map((column) => {
           const isUsed = !!editorValue?.includes(`$${column.variableName}`);
 

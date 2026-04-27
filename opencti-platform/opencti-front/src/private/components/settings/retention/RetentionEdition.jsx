@@ -49,14 +49,14 @@ const styles = (theme) => ({
     borderBottom: '1px solid #5c5c5c',
   },
   button: {
-    marginLeft: theme.spacing(2),
+    marginInlineStart: theme.spacing(2),
   },
   buttons: {
     marginTop: 20,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   title: {
-    float: 'left',
+    float: 'inline-start',
   },
 });
 

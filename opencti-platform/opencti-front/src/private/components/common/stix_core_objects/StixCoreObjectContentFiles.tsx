@@ -288,7 +288,7 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
                     <InformationOutline
                       fontSize="small"
                       color="primary"
-                      style={{ marginLeft: 5 }}
+                      style={{ marginInlineStart: 5 }}
                     />
                   </Tooltip>
                 )}

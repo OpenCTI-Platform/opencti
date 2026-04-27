@@ -196,7 +196,7 @@ export const ExternalReferencesField: FunctionComponent<
             <div style={{
               display: 'inline-block',
               flexGrow: 1,
-              marginLeft: 10,
+              marginInlineStart: 10,
             }}
             >
               {option.label}

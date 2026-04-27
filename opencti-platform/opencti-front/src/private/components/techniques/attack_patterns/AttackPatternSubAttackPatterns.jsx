@@ -89,7 +89,7 @@ const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
               <ListItemButton
                 component={Link}
                 to={`/dashboard/techniques/attack_patterns/${subAttackPattern.id}`}
-                sx={{ paddingLeft: 0 }}
+                sx={{ paddingInlineStart: 0 }}
               >
                 <ListItemText
                   primary={`[${subAttackPattern.x_mitre_id}] ${subAttackPattern.name}`}

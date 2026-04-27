@@ -30,7 +30,7 @@ export const LOCAL_STORAGE_KEY_CSV_MAPPERS = 'csvMappers';
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
   container: {
-    paddingRight: '200px',
+    paddingInlineEnd: '200px',
   },
 }));
 

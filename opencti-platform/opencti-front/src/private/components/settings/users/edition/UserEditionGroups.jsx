@@ -105,7 +105,7 @@ const UserEditionGroupsComponent = ({ user }) => {
                       <Tooltip
                         title={t_i18n('This group has no Max Confidence Level defined.')}
                       >
-                        <ReportGmailerrorred fontSize="small" color="error" style={{ marginLeft: 5 }} />
+                        <ReportGmailerrorred fontSize="small" color="error" style={{ marginInlineStart: 5 }} />
                       </Tooltip>
                     ) : (
                       ` (${t_i18n('Max Confidence Level:')} ${group.group_confidence_level.max_confidence})`

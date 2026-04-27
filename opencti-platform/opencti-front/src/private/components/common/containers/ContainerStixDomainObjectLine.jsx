@@ -30,7 +30,7 @@ import { EMPTY_VALUE } from '../../../../utils/String';
 // Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
   item: {
-    paddingLeft: 10,
+    paddingInlineStart: 10,
     height: 50,
   },
   itemIcon: {
@@ -39,11 +39,11 @@ const useStyles = makeStyles((theme) => ({
   bodyItem: {
     height: 25,
     fontSize: 13,
-    float: 'left',
+    float: 'inline-start',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 10,
+    paddingInlineEnd: 10,
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -96,7 +96,7 @@ const ContainerStixDomainObjectLineComponent = (props) => {
       disablePadding
       secondaryAction={isOnlyThroughInference ? (
         <Tooltip title={t_i18n('Inferred knowledge')}>
-          <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
+          <AutoFix fontSize="small" style={{ marginInlineStart: -30 }} />
         </Tooltip>
       ) : (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>

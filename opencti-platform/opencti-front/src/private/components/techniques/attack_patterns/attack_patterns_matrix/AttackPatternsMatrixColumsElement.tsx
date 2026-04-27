@@ -103,7 +103,7 @@ const AttackPatternsMatrixColumnsElement = ({
 
       {isCoverage && attackPattern.isCovered && (
         <>
-          <Box sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Box sx={{ marginInlineStart: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <SecurityCoverageInformation
               coverage_information={coverage || null}
               variant="matrix"

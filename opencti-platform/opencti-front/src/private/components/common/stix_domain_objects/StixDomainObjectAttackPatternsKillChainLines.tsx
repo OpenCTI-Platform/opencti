@@ -172,7 +172,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                             secondaryAction={(
                               <div
                                 style={{
-                                  paddingLeft: theme.spacing(4),
+                                  paddingInlineStart: theme.spacing(4),
                                 }}
                               >
                                 {coursesOfAction && (
@@ -192,7 +192,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                           >
                             <ListItemButton
                               style={{
-                                paddingLeft: theme.spacing(4),
+                                paddingInlineStart: theme.spacing(4),
                               }}
                               component={coursesOfAction ? 'ul' : Link}
                               to={coursesOfAction ? undefined : link}
@@ -243,7 +243,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                         <ListItemButton
                                           key={courseOfAction.id}
                                           style={{
-                                            paddingLeft: theme.spacing(8),
+                                            paddingInlineStart: theme.spacing(8),
                                           }}
                                           divider={true}
                                           dense={true}

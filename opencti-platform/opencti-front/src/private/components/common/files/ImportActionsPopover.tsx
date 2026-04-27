@@ -82,7 +82,7 @@ const ImportActionsPopover = ({
   };
 
   return (
-    <div style={{ marginLeft: -40 }}>
+    <div style={{ marginInlineStart: -40 }}>
       <Tooltip title={t_i18n('Show the imports')}>
         <IconButton
           onClick={(event) => {

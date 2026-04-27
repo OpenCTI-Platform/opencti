@@ -93,7 +93,7 @@ const FintelDesignFieldComponent: FunctionComponent<FintelDesignFieldComponentPr
         ) => (
           <li {...props} style={{ display: 'flex', alignItems: 'center' }}>
             <ItemIcon type="Fintel-Design" />
-            <div style={{ flexGrow: 1, marginLeft: 10 }}>{option.label}</div>
+            <div style={{ flexGrow: 1, marginInlineStart: 10 }}>{option.label}</div>
           </li>
         )}
         classes={{ clearIndicator: { display: 'none' } }}

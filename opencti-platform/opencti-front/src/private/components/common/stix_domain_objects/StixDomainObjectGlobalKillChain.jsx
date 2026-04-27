@@ -28,7 +28,7 @@ const styles = (theme) => ({
     color: theme.palette.primary.main,
   },
   nested: {
-    paddingLeft: theme.spacing(4),
+    paddingInlineStart: theme.spacing(4),
   },
 });
 
@@ -216,7 +216,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                                 />
                               </ListItemIcon>
                               <ListItemText
-                                sx={{ marginRight: 8, width: '100%' }}
+                                sx={{ marginInlineEnd: 8, width: '100%' }}
                                 primary={domainObjectPrimaryText}
                                 secondary={(
                                   <MarkdownDisplay
@@ -229,7 +229,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                               <Box
                                 sx={{
                                   width: 150,
-                                  marginRight: 6,
+                                  marginInlineEnd: 6,
                                   display: 'flex',
                                   justifyContent: 'center',
                                 }}
@@ -239,7 +239,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                                   limit={1}
                                 />
                               </Box>
-                              <Box sx={{ marginRight: 8 }}>
+                              <Box sx={{ marginInlineEnd: 8 }}>
                                 <ItemYears
                                   years={stixDomainObject.years}
                                 />

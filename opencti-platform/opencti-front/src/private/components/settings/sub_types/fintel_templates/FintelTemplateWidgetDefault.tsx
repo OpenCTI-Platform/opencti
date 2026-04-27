@@ -38,7 +38,7 @@ const FintelTemplateWidgetDefault = ({
       value={variableName}
       sx={{
         borderBottom: `1px solid ${theme.palette.divider}`,
-        paddingRight: 1,
+        paddingInlineEnd: 1,
         gap: 0,
         flexDirection: 'column',
         alignItems: 'stretch',
@@ -80,7 +80,7 @@ const FintelTemplateWidgetDefault = ({
         display: 'flex',
         alignItems: 'center',
         gap: theme.spacing(1),
-        paddingLeft: theme.spacing(3.5),
+        paddingInlineStart: theme.spacing(3.5),
       }}
       >
         <ListItemText secondary={`$${variableName}`} />

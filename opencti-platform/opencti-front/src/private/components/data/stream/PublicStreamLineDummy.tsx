@@ -13,18 +13,18 @@ const bodyItemStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   fontSize: 13,
-  float: 'left',
+  float: 'inline-start',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
-  paddingRight: 10,
+  paddingInlineEnd: 10,
 };
 
 const PublicStreamLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const theme = useTheme<Theme>();
   return (
     <ListItem
-      style={{ paddingLeft: 10, height: 50 }}
+      style={{ paddingInlineStart: 10, height: 50 }}
       divider={true}
       secondaryAction={<MoreVert style={{ color: theme.palette.grey?.[700] }} />}
     >

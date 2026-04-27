@@ -24,7 +24,7 @@ import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
-    paddingLeft: 10,
+    paddingInlineStart: 10,
     height: 50,
   },
   itemIcon: {
@@ -33,11 +33,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
   bodyItem: {
     height: 25,
     fontSize: 13,
-    float: 'left',
+    float: 'inline-start',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 10,
+    paddingInlineEnd: 10,
   },
   itemIconDisabled: {
     color: theme.palette.grey?.[700],
@@ -97,7 +97,7 @@ export const IngestionTaxiiCollectionLineLineComponent: FunctionComponent<Ingest
             </div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.id.width, paddingRight: 10 }}
+              style={{ width: dataColumns.id.width, paddingInlineEnd: 10 }}
             >
               <ItemCopy content={`${window.location.origin}${APP_BASE_PATH}/taxii2/root/collections/${data.id}/objects/`} variant="inLine" />
             </div>

@@ -109,7 +109,7 @@ const Campaigns = () => {
               <Grid
                 container={true}
                 spacing={3}
-                style={{ paddingLeft: 17 }}
+                style={{ paddingInlineStart: 17 }}
               >
                 {Array(20)
                   .fill(0)

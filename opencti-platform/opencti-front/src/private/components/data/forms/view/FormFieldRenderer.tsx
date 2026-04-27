@@ -44,7 +44,7 @@ const useStyles = makeStyles<Theme>(() => ({
     marginTop: 10,
   },
   fileChip: {
-    marginRight: 5,
+    marginInlineEnd: 5,
     marginBottom: 5,
   },
 }));

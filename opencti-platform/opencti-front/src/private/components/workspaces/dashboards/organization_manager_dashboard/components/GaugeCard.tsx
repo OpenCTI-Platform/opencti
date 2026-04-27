@@ -78,7 +78,7 @@ const GaugeCard: React.FC<GaugeCardProps> = ({
             marginBottom: 1,
             color: 'text.primary',
             fontSize: '1rem',
-            paddingRight: 4, // Space for menu icon
+            paddingInlineEnd: 4, // Space for menu icon
           }}
         >
           {t_i18n(title)}

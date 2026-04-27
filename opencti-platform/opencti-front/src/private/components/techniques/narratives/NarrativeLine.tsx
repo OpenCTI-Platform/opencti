@@ -87,11 +87,11 @@ export const narrativeLineFragment = graphql`
 const commonBodyItemStyle: CSSProperties = {
   height: 20,
   fontSize: 13,
-  float: 'left',
+  float: 'inline-start',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
-  paddingRight: 10,
+  paddingInlineEnd: 10,
 };
 
 const commonTextStyle = (theme: Theme, width?: string | number): CSSProperties => ({
@@ -116,7 +116,7 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
   const data = useFragment(narrativeLineFragment, node);
   return (
     <ListItem
-      style={{ paddingLeft: 10, height: 50 }}
+      style={{ paddingInlineStart: 10, height: 50 }}
       divider={true}
       component={Link}
       to={`/dashboard/techniques/narratives/${data.id}`}
@@ -182,7 +182,7 @@ export const NarrativeLineDummy = ({
   const theme = useTheme();
 
   return (
-    <ListItem style={{ paddingLeft: 10, height: 50 }} divider={true}>
+    <ListItem style={{ paddingInlineStart: 10, height: 50 }} divider={true}>
       <ListItemIcon style={{ color: theme.palette.primary.main }}>
         <Skeleton
           animation="wave"

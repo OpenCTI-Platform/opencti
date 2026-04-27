@@ -343,11 +343,11 @@ const StixDomainObjectNestedEntitiesLines = ({
   const bodyItemStyle: CSSProperties = {
     height: 20,
     fontSize: 13,
-    float: 'left',
+    float: 'inline-start',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 10,
+    paddingInlineEnd: 10,
   };
   return (
     <div>
@@ -370,7 +370,7 @@ const StixDomainObjectNestedEntitiesLines = ({
             >
               <ListItemButton
                 style={{
-                  paddingLeft: 10,
+                  paddingInlineStart: 10,
                   height: 50,
                 }}
                 component={Link}
@@ -402,7 +402,7 @@ const StixDomainObjectNestedEntitiesLines = ({
                         />
                       </div>
                       <div
-                        style={{ ...bodyItemStyle, width: '40%', paddingTop: '2px', marginLeft: '16px' }}
+                        style={{ ...bodyItemStyle, width: '40%', paddingTop: '2px', marginInlineStart: '16px' }}
                       >
                         {getMainRepresentative(stixCoreObject)}
                         {stixCoreObject.draftVersion && (<DraftChip />)}

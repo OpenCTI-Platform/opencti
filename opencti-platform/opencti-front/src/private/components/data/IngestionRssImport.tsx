@@ -92,7 +92,7 @@ const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({ pagina
       <ToggleButton
         value="import"
         size="small"
-        sx={{ marginLeft: 1 }}
+        sx={{ marginInlineStart: 1 }}
         title={t_i18n('Import a RSS Feed')}
         onClick={() => inputFileRef?.current?.click()}
       >

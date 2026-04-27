@@ -37,7 +37,7 @@ const styles = () => ({
     zIndex: 2000,
   },
   listIcon: {
-    marginRight: 0,
+    marginInlineEnd: 0,
   },
   item: {
     padding: '0 0 0 10px',

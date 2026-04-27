@@ -34,7 +34,7 @@ const styles = (theme) => ({
     padding: '20px 20px 20px 60px',
   },
   listIcon: {
-    marginRight: 0,
+    marginInlineEnd: 0,
   },
   item: {
     padding: '0 0 0 10px',

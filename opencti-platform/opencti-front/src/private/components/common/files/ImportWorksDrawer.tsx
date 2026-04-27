@@ -264,7 +264,7 @@ const FileWorksComponent = ({
                 fontSize: 12,
                 lineHeight: '12px',
                 height: 20,
-                float: 'left',
+                float: 'inline-start',
                 textTransform: 'uppercase',
                 borderRadius: 4,
                 width: 90,
@@ -290,7 +290,7 @@ const FileWorksComponent = ({
           globalCount={works.length}
           variant={DataTableVariant.inline}
           actions={(work: { id: string; draft_context?: string; status: string }) => (
-            <div style={{ marginLeft: work?.draft_context && !draftContext ? -45 : 0 }}>
+            <div style={{ marginInlineStart: work?.draft_context && !draftContext ? -45 : 0 }}>
               {work?.draft_context && !draftContext && (
                 <Tooltip title={t_i18n('Navigate to draft')}>
                   <IconButton
@@ -421,7 +421,7 @@ const ImportWorksDrawer = ({
                 size="small"
                 aria-label={launchImportTitle}
                 title={launchImportTitle}
-                sx={{ marginLeft: 'auto', marginRight: 2 }}
+                sx={{ marginInlineStart: 'auto', marginInlineEnd: 2 }}
               >
                 {launchImportTitle}
               </Button>

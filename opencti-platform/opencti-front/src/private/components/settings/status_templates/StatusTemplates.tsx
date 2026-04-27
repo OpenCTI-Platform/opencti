@@ -134,7 +134,7 @@ const StatusTemplates = () => {
   } as UsePreloadedPaginationFragment<StatusTemplatesLinesPaginationQuery>;
 
   return (
-    <div style={{ marginRight: 200 }} data-testid="status-template-page">
+    <div style={{ marginInlineEnd: 200 }} data-testid="status-template-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Status templates'), current: true }]} />
       {queryRef && (
         <DataTable

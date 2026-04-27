@@ -33,7 +33,7 @@ const EmailTemplateComponent = ({ queryRef }: EmailTemplateProps) => {
 
   return (
     <EmailTemplateProvider>
-      <div style={{ marginRight: EMAIL_TEMPLATE_SIDEBAR_WIDTH }}>
+      <div style={{ marginInlineEnd: EMAIL_TEMPLATE_SIDEBAR_WIDTH }}>
         <EmailTemplateHeader
           data={emailTemplate}
         />

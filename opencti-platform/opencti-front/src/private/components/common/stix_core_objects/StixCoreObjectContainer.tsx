@@ -247,7 +247,7 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
               <div style={{ padding: '4px' }}>
                 <ItemIcon type={option.type} />
               </div>
-              <div style={{ marginLeft: 10 }}>{option.label}</div>
+              <div style={{ marginInlineStart: 10 }}>{option.label}</div>
             </li>
           )}
           disableClearable

@@ -74,7 +74,7 @@ const SectorSubSectorsComponent = ({ sector }) => {
                   </IconButton>
                 </Tooltip>
               </Security>
-            ) : <AutoFix fontSize="small" style={{ marginRight: 13 }} />}
+            ) : <AutoFix fontSize="small" style={{ marginInlineEnd: 13 }} />}
           >
             <ListItemButton
               component={Link}

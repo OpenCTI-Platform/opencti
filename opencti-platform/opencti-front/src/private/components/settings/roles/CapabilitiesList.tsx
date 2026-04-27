@@ -46,7 +46,7 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
           key="sensitive"
           dense={true}
           divider={true}
-          style={{ paddingLeft: 0 }}
+          style={{ paddingInlineStart: 0 }}
         >
           <ListItemIcon style={{ minWidth: 32 }}>
             <ItemIcon type="Capability" />

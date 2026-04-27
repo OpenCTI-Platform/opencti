@@ -119,8 +119,8 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
               <Button
                 size="small"
                 sx={{
-                  marginLeft: -1,
-                  marginRight: -3,
+                  marginInlineStart: -1,
+                  marginInlineEnd: -3,
                   color: theme.palette.text.primary,
                   ':hover': {
                     backgroundColor: 'transparent',

@@ -112,7 +112,7 @@ const IngestionCsv = () => {
               {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
                 <Button
                   gradient
-                  sx={{ marginLeft: 1 }}
+                  sx={{ marginInlineStart: 1 }}
                   href={importFromHubUrl}
                   target="_blank"
                   title={t_i18n('Import from Hub')}

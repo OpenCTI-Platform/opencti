@@ -23,7 +23,7 @@ const EEChip = React.forwardRef<HTMLDivElement, { feature?: string; clickable?: 
   };
   const divStyle: CSSProperties = floating
     ? {
-        float: 'left',
+        float: 'inline-start',
         fontSize: 'xx-small',
         height: 18,
         display: 'inline-flex',
@@ -45,7 +45,7 @@ const EEChip = React.forwardRef<HTMLDivElement, { feature?: string; clickable?: 
         alignItems: 'center',
         width: 21,
         margin: 'auto',
-        marginLeft: 6,
+        marginInlineStart: 6,
         borderRadius: theme.borderRadius,
         border: `1px solid ${theme.palette.ee.main}`,
         color: theme.palette.ee.main,

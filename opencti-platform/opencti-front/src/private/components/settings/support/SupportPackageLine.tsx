@@ -29,14 +29,14 @@ const styles = {
   bodyItem: {
     height: 25,
     fontSize: 13,
-    float: 'left' as 'left' | 'right' | 'none' | undefined,
+    float: 'inline-start' as 'left' | 'right' | 'none' | undefined,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 10,
+    paddingInlineEnd: 10,
   },
   item: {
-    paddingLeft: 10,
+    paddingInlineStart: 10,
     height: 50,
     cursor: 'default',
   },
@@ -228,7 +228,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
               <div style={{ width: dataColumns.name.width, ...styles.bodyItem }}>
                 {data.name}
               </div>
-              <div style={{ width: dataColumns.package_status.width, ...styles.bodyItem, paddingLeft: 15 }}>
+              <div style={{ width: dataColumns.package_status.width, ...styles.bodyItem, paddingInlineStart: 15 }}>
                 <Chip
                   style={{
                     color: packageStatusColors[finalStatus],
@@ -241,7 +241,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
                 />
               </div>
               <div
-                style={{ width: dataColumns.created_at.width, ...styles.bodyItem, paddingLeft: 20 }}
+                style={{ width: dataColumns.created_at.width, ...styles.bodyItem, paddingInlineStart: 20 }}
               >
                 {fndt(data.created_at)}
               </div>

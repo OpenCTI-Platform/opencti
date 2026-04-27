@@ -90,7 +90,7 @@ const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
       display: 'flex',
       gap: '15px',
       paddingBottom: '5px',
-      paddingLeft: '5px',
+      paddingInlineStart: '5px',
     }}
     >
       <Box sx={{ minWidth: `${entityTypeHeaderWidth}px` }}>

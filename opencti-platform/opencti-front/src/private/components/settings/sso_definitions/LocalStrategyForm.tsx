@@ -239,19 +239,19 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
             label={t_i18n('Number of uppercase chars must be greater or equals to')}
             fullWidth
           />
-          <div style={{ marginTop: 20, textAlign: 'right' }}>
+          <div style={{ marginTop: 20, textAlign: 'end' }}>
             <Button
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              style={{ marginLeft: theme.spacing(1) }}
+              style={{ marginInlineStart: theme.spacing(1) }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={submitForm}
               disabled={isSubmitting || !dirty}
-              style={{ marginLeft: theme.spacing(1) }}
+              style={{ marginInlineStart: theme.spacing(1) }}
             >
               {t_i18n('Update')}
             </Button>

@@ -107,7 +107,7 @@ const GradientButton = ({
           lineHeight: 1.5,
         },
         '& .MuiButton-startIcon': {
-          marginRight: children ? undefined : 0,
+          marginInlineEnd: children ? undefined : 0,
         },
         '&:hover': bgGradientStyle({ hover: true }),
         '&:active': bgGradientStyle({ active: true }),

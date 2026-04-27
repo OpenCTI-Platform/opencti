@@ -125,7 +125,7 @@ const JsonMapperTestDialog: FunctionComponent<JsonMapperTestDialogProps> = ({
           {t_i18n('Test')}
         </Button>
         {loading && (
-          <Box sx={{ marginLeft: '8px' }}>
+          <Box sx={{ marginInlineStart: '8px' }}>
             <Loader variant={LoaderVariant.inElement} />
           </Box>
         )}

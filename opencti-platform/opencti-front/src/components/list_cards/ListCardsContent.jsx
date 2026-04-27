@@ -9,7 +9,7 @@ const numberOfCardsPerLine = 4;
 
 const styles = () => ({
   windowScrollerWrapper: {
-    marginLeft: -10,
+    marginInlineStart: -10,
     flex: '1 1 auto',
   },
   defaultCard: {

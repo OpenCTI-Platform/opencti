@@ -26,8 +26,8 @@ const Sessions = () => {
       data-testid="session-settings-page"
     >
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Sessions'), current: true }]} />
-      <div style={{ float: 'left', marginBottom: 10 }}>
-        <div style={{ float: 'left', marginRight: 20 }}>
+      <div style={{ float: 'inline-start', marginBottom: 10 }}>
+        <div style={{ float: 'inline-start', marginInlineEnd: 20 }}>
           <SearchInput
             variant="small"
             onSubmit={helpers.handleSearch}

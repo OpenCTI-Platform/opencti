@@ -81,7 +81,7 @@ const PirThreatMap = ({ data }: PirThreatMapProps) => {
 
   const containerStyle: CSSProperties = {
     position: 'relative',
-    paddingLeft: theme.spacing(1),
+    paddingInlineStart: theme.spacing(1),
     paddingBottom: theme.spacing(1.5),
     fontSize: 12,
   };

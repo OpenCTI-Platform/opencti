@@ -225,11 +225,11 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
                         />
                       )
                   }
-                  <div style={{ marginTop: 20, textAlign: 'right' }}>
+                  <div style={{ marginTop: 20, textAlign: 'end' }}>
                     <Button
                       variant="secondary"
                       disabled={isSubmitting}
-                      style={{ marginLeft: 16 }}
+                      style={{ marginInlineStart: 16 }}
                       onClick={onClose}
                     >
                       {t_i18n('Cancel')}
@@ -237,7 +237,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
                     <Button
                       onClick={submitForm}
                       disabled={isSubmitting}
-                      style={{ marginLeft: 16 }}
+                      style={{ marginInlineStart: 16 }}
                     >
                       {t_i18n('Update')}
                     </Button>

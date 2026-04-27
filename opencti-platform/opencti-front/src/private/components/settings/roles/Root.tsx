@@ -89,7 +89,7 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
           <TitleMainEntity sx={{ flex: 1 }}>
             {role.name}
           </TitleMainEntity>
-          <div style={{ marginRight: theme.spacing(0.5) }}>
+          <div style={{ marginInlineEnd: theme.spacing(0.5) }}>
             {canDelete && (
               <PopoverMenu>
                 {({ closeMenu }) => (

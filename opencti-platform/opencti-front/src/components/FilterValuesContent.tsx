@@ -54,7 +54,7 @@ const FilterValuesContent: FunctionComponent<
           {displayedValue}
         </span>
         <Tooltip
-          style={{ marginLeft: 3, marginTop: -5, paddingTop: 7 }}
+          style={{ marginInlineStart: 3, marginTop: -5, paddingTop: 7 }}
           title={t_i18n('Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lose the context of the entity in which the template is used.')}
         >
           <InformationOutline color="primary" />

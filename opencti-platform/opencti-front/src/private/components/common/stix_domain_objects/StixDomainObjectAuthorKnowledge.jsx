@@ -37,12 +37,12 @@ const styles = (theme) => ({
     color: theme.palette.primary.main,
   },
   itemIconSecondary: {
-    marginRight: 0,
+    marginInlineEnd: 0,
     color: theme.palette.secondary.main,
   },
   number: {
     marginTop: 10,
-    float: 'left',
+    float: 'inline-start',
     fontSize: 30,
   },
   title: {

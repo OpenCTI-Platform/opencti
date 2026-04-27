@@ -27,7 +27,7 @@ import StixCyberObservableIndicatorPopover from './StixCyberObservableIndicatorP
 
 const inlineStyles = {
   pattern_type: {
-    float: 'left',
+    float: 'inline-start',
     width: '20%',
     height: 20,
     whiteSpace: 'nowrap',
@@ -35,7 +35,7 @@ const inlineStyles = {
     textOverflow: 'ellipsis',
   },
   observable_value: {
-    float: 'left',
+    float: 'inline-start',
     width: '50%',
     height: 20,
     whiteSpace: 'nowrap',
@@ -43,7 +43,7 @@ const inlineStyles = {
     textOverflow: 'ellipsis',
   },
   created_at: {
-    float: 'left',
+    float: 'inline-start',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -173,7 +173,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
           >
             <ListItemButton
               aria-label="stix cyber observable indicators item"
-              style={{ paddingLeft: 10, height: 50 }}
+              style={{ paddingInlineStart: 10, height: 50 }}
               component={Link}
               to={`/dashboard/observations/indicators/${indicatorEdge.node.id}`}
             >

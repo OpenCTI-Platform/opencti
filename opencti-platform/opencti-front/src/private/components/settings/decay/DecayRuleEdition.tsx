@@ -169,7 +169,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
                           }}
                         />
                       </div>
-                      <div style={{ marginLeft: 10 }}>
+                      <div style={{ marginInlineStart: 10 }}>
                         <Tooltip title={t_i18n('Remove this reaction point')}>
                           <IconButton
                             color="primary"

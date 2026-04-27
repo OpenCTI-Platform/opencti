@@ -181,8 +181,8 @@ const FilterIconButtonContainer: FunctionComponent<
       backgroundColor: theme.palette.action?.selected,
       padding: '0 8px',
       height: 20,
-      marginRight: 5,
-      marginLeft: 5,
+      marginInlineEnd: 5,
+      marginInlineStart: 5,
     };
     if (isReadWriteFilter) margin = '0 0 0 0';
   } else if (variant === 'tag') {

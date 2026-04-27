@@ -52,19 +52,19 @@ const useStyles = makeStyles<Theme>({
     marginTop: 10,
   },
   itemHead: {
-    paddingLeft: 10,
+    paddingInlineStart: 10,
     textTransform: 'uppercase',
     cursor: 'pointer',
   },
   item: {
-    paddingLeft: 10,
+    paddingInlineStart: 10,
     height: 50,
   },
   bodyItem: {
     overflow: 'hidden',
     fontSize: 13,
     whiteSpace: 'nowrap',
-    paddingRight: 10,
+    paddingInlineEnd: 10,
     display: 'flex',
     alignItems: 'center',
     minWidth: 0,

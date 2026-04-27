@@ -31,7 +31,7 @@ const stixSightingRelationshipQuery = graphql`
 
 interface StixSightingRelationshipProps {
   entityId: string;
-  paddingRight: boolean;
+  paddingInlineEnd: boolean;
 }
 
 const StixSightingRelationship: FunctionComponent<

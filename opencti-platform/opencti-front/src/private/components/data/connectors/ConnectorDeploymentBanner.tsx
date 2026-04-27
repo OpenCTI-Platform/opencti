@@ -24,7 +24,7 @@ const ConnectorDeploymentBanner: FunctionComponent<ConnectorDeploymentBannerProp
       <Alert severity="warning">
         <Typography>
           {t_i18n('Deploying connectors from this catalog requires the installation of our')}
-          <Link style={{ marginLeft: 4 }} to={URL} target="_blank" rel="noopener">
+          <Link style={{ marginInlineStart: 4 }} to={URL} target="_blank" rel="noopener">
             {t_i18n('Integration Manager')}
           </Link>
         </Typography>

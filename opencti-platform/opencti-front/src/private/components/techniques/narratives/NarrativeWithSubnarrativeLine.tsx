@@ -35,7 +35,7 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
     <div>
       <ListItemButton
         style={{
-          paddingLeft: isSubNarrative ? theme.spacing(4) : undefined,
+          paddingInlineStart: isSubNarrative ? theme.spacing(4) : undefined,
         }}
         divider
         component={Link}
@@ -55,7 +55,7 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
                   width: '30%',
                   height: 20,
                   lineHeight: '20px',
-                  float: 'left',
+                  float: 'inline-start',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -67,11 +67,11 @@ const NarrativeWithSubnarrativeLine: FunctionComponent<NarrativeWithSubnarrative
                 style={{
                   height: 20,
                   fontSize: 13,
-                  float: 'left',
+                  float: 'inline-start',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  paddingRight: 10,
+                  paddingInlineEnd: 10,
                   color: theme.palette.text.primary,
                 }}
               >

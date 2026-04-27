@@ -271,11 +271,11 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
                   type="checkbox"
                   name="enabled"
                   label={t_i18n('Enable client certificate authentication')}
-                  containerstyle={{ marginTop: 0, marginRight: 0 }}
+                  containerstyle={{ marginTop: 0, marginInlineEnd: 0 }}
                 />
                 {!settings.platform_https_enabled && (
                   <Tooltip title={t_i18n('Client certificate requires the platform to be configured with HTTPS')}>
-                    <span style={{ display: 'inline-flex', marginLeft: 4 }}>
+                    <span style={{ display: 'inline-flex', marginInlineStart: 4 }}>
                       <IconButton
                         size="small"
                         disabled
@@ -330,19 +330,19 @@ const CertStrategyForm = ({ onCancel }: CertStrategyFormProps) => {
           )}
 
           {/* Shared Cancel / Update buttons */}
-          <div style={{ marginTop: 20, textAlign: 'right' }}>
+          <div style={{ marginTop: 20, textAlign: 'end' }}>
             <Button
               variant="secondary"
               onClick={handleReset}
               disabled={isSubmitting}
-              style={{ marginLeft: theme.spacing(1) }}
+              style={{ marginInlineStart: theme.spacing(1) }}
             >
               {t_i18n('Cancel')}
             </Button>
             <Button
               onClick={submitForm}
               disabled={isSubmitting || !dirty}
-              style={{ marginLeft: theme.spacing(1) }}
+              style={{ marginInlineStart: theme.spacing(1) }}
             >
               {t_i18n('Update')}
             </Button>

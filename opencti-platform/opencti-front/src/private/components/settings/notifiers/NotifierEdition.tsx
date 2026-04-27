@@ -30,10 +30,10 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
     marginTop: 20,
-    textAlign: 'right',
+    textAlign: 'end',
   },
   button: {
-    marginLeft: theme.spacing(2),
+    marginInlineStart: theme.spacing(2),
   },
 }));
 
@@ -193,7 +193,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
             />
             <Box
               sx={{
-                paddingLeft: '15px',
+                paddingInlineStart: '15px',
                 '& .MuiGrid-root': {
                   flexDirection: 'column',
                   paddingTop: '16px',

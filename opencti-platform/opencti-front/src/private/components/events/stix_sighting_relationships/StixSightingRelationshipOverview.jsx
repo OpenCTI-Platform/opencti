@@ -570,7 +570,7 @@ class StixSightingRelationshipContainer extends Component {
 
 StixSightingRelationshipContainer.propTypes = {
   stixSightingRelationship: PropTypes.object,
-  paddingRight: PropTypes.bool,
+  paddingInlineEnd: PropTypes.bool,
   classes: PropTypes.object,
   t: PropTypes.func,
   nsdt: PropTypes.func,

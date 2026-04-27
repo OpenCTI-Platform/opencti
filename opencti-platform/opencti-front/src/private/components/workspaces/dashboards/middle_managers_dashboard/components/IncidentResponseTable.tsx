@@ -208,7 +208,7 @@ const IncidentCardItem: React.FC<{ incident: IncidentCard }> = ({ incident }) =>
           >
             {incident.title}
           </Typography>
-          <Box sx={{ display: 'flex', gap: 0.5, marginLeft: 1, flexShrink: 0 }}>
+          <Box sx={{ display: 'flex', gap: 0.5, marginInlineStart: 1, flexShrink: 0 }}>
             <Chip
               label={t_i18n(incident.severity)}
               size="small"
@@ -427,7 +427,7 @@ const IncidentResponseTable: React.FC = () => {
 
           <Typography
             variant="h6"
-            sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingRight: 4 }}
+            sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingInlineEnd: 4 }}
           >
             {t_i18n('Incident Response Table')}
           </Typography>

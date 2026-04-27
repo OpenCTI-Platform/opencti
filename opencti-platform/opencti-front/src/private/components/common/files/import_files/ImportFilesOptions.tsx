@@ -77,7 +77,7 @@ const ImportFilesOptions = ({
                 component={SelectField}
                 variant="standard"
                 name="validationMode"
-                containerstyle={{ marginTop: 16, width: '100%', marginRight: 10 }}
+                containerstyle={{ marginTop: 16, width: '100%', marginInlineEnd: 10 }}
                 disabled={isForcedImportToDraft}
                 label={(
                   <>
@@ -86,7 +86,7 @@ const ImportFilesOptions = ({
                       title={t_i18n('Import all data into a new draft or an analyst workbench, to validate the data before ingestion. Note that creating a workbench is not possible when several files are selected.')}
                     >
                       <InformationOutline
-                        style={{ display: 'flex', marginTop: -22, marginLeft: 115 }}
+                        style={{ display: 'flex', marginTop: -22, marginInlineStart: 115 }}
                         fontSize="small"
                         color="primary"
                       />

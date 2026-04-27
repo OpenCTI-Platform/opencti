@@ -143,10 +143,10 @@ class AddObservedDataLinesContainer extends Component {
                 primary={`${observedData.observedData} ${observedDataId}`}
                 secondary={truncate(observedData.explanation, 120)}
               />
-              <div style={{ marginRight: 50 }}>
+              <div style={{ marginInlineEnd: 50 }}>
                 {observedData.createdBy?.name ?? EMPTY_VALUE}
               </div>
-              <div style={{ marginRight: 50 }}>
+              <div style={{ marginInlineEnd: 50 }}>
                 <ItemMarkings
                   variant="inList"
                   markingDefinitions={observedData.objectMarking ?? []}

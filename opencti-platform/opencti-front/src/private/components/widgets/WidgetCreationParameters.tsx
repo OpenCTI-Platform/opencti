@@ -527,7 +527,7 @@ const WidgetCreationParameters = () => {
                         fullWidth={true}
                         style={{
                           flex: 1,
-                          marginRight: 20,
+                          marginInlineEnd: 20,
                           width: '100%',
                         }}
                       >
@@ -651,7 +651,7 @@ const WidgetCreationParameters = () => {
                         fullWidth={true}
                         style={{
                           flex: 1,
-                          marginRight: 20,
+                          marginInlineEnd: 20,
                           width: '100%',
                         }}
                       >

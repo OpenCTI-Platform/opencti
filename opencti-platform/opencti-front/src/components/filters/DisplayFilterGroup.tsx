@@ -255,7 +255,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
                   padding: '8px 16px',
                   fontFamily: 'Consolas, monaco, monospace',
                   backgroundColor: '#01478d',
-                  marginRight: '8px',
+                  marginInlineEnd: '8px',
                   height: 'fit-content',
                 }}
               >

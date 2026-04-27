@@ -12,11 +12,11 @@ import { DataColumns } from './list_lines';
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
   item: {
-    paddingLeft: 10,
+    paddingInlineStart: 10,
     textTransform: 'uppercase',
   },
   headerItem: {
-    float: 'left',
+    float: 'inline-start',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -26,7 +26,7 @@ const useStyles = makeStyles(() => ({
     padding: 0,
   },
   sortableHeaderItem: {
-    float: 'left',
+    float: 'inline-start',
     fontSize: 12,
     fontWeight: '700',
     cursor: 'pointer',

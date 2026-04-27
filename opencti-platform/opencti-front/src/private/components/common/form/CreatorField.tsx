@@ -79,7 +79,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
             <IconButton
               component={Link}
               to={`/dashboard/settings/accesses/users/${node.internal_id}`}
-              sx={{ marginLeft: 1 }}
+              sx={{ marginInlineStart: 1 }}
               color="primary"
             >
               <OpenInNewOutlined fontSize="small" />
@@ -151,7 +151,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
             <div
               style={{
                 flexGrow: 1,
-                marginLeft: 10,
+                marginInlineStart: 10,
               }}
             >
               {option.label}
@@ -160,8 +160,8 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
               <Box
                 sx={{
                   flexGrow: 1,
-                  marginLeft: 1,
-                  textAlign: 'right',
+                  marginInlineStart: 1,
+                  textAlign: 'end',
                   color: 'text.disabled',
                 }}
               >

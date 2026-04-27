@@ -262,7 +262,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                       <Tooltip
                         title={`${t_i18n('The default groups are:')} ${defaultGroups.edges.map((g) => g.node.name)}`}
                       >
-                        <InformationOutline style={{ marginLeft: 8 }} fontSize="small" color="primary" />
+                        <InformationOutline style={{ marginInlineStart: 8 }} fontSize="small" color="primary" />
                       </Tooltip>
                     </div>
                   )}

@@ -19,10 +19,10 @@
 
 .rich-text-editor-wrapper .ProseMirror blockquote {
   overflow: hidden;
-  padding-right: 1.5em;
-  padding-left: 1.5em;
-  margin-left: 0;
-  margin-right: 0;
+  padding-inline-end: 1.5em;
+  padding-inline-start: 1.5em;
+  margin-inline-start: 0;
+  margin-inline-end: 0;
   font-style: italic;
   border-left: solid 5px hsl(0, 0%, 80%);
   color: inherit;
@@ -34,7 +34,7 @@
   background: rgba(199, 199, 199, 0.3);
   border: 1px solid hsl(0, 0%, 77%);
   border-radius: 2px;
-  text-align: left;
+  text-align: start;
   direction: ltr;
   tab-size: 4;
   white-space: pre-wrap;
@@ -59,7 +59,7 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
 
 .rich-text-editor-wrapper .ProseMirror ul,
 .rich-text-editor-wrapper .ProseMirror ol {
-  padding-left: 1.5em;
+  padding-inline-start: 1.5em;
 }
 
 /* Task list - no bullets, checkbox and text on same line */
@@ -67,7 +67,7 @@ body[data-theme="dark"] .rich-text-editor-wrapper .ProseMirror pre {
 .rich-text-content ul[data-type="taskList"],
 .rich-text-content ul.todo-list {
   list-style: none !important;
-  padding-left: 0;
+  padding-inline-start: 0;
 }
 
 .rich-text-editor-wrapper .ProseMirror li.tiptap-task-item,
@@ -300,7 +300,7 @@ body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
 
 .rich-text-editor-wrapper .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
-  float: left;
+  float: inline-start;
   color: #999;
   pointer-events: none;
   height: 0;
@@ -385,17 +385,17 @@ body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
 /* Legacy Editor support for right-aligned image figures */
 .rich-text-content figure.image-style-side,
 .rich-text-editor-wrapper .ProseMirror figure.image-style-side {
-  float: right !important;
+  float: inline-end !important;
   clear: none !important;
   margin: 0.9em 0 0.9em 1.5em !important;
 }
 
 .rich-text-content blockquote {
   overflow: hidden;
-  padding-right: 1.5em;
-  padding-left: 1.5em;
-  margin-left: 0;
-  margin-right: 0;
+  padding-inline-end: 1.5em;
+  padding-inline-start: 1.5em;
+  margin-inline-start: 0;
+  margin-inline-end: 0;
   font-style: italic;
   border-left: solid 5px hsl(0, 0%, 80%);
 }
@@ -406,7 +406,7 @@ body[data-theme="light"] .rich-text-editor-wrapper .ProseMirror a {
   background: rgba(199, 199, 199, 0.3);
   border: 1px solid hsl(0, 0%, 77%);
   border-radius: 2px;
-  text-align: left;
+  text-align: start;
   direction: ltr;
   tab-size: 4;
   white-space: pre-wrap;

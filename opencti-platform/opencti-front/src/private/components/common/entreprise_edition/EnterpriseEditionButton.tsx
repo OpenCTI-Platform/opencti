@@ -15,7 +15,7 @@ import type { Theme } from '../../../../components/Theme';
 // Do not use it for new code.
 const useStyles = makeStyles({
   button: {
-    marginLeft: 20,
+    marginInlineStart: 20,
   },
 });
 

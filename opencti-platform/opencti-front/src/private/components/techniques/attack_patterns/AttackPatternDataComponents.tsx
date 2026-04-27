@@ -94,7 +94,7 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
                   <ListItemButton
                     component={Link}
                     to={`/dashboard/techniques/data_components/${dataComponent.id}`}
-                    sx={{ paddingLeft: 0 }}
+                    sx={{ paddingInlineStart: 0 }}
                   >
                     <ListItemText primary={dataComponent.name} />
                   </ListItemButton>

@@ -105,7 +105,7 @@ class ThreatActorGroupLocationsComponent extends Component {
                       )}
                     </ListItemIcon>
                     <ListItemText primary={location.name} />
-                    {!types.includes('manual') && <AutoFix fontSize="small" style={{ marginRight: 13 }} />}
+                    {!types.includes('manual') && <AutoFix fontSize="small" style={{ marginInlineEnd: 13 }} />}
                   </ListItemButton>
                 </ListItem>
               );

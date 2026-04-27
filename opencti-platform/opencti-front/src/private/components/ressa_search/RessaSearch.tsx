@@ -474,8 +474,8 @@ const RessaSearch = () => {
                         flexItem
                         sx={{
                           height: 20,
-                          marginLeft: 0.5,
-                          marginRight: 0.5,
+                          marginInlineStart: 0.5,
+                          marginInlineEnd: 0.5,
                           borderColor: 'divider',
                           alignSelf: 'center',
                           marginTop: '2px',
@@ -496,8 +496,8 @@ const RessaSearch = () => {
                         flexItem
                         sx={{
                           height: 20,
-                          marginLeft: 0.5,
-                          marginRight: 0.5,
+                          marginInlineStart: 0.5,
+                          marginInlineEnd: 0.5,
                           borderColor: 'divider',
                           alignSelf: 'center',
                           marginTop: '2px',
@@ -518,8 +518,8 @@ const RessaSearch = () => {
                         flexItem
                         sx={{
                           height: 20,
-                          marginLeft: 0.5,
-                          marginRight: 0.5,
+                          marginInlineStart: 0.5,
+                          marginInlineEnd: 0.5,
                           borderColor: 'divider',
                           alignSelf: 'center',
                           marginTop: '2px',
@@ -538,8 +538,8 @@ const RessaSearch = () => {
                         flexItem
                         sx={{
                           height: 20,
-                          marginLeft: 0.5,
-                          marginRight: 0.5,
+                          marginInlineStart: 0.5,
+                          marginInlineEnd: 0.5,
                           borderColor: 'divider',
                           alignSelf: 'center',
                           marginTop: '2px',

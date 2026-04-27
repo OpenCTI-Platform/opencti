@@ -6,7 +6,7 @@ const Tick = ({ tick, count, format = (d) => d }) => {
   const isFullHour = !getMinutes(tick.value);
 
   const tickLabelStyle = {
-    marginLeft: `${-(100 / count) / 2}%`,
+    marginInlineStart: `${-(100 / count) / 2}%`,
     width: `${100 / count}%`,
     left: `${tick.percent}%`,
   };

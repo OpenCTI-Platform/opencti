@@ -360,7 +360,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               {!isSecurityPlatform && (
                 <Box
                   style={{
-                    float: 'right',
+                    float: 'inline-end',
                     display: 'flex',
                   }}
                 >

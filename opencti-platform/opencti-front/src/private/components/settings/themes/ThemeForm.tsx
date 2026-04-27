@@ -270,7 +270,7 @@ const ThemeForm: FunctionComponent<ThemeFormProps> = ({
             }}
             endAdornment={
               loginAsideType && (
-                <InputAdornment position="end" style={{ marginRight: 16 }}>
+                <InputAdornment position="end" style={{ marginInlineEnd: 16 }}>
                   <IconButton size="small" onClick={() => handleLoginAsideTypeChange({ target: { value: '' } } as SelectChangeEvent<string>)}>
                     <ClearIcon fontSize="small" />
                   </IconButton>

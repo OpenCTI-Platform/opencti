@@ -24,7 +24,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   containerWrap: {
     position: 'relative',
-    paddingRight: 18,
+    paddingInlineEnd: 18,
   },
   container: {
     position: 'relative',
@@ -112,7 +112,7 @@ const ItemCopy: FunctionComponent<ItemCopyProps> = ({
           overflow: 'hidden',
           minWidth: 0,
           textOverflow: 'ellipsis',
-          marginRight: 3,
+          marginInlineEnd: 3,
         }}
       >
         {textToShow}

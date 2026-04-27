@@ -48,7 +48,7 @@ const Tag = ({
     borderRadius: 4,
     fontSize: 12,
     fontWeight: 400,
-    paddingLeft: '8px',
+    paddingInlineStart: '8px',
     cursor: onClick ? 'pointer' : 'default',
     textTransform: labelTextTransform,
   };
@@ -65,8 +65,8 @@ const Tag = ({
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
       display: 'block',
-      paddingLeft: icon ? '8px' : '4px',
-      paddingRight: onDelete ? '4px' : '12px',
+      paddingInlineStart: icon ? '8px' : '4px',
+      paddingInlineEnd: onDelete ? '4px' : '12px',
       textTransform: labelTextTransform,
       '&::first-letter': {
         textTransform: labelTextTransform,
@@ -85,7 +85,7 @@ const Tag = ({
         color: '#FFFFFF',
       },
       background: 'none',
-      marginLeft: '8px',
+      marginInlineStart: '8px',
     },
     ...sx,
   };

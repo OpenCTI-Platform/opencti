@@ -67,13 +67,13 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
       <Breadcrumbs elements={breadcrumb} />
 
       <div style={{ display: 'flex', gap: theme.spacing(1) }}>
-        <Typography variant="h1" sx={{ float: 'left' }}>
+        <Typography variant="h1" sx={{ float: 'inline-start' }}>
           {template.name}
         </Typography>
 
         <div
           style={{
-            float: 'left',
+            float: 'inline-start',
             margin: '0 0 0 5px',
           }}
         >
@@ -82,7 +82,7 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
             label={template.start_date ? t_i18n('Published') : t_i18n('Not published')}
           />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: theme.spacing(1) }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginInlineStart: 'auto', gap: theme.spacing(1) }}>
           <FintelTemplatePopover
             onUpdate={() => setFormOpen(true)}
             entitySettingId={entitySettingId}
@@ -92,7 +92,7 @@ const FintelTemplateHeader = ({ entitySettingId, data }: FintelTemplateHeaderPro
           />
           <Button
             onClick={onSubmit}
-            style={{ marginLeft: 'auto' }}
+            style={{ marginInlineStart: 'auto' }}
             disabled={editorValue === template.template_content || editOnGoing}
           >
             {t_i18n('Save template')}

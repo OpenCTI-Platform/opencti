@@ -22,7 +22,7 @@ export const SimpleError = () => {
   return (
     <div style={{ paddingTop: 10 }}>
       <Alert severity="error">
-        <span style={{ marginRight: 10 }}>
+        <span style={{ marginInlineEnd: 10 }}>
           {t_i18n(
             '',
             {

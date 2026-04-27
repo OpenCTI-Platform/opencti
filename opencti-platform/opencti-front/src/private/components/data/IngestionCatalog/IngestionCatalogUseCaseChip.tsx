@@ -59,7 +59,7 @@ const IngestionCatalogChip = ({
           fontSize: 12,
           lineHeight: '14px',
           borderRadius: 1,
-          marginRight: isInlist ? theme.spacing(1) : 0,
+          marginInlineEnd: isInlist ? theme.spacing(1) : 0,
           border: `1px solid ${color || theme.palette.chip.main}`,
           backgroundColor: 'rgba(0, 0, 0, 0.1)',
           color,

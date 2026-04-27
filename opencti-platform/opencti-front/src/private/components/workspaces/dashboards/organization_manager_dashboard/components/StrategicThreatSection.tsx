@@ -68,7 +68,7 @@ const TopAttackersCard: React.FC = () => {
 
         <Typography
           variant="h6"
-          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingRight: 4 }}
+          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingInlineEnd: 4 }}
         >
           {t_i18n('Top Attackers by Strategic Impact')}
         </Typography>
@@ -137,7 +137,7 @@ const TopAttackersCard: React.FC = () => {
                     color: 'text.primary',
                     fontSize: '0.85rem',
                     fontWeight: 700,
-                    marginLeft: 1,
+                    marginInlineStart: 1,
                   }}
                 >
                   {attacker.score}
@@ -289,7 +289,7 @@ const HighConfidenceCampaignsCard: React.FC = () => {
 
         <Typography
           variant="h6"
-          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingRight: 4 }}
+          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingInlineEnd: 4 }}
         >
           {t_i18n('High Confidence Active Campaigns')}
         </Typography>
@@ -561,7 +561,7 @@ const ResourceAllocationCard: React.FC = () => {
 
         <Typography
           variant="h6"
-          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingRight: 4 }}
+          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem', paddingInlineEnd: 4 }}
         >
           {t_i18n('Resource Allocation Attribution')}
         </Typography>

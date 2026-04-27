@@ -29,10 +29,10 @@ Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   nested: {
-    paddingLeft: theme.spacing(4),
+    paddingInlineStart: theme.spacing(4),
   },
   nestedNested: {
-    paddingLeft: theme.spacing(8),
+    paddingInlineStart: theme.spacing(8),
   },
   tooltip: {
     maxWidth: 600,
@@ -41,7 +41,7 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    marginRight: 10,
+    marginInlineEnd: 10,
   },
 });
 
@@ -170,7 +170,7 @@ const FileWorkComponent = (props) => {
                     <CircularProgress
                       size={20}
                       thickness={2}
-                      style={{ marginRight: 10 }}
+                      style={{ marginInlineEnd: 10 }}
                     />
                   )}
                 </ListItemIcon>

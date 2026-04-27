@@ -81,7 +81,7 @@ const ActiveCampaignAlertsChart: React.FC = () => {
         >
           <MoreVert fontSize="small" />
         </IconButton>
-        <Typography variant="h6" sx={{ fontWeight: 600, marginBottom: 1, color: 'text.primary', fontSize: '1rem', paddingRight: 4 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, marginBottom: 1, color: 'text.primary', fontSize: '1rem', paddingInlineEnd: 4 }}>
           {t_i18n('Number of Active Campaign Alerts')}
         </Typography>
         <Typography variant="body2" sx={{ color: 'text.secondary', marginBottom: 2, fontSize: '0.875rem', lineHeight: 1.5 }}>

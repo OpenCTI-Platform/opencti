@@ -325,10 +325,10 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
           </Grid>
         ) : (
           <Grid item xs={6}>
-            <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+            <Typography variant="h4" gutterBottom={true} style={{ float: 'inline-start' }}>
               {t_i18n('Enterprise Edition')}
             </Typography>
-            <div style={{ float: 'right', marginTop: theme.spacing(-2.1), position: 'relative' }}>
+            <div style={{ float: 'inline-end', marginTop: theme.spacing(-2.1), position: 'relative' }}>
               {!isEnterpriseEditionActivated && isGrantedToParameters && (
                 <EnterpriseEditionButton inLine={true} />
               )}
@@ -344,7 +344,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                   {t_i18n('Enable powerful features with OpenCTI Enterprise Edition')}
                 </Typography>
                 <p>{t_i18n('OpenCTI Enterprise Edition (EE) provides highly demanding organizations with a version that includes additional and powerful features, which require specific investments in research and development.')}</p>
-                <List sx={{ listStyleType: 'disc', marginLeft: 4 }}>
+                <List sx={{ listStyleType: 'disc', marginInlineStart: 4 }}>
                   <li>{t_i18n('Agentic AI capabilities')}</li>
                   <li>{t_i18n('Playbooks and automation')}</li>
                   <li>{t_i18n('Full text indexing')}</li>

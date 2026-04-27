@@ -46,7 +46,7 @@ const ImportFilesUploadProgress: React.FC<ImportFilesUploadProgressProps> = ({
               </Box>
             )}
           >
-            <UploadFileOutlined color="primary" sx={{ marginRight: 2 }} />
+            <UploadFileOutlined color="primary" sx={{ marginInlineEnd: 2 }} />
             {file.name}
           </ListItem>
         ))}

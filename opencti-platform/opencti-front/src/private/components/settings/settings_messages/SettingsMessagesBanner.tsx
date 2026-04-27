@@ -59,7 +59,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   message: {
     textAlign: 'center',
-    marginRight: theme.spacing(1),
+    marginInlineEnd: theme.spacing(1),
     color: '#663c00',
     fontWeight: 500,
   },

@@ -143,8 +143,8 @@ const styles = (theme) => ({
       theme.palette.mode === 'dark'
         ? 'rgba(255, 255, 255, .1)'
         : 'rgba(0, 0, 0, .1)',
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
+    borderStartStartRadius: 0,
+    borderStartEndRadius: 0,
     '&:hover': {
       backgroundColor:
         theme.palette.mode === 'dark'
@@ -592,7 +592,7 @@ class StixCoreRelationshipContainer extends Component {
 StixCoreRelationshipContainer.propTypes = {
   entityId: PropTypes.string,
   stixCoreRelationship: PropTypes.object,
-  paddingRight: PropTypes.bool,
+  paddingInlineEnd: PropTypes.bool,
   classes: PropTypes.object,
   t: PropTypes.func,
   nsdt: PropTypes.func,

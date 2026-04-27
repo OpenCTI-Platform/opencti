@@ -139,10 +139,10 @@ class AddOpinionsLinesContainer extends Component {
                 primary={`${opinion.opinion} ${opinionId}`}
                 secondary={truncate(opinion.explanation, 120)}
               />
-              <div style={{ marginRight: 50 }}>
+              <div style={{ marginInlineEnd: 50 }}>
                 {opinion.createdBy?.name ?? EMPTY_VALUE}
               </div>
-              <div style={{ marginRight: 50 }}>
+              <div style={{ marginInlineEnd: 50 }}>
                 <ItemMarkings
                   variant="inList"
                   markingDefinitions={opinion.objectMarking ?? []}

@@ -59,7 +59,7 @@ const XtmHubSettingsComponent = () => {
       {xtmHubSettings.xtm_hub_registration_status !== 'registered' && xtmHubSettings.xtm_hub_registration_status !== 'lost_connectivity' && (
         <>
           <p>{t_i18n('By registering this platform into the hub, it will allow to:')}</p>
-          <List sx={{ listStyleType: 'disc', marginLeft: 4 }}>
+          <List sx={{ listStyleType: 'disc', marginInlineStart: 4 }}>
             <li>{t_i18n('deploy in one-click threat management resources such as feeds, dashboards, playbooks, etc.')}</li>
             <li>{t_i18n('stay informed of new resources and key threat events with an exclusive news feed')} <i>({t_i18n('coming soon')})</i></li>
             <li>{t_i18n('monitor key metrics of the platform and health status')} <i>({t_i18n('coming soon')})</i></li>

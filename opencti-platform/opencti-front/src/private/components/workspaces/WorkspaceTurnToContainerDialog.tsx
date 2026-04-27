@@ -206,7 +206,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
             <div style={{
               display: 'inline-block',
               paddingTop: 4,
-              marginRight: theme.spacing(1),
+              marginInlineEnd: theme.spacing(1),
             }}
             >
               <ItemIcon type={option.type} />

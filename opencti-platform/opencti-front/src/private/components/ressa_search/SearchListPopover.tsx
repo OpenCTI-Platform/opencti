@@ -109,7 +109,7 @@ const SearchListPopover = ({
                     minHeight: 36,
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', marginRight: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', marginInlineEnd: 1 }}>
                     {icon}
                   </Box>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -119,7 +119,7 @@ const SearchListPopover = ({
                   </Box>
                   <ListItemSecondaryAction>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ marginRight: 1 }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ marginInlineEnd: 1 }}>
                         {item.timestamp}
                       </Typography>
                       {isHovered && (

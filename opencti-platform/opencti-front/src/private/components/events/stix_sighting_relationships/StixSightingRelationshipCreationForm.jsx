@@ -81,10 +81,10 @@ const useStyles = makeStyles((theme) => ({
   },
   buttonBack: {
     marginTop: 20,
-    float: 'left',
+    float: 'inline-start',
   },
   button: {
-    marginLeft: theme.spacing(2),
+    marginInlineStart: theme.spacing(2),
   },
 }));
 

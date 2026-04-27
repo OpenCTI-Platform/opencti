@@ -68,7 +68,7 @@ const AppliedFilters: React.FC<AppliedFiltersProps> = ({
           display: 'flex',
           alignItems: 'center',
           gap: 1,
-          marginLeft: 'auto',
+          marginInlineStart: 'auto',
           color: 'error.main',
           cursor: 'pointer',
           flexDirection: 'row',

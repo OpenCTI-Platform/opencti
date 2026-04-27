@@ -81,7 +81,7 @@ const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProp
             <div style={{ color: option.color, paddingTop: 4, display: 'inline-block' }}>
               <Label />
             </div>
-            <div style={{ display: 'inline-block', flexGrow: 1, marginLeft: 10 }}>{option.label}</div>
+            <div style={{ display: 'inline-block', flexGrow: 1, marginInlineStart: 10 }}>{option.label}</div>
           </li>
         )}
       />

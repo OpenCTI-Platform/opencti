@@ -137,7 +137,7 @@ export const LeftBarHeader: React.FC<LeftBarHeaderProps> = ({
         }}
         sx={{
           padding: navOpen ? 2 : '16px 0',
-          paddingRight: navOpen ? 1 : 0,
+          paddingInlineEnd: navOpen ? 1 : 0,
           width: '100%',
           flexShrink: 0,
           display: 'flex',

@@ -106,7 +106,7 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
           <TitleMainEntity sx={{ flex: 1 }}>
             {fintelDesign.name}
           </TitleMainEntity>
-          <div style={{ marginRight: theme.spacing(0.5) }}>
+          <div style={{ marginInlineEnd: theme.spacing(0.5) }}>
             {canDelete && (
               <PopoverMenu>
                 {({ closeMenu }) => (
