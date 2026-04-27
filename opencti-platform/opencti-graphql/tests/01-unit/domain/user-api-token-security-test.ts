@@ -62,6 +62,10 @@ vi.mock('../../../src/modules/authenticationProvider/providers-configuration', (
   getConfigurationAdminToken: vi.fn(),
 }));
 
+vi.mock('../../../src/domain/settings', () => ({
+  getSettings: vi.fn().mockResolvedValue({ local_auth: { enabled: true }, platform_organization: null, platform_session_max_concurrent: 0 }),
+}));
+
 // ─── Imports (must come after vi.mock) ───────────────────────────────────────
 
 import passport from 'passport';
@@ -173,6 +177,7 @@ describe('sessionLogin — must return null, not the session token', () => {
       ip: '127.0.0.1',
       headers: {},
       header: () => undefined,
+      socket: { remoteAddress: '127.0.0.1' },
       session: { user: null as any, session_provider: null as any, save: vi.fn() },
     },
   } as any;
