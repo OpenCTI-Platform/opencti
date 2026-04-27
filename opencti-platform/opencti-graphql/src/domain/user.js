@@ -771,6 +771,7 @@ export const addUser = async (context, user, newUser) => {
     R.dissoc('groups'),
     R.dissoc('prevent_default_groups'),
     R.dissoc('email_template_id'),
+    R.dissoc('api_token'), // [SECURITY] api_token is deprecated - never persist it
   )(newUser);
 
   userToCreate = {
