@@ -226,7 +226,7 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   const cguStatus = data.find((inputData) => inputData.key === 'filigran_chatbot_ai_cgu_status');
   if (cguStatus && cguStatus.value) {
     const validStatuses = Object.values(CguStatus);
-    if (!validStatuses.includes(cguStatus.value)) {
+    if (!validStatuses.includes(cguStatus.value[0])) {
       throw UnsupportedError(`Invalid CGU status, expected one of ${validStatuses.join(', ')}`);
     }
   }
