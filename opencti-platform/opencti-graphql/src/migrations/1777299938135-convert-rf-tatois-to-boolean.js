@@ -26,7 +26,7 @@ export const up = async (next) => {
         const newValueForRF_taToIs = rfEnvvar.value.length > 0;
         logMigration.info(`${message} > connectorId:${currentConnector.id} will have RECORDED_FUTURE_TA_TO_INTRUSION_SET rewrite as ${newValueForRF_taToIs}`);
         const newContract = currentConnector.manager_contract_configuration.filter((item) => item.key !== 'RECORDED_FUTURE_TA_TO_INTRUSION_SET');
-        newContract.push({ key: 'RECORDED_FUTURE_TA_TO_INTRUSION_SET', value: '${newValueForRF_taToIs}' });
+        newContract.push({ key: 'RECORDED_FUTURE_TA_TO_INTRUSION_SET', value: `${newValueForRF_taToIs}` });
         const patch = {
           manager_contract_configuration: newContract,
         };
