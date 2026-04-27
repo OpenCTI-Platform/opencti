@@ -124,7 +124,7 @@ const CustomDashboard = ({ data, noToolbar = false }) => {
       <DashboardContent
         helpers={helpers}
         isEditable={userCanEdit}
-        dashboardEntity={workspace}
+        entity={workspace}
       />
     </Stack>
   );
