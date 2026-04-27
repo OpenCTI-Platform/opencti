@@ -4,10 +4,11 @@ import DashboardTimeFilters from '../../../../components/dashboard/DashboardTime
 import WorkspaceHeader from '../workspaceHeader/WorkspaceHeader';
 import { commitMutation, handleError, fetchQuery } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
-import useGranted, { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DashboardContent from '../../../../components/dashboard/DashboardContent';
 import useDashboard from '../../../../components/dashboard/useDashboard';
+import Security from 'src/utils/Security';
 
 const dashboardExportWidgetQuery = graphql`
   query CustomDashboardWidgetExportQuery($id: String!, $widgetId: ID!) {
@@ -113,11 +114,15 @@ const CustomDashboard = ({ data, noToolbar = false }) => {
             data={workspace}
             variant="dashboard"
           />
-          <DashboardTimeFilters
-            currentUserAccessRight={workspace.currentUserAccessRight}
-            config={config}
-            handleDateChange={handleDateChange}
-          />
+          <Security
+            needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
+            hasAccess={userCanEdit}
+          >
+            <DashboardTimeFilters
+              config={config}
+              handleDateChange={handleDateChange}
+            />
+          </Security>
         </Stack>
       )
       }

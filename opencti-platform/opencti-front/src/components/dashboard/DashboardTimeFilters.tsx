@@ -5,23 +5,18 @@ import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import DatePicker from '@common/input/DatePicker';
 import { parse, buildDate } from 'src/utils/Time';
-import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../utils/hooks/useGranted';
-import Security from '../../utils/Security';
 import { useFormatter } from '../i18n';
-import { useGetCurrentUserAccessRight } from '../../utils/authorizedMembers';
 import { Stack } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { Theme } from '../Theme';
 import { DashboardConfig } from './dashboard-types';
 
 interface DashboardTimeFiltersProps {
-  currentUserAccessRight: string | null | undefined;
   config?: DashboardConfig;
   handleDateChange: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void;
 }
 
 const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
-  currentUserAccessRight,
   config = {
     startDate: null,
     endDate: null,
@@ -31,7 +26,6 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { canEdit } = useGetCurrentUserAccessRight(currentUserAccessRight);
 
   const handleChangeRelativeDate = (event: SelectChangeEvent) => {
     const { value } = event.target;
@@ -44,61 +38,56 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
   };
 
   return (
-    <Security
-      needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
-      hasAccess={canEdit}
-    >
-      <Stack direction="row" gap={1}>
-        <FormControl
-          size="small"
-          style={{ width: 194 }}
+    <Stack direction="row" gap={1}>
+      <FormControl
+        size="small"
+        style={{ width: 194 }}
+        variant="outlined"
+      >
+        <InputLabel
+          id="relative"
           variant="outlined"
         >
-          <InputLabel
-            id="relative"
-            variant="outlined"
-          >
-            {t_i18n('Relative time')}
-          </InputLabel>
-          <Select
-            labelId="relative"
-            value={config.relativeDate ?? ''}
-            onChange={handleChangeRelativeDate}
-            label={t_i18n('Relative time')}
-            variant="outlined"
-            sx={{
-              '& fieldset': {
-                border: config.relativeDate
-                  ? `1px solid ${theme.palette.border.secondary}`
-                  : undefined,
-              },
-            }}
-          >
-            <MenuItem value="none">{t_i18n('None')}</MenuItem>
-            <MenuItem value="days-1">{t_i18n('Last 24 hours')}</MenuItem>
-            <MenuItem value="days-7">{t_i18n('Last 7 days')}</MenuItem>
-            <MenuItem value="months-1">{t_i18n('Last month')}</MenuItem>
-            <MenuItem value="months-3">{t_i18n('Last 3 months')}</MenuItem>
-            <MenuItem value="months-6">{t_i18n('Last 6 months')}</MenuItem>
-            <MenuItem value="years-1">{t_i18n('Last year')}</MenuItem>
-          </Select>
-        </FormControl>
-        <DatePicker
-          value={buildDate(config.startDate)}
-          label={t_i18n('Start date')}
-          disableFuture
-          disabled={!!config.relativeDate}
-          onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('startDate', value)}
-        />
-        <DatePicker
-          value={buildDate(config.endDate)}
-          label={t_i18n('End date')}
-          disabled={!!config.relativeDate}
-          disableFuture
-          onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('endDate', value)}
-        />
-      </Stack>
-    </Security>
+          {t_i18n('Relative time')}
+        </InputLabel>
+        <Select
+          labelId="relative"
+          value={config.relativeDate ?? ''}
+          onChange={handleChangeRelativeDate}
+          label={t_i18n('Relative time')}
+          variant="outlined"
+          sx={{
+            '& fieldset': {
+              border: config.relativeDate
+                ? `1px solid ${theme.palette.border.secondary}`
+                : undefined,
+            },
+          }}
+        >
+          <MenuItem value="none">{t_i18n('None')}</MenuItem>
+          <MenuItem value="days-1">{t_i18n('Last 24 hours')}</MenuItem>
+          <MenuItem value="days-7">{t_i18n('Last 7 days')}</MenuItem>
+          <MenuItem value="months-1">{t_i18n('Last month')}</MenuItem>
+          <MenuItem value="months-3">{t_i18n('Last 3 months')}</MenuItem>
+          <MenuItem value="months-6">{t_i18n('Last 6 months')}</MenuItem>
+          <MenuItem value="years-1">{t_i18n('Last year')}</MenuItem>
+        </Select>
+      </FormControl>
+      <DatePicker
+        value={buildDate(config.startDate)}
+        label={t_i18n('Start date')}
+        disableFuture
+        disabled={!!config.relativeDate}
+        onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('startDate', value)}
+      />
+      <DatePicker
+        value={buildDate(config.endDate)}
+        label={t_i18n('End date')}
+        disabled={!!config.relativeDate}
+        disableFuture
+        onChange={(value: Date | null, context) => !context.validationError && handleChangeDate('endDate', value)}
+      />
+    </Stack>
   );
 };
 
