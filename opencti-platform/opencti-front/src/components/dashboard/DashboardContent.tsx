@@ -68,12 +68,7 @@ const DashboardContent = ({
           );
 
           return (
-            <div
-              key={widget.id}
-              style={{
-                display: 'relative',
-              }}
-            >
+            <div key={widget.id}>
               {isEditable && widget.id === idToResize ? <div /> : (
                 <DashboardViz
                   widget={widget}

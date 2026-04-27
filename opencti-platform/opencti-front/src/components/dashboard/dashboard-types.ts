@@ -3,7 +3,7 @@ import type { Widget } from '../../utils/widget/widget';
 export interface DashboardConfig {
   startDate?: string | null;
   endDate?: string | null;
-  relativeDate?: string;
+  relativeDate?: string | null;
 }
 
 // When used in dashboards widgets must have a layout

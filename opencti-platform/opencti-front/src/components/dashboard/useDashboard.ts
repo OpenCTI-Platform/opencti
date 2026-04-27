@@ -5,7 +5,7 @@ import fileDownload from 'js-file-download';
 import { fromB64, toB64 } from '../../utils/String';
 import { deserializeDashboardManifestForFrontend, serializeDashboardManifestForBackend } from '../../utils/filters/filtersUtils';
 import type { WidgetLayout } from '../../utils/widget/widget';
-import type { DashboardLike, DashboardManifest } from './dashboard-types';
+import type { DashboardLike, DashboardManifest, DashboardWidget } from './dashboard-types';
 
 interface useDashboardProps {
   entity: DashboardLike | undefined | null;
@@ -133,7 +133,10 @@ function useDashboard({
   };
 
   const handleExportWidget = async (id: string, widget: { id: string; type: string }) => {
-    onExportWidget?.(id, widget)
+    if (!onExportWidget) {
+      return;
+    }
+    onExportWidget(id, widget)
       .then((exportedWidget: string) => {
         if (!exportedWidget) {
           return;
@@ -149,7 +152,7 @@ function useDashboard({
       });
   };
 
-  const handleAddWidget = (widgetConfig: DashboardManifest['widgets'][number]) => {
+  const handleAddWidget = (widgetConfig: DashboardWidget) => {
     saveManifest({
       ...manifest,
       widgets: {
@@ -170,7 +173,7 @@ function useDashboard({
     });
   };
 
-  const handleUpdateWidget = (widgetManifest: DashboardManifest['widgets'][number]) => {
+  const handleUpdateWidget = (widgetManifest: DashboardWidget) => {
     const newManifest = {
       ...manifest,
       widgets: { ...manifest.widgets, [widgetManifest.id]: widgetManifest },
@@ -188,7 +191,7 @@ function useDashboard({
     });
   };
 
-  const handleDuplicateWidget = (widgetToDuplicate: DashboardManifest['widgets'][number]) => {
+  const handleDuplicateWidget = (widgetToDuplicate: DashboardWidget) => {
     handleAddWidget({
       ...widgetToDuplicate,
       id: uuid(),
