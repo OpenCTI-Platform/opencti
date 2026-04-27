@@ -141,11 +141,6 @@ export const startModules = async () => {
     logApp.info('[OPENCTI-MODULE] File index manager not started (disabled by configuration)');
   }
 
-  // endregion
-  // region Cluster manager
-  startingPromises.push(clusterManager.start());
-  // endregion
-
   // region Audit
   startingPromises.push(activityListener.start());
   startingPromises.push(activityManager.start());
@@ -159,6 +154,9 @@ export const startModules = async () => {
   // refactoring in module in progress
   // all managers will be started only in this method
   await startAllManagers();
+
+  // cluster manager checks all manager statuses, so better at the end
+  await clusterManager.start();
 };
 
 export const shutdownModules = async () => {

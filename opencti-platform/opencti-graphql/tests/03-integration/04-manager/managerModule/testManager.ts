@@ -14,7 +14,7 @@ export const TEST_MANAGER_DEFINITION: ManagerDefinition = {
   executionContext: 'test_manager',
   cronSchedulerHandler: {
     handler: cronTestManager,
-    interval: 1000,
+    interval: 100,
     lockKey: 'test_manager_lock',
   },
   enabledByConfig: true,
