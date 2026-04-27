@@ -40,11 +40,8 @@ input CustomViewAddInput {
     targetEntityType: String!
 }
 
-# Queries
 type Query {
-    # Display a custom view
     customViewDisplay(id: ID!): CustomView @auth @ff(flags: ["CUSTOM_VIEW"])
-    # List all custom views
     customViews(
         entityType: String
         first: Int
@@ -53,17 +50,12 @@ type Query {
         search: String
         orderMode: OrderingMode
     ): CustomViewsConnection! @auth @ff(flags: ["CUSTOM_VIEW"])
-    # For a given entity type provides whether it is eligible to having custom views
     customViewsSettings(
         entityType: String!
     ): CustomViewsSettings! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
 }
 
-# Mutations
 type Mutation {
-    ## Administration use cases
-
-    # Add a new custom view
     customViewAdd(input: CustomViewAddInput!): CustomView! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
 }
 
