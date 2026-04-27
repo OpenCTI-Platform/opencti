@@ -195,7 +195,7 @@ describe('CustomView resolvers', () => {
           const manifest = DASHBOARD_MANIFEST;
           const name = 'Custom view name';
           const targetEntityType = ENTITY_TYPE_CONTAINER_FEEDBACK;
-          const result = await queryAsAdminWithError({
+          await queryAsAdminWithError({
             query: CREATE_CUSTOM_VIEW_QUERY,
             variables: {
               input: {
@@ -205,10 +205,10 @@ describe('CustomView resolvers', () => {
                 targetEntityType,
               },
             },
-          });
-          expect(result.errors?.[0].message).toBe('Custom views cannot be created for given entity type');
-          expect(result.errors?.[0].extensions?.code).toBe('FUNCTIONAL_ERROR');
-          expect(result.errors?.[0].extensions?.data).toMatchObject({ http_status: 400 });
+          },
+          'Custom views cannot be created for given entity type',
+          'FUNCTIONAL_ERROR',
+          );
         });
       });
 
