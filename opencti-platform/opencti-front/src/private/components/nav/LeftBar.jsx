@@ -69,7 +69,6 @@ import {
   Timetable,
 } from 'mdi-material-ui';
 import React, { useRef, useState } from 'react';
-import { graphql, usePreloadedQuery } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { THEME_LIGHT_DEFAULT_BACKGROUND, THEME_LIGHT_DEFAULT_PAPER } from '../../../components/ThemeLight';
 import { useFormatter } from '../../../components/i18n';
@@ -113,7 +112,6 @@ import useGranted, {
 } from '../../../utils/hooks/useGranted';
 import { usePlatformModulesHelper } from '../../../utils/platformModulesHelper';
 import useImportAccess from '../../../utils/hooks/useImportAccess';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import { LeftBarHeader } from './LeftBarHeader';
 import LeftBarItem from './LeftBarItem';
@@ -205,14 +203,6 @@ const useStyles = makeStyles((theme) => createStyles({
   },
 }));
 
-const leftBarQuery = graphql`
-  query LeftBarQuery {
-    settings {
-      platform_whitemark
-    }
-  }
-`;
-
 const Separator = () => {
   const theme = useTheme();
   return (
@@ -220,12 +210,20 @@ const Separator = () => {
   );
 };
 
-const LeftBarComponent = ({ queryRef }) => {
+const LeftBar = () => {
   const theme = useTheme();
   const ref = useRef();
   const { t_i18n } = useFormatter();
   const {
     me: { submenu_auto_collapse, submenu_show_icons, draftContext },
+    bannerSettings: { bannerHeightNumber },
+    settings: {
+      platform_openaev_url: openAEVUrl,
+      // platform_enterprise_edition: ee,
+      platform_xtmhub_url: xtmhubUrl,
+      xtm_hub_registration_status: xtmhubStatus,
+      platform_whitemark,
+    },
   } = useAuth();
   const navigate = useNavigate();
   const { hasOnlyAccessToImportDraftTab } = useImportAccess();
@@ -258,8 +256,6 @@ const LeftBarComponent = ({ queryRef }) => {
     localStorage.getItem('navOpen') === 'true',
   );
   const classes = useStyles({ navOpen });
-
-  const data = usePreloadedQuery(leftBarQuery, queryRef);
 
   const navOpenLogo = draftContext ? LogoTextOrange : theme.logo;
   const navCloseLogo = draftContext ? LogoCollapsedOrange : theme.logo_collapsed;
@@ -369,16 +365,6 @@ const LeftBarComponent = ({ queryRef }) => {
   );
 
   const { isTrashEnable } = usePlatformModulesHelper();
-
-  const {
-    bannerSettings: { bannerHeightNumber },
-    settings: {
-      platform_openaev_url: openAEVUrl,
-      // platform_enterprise_edition: ee,
-      platform_xtmhub_url: xtmhubUrl,
-      xtm_hub_registration_status: xtmhubStatus,
-    },
-  } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   const { dimension } = useDimensions();
 
@@ -806,7 +792,7 @@ const LeftBarComponent = ({ queryRef }) => {
             label={t_i18n('Collapse')}
             onClick={handleToggle}
           />
-          {!data?.settings?.platform_whitemark && (
+          {!platform_whitemark && (
             <Stack
               direction="row"
               alignItems="center"
@@ -847,19 +833,6 @@ const LeftBarComponent = ({ queryRef }) => {
         </MenuList>
       </div>
     </Drawer>
-  );
-};
-
-const LeftBar = () => {
-  const queryRef = useQueryLoading(leftBarQuery, {});
-  return (
-    <>
-      {queryRef && (
-        <React.Suspense>
-          <LeftBarComponent queryRef={queryRef} />
-        </React.Suspense>
-      )}
-    </>
   );
 };
 
