@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import { useEffect, useMemo, useState } from 'react';
 import fileDownload from 'js-file-download';
 import type { WidgetLayout } from '../../utils/widget/widget';
-import { deserializeDashboardManifestForFrontend, prepareManifest } from './dashboard-utils';
+import { deserializeDashboardManifestForFrontend, prepareManifest, serializeDashboardManifestForBackend } from './dashboard-utils';
 import type { DashboardLike, DashboardManifest, DashboardWidget } from './dashboard-types';
 
 interface useDashboardProps {
@@ -59,7 +59,8 @@ function useDashboard({
 
   const saveManifest = (newManifest: DashboardManifest, opts = { layouts: widgetsLayouts, noRefresh: false }) => {
     const { layouts, noRefresh } = opts;
-    const newManifestEncoded = prepareManifest(newManifest, layouts);
+    const preparedManifest = prepareManifest(newManifest, layouts);
+    const newManifestEncoded = serializeDashboardManifestForBackend(preparedManifest);
     // Sometimes (in case of layout adjustment) we do not want to re-fetch
     // all the manifest because widgets data is still the same, and it's costly
     // in performance.
@@ -99,7 +100,8 @@ function useDashboard({
   };
 
   const handleImportWidget = (widgetConfig: unknown) => {
-    const manifestEncoded = prepareManifest(manifest, widgetsLayouts);
+    const preparedManifest = prepareManifest(manifest, widgetsLayouts);
+    const manifestEncoded = serializeDashboardManifestForBackend(preparedManifest);
     onImportWidget?.(entity?.id ?? '', widgetConfig, manifestEncoded);
   };
 

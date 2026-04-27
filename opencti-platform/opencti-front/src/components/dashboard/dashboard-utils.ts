@@ -39,10 +39,10 @@ export const serializeDashboardManifestForBackend = (
     };
   });
 
-  return JSON.stringify({
+  return toB64(JSON.stringify({
     ...manifest,
     widgets: newWidgets,
-  });
+  }));
 };
 
 export const deserializeDashboardManifestForFrontend = (
@@ -87,16 +87,17 @@ export const deserializeDashboardManifestForFrontend = (
 };
 
 /**
- * Merge a manifest with some layouts and transform it in base64.
+ * Merge a manifest with local layout changes.
  *
- * @param newManifest Manifest to merge with local changes and stringify.
+ * @remarks
+ * We need to sync manifest with local layouts before sending for update.
+ * A desync occurs when resizing or moving a widget because in those cases
+ * we skip a complete reload to avoid performance issue.
+ *
+ * @param newManifest Manifest to merge with local changes.
  * @param layouts Local layout changes.
- * @returns Manifest in B64.
  */
 export const prepareManifest = (newManifest: DashboardManifest, layouts: Record<string, WidgetLayout>) => {
-  // Need to sync manifest with local layouts before sending for update.
-  // A desync occurs when resizing or moving a widget because in those cases
-  // we skip a complete reload to avoid performance issue.
   const syncWidgets = Object.values(newManifest.widgets).reduce((res, widget) => {
     const localLayout = layouts[widget.id];
     res[widget.id] = {
@@ -105,11 +106,8 @@ export const prepareManifest = (newManifest: DashboardManifest, layouts: Record<
     };
     return res;
   }, {} as DashboardManifest['widgets']);
-  const manifestToSave = {
+  return {
     ...newManifest,
     widgets: syncWidgets,
   };
-
-  const strManifest = serializeDashboardManifestForBackend(manifestToSave);
-  return toB64(strManifest);
 };
