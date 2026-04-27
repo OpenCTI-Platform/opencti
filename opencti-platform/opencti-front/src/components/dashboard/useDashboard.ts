@@ -2,9 +2,8 @@ import { v4 as uuid } from 'uuid';
 import * as R from 'ramda';
 import { useEffect, useMemo, useState } from 'react';
 import fileDownload from 'js-file-download';
-import { fromB64, toB64 } from '../../utils/String';
-import { deserializeDashboardManifestForFrontend, serializeDashboardManifestForBackend } from '../../utils/filters/filtersUtils';
 import type { WidgetLayout } from '../../utils/widget/widget';
+import { deserializeDashboardManifestForFrontend, prepareManifest } from './dashboard-utils';
 import type { DashboardLike, DashboardManifest, DashboardWidget } from './dashboard-types';
 
 interface useDashboardProps {
@@ -37,7 +36,7 @@ function useDashboard({
   // Deserialized manifest, refreshed when workspace is updated.
   const manifest = useMemo(() => {
     return serializedManifest && serializedManifest.length > 0
-      ? deserializeDashboardManifestForFrontend(fromB64(serializedManifest))
+      ? deserializeDashboardManifestForFrontend(serializedManifest)
       : { widgets: {}, config: {} };
   }, [serializedManifest]);
 
@@ -57,34 +56,6 @@ function useDashboard({
       }, {} as Record<string, WidgetLayout>),
     );
   }, [widgetsArray]);
-
-  /**
-   * Merge a manifest with some layouts and transform it in base64.
-   *
-   * @param newManifest Manifest to merge with local changes and stringify.
-   * @param layouts Local layout changes.
-   * @returns Manifest in B64.
-   */
-  const prepareManifest = (newManifest: DashboardManifest, layouts: Record<string, WidgetLayout>) => {
-    // Need to sync manifest with local layouts before sending for update.
-    // A desync occurs when resizing or moving a widget because in those cases
-    // we skip a complete reload to avoid performance issue.
-    const syncWidgets = Object.values(newManifest.widgets).reduce((res, widget) => {
-      const localLayout = layouts[widget.id];
-      res[widget.id] = {
-        ...widget,
-        layout: localLayout || widget.layout,
-      };
-      return res;
-    }, {} as DashboardManifest['widgets']);
-    const manifestToSave = {
-      ...newManifest,
-      widgets: syncWidgets,
-    };
-
-    const strManifest = serializeDashboardManifestForBackend(manifestToSave);
-    return toB64(strManifest);
-  };
 
   const saveManifest = (newManifest: DashboardManifest, opts = { layouts: widgetsLayouts, noRefresh: false }) => {
     const { layouts, noRefresh } = opts;
