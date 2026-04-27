@@ -15,6 +15,7 @@ import { ENTITY_TYPE_FEED } from '../modules/dataSharing/feed-types';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../modules/dataSharing/taxiiCollection-types';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../modules/dataSharing/streamCollection-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { ENTITY_TYPE_CUSTOM_VIEW } from '../modules/customView/customView-types';
 
 // Re-exported for backward compatibility (used by migrations)
 export { ENTITY_TYPE_FEED } from '../modules/dataSharing/feed-types';
@@ -64,6 +65,7 @@ const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_FORM,
   ENTITY_TYPE_THEME,
   ENTITY_TYPE_PLAYBOOK,
+  ENTITY_TYPE_CUSTOM_VIEW,
 ];
 const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
