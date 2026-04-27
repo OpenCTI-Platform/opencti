@@ -70,7 +70,6 @@ MARKDOWN_EXPORT_FIELDS: Tuple[str, ...] = (
     "description",
     "x_opencti_description",
     "content",
-    "descriptions",
 )
 
 meter = metrics.get_meter(__name__)
@@ -261,15 +260,6 @@ class OpenCTIStix2:
             value = entity.get(key)
             if isinstance(value, str):
                 entity[key] = self._rewrite_markdown_embedded_storage_images(value)
-            elif isinstance(value, list):
-                entity[key] = [
-                (
-                        self._rewrite_markdown_embedded_storage_images(item)
-                        if isinstance(item, str)
-                        else item
-                )
-                    for item in value
-            ]
 
     def format_date(self, date: Any = None) -> str:
         """Convert multiple input date formats to OpenCTI style dates.

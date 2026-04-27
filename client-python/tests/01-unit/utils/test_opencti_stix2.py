@@ -241,7 +241,7 @@ def test_prepare_export_rewrites_embedded_markdown_image_uri_view_path(
     assert fetch_calls[0][2] is True
 
 
-def test_prepare_export_rewrites_embedded_markdown_image_uri_in_descriptions_list(
+def test_prepare_export_does_not_rewrite_markdown_image_uri_in_descriptions_list(
     opencti_stix2: OpenCTIStix2, monkeypatch
 ):
     monkeypatch.setattr(
@@ -271,12 +271,12 @@ def test_prepare_export_rewrites_embedded_markdown_image_uri_in_descriptions_lis
     result = opencti_stix2.prepare_export(entity=entity, mode="simple")
 
     assert len(result) == 1
-    assert "data:image/png;base64,Zm9v" in result[0]["descriptions"][0]
-    assert result[0]["descriptions"][1] == "second no image"
-    assert len(fetch_calls) == 1
-    assert fetch_calls[0][0].endswith(
-        "/storage/get/embedded/Report/internal-report-id-6/a.png"
+    assert (
+        result[0]["descriptions"][0]
+        == "first ![img](/storage/view/embedded/Report/internal-report-id-6/a.png)"
     )
+    assert result[0]["descriptions"][1] == "second no image"
+    assert len(fetch_calls) == 0
 
 
 def test_prepare_export_rewrites_embedded_markdown_image_uri_with_escaped_alt_bracket(
