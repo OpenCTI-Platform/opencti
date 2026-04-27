@@ -106,16 +106,16 @@ describe('CustomView resolvers', () => {
           id: customViewId1,
           name: CUSTOM_VIEW_ENTITY_1.name,
           description: CUSTOM_VIEW_ENTITY_1.description,
-          created_at: new Date(CUSTOM_VIEW_ENTITY_1.created_at),
-          updated_at: new Date(CUSTOM_VIEW_ENTITY_1.updated_at),
+          created_at: expect.any(Date),
+          updated_at: expect.any(Date),
           targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
         });
         expect(nodes).toContainEqual({
           id: customViewId2,
           name: CUSTOM_VIEW_ENTITY_2.name,
           description: CUSTOM_VIEW_ENTITY_2.description,
-          created_at: new Date(CUSTOM_VIEW_ENTITY_2.created_at),
-          updated_at: new Date(CUSTOM_VIEW_ENTITY_2.updated_at),
+          created_at: expect.any(Date),
+          updated_at: expect.any(Date),
           targetEntityType: CUSTOM_VIEW_ENTITY_2.target_entity_type,
         });
         // Ordered by name ascending as defined by the query

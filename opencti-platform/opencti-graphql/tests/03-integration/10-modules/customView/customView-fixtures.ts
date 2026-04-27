@@ -1,6 +1,5 @@
 import { toB64 } from '../../../../src/utils/base64';
 import type { BasicStoreEntityCustomView } from '../../../../src/modules/customView/customView-types';
-import { utcDate } from '../../../../src/utils/format';
 
 type BasicStoreEntityCustomViewForTestsKeys = Extract<
   keyof BasicStoreEntityCustomView,
@@ -9,8 +8,6 @@ type BasicStoreEntityCustomViewForTestsKeys = Extract<
   | 'slug'
   | 'manifest'
   | 'target_entity_type'
-  | 'created_at'
-  | 'updated_at'
 >;
 
 type BasicStoreEntityCustomViewForTests = Record<
@@ -233,8 +230,6 @@ export const CUSTOM_VIEW_ENTITY_1: BasicStoreEntityCustomViewForTests = {
   slug: 'first-custom-view',
   manifest: DASHBOARD_MANIFEST,
   target_entity_type: 'Intrusion-Set',
-  created_at: utcDate('1986-09-22T02:22:00.000Z').toISOString(),
-  updated_at: utcDate('2026-09-22T02:22:00.000Z').toISOString(),
 };
 
 export const CUSTOM_VIEW_ENTITY_2: BasicStoreEntityCustomViewForTests = {
@@ -243,8 +238,6 @@ export const CUSTOM_VIEW_ENTITY_2: BasicStoreEntityCustomViewForTests = {
   slug: 'second-custom-view',
   manifest: DASHBOARD_MANIFEST,
   target_entity_type: 'Case-Rft',
-  created_at: utcDate('1986-09-22T02:22:00.000Z').toISOString(),
-  updated_at: utcDate('2026-09-22T02:22:00.000Z').toISOString(),
 };
 
 export const CUSTOM_VIEW_ENTITY_INVALID: BasicStoreEntityCustomViewForTests = {
@@ -253,6 +246,4 @@ export const CUSTOM_VIEW_ENTITY_INVALID: BasicStoreEntityCustomViewForTests = {
   slug: 'invalid-custom-view',
   manifest: DASHBOARD_MANIFEST,
   target_entity_type: 'Feedback', // Can't have custom views on Feedback entity_type
-  created_at: utcDate('1986-09-22T02:22:00.000Z').toISOString(),
-  updated_at: utcDate('2026-09-22T02:22:00.000Z').toISOString(),
 };

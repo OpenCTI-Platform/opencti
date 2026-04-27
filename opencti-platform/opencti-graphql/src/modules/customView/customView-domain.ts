@@ -19,7 +19,6 @@ import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../schema/stixCyberObservable';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { createEntity } from '../../database/middleware';
-import { now } from '../../utils/format';
 import { FunctionalError } from '../../config/errors';
 
 /**
@@ -119,15 +118,12 @@ export const addCustomView = async (
         entityType: input.targetEntityType,
       });
   }
-  const created_at = now();
   const customViewToCreate = {
     description: input.description,
     manifest: input.manifest,
     name: input.name,
     target_entity_type: input.targetEntityType,
     slug: slugify(input.name),
-    created_at,
-    updated_at: created_at,
   };
   return await createEntity(
     context,
