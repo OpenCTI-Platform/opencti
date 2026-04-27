@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { fullEntitiesList, fullEntitiesThroughRelationsFromList } from '../../../src/database/middleware-loader';
+import { fullEntitiesList, fullEntitiesThroughRelationsToList } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import { loadEntity } from '../../../src/database/middleware';
 import { setPlatformId } from '../../../src/database/data-initialization';
 import { entitiesCounter } from '../../02-dataInjection/01-dataCount/entityCountHelper';
-import { generateStandardId } from '../../../src/schema/identifier';
 import { RELATION_HAS_CAPABILITY } from '../../../src/schema/internalRelationship';
 
 describe('Data initialization test', () => {
@@ -104,16 +103,20 @@ describe('Data initialization test', () => {
   });
 
   it('should not grant ingestion management to Connector role on initialization', async () => {
-    const connectorRoleId = generateStandardId(ENTITY_TYPE_ROLE, { name: 'Connector' });
-    const connectorCapabilities = await fullEntitiesThroughRelationsFromList<BasicStoreEntity>(
+    const roles = await fullEntitiesList<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_ROLE]);
+    const connectorRole = roles.find((role) => role.name === 'Connector');
+    expect(connectorRole).toBeDefined();
+
+    const connectorCapabilities = await fullEntitiesThroughRelationsToList<BasicStoreEntity>(
       testContext,
       ADMIN_USER,
-      connectorRoleId,
+      connectorRole!.id,
       RELATION_HAS_CAPABILITY,
       ENTITY_TYPE_CAPABILITY,
     );
     const connectorCapabilityNames = connectorCapabilities.map((capability) => capability.name);
 
+    expect(connectorCapabilityNames).toContain('CONNECTORAPI');
     expect(connectorCapabilityNames).not.toContain('INGESTION');
     expect(connectorCapabilityNames).not.toContain('INGESTION_SETINGESTIONS');
   });
