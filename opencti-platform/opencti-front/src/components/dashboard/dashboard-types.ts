@@ -14,6 +14,10 @@ export interface DashboardManifest {
   widgets: Record<string, DashboardWidget>;
 }
 
+/**
+ * Represents the common fields an Entity should have
+ * in order to use the Dashboard shared building blocks
+ */
 export interface DashboardLike {
   id: string;
   manifest: string | undefined | null;

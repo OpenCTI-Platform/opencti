@@ -31,7 +31,7 @@ const CustomViewComponent = ({ queryRef }: CustomViewComponentProps) => {
   }
 
   const helpers = useDashboard({ entity: customView });
-  return <DashboardContent helpers={helpers} isEditable={false} dashboardEntity={customView} />;
+  return <DashboardContent helpers={helpers} isEditable={false} entity={customView} />;
 };
 
 interface CustomViewProps {

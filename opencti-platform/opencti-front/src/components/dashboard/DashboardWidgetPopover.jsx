@@ -20,7 +20,7 @@ const DashboardWidgetPopover = ({
   onDelete,
   onExport,
   widget,
-  workspace,
+  entity,
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -39,7 +39,7 @@ const DashboardWidgetPopover = ({
   };
 
   const handleExportWidget = () => {
-    onExport?.(workspace.id, widget);
+    onExport?.(entity.id, widget);
   };
 
   return (

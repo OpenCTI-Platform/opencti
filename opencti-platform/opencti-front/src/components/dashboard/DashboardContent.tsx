@@ -6,13 +6,13 @@ import DashboardViz from './DashboardViz';
 import type { DashboardLike } from './dashboard-types';
 
 interface DashboardContentProps {
-  dashboardEntity: DashboardLike;
+  entity: DashboardLike;
   isEditable: boolean;
   helpers: ReturnType<typeof useDashboard>;
 }
 
 const DashboardContent = ({
-  dashboardEntity,
+  entity,
   isEditable,
   helpers: {
     widgetsLayouts,
@@ -59,7 +59,7 @@ const DashboardContent = ({
           const popover = isEditable && (
             <DashboardWidgetPopover
               widget={widget}
-              workspace={dashboardEntity}
+              entity={entity}
               onUpdate={handleUpdateWidget}
               onDuplicate={handleDuplicateWidget}
               onDelete={() => handleDeleteWidget(widget.id)}
