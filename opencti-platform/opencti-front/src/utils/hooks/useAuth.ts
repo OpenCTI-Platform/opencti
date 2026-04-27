@@ -59,7 +59,6 @@ export interface UserContextType {
   unitSystem: string;
   locale: PlatformLang;
   tz: string;
-  queryData: RootPrivateQuery$data | undefined;
 }
 
 const defaultContext = {
@@ -75,7 +74,6 @@ const defaultContext = {
   locale: defaultLang,
   unitSystem: 'Metric',
   tz: 'UTC',
-  queryData: undefined,
 };
 export const UserContext = React.createContext<UserContextType>(defaultContext);
 
@@ -93,9 +91,8 @@ const useAuth = () => {
     unitSystem,
     locale,
     tz,
-    queryData,
   } = useContext(UserContext);
-  if (!me || !settings || !bannerSettings || !entitySettings || !platformModuleHelpers || !schema || !about || !themes || !queryData) {
+  if (!me || !settings || !bannerSettings || !entitySettings || !platformModuleHelpers || !schema || !about || !themes) {
     throw new Error('Invalid user context !');
   }
   return {
@@ -111,7 +108,6 @@ const useAuth = () => {
     locale,
     tz,
     unitSystem,
-    queryData,
   };
 };
 

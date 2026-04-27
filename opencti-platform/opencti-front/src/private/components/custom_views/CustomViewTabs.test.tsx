@@ -12,8 +12,7 @@ import { useCustomViewsData } from './useCustomViewsData';
 
 vi.mock('./useCustomViewsData', () => ({
   useCustomViewsData: vi.fn().mockImplementation(() => ({
-    allCustomViews: [],
-    refetchCustomViews: () => ({ dispose: () => {} }),
+    customViews: [],
   })),
 }));
 
@@ -93,13 +92,12 @@ describe('useCustomViewTabs', () => {
   });
   it('renders another tab when custom view available', () => {
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
-      allCustomViews: [{
+      customViews: [{
         id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
         name: customViewDisplayName,
         path: customViewPath,
         targetEntityType: 'Intrusion-Set',
       }],
-      refetchCustomViews: () => ({ dispose: () => {} }),
     }));
     const customViewDisplayName = 'My custom view';
     const customViewPath = 'some-path';
@@ -126,7 +124,7 @@ describe('useCustomViewTabs', () => {
 
   it('renders a "Custom view" tab when multiple custom views available', async () => {
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
-      allCustomViews: [{
+      customViews: [{
         id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
         name: 'My first custom view',
         path: 'some-path',
@@ -137,7 +135,6 @@ describe('useCustomViewTabs', () => {
         path: 'some-other-path',
         targetEntityType: 'Intrusion-Set',
       }],
-      refetchCustomViews: () => ({ dispose: () => {} }),
     }));
     const { user } = testRender(
       <TestWrapper entityType="Intrusion-Set" basePath="" />,
@@ -171,13 +168,12 @@ describe('useCustomViewTabs', () => {
     const customViewDisplayName = 'My custom view';
     const customViewPath = 'some-path';
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
-      allCustomViews: [{
+      customViews: [{
         id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
         name: customViewDisplayName,
         path: customViewPath,
         targetEntityType: 'Intrusion-Set',
       }],
-      refetchCustomViews: () => ({ dispose: () => {} }),
     }));
     testRender(
       <TestWrapper entityType="Case-Rft" basePath="" />,

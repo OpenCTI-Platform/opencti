@@ -35,6 +35,7 @@ export const RootCustomView = ({ customViewId }: RootCustomViewProps) => {
   const queryRef = useQueryLoading<RootCustomViewQuery>(
     customViewQuery,
     { id: customViewId },
+    { fetchPolicy: 'store-or-network' },
   );
 
   return (

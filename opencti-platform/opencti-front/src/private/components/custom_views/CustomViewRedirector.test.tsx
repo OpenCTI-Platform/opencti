@@ -14,8 +14,7 @@ vi.mock('./RootCustomView', () => ({
 
 vi.mock('./useCustomViewsData', () => ({
   useCustomViewsData: vi.fn().mockImplementation(() => ({
-    allCustomViews: [],
-    refetchCustomViews: () => ({ dispose: () => {} }),
+    customViews: [],
   })),
 }));
 
@@ -25,13 +24,12 @@ describe('CustomViewRedirector', () => {
   });
   it('renders custom view when on custom view route', () => {
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
-      allCustomViews: [{
+      customViews: [{
         id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
         name: 'My custom view',
         path: customViewPath,
         targetEntityType: 'Intrusion-Set',
       }],
-      refetchCustomViews: () => ({ dispose: () => {} }),
     }));
     const customViewPath = 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3';
     testRender(
@@ -52,13 +50,12 @@ describe('CustomViewRedirector', () => {
 
   it('renders fallback when no match', () => {
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
-      allCustomViews: [{
+      customViews: [{
         id: 'dc60eb35-a670-4b49-804e-ef38e3655392',
         name: 'My custom view',
         path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
         targetEntityType: 'Intrusion-Set',
       }],
-      refetchCustomViews: () => ({ dispose: () => {} }),
     }));
     testRender(
       <Routes>
@@ -78,13 +75,12 @@ describe('CustomViewRedirector', () => {
 
   it('renders fallback when no match because wrong entity type', () => {
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
-      allCustomViews: [{
+      customViews: [{
         id: 'dc60eb35-a670-4b49-804e-ef38e3655392',
         name: 'My custom view',
         path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
         targetEntityType: 'Intrusion-Set',
       }],
-      refetchCustomViews: () => ({ dispose: () => {} }),
     }));
     testRender(
       <Routes>
@@ -104,13 +100,12 @@ describe('CustomViewRedirector', () => {
 
   it('renders custom view when the id in the path matches but not the slug', () => {
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
-      allCustomViews: [{
+      customViews: [{
         id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
         name: 'My custom view',
         path: 'my-custom-view-1504f07bee3f4c09ae66b9550eb3abe3',
         targetEntityType: 'Intrusion-Set',
       }],
-      refetchCustomViews: () => ({ dispose: () => {} }),
     }));
     testRender(
       <Routes>

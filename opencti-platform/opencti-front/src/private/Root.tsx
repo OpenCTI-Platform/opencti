@@ -291,7 +291,6 @@ const rootPrivateQuery = graphql`
         }
       }
     }
-    ...useCustomViews_data
     schemaSCOs: subTypes(type: "Stix-Cyber-Observable") {
       edges {
         node {
@@ -485,7 +484,6 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   return (
     <UserContext.Provider
       value={{
-        queryData,
         me,
         settings,
         bannerSettings,

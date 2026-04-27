@@ -16,7 +16,7 @@ const useQueryLoading = <T extends OperationType>(
   }
   // refetch when variables change
   useEffect(() => {
-    loadQuery(variables, { ...opts, fetchPolicy: 'store-and-network' });
+    loadQuery(variables, { fetchPolicy: 'store-and-network', ...opts });
   }, [varRef.current]);
 
   return queryRef;
@@ -34,7 +34,7 @@ export const useQueryLoadingWithLoadQuery = <T extends OperationType>(
   }
   // refetch when variables change
   useEffect(() => {
-    loadQuery(variables, { ...opts, fetchPolicy: 'store-and-network' });
+    loadQuery(variables, { fetchPolicy: 'store-and-network', ...opts });
   }, [varRef.current]);
 
   return [queryRef, loadQuery];

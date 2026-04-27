@@ -5,8 +5,7 @@ import { useCustomViewsData } from './useCustomViewsData';
 
 vi.mock('./useCustomViewsData', () => ({
   useCustomViewsData: vi.fn().mockImplementation(() => ({
-    allCustomViews: [],
-    refetchCustomViews: () => ({ dispose: () => {} }),
+    customViews: [],
   })),
 }));
 
@@ -16,7 +15,7 @@ describe('useCustomViews', () => {
   });
   it('provides the list of custom views filtered by targetEntityType', () => {
     vi.mocked(useCustomViewsData).mockImplementation(() => ({
-      allCustomViews: [{
+      customViews: [{
         id: 'e8170a92-344d-4b17-815b-7eb2ec26430c',
         name: 'Basic view',
         path: 'basic-view-e8170a92344d4b17815b7eb2ec26430c',
@@ -32,7 +31,6 @@ describe('useCustomViews', () => {
         path: 'other-view-0f65d13d-fef7-4ed7-8f40-5d53183fb983',
         targetEntityType: 'Malware',
       }],
-      refetchCustomViews: () => ({ dispose: () => {} }),
     }));
     const { hook } = testRenderHook(() => useCustomViews('Intrusion-Set'));
     expect(hook.result.current.customViews.map(({ name }) => name)).toStrictEqual(
