@@ -3,8 +3,6 @@ import Button from '@common/button/Button';
 import MenuItem from '@mui/material/MenuItem';
 import VisuallyHiddenInput from '../../private/components/common/VisuallyHiddenInput';
 import WidgetConfig from '../../private/components/widgets/WidgetConfig';
-import Security from '../../utils/Security';
-import { EXPLORE_EXUPDATE } from '../../utils/hooks/useGranted';
 import { useFormatter } from '../i18n';
 import type { DashboardWidget } from './dashboard-types';
 
@@ -46,25 +44,21 @@ const DashboardWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
             ref={inputRef}
             onChange={handleWidgetImport}
           />
-          <Security needs={[EXPLORE_EXUPDATE]}>
-            <>
-              <Button
-                variant="secondary"
-                disableElevation
-                onClick={handleImportWidgetButtonClick}
-              >
-                {t_i18n('Import Widget')}
-              </Button>
-              <Button
-                variant="secondary"
-                disableElevation
-                onClick={handleOpenWidgetConfig}
-                data-testid="create-widget-button"
-              >
-                {t_i18n('Create Widget')}
-              </Button>
-            </>
-          </Security>
+          <Button
+            variant="secondary"
+            disableElevation
+            onClick={handleImportWidgetButtonClick}
+          >
+            {t_i18n('Import Widget')}
+          </Button>
+          <Button
+            variant="secondary"
+            disableElevation
+            onClick={handleOpenWidgetConfig}
+            data-testid="create-widget-button"
+          >
+            {t_i18n('Create Widget')}
+          </Button>
         </>
       )}
       {widget && (

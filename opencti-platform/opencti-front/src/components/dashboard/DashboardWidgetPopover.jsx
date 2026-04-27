@@ -9,9 +9,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { useState } from 'react';
 import DeleteDialog from '../DeleteDialog';
 import { useFormatter } from '../i18n';
-import Security from '../../utils/Security';
 import useDeletion from '../../utils/hooks/useDeletion';
-import { EXPLORE_EXUPDATE } from '../../utils/hooks/useGranted';
 import DashboardWidgetConfig from './DashboardWidgetConfig';
 
 const DashboardWidgetPopover = ({
@@ -65,16 +63,14 @@ const DashboardWidgetPopover = ({
         onClose={() => setAnchorEl(null)}
         className="noDrag"
       >
-        <Security needs={[EXPLORE_EXUPDATE]}>
-          <DashboardWidgetConfig
-            closeMenu={() => setAnchorEl(null)}
-            onComplete={onUpdate}
-            widget={widget}
-          />
-          <MenuItem onClick={handleExportWidget}>{t_i18n('Export')}</MenuItem>
-          <MenuItem onClick={handleOpenDuplicate}>{t_i18n('Duplicate')}</MenuItem>
-          <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
-        </Security>
+        <DashboardWidgetConfig
+          closeMenu={() => setAnchorEl(null)}
+          onComplete={onUpdate}
+          widget={widget}
+        />
+        <MenuItem onClick={handleExportWidget}>{t_i18n('Export')}</MenuItem>
+        <MenuItem onClick={handleOpenDuplicate}>{t_i18n('Duplicate')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
       </Menu>
       <DeleteDialog
         deletion={deletion}
