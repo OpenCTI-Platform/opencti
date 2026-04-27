@@ -57,7 +57,7 @@ Playbooks finishing processing the bundle with at least one of the following com
 - **send for ingestion** is required to update your OpenCTI knowledge with the modifications the playbook has made to the data
 - **notify users** of the data will trigger a notification to users, can be ran in parrallel to other actions in your playbook. 
 
-These two components will complete a branch of your playbook. See the [Playbook Components](#Playbook-Components) page for full details of the available components. If you want to both send for ingestion and send a notification then you can use the option to “add a new branch at the same level from the parent output”. 
+These two components will complete a branch of your playbook. See the [Playbook components](/playbook-components) page for full details of the available components. If you want to both send for ingestion and send a notification then you can use the option to “add a new branch at the same level from the parent output”. 
 
 ![Add new branch at the same level](assets/playbook_add_new_branch_at_same_level.png)
 
