@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import useGraphParser, { ObjectToParse } from './useGraphParser';
@@ -36,17 +36,90 @@ const constructRelationship = (overrides: Partial<ObjectToParse> = {}): ObjectTo
 const emptyPositions: OctiGraphPositions = {};
 
 describe('useGraphParser', () => {
-  const getParser = () => {
+  let parser: ReturnType<typeof useGraphParser>;
+
+  beforeAll(() => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       React.createElement(IntlProvider, { locale: 'en', messages: {}, onError: () => {} }, children)
     );
     const { result } = renderHook(() => useGraphParser(), { wrapper });
-    return result.current;
-  };
+    parser = result.current;
+  });
+
+  describe('buildNode', () => {
+    it('should build a node with correct id and attributes', () => {
+      const entity = constructEntity({
+        id: 'node-1',
+        entity_type: 'Malware',
+        createdBy: { id: 'creator-1', name: 'Creator' },
+        objectMarking: [{ id: 'marking-1', definition: 'TLP:RED' }],
+      });
+
+      const node = parser.buildNode(entity, emptyPositions);
+
+      expect(node.id).toBe('node-1');
+      expect(node.entity_type).toBe('Malware');
+      expect(node.createdBy).toEqual({ id: 'creator-1', name: 'Creator' });
+      expect(node.markedBy).toEqual([{ id: 'marking-1', definition: 'TLP:RED' }]);
+      expect(node.isObservable).toBe(false);
+      expect(node.isNestedInferred).toBe(false);
+      expect(node.disabled).toBe(false);
+      expect(node.val).toBe(1);
+      expect(node.z).toBe(0); // default z to 0 when no position is provided
+    });
+
+    it('should use graph positions when provided', () => {
+      const entity = constructEntity({ id: 'node-1' });
+      const positions: OctiGraphPositions = {
+        'node-1': { id: 'node-1', x: 100, y: 200, z: 300 },
+      };
+
+      const node = parser.buildNode(entity, positions);
+
+      expect(node.x).toBe(100);
+      expect(node.y).toBe(200);
+      expect(node.z).toBe(300);
+      expect(node.fx).toBe(100);
+      expect(node.fy).toBe(200);
+      expect(node.fz).toBe(300);
+    });
+
+    it('should use custom color when x_opencti_color is set', () => {
+      const entity = constructEntity({ id: 'node-1', x_opencti_color: '#ff0000' });
+      const node = parser.buildNode(entity, emptyPositions);
+      expect(node.color).toBe('#ff0000');
+    });
+
+    it('should use provided numberOfConnectedElement over data value', () => {
+      const entity = constructEntity({ id: 'node-1', numberOfConnectedElement: 10 });
+
+      const node = parser.buildNode(entity, emptyPositions, 5);
+
+      expect(node.numberOfConnectedElement).toBe(5);
+    });
+
+    it('should fall back to data numberOfConnectedElement when not provided', () => {
+      const entity = constructEntity({ id: 'node-1', numberOfConnectedElement: 10 });
+
+      const node = parser.buildNode(entity, emptyPositions);
+
+      expect(node.numberOfConnectedElement).toBe(10);
+    });
+
+    it('should set fromId/toId for relationship entities', () => {
+      const rel = constructRelationship({ id: 'rel-1' });
+
+      const node = parser.buildNode(rel, emptyPositions);
+
+      expect(node.fromId).toBe('entity-A');
+      expect(node.fromType).toBe('Malware');
+      expect(node.toId).toBe('entity-B');
+      expect(node.toType).toBe('Attack-Pattern');
+    });
+  });
 
   describe('buildGraphDataAfterRelationshipLinkToNodeConversion', () => {
     it('should return previous graph data when relObj has no relationship_type', () => {
-      const parser = getParser();
       const previousGraphData = { nodes: [] as GraphNode[], links: [] as GraphLink[] };
 
       const result = parser.buildGraphDataAfterRelationshipLinkToNodeConversion(
@@ -60,7 +133,6 @@ describe('useGraphParser', () => {
     });
 
     it('should return previous graph data when relObj is already a node', () => {
-      const parser = getParser();
       const existingNode = parser.buildNode(constructEntity({ id: 'rel-1' }), emptyPositions);
       const previousGraphData = { nodes: [existingNode], links: [] as GraphLink[] };
 
@@ -75,8 +147,6 @@ describe('useGraphParser', () => {
     });
 
     it('should convert a relationship link to a node', () => {
-      const parser = getParser();
-
       const entityA = constructEntity({ id: 'entity-A', entity_type: 'Malware' });
       const entityB = constructEntity({ id: 'entity-B', entity_type: 'Attack-Pattern' });
       const rel = constructRelationship({ id: 'rel-1', relationship_type: 'related-to' });
@@ -116,8 +186,6 @@ describe('useGraphParser', () => {
     });
 
     it('should preserve existing nodes and other links', () => {
-      const parser = getParser();
-
       const entityA = constructEntity({ id: 'entity-A' });
       const entityB = constructEntity({ id: 'entity-B' });
       const entityC = constructEntity({ id: 'entity-C' });
@@ -160,8 +228,6 @@ describe('useGraphParser', () => {
     });
 
     it('should return previous graph data when previousGraphData is undefined', () => {
-      const parser = getParser();
-
       const result = parser.buildGraphDataAfterRelationshipLinkToNodeConversion(
         undefined,
         [],
