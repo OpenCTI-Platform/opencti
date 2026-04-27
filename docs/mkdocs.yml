@@ -204,7 +204,9 @@ nav:
         - Tips for widget creation: usage/tips-widget-creation.md
       - Workflows and assignation: usage/workflows.md
       - Indicators lifecycle: usage/indicators-lifecycle.md
-      - Automation: usage/automation.md
+      - Playbook automation: usage/playbook-automation.md
+        - Playbook creation: usage/playbook-creation.md
+        - Playbook components: usage/playbook-components.md
       - Security Coverage: usage/security-coverage.md
     - Delete and restore knowledge: usage/delete-restore.md
     - Sharing and exports:
