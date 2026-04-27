@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import { encodeOidcState, decodeOidcState } from '../../../src/http/httpUtils';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { encodeOidcState, decodeOidcState, buildPublicHelmetParameters, buildDefaultHelmetParameters } from '../../../src/http/httpUtils';
+import * as httpConfig from '../../../src/http/httpConfig';
+import { getRateProtectionIpSkipList, getRateProtectionTimeWindowMs } from '../../../src/http/httpConfig';
 
 describe('httpUtils: OIDC state encoding/decoding', () => {
   describe('encodeOidcState', () => {
@@ -52,5 +54,30 @@ describe('httpUtils: OIDC state encoding/decoding', () => {
     it('should return undefined for malformed base64url', () => {
       expect(decodeOidcState('not!valid@base64')).toBeUndefined();
     });
+  });
+});
+
+describe('httpUtils: buildRateLimiter configuration tests', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('buildRateLimiter with default should be good', () => {
+    const rateLimiter = buildRateLimiterOptions();
+    expect(rateLimiter.windowMs).toBe(1000);
+    expect(rateLimiter.limit).toBe(10000);
+    expect(getRateProtectionIpSkipList()).toStrictEqual([]);
+  });
+
+  it('buildRateLimiter with modified configuration should be good', () => {
+    vi.spyOn(httpConfig, 'getRateProtectionMaxRequests').mockReturnValue(5000);
+    vi.spyOn(httpConfig, 'getRateProtectionTimeWindowMs').mockReturnValue(5);
+    const rateLimiter = buildRateLimiterOptions();
+    expect(rateLimiter.windowMs).toBe(5);
+    expect(rateLimiter.limit).toBe(5000);
   });
 });
