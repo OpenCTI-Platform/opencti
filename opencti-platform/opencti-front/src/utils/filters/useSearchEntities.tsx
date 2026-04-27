@@ -968,6 +968,13 @@ const useSearchEntities = ({
                 value: n?.node.id,
                 type: n?.node.id,
               }));
+              if (filterKey === 'x_opencti_main_observable_type') {
+                mainObservableTypeEntities.push({
+                  label: t_i18n('Unknown'),
+                  value: 'Unknown',
+                  type: 'Unknown',
+                });
+              }
               unionSetEntities(
                 filterKey,
                 mainObservableTypeEntities,

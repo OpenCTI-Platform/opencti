@@ -85,6 +85,9 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
   } else if (data.scope === 'workbench') {
     scopeColor = 'primary';
     appliedOnContent = t_i18n('All workbenches');
+  } else if (data.scope === 'history') {
+    scopeColor = 'error';
+    appliedOnContent = t_i18n('Knowledge history logs');
   }
   return (
     <ListItem
@@ -129,7 +132,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
               style={{ width: dataColumns.scope.width }}
             >
               <Chip
-                color={scopeColor as 'warning' | 'secondary' | 'primary'}
+                color={scopeColor as 'warning' | 'secondary' | 'primary' | 'error'}
                 classes={{ root: classes.chipInList }}
                 label={t_i18n(data.scope)}
                 variant="outlined"
@@ -145,7 +148,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
             ) : (
               <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
                 <span>{appliedOnContent}</span>
-                {data.scope !== 'knowledge'
+                {data.scope !== 'knowledge' && data.scope !== 'history'
                   && (
                     <Tooltip
                       title={`${t_i18n('Files contained in')} ${t_i18n('Data')}/${t_i18n('Import')}`}

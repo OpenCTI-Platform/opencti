@@ -30,6 +30,7 @@ import type { Theme } from '../../../../components/Theme';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import { useTheme } from '@mui/material/styles';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const useStyles = makeStyles<Theme>(() => ({
   text: {
@@ -78,6 +79,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const { isActivityHistoryRetentionEnable } = useHelper();
 
   const [filters, helpers] = useFiltersState();
   const [verified, setVerified] = useState(false);
@@ -88,7 +90,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
       ...values,
       max_retention: Number(values.max_retention),
       scope,
-      filters: scope === 'knowledge' ? values.filters : '',
+      filters: (scope === 'knowledge' || scope === 'history') ? values.filters : '',
     };
     const jsonFilters = serializeFilterGroupForBackend(filters);
     commitMutation({
@@ -121,7 +123,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
       ...values,
       max_retention: Number(values.max_retention),
       scope,
-      filters: scope === 'knowledge' ? values.filters : '',
+      filters: (scope === 'knowledge' || scope === 'history') ? values.filters : '',
     };
     const jsonFilters = serializeFilterGroupForBackend(filters);
     commitMutation({
@@ -215,8 +217,9 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 fullWidth={true}
                 onChange={setFieldValue}
                 options={[
-                  { value: 'knowledge', label: t_i18n('Knowledge') },
                   { value: 'file', label: t_i18n('File') },
+                  ...(isActivityHistoryRetentionEnable() ? [{ value: 'history', label: t_i18n('History') }] : []),
+                  { value: 'knowledge', label: t_i18n('Knowledge') },
                   { value: 'workbench', label: t_i18n('Workbench') },
                 ]}
                 renderOption={(prop: Record<string, unknown>, option: FieldOption) => (
@@ -239,6 +242,13 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 && (
                   <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
                     {t_i18n('The retention policy will be applied on all workbenches (both global and entity-attached)')}
+                  </Alert>
+                )
+              }
+              {formValues.scope?.value === 'history'
+                && (
+                  <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                    {t_i18n('The retention policy will be applied on history logs of knowledge entities')}
                   </Alert>
                 )
               }

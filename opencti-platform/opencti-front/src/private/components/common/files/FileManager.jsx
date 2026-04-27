@@ -17,8 +17,8 @@ import inject18n, { useFormatter } from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
 import { commitMutation, handleErrorInForm, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import { convertMarkings } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 import DraftWorkspaceViewer from './draftWorkspace/DraftWorkspaceViewer';
@@ -27,6 +27,8 @@ import FileExternalReferencesViewer from './FileExternalReferencesViewer';
 import FileImportViewer from './FileImportViewer';
 import PictureManagementViewer from './PictureManagementViewer';
 import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';
+import { Stack, Tooltip } from '@mui/material';
+import { InfoOutlined } from '@mui/icons-material';
 
 const styles = (theme) => ({
   container: {
@@ -127,6 +129,23 @@ export const fileManagerExportMutation = graphql`
   }
 `;
 
+const fileManagerExportDialogQuery = graphql`
+  query FileManagerExportDialogQuery($id: String!) {
+    stixCoreObject(id: $id) {
+      ... on StixCoreObject {
+        id
+        objectMarking {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
+        }
+      }
+    }
+  }
+`;
+
 export const scopesConn = (exportConnectors) => {
   const scopes = uniq(flatten(map((c) => c.connector_scope, exportConnectors)));
   const connectors = map((s) => {
@@ -178,10 +197,19 @@ const FileManager = ({
   const [openExport, setOpenExport] = useState(false);
   const [selectedConnector, setSelectedConnector] = useState(null);
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState([]);
-  const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value));
+
+  const entityMarkings = convertMarkings(entity);
+
+  const handleSelectedContentMaxMarkingsChange = (values, setFieldValue, fallbackEntityMarkings) => {
+    const nextValues = values ?? [];
+    setSelectedContentMaxMarkingsIds(nextValues.map(({ value }) => value));
+    setFieldValue('fileMarkings', nextValues.length > 0 ? nextValues : fallbackEntityMarkings);
+  };
+
   const exportScopes = uniq(
     flatten(map((c) => c.connector_scope, connectorsExport)),
   );
+
   const exportConnsPerFormat = scopesConn(connectorsExport);
 
   const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
@@ -430,25 +458,41 @@ const FileManager = ({
             format: '',
             type: 'full',
             contentMaxMarkings: [],
-            fileMarkings: [],
+            fileMarkings: entityMarkings,
           }}
           validationSchema={exportValidation(t_i18n)}
           onSubmit={onSubmitExport}
           onReset={handleCloseExport}
         >
-          {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue }) => (
+          {({ submitForm, handleReset, isSubmitting, resetForm, setFieldValue, values }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 open={openExport}
                 onClose={resetForm}
                 data-testid="FileManagerExportDialog"
-                title={t('Generate an export')}
+                title={(
+                  <Stack direction="row" alignItems="center" gap={1}>
+                    {t_i18n('Generate an export')}
+                    <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
+                      <InfoOutlined fontSize="small" color="primary" />
+                    </Tooltip>
+                  </Stack>
+                )}
               >
                 <QueryRenderer
-                  query={markingDefinitionsLinesSearchQuery}
-                  variables={{ first: 200 }}
+                  query={fileManagerExportDialogQuery}
+                  variables={{ id }}
                   render={({ props }) => {
-                    if (props && props.markingDefinitions) {
+                    if (props) {
+                      const resolvedEntityMarkings = convertMarkings(props.stixCoreObject ?? entity);
+
+                      if (
+                        values.fileMarkings.length === 0
+                        && values.contentMaxMarkings.length === 0
+                        && resolvedEntityMarkings.length > 0
+                      ) {
+                        setFieldValue('fileMarkings', resolvedEntityMarkings);
+                      }
                       return (
                         <>
                           <Field
@@ -487,7 +531,11 @@ const FileManager = ({
                           <ObjectMarkingField
                             name="contentMaxMarkings"
                             label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
-                            onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
+                            onChange={(_, updatedValues) => handleSelectedContentMaxMarkingsChange(
+                              updatedValues,
+                              setFieldValue,
+                              resolvedEntityMarkings,
+                            )}
                             style={fieldSpacingContainerStyle}
                             setFieldValue={setFieldValue}
                             limitToMaxSharing

@@ -97,6 +97,7 @@ describe('RetentionRules module – integration tests', () => {
   let knowledgeRuleId: string;
   let fileRuleId: string;
   let workbenchRuleId: string;
+  let historyRuleId: string;
 
   // -------------------------------------------------------------------------
   // CREATE
@@ -178,6 +179,34 @@ describe('RetentionRules module – integration tests', () => {
       expect(rule.max_retention).toBe(48);
 
       workbenchRuleId = rule.id;
+    });
+
+    it('should create a history retention rule', async () => {
+      const input: RetentionRuleAddInput = {
+        name: '[Integration] History rule',
+        filters: emptyFilters,
+        max_retention: 365,
+        retention_unit: RetentionUnit.Days,
+        scope: RetentionRuleScope.History,
+      };
+
+      const response = await queryAsAdminWithSuccess({
+        query: CREATE_RETENTION_RULE,
+        variables: { input },
+      });
+
+      const rule = response.data?.retentionRuleAdd;
+      expect(rule).toBeDefined();
+      expect(rule.id).toBeDefined();
+      expect(rule.name).toBe('[Integration] History rule');
+      expect(rule.scope).toBe('history');
+      expect(rule.max_retention).toBe(365);
+      expect(rule.retention_unit).toBe('days');
+      expect(rule.last_execution_date).toBeNull();
+      expect(rule.last_deleted_count).toBeNull();
+      expect(rule.remaining_count).toBeNull();
+
+      historyRuleId = rule.id;
     });
 
     it('should create a retention rule without filters (defaults to empty filter set)', async () => {
@@ -376,6 +405,72 @@ describe('RetentionRules module – integration tests', () => {
       expect(count).toBeGreaterThanOrEqual(0);
     });
 
+    it('should return a count for history scope', async () => {
+      // Verifies the history code path executes and returns a number.
+      // max_retention: 3650 days means "entries not updated in 10 years" → 0 in a fresh test env, which is valid.
+      const input: RetentionRuleAddInput = {
+        name: 'check history',
+        filters: emptyFilters,
+        max_retention: 3650,
+        retention_unit: RetentionUnit.Days,
+        scope: RetentionRuleScope.History,
+      };
+
+      const response = await queryAsAdminWithSuccess({
+        query: CHECK_RETENTION_RULE,
+        variables: { input },
+      });
+
+      const count = response.data?.retentionRuleCheck;
+      expect(typeof count).toBe('number');
+      expect(count).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should return a number for history scope with a short retention window', async () => {
+      // A 1-minute window may or may not match entries depending on test suite duration – just verify it returns a number.
+      const input: RetentionRuleAddInput = {
+        name: 'check history short window',
+        filters: emptyFilters,
+        max_retention: 1,
+        retention_unit: RetentionUnit.Minutes,
+        scope: RetentionRuleScope.History,
+      };
+
+      const response = await queryAsAdminWithSuccess({
+        query: CHECK_RETENTION_RULE,
+        variables: { input },
+      });
+
+      const count = response.data?.retentionRuleCheck;
+      expect(typeof count).toBe('number');
+      expect(count).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should return a count for history scope with filters', async () => {
+      // Use a large window to ensure we have entries, combined with an entity_type filter on History
+      const historyFilters = JSON.stringify({
+        mode: 'and',
+        filters: [{ key: ['entity_type'], values: ['History'], operator: 'eq', mode: 'or' }],
+        filterGroups: [],
+      });
+      const input: RetentionRuleAddInput = {
+        name: 'check history with filters',
+        filters: historyFilters,
+        max_retention: 3650,
+        retention_unit: RetentionUnit.Days,
+        scope: RetentionRuleScope.History,
+      };
+
+      const response = await queryAsAdminWithSuccess({
+        query: CHECK_RETENTION_RULE,
+        variables: { input },
+      });
+
+      const count = response.data?.retentionRuleCheck;
+      expect(typeof count).toBe('number');
+      expect(count).toBeGreaterThanOrEqual(0);
+    });
+
     it('should return 0 elements when max_retention is very short (minutes)', async () => {
       // A very short retention (1 minute) should find elements modified before 1 minute ago – likely 0 in a fresh test run
       const input: RetentionRuleAddInput = {
@@ -432,6 +527,21 @@ describe('RetentionRules module – integration tests', () => {
       });
       expect(response.data?.retentionRuleEdit?.delete).toBe(workbenchRuleId);
     });
+
+    it('should delete the history retention rule', async () => {
+      const response = await queryAsAdminWithSuccess({
+        query: DELETE_RETENTION_RULE,
+        variables: { id: historyRuleId },
+      });
+      expect(response.data?.retentionRuleEdit?.delete).toBe(historyRuleId);
+
+      // Verify it no longer exists
+      const getResponse = await queryAsAdminWithSuccess({
+        query: GET_RETENTION_RULE,
+        variables: { id: historyRuleId },
+      });
+      expect(getResponse.data?.retentionRule).toBeNull();
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -439,7 +549,7 @@ describe('RetentionRules module – integration tests', () => {
   // -------------------------------------------------------------------------
 
   afterAll(async () => {
-    const rules = [knowledgeRuleId, fileRuleId, workbenchRuleId].filter(Boolean);
+    const rules = [knowledgeRuleId, fileRuleId, workbenchRuleId, historyRuleId].filter(Boolean);
     await Promise.allSettled(
       rules.map((id) => queryAsAdminWithSuccess({ query: DELETE_RETENTION_RULE, variables: { id } })),
     );

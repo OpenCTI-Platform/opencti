@@ -11,7 +11,6 @@ import { marked } from 'marked';
 import archiver from 'archiver';
 import validator from 'validator';
 import archiverZipEncrypted from 'archiver-zip-encrypted';
-import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
 import { printSchema } from 'graphql';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
@@ -38,6 +37,7 @@ import { PROVIDERS } from '../modules/authenticationProvider/providers-configura
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 import { AuthenticationProviderError } from '../modules/authenticationProvider/providers-logger';
+import { buildDefaultHelmetParameters, buildPublicHelmetParameters } from './httpUtils';
 
 export const sanitizeReferer = (refererToSanitize) => {
   // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
@@ -89,73 +89,22 @@ const publishFileRead = async (executeContext, auth, file) => {
 };
 
 const createApp = async (app, schema) => {
-  const limiter = rateLimit({
-    windowMs: nconf.get('app:rate_protection:time_window') * 1000, // seconds
-    limit: nconf.get('app:rate_protection:max_requests'),
-    handler: (req, res /* , next */) => {
-      res.status(429).send({ message: 'Too many requests, please try again later.' });
-    },
-  });
-
   // Init the http server
   app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
-  app.use(limiter);
   if (DEV_MODE) {
     app.set('json spaces', 2);
   }
 
   // Configure server security
-  const buildSecurity = (opts) => helmet({
-    expectCt: { enforce: true, maxAge: 30 },
-    referrerPolicy: { policy: 'unsafe-url' },
-    crossOriginEmbedderPolicy: false,
-    crossOriginOpenerPolicy: false,
-    crossOriginResourcePolicy: false,
-    contentSecurityPolicy: {
-      useDefaults: false,
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: opts.scriptSrc,
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrcAttr: ["'none'"],
-        fontSrc: ["'self'", 'data:'],
-        imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
-        manifestSrc: ["'self'", 'data:', 'https://*', 'http://*'],
-        connectSrc: ["'self'", 'wss://*', 'ws://*', 'data:', 'http://*', 'https://*'],
-        objectSrc: ["'self'", 'data:', 'http://*', 'https://*'],
-        frameSrc: opts.allowedFrameSrc,
-        frameAncestors: opts.frameAncestorDomains,
-      },
-    },
-    xFrameOptions: !opts.isIframeAllowed,
-  });
-
-  const ancestorsFromConfig = nconf.get('app:public_dashboard_authorized_domains')?.trim() ?? '';
-  const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
-  const allowedFrameSrc = ["'self'"];
-  const scriptSrc = ["'self'", "'unsafe-inline'"];
-  if (DEV_MODE) {
-    scriptSrc.push("'unsafe-eval'");
-  }
-  const securityOpts = {
-    frameAncestorDomains: "'none'",
-    allowedFrameSrc,
-    scriptSrc,
-    isIframeAllowed: false,
-  };
+  const publicSecurityMiddleware = helmet(buildPublicHelmetParameters());
+  const defaultSecurityMiddleware = helmet(buildDefaultHelmetParameters());
 
   app.use((req, res, next) => {
     const urlString = req.url;
     if (urlString && (urlString.startsWith(`${basePath}/public`))) {
-      const securityMiddleware = buildSecurity({
-        ...securityOpts,
-        frameAncestorDomains,
-        isIframeAllowed: frameAncestorDomains !== "'none'",
-      });
-      securityMiddleware(req, res, next);
+      publicSecurityMiddleware(req, res, next);
     } else {
-      const securityMiddleware = buildSecurity(securityOpts);
-      securityMiddleware(req, res, next);
+      defaultSecurityMiddleware(req, res, next);
     }
   });
 

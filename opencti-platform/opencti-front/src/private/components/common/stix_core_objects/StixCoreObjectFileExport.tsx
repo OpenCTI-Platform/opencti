@@ -414,6 +414,10 @@ const StixCoreObjectFileExportComponent = ({
           connectors={activeConnectors}
           fileOptions={fileOptions}
           templates={templateOptions}
+          defaultFileMarkings={(stixCoreObject?.objectMarking ?? []).map((o) => ({
+            value: o.id,
+            label: getMainRepresentative(o),
+          }))}
           isOpen={isOpen}
           onSubmit={onSubmitExport}
           onClose={close}

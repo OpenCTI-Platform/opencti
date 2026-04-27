@@ -1,4 +1,4 @@
-name: OpenCTI CI for testing-xtm-one
+name: OpenCTI Deploy for testing-xtm-one
 on:
   workflow_dispatch:
   push:
@@ -32,8 +32,8 @@ jobs:
             awx --conf.host ${{ secrets.AWX_URL }} \
               --conf.username ${{ secrets.AWX_USER }} \
               --conf.password ${{ secrets.AWX_PASSWORD }} \
-              job_templates launch 'Deploy OCTI/OAEV' \
-              --inventory eu-west-production \
-              --extra_vars '{"instance":"opencti", "customer":"filigran-test-octi"}' \
+              job_templates launch 'Rollout restart an instance resources' \
+              --inventory eu-west-staging \
+              --extra_vars '{"solution":"opencti", "customer":"testing-xtm-one-octi"}' \
               --wait \
               -f human

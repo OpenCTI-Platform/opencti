@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
-import { Tooltip } from '@mui/material';
+import { Stack, Tooltip } from '@mui/material';
 import { InformationOutline } from 'mdi-material-ui';
 import { filterValue, SELF_ID_VALUE } from '../utils/filters/filtersUtils';
 import { truncate } from '../utils/String';
@@ -40,6 +40,7 @@ const FilterValuesContent: FunctionComponent<
   let displayedValue = isFilterTooltip
     ? filterValue(filterKey, value, filterType, filterOperator)
     : truncate(filterValue(filterKey, value, filterType, filterOperator), 20);
+
   if (displayedValue === null) {
     return (
       <>
@@ -49,17 +50,18 @@ const FilterValuesContent: FunctionComponent<
   }
   if (displayedValue === SELF_ID_VALUE) {
     displayedValue = (
-      <div>
-        <span>
-          {displayedValue}
-        </span>
+      <Stack
+        direction="row"
+        alignItems="center"
+        gap={0.5}
+      >
+        <span>{displayedValue}</span>
         <Tooltip
-          style={{ marginLeft: 3, marginTop: -5, paddingTop: 7 }}
           title={t_i18n('Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lose the context of the entity in which the template is used.')}
         >
-          <InformationOutline color="primary" />
+          <InformationOutline color="primary" fontSize="small" />
         </Tooltip>
-      </div>
+      </Stack>
     );
   }
   const isRedirectableFilter = filterDefinition

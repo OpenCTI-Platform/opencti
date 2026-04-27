@@ -9,8 +9,6 @@ import MenuItem from '@mui/material/MenuItem';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Dialog from '@common/dialog/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
 import { InfoOutlined } from '@mui/icons-material';
@@ -29,6 +27,7 @@ import FileExternalReferencesViewer from '../files/FileExternalReferencesViewer'
 import WorkbenchFileViewer from '../files/workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import { convertMarkings } from '../../../../utils/edition';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useAuth from '../../../../utils/hooks/useAuth';
 import AuthorizedMembersField from '../form/AuthorizedMembersField';
@@ -40,6 +39,7 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';
+import { Stack } from '@mui/material';
 
 const styles = (theme) => ({
   container: {
@@ -156,6 +156,9 @@ const StixCoreObjectFilesAndHistory = ({
   const [openExport, setOpenExport] = useState(false);
   const [selectedConnector, setSelectedConnector] = useState(null);
   const [selectedContentMaxMarkingsIds, setSelectedContentMaxMarkingsIds] = useState([]);
+
+  const entityMarkings = convertMarkings(entity);
+
   const exportScopes = uniq(
     flatten(map((c) => c.connector_scope, connectorsExport)),
   );
@@ -170,7 +173,13 @@ const StixCoreObjectFilesAndHistory = ({
   };
   const handleOpenExport = () => setOpenExport(true);
   const handleCloseExport = () => setOpenExport(false);
-  const handleSelectedContentMaxMarkingsChange = (values) => setSelectedContentMaxMarkingsIds(values.map(({ value }) => value));
+
+  const handleSelectedContentMaxMarkingsChange = (values, setFieldValue) => {
+    const nextValues = values ?? [];
+    setSelectedContentMaxMarkingsIds(nextValues.map(({ value }) => value));
+    setFieldValue('fileMarkings', nextValues.length > 0 ? nextValues : entityMarkings);
+  };
+
   const onSubmitImport = (values, { setSubmitting, resetForm }) => {
     const { connector_id, configuration, objectMarking, validation_mode, authorizedMembers } = values;
     let config = configuration;
@@ -496,7 +505,7 @@ const StixCoreObjectFilesAndHistory = ({
             format: '',
             type: 'full',
             contentMaxMarkings: [],
-            fileMarkings: [],
+            fileMarkings: entityMarkings,
           }}
           validationSchema={exportValidation(t_i18n)}
           onSubmit={onSubmitExport}
@@ -511,64 +520,64 @@ const StixCoreObjectFilesAndHistory = ({
                 onClose={handleCloseExport}
                 fullWidth={true}
                 data-testid="StixCoreObjectFilesAndHistoryExportDialog"
+                title={(
+                  <Stack direction="row" alignItems="center" gap={1}>
+                    {t_i18n('Generate an export')}
+                    <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
+                      <InfoOutlined fontSize="small" color="primary" />
+                    </Tooltip>
+                  </Stack>
+                )}
               >
-                <DialogTitle>
-                  {t_i18n('Generate an export')}
-                  <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
-                    <InfoOutlined sx={{ paddingLeft: 1 }} fontSize="small" />
-                  </Tooltip>
-                </DialogTitle>
-                <DialogContent>
-                  <Field
-                    component={SelectField}
-                    variant="standard"
-                    name="format"
-                    label={t_i18n('Export format')}
-                    fullWidth={true}
-                    containerstyle={{ width: '100%' }}
-                  >
-                    {exportScopes.map((value, i) => (
-                      <MenuItem
-                        key={i}
-                        value={value}
-                        disabled={!isExportActive(value)}
-                      >
-                        {value}
-                      </MenuItem>
-                    ))}
-                  </Field>
-                  <Field
-                    component={SelectField}
-                    variant="standard"
-                    name="type"
-                    label={t_i18n('Export type')}
-                    fullWidth={true}
-                    containerstyle={fieldSpacingContainerStyle}
-                  >
-                    <MenuItem value="simple">
-                      {t_i18n('Simple export (just the entity)')}
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="format"
+                  label={t_i18n('Export format')}
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                >
+                  {exportScopes.map((value, i) => (
+                    <MenuItem
+                      key={i}
+                      value={value}
+                      disabled={!isExportActive(value)}
+                    >
+                      {value}
                     </MenuItem>
-                    <MenuItem value="full">
-                      {t_i18n('Full export (entity and first neighbours)')}
-                    </MenuItem>
-                  </Field>
-                  <ObjectMarkingField
-                    name="contentMaxMarkings"
-                    label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
-                    onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values)}
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                    limitToMaxSharing
-                    helpertext={t_i18n(CONTENT_MAX_MARKINGS_HELPERTEXT)}
-                  />
-                  <ObjectMarkingField
-                    name="fileMarkings"
-                    label={t_i18n('File marking definition levels')}
-                    filterTargetIds={selectedContentMaxMarkingsIds}
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                  />
-                </DialogContent>
+                  ))}
+                </Field>
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="type"
+                  label={t_i18n('Export type')}
+                  fullWidth={true}
+                  containerstyle={fieldSpacingContainerStyle}
+                >
+                  <MenuItem value="simple">
+                    {t_i18n('Simple export (just the entity)')}
+                  </MenuItem>
+                  <MenuItem value="full">
+                    {t_i18n('Full export (entity and first neighbours)')}
+                  </MenuItem>
+                </Field>
+                <ObjectMarkingField
+                  name="contentMaxMarkings"
+                  label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
+                  onChange={(_, values) => handleSelectedContentMaxMarkingsChange(values, setFieldValue)}
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                  limitToMaxSharing
+                  helpertext={t_i18n(CONTENT_MAX_MARKINGS_HELPERTEXT)}
+                />
+                <ObjectMarkingField
+                  name="fileMarkings"
+                  label={t_i18n('File marking definition levels')}
+                  filterTargetIds={selectedContentMaxMarkingsIds}
+                  style={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                />
                 <DialogActions>
                   <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                     {t_i18n('Cancel')}

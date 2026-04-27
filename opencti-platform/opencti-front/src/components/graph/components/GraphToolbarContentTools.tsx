@@ -17,6 +17,7 @@ import { useGraphContext } from '../GraphContext';
 import { ObjectToParse } from '../utils/useGraphParser';
 import GraphToolbarRemoveConfirm, { GraphToolbarDeleteConfirmProps } from './GraphToolbarRemoveConfirm';
 import ContainerAddStixCoreObjectsInLine from '../../../private/components/common/containers/ContainerAddStixCoreObjectsInLine';
+import { getRelationshipMainRepresentative } from '../../../utils/defaultRepresentatives';
 
 export interface GraphToolbarContentToolsProps {
   stixCoreObjectRefetchQuery?: GraphQLTaggedNode;
@@ -57,8 +58,8 @@ const GraphToolbarContentTools = ({
     context,
     rawObjects,
     graphState: {
-      selectedNodes,
-      selectedLinks,
+      selectedNodes: rawSelectedNodes,
+      selectedLinks: rawSelectedLinks,
       isAddRelationOpen,
     },
   } = useGraphContext();
@@ -69,6 +70,23 @@ const GraphToolbarContentTools = ({
     removeLink,
     addLink,
   } = useGraphInteractions();
+
+  // if a link or node is a relationship, display correctly its representative
+  const selectedLinks = rawSelectedLinks.map((o) => o.relationship_type
+    ? {
+        ...o,
+        name: getRelationshipMainRepresentative(
+          { label: (o.source as GraphNode).label },
+          { label: (o.target as GraphNode).label },
+          10),
+      }
+    : o);
+  const selectedNodes = rawSelectedNodes.map((o) => o.relationship_type
+    ? {
+        ...o,
+        name: o.label, // no source and target if the relationship is displayed as a node
+      }
+    : o);
 
   const head = selectedNodes.slice(0, 1);
   const tail = selectedNodes.slice(-1);

@@ -19,6 +19,7 @@ import { FilterRepresentative } from './filters/FiltersModel';
 import { filterValuesContentQuery } from './FilterValuesContent';
 import { PageContainerContext } from './PageContainer';
 import { useTheme } from '@mui/material/styles';
+import { Stack } from '@mui/material';
 
 export type FilterIconButtonVariant
   = undefined // default variant (variant is undefined), for filters applied in datatables or widgets for instance
@@ -296,7 +297,9 @@ const FilterIconButtonContainer: FunctionComponent<
                     },
                   }}
                   label={(
-                    <Box
+                    <Stack
+                      direction="row"
+                      gap={0.5}
                       sx={{
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -315,7 +318,7 @@ const FilterIconButtonContainer: FunctionComponent<
                         entityTypes={entityTypes}
                         filtersRestrictions={filtersRestrictions}
                       />
-                    </Box>
+                    </Stack>
                   )}
                   disabled={
                     disabledPossible ? displayedFilters.length === 1 : undefined

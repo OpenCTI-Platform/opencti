@@ -48,6 +48,13 @@ const TaskQuery = graphql`
       name
       x_opencti_graph_data
       entity_type
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
       ...Tasks_tasks
       ...FileImportViewer_entity
       ...FileExportViewer_entity

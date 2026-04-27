@@ -12,6 +12,7 @@ import { useServer } from 'graphql-ws/use/ws';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import passport from 'passport';
 import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
+import rateLimit from 'express-rate-limit';
 import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
 import { applicationSession } from '../database/session';
@@ -25,6 +26,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
 import { isWorkAlive } from '../domain/work';
+import { buildRateLimiterOptions } from './httpUtils';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -36,6 +38,9 @@ const rejectUnauthorized = booleanConf('app:https_cert:reject_unauthorized', tru
 const createHttpServer = async () => {
   logApp.info('[INIT] Configuring HTTP/HTTPS server');
   const app = express();
+  // Rate limiter must be first registered so it applies to all requests including /graphql
+  // Even before session so it avoid creating session on rate limited requests.
+  app.use(rateLimit(buildRateLimiterOptions()));
   app.use(applicationSession.session);
   app.use(passport.initialize({}));
   const { schema, apolloServer } = createApolloServer();
@@ -127,6 +132,7 @@ const createHttpServer = async () => {
     },
   });
   await apolloServer.start();
+
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
   app.use(express.json({ limit: requestSizeLimit }));
   app.use(graphqlUploadExpress());

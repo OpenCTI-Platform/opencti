@@ -1,10 +1,20 @@
-import type Express from 'express';
+import type { Request, Response } from 'express';
 import crypto from 'node:crypto';
 import { booleanConf, logApp } from '../config/conf';
 import { isEmptyField } from '../database/utils';
 import { URL } from 'node:url';
+import {
+  getPublicAuthorizedDomainsFromConfiguration,
+  getRateProtectionIpSkipList,
+  getRateProtectionMaxRequests,
+  getRateProtectionTimeWindowMs,
+  isDevMode,
+  isUnsecureHttpResourceAllowed,
+} from './httpConfig';
+import type { HelmetOptions } from 'helmet';
+import { type Options } from 'express-rate-limit';
 
-export const setCookieError = (res: Express.Response, message: string) => {
+export const setCookieError = (res: Response, message: string) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
     maxAge: 10000,
     httpOnly: false,
@@ -13,7 +23,7 @@ export const setCookieError = (res: Express.Response, message: string) => {
   });
 };
 
-export const extractRefererPathFromReq = (req: Express.Request) => {
+export const extractRefererPathFromReq = (req: Request) => {
   if (!req.headers.referer || isEmptyField(req.headers.referer)) {
     return undefined;
   }
@@ -57,4 +67,118 @@ export const decodeOidcState = (state: string | undefined) => {
   } catch {
     return undefined;
   }
+};
+
+// Region helmet configuration
+
+const buildScriptSrc = () => {
+  const scriptSrc = ["'self'", "'unsafe-inline'"];
+  if (isDevMode()) {
+    scriptSrc.push("'unsafe-eval'");
+  }
+  return scriptSrc;
+};
+
+const buildImgSrcSrc = () => {
+  const imgSrc = ["'self'", 'data:', 'https://*'];
+  if (isUnsecureHttpResourceAllowed()) {
+    imgSrc.push('http://*');
+  }
+  return imgSrc;
+};
+
+const buildManifestSrc = () => {
+  const manifestSrc = ["'self'", 'data:', 'https://*'];
+  if (isUnsecureHttpResourceAllowed()) {
+    manifestSrc.push('http://*');
+  }
+  return manifestSrc;
+};
+
+const buildConnectSrc = () => {
+  const connectSrc = ["'self'", 'wss://*', 'data:', 'https://*'];
+  if (isUnsecureHttpResourceAllowed()) {
+    connectSrc.push('http://*');
+    connectSrc.push('ws://*');
+  }
+  return connectSrc;
+};
+
+const buildObjectSrc = () => {
+  const objectSrc = ["'self'", 'data:', 'https://*'];
+  if (isUnsecureHttpResourceAllowed()) {
+    objectSrc.push('http://*');
+  }
+  return objectSrc;
+};
+
+export const buildPublicHelmetParameters = () => {
+  const ancestorsFromConfig = getPublicAuthorizedDomainsFromConfiguration();
+  const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
+  const allowedFrameSrc = ["'self'"];
+  const helmetConfiguration: HelmetOptions = {
+    referrerPolicy: { policy: 'unsafe-url' },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: buildScriptSrc(),
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrcAttr: ["'none'"],
+        fontSrc: ["'self'", 'data:'],
+        imgSrc: buildImgSrcSrc(),
+        manifestSrc: buildManifestSrc(),
+        connectSrc: buildConnectSrc(),
+        objectSrc: buildObjectSrc(),
+        frameSrc: allowedFrameSrc,
+        frameAncestors: frameAncestorDomains,
+      },
+    },
+    // false means disable the header when frame-ancestors allows external domains
+    xFrameOptions: frameAncestorDomains === "'none'" ? { action: 'deny' } : false,
+  };
+  return helmetConfiguration;
+};
+
+export const buildDefaultHelmetParameters = () => {
+  const helmetConfiguration: HelmetOptions = {
+    referrerPolicy: { policy: 'unsafe-url' },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: buildScriptSrc(),
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrcAttr: ["'none'"],
+        fontSrc: ["'self'", 'data:'],
+        imgSrc: buildImgSrcSrc(),
+        manifestSrc: buildManifestSrc(),
+        connectSrc: buildConnectSrc(),
+        objectSrc: buildObjectSrc(),
+        frameAncestors: "'none'",
+      },
+    },
+    xFrameOptions: { action: 'deny' },
+  };
+  return helmetConfiguration;
+};
+
+export const buildRateLimiterOptions = (): Options => {
+  const skipList: string[] = getRateProtectionIpSkipList();
+  const rateLimitOptions: Partial<Options> = {
+    windowMs: getRateProtectionTimeWindowMs(),
+    limit: getRateProtectionMaxRequests(),
+    handler: (req, res /* , next */) => {
+      logApp.debug(`[RATE-LIMIT] over quota for ${req?.ip}`);
+      res.status(429).send({ message: 'Too many requests, please try again later.' });
+    },
+    skip: (req, _res) => req.ip ? skipList.includes(req.ip) : false,
+  };
+  return rateLimitOptions as Options;
 };

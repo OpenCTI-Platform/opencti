@@ -102,6 +102,8 @@ import {
 } from '../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { isInternalRelationship, isStoreRelationPir } from '../schema/internalRelationship';
+import type { StoreRelationPir } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
@@ -550,7 +552,6 @@ const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
       }
       return externalConverter(basic);
     }
-    // TODO add Identity, all SDOs
     if (ENTITY_TYPE_INCIDENT === type) {
       return convertIncidentToStix(basic);
     }
@@ -602,7 +603,20 @@ const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
     // No converter_2_0 found
     throw UnsupportedError(`No entity stix 2.0 converter available for ${type}`);
   }
-  // TODO add SRO (relations and sightings), InternalObject, MetaObject :)
+  // SRO
+  if (isBasicRelationship(type)) {
+    if (isStoreRelationPir(instance)) {
+      return convertInPirRelToStix(instance as StoreRelationPir);
+    }
+    const basicRel = instance as StoreRelation;
+    if (isInternalRelationship(type) || isStixCoreRelationship(type)) {
+      return convertRelationToStix(basicRel);
+    }
+    if (isStixSightingRelationship(type)) {
+      return convertSightingToStix(basicRel);
+    }
+    throw UnsupportedError('No relation converter_2_0 available', { type });
+  }
   if (isStixCyberObservable(type)) {
     const cyber = instance as StoreCyberObservable;
     if (ENTITY_WINDOWS_REGISTRY_VALUE_TYPE === type) return convertWindowsRegistryValueToStix(cyber);
@@ -660,6 +674,38 @@ export const convertStoreToStix_2_0 = (instance: StoreCommon): S.StixObject => {
 };
 
 // SRO
+export const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
+  checkInstanceCompletion(instance);
+  const stixRelationship = buildStixRelationship(instance);
+  const resolvedFrom = instance.from as BasicStoreCommon;
+  const resolvedTo = instance.to as BasicStoreCommon;
+  return {
+    ...stixRelationship,
+    relationship_type: instance.relationship_type,
+    description: instance.description,
+    source_ref: resolvedFrom.standard_id,
+    target_ref: resolvedTo.standard_id,
+    start_time: convertToStixDate(instance.start_time),
+    stop_time: convertToStixDate(instance.stop_time),
+  };
+};
+
+export const convertInPirRelToStix = (instance: StoreRelationPir): SRO.StixRelation => {
+  checkInstanceCompletion(instance);
+  const stixRelationship = buildStixRelationship(instance);
+  const resolvedFrom = instance.from as BasicStoreCommon;
+  const resolvedTo = instance.to as BasicStoreCommon;
+  return {
+    ...stixRelationship,
+    relationship_type: instance.relationship_type,
+    description: instance.description,
+    source_ref: resolvedFrom.standard_id,
+    target_ref: resolvedTo.standard_id,
+    start_time: convertToStixDate(instance.start_time),
+    stop_time: convertToStixDate(instance.stop_time),
+  };
+};
+
 export const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
   checkInstanceCompletion(instance);
   const stixRelationship = buildStixRelationship(instance);

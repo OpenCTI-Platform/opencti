@@ -54,6 +54,13 @@ const groupingQuery = graphql`
       entity_type
       name
       currentUserAccessRight
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
       securityCoverage {
         id
         coverage_information {

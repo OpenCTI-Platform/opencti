@@ -42,9 +42,12 @@ import {
   convertReportToStix,
   convertIncidentToStix,
   convertSightingToStix,
+  convertRelationToStix,
+  convertInPirRelToStix,
   convertIdentityToStix,
   convertLocationToStix,
   convertInfrastructureToStix,
+  convertStoreToStix_2_0,
 } from '../../../src/database/stix-2-0-converter';
 import {
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -61,6 +64,8 @@ import { EXPECTED_INTRUSION_SET, INTRUSION_SET_INSTANCE } from './stix-2-0-conve
 import { EXPECTED_THREAT_ACTOR_GROUP, THREAT_ACTOR_GROUP_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/threats/threat-actor-group';
 import { EXPECTED_THREAT_ACTOR_INDIVIDUAL, THREAT_ACTOR_INDIVIDUAL_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/threats/threat-actor-individual';
 import { EXPECTED_SIGHTING, SIGHTING_INSTANCE } from './stix-2-0-converter-fixtures/SROs/sightings';
+import { EXPECTED_RELATION, RELATION_INSTANCE } from './stix-2-0-converter-fixtures/SROs/relation';
+import { EXPECTED_PIR_RELATION, PIR_RELATION_INSTANCE } from './stix-2-0-converter-fixtures/SROs/pir-relation';
 import { ATTACK_PATTERN_INSTANCE, EXPECTED_ATTACK_PATTERN } from './stix-2-0-converter-fixtures/SDOs/techniques/attack-pattern';
 import { EXPECTED_NARRATIVE, NARRATIVE_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/techniques/narrative';
 import { COURSE_OF_ACTION_INSTANCE, EXPECTED_COURSE_OF_ACTION } from './stix-2-0-converter-fixtures/SDOs/techniques/course-of-action';
@@ -279,6 +284,14 @@ describe('Stix 2.0 opencti converter', () => {
     const result = convertSightingToStix(SIGHTING_INSTANCE);
     expect(result).toEqual(EXPECTED_SIGHTING);
   });
+  it('should convert StixCoreRelationship', async () => {
+    const result = convertRelationToStix(RELATION_INSTANCE);
+    expect(result).toEqual(EXPECTED_RELATION);
+  });
+  it('should convert InPirRelationship', async () => {
+    const result = convertInPirRelToStix(PIR_RELATION_INSTANCE);
+    expect(result).toEqual(EXPECTED_PIR_RELATION);
+  });
   // Identities
   it('should convert Individual', async () => {
     const result = convertIdentityToStix(INDIVIDUAL_INSTANCE, ENTITY_TYPE_IDENTITY_INDIVIDUAL);
@@ -474,5 +487,28 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Administrative Area', async () => {
     const result = convertAdministrativeAreaToStix_2_0(ADMINISTRATIVE_AREA_INSTANCE);
     expect(result).toEqual(EXPECTED_ADMINISTRATIVE_AREA);
+  });
+});
+
+describe('Stix 2.0 opencti converter - SRO dispatch via convertStoreToStix_2_0', () => {
+  it('should dispatch StixCoreRelationship', () => {
+    const result = convertStoreToStix_2_0(RELATION_INSTANCE);
+    expect(result.type).toBe('relationship');
+    expect((result as any).relationship_type).toBe('uses');
+    expect((result as any).source_ref).toBe('intrusion-set--738e5ee3-6781-5f4c-93b0-d914bbf0c1d3');
+    expect((result as any).target_ref).toBe('tool--6dabb5b8-a30d-5bd3-ab61-5e1f048a3dc3');
+  });
+  it('should dispatch StixSightingRelationship', () => {
+    const result = convertStoreToStix_2_0(SIGHTING_INSTANCE);
+    expect(result.type).toBe('sighting');
+    expect((result as any).sighting_of_ref).toBe('indicator--3e01a7d8-997b-5e7b-a1a3-32f8956ca752');
+    expect((result as any).where_sighted_refs).toEqual(['identity--4f347cc9-4658-59ee-9707-134f434f9d1c']);
+  });
+  it('should dispatch InPirRelationship', () => {
+    const result = convertStoreToStix_2_0(PIR_RELATION_INSTANCE);
+    expect(result.type).toBe('in-pir');
+    expect((result as any).relationship_type).toBe('in-pir');
+    expect((result as any).source_ref).toBe('malware--b1c2d3e4-f5a6-7890-bcde-f01234567890');
+    expect((result as any).target_ref).toBe('identity--c2d3e4f5-a6b7-8901-cdef-123456789012');
   });
 });

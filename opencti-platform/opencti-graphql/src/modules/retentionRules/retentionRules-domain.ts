@@ -3,21 +3,25 @@ import { topEntitiesList, pageEntitiesConnection, storeLoadById } from '../../da
 import { ENTITY_TYPE_RETENTION_RULE, type BasicStoreEntityRetentionRule } from './retentionRules-types';
 import { generateInternalId, generateStandardId } from '../../schema/identifier';
 import { elIndex, elPaginate } from '../../database/engine';
-import { INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES } from '../../database/utils';
+import { INDEX_INTERNAL_OBJECTS, READ_INDEX_HISTORY, READ_STIX_INDICES } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import { utcDate } from '../../utils/format';
 import { RETENTION_MANAGER_USER } from '../../utils/access';
 import { convertFiltersToQueryOptions } from '../../utils/filtering/filtering-resolution';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../internal/document/document-domain';
-import { logApp } from '../../config/conf';
+import { FEATURE_ACTIVITY_HISTORY_RETENTION, isFeatureEnabled, logApp } from '../../config/conf';
 import { BASE_TYPE_ENTITY } from '../../schema/general';
 import { getParentTypes } from '../../schema/schemaUtils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, QueryRetentionRulesArgs, RetentionRuleAddInput } from '../../generated/graphql';
+import { ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
 
 export const checkRetentionRule = async (context: AuthContext, input: RetentionRuleAddInput) => {
   const { filters, max_retention: maxDays, scope, retention_unit: unit } = input;
+  if (scope === 'history' && !isFeatureEnabled(FEATURE_ACTIVITY_HISTORY_RETENTION)) {
+    throw UnsupportedError('The history scope for retention rules is not enabled on this platform');
+  }
   const before = utcDate().subtract(maxDays, unit ?? 'days');
   let result: any = [];
   // knowledge rule
@@ -33,6 +37,11 @@ export const checkRetentionRule = async (context: AuthContext, input: RetentionR
   } else if (scope === 'workbench') {
     // exact_path: false to get ALL workbenches (both global and entity-attached)
     result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/pending', undefined, { notModifiedSince: before.toISOString(), exact_path: false });
+  } else if (scope === 'history') {
+    const jsonFilters = filters ? JSON.parse(filters) : null;
+    const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_INDEX_HISTORY, { ...queryOptions, types: [ENTITY_TYPE_HISTORY], first: 1 });
+    return result.pageInfo.globalCount;
   } else {
     logApp.error('[Retention manager] Scope not existing for Retention Rule.', { scope });
   }

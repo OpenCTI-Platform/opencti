@@ -28349,6 +28349,7 @@ export enum RetentionRuleOrdering {
 
 export enum RetentionRuleScope {
   File = 'file',
+  History = 'history',
   Knowledge = 'knowledge',
   Workbench = 'workbench'
 }

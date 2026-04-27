@@ -1,6 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "7.260422.0",
+  "version": "7.260423.0",
   "private": true,
   "workspaces": [
     "packages/*"
@@ -35,8 +35,8 @@
     "@analytics/google-analytics": "1.1.0",
     "@cfworker/json-schema": "4.1.1",
     "@ckeditor/ckeditor5-react": "9.5.0",
-    "@filigran/chatbot": "3.0.3",
-    "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2",
+    "@filigran/chatbot": "3.2.0",
+    "@filigran/chatbot-legacy": "npm:@filigran/chatbot@3.2.1",
     "@fontsource/geologica": "5.2.8",
     "@fontsource/ibm-plex-sans": "5.2.8",
     "@graphiql/toolkit": "0.11.3",
@@ -210,7 +210,7 @@
     "relay-test-utils": "20.1.1",
     "typescript": "5.9.3",
     "typescript-eslint": "8.58.2",
-    "vite": "8.0.8",
+    "vite": "8.0.9",
     "vite-plugin-relay": "2.1.0",
     "vite-plugin-static-copy": "4.1.0",
     "vitest": "4.1.4"
