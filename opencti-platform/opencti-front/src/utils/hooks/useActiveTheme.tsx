@@ -1,4 +1,4 @@
-import { RootPrivateQuery$data } from '../../private/__generated__/RootPrivateQuery.graphql';
+import { PrivateRootPreloadedQuery$data } from '../../private/__generated__/PrivateRootPreloadedQuery.graphql';
 
 interface UseActiveThemeParams {
   userThemeId?: string | null;
@@ -16,7 +16,7 @@ interface UseActiveThemeParams {
     theme_logo_collapsed?: string | null;
     theme_logo_login?: string | null;
   } | null;
-  allThemes: RootPrivateQuery$data['themes'];
+  allThemes: PrivateRootPreloadedQuery$data['themes'];
 }
 
 const useActiveTheme = ({
