@@ -1,7 +1,8 @@
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_CUSTOM_VIEW, type BasicStoreEntityCustomView } from './customView-types';
-import { type QueryCustomViewsArgs } from '../../generated/graphql';
+import { type QueryCustomViewsArgs, type CustomViewAddInput } from '../../generated/graphql';
+import slugify from 'slug';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -17,6 +18,8 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRA
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../schema/stixCyberObservable';
 import { addFilter } from '../../utils/filtering/filtering-utils';
+import { createEntity } from '../../database/middleware';
+import { FunctionalError } from '../../config/errors';
 
 /**
  * Exclusion list: entity types not capable of
@@ -102,4 +105,30 @@ export const findAllCustomViews = async (
 
 export const getCustomViewsSettings = (entityType: string) => {
   return { canEntityTypeHaveCustomViews: isCustomViewsAvailableForEntityType(entityType) };
+};
+
+export const addCustomView = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: CustomViewAddInput,
+) => {
+  if (!isCustomViewsAvailableForEntityType(input.targetEntityType)) {
+    throw FunctionalError(
+      'Custom views cannot be created for given entity type', {
+        entityType: input.targetEntityType,
+      });
+  }
+  const customViewToCreate = {
+    description: input.description,
+    manifest: input.manifest,
+    name: input.name,
+    target_entity_type: input.targetEntityType,
+    slug: slugify(input.name),
+  };
+  return await createEntity(
+    context,
+    user,
+    customViewToCreate,
+    ENTITY_TYPE_CUSTOM_VIEW,
+  );
 };
