@@ -33,11 +33,15 @@ type CustomViewsSettings {
     canEntityTypeHaveCustomViews: Boolean!
 }
 
-# Queries
+input CustomViewAddInput {
+    name: String! @constraint(minLength: 2, format: "not-blank")
+    description: String
+    manifest: String
+    targetEntityType: String!
+}
+
 type Query {
-    # Display a custom view
     customViewDisplay(id: ID!): CustomView @auth @ff(flags: ["CUSTOM_VIEW"])
-    # List all custom views
     customViews(
         entityType: String
         first: Int
@@ -46,8 +50,12 @@ type Query {
         search: String
         orderMode: OrderingMode
     ): CustomViewsConnection! @auth @ff(flags: ["CUSTOM_VIEW"])
-    # For a given entity type provides whether it is eligible to having custom views
     customViewsSettings(
         entityType: String!
     ): CustomViewsSettings! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
 }
+
+type Mutation {
+    customViewAdd(input: CustomViewAddInput!): CustomView! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
+}
+
