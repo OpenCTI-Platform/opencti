@@ -46,9 +46,15 @@ export const serializeDashboardManifestForBackend = (
 };
 
 export const deserializeDashboardManifestForFrontend = (
-  manifestB64Str: string,
+  manifestB64Str: string | undefined | null,
 ): DashboardManifest => {
   const widgets: Record<string, AnyForDashboardManifest> = {};
+  if (!manifestB64Str) {
+    return {
+      widgets,
+      config: {},
+    };
+  }
   const manifestStr = fromB64(manifestB64Str);
   if (!manifestStr) {
     return {

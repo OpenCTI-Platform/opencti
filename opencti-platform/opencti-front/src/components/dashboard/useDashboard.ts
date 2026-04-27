@@ -34,11 +34,10 @@ function useDashboard({
   }, []);
 
   // Deserialized manifest, refreshed when workspace is updated.
-  const manifest = useMemo(() => {
-    return serializedManifest && serializedManifest.length > 0
-      ? deserializeDashboardManifestForFrontend(serializedManifest)
-      : { widgets: {}, config: {} };
-  }, [serializedManifest]);
+  const manifest = useMemo(
+    () => deserializeDashboardManifestForFrontend(serializedManifest),
+    [serializedManifest],
+  );
 
   // Array of all widgets, refreshed when workspace is updated.
   const widgetsArray = useMemo(() => Object.values(manifest.widgets), [manifest]);
