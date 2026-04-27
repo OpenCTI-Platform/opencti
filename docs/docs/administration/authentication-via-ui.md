@@ -4,7 +4,7 @@
 
      Please read the information below. The ability to log in via SSO is covered by the [OpenCTI Enterprise Edition license](https://docs.opencti.io/latest/administration/enterprise/?h=ente).
  
-All the configurations listed below require an Enterprise Edition to work, except the Local strategy.
+All the configtesturations listed below require an Enterprise Edition to work, except the Local strategy.
 
 ## Capability required to manage authentication strategies
 To access the Authentication screen, you need to have the  [Manage Authentication capability](https://docs.opencti.io/latest/administration/users/). 
