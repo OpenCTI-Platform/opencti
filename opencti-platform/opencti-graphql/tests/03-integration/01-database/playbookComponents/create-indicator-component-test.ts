@@ -720,6 +720,10 @@ describe('Create indicator component', () => {
       { prefix: 'threat-actor', id: 'threat-actor--00000000-0000-0000-0000-000000000001' },
       { prefix: 'campaign', id: 'campaign--00000000-0000-0000-0000-000000000002' },
       { prefix: 'malware', id: 'malware--00000000-0000-0000-0000-000000000003' },
+      { prefix: 'intrusion-set', id: 'intrusion-set--00000000-0000-0000-0000-000000000007' },
+      { prefix: 'tool', id: 'tool--00000000-0000-0000-0000-000000000009' },
+      { prefix: 'attack-pattern', id: 'attack-pattern--00000000-0000-0000-0000-000000000067' },
+      { prefix: 'incident', id: 'incident--00000000-0000-0000-0000-000000007003' },
     ];
 
     const relationships = targets.map((t, i) => ({
@@ -747,7 +751,7 @@ describe('Create indicator component', () => {
       (o) => o.type === 'relationship' && (o as StixRelation).relationship_type === RELATION_INDICATES,
     ) as StixRelation[];
 
-    expect(indicatesRels).toHaveLength(3);
+    expect(indicatesRels).toHaveLength(7);
     const targetRefs = indicatesRels.map((r) => r.target_ref);
     targets.forEach((t) => expect(targetRefs).toContain(t.id));
   });
