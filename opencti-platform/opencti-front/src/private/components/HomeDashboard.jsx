@@ -19,7 +19,7 @@ import Security from '../../utils/Security';
 import { lastDayOfThePreviousMonth, monthsAgo, yearsAgo } from '../../utils/Time';
 import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
 import StixRelationshipsHorizontalBars from './common/stix_relationships/StixRelationshipsHorizontalBars';
-import DashboardView from './workspaces/dashboards/Dashboard';
+import CustomDashboard from './workspaces/dashboards/CustomDashboard';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
 
@@ -452,7 +452,7 @@ const dashboardCustomDashboardQuery = graphql`
     workspace(id: $id) {
       id
       name
-      ...Dashboard_workspace
+      ...CustomDashboard_workspace
     }
   }
 `;
@@ -460,7 +460,7 @@ const WorkspaceDashboardComponent = ({ queryRef, timeField }) => {
   const data = usePreloadedQuery(dashboardCustomDashboardQuery, queryRef);
   if (data.workspace) {
     return (
-      <DashboardView
+      <CustomDashboard
         data={data.workspace}
         noToolbar={true}
         timeField={timeField}

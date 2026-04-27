@@ -10,7 +10,7 @@ import DashboardContent from '../../../../components/dashboard/DashboardContent'
 import useDashboard from '../../../../components/dashboard/useDashboard';
 
 const dashboardExportWidgetQuery = graphql`
-  query DashboardWidgetExportQuery($id: String!, $widgetId: ID!) {
+  query CustomDashboardWidgetExportQuery($id: String!, $widgetId: ID!) {
     workspace(id: $id) {
       toWidgetExport(widgetId: $widgetId)
     }
@@ -18,7 +18,7 @@ const dashboardExportWidgetQuery = graphql`
 `;
 
 const dashboardLayoutMutation = graphql`
-  mutation DashboardLayoutMutation($id: ID!, $input: [EditInput!]!) {
+  mutation CustomDashboardLayoutMutation($id: ID!, $input: [EditInput!]!) {
     workspaceFieldPatch(id: $id, input: $input) {
       id
     }
@@ -26,18 +26,18 @@ const dashboardLayoutMutation = graphql`
 `;
 
 const dashboardImportWidgetMutation = graphql`
-  mutation DashboardWidgetImportMutation(
+  mutation CustomDashboardWidgetImportMutation(
     $id: ID!
     $input: ImportConfigurationInput!
   ) {
     workspaceWidgetConfigurationImport(id: $id, input: $input) {
-      ...Dashboard_workspace
+      ...CustomDashboard_workspace
     }
   }
 `;
 
 const dashboardFragment = graphql`
-  fragment Dashboard_workspace on Workspace {
+  fragment CustomDashboard_workspace on Workspace {
     id
     type
     name
@@ -61,7 +61,7 @@ const onExportWidget = async (id, widget) => {
   return data.workspace?.toWidgetExport;
 };
 
-const DashboardComponent = ({ data, noToolbar = false }) => {
+const CustomDashboard = ({ data, noToolbar = false }) => {
   const workspace = useFragment(dashboardFragment, data);
   const [commitWidgetImportMutation] = useApiMutation(dashboardImportWidgetMutation);
 
@@ -130,4 +130,4 @@ const DashboardComponent = ({ data, noToolbar = false }) => {
   );
 };
 
-export default DashboardComponent;
+export default CustomDashboard;
