@@ -18,7 +18,7 @@ import Security from '../../../utils/Security';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
-import useStoreTempImagesForEntityAfterCreate from '../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../components/fields/markdownField/MarkdownField';
 import { insertNode } from '../../../utils/store';
 import { isNotEmptyField } from '../../../utils/utils';
 import Drawer from '../common/drawer/Drawer';
@@ -90,14 +90,14 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
     });
   };
 
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    { workspaceAdd?: { id?: string | null } | null },
-    WorkspaceCreationForm
-  >({
-    getCreatedId: (response) => response?.workspaceAdd?.id,
-    getInitialValue: (values) => values.description,
-    patchField: patchWorkspaceDescription,
-  });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
 
   const handleImport = (file: File) => new Promise<void>((resolve, reject) => {
     commitImportMutation({
@@ -122,6 +122,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
     commitCreationMutation({
       variables: {
         input: {
+        ...buildMarkdownFilesInput(),
           ...values,
           type,
         },
@@ -139,15 +140,10 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
         setSubmitting(false);
       },
       onCompleted: (response) => {
-        runAfterStoringTempImagesForEntity(response, values, {
-          onSuccess: () => {
+
             setSubmitting(false);
             resetForm();
-          },
-          onError: () => {
-            setSubmitting(false);
-          },
-        });
+          
       },
     });
   };
@@ -222,7 +218,10 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
                   multiline={true}
                   rows="4"
                   style={{ marginTop: 20 }}
-                  {...getTempImageFieldProps()}
+                  autoPersistOnBlur={false}
+            registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+              descriptionMarkdownController = controller;
+            }}
                 />
                 <FormButtonContainer>
                   <Button

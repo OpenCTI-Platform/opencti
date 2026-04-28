@@ -30,7 +30,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 
 const regionMutation = graphql`
   mutation RegionCreationMutation($input: RegionAddInput!) {
@@ -124,14 +124,14 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
       });
     });
   };
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    RegionCreationMutation['response'],
-    RegionAddInput
-  >({
-    getCreatedId: (response) => response?.regionAdd?.id,
-    getInitialValue: (values) => values.description,
-    patchField: patchRegionDescription,
-  });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
   const {
     bulkCommit,
     bulkCount,
@@ -160,6 +160,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: RegionCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildMarkdownFilesInput(),
         name,
         description: values.description,
         confidence: parseInt(String(values.confidence), 10),
@@ -179,13 +180,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
           ...args,
           variables: mutationVariables,
           onCompleted: (response, errors) => {
-            runAfterStoringTempImagesForEntity(response, {
-              ...values,
-              description: mutationVariables.input.description ?? '',
-            }, {
-              onSuccess: () => args.onCompleted?.(response, errors),
-              onError: () => args.onCompleted?.(response, errors),
-            });
+            args.onCompleted?.(response, errors);
           },
         });
       },
@@ -268,7 +263,11 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
-              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                descriptionMarkdownController = controller;
+              }}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <ConfidenceField
               entityType="Region"

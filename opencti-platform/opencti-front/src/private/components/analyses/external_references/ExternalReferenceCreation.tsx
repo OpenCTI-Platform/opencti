@@ -16,7 +16,7 @@ import FormButtonContainer from '../../../../components/common/form/FormButtonCo
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import { ExternalReferencesLinesPaginationQuery$variables } from '../__generated__/ExternalReferencesLinesPaginationQuery.graphql';
@@ -125,20 +125,23 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
     });
   };
 
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    ExternalReferenceCreationMutation$data,
-    ExternalReferenceAddInput
-  >({
-    getCreatedId: (response) => response?.externalReferenceAdd?.id,
-    getInitialValue: (values) => values.description ?? '',
-    patchField: patchExternalReferenceDescription,
-  });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
 
   const onSubmit: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
-    const finalValues = values.file.length === 0 ? R.dissoc('file', values) : values;
+    const finalValues = {
+      ...(values.file.length === 0 ? R.dissoc('file', values) : values),
+      ...buildMarkdownFilesInput(),
+    };
     if (dryrun && onCreate) {
       onCreate(values, true);
       handleClose();
@@ -159,17 +162,14 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
         setSubmitting(false);
       },
       onCompleted: (response: ExternalReferenceCreationMutation$data) => {
-        runAfterStoringTempImagesForEntity(response, values, {
-          onSuccess: () => {
+        
             setSubmitting(false);
             resetForm();
             handleClose();
             if (onCreate) {
               onCreate(response.externalReferenceAdd, true);
             }
-          },
-          onError: () => setSubmitting(false),
-        });
+          
       },
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
@@ -177,7 +177,10 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
   };
 
   const onSubmitContextual: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues = values.file.length === 0 ? R.dissoc('file', values) : values;
+    const finalValues = {
+      ...(values.file.length === 0 ? R.dissoc('file', values) : values),
+      ...buildMarkdownFilesInput(),
+    };
     if (dryrun && creationCallback && handleCloseContextual) {
       creationCallback({
         externalReferenceAdd: values,
@@ -204,17 +207,14 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
         setSubmitting(false);
       },
       onCompleted: (response: ExternalReferenceCreationMutation$data) => {
-        runAfterStoringTempImagesForEntity(response, values, {
-          onSuccess: () => {
+        
             setSubmitting(false);
             resetForm();
             if (creationCallback && handleCloseContextual) {
               creationCallback(response);
               handleCloseContextual();
             }
-          },
-          onError: () => setSubmitting(false),
-        });
+          
       },
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
@@ -298,7 +298,10 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                   multiline={true}
                   rows="4"
                   style={{ marginTop: 20 }}
-                  {...getTempImageFieldProps()}
+                  autoPersistOnBlur={false}
+            registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+              descriptionMarkdownController = controller;
+            }}
                 />
                 <FormButtonContainer>
                   <Button
@@ -384,7 +387,10 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                   multiline={true}
                   rows="4"
                   style={{ marginTop: 20, marginBottom: 20 }}
-                  {...getTempImageFieldProps()}
+                  autoPersistOnBlur={false}
+            registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+              descriptionMarkdownController = controller;
+            }}
                 />
                 <DialogActions>
                   <Button

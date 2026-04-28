@@ -14,7 +14,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 import Drawer from '../../common/drawer/Drawer';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -78,14 +78,14 @@ const FeedbackCreation: FunctionComponent<{
       });
     });
   };
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    FeedbackCreationMutation['response'],
-    FormikFeedbackAddInput
-  >({
-    getCreatedId: (response) => (response as { feedbackAdd?: { id?: string } })?.feedbackAdd?.id,
-    getInitialValue: (values) => values.description,
-    patchField: patchFeedbackDescription,
-  });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(
@@ -103,6 +103,7 @@ const FeedbackCreation: FunctionComponent<{
     { setSubmitting, resetForm },
   ) => {
     const input: FeedbackCreationMutation$variables['input'] = {
+      ...buildMarkdownFilesInput(),
       name: values.name,
       description: values.description,
       confidence: parseInt(String(values.confidence), 10),
@@ -116,18 +117,11 @@ const FeedbackCreation: FunctionComponent<{
         input,
       },
       onCompleted: (response) => {
-        runAfterStoringTempImagesForEntity(response, values, {
-          onSuccess: () => {
+
             setSubmitting(false);
             resetForm();
             handleCloseDrawer();
-          },
-          onError: () => {
-            setSubmitting(false);
-            resetForm();
-            handleCloseDrawer();
-          },
-        });
+          
       },
     });
   };
@@ -179,7 +173,10 @@ const FeedbackCreation: FunctionComponent<{
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
-              {...getTempImageFieldProps()}
+              autoPersistOnBlur={false}
+            registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+              descriptionMarkdownController = controller;
+            }}
             />
             <ConfidenceField
               entityType="Feedback"

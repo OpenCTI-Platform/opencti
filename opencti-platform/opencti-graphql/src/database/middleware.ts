@@ -3984,7 +3984,7 @@ const internalCreateEntityRaw = async (
         );
         uploadedFiles.push(storeFileConverter(user, uploadedFile));
         if (embedded) {
-          embeddedImageUrls.push(`/storage/view/${key}`);
+          embeddedImageUrls.push(`/storage/view/${encodeURIComponent(uploadedFile.id)}`);
         }
         // Add external references from files if necessary
         if (isAutoExternal) {

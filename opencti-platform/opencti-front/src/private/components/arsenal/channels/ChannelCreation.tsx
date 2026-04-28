@@ -31,7 +31,7 @@ import { splitMultilines } from '../../../../utils/String';
 import ProgressBar from '../../../../components/ProgressBar';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 
 const channelMutation = graphql`
   mutation ChannelCreationMutation($input: ChannelAddInput!) {
@@ -46,14 +46,6 @@ const channelMutation = graphql`
       entity_type
       parent_types
       ...ChannelsLine_node
-    }
-  }
-`;
-
-const channelCreationDescriptionPatchMutation = graphql`
-  mutation ChannelCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    channelFieldPatch(id: $id, input: $input) {
-      id
     }
   }
 `;
@@ -118,28 +110,14 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Channel')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(channelCreationDescriptionPatchMutation);
-  const patchChannelDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
 
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    ChannelCreationMutation['response'],
-    ChannelAddInput
-  >({
-    getCreatedId: (response) => response?.channelAdd?.id,
-    getInitialValue: (values) => values.description,
-    patchField: patchChannelDescription,
-  });
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
   const {
     bulkCommit,
     bulkCount,
@@ -168,6 +146,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: ChannelCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildMarkdownFilesInput(),
         name,
         description: values.description,
         channel_types: values.channel_types,
@@ -188,13 +167,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
           ...args,
           variables: mutationVariables,
           onCompleted: (response, errors) => {
-            runAfterStoringTempImagesForEntity(response, {
-              ...values,
-              description: mutationVariables.input.description ?? '',
-            }, {
-              onSuccess: () => args.onCompleted?.(response, errors),
-              onError: () => args.onCompleted?.(response, errors),
-            });
+            args.onCompleted?.(response, errors);
           },
         });
       },
@@ -287,7 +260,11 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
-              {...getTempImageFieldProps(values.objectMarking.map((v) => v.value))}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                descriptionMarkdownController = controller;
+              }}
+              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
             />
             <ConfidenceField
               entityType="Channel"

@@ -16,6 +16,7 @@ import FormButtonContainer from '../../../../components/common/form/FormButtonCo
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 import RichTextField from '../../../../components/fields/RichTextField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -108,7 +109,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
-  const getDescriptionTempImageFilesRef = useRef<(() => File[]) | null>(null);
+  const descriptionMarkdownControllerRef = useRef<MarkdownImagesController | null>(null);
   const { mandatoryAttributes } = useIsMandatoryAttribute(REPORT_TYPE);
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -143,7 +144,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
-    const markdownTempFiles = getDescriptionTempImageFilesRef.current?.() ?? [];
+    const markdownTempFiles = descriptionMarkdownControllerRef.current?.getPendingImageFiles() ?? [];
     const files = [
       ...markdownTempFiles,
       ...(values.file ? [values.file] : []),
@@ -290,9 +291,9 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             rows="4"
             style={fieldSpacingContainerStyle}
             askAi={true}
-            finalizeOnBlur={false}
-            registerGetTempImageFiles={(getFiles: () => File[]) => {
-              getDescriptionTempImageFilesRef.current = getFiles;
+            autoPersistOnBlur={false}
+            registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+              descriptionMarkdownControllerRef.current = controller;
             }}
           />
           <Field

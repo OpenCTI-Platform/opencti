@@ -33,7 +33,7 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import TextField from '../../../../components/TextField';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 
 const toolMutation = graphql`
   mutation ToolCreationMutation($input: ToolAddInput!) {
@@ -135,14 +135,14 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     });
   };
 
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    ToolCreationMutation['response'],
-    ToolAddInput
-  >({
-    getCreatedId: (response) => response?.toolAdd?.id,
-    getInitialValue: (values) => values.description,
-    patchField: patchToolDescription,
-  });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
   const {
     bulkCommit,
     bulkCount,
@@ -171,6 +171,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: ToolCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildMarkdownFilesInput(),
         name,
         description: values.description,
         createdBy: values.createdBy?.value,
@@ -193,13 +194,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
           ...args,
           variables: mutationVariables,
           onCompleted: (response, errors) => {
-            runAfterStoringTempImagesForEntity(response, {
-              ...values,
-              description: mutationVariables.input.description ?? '',
-            }, {
-              onSuccess: () => args.onCompleted?.(response, errors),
-              onError: () => args.onCompleted?.(response, errors),
-            });
+            args.onCompleted?.(response, errors);
           },
         });
       },
@@ -290,7 +285,11 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
               rows="4"
               style={fieldSpacingContainerStyle}
               askAi={true}
-              {...getTempImageFieldProps(values.objectMarking.map((v) => v.value))}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                descriptionMarkdownController = controller;
+              }}
+              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
             />
             <ConfidenceField
               entityType="Tool"

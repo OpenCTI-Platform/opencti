@@ -26,7 +26,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 import Security from '../../../../utils/Security';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -153,19 +153,20 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
       });
     });
   };
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    CaseRfiCreationCaseMutation['response'],
-    FormikCaseRfiAddInput
-  >({
-    getCreatedId: (response) => response?.caseRfiAdd?.id,
-    getInitialValue: (values) => values.description,
-    patchField: patchCaseRfiDescription,
-  });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
   const onSubmit: FormikConfig<FormikCaseRfiAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: CaseRfiAddInput = {
+      ...buildMarkdownFilesInput(),
       name: values.name,
       description: values.description,
       content: values.content,
@@ -204,8 +205,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
         setSubmitting(false);
       },
       onCompleted: (response) => {
-        runAfterStoringTempImagesForEntity(response, values, {
-          onSuccess: () => {
+
             setSubmitting(false);
             resetForm();
             if (onClose) {
@@ -216,20 +216,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
                 `/dashboard/cases/rfis/${response.caseRfiAdd?.id}/content/mapping`,
               );
             }
-          },
-          onError: () => {
-            setSubmitting(false);
-            resetForm();
-            if (onClose) {
-              onClose();
-            }
-            if (mapAfter) {
-              navigate(
-                `/dashboard/cases/rfis/${response.caseRfiAdd?.id}/content/mapping`,
-              );
-            }
-          },
-        });
+          
       },
     });
   };
@@ -331,7 +318,11 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             rows="4"
             style={fieldSpacingContainerStyle}
             askAi={true}
-            {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
+            autoPersistOnBlur={false}
+              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                descriptionMarkdownController = controller;
+              }}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
           />
           <Field
             component={RichTextField}

@@ -14,7 +14,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -28,16 +28,6 @@ const caseTaskAddMutation = graphql`
     taskAdd(input: $input) {
       id
       ...CaseUtilsTasksLine_data
-    }
-  }
-`;
-
-const caseTaskCreationDescriptionPatchMutation = graphql`
-  mutation CaseTaskCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    stixDomainObjectEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
     }
   }
 `;
@@ -88,27 +78,14 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Task')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(caseTaskCreationDescriptionPatchMutation);
-  const patchTaskDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
   };
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    CaseTaskCreationMutation['response'],
-    FormikCaseTaskAddInput
-  >({
-    getCreatedId: (response) => response?.taskAdd?.id,
-    getInitialValue: (values) => values.description ?? '',
-    patchField: patchTaskDescription,
-  });
 
   const onSubmit: FormikConfig<FormikCaseTaskAddInput>['onSubmit'] = (
     values,
@@ -119,6 +96,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
     addTask({
       variables: {
         input: {
+          ...buildMarkdownFilesInput(),
           ...values,
           objectAssignee: (values.objectAssignee ?? []).map(
             ({ value }) => value,
@@ -134,19 +112,10 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: (response) => {
-        runAfterStoringTempImagesForEntity(response, values, {
-          onSuccess: () => {
-            setSubmitting(false);
-            resetForm();
-            onClose();
-          },
-          onError: () => {
-            setSubmitting(false);
-            resetForm();
-            onClose();
-          },
-        });
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+        onClose();
       },
     });
   };
@@ -216,7 +185,11 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
             multiline
             rows="4"
             style={fieldSpacingContainerStyle}
-            {...getTempImageFieldProps((values.objectMarking ?? []).map(({ value }) => value))}
+            autoPersistOnBlur={false}
+            registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+              descriptionMarkdownController = controller;
+            }}
+            uploadFileMarkings={(values.objectMarking ?? []).map(({ value }) => value)}
           />
           <FormButtonContainer>
             <Button

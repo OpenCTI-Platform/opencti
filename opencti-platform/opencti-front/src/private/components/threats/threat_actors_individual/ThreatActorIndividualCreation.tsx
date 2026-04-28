@@ -39,7 +39,7 @@ import useUserMetric from '../../../../utils/hooks/useUserMetric';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 import { splitMultilines } from '../../../../utils/String';
 import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
@@ -234,14 +234,14 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
       });
     });
   };
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    ThreatActorIndividualCreationMutation['response'],
-    ThreatActorIndividualAddInput
-  >({
-    getCreatedId: (response) => response?.threatActorIndividualAdd?.id,
-    getInitialValue: (values) => values.description,
-    patchField: patchThreatActorIndividualDescription,
-  });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
   const {
     bulkCommit,
     bulkCount,
@@ -270,6 +270,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
     const allNames = splitMultilines(values.name);
     const variables: ThreatActorIndividualCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildMarkdownFilesInput(),
         name,
         description: values?.description,
         threat_actor_types: values?.threat_actor_types,
@@ -315,13 +316,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
           ...args,
           variables: mutationVariables,
           onCompleted: (response, errors) => {
-            runAfterStoringTempImagesForEntity(response, {
-              ...values,
-              description: mutationVariables.input.description ?? '',
-            }, {
-              onSuccess: () => args.onCompleted?.(response, errors),
-              onError: () => args.onCompleted?.(response, errors),
-            });
+            args.onCompleted?.(response, errors);
           },
         });
       },
@@ -471,7 +466,11 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                 rows="4"
                 style={{ marginTop: 20 }}
                 askAi={true}
-                {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
+                autoPersistOnBlur={false}
+              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                descriptionMarkdownController = controller;
+              }}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
               />
               <CreatedByField
                 name="createdBy"

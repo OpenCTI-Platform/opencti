@@ -1,7 +1,6 @@
 import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { graphql } from 'react-relay';
 import { securityPlatformCreationMutation } from '@components/entities/securityPlatforms/SecurityPlatformCreation';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import {
@@ -27,17 +26,7 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
-
-const SecurityPlatformCreationDescriptionPatchMutation = graphql`
-  mutation SecurityPlatformCreationFormDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    stixDomainObjectEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
-    }
-  }
-`;
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 
 interface SecurityPlatformCreationFormData {
   name: string;
@@ -79,28 +68,14 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
     undefined,
     { successMessage: `${t_i18n('entity_SecurityPlatform')} ${t_i18n('successfully created')}` },
   );
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
 
-  const [commitDescriptionPatch] = useApiMutation(SecurityPlatformCreationDescriptionPatchMutation);
-  const patchSecurityPlatformDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
   };
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    SecurityPlatformCreationMutation['response'],
-    SecurityPlatformCreationFormData
-  >({
-    getCreatedId: (response) => (response?.securityPlatformAdd as { id?: string } | null | undefined)?.id,
-    getInitialValue: (values) => values.description,
-    patchField: patchSecurityPlatformDescription,
-  });
 
   const {
     bulkCommit,
@@ -131,6 +106,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
     const allNames = splitMultilines(values.name);
     const variables: SecurityPlatformCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildMarkdownFilesInput(),
         name,
         description: values.description,
         security_platform_type: values.security_platform_type,
@@ -148,13 +124,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
           ...args,
           variables: mutationVariables,
           onCompleted: (response, errors) => {
-            runAfterStoringTempImagesForEntity(response, {
-              ...values,
-              description: mutationVariables.input.description ?? '',
-            }, {
-              onSuccess: () => args.onCompleted?.(response, errors),
-              onError: () => args.onCompleted?.(response, errors),
-            });
+            args.onCompleted?.(response, errors);
           },
         });
       },
@@ -245,7 +215,11 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
-              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                descriptionMarkdownController = controller;
+              }}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             { /* TODO Improve customization (vocab with letter range) 2662 */}
             <OpenVocabField

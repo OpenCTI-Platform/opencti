@@ -32,7 +32,7 @@ import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../..
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 import { insertNode } from '../../../../utils/store';
 import { CoverageInformationFieldAdd } from '../../common/form/CoverageInformationField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -441,14 +441,14 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     });
   };
 
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    SecurityCoverageCreationMutation$data,
-    SecurityCoverageFormValues
-  >({
-    getCreatedId: (response) => response?.securityCoverageAdd?.id,
-    getInitialValue: (values) => values.description,
-    patchField: patchSecurityCoverageDescription,
-  });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
 
   const onSubmit: FormikConfig<SecurityCoverageFormValues>['onSubmit'] = (
     values,
@@ -459,6 +459,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       return;
     }
     const finalValues = {
+      ...buildMarkdownFilesInput(),
       name: values.name,
       description: values.description,
       objectCovered: selectedEntity.id,
@@ -494,17 +495,14 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
         setSubmitting(false);
       },
       onCompleted: (response) => {
-        runAfterStoringTempImagesForEntity(response, values, {
-          onSuccess: () => {
+        
             setSubmitting(false);
             resetForm();
             handleClose();
             if (response.securityCoverageAdd && shouldRedirect) {
               navigate(`/dashboard/analyses/security_coverages/${response.securityCoverageAdd.id}`);
             }
-          },
-          onError: () => setSubmitting(false),
-        });
+          
       },
     });
   };
@@ -734,7 +732,11 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
               multiline={true}
               rows={4}
               style={fieldSpacingContainerStyle}
-              {...getTempImageFieldProps(values.objectMarking.map((v) => v.value))}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                descriptionMarkdownController = controller;
+              }}
+              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
             />
             <ConfidenceField
               containerStyle={fieldSpacingContainerStyle}

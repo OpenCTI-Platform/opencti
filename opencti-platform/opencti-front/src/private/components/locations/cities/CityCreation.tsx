@@ -31,7 +31,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 
 const cityMutation = graphql`
   mutation CityCreationMutation($input: CityAddInput!) {
@@ -132,14 +132,14 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
       });
     });
   };
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    CityCreationMutation['response'],
-    CityAddInput
-  >({
-    getCreatedId: (response) => response?.cityAdd?.id,
-    getInitialValue: (values) => values.description,
-    patchField: patchCityDescription,
-  });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
   const {
     bulkCommit,
     bulkCount,
@@ -168,6 +168,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: CityCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildMarkdownFilesInput(),
         name,
         description: values.description,
         latitude: parseFloat(values.latitude),
@@ -189,13 +190,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
           ...args,
           variables: mutationVariables,
           onCompleted: (response, errors) => {
-            runAfterStoringTempImagesForEntity(response, {
-              ...values,
-              description: mutationVariables.input.description ?? '',
-            }, {
-              onSuccess: () => args.onCompleted?.(response, errors),
-              onError: () => args.onCompleted?.(response, errors),
-            });
+            args.onCompleted?.(response, errors);
           },
         });
       },
@@ -279,7 +274,11 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
               multiline={true}
               rows={4}
               style={fieldSpacingContainerStyle}
-              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                descriptionMarkdownController = controller;
+              }}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <ConfidenceField
               entityType="City"

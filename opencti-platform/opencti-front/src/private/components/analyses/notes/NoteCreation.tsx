@@ -23,7 +23,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -173,20 +173,21 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
     });
   };
 
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    Partial<NoteCreationMutation$data & NoteCreationUserMutation$data>,
-    NoteAddInput
-  >({
-    getCreatedId: (response) => response?.noteAdd?.id ?? response?.userNoteAdd?.id,
-    getInitialValue: (values) => values.content,
-    patchField: patchNoteContent,
-  });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
 
   const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = async (
     values,
     { setSubmitting, resetForm },
   ) => {
     const input: NoteCreationMutation$variables['input'] = {
+      ...buildMarkdownFilesInput(),
       created: values.created,
       attribute_abstract: values.attribute_abstract,
       content: values.content,
@@ -212,16 +213,13 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
         }
       },
       onCompleted: (response) => {
-        runAfterStoringTempImagesForEntity(response, values, {
-          onSuccess: () => {
+        
             setSubmitting(false);
             resetForm();
             if (onClose) {
               onClose();
             }
-          },
-          onError: () => setSubmitting(false),
-        });
+          
       },
       onError: () => {
         setSubmitting(false);
@@ -284,7 +282,11 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             formikSyncMode="immediate"
             style={{ marginTop: 20 }}
             askAi={true}
-            {...getTempImageFieldProps(values.objectMarking.map((v) => v.value))}
+            autoPersistOnBlur={false}
+              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                descriptionMarkdownController = controller;
+              }}
+              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
           />
           <OpenVocabField
             label={t_i18n('Note types')}

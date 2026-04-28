@@ -22,7 +22,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import { splitMultilines } from '../../../../utils/String';
@@ -129,14 +129,14 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
       });
     });
   };
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    DataComponentCreationMutation['response'],
-    DataComponentAddInput
-  >({
-    getCreatedId: (response) => response?.dataComponentAdd?.id,
-    getInitialValue: (values) => values.description,
-    patchField: patchDataComponentDescription,
-  });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
   const {
     bulkCommit,
     bulkCount,
@@ -169,6 +169,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     const allNames = splitMultilines(values.name);
     const variables: DataComponentCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildMarkdownFilesInput(),
         name,
         description: values.description,
         createdBy: values.createdBy?.value,
@@ -188,13 +189,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
           ...args,
           variables: mutationVariables,
           onCompleted: (response, errors) => {
-            runAfterStoringTempImagesForEntity(response, {
-              ...values,
-              description: mutationVariables.input.description ?? '',
-            }, {
-              onSuccess: () => args.onCompleted?.(response, errors),
-              onError: () => args.onCompleted?.(response, errors),
-            });
+            args.onCompleted?.(response, errors);
           },
         });
       },
@@ -290,7 +285,11 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
-              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                descriptionMarkdownController = controller;
+              }}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <CreatedByField
               name="createdBy"

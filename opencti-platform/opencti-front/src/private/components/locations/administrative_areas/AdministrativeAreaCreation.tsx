@@ -31,7 +31,7 @@ import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 
 const administrativeAreaMutation = graphql`
   mutation AdministrativeAreaCreationMutation(
@@ -132,14 +132,14 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
       });
     });
   };
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    AdministrativeAreaCreationMutation['response'],
-    AdministrativeAreaAddInput
-  >({
-    getCreatedId: (response) => response?.administrativeAreaAdd?.id,
-    getInitialValue: (values) => values.description,
-    patchField: patchAdministrativeAreaDescription,
-  });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
   const {
     bulkCommit,
     bulkCount,
@@ -168,6 +168,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
     const allNames = splitMultilines(values.name);
     const variables: AdministrativeAreaCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildMarkdownFilesInput(),
         name,
         latitude: parseFloat(values.latitude),
         longitude: parseFloat(values.longitude),
@@ -189,13 +190,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
           ...args,
           variables: mutationVariables,
           onCompleted: (response, errors) => {
-            runAfterStoringTempImagesForEntity(response, {
-              ...values,
-              description: mutationVariables.input.description ?? '',
-            }, {
-              onSuccess: () => args.onCompleted?.(response, errors),
-              onError: () => args.onCompleted?.(response, errors),
-            });
+            args.onCompleted?.(response, errors);
           },
         });
       },
@@ -283,7 +278,11 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               multiline={true}
               rows={4}
               style={fieldSpacingContainerStyle}
-              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                descriptionMarkdownController = controller;
+              }}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <ConfidenceField
               entityType="Administrative-Area"

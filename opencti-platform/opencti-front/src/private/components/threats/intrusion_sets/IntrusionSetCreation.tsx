@@ -23,7 +23,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 import { splitMultilines } from '../../../../utils/String';
 import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextField';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
@@ -132,14 +132,14 @@ export const IntrusionSetCreationForm: FunctionComponent<
       });
     });
   };
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    IntrusionSetCreationMutation['response'],
-    IntrusionSetAddInput
-  >({
-    getCreatedId: (response) => response?.intrusionSetAdd?.id,
-    getInitialValue: (values) => values.description,
-    patchField: patchIntrusionSetDescription,
-  });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
   const {
     bulkCommit,
     bulkCount,
@@ -168,6 +168,7 @@ export const IntrusionSetCreationForm: FunctionComponent<
     const allNames = splitMultilines(values.name);
     const variables: IntrusionSetCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...buildMarkdownFilesInput(),
         name,
         description: values.description,
         confidence: parseInt(String(values.confidence), 10),
@@ -187,13 +188,7 @@ export const IntrusionSetCreationForm: FunctionComponent<
           ...args,
           variables: mutationVariables,
           onCompleted: (response, errors) => {
-            runAfterStoringTempImagesForEntity(response, {
-              ...values,
-              description: mutationVariables.input.description ?? '',
-            }, {
-              onSuccess: () => args.onCompleted?.(response, errors),
-              onError: () => args.onCompleted?.(response, errors),
-            });
+            args.onCompleted?.(response, errors);
           },
         });
       },
@@ -285,7 +280,11 @@ export const IntrusionSetCreationForm: FunctionComponent<
               multiline={true}
               rows="4"
               style={fieldSpacingContainerStyle}
-              {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                descriptionMarkdownController = controller;
+              }}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <CreatedByField
               name="createdBy"

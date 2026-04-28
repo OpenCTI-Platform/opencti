@@ -30,7 +30,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { IncidentCreationMutation, IncidentCreationMutation$data } from './__generated__/IncidentCreationMutation.graphql';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 
 const IncidentMutation = graphql`
   mutation IncidentCreationMutation($input: IncidentAddInput!) {
@@ -115,14 +115,14 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       });
     });
   };
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    IncidentCreationMutation['response'],
-    IncidentAddInput
-  >({
-    getCreatedId: (response) => response?.incidentAdd?.id,
-    getInitialValue: (values) => values.description,
-    patchField: patchIncidentDescription,
-  });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
   const { mandatoryAttributes } = useIsMandatoryAttribute(INCIDENT_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
@@ -144,6 +144,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       ? R.dissoc('severity', values)
       : values;
     const input = {
+      ...buildMarkdownFilesInput(),
       ...cleanedValues,
       confidence: parseInt(String(cleanedValues.confidence), 10),
       createdBy: cleanedValues.createdBy?.value,
@@ -173,22 +174,13 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
         setSubmitting(false);
       },
       onCompleted: (response) => {
-        runAfterStoringTempImagesForEntity(response, values, {
-          onSuccess: () => {
+
             setSubmitting(false);
             resetForm();
             if (onCompleted) {
               onCompleted();
             }
-          },
-          onError: () => {
-            setSubmitting(false);
-            resetForm();
-            if (onCompleted) {
-              onCompleted();
-            }
-          },
-        });
+          
       },
     });
   };
@@ -258,7 +250,11 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             multiline={true}
             rows="4"
             style={fieldSpacingContainerStyle}
-            {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
+            autoPersistOnBlur={false}
+              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                descriptionMarkdownController = controller;
+              }}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
           />
           <Field
             component={TextField}

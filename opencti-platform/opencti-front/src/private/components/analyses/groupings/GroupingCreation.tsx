@@ -24,7 +24,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { insertNode } from '../../../../utils/store';
@@ -147,20 +147,21 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     });
   };
 
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    GroupingCreationMutation$data,
-    GroupingAddInput
-  >({
-    getCreatedId: (response) => response?.groupingAdd?.id,
-    getInitialValue: (values) => values.description,
-    patchField: patchGroupingDescription,
-  });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
 
   const onSubmit: FormikConfig<GroupingAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: GroupingCreationMutation$variables['input'] = {
+      ...buildMarkdownFilesInput(),
       name: values.name,
       description: values.description,
       content: values.content,
@@ -193,8 +194,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
         setSubmitting(false);
       },
       onCompleted: (response) => {
-        runAfterStoringTempImagesForEntity(response, values, {
-          onSuccess: () => {
+        
             setSubmitting(false);
             resetForm();
             if (onClose) {
@@ -205,9 +205,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
                 `/dashboard/analyses/groupings/${response.groupingAdd?.id}/content/mapping`,
               );
             }
-          },
-          onError: () => setSubmitting(false),
-        });
+          
       },
     });
   };
@@ -271,7 +269,11 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             rows="4"
             style={fieldSpacingContainerStyle}
             askAi={true}
-            {...getTempImageFieldProps(values.objectMarking.map((v) => v.value))}
+            autoPersistOnBlur={false}
+              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                descriptionMarkdownController = controller;
+              }}
+              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
           />
           <Field
             component={RichTextField}

@@ -1,6 +1,9 @@
 import React, { CSSProperties, ReactElement, useCallback, useEffect, useRef } from 'react';
 import { useField } from 'formik';
 import MarkdownFieldBase, { MarkdownTab } from './MarkdownFieldBase';
+import type { MarkdownImagesController } from './markdownImagesController';
+
+export type { MarkdownImagesController } from './markdownImagesController';
 
 type MarkdownFieldProps = {
   form: {
@@ -24,9 +27,8 @@ type MarkdownFieldProps = {
   askAi?: boolean;
   uploadEntityId?: string;
   uploadFileMarkings?: string[];
-  finalizeOnBlur?: boolean;
-  registerFinalize?: (finalize: (uploadEntityIdOverride?: string) => Promise<string>) => void;
-  registerGetTempImageFiles?: (getFiles: () => File[]) => void;
+  autoPersistOnBlur?: boolean;
+  registerMarkdownImagesController?: (controller: MarkdownImagesController) => void;
   formikSyncMode?: 'immediate' | 'deferred';
   formikSyncDelayMs?: number;
 };
@@ -48,9 +50,8 @@ const MarkdownField = (props: MarkdownFieldProps): ReactElement => {
     askAi,
     uploadEntityId,
     uploadFileMarkings,
-    finalizeOnBlur,
-    registerFinalize,
-    registerGetTempImageFiles,
+    autoPersistOnBlur,
+    registerMarkdownImagesController,
     formikSyncMode,
     formikSyncDelayMs,
   } = props;
@@ -119,9 +120,8 @@ const MarkdownField = (props: MarkdownFieldProps): ReactElement => {
       askAi={askAi}
       uploadEntityId={uploadEntityId}
       uploadFileMarkings={uploadFileMarkings}
-      finalizeOnBlur={finalizeOnBlur}
-      registerFinalize={registerFinalize}
-      registerGetTempImageFiles={registerGetTempImageFiles}
+      autoPersistOnBlur={autoPersistOnBlur}
+      registerMarkdownImagesController={registerMarkdownImagesController}
     />
   );
 };

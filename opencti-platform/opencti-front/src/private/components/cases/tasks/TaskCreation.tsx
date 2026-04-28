@@ -16,7 +16,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -114,14 +114,14 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
       });
     });
   };
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    TaskCreationMutation['response'],
-    FormikTaskAddInput
-  >({
-    getCreatedId: (response) => response?.taskAdd?.id,
-    getInitialValue: (values) => values.description ?? '',
-    patchField: patchTaskDescription,
-  });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
 
   const initialValues: FormikTaskAddInput = {
     name: inputValue ?? '',
@@ -136,6 +136,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
     { setSubmitting, resetForm, setErrors },
   ) => {
     const input: TaskCreationMutation$variables['input'] = {
+      ...buildMarkdownFilesInput(),
       name: values.name,
       description: values.description,
       due_date: values.due_date,
@@ -157,16 +158,10 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
         setSubmitting(false);
       },
       onCompleted: (response) => {
-        runAfterStoringTempImagesForEntity(response, values, {
-          onSuccess: () => {
+
             setSubmitting(false);
             resetForm();
-          },
-          onError: () => {
-            setSubmitting(false);
-            resetForm();
-          },
-        });
+          
       },
     });
   };
@@ -223,7 +218,11 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
             multiline
             rows="4"
             style={fieldSpacingContainerStyle}
-            {...getTempImageFieldProps((values.objectMarking ?? []).map(({ value }) => value))}
+            autoPersistOnBlur={false}
+              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                descriptionMarkdownController = controller;
+              }}
+              uploadFileMarkings={(values.objectMarking ?? []).map(({ value }) => value)}
           />
           <FormButtonContainer>
             <Button

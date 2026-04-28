@@ -24,7 +24,7 @@ import { parse } from '../../../../utils/Time';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -174,17 +174,18 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
       });
     });
   };
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    IndicatorCreationMutation['response'],
-    IndicatorAddInput
-  >({
-    getCreatedId: (response) => response?.indicatorAdd?.id,
-    getInitialValue: (values) => values.description,
-    patchField: patchIndicatorDescription,
-  });
+  let descriptionMarkdownController: MarkdownImagesController | null = null;
+
+  const buildMarkdownFilesInput = () => {
+    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
+    return markdownTempFiles.length > 0
+      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+      : {};
+  };
 
   const onSubmit: FormikConfig<IndicatorAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const input: IndicatorCreationMutation$variables['input'] = {
+      ...buildMarkdownFilesInput(),
       name: values.name,
       description: values.description,
       indicator_types: values.indicator_types,
@@ -220,22 +221,13 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
         setSubmitting(false);
       },
       onCompleted: (response) => {
-        runAfterStoringTempImagesForEntity(response, values, {
-          onSuccess: () => {
+
             setSubmitting(false);
             resetForm();
             if (onCompleted) {
               onCompleted();
             }
-          },
-          onError: () => {
-            setSubmitting(false);
-            resetForm();
-            if (onCompleted) {
-              onCompleted();
-            }
-          },
-        });
+          
       },
     });
   };
@@ -384,7 +376,11 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             multiline={true}
             rows="4"
             style={fieldSpacingContainerStyle}
-            {...getTempImageFieldProps(values.objectMarking.map(({ value }) => value))}
+            autoPersistOnBlur={false}
+              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
+                descriptionMarkdownController = controller;
+              }}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
           />
           <KillChainPhasesField
             name="killChainPhases"
