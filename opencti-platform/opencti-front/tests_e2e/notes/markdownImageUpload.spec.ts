@@ -62,18 +62,14 @@ test.describe('Markdown editor – image upload', { tag: ['@ce'] }, () => {
     await expect(contentImage.getTextarea()).toContainText('opencti-image://temp/');
 
     await noteForm.submit();
+    await expect(page.getByRole('heading', { name: 'Create a note' })).toBeHidden();
 
-    // Submit form (triggers finalize: upload to storage + token rewrite)
-    // await noteForm.submit();
-
-    await page.getByRole('button', { name: 'Create' }).click();
-
-    // // Open the created note
+    // Open the created note
 
     await notesPage.getItemFromList('E2E image upload test note').click();
     await expect(noteDetails.getPage()).toBeVisible();
 
-    // // In note detail view, MarkdownDisplay should render image from backend storage URL
+    // In note detail view, MarkdownDisplay should render image from backend storage URL
     const noteContent = page.getByTestId('note-details-page');
     const persistedImg = noteContent.locator('img');
     await expect(persistedImg).toBeVisible();
