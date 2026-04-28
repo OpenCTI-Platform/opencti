@@ -35,6 +35,7 @@ import DashboardSettings from '../DashboardSettings';
 import TokenCreationDrawer from './api_tokens/TokenCreationDrawer';
 import TokenList from './api_tokens/TokenList';
 import ProfileLocalStorage from './ProfileLocalStorage';
+import ProfileOverviewNewsFeed from './ProfileOverviewNewsFeed';
 
 const styles = () => ({
   container: {
@@ -107,6 +108,7 @@ const userValidation = (t) => Yup.object().shape({
   submenu_show_icons: Yup.boolean(),
   submenu_auto_collapse: Yup.boolean(),
   monochrome_labels: Yup.boolean(),
+  unsubscribed_news_feed_types: Yup.array(Yup.string()),
 });
 
 const passwordValidation = (t) => Yup.object().shape({
@@ -474,38 +476,14 @@ const ProfileOverviewComponent = (props) => {
           <DashboardSettings />
         </Card>
       ) : null}
+      {settings.xtm_hub_available_news_feed_types?.length > 0 && (
+        <ProfileOverviewNewsFeed
+          availableNewsFeedTypes={settings.xtm_hub_available_news_feed_types}
+          unsubscribedNewsFeedTypes={me.unsubscribed_news_feed_types ?? []}
+          onSubmitField={handleSubmitField}
+        />
+      )}
       <Card title={t('Authentication')}>
-        {(settings.available_news_feed_types?.length > 0) && (
-          <Card title={t('XTM Hub Newsfeeds')}>
-            <ListItem style={{ padding: '20px 0 0 0' }}>
-              <ListItemText primary={t('Receive all XTM Hub newsfeeds')} />
-              <Switch
-                checked={!me.unsubscribed_news_feed_types?.includes('*')}
-                onChange={(_, value) => handleSubmitField(
-                  'unsubscribed_news_feed_types',
-                  value ? [] : ['*'],
-                )}
-              />
-            </ListItem>
-            {settings.available_news_feed_types.map((feedType) => (
-              <ListItem key={feedType} style={{ padding: '10px 0 0 0' }}>
-                <ListItemText primary={t(feedType)} />
-                <Switch
-                  disabled={me.unsubscribed_news_feed_types?.includes('*')}
-                  checked={!me.unsubscribed_news_feed_types?.includes(feedType)}
-                  onChange={(_, value) => {
-                    const current = (me.unsubscribed_news_feed_types ?? [])
-                      .filter((type) => type !== '*');
-                    const next = value
-                      ? current.filter((type) => type !== feedType)
-                      : [...current, feedType];
-                    handleSubmitField('unsubscribed_news_feed_types', next);
-                  }}
-                />
-              </ListItem>
-            ))}
-          </Card>
-        )}
         <div style={{ float: 'right', marginTop: -5 }}>
           {useOtp && (
             <Button
@@ -673,6 +651,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
   settings: graphql`
     fragment ProfileOverview_settings on Settings {
       otp_mandatory
+      xtm_hub_available_news_feed_types
     }
   `,
 });

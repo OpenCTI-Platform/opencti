@@ -29761,7 +29761,6 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   __typename?: 'Settings';
   activity_listeners?: Maybe<Array<Member>>;
   analytics_google_analytics_v4?: Maybe<Scalars['String']['output']>;
-  available_news_feed_types?: Maybe<Array<Scalars['String']['output']>>;
   cert_auth?: Maybe<CertAuthConfig>;
   created_at: Scalars['DateTime']['output'];
   editContext?: Maybe<Array<EditUserContext>>;
@@ -29831,6 +29830,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
   view_all_users?: Maybe<Scalars['Boolean']['output']>;
+  xtm_hub_available_news_feed_types?: Maybe<Array<Scalars['String']['output']>>;
   xtm_hub_backend_is_reachable?: Maybe<Scalars['Boolean']['output']>;
   xtm_hub_last_connectivity_check?: Maybe<Scalars['DateTime']['output']>;
   xtm_hub_registration_date?: Maybe<Scalars['DateTime']['output']>;
@@ -49476,7 +49476,6 @@ export type SessionDetailResolvers<ContextType = any, ParentType extends Resolve
 export type SettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Settings'] = ResolversParentTypes['Settings']> = ResolversObject<{
   activity_listeners?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   analytics_google_analytics_v4?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  available_news_feed_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   cert_auth?: Resolver<Maybe<ResolversTypes['CertAuthConfig']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -49546,6 +49545,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   view_all_users?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  xtm_hub_available_news_feed_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   xtm_hub_backend_is_reachable?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   xtm_hub_last_connectivity_check?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   xtm_hub_registration_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
