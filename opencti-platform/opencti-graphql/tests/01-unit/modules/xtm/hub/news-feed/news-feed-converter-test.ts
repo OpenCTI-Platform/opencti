@@ -39,7 +39,7 @@ const buildMockInstance = (overrides: Partial<StoreEntityNewsFeedItem> = {}): St
   entity_type: 'NewsFeedItem',
   parent_types: [],
   title: 'Test News Item',
-  type: NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD,
+  news_feed_type: NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD,
   tags: ['tag1', 'tag2'],
   metadata: [{ key: 'source', value: 'rss' }],
   creation_date: new Date('2024-01-15T10:00:00Z'),
@@ -74,7 +74,7 @@ describe('convertNewsFeedItemToStix', () => {
     const instance = buildMockInstance();
     const result = convertNewsFeedItemToStix(instance);
     expect(result.title).toBe('Test News Item');
-    expect(result.type).toBe(NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD);
+    expect(result.news_feed_type).toBe(NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD);
     expect(result.tags).toEqual(['tag1', 'tag2']);
     expect(result.metadata).toEqual([{ key: 'source', value: 'rss' }]);
     expect(result.creation_date).toEqual(new Date('2024-01-15T10:00:00Z'));

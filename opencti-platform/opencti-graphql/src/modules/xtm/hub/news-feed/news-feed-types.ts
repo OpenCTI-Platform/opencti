@@ -15,7 +15,7 @@ export interface NewsFeedItemMetadata {
 
 export interface BasicStoreEntityNewsFeedItem extends BasicStoreEntity {
   title: string;
-  type: NewsFeedItemType;
+  news_feed_type: NewsFeedItemType;
   tags: string[];
   metadata: NewsFeedItemMetadata[];
   creation_date: Date;
@@ -25,7 +25,7 @@ export interface BasicStoreEntityNewsFeedItem extends BasicStoreEntity {
 
 export interface StoreEntityNewsFeedItem extends StoreEntity {
   title: string;
-  type: NewsFeedItemType;
+  news_feed_type: NewsFeedItemType;
   tags: string[];
   metadata: NewsFeedItemMetadata[];
   creation_date: Date;
@@ -35,7 +35,7 @@ export interface StoreEntityNewsFeedItem extends StoreEntity {
 
 export interface StixNewsFeedItem extends StixObject {
   title: string;
-  type: NewsFeedItemType;
+  news_feed_type: NewsFeedItemType;
   tags: string[];
   metadata: NewsFeedItemMetadata[];
   creation_date: Date;
@@ -48,7 +48,7 @@ export interface StixNewsFeedItem extends StixObject {
 
 export interface NewsFeedAddInput {
   title: string;
-  type: NewsFeedItemType;
+  news_feed_type: NewsFeedItemType;
   tags: string[];
   metadata: NewsFeedItemMetadata[];
   creation_date: Date;

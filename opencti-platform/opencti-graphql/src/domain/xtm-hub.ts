@@ -225,7 +225,7 @@ export const loadAndSaveLatestNewsFeed = async (context: AuthContext, user: Auth
   const feedItemUserPairs = newsFeedItems.flatMap((feedItem) => nonServiceAccountUsers.map((platformUser) => ({ feedItem, platformUser })));
   await promiseMap(feedItemUserPairs, async ({ feedItem, platformUser }) => {
     try {
-      await addNewsFeed(context, platformUser, { ...feedItem, user_id: platformUser.id });
+      await addNewsFeed(context, platformUser, { ...feedItem, news_feed_type: feedItem.type, user_id: platformUser.id });
     } catch (e) {
       logApp.error(e, { message: '[XTMH] Error adding news feed item', userId: platformUser.id });
     }

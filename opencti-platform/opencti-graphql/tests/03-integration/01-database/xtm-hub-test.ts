@@ -464,7 +464,7 @@ describe('XTM hub', () => {
           expect(addNewsFeedSpy).toBeCalledWith(
             testContext,
             user,
-            { ...feedItem, user_id: (user as any).id },
+            { ...feedItem, news_feed_type: feedItem.type, user_id: (user as any).id },
           );
         }
       }

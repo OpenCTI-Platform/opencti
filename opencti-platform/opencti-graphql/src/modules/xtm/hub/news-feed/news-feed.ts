@@ -18,7 +18,7 @@ const NEWS_FEED_DEFINITION: ModuleDefinition<StoreEntityNewsFeedItem, StixNewsFe
   },
   attributes: [
     { name: 'title', label: 'Title', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    { name: 'type', label: 'Type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'news_feed_type', label: 'News feed type', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'tags', label: 'Tags', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     { name: 'metadata', label: 'Metadata', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'creation_date', label: 'Creation date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },

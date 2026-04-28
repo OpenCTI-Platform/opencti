@@ -8,7 +8,7 @@ export const convertNewsFeedItemToStix = (instance: StoreEntityNewsFeedItem): St
   return {
     ...stixObject,
     title: instance.title,
-    type: instance.type,
+    news_feed_type: instance.news_feed_type,
     tags: instance.tags,
     metadata: instance.metadata,
     creation_date: instance.creation_date,

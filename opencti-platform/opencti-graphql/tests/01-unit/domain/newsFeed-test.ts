@@ -14,7 +14,7 @@ const mockUser = { id: 'user-1', name: 'Test User' } as any;
 
 const baseInput: NewsFeedAddInput = {
   title: 'Test news feed item',
-  type: NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD,
+  news_feed_type: NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD,
   tags: ['tag1', 'tag2'],
   metadata: [{ key: 'key1', value: 'value1' }],
   creation_date: new Date('2026-01-01T00:00:00.000Z'),
