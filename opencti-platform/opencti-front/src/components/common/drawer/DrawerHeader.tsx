@@ -26,7 +26,7 @@ const DrawerHeader = ({ title, onClose, endContent }: DrawerHeaderProps) => {
     >
       <Typography
         variant="h5"
-        style={{ textWrap: 'nowrap' }}
+        style={{ textWrap: 'wrap', overflowWrap: 'anywhere' }}
       >
         {title}
       </Typography>
