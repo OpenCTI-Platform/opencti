@@ -14,7 +14,6 @@ coverage:
         informational: false
         paths: 
           - opencti-platform/opencti-graphql/src/modules
-          - opencti-platform/opencti-graphql/src/manager
           - opencti-platform/opencti-graphql/src/domain
           - opencti-platform/opencti-graphql/src/resolvers
           - opencti-platform/opencti-graphql/src/database
