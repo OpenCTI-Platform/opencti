@@ -118,7 +118,7 @@ export interface WorkflowSerializedState {
 }
 
 export interface WorkflowSerializedTransition {
-  from: string;
+  from: string | string[];
   to: string;
   event: string;
   actions?: WorkflowActionConfig[];
