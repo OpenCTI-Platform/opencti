@@ -3,15 +3,20 @@ import { extractMarkdownPreviewImages, isAllowedUploadedImageUrl } from './markd
 
 describe('markdown preview image utils', () => {
   describe('isAllowedUploadedImageUrl', () => {
-    it('accepts platform storage URLs', () => {
+    it('accepts platform relative storage URLs', () => {
       expect(isAllowedUploadedImageUrl('/storage/view/embedded/Report/r-1/image.png')).toBe(true);
       expect(isAllowedUploadedImageUrl('/storage/get/embedded/Report/r-1/image.png')).toBe(true);
+      expect(isAllowedUploadedImageUrl('/public/storage/view/image.png')).toBe(false);
     });
 
-    it('accepts temp image scheme and normal web URLs, rejects dangerous URLs', () => {
+    it('accepts temp image scheme and http/https URLs, rejects dangerous URLs', () => {
       expect(isAllowedUploadedImageUrl('opencti-image://temp/abc123')).toBe(true);
       expect(isAllowedUploadedImageUrl('https://example.org/image.png')).toBe(true);
+      expect(isAllowedUploadedImageUrl('http://example.org/image.png')).toBe(true);
       expect(isAllowedUploadedImageUrl('javascript:alert(1)')).toBe(false);
+      expect(isAllowedUploadedImageUrl('javascript:alert(1)//storage/view/embedded/Report/r-1/image.png')).toBe(false);
+      expect(isAllowedUploadedImageUrl('data:image/png;base64,abcd')).toBe(false);
+      expect(isAllowedUploadedImageUrl('storage/view/embedded/Report/r-1/image.png')).toBe(false);
     });
   });
 

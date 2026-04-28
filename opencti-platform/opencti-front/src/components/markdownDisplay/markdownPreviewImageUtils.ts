@@ -9,11 +9,36 @@ export type MarkdownPreviewImage = {
 
 const STORAGE_IMAGE_PATHS = ['/storage/view', '/storage/get'];
 
+const hasUrlScheme = (url: string): boolean => /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(url);
+
+const isAllowedRelativeStoragePath = (url: string): boolean => {
+  return STORAGE_IMAGE_PATHS.some((path) => url.startsWith(path));
+};
+
+const isAllowedHttpUrl = (url: string): boolean => {
+  if (defaultUrlTransform(url) === '') {
+    return false;
+  }
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 export const isAllowedUploadedImageUrl = (url: string): boolean => {
   if (!url) return false;
-  if (url.startsWith(TEMP_IMAGE_SCHEME)) return true;
-  if (STORAGE_IMAGE_PATHS.some((path) => url.includes(path))) return true;
-  return defaultUrlTransform(url) !== '';
+  const normalizedUrl = url.trim();
+  if (!normalizedUrl) return false;
+  if (normalizedUrl.startsWith(TEMP_IMAGE_SCHEME)) return true;
+  if (normalizedUrl.startsWith('/')) {
+    return isAllowedRelativeStoragePath(normalizedUrl);
+  }
+  if (hasUrlScheme(normalizedUrl)) {
+    return isAllowedHttpUrl(normalizedUrl);
+  }
+  return false;
 };
 
 export const extractMarkdownPreviewImages = (
