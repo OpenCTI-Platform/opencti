@@ -99,15 +99,25 @@ const transformToWorkflowDefinition = (
 
       // Create a transition entry for every possible path through this node
       // This handles: Multiple Sources -> 1 Transition -> Multiple Targets
-      return incomingEdges.flatMap((inEdge) =>
-        outgoingEdges.map((outEdge) => ({
-          from: inEdge.source,
-          to: outEdge.target,
-          event,
-          conditions,
-          actions: formatActions(actions),
-        })),
-      );
+      if (outgoingEdges.length > 0) {
+        return incomingEdges.flatMap((inEdge) =>
+          outgoingEdges.map((outEdge) => ({
+            from: inEdge.source,
+            to: outEdge.target as string | null,
+            event,
+            conditions,
+            actions: formatActions(actions),
+          })),
+        );
+      }
+      // Multiple Sources -> 1 Transition -> (no target)
+      return incomingEdges.map((inEdge) => ({
+        from: inEdge.source,
+        to: null as string | null,
+        event,
+        conditions,
+        actions: formatActions(actions),
+      }));
     }
     return [];
   });
