@@ -9752,7 +9752,6 @@ type Query {
   Auth log history by provider id: internal_id for DB providers, or static id for singletons (Headers, Cert).
   """
   authLogHistoryById(id: String!): [AuthLogEntry!]!
-  customViewDisplay(id: ID!): CustomView
   customViews(entityType: String, first: Int, after: ID, orderBy: CustomViewsOrdering, search: String, orderMode: OrderingMode): CustomViewsConnection!
   customViewsSettings(entityType: String!): CustomViewsSettings!
   customView(id: ID!): CustomView

@@ -12,9 +12,6 @@ import {
 
 const customViewResolver: Resolvers = {
   Query: {
-    customViewDisplay: (_parent, { id }, context) => {
-      return findCustomViewById(context, context.user, id);
-    },
     customViewsSettings: (_parent, { entityType }) => {
       return getCustomViewsSettings(entityType);
     },

@@ -47,7 +47,6 @@ input CustomViewImportWidgetInput {
 }
 
 type Query {
-    customViewDisplay(id: ID!): CustomView @auth @ff(flags: ["CUSTOM_VIEW"])
     customViews(
         entityType: String
         first: Int
@@ -59,7 +58,7 @@ type Query {
     customViewsSettings(
         entityType: String!
     ): CustomViewsSettings! @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
-    customView(id: ID!): CustomView @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_VIEW"])
+    customView(id: ID!): CustomView @auth @ff(flags: ["CUSTOM_VIEW"])
 }
 
 type Mutation {

@@ -7,9 +7,9 @@ import { CUSTOM_VIEW_ENTITY_1, CUSTOM_VIEW_ENTITY_2, CUSTOM_VIEW_ENTITY_INVALID,
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../../src/modules/case/feedback/feedback-types';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../../src/schema/stixDomainObject';
 
-const READ_CUSTOM_VIEW_FOR_DISPLAY_QUERY = gql`
-  query CustomViewDisplayTest($id: ID!) {
-    customViewDisplay(id: $id) {
+const READ_CUSTOM_VIEW_QUERY = gql`
+  query CustomViewTest($id: ID!) {
+    customView(id: $id) {
       manifest
     }
   }
@@ -84,15 +84,15 @@ describe('CustomView resolvers', () => {
     );
   });
   describe('display use cases', () => {
-    describe('customViewDisplay', () => {
+    describe('customView', () => {
       it('should retrieve serialized dashboard manifest', async () => {
         const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
-          query: READ_CUSTOM_VIEW_FOR_DISPLAY_QUERY,
+          query: READ_CUSTOM_VIEW_QUERY,
           variables: {
             id: customViewId1,
           },
         });
-        expect(result.data.customViewDisplay.manifest).toBe(CUSTOM_VIEW_ENTITY_1.manifest);
+        expect(result.data.customView.manifest).toBe(CUSTOM_VIEW_ENTITY_1.manifest);
       });
     });
 
