@@ -131,9 +131,14 @@ const TimeoutLock: React.FunctionComponent = () => {
    * Going to /logout disconnects the user from the platform (see backend middleware).
    * Referrer is kept so user will be redirected there on next login.
    */
-  const handleLogout = () => {
-    // better than using navigate because it makes a HTTP request to /logout on the backend
+
+  const logout = () => {
     window.location.assign(`${APP_BASE_PATH}/logout`);
+  };
+
+  const handleLogout = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    logout();
   };
 
   /**
@@ -219,7 +224,7 @@ const TimeoutLock: React.FunctionComponent = () => {
       secondsBetween >= state.sessionLimit
       || (state.idleCount !== undefined && state.idleCount <= 0 && dialogOpen)
     ) {
-      handleLogout();
+      logout();
     }
     // Lock the screen for the remaining session time
     if (state.idleLimit > 0 && secondsBetween >= state.idleLimit && secondsBetween < state.sessionLimit) {
@@ -255,7 +260,7 @@ const TimeoutLock: React.FunctionComponent = () => {
       </DialogContentText>
 
       <DialogActions>
-        <Button variant="secondary" onClick={() => handleLogout()}>
+        <Button variant="secondary" onClick={handleLogout}>
           {t_i18n('Logout')}
         </Button>
         <Button onClick={() => unlockScreen()}>
