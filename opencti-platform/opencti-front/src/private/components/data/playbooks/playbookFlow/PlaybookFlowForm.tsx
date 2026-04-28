@@ -43,6 +43,7 @@ import PlaybookFlowFieldTargets from './playbookFlowFields/PlaybookFlowFieldTarg
 import PlaybookFlowFieldTriggerTime from './playbookFlowFields/PlaybookFlowFieldTriggerTime';
 import PlaybookFlowFieldActions from './playbookFlowFields/playbookFlowFieldsActions/PlaybookFlowFieldActions';
 import { PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
+import { getShortComponentDescription } from '../utils/playbookComponentDescriptions';
 
 export type PlaybookFlowFormData
   // Component: update knowledge
@@ -91,6 +92,7 @@ const PlaybookFlowForm = ({
   const configurationSchema = selectedComponent?.configuration_schema
     ? JSON.parse(selectedComponent.configuration_schema) as PlaybookComponentConfigSchema
     : null;
+  const descriptionPlaceholder = getShortComponentDescription(selectedComponent?.name, selectedComponent?.description);
 
   // Submit function that formats correctly the data for the backend.
   const onSubmit: FormikConfig<PlaybookFlowFormData>['onSubmit'] = (values, { resetForm }) => {
@@ -214,6 +216,8 @@ const PlaybookFlowForm = ({
                 variant="standard"
                 name="description"
                 label={t_i18n('Description')}
+                placeholder={descriptionPlaceholder ? t_i18n(descriptionPlaceholder) : ''}
+                InputLabelProps={{ shrink: true }}
                 multiline
                 minRows={2}
                 fullWidth
