@@ -29,11 +29,6 @@ const workflowDefinitionSetMutation = graphql`
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
 const fitViewOptions = {};
-// const defaultEdgeOptions = {
-//   type: 'straight',
-//   markerEnd: { type: MarkerType.Arrow },
-//   style: { strokeWidth: 2, strokeDasharray: '3 3' },
-// };
 
 const emptyElement = {
   id: NEW_STATUS_NAME,

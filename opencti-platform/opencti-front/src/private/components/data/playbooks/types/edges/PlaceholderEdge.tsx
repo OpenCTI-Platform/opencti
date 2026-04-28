@@ -1,5 +1,4 @@
-import React from 'react';
-import { EdgeLabelRenderer, EdgeProps, getBezierPath } from 'reactflow';
+import { EdgeLabelRenderer, EdgeProps, getSmoothStepPath } from 'reactflow';
 import { useFormatter } from 'src/components/i18n';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
@@ -36,7 +35,7 @@ export default function PlaceholderEdge({
   sourceHandleId,
 }: EdgeProps) {
   const theme = useTheme<Theme>();
-  const [edgePath] = getBezierPath({
+  const [edgePath] = getSmoothStepPath({
     sourceX,
     sourceY,
     sourcePosition,

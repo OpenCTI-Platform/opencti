@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { EdgeProps, getBezierPath } from 'reactflow';
+import { useState } from 'react';
+import { EdgeProps, getSmoothStepPath } from 'reactflow';
 import { useTheme } from '@mui/styles';
 import type { Theme } from '../../../../../../components/Theme';
 
@@ -15,17 +15,19 @@ const TransitionEdge = ({
 }: EdgeProps) => {
   const theme = useTheme<Theme>();
   const [isHovered, setIsHovered] = useState(false);
-  const [edgePath, edgeCenterX, edgeCenterY] = getBezierPath({
+  const [edgePath, edgeCenterX, edgeCenterY] = getSmoothStepPath({
     sourceX,
     sourceY,
     sourcePosition,
     targetX,
     targetY,
     targetPosition,
+    borderRadius: 10,
+    offset: 10,
   });
 
   return (
-    <g onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+    <g onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} style={{ zIndex: -1 }}>
       <path
         id={id}
         style={{
