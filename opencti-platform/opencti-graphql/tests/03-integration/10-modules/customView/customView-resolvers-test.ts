@@ -38,6 +38,7 @@ const READ_ALL_CUSTOM_VIEWS_QUERY = gql`
         node {
           id
           name
+          path
           description
           created_at
           updated_at
@@ -98,6 +99,28 @@ const IMPORT_WIDGET_CUSTOM_VIEW_QUERY = gql`
   }
 `;
 
+const DUPLICATE_CUSTOM_VIEW_QUERY = gql`
+  mutation DuplicateCustomViewQuery(
+    $input: CustomViewDuplicateInput!
+  ) {
+    customViewDuplicate(input: $input) {
+      id
+      name
+      path
+      description
+      targetEntityType
+      created_at
+      updated_at
+    }
+  }
+`;
+
+const DELETE_CUSTOM_VIEW_QUERY = gql`
+    mutation DeleteCustomViewQuery($id: ID!) {
+        customViewDelete(id: $id)
+    }
+`;
+
 const createUploadFile = (filePath: string, fileName: string) => {
   const readStream = fileToReadStream(filePath, fileName, fileName, 'text/plain');
   const fileUpload = { ...readStream, encoding: 'utf8' };
@@ -156,6 +179,7 @@ describe('CustomView resolvers', () => {
           id: customView1?.id,
           name: CUSTOM_VIEW_ENTITY_1.name,
           description: CUSTOM_VIEW_ENTITY_1.description,
+          path: `${CUSTOM_VIEW_ENTITY_1.slug}-${customView1?.id.replaceAll('-', '')}`,
           created_at: expect.any(Date),
           updated_at: expect.any(Date),
           targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
@@ -164,6 +188,7 @@ describe('CustomView resolvers', () => {
           id: customView2?.id,
           name: CUSTOM_VIEW_ENTITY_2.name,
           description: CUSTOM_VIEW_ENTITY_2.description,
+          path: `${CUSTOM_VIEW_ENTITY_2.slug}-${customView2?.id.replaceAll('-', '')}`,
           created_at: expect.any(Date),
           updated_at: expect.any(Date),
           targetEntityType: CUSTOM_VIEW_ENTITY_2.target_entity_type,
@@ -343,6 +368,56 @@ describe('CustomView resolvers', () => {
           expect(fromB64(result.data?.customViewWidgetConfigurationImport?.manifest)).toBeDefined();
           expect(fromB64(result.data?.customViewWidgetConfigurationImport?.manifest)).not.toBe(manifestBefore);
         });
+
+        it('should duplicate a custom view', async () => {
+          const duplicateName = 'Duplicated custom view 2';
+          const result = await queryAsAdminWithSuccess({
+            query: DUPLICATE_CUSTOM_VIEW_QUERY,
+            variables: {
+              input: {
+                name: duplicateName,
+                description: customView2?.description,
+                manifest: customView2?.manifest,
+                targetEntityType: customView2?.target_entity_type,
+              },
+            },
+          });
+          const expectedResult = {
+            id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
+            name: duplicateName,
+            description: customView2?.description,
+            path: `duplicated-custom-view-2-${result.data.customViewDuplicate.id.replaceAll('-', '')}`,
+            targetEntityType: customView2?.target_entity_type,
+            created_at: expect.any(Date),
+            updated_at: expect.any(Date),
+          };
+          expect(result.data.customViewDuplicate).toMatchObject(expectedResult);
+          expect(result.data.customViewDuplicate.id).not.toBe(customView2?.id);
+
+          // Find new custom view in list query
+          const listResult = await queryAsAdminWithSuccess({
+            query: READ_ALL_CUSTOM_VIEWS_QUERY,
+          });
+          const nodes = listResult.data.customViews.edges.map((e: any) => e.node);
+          expect(nodes).toContainEqual(expectedResult);
+        });
+
+        it('should delete a custom view', async () => {
+          const result = await queryAsAdminWithSuccess({
+            query: DELETE_CUSTOM_VIEW_QUERY,
+            variables: {
+              id: customView2?.id,
+            },
+          });
+          expect(result.data.customViewDelete).toBe(customView2?.id);
+
+          // Not returned in list query
+          const listResult = await queryAsAdminWithSuccess({
+            query: READ_ALL_CUSTOM_VIEWS_QUERY,
+          });
+          const nodeIds = listResult.data.customViews.edges.map((e: any) => e.node).map((node: any) => node.id);
+          expect(nodeIds).not.toContain(customView2?.id);
+        });
       });
 
       describe('when user is a simple participant', () => {
@@ -379,6 +454,29 @@ describe('CustomView resolvers', () => {
                 key: 'description',
                 value: [updatedDescription],
               }],
+            },
+          });
+        });
+
+        it('should fail trying to delete a custom view', async () => {
+          await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+            query: DELETE_CUSTOM_VIEW_QUERY,
+            variables: {
+              id: customView1?.id,
+            },
+          });
+        });
+
+        it('should fail trying to duplicate a custom view', async () => {
+          await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+            query: DUPLICATE_CUSTOM_VIEW_QUERY,
+            variables: {
+              input: {
+                name: 'Never gonna be created',
+                description: customView1?.description,
+                manifest: customView1?.manifest,
+                targetEntityType: customView1?.target_entity_type,
+              },
             },
           });
         });
