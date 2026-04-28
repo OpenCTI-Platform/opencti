@@ -16424,7 +16424,7 @@ type Mutation {
 
   ######## INTERNAL OBJECT ENTITIES
   frontendErrorLog(message: String!, codeStack: String, componentStack: String): Boolean @auth
-  token(input: UserLoginInput): String @public # Use for login
+  token(input: UserLoginInput): String @public @rateLimit(limit: 1, duration: 1) # Use for login
   connectorJWT: String! @auth(for: [SETTINGS_SETACCESSES])
   otpActivation(input: UserOTPActivationInput): MeUser @auth @allowUnprotectedOTP
   otpDeactivation: MeUser @auth

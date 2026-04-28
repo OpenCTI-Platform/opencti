@@ -1,0 +1,18 @@
+{
+  "name": "docs",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "docs",
+  "projectType": "application",
+  "targets": {
+    "install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "docs",
+        "command": "pip install -r requirements.txt"
+      },
+      "metadata": {
+        "description": "Install the OpenCTI Documentation dependencies"
+      }
+    }
+  }
+}

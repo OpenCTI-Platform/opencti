@@ -297,6 +297,8 @@ const StixDomainObjectHeader = (props) => {
   } = props;
   const currentAccessRight = useGetCurrentUserAccessRight(stixDomainObject.currentUserAccessRight);
   const enableManageAuthorizedMembers = currentAccessRight.canManage && enableAuthorizedMembers;
+  const isSharingGranted = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
+  const isEnrichPlaybookGranted = useGranted([AUTOMATION]);
 
   // Remove CRUD button in Draft context without the minimal right access "canEdit"
   const draftContext = useDraftContext();
@@ -465,8 +467,8 @@ const StixDomainObjectHeader = (props) => {
   const displayEnrollPlaybookButton = enableEnrollPlaybook && initialNumberOfButtons < 3;
   if (displayEnrollPlaybookButton) initialNumberOfButtons += 1;
   const displaySharingButton = disableSharing !== true && initialNumberOfButtons < 3;
-  const displayPopoverMenu = (disableSharing !== true && !displaySharingButton)
-    || (enableEnrollPlaybook && !displayEnrollPlaybookButton)
+  const displayPopoverMenu = (disableSharing !== true && !displaySharingButton && isSharingGranted)
+    || (enableEnrollPlaybook && !displayEnrollPlaybookButton && isEnrichPlaybookGranted)
     || (enableEnricher && isKnowledgeEnricher)
     || isKnowledgeDeleter;
 

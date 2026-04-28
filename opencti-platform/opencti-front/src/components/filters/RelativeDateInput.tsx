@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import TextField from '@mui/material/TextField';
-import { DateRangeOutlined } from '@mui/icons-material';
-import Button from '@mui/material/Button';
+import { ClearOutlined, DateRangeOutlined } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
 import { useTheme } from '@mui/material/styles';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { Link } from 'react-router-dom';
@@ -82,6 +82,9 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
       handleChangeRangeDateFilter(value.toISOString());
     }
   };
+  const handleClear = () => {
+    handleChangeValue('');
+  };
   return (
     <div style={{ display: 'flex' }}>
       {isDatePickerOpen
@@ -116,20 +119,30 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         slotProps={{
           input: {
             endAdornment: (
-              <Button
-                size="small"
-                sx={{
-                  marginLeft: -1,
-                  marginRight: -3,
-                  color: theme.palette.text.primary,
-                  ':hover': {
-                    backgroundColor: 'transparent',
-                  },
-                }}
-                onClick={() => setIsDatePickerOpen(true)}
-              >
-                <DateRangeOutlined />
-              </Button>
+              <>
+                {dateInput[valueOrder] && (
+                  <IconButton
+                    size="small"
+                    onClick={handleClear}
+                    sx={{ marginRight: -1 }}
+                    aria-label="clear"
+                  >
+                    <ClearOutlined fontSize="small" />
+                  </IconButton>
+                )}
+                <IconButton
+                  size="small"
+                  sx={{
+                    marginLeft: 0.5,
+                    marginRight: -2,
+                    color: theme.palette.text.primary,
+                  }}
+                  onClick={() => setIsDatePickerOpen(true)}
+                  aria-label="open date picker"
+                >
+                  <DateRangeOutlined fontSize="small" />
+                </IconButton>
+              </>
             ),
           },
         }}

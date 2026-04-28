@@ -466,6 +466,9 @@ const ContainerHeader = (props) => {
   const currentAccessRight = useGetCurrentUserAccessRight(container.currentUserAccessRight);
 
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]) && currentAccessRight.canEdit && (!draftContext || currentDraftAccessRight.canEdit);
+  const isSharingGranted = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
+  const isAuthorizedMembersGranted = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
+  const isEnrichPlaybookGranted = useGranted([AUTOMATION]);
 
   const handleCloseEnrollPlaybook = () => {
     setOpenEnrollPlaybook(false);
@@ -553,9 +556,9 @@ const ContainerHeader = (props) => {
   if (displaySharingButton) initialNumberOfButtons += 1;
   const displayAuthorizedMembersButton = displayAuthorizedMembers && initialNumberOfButtons < 3;
 
-  const displayPopoverMenu = (displaySharing && !displaySharingButton)
-    || (displayAuthorizedMembers && !displayAuthorizedMembersButton)
-    || (displayEnrollPlaybook && !displayEnrollPlaybookButton) || (!knowledge && canDelete);
+  const displayPopoverMenu = (displaySharing && !displaySharingButton && isSharingGranted)
+    || (displayAuthorizedMembers && !displayAuthorizedMembersButton && isAuthorizedMembersGranted)
+    || (displayEnrollPlaybook && !displayEnrollPlaybookButton && isEnrichPlaybookGranted) || (!knowledge && canDelete);
 
   const title = container.name
     || container.attribute_abstract

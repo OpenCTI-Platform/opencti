@@ -771,6 +771,7 @@ export const addUser = async (context, user, newUser) => {
     R.dissoc('groups'),
     R.dissoc('prevent_default_groups'),
     R.dissoc('email_template_id'),
+    R.dissoc('api_token'), // [SECURITY] api_token is deprecated - never persist it
   )(newUser);
 
   userToCreate = {
@@ -1528,7 +1529,9 @@ export const sessionLogin = async (context, input) => {
     }
   }
   if (loggedUser) {
-    return loggedUser.api_token;
+    // [SECURITY] api_token plaintext is no longer returned from the login mutation.
+    // The session has been created above; the token value must not be exposed via this endpoint.
+    return null;
   } else {
     deferredErrors.forEach((d) => d());
   }

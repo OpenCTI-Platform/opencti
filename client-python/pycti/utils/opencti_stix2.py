@@ -1,6 +1,7 @@
 import base64
 import datetime
 import json
+import mimetypes
 import os
 import random
 import re
@@ -8,6 +9,7 @@ import time
 import traceback
 import uuid
 from typing import Any, Dict, List, Optional, Tuple, Union
+from urllib.parse import quote, unquote, urljoin, urlparse
 
 import datefinder
 import dateutil.parser
@@ -24,6 +26,9 @@ from pycti.utils.constants import (
     MultipleRefRelationship,
     StixCyberObservableTypes,
     ThreatActorTypes,
+)
+from pycti.utils.opencti_stix2_markdown_embedded_file_utils import (
+    rewrite_markdown_images,
 )
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from pycti.utils.opencti_stix2_update import OpenCTIStix2Update
@@ -61,6 +66,11 @@ STIX_EXT_OCTI_SCO: str = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd56
 STIX_EXT_MITRE: str = "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
 PROCESSING_COUNT: int = 4
 MAX_PROCESSING_COUNT: int = 100
+MARKDOWN_EXPORT_FIELDS: Tuple[str, ...] = (
+    "description",
+    "x_opencti_description",
+    "content",
+)
 
 meter = metrics.get_meter(__name__)
 bundles_timeout_error_counter = meter.create_counter(
@@ -165,6 +175,91 @@ class OpenCTIStix2:
             return re.sub(r"<code>(.*?)</code>", r"`\1`", text, flags=re.DOTALL)
         else:
             return None
+
+    @staticmethod
+    def _extract_embedded_storage_path(uri: str) -> Optional[str]:
+        if not isinstance(uri, str):
+            return None
+        normalized_uri = unquote(uri)
+        parsed_uri = urlparse(normalized_uri)
+        normalized_path = parsed_uri.path
+        storage_prefixes = ["/storage/get/embedded/", "/storage/view/embedded/"]
+        for prefix in storage_prefixes:
+            if normalized_path.startswith(prefix):
+                storage_root = prefix.split("embedded/", 1)[0]
+                storage_path = normalized_path[len(storage_root) :]
+                return storage_path if storage_path.startswith("embedded/") else None
+
+        return None
+
+    def _rewrite_markdown_embedded_storage_images(self, markdown: str) -> str:
+        if not isinstance(markdown, str):
+            return markdown
+
+        normalized_markdown = unquote(markdown)
+        if (
+            "/storage/get/embedded/" not in normalized_markdown
+            and "/storage/view/embedded/" not in normalized_markdown
+        ):
+            return markdown
+
+        embedded_data_uri_by_path: Dict[str, str] = {}
+
+        def _replace_image(alt_text: str, url: str, full_match: str) -> str:
+            embedded_storage_path = self._extract_embedded_storage_path(url)
+            if embedded_storage_path is None:
+                return full_match
+
+            guessed_mime_type = mimetypes.guess_type(embedded_storage_path)[0]
+
+            if embedded_storage_path not in embedded_data_uri_by_path:
+                storage_url = urljoin(
+                    self.opencti.api_url.replace("graphql", ""),
+                    f"storage/get/{embedded_storage_path}",
+                )
+                encoded_data = self.opencti.fetch_opencti_file(
+                    storage_url,
+                    binary=True,
+                    serialize=True,
+                )
+                if not encoded_data:
+                    # Some HTTP stacks reject raw spaces/special chars in path; retry with encoded path.
+                    encoded_storage_path = quote(embedded_storage_path, safe="/")
+                    encoded_storage_url = urljoin(
+                        self.opencti.api_url.replace("graphql", ""),
+                        f"storage/get/{encoded_storage_path}",
+                    )
+                    if encoded_storage_url != storage_url:
+                        encoded_data = self.opencti.fetch_opencti_file(
+                            encoded_storage_url,
+                            binary=True,
+                            serialize=True,
+                        )
+                if not encoded_data:
+                    return full_match
+                mime_type = (
+                    guessed_mime_type
+                    or mimetypes.guess_type(embedded_storage_path)[0]
+                    or "application/octet-stream"
+                )
+                if not mime_type.startswith("image/"):
+                    return full_match
+                embedded_data_uri_by_path[embedded_storage_path] = (
+                    f"data:{mime_type};base64,{encoded_data}"
+                )
+
+            return f"![{alt_text}]({embedded_data_uri_by_path[embedded_storage_path]})"
+
+        return rewrite_markdown_images(markdown, _replace_image)
+
+    def _rewrite_embedded_image_uris_for_export(self, entity: Dict) -> None:
+        if not isinstance(entity, dict):
+            return
+
+        for key in MARKDOWN_EXPORT_FIELDS:
+            value = entity.get(key)
+            if isinstance(value, str):
+                entity[key] = self._rewrite_markdown_embedded_storage_images(value)
 
     def format_date(self, date: Any = None) -> str:
         """Convert multiple input date formats to OpenCTI style dates.
@@ -1967,6 +2062,8 @@ class OpenCTIStix2:
         """
         result = []
         objects_to_get = []
+
+        self._rewrite_embedded_image_uris_for_export(entity)
 
         # CreatedByRef
         if (
