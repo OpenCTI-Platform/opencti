@@ -20,8 +20,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
       theme.palette.mode === 'dark'
         ? 'rgba(255, 255, 255, 0.04)'
         : 'rgba(0, 0, 0, 0.04)',
-    width: 160,
-    height: 50,
+    width: 220,
+    minHeight: 60,
     padding: '11px 5px 5px 5px',
     textAlign: 'center',
     cursor: 'pointer',
