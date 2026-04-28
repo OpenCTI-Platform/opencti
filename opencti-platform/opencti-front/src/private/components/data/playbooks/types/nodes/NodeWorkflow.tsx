@@ -8,7 +8,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { MoreVert, LoginOutlined } from '@mui/icons-material';
 import ItemIcon from '../../../../../../components/ItemIcon';
 import { useFormatter } from '../../../../../../components/i18n';
-import { truncate } from '../../../../../../utils/String';
+import { getShortComponentDescription } from '../../utils/playbookComponentDescriptions';
 
 type node = {
   id: string;
@@ -75,7 +75,8 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const { getNode } = useReactFlow();
-  const nodeDescription = data.description?.trim() || t_i18n(data.component?.description);
+  const componentDescription = getShortComponentDescription(data.component?.name, data.component?.description);
+  const nodeDescription = data.description?.trim() || t_i18n(componentDescription);
 
   return (
     <div style={{
