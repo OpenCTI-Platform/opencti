@@ -14,6 +14,7 @@ import { sendAdministratorsLostConnectivityEmail } from '../modules/xtm/hub/xtm-
 import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { addNewsFeed } from '../modules/xtm/hub/news-feed/news-feed-domain';
 import { pushAll } from '../utils/arrayUtil';
+import { promiseMap } from '../utils/promiseUtils';
 
 interface AttributeUpdate {
   key: keyof BasicStoreSettings;
@@ -221,15 +222,14 @@ export const loadAndSaveLatestNewsFeed = async (context: AuthContext, user: Auth
 
   const users = await getEntitiesListFromCache(context, user, ENTITY_TYPE_USER) as AuthUser[];
   const nonServiceAccountUsers = users.filter((u) => !u.user_service_account);
-  for (const feedItem of newsFeedItems) {
-    for (const platformUser of nonServiceAccountUsers) {
-      try {
-        await addNewsFeed(context, platformUser, { ...feedItem, user_id: platformUser.id });
-      } catch (e) {
-        logApp.error(e, { message: '[XTMH] Error adding news feed item', userId: platformUser.id });
-      }
+  const feedItemUserPairs = newsFeedItems.flatMap((feedItem) => nonServiceAccountUsers.map((platformUser) => ({ feedItem, platformUser })));
+  await promiseMap(feedItemUserPairs, async ({ feedItem, platformUser }) => {
+    try {
+      await addNewsFeed(context, platformUser, { ...feedItem, user_id: platformUser.id });
+    } catch (e) {
+      logApp.error(e, { message: '[XTMH] Error adding news feed item', userId: platformUser.id });
     }
-  }
+  }, 5);
 };
 
 export const contactUsXtmHub = async (context: AuthContext, user: AuthUser, message: string): Promise<{ success: boolean }> => {
