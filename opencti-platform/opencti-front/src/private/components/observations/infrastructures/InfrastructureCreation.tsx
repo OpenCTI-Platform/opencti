@@ -124,7 +124,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
     undefined,
     { successMessage: `${t_i18n('entity_Infrastructure')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -154,7 +154,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
     const allNames = splitMultilines(values.name);
     const variables: InfrastructureCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         infrastructure_types: values.infrastructure_types,
@@ -166,7 +166,6 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-        file: values.file,
       },
     }));
 

@@ -56,7 +56,7 @@ const FeedbackCreation: FunctionComponent<{
     undefined,
     { successMessage: 'Thank you for your feedback!' },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(
@@ -74,14 +74,13 @@ const FeedbackCreation: FunctionComponent<{
     { setSubmitting, resetForm },
   ) => {
     const input: FeedbackCreationMutation$variables['input'] = {
-      ...buildMarkdownFilesInput(),
+      ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
       confidence: parseInt(String(values.confidence), 10),
       rating: parseInt(String(values.rating), 6),
       objects: values.objects.map((o) => o.value),
       objectLabel: values.objectLabel.map((v) => v.value),
-      file: values.file,
     };
     commit({
       variables: {

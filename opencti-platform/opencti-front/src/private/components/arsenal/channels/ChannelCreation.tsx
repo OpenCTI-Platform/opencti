@@ -110,7 +110,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Channel')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -139,7 +139,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: ChannelCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         channel_types: values.channel_types,
@@ -148,7 +148,6 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-        file: values.file,
       },
     }));
 

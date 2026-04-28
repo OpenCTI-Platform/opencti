@@ -108,7 +108,7 @@ export const IntrusionSetCreationForm: FunctionComponent<
     undefined,
     { successMessage: `${t_i18n('entity_Intrusion-Set')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -137,7 +137,7 @@ export const IntrusionSetCreationForm: FunctionComponent<
     const allNames = splitMultilines(values.name);
     const variables: IntrusionSetCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         confidence: parseInt(String(values.confidence), 10),
@@ -145,7 +145,6 @@ export const IntrusionSetCreationForm: FunctionComponent<
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-        file: values.file,
       },
     }));
 

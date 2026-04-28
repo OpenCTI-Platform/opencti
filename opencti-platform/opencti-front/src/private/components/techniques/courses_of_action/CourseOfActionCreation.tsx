@@ -103,7 +103,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
     undefined,
     { successMessage: `${t_i18n('entity_Course-Of-Action')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<CourseOfActionAddInput>['onSubmit'] = (
     values,
@@ -114,7 +114,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
     },
   ) => {
     const input: CourseOfActionCreationMutation$variables['input'] = {
-      ...buildMarkdownFilesInput(),
+      ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
       confidence: parseInt(String(values.confidence), 10),
@@ -122,7 +122,6 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
     };
     commit({
       variables: {

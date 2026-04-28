@@ -112,7 +112,7 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
     undefined,
     { successMessage: `${t_i18n('entity_Threat-Actor-Group')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -141,7 +141,7 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
     const allNames = splitMultilines(values.name);
     const variables: ThreatActorGroupCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         threat_actor_types: values.threat_actor_types,
@@ -150,7 +150,6 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-        file: values.file,
       },
     }));
 

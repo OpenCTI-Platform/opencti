@@ -68,7 +68,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
     undefined,
     { successMessage: `${t_i18n('entity_SecurityPlatform')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const {
     bulkCommit,
@@ -99,7 +99,7 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
     const allNames = splitMultilines(values.name);
     const variables: SecurityPlatformCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(),
         name,
         description: values.description,
         security_platform_type: values.security_platform_type,

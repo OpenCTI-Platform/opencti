@@ -102,7 +102,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Country')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -131,7 +131,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: CountryCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         confidence: parseInt(String(values.confidence), 10),
@@ -139,7 +139,6 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
         objectLabel: values.objectLabel.map(({ value }) => value),
         externalReferences: values.externalReferences.map(({ value }) => value),
         createdBy: values.createdBy?.value,
-        file: values.file,
       },
     }));
 

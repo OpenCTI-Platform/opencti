@@ -148,14 +148,14 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
     { successMessage: `${t_i18n('entity_Note')} ${t_i18n('successfully created')}` },
   );
 
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = async (
     values,
     { setSubmitting, resetForm },
   ) => {
     const input: NoteCreationMutation$variables['input'] = {
-      ...buildMarkdownFilesInput(),
+      ...buildCreationFilesInput(values.file ? [values.file] : []),
       created: values.created,
       attribute_abstract: values.attribute_abstract,
       content: values.content,
@@ -166,7 +166,6 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
     };
     if (!userIsKnowledgeEditor) {
       delete input.createdBy;

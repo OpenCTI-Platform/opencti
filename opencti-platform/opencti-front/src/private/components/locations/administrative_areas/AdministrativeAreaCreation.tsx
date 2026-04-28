@@ -111,7 +111,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
     undefined,
     { successMessage: `${t_i18n('entity_Administrative-Area')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -140,7 +140,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
     const allNames = splitMultilines(values.name);
     const variables: AdministrativeAreaCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         latitude: parseFloat(values.latitude),
         longitude: parseFloat(values.longitude),
@@ -150,7 +150,6 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
         objectLabel: values.objectLabel.map(({ value }) => value),
         externalReferences: values.externalReferences.map(({ value }) => value),
         createdBy: values.createdBy?.value,
-        file: values.file,
       },
     }));
 

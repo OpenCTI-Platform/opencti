@@ -117,7 +117,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Event')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -146,7 +146,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: EventCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         event_types: values.event_types,
@@ -157,7 +157,6 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-        file: values.file,
       },
     }));
 

@@ -417,7 +417,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     { successMessage: `${t_i18n('entity_Security-Coverage')} ${t_i18n('successfully created')}` },
   );
 
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<SecurityCoverageFormValues>['onSubmit'] = (
     values,
@@ -428,7 +428,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       return;
     }
     const finalValues = {
-      ...buildMarkdownFilesInput(),
+      ...buildCreationFilesInput(),
       name: values.name,
       description: values.description,
       objectCovered: selectedEntity.id,

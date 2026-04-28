@@ -8,14 +8,20 @@ const useMarkdownCreationFilesInput = () => {
     markdownControllerRef.current = controller;
   }, []);
 
-  const buildMarkdownFilesInput = useCallback(() => {
+  const buildCreationFilesInput = useCallback((extraFiles: File[] = []) => {
     const markdownTempFiles = markdownControllerRef.current?.getPendingImageFiles() ?? [];
-    return markdownTempFiles.length > 0
-      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
+    const files = [...markdownTempFiles, ...extraFiles];
+    return files.length > 0
+      ? { files, embedded: files.map((_, index) => index < markdownTempFiles.length) }
       : {};
   }, []);
 
+  const buildMarkdownFilesInput = useCallback(() => {
+    return buildCreationFilesInput();
+  }, [buildCreationFilesInput]);
+
   return {
+    buildCreationFilesInput,
     buildMarkdownFilesInput,
     registerMarkdownImagesController,
   };

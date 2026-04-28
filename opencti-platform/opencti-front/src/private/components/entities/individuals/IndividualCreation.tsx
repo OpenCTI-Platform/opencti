@@ -107,7 +107,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Individual')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -137,7 +137,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: IndividualCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         x_opencti_reliability: values.x_opencti_reliability,
@@ -146,7 +146,6 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-        file: values.file,
       },
     }));
 

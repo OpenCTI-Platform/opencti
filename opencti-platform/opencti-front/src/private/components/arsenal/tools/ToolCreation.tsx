@@ -113,7 +113,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     { successMessage: `${t_i18n('entity_Tool')} ${t_i18n('successfully created')}` },
   );
 
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -142,7 +142,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: ToolCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         createdBy: values.createdBy?.value,
@@ -153,7 +153,6 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
         tool_version: values.tool_version,
         confidence: parseInt(String(values.confidence), 10),
         externalReferences: values.externalReferences.map(({ value }) => value),
-        file: values.file,
       },
     }));
 

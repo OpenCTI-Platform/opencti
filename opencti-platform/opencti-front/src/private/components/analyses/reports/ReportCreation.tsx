@@ -109,7 +109,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const { mandatoryAttributes } = useIsMandatoryAttribute(REPORT_TYPE);
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -144,15 +144,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
-    const markdownFilesInput = buildMarkdownFilesInput();
-    const files = [
-      ...(markdownFilesInput.files ?? []),
-      ...(values.file ? [values.file] : []),
-    ];
-    const embedded = [
-      ...(markdownFilesInput.embedded ?? []),
-      ...(values.file ? [false] : []),
-    ];
+    const filesInput = buildCreationFilesInput(values.file ? [values.file] : []);
 
     const input: ReportCreationMutation$variables['input'] = {
       name: values.name,
@@ -168,10 +160,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       objectParticipant: values.objectParticipant.map(({ value }) => value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
-      ...(files.length > 0 && {
-        files,
-        embedded,
-      }),
+      ...filesInput,
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
         authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
           id: value,

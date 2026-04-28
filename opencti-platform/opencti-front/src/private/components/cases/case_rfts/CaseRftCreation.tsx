@@ -132,14 +132,14 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Case-Rft')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<FormikCaseRftAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: CaseRftAddInput = {
-      ...buildMarkdownFilesInput(),
+      ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
       content: values.content,
@@ -155,7 +155,6 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
-      file: values.file,
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
         authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
           id: value,

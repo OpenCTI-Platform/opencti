@@ -78,7 +78,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Task')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<FormikCaseTaskAddInput>['onSubmit'] = (
     values,
@@ -89,7 +89,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
     addTask({
       variables: {
         input: {
-          ...buildMarkdownFilesInput(),
+          ...buildCreationFilesInput(),
           ...values,
           objectAssignee: (values.objectAssignee ?? []).map(
             ({ value }) => value,

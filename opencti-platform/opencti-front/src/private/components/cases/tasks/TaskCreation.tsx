@@ -92,7 +92,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Task')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const initialValues: FormikTaskAddInput = {
     name: inputValue ?? '',
@@ -107,7 +107,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
     { setSubmitting, resetForm, setErrors },
   ) => {
     const input: TaskCreationMutation$variables['input'] = {
-      ...buildMarkdownFilesInput(),
+      ...buildCreationFilesInput(),
       name: values.name,
       description: values.description,
       due_date: values.due_date,

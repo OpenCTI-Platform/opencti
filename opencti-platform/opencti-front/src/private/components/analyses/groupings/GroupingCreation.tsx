@@ -126,14 +126,14 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     { successMessage: `${t_i18n('entity_Grouping')} ${t_i18n('successfully created')}` },
   );
 
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<GroupingAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: GroupingCreationMutation$variables['input'] = {
-      ...buildMarkdownFilesInput(),
+      ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
       content: values.content,
@@ -143,7 +143,6 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
         authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
           id: value,

@@ -106,7 +106,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_System')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -139,7 +139,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: SystemCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         x_opencti_reliability: values.x_opencti_reliability,
@@ -148,7 +148,6 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-        file: values.file,
       },
     }));
 

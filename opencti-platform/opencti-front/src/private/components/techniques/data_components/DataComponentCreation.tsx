@@ -109,7 +109,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     undefined,
     { successMessage: `${t_i18n('entity_Data-Component')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -142,7 +142,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     const allNames = splitMultilines(values.name);
     const variables: DataComponentCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         createdBy: values.createdBy?.value,
@@ -150,7 +150,6 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map((v) => v.value),
         confidence: parseInt(String(values.confidence), 10),
-        file: values.file,
       },
     }));
 

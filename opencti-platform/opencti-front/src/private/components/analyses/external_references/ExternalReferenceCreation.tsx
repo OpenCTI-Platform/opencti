@@ -49,7 +49,6 @@ const externalReferenceCreationMutation = graphql`
   }
 `;
 
-
 const externalReferenceValidation = (t: (value: string) => string) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),
   external_id: Yup.string().nullable(),
@@ -103,15 +102,16 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
     { successMessage: `${t_i18n('entity_External-Reference')} ${t_i18n('successfully created')}` },
   );
 
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
+    const uploadedFile = typeof values.file === 'string' || !values.file ? [] : [values.file];
     const finalValues = {
-      ...(values.file.length === 0 ? R.dissoc('file', values) : values),
-      ...buildMarkdownFilesInput(),
+      ...R.dissoc('file', values),
+      ...buildCreationFilesInput(uploadedFile),
     };
     if (dryrun && onCreate) {
       onCreate(values, true);
@@ -146,9 +146,10 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
   };
 
   const onSubmitContextual: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const uploadedFile = typeof values.file === 'string' || !values.file ? [] : [values.file];
     const finalValues = {
-      ...(values.file.length === 0 ? R.dissoc('file', values) : values),
-      ...buildMarkdownFilesInput(),
+      ...R.dissoc('file', values),
+      ...buildCreationFilesInput(uploadedFile),
     };
     if (dryrun && creationCallback && handleCloseContextual) {
       creationCallback({

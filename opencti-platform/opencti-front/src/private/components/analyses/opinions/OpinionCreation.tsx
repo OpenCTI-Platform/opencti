@@ -115,20 +115,12 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
   );
 
   const [commit] = useApiMutation(opinionCreationMutation);
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const onSubmit: FormikConfig<OpinionAddInput>['onSubmit'] = (
     values: OpinionAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<OpinionAddInput>,
   ) => {
-    const markdownFilesInput = buildMarkdownFilesInput();
-    const files = [
-      ...(markdownFilesInput.files ?? []),
-      ...(values.file ? [values.file] : []),
-    ];
-    const embedded = [
-      ...(markdownFilesInput.embedded ?? []),
-      ...(values.file ? [false] : []),
-    ];
+    const filesInput = buildCreationFilesInput(values.file ? [values.file] : []);
 
     const input: OpinionCreationMutation$variables['input'] = {
       opinion: values.opinion,
@@ -138,10 +130,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
-      ...(files.length > 0 && {
-        files,
-        embedded,
-      }),
+      ...filesInput,
     };
     commit({
       variables: {
@@ -291,20 +280,12 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
   );
 
   const [commit] = useApiMutation(opinionCreationUserMutation);
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const onSubmit: FormikConfig<OpinionAddInput>['onSubmit'] = (
     values: OpinionAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<OpinionAddInput>,
   ) => {
-    const markdownFilesInput = buildMarkdownFilesInput();
-    const files = [
-      ...(markdownFilesInput.files ?? []),
-      ...(values.file ? [values.file] : []),
-    ];
-    const embedded = [
-      ...(markdownFilesInput.embedded ?? []),
-      ...(values.file ? [false] : []),
-    ];
+    const filesInput = buildCreationFilesInput(values.file ? [values.file] : []);
 
     const finalValues: OpinionCreationMutation$variables['input'] = {
       opinion: values.opinion,
@@ -314,10 +295,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
-      ...(files.length > 0 && {
-        files,
-        embedded,
-      }),
+      ...filesInput,
     };
     commit({
       variables: {

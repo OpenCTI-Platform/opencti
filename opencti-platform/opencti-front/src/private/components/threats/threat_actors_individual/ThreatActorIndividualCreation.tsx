@@ -82,7 +82,6 @@ const ThreatActorIndividualMutation = graphql`
   }
 `;
 
-
 const THREAT_ACTOR_INDIVIDUAL_TYPE = 'Threat-Actor-Individual';
 
 interface ThreatActorIndividualAddInput {
@@ -212,7 +211,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
     undefined,
     { successMessage: `${t_i18n('entity_Threat-Actor-Individual')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -238,10 +237,11 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
+    const uploadedFile = values?.file ? [values.file] : [];
     const allNames = splitMultilines(values.name);
     const variables: ThreatActorIndividualCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(uploadedFile),
         name,
         description: values?.description,
         threat_actor_types: values?.threat_actor_types,
@@ -250,7 +250,6 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
         objectMarking: values?.objectMarking.map((v) => v.value),
         objectLabel: values?.objectLabel.map((v) => v.value),
         externalReferences: values?.externalReferences.map(({ value }) => value),
-        file: values?.file,
         first_seen: values?.first_seen,
         last_seen: values?.last_seen,
         secondary_motivations: (values?.secondary_motivations ?? []).map(
@@ -428,8 +427,8 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                 style={{ marginTop: 20 }}
                 askAi={true}
                 autoPersistOnBlur={false}
-            registerMarkdownImagesController={registerMarkdownImagesController}
-            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+                registerMarkdownImagesController={registerMarkdownImagesController}
+                uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
               />
               <CreatedByField
                 name="createdBy"

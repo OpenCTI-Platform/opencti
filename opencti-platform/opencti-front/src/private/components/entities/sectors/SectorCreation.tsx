@@ -123,7 +123,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Sector')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -156,7 +156,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: SectorCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         createdBy: values.createdBy?.value,
@@ -164,7 +164,6 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-        file: values.file,
       },
     }));
 

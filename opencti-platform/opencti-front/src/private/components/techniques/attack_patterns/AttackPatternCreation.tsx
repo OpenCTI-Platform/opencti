@@ -119,14 +119,14 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
     undefined,
     { successMessage: `${t_i18n('entity_Attack-Pattern')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<AttackPatternAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: AttackPatternCreationMutation$variables['input'] = {
-      ...buildMarkdownFilesInput(),
+      ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
       x_mitre_id: values.x_mitre_id,
@@ -136,7 +136,6 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
     };
     commit({
       variables: {

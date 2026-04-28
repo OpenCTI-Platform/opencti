@@ -110,7 +110,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_City')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -139,7 +139,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: CityCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         latitude: parseFloat(values.latitude),
@@ -149,7 +149,6 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
         objectLabel: values.objectLabel.map(({ value }) => value),
         externalReferences: values.externalReferences.map(({ value }) => value),
         createdBy: values.createdBy?.value,
-        file: values.file,
       },
     }));
 

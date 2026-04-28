@@ -116,7 +116,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
     undefined,
     { successMessage: `${t_i18n('entity_Organization')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -146,7 +146,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
     const allNames = splitMultilines(values.name);
     const variables: OrganizationCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         x_opencti_reliability: values.x_opencti_reliability,
@@ -157,7 +157,6 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-        file: values.file,
       },
     }));
 

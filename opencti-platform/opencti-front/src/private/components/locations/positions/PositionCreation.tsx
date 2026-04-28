@@ -145,7 +145,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Position')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -174,7 +174,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: PositionCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         confidence: parseInt(String(values.confidence), 10),
@@ -186,7 +186,6 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
         externalReferences: values.externalReferences.map(({ value }) => value),
-        file: values.file,
       },
     }));
 

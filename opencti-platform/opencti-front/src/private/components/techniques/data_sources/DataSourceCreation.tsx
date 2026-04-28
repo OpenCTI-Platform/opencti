@@ -117,7 +117,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Data-Source')} ${t_i18n('successfully created')}` },
   );
-  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -146,7 +146,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: DataSourceCreationMutation$variables[] = allNames.map((name) => ({
       input: {
-        ...buildMarkdownFilesInput(),
+        ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
         createdBy: values.createdBy?.value,
@@ -156,7 +156,6 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
         confidence: parseInt(String(values.confidence), 10),
         x_mitre_platforms: values.x_mitre_platforms,
         collection_layers: values.collection_layers,
-        file: values.file,
       },
     }));
 
