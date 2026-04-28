@@ -1,9 +1,9 @@
 import React, { CSSProperties, ReactElement, useCallback, useEffect, useRef } from 'react';
 import { useField } from 'formik';
 import MarkdownFieldBase, { MarkdownTab } from './MarkdownFieldBase';
-import type { MarkdownImagesController } from './markdownImagesController';
+import type { MarkdownImagesController } from './core/markdownImagesController';
 
-export type { MarkdownImagesController } from './markdownImagesController';
+export type { MarkdownImagesController } from './core/markdownImagesController';
 
 type MarkdownFieldProps = {
   form: {

@@ -1,6 +1,6 @@
 import { defaultUrlTransform } from 'react-markdown';
-import { TEMP_IMAGE_SCHEME } from '../fields/markdownField/markdownImageTempUtils';
-import { extractMarkdownImageReferences } from '../fields/markdownField/markdownImageParsingUtils';
+import { TEMP_IMAGE_SCHEME } from '../fields/markdownField/core/markdownImagePreviewUtils';
+import { extractMarkdownImageReferences } from '../fields/markdownField/core/markdownImageParsingUtils';
 
 export type MarkdownPreviewImage = {
   src: string;

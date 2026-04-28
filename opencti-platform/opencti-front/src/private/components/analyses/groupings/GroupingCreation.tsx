@@ -164,7 +164,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: () => {
+      onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
         if (onClose) {

@@ -12,7 +12,11 @@ vi.mock('../../../relay/environment', async () => {
   return {
     ...actual,
     commitMutation: (config: {
-      onCompleted?: (response: { uploadPending?: { id?: string } | null }) => void;
+      onCompleted?: (response: {
+        stixCoreObjectEdit?: {
+          importPush?: { id?: string } | null;
+        } | null;
+      }) => void;
       onError?: (error: Error) => void;
     }) => commitMutationMock(config),
   };
@@ -42,7 +46,11 @@ describe('Component: MarkdownField', () => {
     vi.restoreAllMocks();
     commitMutationMock.mockReset();
     commitMutationMock.mockImplementation(({ onCompleted }) => {
-      onCompleted?.({ uploadImport: { id: 'import/global/default-uploaded-file' } });
+      onCompleted?.({
+        stixCoreObjectEdit: {
+          importPush: { id: 'import/global/default-uploaded-file' },
+        },
+      });
     });
   });
 
@@ -96,6 +104,30 @@ describe('Component: MarkdownField', () => {
     });
   });
 
+  it('preserves typed text when dropping an image before deferred formik sync', async () => {
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:drop-typed');
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
+    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue('00000000-0000-0000-0000-000000000009');
+
+    renderMarkdownField('');
+
+    const textArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
+    fireEvent.input(textArea, { target: { value: 'typed before drop' } });
+
+    fireEvent.drop(textArea, {
+      dataTransfer: {
+        files: [new File(['file-content'], 'dropped.png', { type: 'image/png' })],
+        types: ['Files'],
+      },
+    });
+
+    await waitFor(() => {
+      expect(textArea.value).toContain('typed before drop');
+      expect(textArea.value).toContain('![dropped.png](opencti-image://temp/00000000-0000-0000-0000-000000000009)');
+      expect(textArea.value).not.toBe('![dropped.png](opencti-image://temp/00000000-0000-0000-0000-000000000009)');
+    });
+  });
+
   it('shows and clears dashed outline indicator while dragging files over write textarea', async () => {
     renderMarkdownField('');
 
@@ -144,6 +176,36 @@ describe('Component: MarkdownField', () => {
 
     await waitFor(() => {
       expect(textArea.value).toBe('prefix ![screenshot.png](opencti-image://temp/00000000-0000-0000-0000-000000000008)');
+    });
+  });
+
+  it('preserves typed text when pasting an image before deferred formik sync', async () => {
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:paste-typed');
+    vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
+    vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue('00000000-0000-0000-0000-000000000010');
+
+    renderMarkdownField('');
+
+    const textArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
+    fireEvent.input(textArea, { target: { value: 'typed before paste' } });
+
+    const pastedFile = new File(['clipboard-image'], 'pasted.png', { type: 'image/png' });
+    fireEvent.paste(textArea, {
+      clipboardData: {
+        items: [
+          {
+            kind: 'file',
+            type: 'image/png',
+            getAsFile: () => pastedFile,
+          },
+        ],
+      },
+    });
+
+    await waitFor(() => {
+      expect(textArea.value).toContain('typed before paste');
+      expect(textArea.value).toContain('![pasted.png](opencti-image://temp/00000000-0000-0000-0000-000000000010)');
+      expect(textArea.value).not.toBe('![pasted.png](opencti-image://temp/00000000-0000-0000-0000-000000000010)');
     });
   });
 
@@ -319,11 +381,18 @@ describe('Component: MarkdownField', () => {
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
     vi.spyOn(globalThis.crypto, 'randomUUID').mockReturnValue('00000000-0000-0000-0000-000000000007');
     commitMutationMock.mockImplementationOnce(({ onCompleted }) => {
-      onCompleted?.({ uploadImport: { id: 'import/global/uploaded-1' } });
+      onCompleted?.({
+        stixCoreObjectEdit: {
+          importPush: { id: 'import/global/uploaded-1' },
+        },
+      });
     });
 
     const onSubmit = vi.fn();
-    const { container } = renderMarkdownField('', { onSubmit });
+    const { container } = renderMarkdownField('', {
+      onSubmit,
+      uploadEntityId: 'entity--test',
+    });
 
     const textArea = await screen.findByRole('textbox') as HTMLTextAreaElement;
     const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;

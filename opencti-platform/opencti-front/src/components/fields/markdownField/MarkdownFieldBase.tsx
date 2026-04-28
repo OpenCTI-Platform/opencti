@@ -1,26 +1,16 @@
-import React, { CSSProperties, FocusEvent, ReactElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { CSSProperties, FocusEvent, ReactElement, useCallback, useRef, useState } from 'react';
 import ReactMde from 'react-mde';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import { AddPhotoAlternateOutlined } from '@mui/icons-material';
 import { isNil } from 'ramda';
 import Button from '../../common/button/Button';
-import { MESSAGING$ } from '../../../relay/environment';
 import useAI from '../../../utils/hooks/useAI';
 import TextFieldAskAI from '../../../private/components/common/form/TextFieldAskAI';
 import { useFormatter } from '../../i18n';
 import MarkdownDisplay from '../../markdownDisplay/MarkdownDisplay';
-import {
-  cleanupRemovedTempAttachments,
-  extractEmbeddedStoragePathsFromMarkdown,
-  getMarkdownImageDragFeedback,
-  getImageFiles,
-  getImageFilesFromClipboardData,
-  isSvgImageFile,
-} from './markdownImageFieldHelpers';
-import { extractTempImageTokens, insertImageAtCursor, MarkdownTempAttachmentRegistry } from './markdownImageTempUtils';
-import type { MarkdownImagesController } from './markdownImagesController';
-import useMarkdownImageUpload from './useMarkdownImageUpload';
+import type { MarkdownImagesController } from './core/markdownImagesController';
+import useMarkdownImages from './hooks/useMarkdownImages';
 
 export type MarkdownTab = 'write' | 'preview';
 
@@ -80,233 +70,53 @@ const MarkdownFieldBase = ({
   const { fullyActive } = useAI();
   const [selectedTab, setSelectedTab] = useState<MarkdownTab>('write');
   const [draftValue, setDraftValue] = useState(value ?? '');
-  const [dragFeedback, setDragFeedback] = useState<'none' | 'valid' | 'invalid'>('none');
 
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const pendingCleanupTimeoutRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
-  const latestMarkdownRef = useRef(draftValue);
-  const submittedEmbeddedPathsRef = useRef(new Set(extractEmbeddedStoragePathsFromMarkdown(value ?? '')));
   const isFieldFocusedRef = useRef(false);
-  // Tracks how many nested dragEnter events are unmatched by dragLeave events.
-  // The browser fires dragLeave+dragEnter when the cursor moves between child elements,
-  // so a simple boolean would flicker. The indicator only clears when this counter reaches 0,
-  // meaning the drag has left the entire component.
-  const dragDepthRef = useRef(0);
-  const registryRef = useRef(new MarkdownTempAttachmentRegistry());
-
-  const { finalizeTempImageUrls } = useMarkdownImageUpload({
-    uploadEntityId,
-    uploadFileMarkings,
-  });
 
   const showError = !isNil(errorMessage) && showValidationError;
   const activeTab = controlledSelectedTab ?? selectedTab;
 
-  const hasFilePayload = (dataTransfer?: DataTransfer | null): boolean => {
-    if (!dataTransfer) {
-      return false;
-    }
-    return Array.from(dataTransfer.types ?? []).includes('Files');
-  };
-
-  const isDragOverWrite = activeTab === 'write' && dragFeedback !== 'none';
-  const isDragInvalid = dragFeedback === 'invalid';
-
-  useEffect(() => {
-    const next = value ?? '';
-    if (next === latestMarkdownRef.current) {
-      return;
-    }
-
-    // Keep local typing state authoritative while focused to avoid
-    // cursor jumps when the Formik wrapper syncs value asynchronously.
-    if (isFieldFocusedRef.current) {
-      return;
-    }
-
-    latestMarkdownRef.current = next;
-    setDraftValue(next);
-    submittedEmbeddedPathsRef.current = new Set(extractEmbeddedStoragePathsFromMarkdown(next));
-  }, [value]);
-
   const pushDraftValue = useCallback((nextValue: string, shouldValidate = false) => {
-    latestMarkdownRef.current = nextValue;
     setDraftValue(nextValue);
     onValueChange(nextValue, shouldValidate);
   }, [onValueChange]);
 
-  const finalizeMarkdown = useCallback(async (
-    markdown = latestMarkdownRef.current,
-    uploadEntityIdOverride?: string,
-  ): Promise<string> => {
-    const finalized = await finalizeTempImageUrls(markdown, registryRef.current, (token) => {
-      pendingCleanupTimeoutRef.current.delete(token);
-      registryRef.current.removeTempAttachment(token);
-    }, {
-      uploadEntityIdOverride,
-    });
-
-    if (finalized !== markdown) {
-      latestMarkdownRef.current = finalized;
-      setDraftValue(finalized);
-      onValueChange(finalized, false);
-    }
-
-    return finalized;
-  }, [finalizeTempImageUrls, onValueChange]);
-
-  const getPendingImageFiles = useCallback((): File[] => {
-    const files: File[] = [];
-    const tokens = extractTempImageTokens(latestMarkdownRef.current);
-    for (let i = 0; i < tokens.length; i += 1) {
-      const attachment = registryRef.current.getAttachment(tokens[i]);
-      if (attachment?.file) {
-        files.push(attachment.file);
-      }
-    }
-    return files;
-  }, []);
-
-  useEffect(() => {
-    if (!registerMarkdownImagesController) {
-      return undefined;
-    }
-
-    registerMarkdownImagesController({
-      persistTempImages: (uploadEntityIdOverride?: string) => finalizeMarkdown(undefined, uploadEntityIdOverride),
-      getPendingImageFiles,
-    });
-
-    return () => registerMarkdownImagesController({
-      persistTempImages: () => Promise.resolve(latestMarkdownRef.current),
-      getPendingImageFiles: () => [],
-    });
-  }, [finalizeMarkdown, getPendingImageFiles, registerMarkdownImagesController]);
-
-  const resolveTextArea = useCallback((): HTMLTextAreaElement | null => {
-    if (textAreaRef.current) {
-      return textAreaRef.current;
-    }
-
-    const textArea = containerRef.current?.querySelector('textarea') ?? null;
-    if (textArea) {
-      textAreaRef.current = textArea;
-    }
-    return textArea;
-  }, []);
-
-  const insertImagesAtCursor = useCallback((files: File[]) => {
-    const containsSvg = files.some((file) => isSvgImageFile(file));
-    if (containsSvg) {
-      MESSAGING$.notifyError(t_i18n('SVG images are not supported'));
-    }
-
-    const imageFiles = getImageFiles(files);
-    if (imageFiles.length === 0 || disabled) {
-      return;
-    }
-
-    const oversized = imageFiles.filter((f) => f.size > MAX_IMAGE_SIZE_BYTES);
-    if (oversized.length > 0) {
-      MESSAGING$.notifyError(t_i18n('Image files must not exceed 5 MB'));
-    }
-    const validFiles = imageFiles.filter((f) => f.size <= MAX_IMAGE_SIZE_BYTES);
-    if (validFiles.length === 0) {
-      return;
-    }
-
-    const textArea = resolveTextArea();
-    const cursor = textArea?.selectionStart ?? latestMarkdownRef.current.length;
-
-    let nextCursor = cursor;
-    let nextMarkdown = latestMarkdownRef.current;
-    for (let i = 0; i < validFiles.length; i += 1) {
-      const file = validFiles[i];
-      const attachment = registryRef.current.createTempAttachment(file);
-      const result = insertImageAtCursor(nextMarkdown, nextCursor, attachment.token, file.name || 'image');
-      nextMarkdown = result.markdown;
-      nextCursor = result.nextCursor;
-    }
-
-    pushDraftValue(nextMarkdown);
-
-    requestAnimationFrame(() => {
-      const activeTextArea = resolveTextArea();
-      if (activeTextArea) {
-        activeTextArea.focus();
-        activeTextArea.setSelectionRange(nextCursor, nextCursor);
-      }
-    });
-  }, [disabled, pushDraftValue, resolveTextArea]);
-
-  const handleFilePickerChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files ? Array.from(event.target.files) : [];
-    insertImagesAtCursor(files);
-    event.target.value = '';
-  }, [insertImagesAtCursor]);
-
-  const handleUploadButtonClick = useCallback(() => {
-    if (disabled || activeTab !== 'write') {
-      return;
-    }
-    fileInputRef.current?.click();
-  }, [activeTab, disabled]);
-
-  const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    dragDepthRef.current = 0;
-    setDragFeedback('none');
-    if (disabled || activeTab !== 'write') {
-      return;
-    }
-    const files = event.dataTransfer.files ? Array.from(event.dataTransfer.files) : [];
-    insertImagesAtCursor(files);
-  }, [activeTab, disabled, insertImagesAtCursor]);
-
-  const handleDragEnter = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    if (disabled || activeTab !== 'write' || !hasFilePayload(event.dataTransfer)) {
-      return;
-    }
-    event.preventDefault();
-    dragDepthRef.current += 1;
-    setDragFeedback(getMarkdownImageDragFeedback(event.dataTransfer));
-  }, [activeTab, disabled]);
-
-  const handleDragLeave = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    if (disabled || activeTab !== 'write' || !hasFilePayload(event.dataTransfer)) {
-      return;
-    }
-    event.preventDefault();
-    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
-    if (dragDepthRef.current === 0) {
-      setDragFeedback('none');
-    }
-  }, [activeTab, disabled]);
-
-  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    if (!disabled && activeTab === 'write' && hasFilePayload(event.dataTransfer)) {
-      setDragFeedback(getMarkdownImageDragFeedback(event.dataTransfer));
-    }
-  }, [activeTab, disabled]);
-
-  const handlePaste = useCallback((event: React.ClipboardEvent<HTMLDivElement>) => {
-    if (disabled || activeTab !== 'write') {
-      return;
-    }
-
-    const files = getImageFilesFromClipboardData(event.clipboardData);
-    if (files.length === 0) {
-      return;
-    }
-
-    event.preventDefault();
-    insertImagesAtCursor(files);
-  }, [activeTab, disabled, insertImagesAtCursor]);
+  const {
+    fileInputRef,
+    dragFeedback,
+    isDragInvalid,
+    isDragOverWrite,
+    handleDragEnter,
+    handleDragLeave,
+    handleDragOver,
+    handleDrop,
+    handleFilePickerChange,
+    handlePaste,
+    handleUploadButtonClick,
+    toolbarCommands,
+    cleanupRemovedAttachments,
+    finalizeMarkdown,
+    syncLatestMarkdown,
+    latestMarkdownRef,
+    pendingCleanupTimeoutRef,
+    registryRef,
+  } = useMarkdownImages({
+    activeTab,
+    disabled,
+    t_i18n,
+    containerRef,
+    value,
+    onValueChange,
+    setDraftValue,
+    pushDraftValue,
+    isFieldFocusedRef,
+    registerMarkdownImagesController,
+    uploadEntityId,
+    uploadFileMarkings,
+    tempCleanupDelayMs: TEMP_CLEANUP_DELAY_MS,
+    maxImageSizeBytes: MAX_IMAGE_SIZE_BYTES,
+  });
 
   const internalOnFocus = (event: FocusEvent<HTMLDivElement>) => {
     isFieldFocusedRef.current = true;
@@ -342,16 +152,7 @@ const MarkdownFieldBase = ({
       submitValue = await finalizeMarkdown(submitValue);
     }
 
-    const nextEmbeddedPaths = new Set(extractEmbeddedStoragePathsFromMarkdown(submitValue));
-    submittedEmbeddedPathsRef.current = nextEmbeddedPaths;
-
-    cleanupRemovedTempAttachments({
-      pendingCleanupTimeoutRef,
-      latestMarkdownRef,
-      isFieldFocusedRef,
-      registry: registryRef.current,
-      delayMs: TEMP_CLEANUP_DELAY_MS,
-    }, submitValue, true);
+    cleanupRemovedAttachments(submitValue, true);
 
     if (typeof onSubmit === 'function') {
       onSubmit(name, submitValue);
@@ -365,29 +166,9 @@ const MarkdownFieldBase = ({
     }
   };
 
-  useEffect(() => {
-    return () => {
-      const pendingTimeouts = Array.from(pendingCleanupTimeoutRef.current.values());
-      for (let i = 0; i < pendingTimeouts.length; i += 1) {
-        clearTimeout(pendingTimeouts[i]);
-      }
-      pendingCleanupTimeoutRef.current.clear();
-      registryRef.current.cleanupAllTempAttachments();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (activeTab !== 'write' && dragFeedback !== 'none') {
-      dragDepthRef.current = 0;
-      setDragFeedback('none');
-    }
-  }, [activeTab, dragFeedback]);
-
   const markdownPreviewResolver = useCallback((url: string) => {
     return registryRef.current.resolvePreviewImageUrl(url);
   }, []);
-
-  const toolbarCommands = useMemo(() => (disabled ? [] : undefined), [disabled]);
 
   return (
     <div
@@ -419,16 +200,11 @@ const MarkdownFieldBase = ({
         value={draftValue}
         readOnly={disabled}
         onChange={(nextValue) => {
+          syncLatestMarkdown(nextValue);
           pushDraftValue(nextValue);
 
           if (registryRef.current.size > 0 || pendingCleanupTimeoutRef.current.size > 0) {
-            cleanupRemovedTempAttachments({
-              pendingCleanupTimeoutRef,
-              latestMarkdownRef,
-              isFieldFocusedRef,
-              registry: registryRef.current,
-              delayMs: TEMP_CLEANUP_DELAY_MS,
-            }, nextValue);
+            cleanupRemovedAttachments(nextValue);
           }
         }}
         selectedTab={controlledSelectedTab ?? selectedTab}
@@ -509,6 +285,7 @@ const MarkdownFieldBase = ({
         <TextFieldAskAI
           currentValue={draftValue}
           setFieldValue={(nextValue: string) => {
+            syncLatestMarkdown(nextValue);
             pushDraftValue(nextValue, false);
             onFlushValue?.(false);
             if (typeof onSubmit === 'function') {

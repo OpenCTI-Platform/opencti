@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MarkdownTempAttachmentRegistry, TEMP_IMAGE_SCHEME, extractTempImageTokens, insertImageAtCursor, replaceTempImageTokenUrl } from './markdownImageTempUtils';
+import { MarkdownTempAttachmentRegistry, TEMP_IMAGE_SCHEME, extractTempImageTokens, insertImageAtCursor, replaceTempImageTokenUrl } from './markdownImagePreviewUtils';
 
 describe('markdown temp image utilities', () => {
   beforeEach(() => {

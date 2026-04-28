@@ -1,5 +1,5 @@
 import { RefObject } from 'react';
-import { MarkdownTempAttachmentRegistry } from './markdownImageTempUtils';
+import { MarkdownTempAttachmentRegistry } from './markdownImagePreviewUtils';
 import { extractMarkdownImageReferences } from './markdownImageParsingUtils';
 
 type CleanupRefs = {

@@ -1,21 +1,15 @@
 import { graphql } from 'react-relay';
-import { commitMutation } from '../../../relay/environment';
-import { getFileUri } from '../../../utils/utils';
-import { extractTempImageTokens, MarkdownTempAttachmentRegistry, replaceTempImageTokenUrl } from './markdownImageTempUtils';
+import { commitMutation } from '../../../../relay/environment';
+import { getFileUri } from '../../../../utils/utils';
+import { extractTempImageTokens, MarkdownTempAttachmentRegistry, replaceTempImageTokenUrl } from '../core/markdownImagePreviewUtils';
 
-const uploadImportMutation = graphql`
-  mutation useMarkdownImageUploadMutation(
-    $file: Upload!
-    $fileMarkings: [String]
-  ) {
-    uploadImport(file: $file, fileMarkings: $fileMarkings) {
-      id
-    }
-  }
-`;
+type UseMarkdownImagesUploadArgs = {
+  uploadEntityId?: string;
+  uploadFileMarkings?: string[];
+};
 
 const uploadEntityImportPushMutation = graphql`
-  mutation useMarkdownImageUploadEntityMutation(
+  mutation useMarkdownImagesUploadMutation(
     $id: ID!
     $file: Upload!
     $fileMarkings: [String]
@@ -36,22 +30,6 @@ const uploadEntityImportPushMutation = graphql`
     }
   }
 `;
-
-type UseMarkdownImageUploadOptions = {
-  uploadEntityId?: string;
-  uploadFileMarkings?: string[];
-};
-
-type UseMarkdownImageUploadReturn = {
-  finalizeTempImageUrls: (
-    markdown: string,
-    registry: MarkdownTempAttachmentRegistry,
-    onTokenFinalized: (token: string) => void,
-    options?: {
-      uploadEntityIdOverride?: string;
-    },
-  ) => Promise<string>;
-};
 
 const extensionByMimeType: Record<string, string> = {
   'image/png': 'png',
@@ -83,42 +61,39 @@ const withUniqueUploadName = (file: File, token: string): File => {
   });
 };
 
-const useMarkdownImageUpload = ({
+const useMarkdownImagesUpload = ({
   uploadEntityId,
   uploadFileMarkings = [],
-}: UseMarkdownImageUploadOptions): UseMarkdownImageUploadReturn => {
+}: UseMarkdownImagesUploadArgs) => {
   const uploadFile = (file: File, uploadEntityIdOverride?: string): Promise<string> => {
     return new Promise((resolve, reject) => {
       const resolvedUploadEntityId = uploadEntityIdOverride ?? uploadEntityId;
-      const variables = resolvedUploadEntityId
-        ? {
-            id: resolvedUploadEntityId,
-            file,
-            fileMarkings: uploadFileMarkings,
-            noTriggerImport: false,
-            fromTemplate: false,
-            embedded: true,
-          }
-        : {
-            file,
-            fileMarkings: uploadFileMarkings,
-          };
+      if (!resolvedUploadEntityId) {
+        reject(new Error('Missing upload entity id'));
+        return;
+      }
+
+      const variables = {
+        id: resolvedUploadEntityId,
+        file,
+        fileMarkings: uploadFileMarkings,
+        noTriggerImport: false,
+        fromTemplate: false,
+        embedded: true,
+      };
 
       commitMutation({
-        mutation: resolvedUploadEntityId ? uploadEntityImportPushMutation : uploadImportMutation,
+        mutation: uploadEntityImportPushMutation,
         variables,
         updater: undefined,
         optimisticUpdater: undefined,
         optimisticResponse: undefined,
         onCompleted: (response: {
-          uploadImport?: { id?: string } | null;
           stixCoreObjectEdit?: {
             importPush?: { id?: string } | null;
           } | null;
         }) => {
-          const fileId = resolvedUploadEntityId
-            ? response?.stixCoreObjectEdit?.importPush?.id
-            : response?.uploadImport?.id;
+          const fileId = response?.stixCoreObjectEdit?.importPush?.id;
           if (!fileId) {
             reject(new Error('Missing uploaded file id'));
             return;
@@ -135,18 +110,20 @@ const useMarkdownImageUpload = ({
     markdown: string,
     registry: MarkdownTempAttachmentRegistry,
     onTokenFinalized: (token: string) => void,
-    options?: {
-      uploadEntityIdOverride?: string;
-    },
+    options?: { uploadEntityIdOverride?: string },
   ): Promise<string> => {
     const tokens = extractTempImageTokens(markdown);
-    if (tokens.length === 0) return markdown;
+    if (tokens.length === 0) {
+      return markdown;
+    }
 
     let result = markdown;
     for (let i = 0; i < tokens.length; i += 1) {
       const token = tokens[i];
       const attachment = registry.getAttachment(token);
-      if (!attachment) continue;
+      if (!attachment) {
+        continue;
+      }
 
       const uploadFileInput = withUniqueUploadName(attachment.file, token);
       const fileId = await uploadFile(uploadFileInput, options?.uploadEntityIdOverride);
@@ -158,7 +135,9 @@ const useMarkdownImageUpload = ({
     return result;
   };
 
-  return { finalizeTempImageUrls };
+  return {
+    finalizeTempImageUrls,
+  };
 };
 
-export default useMarkdownImageUpload;
+export default useMarkdownImagesUpload;

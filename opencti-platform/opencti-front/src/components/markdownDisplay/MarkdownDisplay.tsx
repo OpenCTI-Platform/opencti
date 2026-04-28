@@ -9,7 +9,7 @@ import type { Theme } from '../Theme';
 import { truncate } from '../../utils/String';
 import ExternalLinkPopover from '../ExternalLinkPopover';
 import FieldOrEmpty from '../FieldOrEmpty';
-import { TEMP_IMAGE_SCHEME } from '../fields/markdownField/markdownImageTempUtils';
+import { TEMP_IMAGE_SCHEME } from '../fields/markdownField/core/markdownImagePreviewUtils';
 import MarkdownImagePreviewModal from './MarkdownImagePreviewModal';
 import { resolveAndNormalizeMarkdownImageUrl } from './markdownDisplayHelpers';
 import { extractMarkdownPreviewImages, isAllowedUploadedImageUrl } from './markdownPreviewImageUtils';
