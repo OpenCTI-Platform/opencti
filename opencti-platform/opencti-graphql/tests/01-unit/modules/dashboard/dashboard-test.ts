@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Readable } from 'stream';
-import { streamToString } from '../../../src/database/raw-file-storage';
-import { checkConfigurationImport } from '../../../src/modules/workspace/workspace-domain';
-import { createUploadFromTestDataFile } from '../../utils/testQueryHelper';
+import { streamToString } from '../../../../src/database/raw-file-storage';
+import { checkDashboardConfigurationImport } from '../../../../src/modules/dashboard/dashboard-utils';
+import { createUploadFromTestDataFile } from '../../../utils/testQueryHelper';
 
 describe('workspace', () => {
   const cases = [
@@ -17,7 +17,7 @@ describe('workspace', () => {
     const fileContent = await streamToString(readStream as Readable);
     const parsedData = JSON.parse(fileContent.toString());
     const check = () => {
-      checkConfigurationImport('dashboard', parsedData);
+      checkDashboardConfigurationImport('dashboard', parsedData);
     };
     expect(check).toThrowError(expectedErrorMessage);
   });
@@ -29,7 +29,7 @@ describe('workspace', () => {
     const fileContent = await streamToString(readStream as Readable);
     const parsedData = JSON.parse(fileContent.toString());
 
-    expect(() => checkConfigurationImport('dashboard', parsedData)).toThrowError('Invalid type. Please import OpenCTI dashboard-type only');
+    expect(() => checkDashboardConfigurationImport('dashboard', parsedData)).toThrowError('Invalid type. Please import OpenCTI dashboard-type only');
   });
 
   it('should verify import version compatibility, given valid import', async () => {
@@ -39,6 +39,6 @@ describe('workspace', () => {
     const fileContent = await streamToString(readStream as Readable);
     const parsedData = JSON.parse(fileContent.toString());
 
-    expect(() => checkConfigurationImport('dashboard', parsedData),).not.toThrowError();
+    expect(() => checkDashboardConfigurationImport('dashboard', parsedData)).not.toThrowError();
   });
 });
