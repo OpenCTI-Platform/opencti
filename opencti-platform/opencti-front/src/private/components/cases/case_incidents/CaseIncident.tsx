@@ -1,4 +1,4 @@
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import React, { useRef } from 'react';
 import { useFragment } from 'react-relay';
 import { CaseUtils_case$key } from '@components/cases/__generated__/CaseUtils_case.graphql';
@@ -76,13 +76,13 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: width }}>
                     <CaseIncidentDetails caseIncidentData={caseIncident} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: width }}>
                     <StixDomainObjectOverview
                       stixDomainObject={caseIncident}
                       displayAssignees
@@ -92,7 +92,7 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
                 );
               case 'task':
                 return (
-                  <Grid key={key} item xs={width} ref={ref}>
+                  <Grid key={key} size={{ xs: width }} ref={ref}>
                     {queryRef && (
                       <React.Suspense
                         fallback={(
@@ -133,7 +133,7 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
                 );
               case 'originOfTheCase':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: width }}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
                       container={caseIncident}
@@ -145,7 +145,7 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
                 );
               case 'observables':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: width }}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
                       container={caseIncident}
@@ -157,21 +157,11 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
                 );
               case 'relatedEntities':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: width }}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={false}
                       container={caseIncident}
-                      types={[
-                        'Threat-Actor',
-                        'Intrusion-Set',
-                        'Campaign',
-                        'Malware',
-                        'Tool',
-                        'Attack-Pattern',
-                        'Identity',
-                        'Location',
-                        'Vulnerability',
-                      ]}
+                      types={['Stix-Domain-Object']}
                       title={t_i18n('Other entities')}
                       enableReferences={enableReferences}
                     />
@@ -179,7 +169,7 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: width }}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={caseIncident.id}
                     />
@@ -187,7 +177,7 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: width }}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={caseIncident.id}
                     />
@@ -195,7 +185,7 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={{ xs: width }}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={caseIncident.id}
                       defaultMarkings={caseIncident.objectMarking ?? []}
