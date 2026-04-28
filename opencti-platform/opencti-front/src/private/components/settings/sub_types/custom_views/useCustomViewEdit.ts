@@ -2,6 +2,7 @@ import { graphql } from 'react-relay';
 import { useState } from 'react';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { useCustomViewEdit_Mutation } from './__generated__/useCustomViewEdit_Mutation.graphql';
+import { useCustomViewsData } from '@components/custom_views/useCustomViewsData';
 
 const customViewEditMutation = graphql`
   mutation useCustomViewEdit_Mutation($id: ID!, $input: [EditInput!]!) {
@@ -21,6 +22,7 @@ const customViewEditMutation = graphql`
 const useCustomViewEdit = () => {
   const [mutating, setMutating] = useState(false);
   const [commitEditMutation] = useApiMutation<useCustomViewEdit_Mutation>(customViewEditMutation);
+  const { refetchCustomViews } = useCustomViewsData();
 
   const mutation: typeof commitEditMutation = ({ variables, onCompleted, onError }) => {
     setMutating(true);
@@ -33,6 +35,7 @@ const useCustomViewEdit = () => {
       onCompleted: (...args) => {
         setMutating(false);
         onCompleted?.(...args);
+        refetchCustomViews();
       },
     });
   };
