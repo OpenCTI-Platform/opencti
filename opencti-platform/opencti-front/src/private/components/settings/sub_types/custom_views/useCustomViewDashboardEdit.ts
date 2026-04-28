@@ -99,9 +99,8 @@ const useCustomViewDashboardEdit = ({ customView }: {
       variables: {
         id,
         input: {
-          importType: 'widget',
           file: widgetConfig,
-          dashboardManifest: manifestEncoded,
+          manifest: manifestEncoded,
         },
       },
       onError: () => {
