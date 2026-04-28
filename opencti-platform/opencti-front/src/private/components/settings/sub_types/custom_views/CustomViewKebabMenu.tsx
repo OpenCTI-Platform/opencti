@@ -8,6 +8,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import CustomViewDuplicationDialog from './CustomViewDuplicationDialog';
 import type { CustomViewKebabMenu_customView$key } from './__generated__/CustomViewKebabMenu_customView.graphql';
 import CustomViewDeletionDialog from './CustomViewDeletionDialog';
+import { useNavigate } from 'react-router-dom';
 
 const kebabMenuFragment = graphql`
   fragment CustomViewKebabMenu_customView on CustomView {
@@ -59,11 +60,15 @@ const CustomViewKebabMenu = ({ data }: CustomViewKebabMenuProps) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const navigate = useNavigate();
   const handleClick = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
     setAnchorEl(null);
+  };
+  const handleDeleted = () => {
+    navigate(`/dashboard/settings/customization/entity_types/${customView.targetEntityType}/custom-views`);
   };
 
   const {
@@ -116,7 +121,7 @@ const CustomViewKebabMenu = ({ data }: CustomViewKebabMenuProps) => {
         id={customView.id}
         isOpen={openDelete}
         handleClose={handleCloseDeletion}
-        targetEntityType={customView.targetEntityType}
+        onDeleted={handleDeleted}
       />
       <CustomViewDuplicationDialog
         data={customView}

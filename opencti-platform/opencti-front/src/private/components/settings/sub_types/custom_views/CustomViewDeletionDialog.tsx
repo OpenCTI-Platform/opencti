@@ -1,12 +1,13 @@
-import { useNavigate } from 'react-router-dom';
+import { type UIEvent } from 'react';
 import { graphql } from 'relay-runtime';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../../components/DeleteDialog';
 import { useCustomViewsData } from '../../../../components/custom_views/useCustomViewsData';
-import useEntityTranslation from '../../../../../utils/hooks/useEntityTranslation';
 import { CustomViewDeletionDialog_Mutation } from './__generated__/CustomViewDeletionDialog_Mutation.graphql';
+import stopEvent from '../../../../../utils/domEvent';
+import { deleteNode } from '../../../../../utils/store';
 
 const customViewDeletionDialogMutation = graphql`
     mutation CustomViewDeletionDialog_Mutation($id: ID!) {
@@ -17,24 +18,21 @@ const customViewDeletionDialogMutation = graphql`
 interface CustomViewDeletionDialogProps {
   id: string;
   isOpen: boolean;
-  handleClose: () => void;
-  targetEntityType: string;
+  handleClose: (e?: UIEvent) => void;
+  onDeleted?: () => void;
+  paginationOptions?: Record<string, unknown>;
 }
 
 const CustomViewDeletionDialog = ({
   id,
   isOpen,
   handleClose,
-  targetEntityType,
+  onDeleted,
+  paginationOptions,
 }: CustomViewDeletionDialogProps) => {
-  const { translateEntityType } = useEntityTranslation();
   const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
   const { refetchCustomViews } = useCustomViewsData();
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
-    values: { entity_type: translateEntityType('CustomView') },
-  });
+  const deleteSuccessMessage = t_i18n('Custom view successfully deleted');
 
   const [commit] = useApiMutation<CustomViewDeletionDialog_Mutation>(
     customViewDeletionDialogMutation,
@@ -45,17 +43,23 @@ const CustomViewDeletionDialog = ({
   const deletion = useDeletion({ handleClose });
   const { setDeleting } = deletion;
 
-  const submitDelete = () => {
+  const submitDelete = (e: UIEvent) => {
+    stopEvent(e);
     setDeleting(true);
     commit({
       variables: {
         id,
       },
+      updater: (store) => {
+        if (paginationOptions) {
+          deleteNode(store, 'CustomViewsSettingsDataTable_customViews', paginationOptions, id);
+        }
+      },
       onCompleted: () => {
         setDeleting(false);
         handleClose();
         refetchCustomViews();
-        navigate(`/dashboard/settings/customization/entity_types/${targetEntityType}/custom-views`);
+        onDeleted?.();
       },
     });
   };
