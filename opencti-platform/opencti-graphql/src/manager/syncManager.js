@@ -94,7 +94,7 @@ const syncManagerInstance = (syncId) => {
       const { uri: fileUri } = entityFile;
       try {
         const response = await httpClient.get(buildSyncStorageFetchUri(uri, fileUri));
-        entityFile.data = Buffer.from(response.data, 'utf-8').toString('base64');
+        entityFile.data = Buffer.from(response.data).toString('base64');
       } catch (e) {
         logApp.warn('[OPENCTI] Sync: Error when trying to get file from storage. Skipping file.', { fileUri, message: e.message });
       }
@@ -128,7 +128,7 @@ const syncManagerInstance = (syncId) => {
             continue;
           }
 
-          const base64Data = Buffer.from(response.data, 'utf-8').toString('base64');
+          const base64Data = Buffer.from(response.data).toString('base64');
           uriByReferenceUrl.set(embeddedStorageUri, `data:${detectedMime};base64,${base64Data}`);
         } catch (e) {
           logApp.warn('[OPENCTI] Sync: Error while resolving embedded markdown image, keeping original URI.', {
