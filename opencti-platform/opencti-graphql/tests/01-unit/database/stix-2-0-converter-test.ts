@@ -48,6 +48,10 @@ import {
   convertLocationToStix,
   convertInfrastructureToStix,
   convertStoreToStix_2_0,
+  convertMarkingDefinitionToStix,
+  convertLabelToStix,
+  convertKillChainPhaseToStix,
+  convertExternalReferenceToStix,
 } from '../../../src/database/stix-2-0-converter';
 import {
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -170,6 +174,15 @@ import { AI_PROMPT_INSTANCE, EXPECTED_AI_PROMPT } from './stix-2-0-converter-fix
 import { ICCID_INSTANCE, EXPECTED_ICCID } from './stix-2-0-converter-fixtures/SCOs/iccid';
 import { IMSI_INSTANCE, EXPECTED_IMSI } from './stix-2-0-converter-fixtures/SCOs/imsi';
 import { EMAIL_MIME_PART_INSTANCE, EXPECTED_EMAIL_MIME_PART } from './stix-2-0-converter-fixtures/SCOs/email-mime-part';
+import {
+  MARKING_DEFINITION_INSTANCE,
+  EXPECTED_MARKING_DEFINITION,
+  PAP_MARKING_DEFINITION_INSTANCE,
+  EXPECTED_PAP_MARKING_DEFINITION,
+} from './stix-2-0-converter-fixtures/SMOs/marking-definition';
+import { LABEL_INSTANCE, EXPECTED_LABEL } from './stix-2-0-converter-fixtures/SMOs/label';
+import { KILL_CHAIN_PHASE_INSTANCE, EXPECTED_KILL_CHAIN_PHASE } from './stix-2-0-converter-fixtures/SMOs/kill-chain-phase';
+import { EXTERNAL_REFERENCE_INSTANCE, EXPECTED_EXTERNAL_REFERENCE } from './stix-2-0-converter-fixtures/SMOs/external-reference';
 
 describe('Stix 2.0 opencti converter', () => {
   // SDOs
@@ -487,6 +500,29 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Administrative Area', async () => {
     const result = convertAdministrativeAreaToStix_2_0(ADMINISTRATIVE_AREA_INSTANCE);
     expect(result).toEqual(EXPECTED_ADMINISTRATIVE_AREA);
+  });
+});
+
+describe('Stix 2.0 opencti converter - SMOs', () => {
+  it('should convert Marking Definition', () => {
+    const result = convertMarkingDefinitionToStix(MARKING_DEFINITION_INSTANCE);
+    expect(result).toEqual(EXPECTED_MARKING_DEFINITION);
+  });
+  it('should convert Marking Definition (non-TLP, e.g. PAP)', () => {
+    const result = convertMarkingDefinitionToStix(PAP_MARKING_DEFINITION_INSTANCE);
+    expect(result).toEqual(EXPECTED_PAP_MARKING_DEFINITION);
+  });
+  it('should convert Label', () => {
+    const result = convertLabelToStix(LABEL_INSTANCE);
+    expect(result).toEqual(EXPECTED_LABEL);
+  });
+  it('should convert Kill Chain Phase', () => {
+    const result = convertKillChainPhaseToStix(KILL_CHAIN_PHASE_INSTANCE);
+    expect(result).toEqual(EXPECTED_KILL_CHAIN_PHASE);
+  });
+  it('should convert External Reference', () => {
+    const result = convertExternalReferenceToStix(EXTERNAL_REFERENCE_INSTANCE);
+    expect(result).toEqual(EXPECTED_EXTERNAL_REFERENCE);
   });
 });
 

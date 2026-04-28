@@ -103,6 +103,7 @@ import {
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isInternalRelationship, isStoreRelationPir } from '../schema/internalRelationship';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import type { StoreRelationPir } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
@@ -532,6 +533,62 @@ export const convertOpinionToStix = (instance: StoreEntity): SDO.StixOpinion => 
   };
 };
 
+// SMO
+const buildStixMarkings = (instance: StoreEntity) => {
+  return {
+    ...buildStixObject(instance),
+    created: convertToStixDate(instance.created),
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    external_references: buildExternalReferences(instance),
+    object_marking_refs: (instance[INPUT_MARKINGS] ?? []).map((m) => m.standard_id),
+  };
+};
+
+export const convertMarkingDefinitionToStix = (instance: StoreEntity): SMO.StixMarkingDefinition => {
+  assertType(ENTITY_TYPE_MARKING_DEFINITION, instance.entity_type);
+  const defType = (instance.definition_type ?? '').toLowerCase();
+  const defValue = (instance.definition ?? '').toLowerCase().replace('tlp:', '').trim();
+  return {
+    ...buildStixMarkings(instance),
+    name: instance.definition,
+    definition_type: defType,
+    definition: { [defType]: defValue },
+    x_opencti_order: instance.x_opencti_order,
+    x_opencti_color: instance.x_opencti_color,
+  };
+};
+
+export const convertLabelToStix = (instance: StoreEntity): SMO.StixLabel => {
+  assertType(ENTITY_TYPE_LABEL, instance.entity_type);
+  return {
+    ...buildStixObject(instance),
+    value: instance.value,
+    color: instance.color,
+  };
+};
+
+export const convertKillChainPhaseToStix = (instance: StoreEntity): SMO.StixKillChainPhase => {
+  assertType(ENTITY_TYPE_KILL_CHAIN_PHASE, instance.entity_type);
+  return {
+    ...buildStixObject(instance),
+    kill_chain_name: instance.kill_chain_name,
+    phase_name: instance.phase_name,
+    x_opencti_order: instance.x_opencti_order,
+  };
+};
+
+export const convertExternalReferenceToStix = (instance: StoreEntity): SMO.StixExternalReference => {
+  assertType(ENTITY_TYPE_EXTERNAL_REFERENCE, instance.entity_type);
+  return {
+    ...buildStixObject(instance),
+    source_name: instance.source_name,
+    description: instance.description,
+    url: instance.url,
+    hashes: instance.hashes ?? {},
+    external_id: instance.external_id,
+  };
+};
+
 // CONVERTERS
 export type ConvertFn<T extends StoreEntity, Z extends S.StixObject> = (instance: T) => Z;
 const stixDomainConverters = new Map<string, ConvertFn<any, any>>();
@@ -616,6 +673,21 @@ const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
       return convertSightingToStix(basicRel);
     }
     throw UnsupportedError('No relation converter_2_0 available', { type });
+  }
+  if (isStixMetaObject(type)) {
+    const basic = instance as StoreEntity;
+    switch (type) {
+      case ENTITY_TYPE_MARKING_DEFINITION:
+        return convertMarkingDefinitionToStix(basic);
+      case ENTITY_TYPE_LABEL:
+        return convertLabelToStix(basic);
+      case ENTITY_TYPE_KILL_CHAIN_PHASE:
+        return convertKillChainPhaseToStix(basic);
+      case ENTITY_TYPE_EXTERNAL_REFERENCE:
+        return convertExternalReferenceToStix(basic);
+      default:
+        throw UnsupportedError(`No meta stix 2.0 converter available for ${type}`);
+    }
   }
   if (isStixCyberObservable(type)) {
     const cyber = instance as StoreCyberObservable;
