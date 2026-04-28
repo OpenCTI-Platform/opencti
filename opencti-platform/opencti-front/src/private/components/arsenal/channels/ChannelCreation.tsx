@@ -31,7 +31,7 @@ import { splitMultilines } from '../../../../utils/String';
 import ProgressBar from '../../../../components/ProgressBar';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 
 const channelMutation = graphql`
   mutation ChannelCreationMutation($input: ChannelAddInput!) {
@@ -110,14 +110,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Channel')} ${t_i18n('successfully created')}` },
   );
-  let descriptionMarkdownController: MarkdownImagesController | null = null;
-
-  const buildMarkdownFilesInput = () => {
-    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
-    return markdownTempFiles.length > 0
-      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
-      : {};
-  };
+  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -261,10 +254,8 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               rows="4"
               style={fieldSpacingContainerStyle}
               autoPersistOnBlur={false}
-              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
-                descriptionMarkdownController = controller;
-              }}
-              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={values.objectMarking.map((v) => v.value)}
             />
             <ConfidenceField
               entityType="Channel"

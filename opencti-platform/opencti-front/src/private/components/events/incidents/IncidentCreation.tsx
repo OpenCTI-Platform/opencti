@@ -30,7 +30,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { IncidentCreationMutation, IncidentCreationMutation$data } from './__generated__/IncidentCreationMutation.graphql';
-import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 
 const IncidentMutation = graphql`
   mutation IncidentCreationMutation($input: IncidentAddInput!) {
@@ -115,14 +115,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       });
     });
   };
-  let descriptionMarkdownController: MarkdownImagesController | null = null;
-
-  const buildMarkdownFilesInput = () => {
-    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
-    return markdownTempFiles.length > 0
-      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
-      : {};
-  };
+  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const { mandatoryAttributes } = useIsMandatoryAttribute(INCIDENT_TYPE);
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
@@ -174,13 +167,11 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
         setSubmitting(false);
       },
       onCompleted: (response) => {
-
-            setSubmitting(false);
-            resetForm();
-            if (onCompleted) {
-              onCompleted();
-            }
-          
+        setSubmitting(false);
+        resetForm();
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };
@@ -251,10 +242,8 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             rows="4"
             style={fieldSpacingContainerStyle}
             autoPersistOnBlur={false}
-              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
-                descriptionMarkdownController = controller;
-              }}
-              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
           />
           <Field
             component={TextField}

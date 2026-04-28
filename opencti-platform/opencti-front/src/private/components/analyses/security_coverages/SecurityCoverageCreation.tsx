@@ -32,7 +32,7 @@ import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../..
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../utils/store';
 import { CoverageInformationFieldAdd } from '../../common/form/CoverageInformationField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -441,14 +441,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     });
   };
 
-  let descriptionMarkdownController: MarkdownImagesController | null = null;
-
-  const buildMarkdownFilesInput = () => {
-    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
-    return markdownTempFiles.length > 0
-      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
-      : {};
-  };
+  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<SecurityCoverageFormValues>['onSubmit'] = (
     values,
@@ -495,14 +488,12 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
         setSubmitting(false);
       },
       onCompleted: (response) => {
-        
-            setSubmitting(false);
-            resetForm();
-            handleClose();
-            if (response.securityCoverageAdd && shouldRedirect) {
-              navigate(`/dashboard/analyses/security_coverages/${response.securityCoverageAdd.id}`);
-            }
-          
+        setSubmitting(false);
+        resetForm();
+        handleClose();
+        if (response.securityCoverageAdd && shouldRedirect) {
+          navigate(`/dashboard/analyses/security_coverages/${response.securityCoverageAdd.id}`);
+        }
       },
     });
   };
@@ -733,10 +724,8 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
               rows={4}
               style={fieldSpacingContainerStyle}
               autoPersistOnBlur={false}
-              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
-                descriptionMarkdownController = controller;
-              }}
-              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={values.objectMarking.map((v) => v.value)}
             />
             <ConfidenceField
               containerStyle={fieldSpacingContainerStyle}

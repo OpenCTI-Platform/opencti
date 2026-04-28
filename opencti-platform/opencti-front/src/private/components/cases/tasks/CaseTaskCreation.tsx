@@ -14,7 +14,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -78,14 +78,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Task')} ${t_i18n('successfully created')}` },
   );
-  let descriptionMarkdownController: MarkdownImagesController | null = null;
-
-  const buildMarkdownFilesInput = () => {
-    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
-    return markdownTempFiles.length > 0
-      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
-      : {};
-  };
+  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<FormikCaseTaskAddInput>['onSubmit'] = (
     values,
@@ -186,9 +179,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
             rows="4"
             style={fieldSpacingContainerStyle}
             autoPersistOnBlur={false}
-            registerMarkdownImagesController={(controller: MarkdownImagesController) => {
-              descriptionMarkdownController = controller;
-            }}
+            registerMarkdownImagesController={registerMarkdownImagesController}
             uploadFileMarkings={(values.objectMarking ?? []).map(({ value }) => value)}
           />
           <FormButtonContainer>

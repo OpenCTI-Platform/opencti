@@ -33,7 +33,7 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import TextField from '../../../../components/TextField';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 
 const toolMutation = graphql`
   mutation ToolCreationMutation($input: ToolAddInput!) {
@@ -135,14 +135,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     });
   };
 
-  let descriptionMarkdownController: MarkdownImagesController | null = null;
-
-  const buildMarkdownFilesInput = () => {
-    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
-    return markdownTempFiles.length > 0
-      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
-      : {};
-  };
+  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -286,10 +279,8 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
               style={fieldSpacingContainerStyle}
               askAi={true}
               autoPersistOnBlur={false}
-              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
-                descriptionMarkdownController = controller;
-              }}
-              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={values.objectMarking.map((v) => v.value)}
             />
             <ConfidenceField
               entityType="Tool"

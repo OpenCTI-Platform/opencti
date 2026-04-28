@@ -23,7 +23,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -33,8 +33,6 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { NoteCreationMutation$data, NoteCreationMutation$variables } from './__generated__/NoteCreationMutation.graphql';
-import { NoteCreationUserMutation$data } from './__generated__/NoteCreationUserMutation.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -74,16 +72,6 @@ export const noteCreationMutation = graphql`
       attribute_abstract
       content
       ...NotesLine_node
-    }
-  }
-`;
-
-const noteCreationContentPatchMutation = graphql`
-  mutation NoteCreationContentPatchMutation($id: ID!, $input: [EditInput]!) {
-    noteEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
     }
   }
 `;
@@ -159,28 +147,8 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Note')} ${t_i18n('successfully created')}` },
   );
-  const [commitContentPatch] = useApiMutation(noteCreationContentPatchMutation);
-  const patchNoteContent = (id: string, content: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitContentPatch({
-        variables: {
-          id,
-          input: [{ key: 'content', value: content }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
 
-  let descriptionMarkdownController: MarkdownImagesController | null = null;
-
-  const buildMarkdownFilesInput = () => {
-    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
-    return markdownTempFiles.length > 0
-      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
-      : {};
-  };
+  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = async (
     values,
@@ -212,14 +180,12 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
           updater(store, userIsKnowledgeEditor ? 'noteAdd' : 'userNoteAdd');
         }
       },
-      onCompleted: (response) => {
-        
-            setSubmitting(false);
-            resetForm();
-            if (onClose) {
-              onClose();
-            }
-          
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+        if (onClose) {
+          onClose();
+        }
       },
       onError: () => {
         setSubmitting(false);
@@ -283,10 +249,8 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             style={{ marginTop: 20 }}
             askAi={true}
             autoPersistOnBlur={false}
-              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
-                descriptionMarkdownController = controller;
-              }}
-              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={values.objectMarking.map((v) => v.value)}
           />
           <OpenVocabField
             label={t_i18n('Note types')}

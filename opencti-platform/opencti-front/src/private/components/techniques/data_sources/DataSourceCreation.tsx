@@ -23,7 +23,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
-import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import { splitMultilines } from '../../../../utils/String';
@@ -137,14 +137,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
       });
     });
   };
-  let descriptionMarkdownController: MarkdownImagesController | null = null;
-
-  const buildMarkdownFilesInput = () => {
-    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
-    return markdownTempFiles.length > 0
-      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
-      : {};
-  };
+  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -284,10 +277,8 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
               rows="4"
               style={fieldSpacingContainerStyle}
               autoPersistOnBlur={false}
-              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
-                descriptionMarkdownController = controller;
-              }}
-              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <CreatedByField
               name="createdBy"

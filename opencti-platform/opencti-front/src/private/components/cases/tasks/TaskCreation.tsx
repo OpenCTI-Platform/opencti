@@ -16,7 +16,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -114,14 +114,7 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
       });
     });
   };
-  let descriptionMarkdownController: MarkdownImagesController | null = null;
-
-  const buildMarkdownFilesInput = () => {
-    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
-    return markdownTempFiles.length > 0
-      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
-      : {};
-  };
+  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const initialValues: FormikTaskAddInput = {
     name: inputValue ?? '',
@@ -219,10 +212,8 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
             rows="4"
             style={fieldSpacingContainerStyle}
             autoPersistOnBlur={false}
-              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
-                descriptionMarkdownController = controller;
-              }}
-              uploadFileMarkings={(values.objectMarking ?? []).map(({ value }) => value)}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={(values.objectMarking ?? []).map(({ value }) => value)}
           />
           <FormButtonContainer>
             <Button

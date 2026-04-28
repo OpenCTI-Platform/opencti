@@ -16,7 +16,7 @@ import FormButtonContainer from '../../../../components/common/form/FormButtonCo
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
-import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import { ExternalReferencesLinesPaginationQuery$variables } from '../__generated__/ExternalReferencesLinesPaginationQuery.graphql';
@@ -125,14 +125,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
     });
   };
 
-  let descriptionMarkdownController: MarkdownImagesController | null = null;
-
-  const buildMarkdownFilesInput = () => {
-    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
-    return markdownTempFiles.length > 0
-      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
-      : {};
-  };
+  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (
     values,
@@ -162,14 +155,12 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
         setSubmitting(false);
       },
       onCompleted: (response: ExternalReferenceCreationMutation$data) => {
-        
-            setSubmitting(false);
-            resetForm();
-            handleClose();
-            if (onCreate) {
-              onCreate(response.externalReferenceAdd, true);
-            }
-          
+        setSubmitting(false);
+        resetForm();
+        handleClose();
+        if (onCreate) {
+          onCreate(response.externalReferenceAdd, true);
+        }
       },
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
@@ -207,14 +198,12 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
         setSubmitting(false);
       },
       onCompleted: (response: ExternalReferenceCreationMutation$data) => {
-        
-            setSubmitting(false);
-            resetForm();
-            if (creationCallback && handleCloseContextual) {
-              creationCallback(response);
-              handleCloseContextual();
-            }
-          
+        setSubmitting(false);
+        resetForm();
+        if (creationCallback && handleCloseContextual) {
+          creationCallback(response);
+          handleCloseContextual();
+        }
       },
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
@@ -299,9 +288,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                   rows="4"
                   style={{ marginTop: 20 }}
                   autoPersistOnBlur={false}
-            registerMarkdownImagesController={(controller: MarkdownImagesController) => {
-              descriptionMarkdownController = controller;
-            }}
+                  registerMarkdownImagesController={registerMarkdownImagesController}
                 />
                 <FormButtonContainer>
                   <Button
@@ -388,9 +375,7 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
                   rows="4"
                   style={{ marginTop: 20, marginBottom: 20 }}
                   autoPersistOnBlur={false}
-            registerMarkdownImagesController={(controller: MarkdownImagesController) => {
-              descriptionMarkdownController = controller;
-            }}
+                  registerMarkdownImagesController={registerMarkdownImagesController}
                 />
                 <DialogActions>
                   <Button

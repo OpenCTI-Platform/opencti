@@ -39,7 +39,7 @@ import useUserMetric from '../../../../utils/hooks/useUserMetric';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
-import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { splitMultilines } from '../../../../utils/String';
 import ProgressBar from '../../../../components/ProgressBar';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
@@ -234,14 +234,7 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
       });
     });
   };
-  let descriptionMarkdownController: MarkdownImagesController | null = null;
-
-  const buildMarkdownFilesInput = () => {
-    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
-    return markdownTempFiles.length > 0
-      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
-      : {};
-  };
+  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -467,10 +460,8 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
                 style={{ marginTop: 20 }}
                 askAi={true}
                 autoPersistOnBlur={false}
-              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
-                descriptionMarkdownController = controller;
-              }}
-              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
               />
               <CreatedByField
                 name="createdBy"

@@ -14,7 +14,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import Drawer from '../../common/drawer/Drawer';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -78,14 +78,7 @@ const FeedbackCreation: FunctionComponent<{
       });
     });
   };
-  let descriptionMarkdownController: MarkdownImagesController | null = null;
-
-  const buildMarkdownFilesInput = () => {
-    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
-    return markdownTempFiles.length > 0
-      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
-      : {};
-  };
+  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(
@@ -174,9 +167,7 @@ const FeedbackCreation: FunctionComponent<{
               rows="4"
               style={fieldSpacingContainerStyle}
               autoPersistOnBlur={false}
-            registerMarkdownImagesController={(controller: MarkdownImagesController) => {
-              descriptionMarkdownController = controller;
-            }}
+            registerMarkdownImagesController={registerMarkdownImagesController}
             />
             <ConfidenceField
               entityType="Feedback"

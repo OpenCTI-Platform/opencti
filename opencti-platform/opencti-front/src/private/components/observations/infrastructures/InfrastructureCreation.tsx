@@ -27,7 +27,7 @@ import CustomFileUploader from '../../common/files/CustomFileUploader';
 import { InfrastructuresLinesPaginationQuery$variables } from '../__generated__/InfrastructuresLinesPaginationQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
-import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { splitMultilines } from '../../../../utils/String';
 import BulkTextModal from '../../../../components/fields/BulkTextField/BulkTextModal';
 import ProgressBar from '../../../../components/ProgressBar';
@@ -146,14 +146,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
       });
     });
   };
-  let descriptionMarkdownController: MarkdownImagesController | null = null;
-
-  const buildMarkdownFilesInput = () => {
-    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
-    return markdownTempFiles.length > 0
-      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
-      : {};
-  };
+  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -338,10 +331,8 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
               rows="4"
               style={fieldSpacingContainerStyle}
               autoPersistOnBlur={false}
-              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
-                descriptionMarkdownController = controller;
-              }}
-              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <CreatedByField
               name="createdBy"

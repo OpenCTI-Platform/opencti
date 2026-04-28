@@ -24,7 +24,7 @@ import { ThreatActorGroupCreationMutation, ThreatActorGroupCreationMutation$vari
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
-import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import { splitMultilines } from '../../../../utils/String';
 import ProgressBar from '../../../../components/ProgressBar';
@@ -136,14 +136,7 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
       });
     });
   };
-  let descriptionMarkdownController: MarkdownImagesController | null = null;
-
-  const buildMarkdownFilesInput = () => {
-    const markdownTempFiles = descriptionMarkdownController?.getPendingImageFiles() ?? [];
-    return markdownTempFiles.length > 0
-      ? { files: markdownTempFiles, embedded: markdownTempFiles.map(() => true) }
-      : {};
-  };
+  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
     bulkCount,
@@ -297,10 +290,8 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
               style={fieldSpacingContainerStyle}
               askAi={true}
               autoPersistOnBlur={false}
-              registerMarkdownImagesController={(controller: MarkdownImagesController) => {
-                descriptionMarkdownController = controller;
-              }}
-              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <CreatedByField
               name="createdBy"

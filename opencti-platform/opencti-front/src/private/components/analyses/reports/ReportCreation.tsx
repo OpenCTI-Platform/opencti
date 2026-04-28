@@ -6,7 +6,7 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import { FunctionComponent, useRef, useState } from 'react';
+import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -16,7 +16,6 @@ import FormButtonContainer from '../../../../components/common/form/FormButtonCo
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
-import type { MarkdownImagesController } from '../../../../components/fields/markdownField/MarkdownField';
 import RichTextField from '../../../../components/fields/RichTextField';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -27,6 +26,7 @@ import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import Security from '../../../../utils/Security';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -109,7 +109,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
-  const descriptionMarkdownControllerRef = useRef<MarkdownImagesController | null>(null);
+  const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const { mandatoryAttributes } = useIsMandatoryAttribute(REPORT_TYPE);
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -144,13 +144,13 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
-    const markdownTempFiles = descriptionMarkdownControllerRef.current?.getPendingImageFiles() ?? [];
+    const markdownFilesInput = buildMarkdownFilesInput();
     const files = [
-      ...markdownTempFiles,
+      ...(markdownFilesInput.files ?? []),
       ...(values.file ? [values.file] : []),
     ];
     const embedded = [
-      ...markdownTempFiles.map(() => true),
+      ...(markdownFilesInput.embedded ?? []),
       ...(values.file ? [false] : []),
     ];
 
@@ -292,9 +292,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             style={fieldSpacingContainerStyle}
             askAi={true}
             autoPersistOnBlur={false}
-            registerMarkdownImagesController={(controller: MarkdownImagesController) => {
-              descriptionMarkdownControllerRef.current = controller;
-            }}
+            registerMarkdownImagesController={registerMarkdownImagesController}
           />
           <Field
             component={RichTextField}
