@@ -49,17 +49,6 @@ const campaignMutation = graphql`
   }
 `;
 
-const campaignCreationDescriptionPatchMutation = graphql`
-  mutation CampaignCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    campaignEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-        description
-        ...CampaignCard_node
-      }
-    }
-  }
-`;
 
 const CAMPAIGN_TYPE = 'Campaign';
 
@@ -116,19 +105,6 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Campaign')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(campaignCreationDescriptionPatchMutation);
-  const patchCampaignDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
@@ -172,16 +148,6 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
 
     bulkCommit({
       variables,
-      commit: (args) => {
-        const mutationVariables = args.variables as CampaignCreationMutation$variables;
-        commit({
-          ...args,
-          variables: mutationVariables,
-          onCompleted: (response, errors) => {
-            args.onCompleted?.(response, errors);
-          },
-        });
-      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },

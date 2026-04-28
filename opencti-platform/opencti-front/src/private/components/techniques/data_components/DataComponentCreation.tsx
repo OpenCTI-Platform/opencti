@@ -51,13 +51,6 @@ const dataComponentMutation = graphql`
   }
 `;
 
-const dataComponentCreationDescriptionPatchMutation = graphql`
-  mutation DataComponentCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    dataComponentFieldPatch(id: $id, input: $input) {
-      id
-    }
-  }
-`;
 
 interface DataComponentAddInput {
   name: string;
@@ -116,19 +109,6 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     undefined,
     { successMessage: `${t_i18n('entity_Data-Component')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(dataComponentCreationDescriptionPatchMutation);
-  const patchDataComponentDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
@@ -176,16 +156,6 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
 
     bulkCommit({
       variables,
-      commit: (args) => {
-        const mutationVariables = args.variables as DataComponentCreationMutation$variables;
-        commit({
-          ...args,
-          variables: mutationVariables,
-          onCompleted: (response, errors) => {
-            args.onCompleted?.(response, errors);
-          },
-        });
-      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },

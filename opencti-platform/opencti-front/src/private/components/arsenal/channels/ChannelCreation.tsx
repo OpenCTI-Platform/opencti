@@ -154,16 +154,6 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
 
     bulkCommit({
       variables,
-      commit: (args) => {
-        const mutationVariables = args.variables as ChannelCreationMutation$variables;
-        commit({
-          ...args,
-          variables: mutationVariables,
-          onCompleted: (response, errors) => {
-            args.onCompleted?.(response, errors);
-          },
-        });
-      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -254,8 +244,8 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
               rows="4"
               style={fieldSpacingContainerStyle}
               autoPersistOnBlur={false}
-            registerMarkdownImagesController={registerMarkdownImagesController}
-            uploadFileMarkings={values.objectMarking.map((v) => v.value)}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
             />
             <ConfidenceField
               entityType="Channel"

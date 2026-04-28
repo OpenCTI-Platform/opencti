@@ -70,15 +70,6 @@ const attackPatternMutation = graphql`
   }
 `;
 
-const attackPatternCreationDescriptionPatchMutation = graphql`
-  mutation AttackPatternCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    attackPatternEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
-    }
-  }
-`;
 
 const ATTACK_PATTERN_TYPE = 'Attack-Pattern';
 
@@ -128,19 +119,6 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
     undefined,
     { successMessage: `${t_i18n('entity_Attack-Pattern')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(attackPatternCreationDescriptionPatchMutation);
-  const patchAttackPatternDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<AttackPatternAddInput>['onSubmit'] = (

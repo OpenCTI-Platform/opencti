@@ -59,15 +59,6 @@ const caseIncidentMutation = graphql`
   }
 `;
 
-const caseIncidentCreationDescriptionPatchMutation = graphql`
-  mutation CaseIncidentCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    stixDomainObjectEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
-    }
-  }
-`;
 
 interface FormikCaseIncidentAddInput {
   name: string;
@@ -142,19 +133,6 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Case-Incident')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(caseIncidentCreationDescriptionPatchMutation);
-  const patchCaseIncidentDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const onSubmit: FormikConfig<FormikCaseIncidentAddInput>['onSubmit'] = (
     values,

@@ -49,15 +49,6 @@ const IncidentMutation = graphql`
   }
 `;
 
-const incidentCreationDescriptionPatchMutation = graphql`
-  mutation IncidentCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    stixDomainObjectEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
-    }
-  }
-`;
 
 interface IncidentAddInput {
   name: string;
@@ -102,19 +93,6 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Incident')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(incidentCreationDescriptionPatchMutation);
-  const patchIncidentDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const { mandatoryAttributes } = useIsMandatoryAttribute(INCIDENT_TYPE);
   const basicShape = yupShapeConditionalRequired({

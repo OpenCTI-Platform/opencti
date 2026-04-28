@@ -163,16 +163,6 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
 
     bulkCommit({
       variables,
-      commit: (args) => {
-        const mutationVariables = args.variables as OrganizationCreationMutation$variables;
-        commit({
-          ...args,
-          variables: mutationVariables,
-          onCompleted: (response, errors) => {
-            args.onCompleted?.(response, errors);
-          },
-        });
-      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -266,8 +256,8 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
               rows="4"
               style={fieldSpacingContainerStyle}
               autoPersistOnBlur={false}
-            registerMarkdownImagesController={registerMarkdownImagesController}
-            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <ConfidenceField
               entityType="Organization"

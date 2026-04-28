@@ -154,16 +154,6 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
 
     bulkCommit({
       variables,
-      commit: (args) => {
-        const mutationVariables = args.variables as SystemCreationMutation$variables;
-        commit({
-          ...args,
-          variables: mutationVariables,
-          onCompleted: (response, errors) => {
-            args.onCompleted?.(response, errors);
-          },
-        });
-      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -255,8 +245,8 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
               rows="4"
               style={fieldSpacingContainerStyle}
               autoPersistOnBlur={false}
-            registerMarkdownImagesController={registerMarkdownImagesController}
-            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <ConfidenceField
               entityType="System"

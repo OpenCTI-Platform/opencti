@@ -58,15 +58,6 @@ const caseRftMutation = graphql`
   }
 `;
 
-const caseRftCreationDescriptionPatchMutation = graphql`
-  mutation CaseRftCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    stixDomainObjectEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
-    }
-  }
-`;
 
 interface FormikCaseRftAddInput {
   name: string;
@@ -141,19 +132,6 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Case-Rft')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(caseRftCreationDescriptionPatchMutation);
-  const patchCaseRftDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<FormikCaseRftAddInput>['onSubmit'] = (

@@ -74,13 +74,6 @@ const narrativeMutation = graphql`
   }
 `;
 
-const narrativeCreationDescriptionPatchMutation = graphql`
-  mutation NarrativeCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    narrativeFieldPatch(id: $id, input: $input) {
-      id
-    }
-  }
-`;
 
 const NARRATIVE_TYPE = 'Narrative';
 
@@ -136,19 +129,6 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Narrative')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(narrativeCreationDescriptionPatchMutation);
-  const patchNarrativeDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
@@ -192,16 +172,6 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
 
     bulkCommit({
       variables,
-      commit: (args) => {
-        const mutationVariables = args.variables as NarrativeCreationMutation$variables;
-        commit({
-          ...args,
-          variables: mutationVariables,
-          onCompleted: (response, errors) => {
-            args.onCompleted?.(response, errors);
-          },
-        });
-      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },

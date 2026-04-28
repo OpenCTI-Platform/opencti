@@ -50,17 +50,6 @@ const ThreatActorGroupMutation = graphql`
   }
 `;
 
-const threatActorGroupCreationDescriptionPatchMutation = graphql`
-  mutation ThreatActorGroupCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    threatActorGroupEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-        description
-        ...ThreatActorGroupCard_node
-      }
-    }
-  }
-`;
 
 const THREAT_ACTOR_GROUP_TYPE = 'Threat-Actor-Group';
 
@@ -123,19 +112,6 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
     undefined,
     { successMessage: `${t_i18n('entity_Threat-Actor-Group')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(threatActorGroupCreationDescriptionPatchMutation);
-  const patchThreatActorGroupDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
@@ -180,16 +156,6 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
 
     bulkCommit({
       variables,
-      commit: (args) => {
-        const mutationVariables = args.variables as ThreatActorGroupCreationMutation$variables;
-        commit({
-          ...args,
-          variables: mutationVariables,
-          onCompleted: (response, errors) => {
-            args.onCompleted?.(response, errors);
-          },
-        });
-      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },

@@ -49,15 +49,6 @@ const externalReferenceCreationMutation = graphql`
   }
 `;
 
-const externalReferenceCreationDescriptionPatchMutation = graphql`
-  mutation ExternalReferenceCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    externalReferenceEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
-    }
-  }
-`;
 
 const externalReferenceValidation = (t: (value: string) => string) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),
@@ -111,19 +102,6 @@ const ExternalReferenceCreation: FunctionComponent<ExternalReferenceCreationProp
     undefined,
     { successMessage: `${t_i18n('entity_External-Reference')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(externalReferenceCreationDescriptionPatchMutation);
-  const patchExternalReferenceDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
 
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 

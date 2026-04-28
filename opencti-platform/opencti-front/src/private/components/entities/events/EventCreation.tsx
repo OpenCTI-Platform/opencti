@@ -53,15 +53,6 @@ const eventMutation = graphql`
   }
 `;
 
-const eventCreationDescriptionPatchMutation = graphql`
-  mutation EventCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    stixDomainObjectEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
-    }
-  }
-`;
 
 const EVENT_TYPE = 'Event';
 
@@ -126,19 +117,6 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Event')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(eventCreationDescriptionPatchMutation);
-  const patchEventDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
@@ -185,16 +163,6 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
 
     bulkCommit({
       variables,
-      commit: (args) => {
-        const mutationVariables = args.variables as EventCreationMutation$variables;
-        commit({
-          ...args,
-          variables: mutationVariables,
-          onCompleted: (response, errors) => {
-            args.onCompleted?.(response, errors);
-          },
-        });
-      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },

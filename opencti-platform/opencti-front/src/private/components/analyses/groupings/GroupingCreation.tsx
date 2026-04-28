@@ -35,7 +35,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { GroupingCreationMutation, GroupingCreationMutation$data, GroupingCreationMutation$variables } from './__generated__/GroupingCreationMutation.graphql';
+import { GroupingCreationMutation, GroupingCreationMutation$variables } from './__generated__/GroupingCreationMutation.graphql';
 
 const groupingMutation = graphql`
   mutation GroupingCreationMutation($input: GroupingAddInput!) {
@@ -50,14 +50,6 @@ const groupingMutation = graphql`
       entity_type
       parent_types
       ...GroupingsLine_node
-    }
-  }
-`;
-
-const groupingCreationDescriptionPatchMutation = graphql`
-  mutation GroupingCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    groupingFieldPatch(id: $id, input: $input) {
-      id
     }
   }
 `;
@@ -133,19 +125,6 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Grouping')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(groupingCreationDescriptionPatchMutation);
-  const patchGroupingDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
 
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
@@ -186,19 +165,17 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: (response) => {
-        
-            setSubmitting(false);
-            resetForm();
-            if (onClose) {
-              onClose();
-            }
-            if (mapAfter) {
-              navigate(
-                `/dashboard/analyses/groupings/${response.groupingAdd?.id}/content/mapping`,
-              );
-            }
-          
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+        if (onClose) {
+          onClose();
+        }
+        if (mapAfter) {
+          navigate(
+            `/dashboard/analyses/groupings/${response.groupingAdd?.id}/content/mapping`,
+          );
+        }
       },
     });
   };

@@ -50,15 +50,6 @@ const courseOfActionMutation = graphql`
   }
 `;
 
-const courseOfActionCreationDescriptionPatchMutation = graphql`
-  mutation CourseOfActionCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    courseOfActionEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
-    }
-  }
-`;
 
 const COURSE_OF_ACTION_TYPE = 'Course-Of-Action';
 
@@ -112,19 +103,6 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
     undefined,
     { successMessage: `${t_i18n('entity_Course-Of-Action')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(courseOfActionCreationDescriptionPatchMutation);
-  const patchCourseOfActionDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<CourseOfActionAddInput>['onSubmit'] = (

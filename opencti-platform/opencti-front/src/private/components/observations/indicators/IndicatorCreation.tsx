@@ -69,13 +69,6 @@ const indicatorMutation = graphql`
   }
 `;
 
-const indicatorCreationDescriptionPatchMutation = graphql`
-  mutation IndicatorCreationDescriptionPatchMutation($id: ID!, $input: [EditInput!]!) {
-    indicatorFieldPatch(id: $id, input: $input) {
-      id
-    }
-  }
-`;
 
 const INDICATOR_TYPE = 'Indicator';
 
@@ -161,19 +154,6 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Indicator')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(indicatorCreationDescriptionPatchMutation);
-  const patchIndicatorDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const onSubmit: FormikConfig<IndicatorAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {

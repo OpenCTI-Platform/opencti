@@ -50,15 +50,6 @@ const countryMutation = graphql`
   }
 `;
 
-const countryCreationDescriptionPatchMutation = graphql`
-  mutation CountryCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    countryEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
-    }
-  }
-`;
 
 interface CountryAddInput {
   name: string;
@@ -111,19 +102,6 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Country')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(countryCreationDescriptionPatchMutation);
-  const patchCountryDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
@@ -167,16 +145,6 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
 
     bulkCommit({
       variables,
-      commit: (args) => {
-        const mutationVariables = args.variables as CountryCreationMutation$variables;
-        commit({
-          ...args,
-          variables: mutationVariables,
-          onCompleted: (response, errors) => {
-            args.onCompleted?.(response, errors);
-          },
-        });
-      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },

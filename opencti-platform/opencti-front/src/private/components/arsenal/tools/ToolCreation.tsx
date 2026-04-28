@@ -52,15 +52,6 @@ const toolMutation = graphql`
   }
 `;
 
-const toolCreationDescriptionPatchMutation = graphql`
-  mutation ToolCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    toolEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
-    }
-  }
-`;
 
 const TOOL_TYPE = 'Tool';
 
@@ -121,19 +112,6 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Tool')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(toolCreationDescriptionPatchMutation);
-  const patchToolDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
 
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
@@ -181,16 +159,6 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
 
     bulkCommit({
       variables,
-      commit: (args) => {
-        const mutationVariables = args.variables as ToolCreationMutation$variables;
-        commit({
-          ...args,
-          variables: mutationVariables,
-          onCompleted: (response, errors) => {
-            args.onCompleted?.(response, errors);
-          },
-        });
-      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },

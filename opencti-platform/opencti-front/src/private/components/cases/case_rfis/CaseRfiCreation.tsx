@@ -58,15 +58,6 @@ const caseRfiMutation = graphql`
   }
 `;
 
-const caseRfiCreationDescriptionPatchMutation = graphql`
-  mutation CaseRfiCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    stixDomainObjectEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
-    }
-  }
-`;
 
 interface FormikCaseRfiAddInput {
   name: string;
@@ -140,19 +131,6 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Case-Rfi')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(caseRfiCreationDescriptionPatchMutation);
-  const patchCaseRfiDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const onSubmit: FormikConfig<FormikCaseRfiAddInput>['onSubmit'] = (
     values,

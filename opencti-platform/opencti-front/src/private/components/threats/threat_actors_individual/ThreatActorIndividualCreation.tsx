@@ -82,15 +82,6 @@ const ThreatActorIndividualMutation = graphql`
   }
 `;
 
-const threatActorIndividualCreationDescriptionPatchMutation = graphql`
-  mutation ThreatActorIndividualCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    threatActorIndividualFieldPatch(id: $id, input: $input) {
-      id
-      description
-      ...ThreatActorIndividualCard_node
-    }
-  }
-`;
 
 const THREAT_ACTOR_INDIVIDUAL_TYPE = 'Threat-Actor-Individual';
 
@@ -221,19 +212,6 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
     undefined,
     { successMessage: `${t_i18n('entity_Threat-Actor-Individual')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(threatActorIndividualCreationDescriptionPatchMutation);
-  const patchThreatActorIndividualDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
@@ -303,16 +281,6 @@ export const ThreatActorIndividualCreationForm: FunctionComponent<
 
     bulkCommit({
       variables,
-      commit: (args) => {
-        const mutationVariables = args.variables as ThreatActorIndividualCreationMutation$variables;
-        commit({
-          ...args,
-          variables: mutationVariables,
-          onCompleted: (response, errors) => {
-            args.onCompleted?.(response, errors);
-          },
-        });
-      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },

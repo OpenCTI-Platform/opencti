@@ -111,16 +111,6 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
 
     bulkCommit({
       variables,
-      commit: (args) => {
-        const mutationVariables = args.variables as SecurityPlatformCreationMutation$variables;
-        commit({
-          ...args,
-          variables: mutationVariables,
-          onCompleted: (response, errors) => {
-            args.onCompleted?.(response, errors);
-          },
-        });
-      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -209,8 +199,8 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
               rows="4"
               style={fieldSpacingContainerStyle}
               autoPersistOnBlur={false}
-            registerMarkdownImagesController={registerMarkdownImagesController}
-            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             { /* TODO Improve customization (vocab with letter range) 2662 */}
             <OpenVocabField

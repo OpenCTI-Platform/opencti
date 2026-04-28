@@ -31,15 +31,6 @@ const feedbackMutation = graphql`
   }
 `;
 
-const feedbackCreationDescriptionPatchMutation = graphql`
-  mutation FeedbackCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    stixDomainObjectEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
-    }
-  }
-`;
 
 interface FormikFeedbackAddInput {
   name: string;
@@ -65,19 +56,6 @@ const FeedbackCreation: FunctionComponent<{
     undefined,
     { successMessage: 'Thank you for your feedback!' },
   );
-  const [commitDescriptionPatch] = useApiMutation(feedbackCreationDescriptionPatchMutation);
-  const patchFeedbackDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
 

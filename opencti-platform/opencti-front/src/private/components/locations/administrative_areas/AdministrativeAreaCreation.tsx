@@ -53,14 +53,6 @@ const administrativeAreaMutation = graphql`
   }
 `;
 
-const administrativeAreaCreationDescriptionPatchMutation = graphql`
-  mutation AdministrativeAreaCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    administrativeAreaFieldPatch(id: $id, input: $input) {
-      id
-    }
-  }
-`;
-
 interface AdministrativeAreaAddInput {
   name: string;
   description: string;
@@ -119,19 +111,6 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
     undefined,
     { successMessage: `${t_i18n('entity_Administrative-Area')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(administrativeAreaCreationDescriptionPatchMutation);
-  const patchAdministrativeAreaDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
@@ -177,16 +156,6 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
 
     bulkCommit({
       variables,
-      commit: (args) => {
-        const mutationVariables = args.variables as AdministrativeAreaCreationMutation$variables;
-        commit({
-          ...args,
-          variables: mutationVariables,
-          onCompleted: (response, errors) => {
-            args.onCompleted?.(response, errors);
-          },
-        });
-      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },
@@ -272,8 +241,8 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               rows={4}
               style={fieldSpacingContainerStyle}
               autoPersistOnBlur={false}
-            registerMarkdownImagesController={registerMarkdownImagesController}
-            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <ConfidenceField
               entityType="Administrative-Area"

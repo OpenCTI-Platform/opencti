@@ -44,15 +44,6 @@ const taskAddMutation = graphql`
   }
 `;
 
-const taskCreationDescriptionPatchMutation = graphql`
-  mutation TaskCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    stixDomainObjectEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
-    }
-  }
-`;
 
 const TASK_TYPE = 'Task';
 interface FormikTaskAddInput {
@@ -101,19 +92,6 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Task')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(taskCreationDescriptionPatchMutation);
-  const patchTaskDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const initialValues: FormikTaskAddInput = {

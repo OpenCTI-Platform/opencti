@@ -50,15 +50,6 @@ const regionMutation = graphql`
   }
 `;
 
-const regionCreationDescriptionPatchMutation = graphql`
-  mutation RegionCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    regionEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
-    }
-  }
-`;
 
 interface RegionAddInput {
   name: string;
@@ -111,19 +102,6 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Region')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(regionCreationDescriptionPatchMutation);
-  const patchRegionDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
@@ -167,16 +145,6 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
 
     bulkCommit({
       variables,
-      commit: (args) => {
-        const mutationVariables = args.variables as RegionCreationMutation$variables;
-        commit({
-          ...args,
-          variables: mutationVariables,
-          onCompleted: (response, errors) => {
-            args.onCompleted?.(response, errors);
-          },
-        });
-      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },

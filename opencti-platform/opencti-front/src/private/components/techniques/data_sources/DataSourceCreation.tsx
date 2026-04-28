@@ -52,13 +52,6 @@ const dataSourceMutation = graphql`
   }
 `;
 
-const dataSourceCreationDescriptionPatchMutation = graphql`
-  mutation DataSourceCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    dataSourceFieldPatch(id: $id, input: $input) {
-      id
-    }
-  }
-`;
 
 interface DataSourceAddInput {
   name: string;
@@ -124,19 +117,6 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Data-Source')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(dataSourceCreationDescriptionPatchMutation);
-  const patchDataSourceDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const {
     bulkCommit,
@@ -182,16 +162,6 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
 
     bulkCommit({
       variables,
-      commit: (args) => {
-        const mutationVariables = args.variables as DataSourceCreationMutation$variables;
-        commit({
-          ...args,
-          variables: mutationVariables,
-          onCompleted: (response, errors) => {
-            args.onCompleted?.(response, errors);
-          },
-        });
-      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
       },

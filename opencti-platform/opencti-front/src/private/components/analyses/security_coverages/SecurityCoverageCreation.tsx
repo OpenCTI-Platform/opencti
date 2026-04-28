@@ -40,10 +40,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SecurityCoverageEntityLine from './SecurityCoverageEntityLine';
 import { useNavigate } from 'react-router-dom';
-import {
-  SecurityCoverageCreationMutation,
-  SecurityCoverageCreationMutation$data,
-} from '@components/analyses/security_coverages/__generated__/SecurityCoverageCreationMutation.graphql';
+import { SecurityCoverageCreationMutation } from '@components/analyses/security_coverages/__generated__/SecurityCoverageCreationMutation.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -114,14 +111,6 @@ const securityCoverageMutation = graphql`
         coverage_score
       }
       ...SecurityCoveragesLine_node
-    }
-  }
-`;
-
-const securityCoverageCreationDescriptionPatchMutation = graphql`
-  mutation SecurityCoverageCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    securityCoverageFieldPatch(id: $id, input: $input) {
-      id
     }
   }
 `;
@@ -427,19 +416,6 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     undefined,
     { successMessage: `${t_i18n('entity_Security-Coverage')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(securityCoverageCreationDescriptionPatchMutation);
-  const patchSecurityCoverageDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
 
   const { buildMarkdownFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
@@ -724,8 +700,8 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
               rows={4}
               style={fieldSpacingContainerStyle}
               autoPersistOnBlur={false}
-            registerMarkdownImagesController={registerMarkdownImagesController}
-            uploadFileMarkings={values.objectMarking.map((v) => v.value)}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
             />
             <ConfidenceField
               containerStyle={fieldSpacingContainerStyle}
