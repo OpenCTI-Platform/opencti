@@ -111,6 +111,14 @@ const DELETE_PLAYBOOK = gql`
     playbookDelete(id:$id)
   }
 `;
+const PLAYBOOK_MANAGER_INFO = gql`
+  query playbookManagerInfo {
+    playbookManagerInfo {
+      activated
+      lastEventDate
+    }
+  }
+`;
 
 const EMPTY_STRING_FILTERS = JSON.stringify({
   mode: 'and',
@@ -671,5 +679,15 @@ describe('Playbook resolver standard behavior', () => {
       });
       expect(queryResult.data?.playbookDelete).toEqual(playbookId);
     });
+  });
+});
+
+describe('Playbook manager info', () => {
+  it('should return playbook manager info', async () => {
+    const queryResult = await queryAsAdminWithSuccess({ query: PLAYBOOK_MANAGER_INFO });
+    const managerInfo = queryResult.data?.playbookManagerInfo;
+    expect(managerInfo).toBeDefined();
+    expect(managerInfo.activated).toBeDefined();
+    expect(typeof managerInfo.activated).toBe('boolean');
   });
 });
