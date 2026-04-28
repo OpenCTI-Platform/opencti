@@ -52,7 +52,6 @@ const toolMutation = graphql`
   }
 `;
 
-
 const TOOL_TYPE = 'Tool';
 
 interface ToolAddInput {
@@ -246,8 +245,8 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
               style={fieldSpacingContainerStyle}
               askAi={true}
               autoPersistOnBlur={false}
-            registerMarkdownImagesController={registerMarkdownImagesController}
-            uploadFileMarkings={values.objectMarking.map((v) => v.value)}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
             />
             <ConfidenceField
               entityType="Tool"

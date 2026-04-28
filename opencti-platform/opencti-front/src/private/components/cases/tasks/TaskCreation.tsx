@@ -44,7 +44,6 @@ const taskAddMutation = graphql`
   }
 `;
 
-
 const TASK_TYPE = 'Task';
 interface FormikTaskAddInput {
   name: string;
@@ -128,11 +127,9 @@ export const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: (response) => {
-
-            setSubmitting(false);
-            resetForm();
-          
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
       },
     });
   };

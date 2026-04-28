@@ -58,7 +58,6 @@ const caseRftMutation = graphql`
   }
 `;
 
-
 interface FormikCaseRftAddInput {
   name: string;
   confidence: number | undefined;
@@ -177,18 +176,16 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
         setSubmitting(false);
       },
       onCompleted: (response) => {
-
-            setSubmitting(false);
-            resetForm();
-            if (onClose) {
-              onClose();
-            }
-            if (mapAfter) {
-              navigate(
-                `/dashboard/cases/rfts/${response.caseRftAdd?.id}/content/mapping`,
-              );
-            }
-          
+        setSubmitting(false);
+        resetForm();
+        if (onClose) {
+          onClose();
+        }
+        if (mapAfter) {
+          navigate(
+            `/dashboard/cases/rfts/${response.caseRftAdd?.id}/content/mapping`,
+          );
+        }
       },
     });
   };

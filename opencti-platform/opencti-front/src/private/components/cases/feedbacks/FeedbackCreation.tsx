@@ -31,7 +31,6 @@ const feedbackMutation = graphql`
   }
 `;
 
-
 interface FormikFeedbackAddInput {
   name: string;
   description: string;
@@ -86,12 +85,10 @@ const FeedbackCreation: FunctionComponent<{
       variables: {
         input,
       },
-      onCompleted: (response) => {
-
-            setSubmitting(false);
-            resetForm();
-            handleCloseDrawer();
-          
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+        handleCloseDrawer();
       },
     });
   };
@@ -144,7 +141,7 @@ const FeedbackCreation: FunctionComponent<{
               rows="4"
               style={fieldSpacingContainerStyle}
               autoPersistOnBlur={false}
-            registerMarkdownImagesController={registerMarkdownImagesController}
+              registerMarkdownImagesController={registerMarkdownImagesController}
             />
             <ConfidenceField
               entityType="Feedback"

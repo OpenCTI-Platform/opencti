@@ -70,7 +70,6 @@ const attackPatternMutation = graphql`
   }
 `;
 
-
 const ATTACK_PATTERN_TYPE = 'Attack-Pattern';
 
 interface AttackPatternAddInput {
@@ -150,14 +149,12 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: (response, _errors) => {
-
-            setSubmitting(false);
-            resetForm();
-            if (onCompleted) {
-              onCompleted();
-            }
-          
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };

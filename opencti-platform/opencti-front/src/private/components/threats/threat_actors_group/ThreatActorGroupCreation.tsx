@@ -50,7 +50,6 @@ const ThreatActorGroupMutation = graphql`
   }
 `;
 
-
 const THREAT_ACTOR_GROUP_TYPE = 'Threat-Actor-Group';
 
 interface ThreatActorGroupAddInput {
@@ -255,8 +254,8 @@ export const ThreatActorGroupCreationForm: FunctionComponent<
               style={fieldSpacingContainerStyle}
               askAi={true}
               autoPersistOnBlur={false}
-            registerMarkdownImagesController={registerMarkdownImagesController}
-            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <CreatedByField
               name="createdBy"

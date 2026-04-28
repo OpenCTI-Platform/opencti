@@ -49,7 +49,6 @@ const campaignMutation = graphql`
   }
 `;
 
-
 const CAMPAIGN_TYPE = 'Campaign';
 
 interface CampaignAddInput {
@@ -237,8 +236,8 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
               style={fieldSpacingContainerStyle}
               askAi={true}
               autoPersistOnBlur={false}
-            registerMarkdownImagesController={registerMarkdownImagesController}
-            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <CreatedByField
               name="createdBy"

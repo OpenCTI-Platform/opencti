@@ -53,7 +53,6 @@ const infrastructureMutation = graphql`
   }
 `;
 
-
 const INFRASTRUCTURE_TYPE = 'Infrastructure';
 
 interface InfrastructureAddInput {
@@ -298,8 +297,8 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
               rows="4"
               style={fieldSpacingContainerStyle}
               autoPersistOnBlur={false}
-            registerMarkdownImagesController={registerMarkdownImagesController}
-            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <CreatedByField
               name="createdBy"

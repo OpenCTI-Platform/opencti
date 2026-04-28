@@ -49,7 +49,6 @@ const intrusionSetMutation = graphql`
   }
 `;
 
-
 const INTRUSION_SET_TYPE = 'Intrusion-Set';
 
 interface IntrusionSetAddInput {
@@ -239,8 +238,8 @@ export const IntrusionSetCreationForm: FunctionComponent<
               rows="4"
               style={fieldSpacingContainerStyle}
               autoPersistOnBlur={false}
-            registerMarkdownImagesController={registerMarkdownImagesController}
-            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <CreatedByField
               name="createdBy"

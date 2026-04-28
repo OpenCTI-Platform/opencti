@@ -50,7 +50,6 @@ const courseOfActionMutation = graphql`
   }
 `;
 
-
 const COURSE_OF_ACTION_TYPE = 'Course-Of-Action';
 
 interface CourseOfActionAddInput {
@@ -137,14 +136,12 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: (response) => {
-
-            setSubmitting(false);
-            resetForm();
-            if (onCompleted) {
-              onCompleted();
-            }
-          
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };

@@ -40,12 +40,39 @@ const extractMimeTypeFromHeader = (response) => {
   return contentTypeHeader.split(';')[0].trim().toLowerCase();
 };
 
-const buildSyncStorageFetchUri = (syncUri, storageUri) => {
-  const storageIndex = storageUri.indexOf('storage/get');
-  if (storageIndex >= 0) {
-    return `${httpBase(syncUri)}${storageUri.substring(storageIndex)}`;
+const extractStorageRelativePath = (candidateUri) => {
+  const normalizedUri = candidateUri.trim();
+  const lowerCaseUri = normalizedUri.toLowerCase();
+  const getIndex = lowerCaseUri.indexOf('/storage/get/');
+  const viewIndex = lowerCaseUri.indexOf('/storage/view/');
+  const candidates = [getIndex, viewIndex].filter((index) => index >= 0);
+  if (candidates.length === 0) {
+    return null;
   }
-  const normalized = storageUri.startsWith('/') ? storageUri.substring(1) : storageUri;
+  const pathIndex = Math.min(...candidates);
+  return normalizedUri.substring(pathIndex).replace(/^\/+/, '');
+};
+
+const buildSyncStorageFetchUri = (syncUri, storageUri) => {
+  const trimmedStorageUri = storageUri.trim();
+  if (/^https?:\/\//i.test(trimmedStorageUri)) {
+    try {
+      const parsedUri = new URL(trimmedStorageUri);
+      const extractedPath = extractStorageRelativePath(`${parsedUri.pathname}${parsedUri.search}`);
+      if (extractedPath) {
+        return `${httpBase(syncUri)}${extractedPath}`;
+      }
+    } catch {
+      return trimmedStorageUri;
+    }
+  }
+
+  const extractedPath = extractStorageRelativePath(trimmedStorageUri);
+  if (extractedPath) {
+    return `${httpBase(syncUri)}${extractedPath}`;
+  }
+
+  const normalized = trimmedStorageUri.startsWith('/') ? trimmedStorageUri.substring(1) : trimmedStorageUri;
   return `${httpBase(syncUri)}${normalized}`;
 };
 

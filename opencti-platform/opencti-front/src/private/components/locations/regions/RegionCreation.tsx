@@ -50,7 +50,6 @@ const regionMutation = graphql`
   }
 `;
 
-
 interface RegionAddInput {
   name: string;
   description: string;
@@ -224,8 +223,8 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
               rows="4"
               style={fieldSpacingContainerStyle}
               autoPersistOnBlur={false}
-            registerMarkdownImagesController={registerMarkdownImagesController}
-            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <ConfidenceField
               entityType="Region"

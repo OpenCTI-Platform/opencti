@@ -59,7 +59,6 @@ const caseIncidentMutation = graphql`
   }
 `;
 
-
 interface FormikCaseIncidentAddInput {
   name: string;
   confidence: number | undefined;
@@ -177,18 +176,16 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
         setSubmitting(false);
       },
       onCompleted: (response) => {
-
-            setSubmitting(false);
-            resetForm();
-            if (onClose) {
-              onClose();
-            }
-            if (mapAfter) {
-              navigate(
-                `/dashboard/cases/incidents/${response.caseIncidentAdd?.id}/content/mapping`,
-              );
-            }
-          
+        setSubmitting(false);
+        resetForm();
+        if (onClose) {
+          onClose();
+        }
+        if (mapAfter) {
+          navigate(
+            `/dashboard/cases/incidents/${response.caseIncidentAdd?.id}/content/mapping`,
+          );
+        }
       },
     });
   };

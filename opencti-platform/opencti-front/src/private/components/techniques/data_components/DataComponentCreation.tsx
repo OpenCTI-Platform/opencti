@@ -51,7 +51,6 @@ const dataComponentMutation = graphql`
   }
 `;
 
-
 interface DataComponentAddInput {
   name: string;
   description: string;
@@ -248,8 +247,8 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
               rows="4"
               style={fieldSpacingContainerStyle}
               autoPersistOnBlur={false}
-            registerMarkdownImagesController={registerMarkdownImagesController}
-            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <CreatedByField
               name="createdBy"

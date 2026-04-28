@@ -69,7 +69,6 @@ const indicatorMutation = graphql`
   }
 `;
 
-
 const INDICATOR_TYPE = 'Indicator';
 
 interface IndicatorAddInput {
@@ -192,14 +191,12 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: (response) => {
-
-            setSubmitting(false);
-            resetForm();
-            if (onCompleted) {
-              onCompleted();
-            }
-          
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };

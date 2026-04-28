@@ -74,7 +74,6 @@ const narrativeMutation = graphql`
   }
 `;
 
-
 const NARRATIVE_TYPE = 'Narrative';
 
 interface NarrativeAddInput {
@@ -253,8 +252,8 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
               rows="4"
               style={{ marginTop: 20 }}
               autoPersistOnBlur={false}
-            registerMarkdownImagesController={registerMarkdownImagesController}
-            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
             />
             <ConfidenceField
               entityType="Narratives"
