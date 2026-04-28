@@ -4,12 +4,14 @@ import remarkFlexibleMarkers from 'remark-flexible-markers';
 import { useTheme } from '@mui/styles';
 import React, { FunctionComponent, SyntheticEvent, useCallback, useMemo, useState } from 'react';
 import remarkGfm from 'remark-gfm';
+import { APP_BASE_PATH } from '../../relay/environment';
 import type { Theme } from '../Theme';
 import { truncate } from '../../utils/String';
 import ExternalLinkPopover from '../ExternalLinkPopover';
 import FieldOrEmpty from '../FieldOrEmpty';
 import { TEMP_IMAGE_SCHEME } from '../fields/markdownField/markdownImageTempUtils';
 import MarkdownImagePreviewModal from './MarkdownImagePreviewModal';
+import { resolveAndNormalizeMarkdownImageUrl } from './markdownDisplayHelpers';
 import { extractMarkdownPreviewImages, isAllowedUploadedImageUrl } from './markdownPreviewImageUtils';
 
 const markdownStyle: React.CSSProperties = {
@@ -113,7 +115,7 @@ const MarkdownDisplay: FunctionComponent<MarkdownWithRedirectionWarningProps> = 
   }, [removeLinks, removeLineBreaks]);
 
   const resolveMarkdownImageUrl = useCallback((url: string) => {
-    return resolveImageUrl ? resolveImageUrl(url) : url;
+    return resolveAndNormalizeMarkdownImageUrl(url, resolveImageUrl, APP_BASE_PATH);
   }, [resolveImageUrl]);
 
   const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(null);

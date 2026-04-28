@@ -6,7 +6,7 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import { FunctionComponent, useState } from 'react';
+import { FunctionComponent, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -25,7 +25,6 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import useStoreTempImagesForEntityAfterCreate from '../../../../utils/hooks/useStoreTempImagesForEntityAfterCreate';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { insertNode } from '../../../../utils/store';
@@ -38,7 +37,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { ReportCreationMutation, ReportCreationMutation$data, ReportCreationMutation$variables } from './__generated__/ReportCreationMutation.graphql';
+import { ReportCreationMutation, ReportCreationMutation$variables } from './__generated__/ReportCreationMutation.graphql';
 
 export const reportCreationMutation = graphql`
   mutation ReportCreationMutation($input: ReportAddInput!) {
@@ -54,16 +53,6 @@ export const reportCreationMutation = graphql`
       confidence
       parent_types
       ...ReportsLine_node
-    }
-  }
-`;
-
-const reportCreationDescriptionPatchMutation = graphql`
-  mutation ReportCreationDescriptionPatchMutation($id: ID!, $input: [EditInput]!) {
-    reportEdit(id: $id) {
-      fieldPatch(input: $input) {
-        id
-      }
     }
   }
 `;
@@ -119,6 +108,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
+  const getDescriptionTempImageFilesRef = useRef<(() => File[]) | null>(null);
   const { mandatoryAttributes } = useIsMandatoryAttribute(REPORT_TYPE);
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -148,34 +138,21 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     undefined,
     { successMessage: `${t_i18n('entity_Report')} ${t_i18n('successfully created')}` },
   );
-  const [commitDescriptionPatch] = useApiMutation(reportCreationDescriptionPatchMutation);
-
-  const patchReportDescription = (id: string, description: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      commitDescriptionPatch({
-        variables: {
-          id,
-          input: [{ key: 'description', value: description }],
-        },
-        onCompleted: () => resolve(),
-        onError: reject,
-      });
-    });
-  };
-
-  const { runAfterStoringTempImagesForEntity, getTempImageFieldProps } = useStoreTempImagesForEntityAfterCreate<
-    ReportCreationMutation$data,
-    ReportAddInput
-  >({
-    getCreatedId: (response) => response?.reportAdd?.id,
-    getInitialValue: (values) => values.description,
-    patchField: patchReportDescription,
-  });
 
   const onSubmit: FormikConfig<ReportAddInput>['onSubmit'] = (
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
+    const markdownTempFiles = getDescriptionTempImageFilesRef.current?.() ?? [];
+    const files = [
+      ...markdownTempFiles,
+      ...(values.file ? [values.file] : []),
+    ];
+    const embedded = [
+      ...markdownTempFiles.map(() => true),
+      ...(values.file ? [false] : []),
+    ];
+
     const input: ReportCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -190,7 +167,10 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       objectParticipant: values.objectParticipant.map(({ value }) => value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
-      file: values.file,
+      ...(files.length > 0 && {
+        files,
+        embedded,
+      }),
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
         authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
           id: value,
@@ -213,21 +193,16 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
         setSubmitting(false);
       },
       onCompleted: (response) => {
-        runAfterStoringTempImagesForEntity(response, values, {
-          onSuccess: () => {
-            setSubmitting(false);
-            resetForm();
-            if (onClose) {
-              onClose();
-            }
-            if (mapAfter) {
-              navigate(
-                `/dashboard/analyses/reports/${response.reportAdd?.id}/content/mapping`,
-              );
-            }
-          },
-          onError: () => setSubmitting(false),
-        });
+        setSubmitting(false);
+        resetForm();
+        if (onClose) {
+          onClose();
+        }
+        if (mapAfter) {
+          navigate(
+            `/dashboard/analyses/reports/${response.reportAdd?.id}/content/mapping`,
+          );
+        }
       },
     });
   };
@@ -315,7 +290,10 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             rows="4"
             style={fieldSpacingContainerStyle}
             askAi={true}
-            {...getTempImageFieldProps(values.objectMarking.map((v) => v.value))}
+            finalizeOnBlur={false}
+            registerGetTempImageFiles={(getFiles: () => File[]) => {
+              getDescriptionTempImageFilesRef.current = getFiles;
+            }}
           />
           <Field
             component={RichTextField}

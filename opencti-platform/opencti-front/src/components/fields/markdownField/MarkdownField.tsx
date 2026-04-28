@@ -26,6 +26,7 @@ type MarkdownFieldProps = {
   uploadFileMarkings?: string[];
   finalizeOnBlur?: boolean;
   registerFinalize?: (finalize: (uploadEntityIdOverride?: string) => Promise<string>) => void;
+  registerGetTempImageFiles?: (getFiles: () => File[]) => void;
   formikSyncMode?: 'immediate' | 'deferred';
   formikSyncDelayMs?: number;
 };
@@ -49,6 +50,7 @@ const MarkdownField = (props: MarkdownFieldProps): ReactElement => {
     uploadFileMarkings,
     finalizeOnBlur,
     registerFinalize,
+    registerGetTempImageFiles,
     formikSyncMode,
     formikSyncDelayMs,
   } = props;
@@ -119,6 +121,7 @@ const MarkdownField = (props: MarkdownFieldProps): ReactElement => {
       uploadFileMarkings={uploadFileMarkings}
       finalizeOnBlur={finalizeOnBlur}
       registerFinalize={registerFinalize}
+      registerGetTempImageFiles={registerGetTempImageFiles}
     />
   );
 };

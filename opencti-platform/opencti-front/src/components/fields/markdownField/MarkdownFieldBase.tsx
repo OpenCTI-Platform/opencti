@@ -18,7 +18,7 @@ import {
   getImageFilesFromClipboardData,
   isSvgImageFile,
 } from './markdownImageFieldHelpers';
-import { insertImageAtCursor, MarkdownTempAttachmentRegistry } from './markdownImageTempUtils';
+import { extractTempImageTokens, insertImageAtCursor, MarkdownTempAttachmentRegistry } from './markdownImageTempUtils';
 import useMarkdownImageUpload from './useMarkdownImageUpload';
 
 export type MarkdownTab = 'write' | 'preview';
@@ -46,6 +46,7 @@ type MarkdownFieldBaseProps = {
   uploadFileMarkings?: string[];
   finalizeOnBlur?: boolean;
   registerFinalize?: (finalize: (uploadEntityIdOverride?: string) => Promise<string>) => void;
+  registerGetTempImageFiles?: (getFiles: () => File[]) => void;
 };
 
 const TEMP_CLEANUP_DELAY_MS = 300;
@@ -74,6 +75,7 @@ const MarkdownFieldBase = ({
   uploadFileMarkings,
   finalizeOnBlur = true,
   registerFinalize,
+  registerGetTempImageFiles,
 }: MarkdownFieldBaseProps): ReactElement => {
   const { t_i18n } = useFormatter();
   const { fullyActive } = useAI();
@@ -165,6 +167,26 @@ const MarkdownFieldBase = ({
     registerFinalize((uploadEntityIdOverride?: string) => finalizeMarkdown(undefined, uploadEntityIdOverride));
     return () => registerFinalize(() => Promise.resolve(latestMarkdownRef.current));
   }, [finalizeMarkdown, registerFinalize]);
+
+  useEffect(() => {
+    if (!registerGetTempImageFiles) {
+      return undefined;
+    }
+
+    registerGetTempImageFiles(() => {
+      const files: File[] = [];
+      const tokens = extractTempImageTokens(latestMarkdownRef.current);
+      for (let i = 0; i < tokens.length; i += 1) {
+        const attachment = registryRef.current.getAttachment(tokens[i]);
+        if (attachment?.file) {
+          files.push(attachment.file);
+        }
+      }
+      return files;
+    });
+
+    return () => registerGetTempImageFiles(() => []);
+  }, [registerGetTempImageFiles]);
 
   const resolveTextArea = useCallback((): HTMLTextAreaElement | null => {
     if (textAreaRef.current) {

@@ -240,7 +240,12 @@ import {
   findRemovedEmbeddedStoragePathsFromMarkdownFields,
   rewriteMarkdownImageUrls,
 } from './markdown-embedded-images';
-import { rewriteEmbeddedDataUriImagesInDescriptions, rewriteEmbeddedDataUriImagesInUpdateInputs } from './middlewareEmbeddedImages';
+import {
+  collectTempImageTokensFromDescriptionFields,
+  rewriteEmbeddedDataUriImagesInDescriptions,
+  rewriteEmbeddedDataUriImagesInUpdateInputs,
+  rewriteTempImageTokensInDescriptions,
+} from './middlewareEmbeddedImages';
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccessUtils';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { type BasicStoreEntityEntitySetting, ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
@@ -3932,6 +3937,7 @@ const internalCreateEntityRaw = async (
         fileMarkings: extractMarkingIds(resolvedInput),
       });
     }
+
     // Handle multiple files upload (new plural form)
     const filesToUpload = [];
     if (!isEmptyField(resolvedInput.files) && Array.isArray(resolvedInput.files)) {
@@ -3959,6 +3965,8 @@ const internalCreateEntityRaw = async (
     if (filesToUpload.length > 0) {
       const isAutoExternal = entitySetting?.platform_entity_files_ref;
       const uploadedFiles = [];
+      const tempTokens = collectTempImageTokensFromDescriptionFields(dataEntity.element);
+      const embeddedImageUrls: string[] = [];
       for (let i = 0; i < filesToUpload.length; i += 1) {
         const { file: fileInput, markings: file_markings, noTriggerImport, embedded } = filesToUpload[i];
         const { filename } = await fileInput;
@@ -3975,6 +3983,9 @@ const internalCreateEntityRaw = async (
           { entity: dataEntity.element as BasicStoreBase, file_markings, meta, noTriggerImport },
         );
         uploadedFiles.push(storeFileConverter(user, uploadedFile));
+        if (embedded) {
+          embeddedImageUrls.push(`/storage/view/${key}`);
+        }
         // Add external references from files if necessary
         if (isAutoExternal) {
           // Create external ref + link to current entity
@@ -3984,6 +3995,16 @@ const internalCreateEntityRaw = async (
           pushAll(dataEntity.relations, newRefRel);
         }
       }
+
+      if (tempTokens.length > 0 && embeddedImageUrls.length > 0) {
+        const tokenToUrl = new Map<string, string>();
+        const rewriteCount = Math.min(tempTokens.length, embeddedImageUrls.length);
+        for (let i = 0; i < rewriteCount; i += 1) {
+          tokenToUrl.set(tempTokens[i], embeddedImageUrls[i]);
+        }
+        rewriteTempImageTokensInDescriptions(dataEntity.element, tokenToUrl);
+      }
+
       dataEntity.element = { ...dataEntity.element, x_opencti_files: uploadedFiles };
     }
     if (opts.restore === true) {
