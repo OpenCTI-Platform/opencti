@@ -25,27 +25,28 @@ const useStyles = makeStyles<Theme>((theme) => ({
         : '1px solid rgba(0, 0, 0, 0.12)',
     borderRadius: 4,
     backgroundColor: theme.palette.background.paper,
-    width: 160,
-    height: 50,
+    width: 220,
+    minHeight: 60,
     padding: '8px 5px 5px 5px',
   },
   name: {
-    maxWidth: 100,
+    maxWidth: 160,
     fontSize: 10,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    whiteSpace: 'normal',
+    overflowWrap: 'anywhere',
+    lineHeight: 1.2,
   },
   component: {
-    maxWidth: 100,
+    maxWidth: 160,
     color:
       theme.palette.mode === 'dark'
         ? 'rgba(255, 255, 255, 0.5)'
         : 'rgba(0, 0, 0, 0.5)',
     fontSize: 8,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    whiteSpace: 'normal',
+    overflowWrap: 'anywhere',
+    lineHeight: 1.2,
+    marginTop: 4,
   },
   handlesWrapper: {
     position: 'absolute',
@@ -61,7 +62,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const getHandlePositionStyle = (count: number, index: number, width = 160): React.CSSProperties | undefined => {
+const getHandlePositionStyle = (count: number, index: number, width = 220): React.CSSProperties | undefined => {
   // we distribute evenly the output ports at the bottom using CSS
   // we divide our width in N intervals, the N points being at the center of their interval
   const interval = width / count;
@@ -74,6 +75,8 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const { getNode } = useReactFlow();
+  const nodeDescription = data.description?.trim() || t_i18n(data.component?.description);
+
   return (
     <div className={classes.node}>
       <ItemIcon type={data.component.icon} variant="inline" />
@@ -81,8 +84,8 @@ const NodeWorkflow = ({ id, data }: NodeProps) => {
         <Tooltip title={t_i18n(data.name)}>
           <div className={classes.name}>{t_i18n(data.name)}</div>
         </Tooltip>
-        <Tooltip title={t_i18n(data.component.description)}>
-          <div className={classes.component}>{t_i18n(data.component.description)}</div>
+        <Tooltip title={nodeDescription}>
+          <div className={classes.component}>{nodeDescription}</div>
         </Tooltip>
       </div>
       <div className="clearfix" />

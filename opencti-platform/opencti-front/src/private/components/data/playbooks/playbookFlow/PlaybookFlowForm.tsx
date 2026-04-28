@@ -50,6 +50,7 @@ export type PlaybookFlowFormData
     & {
     // Common for every component
       name: string;
+      description?: string;
       // Component: CRON
       time?: string;
       period?: string;
@@ -93,8 +94,19 @@ const PlaybookFlowForm = ({
 
   // Submit function that formats correctly the data for the backend.
   const onSubmit: FormikConfig<PlaybookFlowFormData>['onSubmit'] = (values, { resetForm }) => {
-    const { name, actionsFormValues, ...config } = values;
+    const {
+      name,
+      description,
+      actionsFormValues,
+      ...config
+    } = values;
     let finalConfig: PlaybookConfig = config;
+
+    const normalizedDescription = description?.trim();
+    finalConfig = {
+      ...finalConfig,
+      description: normalizedDescription && normalizedDescription.length > 0 ? normalizedDescription : undefined,
+    };
 
     // Special work in case of filters,
     // (get filters from React state and and them in config).
@@ -139,6 +151,7 @@ const PlaybookFlowForm = ({
 
   const initialValues: PlaybookFlowFormData = {
     name: '',
+    description: '',
   };
 
   if (!currentConfig) {
@@ -196,8 +209,21 @@ const PlaybookFlowForm = ({
                 label={t_i18n('Name')}
                 fullWidth
               />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="description"
+                label={t_i18n('Description')}
+                multiline
+                minRows={2}
+                fullWidth
+                style={fieldSpacingContainerStyle}
+              />
               {Object.entries(configurationSchema?.properties ?? {}).map(
                 ([propName, property]) => {
+                  if (propName === 'description') {
+                    return null;
+                  }
                   if (propName === 'access_restrictions') {
                     return <PlaybookFlowFieldAccessRestrictions key={propName} />;
                   }

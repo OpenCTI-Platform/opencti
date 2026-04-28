@@ -11,6 +11,7 @@ export const computeNodes = (
     const component = playbookComponents.find((playbookComponent) => {
       return playbookComponent?.id === node?.component_id;
     }) || undefined;
+    const configuration = node.configuration ? JSON.parse(node.configuration) : undefined;
 
     return {
       id: node.id,
@@ -18,7 +19,8 @@ export const computeNodes = (
       position: node.position,
       data: {
         name: node.name,
-        configuration: node.configuration ? JSON.parse(node.configuration) : undefined,
+        description: configuration?.description,
+        configuration,
         component,
         openConfig: (nodeId: string) => {
           setSelectedNode(nodeId);

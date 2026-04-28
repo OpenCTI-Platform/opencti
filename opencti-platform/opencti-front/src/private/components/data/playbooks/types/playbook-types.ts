@@ -9,6 +9,7 @@ export interface PlaybookConfig {
   filters?: string;
   actions?: PlaybookUpdateAction[];
   triggerTime?: string;
+  description?: string;
 }
 
 export interface PlaybookDefinitionNode {
@@ -32,6 +33,7 @@ export interface PlaybookDefinitionEdge {
 
 export type PlaybookNode = Node<{
   name?: string;
+  description?: string;
   configuration?: PlaybookConfig;
   component?: PlaybookComponent;
   openConfig: (nodeId: string) => void;
