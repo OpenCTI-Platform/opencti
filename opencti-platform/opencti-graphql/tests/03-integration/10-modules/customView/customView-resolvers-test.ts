@@ -1,11 +1,15 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
+import Upload from 'graphql-upload/Upload.mjs';
 import { createEntity } from '../../../../src/database/middleware';
 import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { queryAsUserWithSuccess, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsAdminWithError } from '../../../utils/testQueryHelper';
-import { CUSTOM_VIEW_ENTITY_1, CUSTOM_VIEW_ENTITY_2, CUSTOM_VIEW_ENTITY_INVALID, DASHBOARD_MANIFEST } from './customView-fixtures';
+import { CUSTOM_VIEW_ENTITY_1, CUSTOM_VIEW_ENTITY_2, CUSTOM_VIEW_ENTITY_INVALID, DASHBOARD_MANIFEST, DASHBOARD_MANIFEST_OBJECT } from './customView-fixtures';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../../src/modules/case/feedback/feedback-types';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../../src/schema/stixDomainObject';
+import type { StoreEntityCustomView } from '../../../../src/modules/customView/customView-types';
+import { fromB64, toB64 } from '../../../../src/utils/base64';
+import { fileToReadStream } from '../../../../src/database/file-storage';
 
 const READ_CUSTOM_VIEW_QUERY = gql`
   query CustomViewTest($id: ID!) {
@@ -58,24 +62,70 @@ const CREATE_CUSTOM_VIEW_QUERY = gql`
   }
 `;
 
+const EDIT_CUSTOM_VIEW_QUERY = gql`
+  mutation EditCustomViewTest($id: ID!, $input: [EditInput!]!) {
+    customViewEdit(
+      id: $id
+      input: $input
+    ) {
+      id
+      name
+      description
+      path
+      manifest
+      updated_at
+    }
+  }
+`;
+
+const EXPORT_WIDGET_CUSTOM_VIEW_QUERY = gql`
+  query ExportWidgetCustomViewTest($id: ID!, $widgetId: ID!) {
+    customView(id: $id) {
+      toWidgetExport(widgetId: $widgetId)
+    }
+  }
+`;
+
+const IMPORT_WIDGET_CUSTOM_VIEW_QUERY = gql`
+  mutation ImportWidgetCustomViewTest(
+    $id: ID!
+    $input: CustomViewImportWidgetInput!
+  ) {
+    customViewWidgetConfigurationImport(id: $id, input: $input) {
+      id
+      manifest
+    }
+  }
+`;
+
+const createUploadFile = (filePath: string, fileName: string) => {
+  const readStream = fileToReadStream(filePath, fileName, fileName, 'text/plain');
+  const fileUpload = { ...readStream, encoding: 'utf8' };
+  const upload = new Upload();
+  upload.promise = new Promise((executor) => {
+    executor(fileUpload);
+  });
+  upload.file = fileUpload;
+
+  return upload;
+};
+
 describe('CustomView resolvers', () => {
-  let customViewId1: string;
-  let customViewId2: string;
+  let customView1: StoreEntityCustomView | undefined;
+  let customView2: StoreEntityCustomView | undefined;
   beforeAll(async () => {
-    const result1 = await createEntity(
+    customView1 = await createEntity(
       testContext,
       ADMIN_USER,
       CUSTOM_VIEW_ENTITY_1,
       'CustomView',
     );
-    customViewId1 = result1.id;
-    const result2 = await createEntity(
+    customView2 = await createEntity(
       testContext,
       ADMIN_USER,
       CUSTOM_VIEW_ENTITY_2,
       'CustomView',
     );
-    customViewId2 = result2.id;
     await createEntity(
       testContext,
       ADMIN_USER,
@@ -89,7 +139,7 @@ describe('CustomView resolvers', () => {
         const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
           query: READ_CUSTOM_VIEW_QUERY,
           variables: {
-            id: customViewId1,
+            id: customView1?.id,
           },
         });
         expect(result.data.customView.manifest).toBe(CUSTOM_VIEW_ENTITY_1.manifest);
@@ -103,7 +153,7 @@ describe('CustomView resolvers', () => {
         });
         const nodes = result.data.customViews.edges.map((e: any) => e.node);
         expect(nodes).toContainEqual({
-          id: customViewId1,
+          id: customView1?.id,
           name: CUSTOM_VIEW_ENTITY_1.name,
           description: CUSTOM_VIEW_ENTITY_1.description,
           created_at: expect.any(Date),
@@ -111,7 +161,7 @@ describe('CustomView resolvers', () => {
           targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
         });
         expect(nodes).toContainEqual({
-          id: customViewId2,
+          id: customView2?.id,
           name: CUSTOM_VIEW_ENTITY_2.name,
           description: CUSTOM_VIEW_ENTITY_2.description,
           created_at: expect.any(Date),
@@ -210,6 +260,89 @@ describe('CustomView resolvers', () => {
           'FUNCTIONAL_ERROR',
           );
         });
+
+        it('should allow editing a custom view', async () => {
+          const updatedDescription = 'Updated description';
+          const updatedAtBefore = customView1?.updated_at;
+          const updatedManifest = toB64({
+            widgets: {},
+            config: {
+              relativeDate: 'months-3',
+              startDate: null,
+              endDate: null,
+            },
+          })!;
+          const result = await queryAsAdminWithSuccess({
+            query: EDIT_CUSTOM_VIEW_QUERY,
+            variables: {
+              id: customView1?.id,
+              input: [{
+                key: 'description',
+                value: [updatedDescription],
+              }, {
+                key: 'manifest',
+                value: [updatedManifest],
+              }],
+            },
+          });
+          expect(result.data.customViewEdit.description).toBe(updatedDescription);
+          expect(result.data.customViewEdit.manifest).toBe(updatedManifest);
+          expect(result.data.customViewEdit.updated_at).not.toBe(updatedAtBefore);
+          // TODO: Check activity logs using the audits query
+        });
+
+        it('should update the slug and thus the path when the name is edited', async () => {
+          const updatedName = 'Updated name';
+          const result = await queryAsAdminWithSuccess({
+            query: EDIT_CUSTOM_VIEW_QUERY,
+            variables: {
+              id: customView1?.id,
+              input: [{
+                key: 'name',
+                value: [updatedName],
+              }],
+            },
+          });
+          expect(result.data.customViewEdit.name).toBe(updatedName);
+          expect(result.data.customViewEdit.path).toBe(`updated-name-${customView1?.id.replaceAll('-', '')}`);
+        });
+
+        it('should allow exporting a widget', async () => {
+          const widgetId = Object.keys(DASHBOARD_MANIFEST_OBJECT.widgets)[0];
+          const result = await queryAsAdminWithSuccess({
+            query: EXPORT_WIDGET_CUSTOM_VIEW_QUERY,
+            variables: {
+              id: customView2?.id,
+              widgetId,
+            },
+          });
+          expect(result.data.customView.toWidgetExport).toBeDefined();
+          expect(typeof result.data.customView.toWidgetExport).toBe('string');
+          const parsedWidget = JSON.parse(result.data.customView.toWidgetExport);
+          expect(parsedWidget.openCTI_version).toBeDefined();
+          expect(parsedWidget.configuration).toBeDefined();
+          expect(parsedWidget.type).toBe('widget');
+        });
+
+        it('should allow importing a widget', async () => {
+          const file = createUploadFile(
+            './tests/03-integration/10-modules/customView/data/',
+            'custom-view-widget.json',
+          );
+          const manifestBefore = customView2?.manifest;
+          const result = await queryAsAdminWithSuccess({
+            query: IMPORT_WIDGET_CUSTOM_VIEW_QUERY,
+            variables: {
+              id: customView2?.id,
+              input: {
+                file,
+                manifest: customView2?.manifest,
+              },
+            },
+          });
+          expect(fromB64(result.data?.customViewWidgetConfigurationImport?.manifest)).toBeDefined();
+          expect(fromB64(result.data?.customViewWidgetConfigurationImport?.manifest)).not.toBe(manifestBefore);
+        });
       });
 
       describe('when user is a simple participant', () => {
@@ -232,6 +365,20 @@ describe('CustomView resolvers', () => {
                 name: 'Custom view name',
                 targetEntityType: ENTITY_TYPE_INTRUSION_SET,
               },
+            },
+          });
+        });
+
+        it('should fail trying to edit a custom view', async () => {
+          const updatedDescription = 'Updated description';
+          await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+            query: EDIT_CUSTOM_VIEW_QUERY,
+            variables: {
+              id: customView1?.id,
+              input: [{
+                key: 'description',
+                value: [updatedDescription],
+              }],
             },
           });
         });

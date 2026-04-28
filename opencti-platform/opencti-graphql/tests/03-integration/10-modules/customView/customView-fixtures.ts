@@ -15,7 +15,7 @@ type BasicStoreEntityCustomViewForTests = Record<
   any
 >;
 
-export const DASHBOARD_MANIFEST = toB64({
+export const DASHBOARD_MANIFEST_OBJECT = {
   widgets: {
     'a3f0a894-6f60-4661-8005-7d84f470ed5c': {
       id: 'a3f0a894-6f60-4661-8005-7d84f470ed5c',
@@ -222,7 +222,9 @@ export const DASHBOARD_MANIFEST = toB64({
     startDate: null,
     endDate: null,
   },
-})!;
+};
+
+export const DASHBOARD_MANIFEST = toB64(DASHBOARD_MANIFEST_OBJECT);
 
 export const CUSTOM_VIEW_ENTITY_1: BasicStoreEntityCustomViewForTests = {
   name: '2 - My first custom view',
