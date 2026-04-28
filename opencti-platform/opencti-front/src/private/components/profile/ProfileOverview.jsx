@@ -108,7 +108,7 @@ const userValidation = (t) => Yup.object().shape({
   submenu_show_icons: Yup.boolean(),
   submenu_auto_collapse: Yup.boolean(),
   monochrome_labels: Yup.boolean(),
-  unsubscribed_news_feed_types: Yup.array(Yup.string()),
+  unsubscribed_news_feed_types: Yup.array().of(Yup.string()),
 });
 
 const passwordValidation = (t) => Yup.object().shape({
