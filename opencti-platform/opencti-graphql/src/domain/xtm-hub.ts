@@ -222,7 +222,15 @@ export const loadAndSaveLatestNewsFeed = async (context: AuthContext, user: Auth
 
   const users = await getEntitiesListFromCache(context, user, ENTITY_TYPE_USER) as AuthUser[];
   const nonServiceAccountUsers = users.filter((u) => !u.user_service_account);
-  const feedItemUserPairs = newsFeedItems.flatMap((feedItem) => nonServiceAccountUsers.map((platformUser) => ({ feedItem, platformUser })));
+  const feedItemUserPairs = newsFeedItems
+    .flatMap((feedItem) => nonServiceAccountUsers
+      .filter((platformUser) => {
+        const unsubscribedTypes = platformUser.unsubscribed_news_feed_types ?? [];
+        const isUnsubscribed = unsubscribedTypes.includes('*') || unsubscribedTypes.includes(feedItem.type);
+        return !isUnsubscribed;
+      }).map((platformUser) => ({ feedItem, platformUser })),
+    );
+
   await promiseMap(feedItemUserPairs, async ({ feedItem, platformUser }) => {
     try {
       await addNewsFeed(context, platformUser, { ...feedItem, news_feed_type: feedItem.type, user_id: platformUser.id });

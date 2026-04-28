@@ -64,6 +64,7 @@ interface AuthUser extends BasicStoreIdentifier {
   otp_activated?: boolean;
   otp_secret?: string;
   creator_id?: string | string[];
+  unsubscribed_news_feed_types: string[];
 }
 
 interface AuthContext {

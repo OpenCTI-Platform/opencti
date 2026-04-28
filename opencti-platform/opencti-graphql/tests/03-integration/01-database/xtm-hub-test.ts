@@ -386,8 +386,8 @@ describe('XTM hub', () => {
     } as unknown as BasicStoreSettings;
 
     const mockUsers = [
-      { id: 'user-1', user_service_account: false },
-      { id: 'user-2', user_service_account: false },
+      { id: 'user-1', user_service_account: false, unsubscribed_news_feed_types: [] },
+      { id: 'user-2', user_service_account: false, unsubscribed_news_feed_types: [] },
     ] as any[];
 
     const mockNewsFeedItems: ProvisionedNewsFeedItem[] = [
@@ -493,6 +493,100 @@ describe('XTM hub', () => {
       expect(addNewsFeedSpy).toBeCalledTimes(mockNewsFeedItems.length * mockUsers.length);
       // Settings should still be updated
       expect(updateAttributeSpy).toBeCalled();
+    });
+
+    describe('unsubscribed_news_feed_types filtering', () => {
+      it('should not add news feed items to a user who unsubscribed from all feed types with *', async () => {
+        const globallyUnsubscribedUser = { id: 'user-unsubscribed-all', user_service_account: false, unsubscribed_news_feed_types: ['*'] };
+        const subscribedUser = { id: 'user-subscribed', user_service_account: false, unsubscribed_news_feed_types: [] };
+        vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([globallyUnsubscribedUser, subscribedUser] as any);
+
+        await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+        for (const feedItem of mockNewsFeedItems) {
+          expect(addNewsFeedSpy).not.toBeCalledWith(testContext, globallyUnsubscribedUser, expect.objectContaining({ title: feedItem.title }));
+          expect(addNewsFeedSpy).toBeCalledWith(testContext, subscribedUser, { ...feedItem, news_feed_type: feedItem.type, user_id: subscribedUser.id });
+        }
+      });
+
+      it('should not add news feed items to a user who unsubscribed from the specific feed type', async () => {
+        const unsubscribedUser = {
+          id: 'user-unsubscribed-type',
+          user_service_account: false,
+          unsubscribed_news_feed_types: [NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD],
+        };
+        const subscribedUser = { id: 'user-subscribed', user_service_account: false, unsubscribed_news_feed_types: [] };
+        vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([unsubscribedUser, subscribedUser] as any);
+
+        await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+        for (const feedItem of mockNewsFeedItems) {
+          expect(addNewsFeedSpy).not.toBeCalledWith(testContext, unsubscribedUser, expect.objectContaining({ title: feedItem.title }));
+          expect(addNewsFeedSpy).toBeCalledWith(testContext, subscribedUser, { ...feedItem, news_feed_type: feedItem.type, user_id: subscribedUser.id });
+        }
+      });
+
+      it('should add news feed items to a user who unsubscribed from a different feed type only', async () => {
+        const userUnsubscribedFromOtherType = {
+          id: 'user-other-type',
+          user_service_account: false,
+          unsubscribed_news_feed_types: ['SOME_OTHER_TYPE'],
+        };
+        vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([userUnsubscribedFromOtherType] as any);
+
+        await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+        expect(addNewsFeedSpy).toBeCalledTimes(mockNewsFeedItems.length);
+        for (const feedItem of mockNewsFeedItems) {
+          expect(addNewsFeedSpy).toBeCalledWith(testContext, userUnsubscribedFromOtherType, {
+            ...feedItem, news_feed_type: feedItem.type, user_id: userUnsubscribedFromOtherType.id });
+        }
+      });
+
+      it('should add news feed items only to subscribed users when mixed subscription states exist', async () => {
+        const subscribedUser = { id: 'user-subscribed', user_service_account: false, unsubscribed_news_feed_types: [] };
+        const globallyUnsubscribedUser = { id: 'user-global-unsub', user_service_account: false, unsubscribed_news_feed_types: ['*'] };
+        const typeUnsubscribedUser = {
+          id: 'user-type-unsub',
+          user_service_account: false,
+          unsubscribed_news_feed_types: [NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD],
+        };
+        vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([subscribedUser, globallyUnsubscribedUser, typeUnsubscribedUser] as any);
+
+        await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+        // Only the subscribed user should receive all items
+        expect(addNewsFeedSpy).toBeCalledTimes(mockNewsFeedItems.length);
+        for (const feedItem of mockNewsFeedItems) {
+          expect(addNewsFeedSpy).toBeCalledWith(testContext, subscribedUser, { ...feedItem, news_feed_type: feedItem.type, user_id: subscribedUser.id });
+          expect(addNewsFeedSpy).not.toBeCalledWith(testContext, globallyUnsubscribedUser, expect.anything());
+          expect(addNewsFeedSpy).not.toBeCalledWith(testContext, typeUnsubscribedUser, expect.anything());
+        }
+      });
+
+      it('should add only items of subscribed types to a user with partial type unsubscription', async () => {
+        const partiallyUnsubscribedUser = {
+          id: 'user-partial',
+          user_service_account: false,
+          unsubscribed_news_feed_types: ['SOME_OTHER_TYPE'],
+        };
+        const mixedFeedItems: ProvisionedNewsFeedItem[] = [
+          { title: 'Subscribed item', type: NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD, tags: [], metadata: [], creation_date: new Date('2026-01-01') },
+          { title: 'Unsubscribed item', type: 'SOME_OTHER_TYPE' as NewsFeedItemType, tags: [], metadata: [], creation_date: new Date('2026-01-02') },
+        ];
+        vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([partiallyUnsubscribedUser] as any);
+        consumeProvisionedNewsFeedItemsSpy.mockResolvedValue({
+          news_feed_items: mixedFeedItems,
+          available_news_feed_types: ['RESOURCE_CUSTOM_DASHBOARD', 'SOME_OTHER_TYPE'],
+        });
+
+        await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+        expect(addNewsFeedSpy).toBeCalledTimes(1);
+        expect(addNewsFeedSpy).toBeCalledWith(testContext, partiallyUnsubscribedUser, {
+          ...mixedFeedItems[0], news_feed_type: mixedFeedItems[0].type, user_id: partiallyUnsubscribedUser.id });
+        expect(addNewsFeedSpy).not.toBeCalledWith(testContext, partiallyUnsubscribedUser, expect.objectContaining({ title: 'Unsubscribed item' }));
+      });
     });
   });
 });
