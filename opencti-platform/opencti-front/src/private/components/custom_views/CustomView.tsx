@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { ErrorBoundary } from '@components/Error';
+import { MESSAGING$ } from '../../../relay/environment';
 import Loader from '../../../components/Loader';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useDashboard from '../../../components/dashboard/useDashboard';
@@ -23,7 +24,8 @@ interface CustomViewComponentProps {
 const CustomViewComponent = ({ queryRef }: CustomViewComponentProps) => {
   const { customViewDisplay: customView } = usePreloadedQuery(customViewQuery, queryRef);
   if (!customView) {
-    throw new Error('Unable to load custom view');
+    MESSAGING$.notifyError('Failed to load custom view');
+    return null;
   }
   if (!customView?.manifest) {
     // Admin hasn't save the dashboard once yet
