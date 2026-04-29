@@ -10,28 +10,14 @@ import { convertWidgetsIds } from '../workspace/workspace-utils';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import type { ConfigImportData, WidgetConfigImportData, WidgetConfiguration } from './dashboard-types';
 
-export const exportDashboardWidget = async (context: AuthContext, user: AuthUser, manifest: string, widgetId: string) => {
-  const parsedManifest = fromB64(manifest ?? '{}');
-  if (parsedManifest && isNotEmptyField(parsedManifest.widgets) && parsedManifest.widgets[widgetId]) {
-    const widgetDefinition = parsedManifest.widgets[widgetId];
-    delete widgetDefinition.id; // Remove current widget id
-    await convertWidgetsIds(context, user, [widgetDefinition], 'internal');
-    const exportConfigration = {
-      openCTI_version: pjson.version,
-      type: 'widget',
-      configuration: toB64(widgetDefinition) as string,
-    };
-    return { success: true, data: JSON.stringify(exportConfigration) } as const;
-  }
-  return { success: false } as const;
-};
-
 const MINIMAL_COMPATIBLE_VERSION = '5.12.16';
+
 const configurationImportTypeValidation = new Map<string, string>();
 configurationImportTypeValidation.set(
   'dashboard',
   'Invalid type. Please import OpenCTI dashboard-type only',
 );
+
 configurationImportTypeValidation.set(
   'widget',
   'Invalid type. Please import OpenCTI widget-type only',
@@ -50,6 +36,22 @@ export const checkDashboardConfigurationImport = (type: string, parsedData: Conf
       { reason: parsedData.openCTI_version },
     );
   }
+};
+
+export const exportDashboardWidget = async (context: AuthContext, user: AuthUser, manifest: string, widgetId: string) => {
+  const parsedManifest = fromB64(manifest ?? '{}');
+  if (parsedManifest && isNotEmptyField(parsedManifest.widgets) && parsedManifest.widgets[widgetId]) {
+    const widgetDefinition = parsedManifest.widgets[widgetId];
+    delete widgetDefinition.id; // Remove current widget id
+    await convertWidgetsIds(context, user, [widgetDefinition], 'internal');
+    const exportConfigration = {
+      openCTI_version: pjson.version,
+      type: 'widget',
+      configuration: toB64(widgetDefinition) as string,
+    };
+    return { success: true, data: JSON.stringify(exportConfigration) } as const;
+  }
+  return { success: false } as const;
 };
 
 export const importDashboardWidgetConfiguration = async (
