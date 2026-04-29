@@ -33,17 +33,10 @@ jobs:
                   name: labelName
                 });
               } catch (error) {
-                if (error.status === 404) {
-                  await github.rest.issues.createLabel({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    name: labelName,
-                    color: '0e8a16',
-                    description: 'Issue has been solved'
-                  });
-                } else {
-                  throw error;
-                }
+                console.error(
+                  `Label "${labelName}" does not exist. Please create it in the repository before using this workflow.`
+                );
+                return;
               }
 
               await github.rest.issues.addLabels({
