@@ -1831,6 +1831,7 @@
   "Failed to parse a connector manager contract definition": "コネクター・マネージャーの契約定義の解析に失敗しました。",
   "Failed to parse a contract": "契約の解析に失敗しました",
   "Failed to set draft context.": "ドラフトコンテキストの設定に失敗しました。",
+  "Failed to update custom view": "カスタムビューの更新に失敗しました",
   "Failed to update theme": "テーマの更新に失敗しました",
   "Failure": "失敗",
   "false": "いいえ",

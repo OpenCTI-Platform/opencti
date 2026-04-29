@@ -1831,6 +1831,7 @@
   "Failed to parse a connector manager contract definition": "Impossibile analizzare una definizione di contratto del gestore di connettori",
   "Failed to parse a contract": "Errore nell'analisi di un contratto",
   "Failed to set draft context.": "Impossibile impostare il contesto della bozza.",
+  "Failed to update custom view": "Aggiornamento fallito della vista personalizzata",
   "Failed to update theme": "Non è stato possibile aggiornare il tema",
   "Failure": "Fallimento",
   "false": "falso",

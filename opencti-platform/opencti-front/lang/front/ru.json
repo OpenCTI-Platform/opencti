@@ -1831,6 +1831,7 @@
   "Failed to parse a connector manager contract definition": "Не удалось разобрать определение контракта менеджера коннектора",
   "Failed to parse a contract": "Не удалось разобрать контракт",
   "Failed to set draft context.": "Не удалось установить контекст проекта.",
+  "Failed to update custom view": "Не удалось обновить пользовательское представление",
   "Failed to update theme": "Не удалось обновить тему",
   "Failure": "Отказ",
   "false": "ложь",
