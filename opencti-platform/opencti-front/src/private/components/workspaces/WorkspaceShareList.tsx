@@ -13,7 +13,7 @@ import type { Theme } from '../../../components/Theme';
 import ItemMarkings from '../../../components/ItemMarkings';
 import ItemBoolean from '../../../components/ItemBoolean';
 import useAuth from '../../../utils/hooks/useAuth';
-import { copyPublicLinkUrl } from './workspace-utils';
+import { copyPublicDashboardLinkUrl } from './dashboards/public_dashboards/public-dashboard-utils';
 
 export const workspaceShareListQuery = graphql`
   query WorkspaceShareListQuery($filters: FilterGroup) {
@@ -107,7 +107,7 @@ const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceSh
                       aria-label="Label"
                       size="small"
                       value="copy-link"
-                      onClick={() => copyPublicLinkUrl(t_i18n, dashboard.uri_key)}
+                      onClick={() => copyPublicDashboardLinkUrl(t_i18n, dashboard.uri_key)}
                     >
                       <ContentCopy fontSize="small" color="primary" />
                     </ToggleButton>

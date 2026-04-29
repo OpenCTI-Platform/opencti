@@ -13,7 +13,7 @@ import { EXPLORE_EXUPDATE_PUBLISH } from '../../../../../utils/hooks/useGranted'
 import Security from '../../../../../utils/Security';
 import { useGetCurrentUserAccessRight } from '../../../../../utils/authorizedMembers';
 import { deleteNode } from '../../../../../utils/store';
-import { copyPublicLinkUrl } from '../../workspace-utils';
+import { copyPublicDashboardLinkUrl } from './public-dashboard-utils';
 
 interface PublicDashboardLineActionsProps {
   publicDashboard: PublicDashboards_PublicDashboard$data;
@@ -47,7 +47,7 @@ const PublicDashboardLineActions = ({ publicDashboard, paginationOptions }: Publ
   const { canManage } = useGetCurrentUserAccessRight(publicDashboard.dashboard.currentUserAccessRight);
 
   const copyLinkUrl = () => {
-    copyPublicLinkUrl(t_i18n, publicDashboard.uri_key);
+    copyPublicDashboardLinkUrl(t_i18n, publicDashboard.uri_key);
     setAnchor(undefined);
   };
 
