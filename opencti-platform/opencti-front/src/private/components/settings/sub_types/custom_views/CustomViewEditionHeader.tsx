@@ -4,8 +4,8 @@ import { Box, Tooltip } from '@mui/material';
 import Button from '@common/button/Button';
 import Tag from '@common/tag/Tag';
 import { useTheme } from '@mui/styles';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import StopIcon from '@mui/icons-material/Stop';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import TitleMainEntity from '../../../../../components/common/typography/TitleMainEntity';
 import { CustomViewEditionHeader_customView$key } from './__generated__/CustomViewEditionHeader_customView.graphql';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
@@ -77,15 +77,15 @@ const CustomViewEditionHeader = ({ data, onCreateWidget, onImportWidget }: Custo
           }
           label={
             customView.enabled
-              ? t_i18n('View is active')
-              : t_i18n('View is stopped')
+              ? t_i18n('View is enabled')
+              : t_i18n('View is disabled')
           }
           labelTextTransform="none"
         />
         <Box sx={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: 1 }}>
           <Tooltip title={customView.enabled ? t_i18n('Disable') : t_i18n('Enable')}>
             <Button variant="secondary" iconOnly disabled={mutating} onClick={handleToggleEnabled}>
-              {customView.enabled ? <StopIcon /> : <PlayArrowIcon />}
+              {customView.enabled ? <VisibilityOffIcon /> : <VisibilityIcon />}
             </Button>
           </Tooltip>
           <CustomViewMenu data={customView} />

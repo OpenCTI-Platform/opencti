@@ -98,7 +98,6 @@ describe('useCustomViewTabs', () => {
         name: customViewDisplayName,
         path: customViewPath,
         targetEntityType: 'Intrusion-Set',
-        enabled: true,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
@@ -132,13 +131,11 @@ describe('useCustomViewTabs', () => {
         name: 'My first custom view',
         path: 'some-path',
         targetEntityType: 'Intrusion-Set',
-        enabled: true,
       }, {
         id: '90ebf22f-2c36-4836-b21a-e114ed4ca2ab',
         name: 'My second custom view',
         path: 'some-other-path',
         targetEntityType: 'Intrusion-Set',
-        enabled: true,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
@@ -179,46 +176,11 @@ describe('useCustomViewTabs', () => {
         name: customViewDisplayName,
         path: customViewPath,
         targetEntityType: 'Intrusion-Set',
-        enabled: true,
       }],
       refetchCustomViews: () => ({ dispose: () => {} }),
     }));
     testRender(
       <TestWrapper entityType="Case-Rft" basePath="" />,
-      {
-        userContext: createMockUserContext({
-          settings: {
-            platform_feature_flags: [{
-              id: 'CUSTOM_VIEW',
-              enable: true,
-            }],
-          },
-        }),
-      },
-    );
-    expect(screen.queryByRole('tab', {
-      name: new RegExp(customViewDisplayName, 'i'),
-    })).not.toBeInTheDocument();
-    expect(screen.queryByRole('tab', {
-      name: /Custom view/i,
-    })).not.toBeInTheDocument();
-  });
-
-  it('does not render another tab when custom view exists but is disabled', () => {
-    const customViewDisplayName = 'My custom view';
-    const customViewPath = 'some-path';
-    vi.mocked(useCustomViewsData).mockImplementation(() => ({
-      allCustomViews: [{
-        id: '1504f07b-ee3f-4c09-ae66-b9550eb3abe3',
-        name: customViewDisplayName,
-        path: customViewPath,
-        enabled: false,
-        default: false,
-      }],
-      refetchCustomViews: () => ({ dispose: () => {} }),
-    }));
-    testRender(
-      <TestWrapper entityType="Intrusion-Set" basePath="" />,
       {
         userContext: createMockUserContext({
           settings: {

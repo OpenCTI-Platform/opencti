@@ -4721,6 +4721,8 @@
   "View associated public dashboards": "Zugehörige öffentliche Dashboards anzeigen",
   "View draft": "Entwurf ansehen",
   "View full details": "Alle Details anzeigen",
+  "View is disabled": "Ansicht ist deaktiviert",
+  "View is enabled": "Ansicht ist aktiviert",
   "View rule": "Regel ansehen",
   "View the element": "Ansicht des Elements",
   "View the item": "Betrachten Sie das Element",
@@ -4909,4 +4911,3 @@
   "Zoom in": "Vergrößern",
   "Zoom out": "Verkleinern"
 }
-

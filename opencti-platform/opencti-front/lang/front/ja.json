@@ -4721,6 +4721,8 @@
   "View associated public dashboards": "関連する公開ダッシュボードを見る",
   "View draft": "草案を見る",
   "View full details": "詳細を表示",
+  "View is disabled": "表示は無効",
+  "View is enabled": "表示が有効",
   "View rule": "ルールを見る",
   "View the element": "エレメントを見る",
   "View the item": "アイテムの表示",
@@ -4909,4 +4911,3 @@
   "Zoom in": "ズームイン",
   "Zoom out": "ズームアウト"
 }
-

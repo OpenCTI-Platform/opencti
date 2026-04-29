@@ -4721,6 +4721,8 @@
   "View associated public dashboards": "Просмотр связанных публичных информационных дашбордов",
   "View draft": "Посмотреть проект",
   "View full details": "Посмотреть все детали",
+  "View is disabled": "Вид отключен",
+  "View is enabled": "Просмотр включен",
   "View rule": "Правило просмотра",
   "View the element": "Посмотреть элемент",
   "View the item": "Посмотреть товар",
@@ -4909,4 +4911,3 @@
   "Zoom in": "Увеличить",
   "Zoom out": "Уменьшить масштаб"
 }
-

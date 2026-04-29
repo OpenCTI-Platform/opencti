@@ -4,7 +4,6 @@ import DataTable from '../../../../../components/dataGrid/DataTable';
 import { DataTableVariant } from '../../../../../components/dataGrid/dataTableTypes';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemBoolean from '../../../../../components/ItemBoolean';
-import DrawOutlinedIcon from '@mui/icons-material/DrawOutlined';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import type { CustomViewsSettingsDataTablePaginationQuery } from './__generated__/CustomViewsSettingsDataTablePaginationQuery.graphql';
 import type { CustomViewsSettingsDataTable_data$data } from './__generated__/CustomViewsSettingsDataTable_data.graphql';
@@ -86,8 +85,9 @@ const DATA_COLUMNS = {
       const { t_i18n } = useFormatter();
       return (
         <ItemBoolean
-          label={enabled ? t_i18n('View is active') : t_i18n('View is stopped')}
+          label={enabled ? t_i18n('View is enabled') : t_i18n('View is disabled')}
           status={enabled}
+          labelTextTransform="none"
         />
       );
     },
@@ -139,10 +139,6 @@ const CustomViewsSettingsDataTable = ({
 
   return (
     <DataTable
-      icon={
-        (customView: CustomViewsSettingsDataTable_node$data) =>
-          <DrawOutlinedIcon color={customView.enabled ? 'secondary' : 'disabled'} />
-      }
       initialValues={DEFAULT_SORT_CONFIG}
       dataColumns={DATA_COLUMNS}
       storageKey={storageKey}
