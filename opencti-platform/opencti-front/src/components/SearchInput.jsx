@@ -297,13 +297,13 @@ const SearchInput = (props) => {
     if (newMode === null) return; // MUI sends null when clicking the already-selected button
     if (newMode === MODE_SEARCH) {
       setMode(newMode);
-      // Execute search immediately with current value
-      if (searchValue && typeof onSubmit === 'function') {
-        onSubmit(searchValue, false, undefined);
+      // Navigate to advanced search screen (even if empty)
+      if (typeof onSubmit === 'function') {
+        onSubmit(searchValue || '', false, undefined);
       }
     } else if (newMode === MODE_BULK) {
       setMode(newMode);
-      // Navigate to bulk with current value
+      // Navigate to bulk search screen (even if empty)
       const encoded = encodeURIComponent(searchValue || '');
       navigate(`/dashboard/search_bulk${searchValue ? `?q=${encoded}` : ''}`);
     }
@@ -403,28 +403,36 @@ const SearchInput = (props) => {
     },
   };
 
+  const nlqNoAgentAvailable = useXtmOne && nlqAgentsFetched && nlqAgents.length === 0;
+
+  const aiColor = theme.palette.ai?.main;
   const nlqToggleButtonSx = {
     ...toggleButtonSx,
     width: 'auto', // wider than standard because it contains icon + caret
     minWidth: 36,
     px: 1,
-    // Always show AI color on the NLQ button
-    color: theme.palette.ai?.main,
+    // Always show AI/pink color on the NLQ button — use !important to beat MUI's default ToggleButton color
+    color: `${aiColor} !important`,
     '&.Mui-selected': {
-      backgroundColor: theme.palette.ai?.main ? `${theme.palette.ai.main}24` : undefined,
-      color: theme.palette.ai?.main,
-      borderColor: theme.palette.ai?.main,
+      backgroundColor: aiColor ? `${aiColor}24` : undefined,
+      color: `${aiColor} !important`,
+      borderColor: aiColor,
       '&:hover': {
-        backgroundColor: theme.palette.ai?.main ? `${theme.palette.ai.main}30` : undefined,
+        backgroundColor: aiColor ? `${aiColor}30` : undefined,
       },
     },
     '&:hover': {
-      backgroundColor: theme.palette.ai?.main ? `${theme.palette.ai.main}12` : undefined,
+      backgroundColor: aiColor ? `${aiColor}12` : undefined,
     },
     ...(isNLQActivated && {
-      backgroundColor: theme.palette.ai?.main ? `${theme.palette.ai.main}18` : undefined,
-      borderColor: theme.palette.ai?.main,
+      backgroundColor: aiColor ? `${aiColor}18` : undefined,
+      borderColor: aiColor,
     }),
+    // Keep AI/pink color even when disabled (no agents available)
+    '&.Mui-disabled': {
+      color: `${aiColor} !important`,
+      opacity: 0.5,
+    },
   };
 
   return (
@@ -510,45 +518,50 @@ const SearchInput = (props) => {
           {/* NLQ split button — icon toggles NLQ, caret opens agent selector */}
           {fullyActive && (
             <Tooltip
-              title={isNLQActivated && selectedAgent
-                ? `${t_i18n('Ask AI')}: ${selectedAgent.name}${selectedAgent.description ? ` — ${selectedAgent.description}` : ''}`
-                : t_i18n('Ask AI')}
+              title={nlqNoAgentAvailable
+                ? t_i18n('No agent available for this action. Ask your administrator to configure XTM One.')
+                : isNLQActivated && selectedAgent
+                  ? `${t_i18n('Ask AI')}: ${selectedAgent.name}${selectedAgent.description ? ` — ${selectedAgent.description}` : ''}`
+                  : t_i18n('Ask AI')}
             >
-              <ToggleButton
-                value={mode}
-                selected={isNLQActivated}
-                sx={nlqToggleButtonSx}
-                onClick={handleNlqToggleClick}
-              >
-                <Stack direction="row" alignItems="center" spacing={0}>
-                  <FiligranIcon
-                    icon={LogoXtmOneIcon}
-                    size="small"
-                    color="ai"
-                  />
-                  {/* Caret click zone — larger hit area with visual separator */}
-                  {useXtmOne && nlqAgents.length > 0 && (
-                    <Box
-                      component="span"
-                      sx={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        ml: 0.5,
-                        pl: 0.5,
-                        borderLeft: `1px solid ${isNLQActivated ? theme.palette.ai?.main + '40' : theme.palette.divider}`,
-                        cursor: 'pointer',
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenNlqMenu(e);
-                      }}
-                    >
-                      <KeyboardArrowDownOutlined sx={{ fontSize: 18, color: 'inherit' }} />
-                    </Box>
-                  )}
-                </Stack>
-              </ToggleButton>
+              <span>
+                <ToggleButton
+                  value={mode}
+                  selected={isNLQActivated}
+                  sx={nlqToggleButtonSx}
+                  onClick={handleNlqToggleClick}
+                  disabled={nlqNoAgentAvailable}
+                >
+                  <Stack direction="row" alignItems="center" spacing={0}>
+                    <FiligranIcon
+                      icon={LogoXtmOneIcon}
+                      size="small"
+                      color="ai"
+                    />
+                    {/* Caret click zone — larger hit area with visual separator */}
+                    {useXtmOne && nlqAgents.length > 0 && (
+                      <Box
+                        component="span"
+                        sx={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          ml: 0.5,
+                          pl: 0.5,
+                          borderLeft: `1px solid ${isNLQActivated ? theme.palette.ai?.main + '40' : theme.palette.divider}`,
+                          cursor: 'pointer',
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenNlqMenu(e);
+                        }}
+                      >
+                        <KeyboardArrowDownOutlined sx={{ fontSize: 18, color: 'inherit' }} />
+                      </Box>
+                    )}
+                  </Stack>
+                </ToggleButton>
+              </span>
             </Tooltip>
           )}
         </ToggleButtonGroup>

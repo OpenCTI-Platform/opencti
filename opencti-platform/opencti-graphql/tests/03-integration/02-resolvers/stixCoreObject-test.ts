@@ -47,8 +47,8 @@ describe('stixCoreObjectsDistributionByEntity', () => {
     expect(distribution.length).toBeGreaterThan(0);
     const aggregationMap = new Map(distribution.map((i: { label: string; value: number }) => [i.label, i.value]));
     // Malware Paradise Ransomware is related to Attack-Patterns and Intrusion-Set
-    expect(aggregationMap.get('Attack-Pattern')).toBeGreaterThanOrEqual(2);
-    expect(aggregationMap.get('Intrusion-Set')).toBeGreaterThanOrEqual(1);
+    expect(aggregationMap.get('Attack-Pattern')).toEqual(2);
+    expect(aggregationMap.get('Intrusion-Set')).toEqual(1);
   });
 
   it('should throw ResourceNotFoundError for unknown objectId', async () => {
@@ -68,7 +68,7 @@ describe('stixCoreObjectsDistributionByEntity', () => {
       operation: 'count',
     });
     expect(distribution).toBeDefined();
-    expect(distribution.length).toBeGreaterThan(0);
+    expect(distribution.length).toEqual(0);
   });
 
   it('should support limit option', async () => {
@@ -81,6 +81,6 @@ describe('stixCoreObjectsDistributionByEntity', () => {
       limit: 1,
     });
     expect(distribution).toBeDefined();
-    expect(distribution.length).toBeLessThanOrEqual(1);
+    expect(distribution.length).toEqual(1);
   });
 });
