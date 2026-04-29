@@ -13,14 +13,16 @@ import type { StixInternalExternalReference } from '../../../../src/types/stix-2
 const OBSERVABLE_ID = 'domain-name--a1b2c3d4-0000-0000-0000-000000000001' as const;
 const INTRUSION_SET_ID = 'intrusion-set--1ad04810-ab05-5873-96f5-a89d19607e1c' as const;
 const REPORT_ID = 'report--b4754e7d-88b4-51d9-aac4-86edaad66c4d' as const;
+const LABEL_ID = '98d475ca-0f72-4878-8d64-de2e094f007e';
 
 const FAKE_PATTERN = "[domain-name:value = 'malicious.example.com']";
 
-const domainObservable = (id: StixId = OBSERVABLE_ID) =>
-  testBundleObject<StixCyberObject & { value: string }>({
+const domainObservable = (id: StixId = OBSERVABLE_ID, withLabel?: boolean) =>
+  testBundleObject<StixCyberObject & { value: string; labels: string[] }>({
     id,
     type: 'domain-name',
     value: 'malicious.example.com',
+    ...(withLabel ? { labels: [LABEL_ID] } : {}),
     octiExtension: {
       type: 'Domain-Name',
       id: '',
@@ -278,6 +280,7 @@ describe('Create indicator component', () => {
 
     const filterDomainNames = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Domain-Name"],"mode":"or"}],"filterGroups":[]}';
     const filterNotMatching = '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["IPv4-Addr"],"mode":"or"}],"filterGroups":[]}';
+    const filterLabel = JSON.stringify({ mode: 'or', filters: [{ key: ['objectLabel'], operator: 'eq', values: [LABEL_ID], mode: 'or' }], filterGroups: [] });
 
     // -- all-elements + filter matching all observables
 
@@ -306,6 +309,35 @@ describe('Create indicator component', () => {
       expect(basedOnRels).toHaveLength(2);
       expect(basedOnRels.map((r) => r.target_ref)).toContain(OBSERVABLE_ID);
       expect(basedOnRels.map((r) => r.target_ref)).toContain(OBSERVABLE_ID_2);
+    });
+
+    // -- all-elements + filter matching label
+
+    it('should create indicators for the observable with matching label when applyToElements = "all-elements" and filter matches a label', async () => {
+      const result = await PLAYBOOK_CREATE_INDICATOR_COMPONENT.executor(
+        testExecutor({
+          mainId: OBSERVABLE_ID,
+          bundleObjects: [domainObservable(OBSERVABLE_ID, true), domainObservable(OBSERVABLE_ID_2)],
+          configuration: {
+            applyToElements: playbookBundleElementsToApply.allElements.value,
+            applyWithFilters: filterLabel,
+            wrap_in_container: false,
+            types: [],
+          },
+        }),
+      );
+
+      expect(result.output_port).toBe('out');
+
+      const indicators = result.bundle.objects.filter((o) => o.type === 'indicator') as StixIndicator[];
+      expect(indicators).toHaveLength(1);
+
+      const basedOnRels = result.bundle.objects.filter(
+        (o) => o.type === 'relationship' && (o as StixRelation).relationship_type === RELATION_BASED_ON,
+      ) as StixRelation[];
+      expect(basedOnRels).toHaveLength(1);
+      expect(basedOnRels.map((r) => r.target_ref)).toContain(OBSERVABLE_ID);
+      expect(basedOnRels.map((r) => r.target_ref)).not.toContain(OBSERVABLE_ID_2);
     });
 
     // -- all-elements + filter not matching any observable

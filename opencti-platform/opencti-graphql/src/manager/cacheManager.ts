@@ -100,10 +100,9 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
     const configurations = definition.nodes.map((n) => JSON.parse(n.configuration));
     // IDs from filters in playbook components.
     const playbookFilterIds = configurations
-      .map((config) => config.filters)
+      .flatMap((config) => [config.filters, config.applyWithFilters])
       .filter((f) => isNotEmptyField(f))
-      .map((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)))
-      .flat();
+      .flatMap((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)));
     // IDs from list of PIRs to listen.
     const playbookInPirFilterIds = configurations
       .map((config) => config.inPirFilters)
