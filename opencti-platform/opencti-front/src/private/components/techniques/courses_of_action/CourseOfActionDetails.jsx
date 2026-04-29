@@ -23,7 +23,7 @@ class CourseOfActionDetailsComponent extends Component {
       <div style={{ height: '100%' }}>
         <Card title={t('Details')}>
           <Grid container={true} spacing={2}>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <Label>
                 {t('Description')}
               </Label>
@@ -31,9 +31,9 @@ class CourseOfActionDetailsComponent extends Component {
                 source={courseOfAction.description}
                 limit={300}
               />
-              <Label
-                sx={{ marginTop: 2 }}
-              >
+            </Grid>
+            <Grid item xs={6}>
+              <Label>
                 {t('Log sources')}
               </Label>
               <FieldOrEmpty source={courseOfAction.x_opencti_log_sources}>

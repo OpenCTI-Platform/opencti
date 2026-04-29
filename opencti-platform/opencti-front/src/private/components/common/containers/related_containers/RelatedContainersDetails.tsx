@@ -120,6 +120,13 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
 
   return (
     <Grid container rowSpacing={3}>
+      <Grid item xs={12}>
+        <Typography variant="h3" gutterBottom>
+          {t_i18n('Description')}
+        </Typography>
+        <ExpandableMarkdown source={relatedContainer.description} limit={300} />
+      </Grid>
+
       <Grid container item xs={12} columnSpacing={3}>
         <Grid item xs={6}>
           <Typography variant="h3" gutterBottom>
@@ -138,12 +145,6 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
       </Grid>
 
       <Grid container item xs={12} columnSpacing={3}>
-        <Grid item xs={6}>
-          <Typography variant="h3" gutterBottom>
-            {t_i18n('Description')}
-          </Typography>
-          <ExpandableMarkdown source={relatedContainer.description} limit={300} />
-        </Grid>
         <Grid item xs={6}>
           <Typography variant="h3" gutterBottom>
             {t_i18n('Processing status')}

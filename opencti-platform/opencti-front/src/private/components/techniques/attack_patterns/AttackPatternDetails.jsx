@@ -24,6 +24,15 @@ class AttackPatternDetailsComponent extends Component {
       <div style={{ height: '100%' }}>
         <Card title={t('Details')}>
           <Grid container={true} spacing={2}>
+            <Grid item xs={12}>
+              <Label>
+                {t('Description')}
+              </Label>
+              <ExpandableMarkdown
+                source={attackPattern.description}
+                limit={300}
+              />
+            </Grid>
             <Grid item xs={6}>
               {attackPattern.isSubAttackPattern && (
                 <AttackPatternParentAttackPatterns
@@ -40,15 +49,6 @@ class AttackPatternDetailsComponent extends Component {
                   label={attackPattern.x_mitre_id}
                 />
               </FieldOrEmpty>
-              <Label
-                sx={{ marginTop: 2 }}
-              >
-                {t('Description')}
-              </Label>
-              <ExpandableMarkdown
-                source={attackPattern.description}
-                limit={300}
-              />
               <div>
                 <Label
                   sx={{ marginTop: 2 }}

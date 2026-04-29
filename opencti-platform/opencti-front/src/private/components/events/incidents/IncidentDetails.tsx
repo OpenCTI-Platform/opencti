@@ -95,6 +95,12 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
     <div style={{ height: '100%' }} data-testid="incident-details-page">
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2}>
+          <Grid item xs={12}>
+            <Label>
+              {t_i18n('Description')}
+            </Label>
+            <ExpandableMarkdown source={incident.description} limit={400} />
+          </Grid>
           <Grid item xs={6}>
             <Label>
               {t_i18n('Incident type')}
@@ -110,12 +116,6 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               {t_i18n('First seen')}
             </Label>
             {fldt(incident.first_seen)}
-            <Label
-              sx={{ marginTop: 2 }}
-            >
-              {t_i18n('Description')}
-            </Label>
-            <ExpandableMarkdown source={incident.description} limit={400} />
           </Grid>
           <Grid item xs={6}>
             <Label>

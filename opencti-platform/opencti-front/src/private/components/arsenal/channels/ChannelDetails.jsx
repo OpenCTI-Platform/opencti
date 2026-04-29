@@ -25,7 +25,7 @@ export const ChannelDetails = ({
   return (
     <Card title={t_i18n('Details')}>
       <Grid container={true} spacing={2}>
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <Label>
             {t_i18n('Description')}
           </Label>

@@ -55,15 +55,15 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
         <Grid container={true} spacing={2}>
           <Grid item xs={12}>
             <Label>
-              {t_i18n('Name')}
-            </Label>
-            {data.name || EMPTY_VALUE}
-          </Grid>
-          <Grid item xs={12}>
-            <Label>
               {t_i18n('Description')}
             </Label>
             <ExpandableMarkdown source={data.description} limit={300} />
+          </Grid>
+          <Grid item xs={12}>
+            <Label>
+              {t_i18n('Name')}
+            </Label>
+            {data.name || EMPTY_VALUE}
           </Grid>
           <Grid item xs={6}>
             <Label>

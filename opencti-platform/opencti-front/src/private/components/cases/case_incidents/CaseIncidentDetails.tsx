@@ -68,6 +68,14 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2} sx={{ marginBottom: 2 }}>
+          <Grid item xs={12}>
+            <Label>
+              {t_i18n('Description')}
+            </Label>
+            <FieldOrEmpty source={data.description}>
+              <ExpandableMarkdown source={data.description} limit={300} />
+            </FieldOrEmpty>
+          </Grid>
           <Grid item xs={6}>
             <Label>
               {t_i18n('Priority')}
@@ -105,14 +113,6 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
                   />
                 ))}
               </Stack>
-            </FieldOrEmpty>
-          </Grid>
-          <Grid item xs={12}>
-            <Label>
-              {t_i18n('Description')}
-            </Label>
-            <FieldOrEmpty source={data.description}>
-              <ExpandableMarkdown source={data.description} limit={300} />
             </FieldOrEmpty>
           </Grid>
         </Grid>

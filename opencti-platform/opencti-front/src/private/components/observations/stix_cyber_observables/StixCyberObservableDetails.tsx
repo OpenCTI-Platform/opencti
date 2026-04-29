@@ -435,13 +435,7 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
     <div style={{ height: '100%' }} className="break">
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2} sx={{ marginBottom: 2 }}>
-          {file && (
-            <Grid size={6}>
-              <DownloadFileButtonMenu fileSize={file.size} encodedFilePath={encodedFilePath} />
-            </Grid>
-          )}
-
-          <Grid size={6}>
+          <Grid size={12}>
             <>
               <Label>
                 {t_i18n('Description')}
@@ -452,6 +446,11 @@ const StixCyberObservableDetails = ({ data }: StixCyberObservableDetailsProps) =
               />
             </>
           </Grid>
+          {file && (
+            <Grid size={6}>
+              <DownloadFileButtonMenu fileSize={file.size} encodedFilePath={encodedFilePath} />
+            </Grid>
+          )}
 
           {orderedObservableAttributes.map((observableAttribute) => {
             const { key, value } = observableAttribute;

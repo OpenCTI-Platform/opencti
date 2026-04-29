@@ -18,20 +18,20 @@ const DraftDetails: FunctionComponent<DraftDetailsProps> = ({ draft }) => {
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
-          <Grid item xs={6}>
+          <Grid item xs={12}>
             <Label>
-              {t_i18n('Name')}
-            </Label>
-            {truncate(draft.name, 40)}
-            <Label
-              sx={{ marginTop: 2 }}
-            >
               {t_i18n('Description')}
             </Label>
             <ExpandableMarkdown
               source={draft.description}
               limit={400}
             />
+          </Grid>
+          <Grid item xs={6}>
+            <Label>
+              {t_i18n('Name')}
+            </Label>
+            {truncate(draft.name, 40)}
           </Grid>
         </Grid>
       </Card>
