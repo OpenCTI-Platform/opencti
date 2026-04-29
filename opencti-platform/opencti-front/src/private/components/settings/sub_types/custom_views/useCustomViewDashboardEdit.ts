@@ -1,5 +1,5 @@
 import { graphql } from 'react-relay';
-import { fetchQuery, handleError } from '../../../../../relay/environment';
+import { fetchQuery, handleError, MESSAGING$ } from '../../../../../relay/environment';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useDashboard from '../../../../../components/dashboard/useDashboard';
 import { useCustomViewDashboardEdit_Mutation } from './__generated__/useCustomViewDashboardEdit_Mutation.graphql';
@@ -66,7 +66,8 @@ const onExportWidget = async (id: string, widget: { id: string; type: string }) 
   const result = data as useCustomViewDashboardEdit_WidgetExportQuery$data;
   const exportString = result.customView?.toWidgetExport;
   if (!exportString) {
-    throw new Error('Failed to export widget');
+    MESSAGING$.notifyError('Failed to export widget');
+    return null;
   }
   return exportString;
 };
