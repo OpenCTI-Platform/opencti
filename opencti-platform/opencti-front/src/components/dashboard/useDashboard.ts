@@ -178,7 +178,7 @@ function useDashboard({
       return res;
     }, {} as Record<string, WidgetLayout>);
 
-    if (R.equals(newLayouts, widgetsLayouts)) return; // ⛔ prevent loop
+    if (R.equals(newLayouts, widgetsLayouts)) return;
 
     setWidgetsLayouts(newLayouts);
     saveManifest(manifest, { layouts: newLayouts, noRefresh: true });
