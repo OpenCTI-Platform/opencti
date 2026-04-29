@@ -67,7 +67,7 @@ const DashboardWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
         </MenuItem>
       )}
       <WidgetConfig
-        onComplete={(widget, variableName) => onComplete(widget, variableName)}
+        onComplete={onComplete}
         widget={widget}
         onClose={handleCloseWidgetConfig}
         open={isWidgetConfigOpen}
