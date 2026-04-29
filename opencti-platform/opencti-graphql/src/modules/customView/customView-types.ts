@@ -29,6 +29,7 @@ export interface StixCustomView extends StixObject {
   name: string;
   description: string;
   slug: string;
+  path: string;
   manifest: string;
   target_entity_type: string;
   enabled: boolean;
