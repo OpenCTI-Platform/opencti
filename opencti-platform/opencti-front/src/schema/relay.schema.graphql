@@ -9748,6 +9748,8 @@ type Query {
   emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
   form(id: ID!): Form
   forms(search: String, first: Int, after: ID, orderBy: FormsOrdering, orderMode: OrderingMode, filters: FilterGroup): FormConnection
+  myNewsFeeds(first: Int, after: ID, orderBy: NewsFeedItemsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): NewsFeedItemConnection
+  myUnreadNewsFeedsCount: Int
   availableSecrets: [AvailableSecretInfo!]!
   authenticationProvider(id: String!): AuthenticationProvider
   authenticationProviders(first: Int, after: ID, orderBy: AuthenticationProviderOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): AuthenticationProviderConnection
@@ -15768,6 +15770,42 @@ input AutoRegisterInput {
 
 type Success {
   success: Boolean!
+}
+
+enum NewsFeedItemsOrdering {
+  title
+  news_feed_type
+  creation_date
+}
+
+type NewsFeedItemMetadata {
+  key: String!
+  value: String
+}
+
+type NewsFeedItem implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  title: String!
+  news_feed_type: String!
+  tags: [String!]!
+  metadata: [NewsFeedItemMetadata!]!
+  creation_date: DateTime!
+  is_read: Boolean!
+  user_id: String!
+}
+
+type NewsFeedItemConnection {
+  pageInfo: PageInfo!
+  edges: [NewsFeedItemEdge!]!
+}
+
+type NewsFeedItemEdge {
+  cursor: String!
+  node: NewsFeedItem!
 }
 
 type Metric {
