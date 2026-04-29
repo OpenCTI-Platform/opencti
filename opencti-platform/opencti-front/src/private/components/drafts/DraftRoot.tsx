@@ -6,6 +6,7 @@ import Tab from '@mui/material/Tab';
 import DraftEntities from '@components/drafts/DraftEntities';
 import DraftRelationships from '@components/drafts/DraftRelationships';
 import DraftSightings from '@components/drafts/DraftSightings';
+import DraftReview from '@components/drafts/DraftReview';
 import { DraftRootQuery } from '@components/drafts/__generated__/DraftRootQuery.graphql';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { interval } from 'rxjs';
@@ -65,6 +66,7 @@ export const draftRootFragment = graphql`
       observablesCount
       relationshipsCount
       sightingsCount
+      reviewsCount
       totalCount
     }
     draft_status
@@ -263,6 +265,12 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
               label={t_i18n('Files')}
             />
           )}
+          <Tab
+            component={Link}
+            to="review"
+            value="review"
+            label={<span>{t_i18n('Review')} ({objectsCount.reviewsCount})</span>}
+          />
         </Tabs>
       </Box>
       <Routes>
@@ -299,6 +307,10 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }: RootDraftComponentPr
         <Route
           path="/files"
           element={<ImportFilesContent inDraftOverview />}
+        />
+        <Route
+          path="/review"
+          element={<DraftReview draftId={draftId} />}
         />
       </Routes>
     </>
