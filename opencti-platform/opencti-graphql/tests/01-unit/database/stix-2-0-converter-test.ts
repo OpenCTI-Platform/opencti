@@ -14,6 +14,7 @@ import { EXPECTED_RFI, RFI_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/c
 import { EXPECTED_TOOL, TOOL_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/arsenal/tool';
 import { EXPECTED_VULNERABILITY, INSTANCE_VULNERABILITY } from './stix-2-0-converter-fixtures/SDOs/arsenal/vulnerability';
 import { CHANNEL_INSTANCE, EXPECTED_CHANNEL } from './stix-2-0-converter-fixtures/SDOs/arsenal/channel';
+import { MALWARE_ANALYSIS_INSTANCE, EXPECTED_MALWARE_ANALYSIS } from './stix-2-0-converter-fixtures/SDOs/arsenal/malware-analysis';
 import { convertGroupingToStix_2_0 } from '../../../src/modules/grouping/grouping-converter';
 import { convertFeedbackToStix_2_0 } from '../../../src/modules/case/feedback/feedback-converter';
 import { convertTaskToStix_2_0 } from '../../../src/modules/task/task-converter';
@@ -46,12 +47,12 @@ import {
   convertInPirRelToStix,
   convertIdentityToStix,
   convertLocationToStix,
-  convertInfrastructureToStix,
   convertStoreToStix_2_0,
   convertMarkingDefinitionToStix,
   convertLabelToStix,
   convertKillChainPhaseToStix,
   convertExternalReferenceToStix,
+  convertInfrastructureToStix,
 } from '../../../src/database/stix-2-0-converter';
 import {
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -89,8 +90,8 @@ import { POSITION_INSTANCE, EXPECTED_POSITION } from './stix-2-0-converter-fixtu
 import { ADMINISTRATIVE_AREA_INSTANCE, EXPECTED_ADMINISTRATIVE_AREA } from './stix-2-0-converter-fixtures/SDOs/locations/administrative-area';
 import { convertAdministrativeAreaToStix_2_0 } from '../../../src/modules/administrativeArea/administrativeArea-converter';
 import { convertIndicatorToStix_2_0 } from '../../../src/modules/indicator/indicator-converter';
+import { convertMalwareAnalysisToStix_2_0 } from '../../../src/modules/malwareAnalysis/malwareAnalysis-converter';
 import { INDICATOR_INSTANCE, EXPECTED_INDICATOR } from './stix-2-0-converter-fixtures/SDOs/observations/indicator';
-import { INFRASTRUCTURE_INSTANCE, EXPECTED_INFRASTRUCTURE } from './stix-2-0-converter-fixtures/SDOs/observations/infrastructure';
 import { IPV4_INSTANCE, EXPECTED_IPV4 } from './stix-2-0-converter-fixtures/SCOs/ipv4-addr';
 import { DOMAIN_NAME_INSTANCE, EXPECTED_DOMAIN_NAME } from './stix-2-0-converter-fixtures/SCOs/domain-name';
 import { URL_INSTANCE, EXPECTED_URL } from './stix-2-0-converter-fixtures/SCOs/url';
@@ -183,6 +184,7 @@ import {
 import { LABEL_INSTANCE, EXPECTED_LABEL } from './stix-2-0-converter-fixtures/SMOs/label';
 import { KILL_CHAIN_PHASE_INSTANCE, EXPECTED_KILL_CHAIN_PHASE } from './stix-2-0-converter-fixtures/SMOs/kill-chain-phase';
 import { EXTERNAL_REFERENCE_INSTANCE, EXPECTED_EXTERNAL_REFERENCE } from './stix-2-0-converter-fixtures/SMOs/external-reference';
+import { EXPECTED_INFRASTRUCTURE, INFRASTRUCTURE_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/observations/infrastructure';
 
 describe('Stix 2.0 opencti converter', () => {
   // SDOs
@@ -201,6 +203,10 @@ describe('Stix 2.0 opencti converter', () => {
   it('should convert Vulnerability', async () => {
     const result = convertVulnerabilityToStix(INSTANCE_VULNERABILITY);
     expect(result).toEqual(EXPECTED_VULNERABILITY);
+  });
+  it('should convert Malware Analysis', async () => {
+    const result = convertMalwareAnalysisToStix_2_0(MALWARE_ANALYSIS_INSTANCE as any);
+    expect(result).toEqual(EXPECTED_MALWARE_ANALYSIS);
   });
   it('should convert Indicator', async () => {
     const result = convertIndicatorToStix_2_0(INDICATOR_INSTANCE);
