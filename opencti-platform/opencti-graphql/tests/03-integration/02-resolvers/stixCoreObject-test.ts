@@ -51,14 +51,12 @@ describe('stixCoreObjectsDistributionByEntity', () => {
     expect(aggregationMap.get('Intrusion-Set')).toBeGreaterThanOrEqual(1);
   });
 
-  it('should return empty distribution for unknown objectId', async () => {
-    const distribution = await stixCoreObjectsDistributionByEntity(testContext, ADMIN_USER, {
+  it('should throw ResourceNotFoundError for unknown objectId', async () => {
+    await expect(stixCoreObjectsDistributionByEntity(testContext, ADMIN_USER, {
       objectId: '00000000-0000-0000-0000-000000000000',
       field: 'entity_type',
       operation: 'count',
-    });
-    expect(distribution).toBeDefined();
-    expect(distribution.length).toEqual(0);
+    })).rejects.toThrow('Specified ids not found or restricted');
   });
 
   it('should support array of objectIds', async () => {
