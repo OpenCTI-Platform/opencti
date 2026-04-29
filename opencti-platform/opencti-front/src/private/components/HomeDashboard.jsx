@@ -459,13 +459,7 @@ const dashboardCustomDashboardQuery = graphql`
 const WorkspaceDashboardComponent = ({ queryRef, timeField }) => {
   const data = usePreloadedQuery(dashboardCustomDashboardQuery, queryRef);
   if (data.workspace) {
-    return (
-      <CustomDashboard
-        data={data.workspace}
-        noToolbar={true}
-        timeField={timeField}
-      />
-    );
+    return <CustomDashboard data={data.workspace} noToolbar={true} />;
   }
   return <DefaultDashboard timeField={timeField} />;
 };

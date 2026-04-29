@@ -1,7 +1,7 @@
 import { Suspense, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import Dashboard from './CustomDashboard';
+import CustomDashboard from './CustomDashboard';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -52,7 +52,7 @@ const RootCustomDashboardComponent = ({ queryRef }: RootCustomDashboardComponent
         height: '100%',
       }}
     >
-      <Dashboard data={workspace} />
+      <CustomDashboard data={workspace} />
     </div>
   );
 };

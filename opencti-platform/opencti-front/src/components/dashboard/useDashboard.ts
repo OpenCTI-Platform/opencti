@@ -10,7 +10,7 @@ interface useDashboardProps {
   entity: DashboardLike | undefined | null;
   onSave?: (entityId: string, newSerializedManifest: string, noRefresh: boolean, onCompleted: () => void) => void;
   onImportWidget?: (entityId: string, widgetConfigFile: File, serializedManifest: string) => void;
-  onExportWidget?: (entityId: string, widget: { id: string; type: string }) => Promise<string>;
+  onExportWidget?: (entityId: string, widget: { id: string; type: string }) => Promise<string | null>;
 }
 
 function useDashboard({
@@ -109,7 +109,7 @@ function useDashboard({
       return;
     }
     onExportWidget(id, widget)
-      .then((exportedWidget: string) => {
+      .then((exportedWidget: string | null) => {
         if (!exportedWidget) {
           return;
         }

@@ -2,13 +2,15 @@ import { graphql, useFragment } from 'react-relay';
 import Stack from '@mui/material/Stack';
 import DashboardTimeFilters from '../../../../components/dashboard/DashboardTimeFilters';
 import WorkspaceHeader from '../workspaceHeader/WorkspaceHeader';
-import { commitMutation, handleError, fetchQuery } from '../../../../relay/environment';
+import { commitMutation, handleError, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import useGranted, { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DashboardContent from '../../../../components/dashboard/DashboardContent';
 import useDashboard from '../../../../components/dashboard/useDashboard';
 import Security from 'src/utils/Security';
+import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_workspace.graphql';
+import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
 
 const dashboardExportWidgetQuery = graphql`
   query CustomDashboardWidgetExportQuery($id: String!, $widgetId: ID!) {
@@ -56,13 +58,22 @@ const dashboardFragment = graphql`
   }
 `;
 
-const onExportWidget = async (id, widget) => {
+const onExportWidget = async (id: string, widget: { id: string; type: string }) => {
   const data = await fetchQuery(dashboardExportWidgetQuery, { id, widgetId: widget.id })
-    .toPromise();
-  return data.workspace?.toWidgetExport;
+    .toPromise() as CustomDashboardWidgetExportQuery$data;
+  if (!data.workspace) {
+    MESSAGING$.notifyError('Failed to export widget');
+    return null;
+  }
+  return data.workspace.toWidgetExport;
 };
 
-const CustomDashboard = ({ data, noToolbar = false }) => {
+interface CustomDashboardProps {
+  data: CustomDashboard_workspace$key;
+  noToolbar?: boolean;
+}
+
+const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   const workspace = useFragment(dashboardFragment, data);
   const [commitWidgetImportMutation] = useApiMutation(dashboardImportWidgetMutation);
 
@@ -71,7 +82,7 @@ const CustomDashboard = ({ data, noToolbar = false }) => {
   const userHasUpdateCapa = useGranted([EXPLORE_EXUPDATE]);
   const userCanEdit = userHasEditAccess && userHasUpdateCapa;
 
-  const onSave = (id, newManifestEncoded, noRefresh, onCompleted) => {
+  const onSave = (id: string, newManifestEncoded: string, noRefresh: boolean, onCompleted: () => void) => {
     const mutation = noRefresh ? dashboardLayoutMutation : workspaceMutationFieldPatch;
     commitMutation({
       mutation,
@@ -83,10 +94,16 @@ const CustomDashboard = ({ data, noToolbar = false }) => {
         },
       },
       onCompleted,
+      // Remove these once commitMutation gets migrated to TS
+      onError: undefined,
+      optimisticResponse: undefined,
+      optimisticUpdater: undefined,
+      setSubmitting: undefined,
+      updater: undefined,
     });
   };
 
-  const onImportWidget = (id, widgetConfig, manifestEncoded) => {
+  const onImportWidget = (id: string, widgetConfig: File, manifestEncoded: string) => {
     commitWidgetImportMutation({
       variables: {
         id,
