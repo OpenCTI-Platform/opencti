@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import DigestNotification from '@components/profile/notifications/DigestNotification';
 import Drawer from '@components/common/drawer/Drawer';
-import { NotificationsLine_node$data } from '@components/profile/__generated__/NotificationsLine_node.graphql';
+import { AlertsLine_node$data } from '@components/profile/__generated__/AlertsLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 
 interface DigestNotificationDrawerProps {
-  notification: NotificationsLine_node$data | undefined;
+  notification: AlertsLine_node$data | undefined;
   open: boolean;
   onClose: () => void;
 }

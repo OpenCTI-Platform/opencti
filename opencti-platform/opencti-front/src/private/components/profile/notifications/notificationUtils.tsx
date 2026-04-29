@@ -1,7 +1,7 @@
 import { deepPurple, green, indigo, red } from '@mui/material/colors';
 import { BellCogOutline, BellOutline, BellPlusOutline, BellRemoveOutline, FileTableBoxMultipleOutline } from 'mdi-material-ui';
 import React from 'react';
-import { NotificationsLine_node$data } from '@components/profile/__generated__/NotificationsLine_node.graphql';
+import { AlertsLine_node$data } from '@components/profile/__generated__/AlertsLine_node.graphql';
 
 export const colors: Record<string, string> = {
   none: green[500],
@@ -11,7 +11,7 @@ export const colors: Record<string, string> = {
   multiple: indigo[500],
 };
 
-export const getFirstOperation = ({ notification_content, notification_type }: Pick<NotificationsLine_node$data, 'notification_content' | 'notification_type'>) => {
+export const getFirstOperation = ({ notification_content, notification_type }: Pick<AlertsLine_node$data, 'notification_content' | 'notification_type'>) => {
   const events = notification_content.map((n) => n.events).flat();
   const firstEvent = events.at(0);
   const isDigest = notification_type === 'digest';

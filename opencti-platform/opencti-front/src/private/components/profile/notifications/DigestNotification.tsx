@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { NotificationsLine_node$data } from '@components/profile/__generated__/NotificationsLine_node.graphql';
+import { AlertsLine_node$data } from '@components/profile/__generated__/AlertsLine_node.graphql';
 import Chip from '@mui/material/Chip';
 import { deepPurple, green, red } from '@mui/material/colors';
 import { iconSelector } from './notificationUtils';
@@ -12,7 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 const LOCAL_STORAGE_KEY = 'digest_notification';
 
 interface DigestNotificationProps {
-  notification: NotificationsLine_node$data | undefined;
+  notification: AlertsLine_node$data | undefined;
 }
 
 const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notification }) => {
