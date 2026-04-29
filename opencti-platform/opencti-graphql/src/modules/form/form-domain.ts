@@ -572,6 +572,13 @@ export const formSubmit = async (
           // @ts-expect-error
           mainEntity[field.attributeMapping.attributeName] = convertedValue;
         }
+        mainEntity = await transformSpecialFields(context, user, mainEntity, mainEntityFields, false);
+        if (mainEntityType === ENTITY_TYPE_MALWARE && isEmptyField(mainEntity.is_family)) {
+          mainEntity.is_family = true;
+        }
+        if (mainEntityType === ENTITY_TYPE_CONTAINER_GROUPING && isEmptyField(mainEntity.context)) {
+          mainEntity.context = 'form';
+        }
         mainEntity = completeEntity(mainEntityType, mainEntity);
         if (isStixCyberObservable(mainEntity.entity_type)) {
           if (checkObservableSyntax(mainEntity.entity_type, mainEntity) !== true) {
@@ -706,6 +713,13 @@ export const formSubmit = async (
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-expect-error
                 newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
+              }
+              newAdditionalEntity = await transformSpecialFields(context, user, newAdditionalEntity, additionalEntityFields, false);
+              if (additionalEntityType === ENTITY_TYPE_MALWARE && isEmptyField(newAdditionalEntity.is_family)) {
+                newAdditionalEntity.is_family = true;
+              }
+              if (additionalEntityType === ENTITY_TYPE_CONTAINER_GROUPING && isEmptyField(newAdditionalEntity.context)) {
+                newAdditionalEntity.context = 'form';
               }
               newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
               if (isStixCyberObservable(newAdditionalEntity.entity_type)) {
