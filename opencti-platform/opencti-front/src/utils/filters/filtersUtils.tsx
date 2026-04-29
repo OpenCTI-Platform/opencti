@@ -11,7 +11,6 @@ import { isEmptyField, uniqueArray } from '../utils';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 import { dateFiltersValueForDisplay } from '../Time';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../widget/widgetUtils';
-import type { DashboardManifest } from '../dashboard';
 
 // ----------------------------------------------------------------------------------------------------------------------
 
@@ -564,88 +563,6 @@ export const deserializeFilterGroupForFrontend = (
     filters = filterGroup;
   }
   return sanitizeFilterGroupKeysForFrontend(filters);
-};
-
-// Dashboard manifests are complex objects with filters deeply nested in widgets configurations
-// (de)serialization is a bit more complex
-// We use any here and use it when manipulating the manifest or internal fields
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyForDashboardManifest = any;
-
-/**
- * Serialize a complex dashboard manifest, sanitizing all filters inside the manifest before.
- * @param manifest
- */
-export const serializeDashboardManifestForBackend = (
-  manifest: AnyForDashboardManifest,
-): string => {
-  const newWidgets: Record<string, AnyForDashboardManifest> = {};
-  const widgetIds = manifest.widgets ? Object.keys(manifest.widgets) : [];
-  widgetIds.forEach((id) => {
-    const widget = manifest.widgets[id];
-    newWidgets[id] = {
-      ...widget,
-      dataSelection: widget.dataSelection.map(
-        (selection: AnyForDashboardManifest) => ({
-          ...selection,
-          filters: selection.filters
-            ? sanitizeFilterGroupKeysForBackend(selection.filters)
-            : undefined,
-          dynamicFrom: selection.dynamicFrom
-            ? sanitizeFilterGroupKeysForBackend(selection.dynamicFrom)
-            : undefined,
-          dynamicTo: selection.dynamicTo
-            ? sanitizeFilterGroupKeysForBackend(selection.dynamicTo)
-            : undefined,
-        }),
-      ),
-    };
-  });
-
-  return JSON.stringify({
-    ...manifest,
-    widgets: newWidgets,
-  });
-};
-
-export const deserializeDashboardManifestForFrontend = (
-  manifestStr: string,
-): DashboardManifest => {
-  const widgets: Record<string, AnyForDashboardManifest> = {};
-  if (!manifestStr) {
-    return {
-      widgets,
-      config: {},
-    };
-  }
-  const manifest = JSON.parse(manifestStr);
-  const widgetIds = manifest.widgets ? Object.keys(manifest.widgets) : [];
-  widgetIds.forEach((id) => {
-    const widget = manifest.widgets[id];
-    widgets[id] = {
-      ...widget,
-      dataSelection: widget.dataSelection.map(
-        (selection: AnyForDashboardManifest) => ({
-          ...selection,
-          filters: selection.filters
-            ? sanitizeFilterGroupKeysForFrontend(selection.filters)
-            : undefined,
-          dynamicFrom: selection.dynamicFrom
-            ? sanitizeFilterGroupKeysForFrontend(selection.dynamicFrom)
-            : undefined,
-          dynamicTo: selection.dynamicTo
-            ? sanitizeFilterGroupKeysForFrontend(selection.dynamicTo)
-            : undefined,
-        }),
-      ),
-    };
-  });
-
-  return {
-    config: {},
-    ...manifest,
-    widgets,
-  };
 };
 
 // ----------------------------------------------------------------------------------------------------------------------
