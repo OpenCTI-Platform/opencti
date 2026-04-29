@@ -48,7 +48,6 @@ const CustomViewFormDrawer = ({
         onClose();
         if (response.customViewAdd) {
           const { id } = response.customViewAdd;
-          MESSAGING$.notifySuccess(t_i18n('Custom view created'));
           navigate(`/dashboard/settings/customization/entity_types/${entityType}/custom-views/${id}`);
         }
       },
