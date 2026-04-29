@@ -186,414 +186,408 @@ describe('CustomView resolvers', () => {
     );
   });
   describe('display use cases', () => {
-    describe('customView', () => {
-      it('should retrieve serialized dashboard manifest', async () => {
-        const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
-          query: READ_CUSTOM_VIEW_QUERY,
-          variables: {
-            id: customView1?.id,
-          },
-        });
-        expect(result.data.customView.manifest).toBe(CUSTOM_VIEW_ENTITY_1.manifest);
+    it('should retrieve serialized dashboard manifest', async () => {
+      const result = await queryAsUserWithSuccess(USER_PARTICIPATE, {
+        query: READ_CUSTOM_VIEW_QUERY,
+        variables: {
+          id: customView1?.id,
+        },
       });
+      expect(result.data.customView.manifest).toBe(CUSTOM_VIEW_ENTITY_1.manifest);
     });
 
-    describe('customViews', () => {
-      it('should retrieve all custom views', async () => {
-        const result = await queryAsAdminWithSuccess({
-          query: READ_ALL_CUSTOM_VIEWS_QUERY,
-        });
-        const nodes = result.data.customViews.edges.map((e: any) => e.node);
-        expect(nodes).toContainEqual({
-          id: customView1?.id,
-          name: CUSTOM_VIEW_ENTITY_1.name,
-          description: CUSTOM_VIEW_ENTITY_1.description,
-          path: `${CUSTOM_VIEW_ENTITY_1.slug}-${customView1?.id.replaceAll('-', '')}`,
-          created_at: expect.any(Date),
-          updated_at: expect.any(Date),
-          targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
-          enabled: true,
-          default: true,
-        });
-        expect(nodes).toContainEqual({
-          id: customView2?.id,
-          name: CUSTOM_VIEW_ENTITY_2.name,
-          description: CUSTOM_VIEW_ENTITY_2.description,
-          path: `${CUSTOM_VIEW_ENTITY_2.slug}-${customView2?.id.replaceAll('-', '')}`,
-          created_at: expect.any(Date),
-          updated_at: expect.any(Date),
-          targetEntityType: CUSTOM_VIEW_ENTITY_2.target_entity_type,
-          enabled: false,
-          default: false,
-        });
-        // Ordered by name ascending as defined by the query
-        // Doesn't contain custom view not part of the whitelist
-        expect(nodes.map(({ name }: { name: string }) => name)).toStrictEqual([
-          CUSTOM_VIEW_ENTITY_2.name,
-          CUSTOM_VIEW_ENTITY_1.name,
-        ]);
+    it('should retrieve all custom views', async () => {
+      const result = await queryAsAdminWithSuccess({
+        query: READ_ALL_CUSTOM_VIEWS_QUERY,
       });
+      const nodes = result.data.customViews.edges.map((e: any) => e.node);
+      expect(nodes).toContainEqual({
+        id: customView1?.id,
+        name: CUSTOM_VIEW_ENTITY_1.name,
+        description: CUSTOM_VIEW_ENTITY_1.description,
+        path: `${CUSTOM_VIEW_ENTITY_1.slug}-${customView1?.id.replaceAll('-', '')}`,
+        created_at: expect.any(Date),
+        updated_at: expect.any(Date),
+        targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+        enabled: true,
+        default: true,
+      });
+      expect(nodes).toContainEqual({
+        id: customView2?.id,
+        name: CUSTOM_VIEW_ENTITY_2.name,
+        description: CUSTOM_VIEW_ENTITY_2.description,
+        path: `${CUSTOM_VIEW_ENTITY_2.slug}-${customView2?.id.replaceAll('-', '')}`,
+        created_at: expect.any(Date),
+        updated_at: expect.any(Date),
+        targetEntityType: CUSTOM_VIEW_ENTITY_2.target_entity_type,
+        enabled: false,
+        default: false,
+      });
+      // Ordered by name ascending as defined by the query
+      // Doesn't contain custom view not part of the whitelist
+      expect(nodes.map(({ name }: { name: string }) => name)).toStrictEqual([
+        CUSTOM_VIEW_ENTITY_2.name,
+        CUSTOM_VIEW_ENTITY_1.name,
+      ]);
+    });
 
-      it('should retrieve all custom views of given type', async () => {
-        const result = await queryAsAdminWithSuccess({
-          query: READ_ALL_CUSTOM_VIEWS_QUERY,
-          variables: {
-            entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
-          },
-        });
-        const targetEntityTypes = result.data.customViews.edges.map((e: any) => e.node)
-          .map((n: any) => n.targetEntityType);
-        expect(targetEntityTypes).toStrictEqual([CUSTOM_VIEW_ENTITY_1.target_entity_type]);
+    it('should retrieve all custom views of given type', async () => {
+      const result = await queryAsAdminWithSuccess({
+        query: READ_ALL_CUSTOM_VIEWS_QUERY,
+        variables: {
+          entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+        },
       });
+      const targetEntityTypes = result.data.customViews.edges.map((e: any) => e.node)
+        .map((n: any) => n.targetEntityType);
+      expect(targetEntityTypes).toStrictEqual([CUSTOM_VIEW_ENTITY_1.target_entity_type]);
     });
   });
 
   describe('settings use cases', () => {
-    describe('customViewsSettings', () => {
-      describe('when user is admin', () => {
-        it('should retrieve canEntityTypeHaveCustomViews=true for allowed entity type', async () => {
-          const result = await queryAsAdminWithSuccess({
-            query: READ_SETTINGS_QUERY,
-            variables: {
-              entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
-            },
-          });
-          expect(result.data.customViewsSettings.canEntityTypeHaveCustomViews).toBe(true);
+    describe('when user is admin', () => {
+      it('should retrieve canEntityTypeHaveCustomViews=true for allowed entity type', async () => {
+        const result = await queryAsAdminWithSuccess({
+          query: READ_SETTINGS_QUERY,
+          variables: {
+            entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+          },
         });
+        expect(result.data.customViewsSettings.canEntityTypeHaveCustomViews).toBe(true);
+      });
 
-        it('should retrieve canEntityTypeHaveCustomViews=false for other entity type', async () => {
-          const result = await queryAsAdminWithSuccess({
-            query: READ_SETTINGS_QUERY,
-            variables: {
-              entityType: CUSTOM_VIEW_ENTITY_INVALID.target_entity_type,
-            },
-          });
-          expect(result.data.customViewsSettings.canEntityTypeHaveCustomViews).toBe(false);
+      it('should retrieve canEntityTypeHaveCustomViews=false for other entity type', async () => {
+        const result = await queryAsAdminWithSuccess({
+          query: READ_SETTINGS_QUERY,
+          variables: {
+            entityType: CUSTOM_VIEW_ENTITY_INVALID.target_entity_type,
+          },
         });
+        expect(result.data.customViewsSettings.canEntityTypeHaveCustomViews).toBe(false);
+      });
 
-        it('should allow creating a custom view', async () => {
-          const description = 'Some great description';
-          const manifest = DASHBOARD_MANIFEST;
-          const name = 'Custom view name';
-          const targetEntityType = 'Intrusion-Set';
-          const result = await queryAsAdminWithSuccess({
-            query: CREATE_CUSTOM_VIEW_QUERY,
-            variables: {
-              input: {
-                description,
-                manifest,
-                name,
-                targetEntityType,
-              },
-            },
-          });
-          expect(result.data.customViewAdd).toMatchObject({
-            id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
-            name,
-            description,
-            path: `custom-view-name-${result.data.customViewAdd.id.replaceAll('-', '')}`,
-            targetEntityType,
-            created_at: expect.any(Date),
-            updated_at: expect.any(Date),
-            // Defaults to false when not provided
-            enabled: false,
-            // Defaults to false when not provided
-            default: false,
-          });
-        });
-
-        it('should return a client error when trying to create a custom view for a non-supported entity type', async () => {
-          const description = 'Some great description';
-          const manifest = DASHBOARD_MANIFEST;
-          const name = 'Custom view name';
-          const targetEntityType = ENTITY_TYPE_CONTAINER_FEEDBACK;
-          await queryAsAdminWithError({
-            query: CREATE_CUSTOM_VIEW_QUERY,
-            variables: {
-              input: {
-                description,
-                manifest,
-                name,
-                targetEntityType,
-              },
+      it('should allow creating a custom view', async () => {
+        const description = 'Some great description';
+        const manifest = DASHBOARD_MANIFEST;
+        const name = 'Custom view name';
+        const targetEntityType = 'Intrusion-Set';
+        const result = await queryAsAdminWithSuccess({
+          query: CREATE_CUSTOM_VIEW_QUERY,
+          variables: {
+            input: {
+              description,
+              manifest,
+              name,
+              targetEntityType,
             },
           },
-          'Custom views cannot be created for given entity type',
-          'FUNCTIONAL_ERROR',
-          );
         });
-
-        it('should allow editing a custom view', async () => {
-          const updatedDescription = 'Updated description';
-          const updatedAtBefore = customView1?.updated_at;
-          const updatedManifest = toB64({
-            widgets: {},
-            config: {
-              relativeDate: 'months-3',
-              startDate: null,
-              endDate: null,
-            },
-          })!;
-          const result = await queryAsAdminWithSuccess({
-            query: EDIT_CUSTOM_VIEW_QUERY,
-            variables: {
-              id: customView1?.id,
-              input: [{
-                key: 'description',
-                value: [updatedDescription],
-              }, {
-                key: 'manifest',
-                value: [updatedManifest],
-              }],
-            },
-          });
-          expect(result.data.customViewEdit.description).toBe(updatedDescription);
-          expect(result.data.customViewEdit.manifest).toBe(updatedManifest);
-          expect(result.data.customViewEdit.updated_at).not.toBe(updatedAtBefore);
-          // TODO: Check activity logs using the audits query
-        });
-
-        it('should update the slug and thus the path when the name is edited', async () => {
-          const updatedName = 'Updated name';
-          const result = await queryAsAdminWithSuccess({
-            query: EDIT_CUSTOM_VIEW_QUERY,
-            variables: {
-              id: customView1?.id,
-              input: [{
-                key: 'name',
-                value: [updatedName],
-              }],
-            },
-          });
-          expect(result.data.customViewEdit.name).toBe(updatedName);
-          expect(result.data.customViewEdit.path).toBe(`updated-name-${customView1?.id.replaceAll('-', '')}`);
-        });
-
-        it('should allow exporting a widget', async () => {
-          const widgetId = Object.keys(DASHBOARD_MANIFEST_OBJECT.widgets)[0];
-          const result = await queryAsAdminWithSuccess({
-            query: EXPORT_WIDGET_CUSTOM_VIEW_QUERY,
-            variables: {
-              id: customView2?.id,
-              widgetId,
-            },
-          });
-          expect(result.data.customView.toWidgetExport).toBeDefined();
-          expect(typeof result.data.customView.toWidgetExport).toBe('string');
-          const parsedWidget = JSON.parse(result.data.customView.toWidgetExport);
-          expect(parsedWidget.openCTI_version).toBeDefined();
-          expect(parsedWidget.configuration).toBeDefined();
-          expect(parsedWidget.type).toBe('widget');
-        });
-
-        it('should allow importing a widget', async () => {
-          const file = createUploadFile(
-            './tests/03-integration/10-modules/customView/data/',
-            'custom-view-widget.json',
-          );
-          const manifestBefore = customView2?.manifest;
-          const result = await queryAsAdminWithSuccess({
-            query: IMPORT_WIDGET_CUSTOM_VIEW_QUERY,
-            variables: {
-              id: customView2?.id,
-              input: {
-                file,
-                manifest: customView2?.manifest,
-              },
-            },
-          });
-          expect(fromB64(result.data?.customViewWidgetConfigurationImport?.manifest)).toBeDefined();
-          expect(fromB64(result.data?.customViewWidgetConfigurationImport?.manifest)).not.toBe(manifestBefore);
-        });
-
-        it('should duplicate a custom view', async () => {
-          const duplicateName = 'Duplicated custom view 2';
-          const result = await queryAsAdminWithSuccess({
-            query: DUPLICATE_CUSTOM_VIEW_QUERY,
-            variables: {
-              input: {
-                name: duplicateName,
-                description: customView2?.description,
-                manifest: customView2?.manifest,
-                targetEntityType: customView2?.target_entity_type,
-              },
-            },
-          });
-          const expectedResult = {
-            id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
-            name: duplicateName,
-            description: customView2?.description,
-            path: `duplicated-custom-view-2-${result.data.customViewDuplicate.id.replaceAll('-', '')}`,
-            targetEntityType: customView2?.target_entity_type,
-            created_at: expect.any(Date),
-            updated_at: expect.any(Date),
-            // Defaults to false when not provided
-            enabled: false,
-            // Defaults to false when not provided
-            default: false,
-          };
-          expect(result.data.customViewDuplicate).toMatchObject(expectedResult);
-          expect(result.data.customViewDuplicate.id).not.toBe(customView2?.id);
-
-          // Find new custom view in list query
-          const listResult = await queryAsAdminWithSuccess({
-            query: READ_ALL_CUSTOM_VIEWS_QUERY,
-          });
-          const nodes = listResult.data.customViews.edges.map((e: any) => e.node);
-          expect(nodes).toContainEqual(expectedResult);
-        });
-
-        it('should delete a custom view', async () => {
-          const result = await queryAsAdminWithSuccess({
-            query: DELETE_CUSTOM_VIEW_QUERY,
-            variables: {
-              id: customView2?.id,
-            },
-          });
-          expect(result.data.customViewDelete).toBe(customView2?.id);
-
-          // Not returned in list query
-          const listResult = await queryAsAdminWithSuccess({
-            query: READ_ALL_CUSTOM_VIEWS_QUERY,
-            variables: {
-              entityType: result.data.targetEntityType,
-            },
-          });
-          const nodeIds = listResult.data.customViews.edges.map((e: any) => e.node).map((node: any) => node.id);
-          expect(nodeIds).not.toContain(customView2?.id);
-        });
-
-        it('should guarantee unique default custom view', async () => {
-          // 1. Guarantee unique default custom view upon creation
-          let result = await queryAsAdminWithSuccess({
-            query: CREATE_CUSTOM_VIEW_QUERY,
-            variables: {
-              input: {
-                name: 'The new default',
-                targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
-                default: true,
-              },
-            },
-          });
-          const firstElementId = result.data.customViewAdd.id;
-          expect(result.data.customViewAdd.default).toBe(true);
-
-          let listResult = await queryAsAdminWithSuccess({
-            query: READ_DEFAULT_CUSTOM_VIEWS_QUERY,
-            variables: {
-              entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
-            },
-          });
-          let nodes = listResult.data.customViews.edges.map((e: any) => e.node);
-          expect(nodes.length).toBe(1);
-          expect(nodes[0].id).toBe(result.data.customViewAdd.id);
-
-          // 2. Guarantee unique default custom view upon duplication
-          result = await queryAsAdminWithSuccess({
-            query: DUPLICATE_CUSTOM_VIEW_QUERY,
-            variables: {
-              input: {
-                name: 'The newer default',
-                targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
-                default: true,
-              },
-            },
-          });
-          expect(result.data.customViewDuplicate.default).toBe(true);
-
-          listResult = await queryAsAdminWithSuccess({
-            query: READ_DEFAULT_CUSTOM_VIEWS_QUERY,
-            variables: {
-              entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
-            },
-          });
-          nodes = listResult.data.customViews.edges.map((e: any) => e.node);
-          expect(nodes.length).toBe(1);
-          expect(nodes[0].id).toBe(result.data.customViewDuplicate.id);
-
-          result = await queryAsAdminWithSuccess({
-            query: EDIT_CUSTOM_VIEW_QUERY,
-            variables: {
-              id: firstElementId,
-              input: [{
-                key: 'default',
-                value: [true],
-              }],
-            },
-          });
-          expect(result.data.customViewEdit.default).toBe(true);
-
-          listResult = await queryAsAdminWithSuccess({
-            query: READ_DEFAULT_CUSTOM_VIEWS_QUERY,
-            variables: {
-              entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
-            },
-          });
-          nodes = listResult.data.customViews.edges.map((e: any) => e.node);
-          expect(nodes.length).toBe(1);
-          expect(nodes[0].id).toBe(firstElementId);
+        expect(result.data.customViewAdd).toMatchObject({
+          id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
+          name,
+          description,
+          path: `custom-view-name-${result.data.customViewAdd.id.replaceAll('-', '')}`,
+          targetEntityType,
+          created_at: expect.any(Date),
+          updated_at: expect.any(Date),
+          // Defaults to false when not provided
+          enabled: false,
+          // Defaults to false when not provided
+          default: false,
         });
       });
 
-      describe('when user is a simple participant', () => {
-        it('should fail retrieving custom view settings with ForbiddenAccess 403 error', async () => {
-          await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
-            query: READ_SETTINGS_QUERY,
-            variables: {
-              entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+      it('should return a client error when trying to create a custom view for a non-supported entity type', async () => {
+        const description = 'Some great description';
+        const manifest = DASHBOARD_MANIFEST;
+        const name = 'Custom view name';
+        const targetEntityType = ENTITY_TYPE_CONTAINER_FEEDBACK;
+        await queryAsAdminWithError({
+          query: CREATE_CUSTOM_VIEW_QUERY,
+          variables: {
+            input: {
+              description,
+              manifest,
+              name,
+              targetEntityType,
             },
-          });
-        });
+          },
+        },
+        'Custom views cannot be created for given entity type',
+        'FUNCTIONAL_ERROR',
+        );
+      });
 
-        it('should fail creating a custom view with ForbiddenAccess 403 error', async () => {
-          await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
-            query: CREATE_CUSTOM_VIEW_QUERY,
-            variables: {
-              input: {
-                description: 'Some great description',
-                manifest: DASHBOARD_MANIFEST,
-                name: 'Custom view name',
-                targetEntityType: ENTITY_TYPE_INTRUSION_SET,
-              },
-            },
-          });
+      it('should allow editing a custom view', async () => {
+        const updatedDescription = 'Updated description';
+        const updatedAtBefore = customView1?.updated_at;
+        const updatedManifest = toB64({
+          widgets: {},
+          config: {
+            relativeDate: 'months-3',
+            startDate: null,
+            endDate: null,
+          },
+        })!;
+        const result = await queryAsAdminWithSuccess({
+          query: EDIT_CUSTOM_VIEW_QUERY,
+          variables: {
+            id: customView1?.id,
+            input: [{
+              key: 'description',
+              value: [updatedDescription],
+            }, {
+              key: 'manifest',
+              value: [updatedManifest],
+            }],
+          },
         });
+        expect(result.data.customViewEdit.description).toBe(updatedDescription);
+        expect(result.data.customViewEdit.manifest).toBe(updatedManifest);
+        expect(result.data.customViewEdit.updated_at).not.toBe(updatedAtBefore);
+        // TODO: Check activity logs using the audits query
+      });
 
-        it('should fail trying to edit a custom view', async () => {
-          const updatedDescription = 'Updated description';
-          await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
-            query: EDIT_CUSTOM_VIEW_QUERY,
-            variables: {
-              id: customView1?.id,
-              input: [{
-                key: 'description',
-                value: [updatedDescription],
-              }],
-            },
-          });
+      it('should update the slug and thus the path when the name is edited', async () => {
+        const updatedName = 'Updated name';
+        const result = await queryAsAdminWithSuccess({
+          query: EDIT_CUSTOM_VIEW_QUERY,
+          variables: {
+            id: customView1?.id,
+            input: [{
+              key: 'name',
+              value: [updatedName],
+            }],
+          },
         });
+        expect(result.data.customViewEdit.name).toBe(updatedName);
+        expect(result.data.customViewEdit.path).toBe(`updated-name-${customView1?.id.replaceAll('-', '')}`);
+      });
 
-        it('should fail trying to delete a custom view', async () => {
-          await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
-            query: DELETE_CUSTOM_VIEW_QUERY,
-            variables: {
-              id: customView1?.id,
-            },
-          });
+      it('should allow exporting a widget', async () => {
+        const widgetId = Object.keys(DASHBOARD_MANIFEST_OBJECT.widgets)[0];
+        const result = await queryAsAdminWithSuccess({
+          query: EXPORT_WIDGET_CUSTOM_VIEW_QUERY,
+          variables: {
+            id: customView2?.id,
+            widgetId,
+          },
         });
+        expect(result.data.customView.toWidgetExport).toBeDefined();
+        expect(typeof result.data.customView.toWidgetExport).toBe('string');
+        const parsedWidget = JSON.parse(result.data.customView.toWidgetExport);
+        expect(parsedWidget.openCTI_version).toBeDefined();
+        expect(parsedWidget.configuration).toBeDefined();
+        expect(parsedWidget.type).toBe('widget');
+      });
 
-        it('should fail trying to duplicate a custom view', async () => {
-          await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
-            query: DUPLICATE_CUSTOM_VIEW_QUERY,
-            variables: {
-              input: {
-                name: 'Never gonna be created',
-                description: customView1?.description,
-                manifest: customView1?.manifest,
-                targetEntityType: customView1?.target_entity_type,
-              },
+      it('should allow importing a widget', async () => {
+        const file = createUploadFile(
+          './tests/03-integration/10-modules/customView/data/',
+          'custom-view-widget.json',
+        );
+        const manifestBefore = customView2?.manifest;
+        const result = await queryAsAdminWithSuccess({
+          query: IMPORT_WIDGET_CUSTOM_VIEW_QUERY,
+          variables: {
+            id: customView2?.id,
+            input: {
+              file,
+              manifest: customView2?.manifest,
             },
-          });
+          },
+        });
+        expect(fromB64(result.data?.customViewWidgetConfigurationImport?.manifest)).toBeDefined();
+        expect(fromB64(result.data?.customViewWidgetConfigurationImport?.manifest)).not.toBe(manifestBefore);
+      });
+
+      it('should duplicate a custom view', async () => {
+        const duplicateName = 'Duplicated custom view 2';
+        const result = await queryAsAdminWithSuccess({
+          query: DUPLICATE_CUSTOM_VIEW_QUERY,
+          variables: {
+            input: {
+              name: duplicateName,
+              description: customView2?.description,
+              manifest: customView2?.manifest,
+              targetEntityType: customView2?.target_entity_type,
+            },
+          },
+        });
+        const expectedResult = {
+          id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i),
+          name: duplicateName,
+          description: customView2?.description,
+          path: `duplicated-custom-view-2-${result.data.customViewDuplicate.id.replaceAll('-', '')}`,
+          targetEntityType: customView2?.target_entity_type,
+          created_at: expect.any(Date),
+          updated_at: expect.any(Date),
+          // Defaults to false when not provided
+          enabled: false,
+          // Defaults to false when not provided
+          default: false,
+        };
+        expect(result.data.customViewDuplicate).toMatchObject(expectedResult);
+        expect(result.data.customViewDuplicate.id).not.toBe(customView2?.id);
+
+        // Find new custom view in list query
+        const listResult = await queryAsAdminWithSuccess({
+          query: READ_ALL_CUSTOM_VIEWS_QUERY,
+        });
+        const nodes = listResult.data.customViews.edges.map((e: any) => e.node);
+        expect(nodes).toContainEqual(expectedResult);
+      });
+
+      it('should delete a custom view', async () => {
+        const result = await queryAsAdminWithSuccess({
+          query: DELETE_CUSTOM_VIEW_QUERY,
+          variables: {
+            id: customView2?.id,
+          },
+        });
+        expect(result.data.customViewDelete).toBe(customView2?.id);
+
+        // Not returned in list query
+        const listResult = await queryAsAdminWithSuccess({
+          query: READ_ALL_CUSTOM_VIEWS_QUERY,
+          variables: {
+            entityType: result.data.targetEntityType,
+          },
+        });
+        const nodeIds = listResult.data.customViews.edges.map((e: any) => e.node).map((node: any) => node.id);
+        expect(nodeIds).not.toContain(customView2?.id);
+      });
+
+      it('should guarantee unique default custom view', async () => {
+        // 1. Guarantee unique default custom view upon creation
+        let result = await queryAsAdminWithSuccess({
+          query: CREATE_CUSTOM_VIEW_QUERY,
+          variables: {
+            input: {
+              name: 'The new default',
+              targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+              default: true,
+            },
+          },
+        });
+        const firstElementId = result.data.customViewAdd.id;
+        expect(result.data.customViewAdd.default).toBe(true);
+
+        let listResult = await queryAsAdminWithSuccess({
+          query: READ_DEFAULT_CUSTOM_VIEWS_QUERY,
+          variables: {
+            entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+          },
+        });
+        let nodes = listResult.data.customViews.edges.map((e: any) => e.node);
+        expect(nodes.length).toBe(1);
+        expect(nodes[0].id).toBe(result.data.customViewAdd.id);
+
+        // 2. Guarantee unique default custom view upon duplication
+        result = await queryAsAdminWithSuccess({
+          query: DUPLICATE_CUSTOM_VIEW_QUERY,
+          variables: {
+            input: {
+              name: 'The newer default',
+              targetEntityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+              default: true,
+            },
+          },
+        });
+        expect(result.data.customViewDuplicate.default).toBe(true);
+
+        listResult = await queryAsAdminWithSuccess({
+          query: READ_DEFAULT_CUSTOM_VIEWS_QUERY,
+          variables: {
+            entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+          },
+        });
+        nodes = listResult.data.customViews.edges.map((e: any) => e.node);
+        expect(nodes.length).toBe(1);
+        expect(nodes[0].id).toBe(result.data.customViewDuplicate.id);
+
+        result = await queryAsAdminWithSuccess({
+          query: EDIT_CUSTOM_VIEW_QUERY,
+          variables: {
+            id: firstElementId,
+            input: [{
+              key: 'default',
+              value: [true],
+            }],
+          },
+        });
+        expect(result.data.customViewEdit.default).toBe(true);
+
+        listResult = await queryAsAdminWithSuccess({
+          query: READ_DEFAULT_CUSTOM_VIEWS_QUERY,
+          variables: {
+            entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+          },
+        });
+        nodes = listResult.data.customViews.edges.map((e: any) => e.node);
+        expect(nodes.length).toBe(1);
+        expect(nodes[0].id).toBe(firstElementId);
+      });
+    });
+
+    describe('when user is a simple participant', () => {
+      it('should fail retrieving custom view settings with ForbiddenAccess 403 error', async () => {
+        await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+          query: READ_SETTINGS_QUERY,
+          variables: {
+            entityType: CUSTOM_VIEW_ENTITY_1.target_entity_type,
+          },
+        });
+      });
+
+      it('should fail creating a custom view with ForbiddenAccess 403 error', async () => {
+        await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+          query: CREATE_CUSTOM_VIEW_QUERY,
+          variables: {
+            input: {
+              description: 'Some great description',
+              manifest: DASHBOARD_MANIFEST,
+              name: 'Custom view name',
+              targetEntityType: ENTITY_TYPE_INTRUSION_SET,
+            },
+          },
+        });
+      });
+
+      it('should fail trying to edit a custom view', async () => {
+        const updatedDescription = 'Updated description';
+        await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+          query: EDIT_CUSTOM_VIEW_QUERY,
+          variables: {
+            id: customView1?.id,
+            input: [{
+              key: 'description',
+              value: [updatedDescription],
+            }],
+          },
+        });
+      });
+
+      it('should fail trying to delete a custom view', async () => {
+        await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+          query: DELETE_CUSTOM_VIEW_QUERY,
+          variables: {
+            id: customView1?.id,
+          },
+        });
+      });
+
+      it('should fail trying to duplicate a custom view', async () => {
+        await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+          query: DUPLICATE_CUSTOM_VIEW_QUERY,
+          variables: {
+            input: {
+              name: 'Never gonna be created',
+              description: customView1?.description,
+              manifest: customView1?.manifest,
+              targetEntityType: customView1?.target_entity_type,
+            },
+          },
         });
       });
     });
