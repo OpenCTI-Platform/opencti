@@ -68,7 +68,7 @@ describe('stixCoreObjectsDistributionByEntity', () => {
       operation: 'count',
     });
     expect(distribution).toBeDefined();
-    expect(distribution.length).toEqual(0);
+    expect(distribution.length).toEqual(6);
   });
 
   it('should support limit option', async () => {
