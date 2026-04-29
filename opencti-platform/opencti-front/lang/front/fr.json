@@ -4139,7 +4139,7 @@
   "The connector state has been reset": "L'état du connecteur a été réinitialisé",
   "The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions": "La mesure du résultat de la couverture indique dans quelle mesure une entité spécifique a été impliquée dans l'exécution du scénario AEV. La couverture peut être partielle si certaines injections n'ont pas été exécutées, si les espaces réservés n'ont pas été résolus ou si la plate-forme ne prend pas en charge certaines actions",
   "The CSV file has been generated with the parameters of the view and is ready for download.": "Le fichier CSV a été généré avec les paramètres de la vue et est prêt pour être téléchargé.",
-  "The custom view has been duplicated. You can manage it": "La vue personnalisée a été dupliquée. Vous pouvez la gérer",
+  "The custom view has been duplicated. You can manage it": "La vue personnalisée a été dupliquée. Vous pouvez l'administrer",
   "The dashboard has been duplicated. You can manage it": "Le tableau de bord a été dupliqué. Vous pouvez l'administrer",
   "the dedicated page": "la page dédiée",
   "The default groups are:": "Les groupes par défaut sont les suivants",
@@ -4908,3 +4908,4 @@
   "Zoom in": "Zoomer",
   "Zoom out": "Zoom arrière"
 }
+
