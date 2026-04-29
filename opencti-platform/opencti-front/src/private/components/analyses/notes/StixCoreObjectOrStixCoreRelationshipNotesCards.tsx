@@ -16,6 +16,7 @@ import { KNOWLEDGE_KNPARTICIPATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
+import type { MarkdownImagesController } from '../../../../components/fields/markdownField/core/markdownImagesController';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
@@ -151,6 +152,7 @@ type NoteFormProps = {
   onSubmit: (values: NoteAddInput, formikHelpers: FormikHelpers<NoteAddInput>) => void;
   onCancel: () => void;
   onToggleMore: (value: boolean) => void;
+  registerMarkdownImagesController: (controller: MarkdownImagesController) => void;
 } & Pick<StixCoreObjectOrStixCoreRelationshipNotesCardsProps, 'defaultMarkings'>;
 
 const NoteForm = ({
@@ -158,6 +160,7 @@ const NoteForm = ({
   onCancel,
   onToggleMore,
   onSubmit,
+  registerMarkdownImagesController,
   stixCoreObjectOrStixCoreRelationshipId,
 }: NoteFormProps) => {
   const { t_i18n } = useFormatter();
@@ -221,6 +224,9 @@ const NoteForm = ({
               fullWidth={true}
               multiline={true}
               rows="4"
+              autoPersistOnBlur={false}
+              registerMarkdownImagesController={registerMarkdownImagesController}
+              uploadFileMarkings={values.objectMarking.map((v) => v.value)}
               uploadEntityId={stixCoreObjectOrStixCoreRelationshipId}
             />
             <ObjectMarkingField
@@ -368,12 +374,23 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
   };
 
   const [commit] = useApiMutation(noteCreationUserMutation);
+  const markdownControllerRef = useRef<MarkdownImagesController | null>(null);
 
-  const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = (
+  const registerMarkdownImagesController = (controller: MarkdownImagesController) => {
+    markdownControllerRef.current = controller;
+  };
+
+  const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = async (
     values,
     { setSubmitting, resetForm },
   ) => {
-    const finalValues = toFinalValues(values, id);
+    const finalizedContent = await markdownControllerRef.current?.persistTempImages(id) ?? values.content;
+    const finalValues = {
+      ...toFinalValues({
+        ...values,
+        content: finalizedContent,
+      }, id),
+    };
     commit({
       variables: {
         input: finalValues,
@@ -385,6 +402,9 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
         setSubmitting(false);
         resetForm();
         scrollToTop();
+      },
+      onError: () => {
+        setSubmitting(false);
       },
     });
   };
@@ -429,6 +449,7 @@ const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
                 onCancel={() => changeState(false)}
                 onToggleMore={handleMore}
                 onSubmit={onSubmit}
+                registerMarkdownImagesController={registerMarkdownImagesController}
               />
             )}
           </CardAccordion>
