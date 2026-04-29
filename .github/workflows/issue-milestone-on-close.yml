@@ -8,7 +8,6 @@ on:
 jobs:
   assign-milestone:
     # Only run when the issue was closed as "completed" (not "not planned")
-    if: github.event.issue.state_reason == 'completed'
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -23,32 +22,42 @@ jobs:
             const owner = context.repo.owner;
             const repo  = context.repo.repo;
 
-            // ── 1. Classify the issue ────────────────────────────────────────────
-            // Priority: native issue type > label fallback
+            const stateReason = issue.state_reason;
+            
+            // if state reason is not "completed", unset any milestone and skip
+            if (stateReason !== 'completed') {
+              if (issue.milestone) {
+                console.log(
+                  `☑️ Issue #${issue.number} closed as "${stateReason}" — unsetting milestone "${issue.milestone.title}".`
+                );
+
+                await github.rest.issues.update({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  milestone: null,
+                });
+              } else {
+                console.log(
+                  `Issue #${issue.number} closed as "${stateReason}" and has no milestone — skipping.`
+                );
+              }
+              return;
+            }
+
             const issueTypeName = (issue.type?.name ?? '').toLowerCase();
             const labelNames    = (issue.labels ?? []).map(l => l.name.toLowerCase());
-
             const isBug =
               issueTypeName === 'bug' ||
               labelNames.includes('bug');
-
-            const isTaskOrFeature =
-              issueTypeName === 'task'    ||
-              issueTypeName === 'feature' ||
-              labelNames.includes('task') ||
-              labelNames.includes('feature');
-
-            if (!isBug && !isTaskOrFeature) {
-              console.log(`Issue #${issue.number} does not match bug / task / feature — skipping.`);
-              return;
-            }
+            
+            // what is not a bug is considered a "feature" for the sake of this workflow
+            // completed bugs goes into "Bugs backlog" milestone, completed features goes into "1. Now"
 
             const targetMilestoneTitle = isBug ? 'Bugs backlog' : '1. Now';
             console.log(`Issue #${issue.number} → targeting milestone "${targetMilestoneTitle}"`);
 
-            // ── 2. Find the milestone by title (searches only open to avoid pagination ) ──────────
             let milestoneNumber = null;
-
             const { data: milestones } = await github.rest.issues.listMilestones({
               owner,
               repo,
@@ -74,12 +83,11 @@ jobs:
               return;
             }
 
-            // ── 3. Assign the milestone (skip if one is already set) ─────────────
+            // existing milestones are replaced
             if (issue.milestone) {
               console.log(
-                `Issue #${issue.number} already has milestone "${issue.milestone.title}" — skipping.`
+                `Issue #${issue.number} already has milestone "${issue.milestone.title}" - it will be replaced.`
               );
-              return;
             }
 
             await github.rest.issues.update({
@@ -90,5 +98,5 @@ jobs:
             });
 
             console.log(
-              `✅ Issue #${issue.number} ("${issue.title}") assigned to milestone "${targetMilestoneTitle}".`
+              `✅ Issue #${issue.number} ("${issue.title}") completed and assigned to milestone "${targetMilestoneTitle}".`
             );
