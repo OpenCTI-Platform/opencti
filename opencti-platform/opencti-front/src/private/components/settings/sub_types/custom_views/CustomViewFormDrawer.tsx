@@ -64,9 +64,6 @@ const CustomViewFormDrawer = ({
     const input: { key: string; value: [unknown] } = { key: field, value: [value] };
     commitEditMutation({
       variables: { id: customView.id, input: [input] },
-      onCompleted: () => {
-        MESSAGING$.notifySuccess(t_i18n('Custom view updated'));
-      },
       onError: () => {
         MESSAGING$.notifyError(t_i18n('Failed to update custom view'));
       },

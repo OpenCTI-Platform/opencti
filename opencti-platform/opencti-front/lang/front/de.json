@@ -1831,7 +1831,6 @@
   "Failed to parse a connector manager contract definition": "Fehler beim Parsen einer Connector Manager-Vertragsdefinition",
   "Failed to parse a contract": "Ein Vertrag konnte nicht analysiert werden",
   "Failed to set draft context.": "Der Entwurfskontext konnte nicht gesetzt werden.",
-  "Failed to update custom view": "Aktualisierung der benutzerdefinierten Ansicht fehlgeschlagen",
   "Failed to update theme": "Theme konnte nicht aktualisiert werden",
   "Failure": "Fehlschlag",
   "false": "Nein",
@@ -4895,4 +4894,3 @@
   "Zoom in": "Vergrößern",
   "Zoom out": "Verkleinern"
 }
-

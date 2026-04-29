@@ -1831,7 +1831,6 @@
   "Failed to parse a connector manager contract definition": "解析连接器管理器合同定义失败",
   "Failed to parse a contract": "解析合同失败",
   "Failed to set draft context.": "设置草稿上下文失败。",
-  "Failed to update custom view": "更新自定义视图失败",
   "Failed to update theme": "更新主题失败",
   "Failure": "失败",
   "false": "假",
@@ -4895,4 +4894,3 @@
   "Zoom in": "放大",
   "Zoom out": "缩小"
 }
-

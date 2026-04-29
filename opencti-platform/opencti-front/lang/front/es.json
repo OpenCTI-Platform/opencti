@@ -1831,7 +1831,6 @@
   "Failed to parse a connector manager contract definition": "Error al analizar una definición de contrato de gestor de conectores",
   "Failed to parse a contract": "Error al analizar un contrato",
   "Failed to set draft context.": "Error al establecer el contexto de borrador.",
-  "Failed to update custom view": "Error al actualizar la vista personalizada",
   "Failed to update theme": "Error al actualizar el tema",
   "Failure": "Fallo",
   "false": "No",
@@ -4895,4 +4894,3 @@
   "Zoom in": "Ampliar",
   "Zoom out": "Alejar"
 }
-

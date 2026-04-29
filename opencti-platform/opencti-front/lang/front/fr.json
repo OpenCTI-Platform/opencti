@@ -1831,7 +1831,6 @@
   "Failed to parse a connector manager contract definition": "Échec de l'analyse d'une définition de contrat de gestionnaire de connecteurs",
   "Failed to parse a contract": "Échec de l'analyse d'un contrat",
   "Failed to set draft context.": "Échec de la définition du contexte de l'ébauche.",
-  "Failed to update custom view": "Échec de la mise à jour de la vue personnalisée",
   "Failed to update theme": "Échec de la mise à jour du thème",
   "Failure": "Échec",
   "false": "Faux",
@@ -4895,4 +4894,3 @@
   "Zoom in": "Zoomer",
   "Zoom out": "Zoom arrière"
 }
-
