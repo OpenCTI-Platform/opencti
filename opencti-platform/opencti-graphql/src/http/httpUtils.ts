@@ -3,9 +3,8 @@ import crypto from 'node:crypto';
 import { booleanConf, logApp } from '../config/conf';
 import { isEmptyField } from '../database/utils';
 import { URL } from 'node:url';
-import { getPublicAuthorizedDomainsFromConfiguration, isDevMode, isUnsecureHttpResourceAllowed } from './httpConfig';
-import type { HelmetOptions } from 'helmet';
 import { type Options } from 'express-rate-limit';
+import { getRateProtectionIpSkipList, getRateProtectionMaxRequests, getRateProtectionTimeWindowMs } from './httpConfig';
 
 export const setCookieError = (res: Response, message: string) => {
   res.cookie('opencti_flash', message || 'Unknown error', {

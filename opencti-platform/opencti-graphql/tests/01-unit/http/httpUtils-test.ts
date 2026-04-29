@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { encodeOidcState, decodeOidcState, buildPublicHelmetParameters, buildDefaultHelmetParameters } from '../../../src/http/httpUtils';
+import { encodeOidcState, decodeOidcState, buildRateLimiterOptions } from '../../../src/http/httpUtils';
 import * as httpConfig from '../../../src/http/httpConfig';
-import { getRateProtectionIpSkipList, getRateProtectionTimeWindowMs } from '../../../src/http/httpConfig';
+import { getRateProtectionIpSkipList } from '../../../src/http/httpConfig';
 
 describe('httpUtils: OIDC state encoding/decoding', () => {
   describe('encodeOidcState', () => {
