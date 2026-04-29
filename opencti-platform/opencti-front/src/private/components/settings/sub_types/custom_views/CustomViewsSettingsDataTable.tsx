@@ -88,7 +88,7 @@ const CustomViewsSettingsDataTable = ({
   targetType,
 }: CustomViewsSettingsDataTableProps) => {
   const { t_i18n } = useFormatter();
-  const getCustomViewLink = (entry: CustomViewsSettingsDataTable_node$data) => `custom-views/${entry.id}`;
+  const getCustomViewLink = (entry: CustomViewsSettingsDataTable_node$data) => `/dashboard/settings/customization/entity_types/${targetType}/custom-views/${entry.id}`;
   const storageKey = `custom-views-${targetType}`;
 
   const { paginationOptions } = usePaginationLocalStorage<typeof DEFAULT_SORT_CONFIG>(

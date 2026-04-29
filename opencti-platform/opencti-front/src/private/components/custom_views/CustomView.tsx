@@ -10,7 +10,7 @@ import { CustomView_Query } from './__generated__/CustomView_Query.graphql';
 
 const customViewQuery = graphql`
   query CustomView_Query($id: ID!) {
-    customViewDisplay(id: $id) {
+    customView(id: $id) {
       id
       manifest
     }
@@ -22,7 +22,7 @@ interface CustomViewComponentProps {
 }
 
 const CustomViewComponent = ({ queryRef }: CustomViewComponentProps) => {
-  const { customViewDisplay: customView } = usePreloadedQuery(customViewQuery, queryRef);
+  const { customView } = usePreloadedQuery(customViewQuery, queryRef);
   if (!customView) {
     MESSAGING$.notifyError('Failed to load custom view');
     return null;

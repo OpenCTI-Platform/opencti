@@ -9,21 +9,30 @@ import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 
 export interface CustomViewFormInputs {
   name: string;
-  description: string | null;
+  description?: string | null;
 }
 
 export type CustomViewFormInputKeys = keyof CustomViewFormInputs;
 
+const DEFAULT_VALUES: CustomViewFormInputs = {
+  name: '',
+  description: null,
+};
+
 interface CustomViewFormProps {
   onClose: () => void;
   onSubmit: FormikConfig<CustomViewFormInputs>['onSubmit'];
-  defaultValues?: CustomViewFormInputs;
+  onSubmitField: (name: string, value: unknown) => void;
+  values?: CustomViewFormInputs;
+  isEdition?: boolean;
 }
 
 const CustomViewForm = ({
   onClose,
   onSubmit,
-  defaultValues,
+  onSubmitField,
+  values,
+  isEdition = false,
 }: CustomViewFormProps) => {
   const { t_i18n } = useFormatter();
 
@@ -32,11 +41,12 @@ const CustomViewForm = ({
     description: Yup.string().nullable(),
   });
 
-  const initialValues: CustomViewFormInputs = defaultValues ?? {
-    name: '',
-    description: null,
+  const handleFieldSubmit = (setSubmitting: (v: boolean) => void) => (name: string, value: unknown) => {
+    onSubmitField(name, value);
+    setSubmitting(false);
   };
 
+  const initialValues = values ?? DEFAULT_VALUES;
   return (
     <Formik<CustomViewFormInputs>
       enableReinitialize={true}
@@ -44,17 +54,17 @@ const CustomViewForm = ({
       initialValues={initialValues}
       onSubmit={onSubmit}
     >
-      {({ submitForm, handleReset, isSubmitting }) => {
+      {({ submitForm, handleReset, isSubmitting, setSubmitting }) => {
         return (
           <Form>
             <Field
               autoFocus
               component={TextField}
-              variant="standard"
               name="name"
               label={t_i18n('Name')}
               fullWidth={true}
               required
+              onSubmit={handleFieldSubmit(setSubmitting)}
             />
             <Field
               component={MarkdownField}
@@ -63,25 +73,28 @@ const CustomViewForm = ({
               style={fieldSpacingContainerStyle}
               multiline={true}
               rows="4"
+              onSubmit={handleFieldSubmit(setSubmitting)}
             />
-            <FormButtonContainer>
-              <Button
-                variant="secondary"
-                disabled={isSubmitting}
-                onClick={() => {
-                  handleReset();
-                  onClose();
-                }}
-              >
-                {t_i18n('Cancel')}
-              </Button>
-              <Button
-                onClick={submitForm}
-                disabled={isSubmitting}
-              >
-                {t_i18n('Create')}
-              </Button>
-            </FormButtonContainer>
+            {!isEdition && (
+              <FormButtonContainer>
+                <Button
+                  variant="secondary"
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    handleReset();
+                    onClose();
+                  }}
+                >
+                  {t_i18n('Cancel')}
+                </Button>
+                <Button
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                >
+                  {t_i18n('Create')}
+                </Button>
+              </FormButtonContainer>
+            )}
           </Form>
         );
       }}
