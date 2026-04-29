@@ -23,7 +23,7 @@ import { Stack, SxProps } from '@mui/material';
 import DraftToolbar from './components/drafts/DraftToolbar';
 import { ChatbotProvider } from './components/chatbox/ChatbotContext';
 
-const Dashboard = lazy(() => import('./components/Dashboard'));
+const HomeDashboard = lazy(() => import('./components/HomeDashboard'));
 const StixObjectOrStixRelationship = lazy(() => import('./components/StixObjectOrStixRelationship'));
 const RootSearchBulk = lazy(() => import('./components/SearchBulkContainer'));
 const RootAnalyses = lazy(() => import('./components/analyses/Root'));
@@ -119,7 +119,7 @@ const Index = ({ settings }: IndexProps) => {
                     ? (
                         <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true} />
                       )
-                    : boundaryWrapper(Dashboard)}
+                    : boundaryWrapper(HomeDashboard)}
                 />
                 {/* Search need to be rework */}
                 <Route path="/search/*" element={boundaryWrapper(RootSearch)} />

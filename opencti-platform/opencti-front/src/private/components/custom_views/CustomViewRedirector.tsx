@@ -1,7 +1,7 @@
 import { ReactNode, useMemo } from 'react';
-import RootCustomView from './RootCustomView';
+import CustomView from './CustomView';
 import { useCustomViews } from './useCustomViews';
-import type { CustomView } from './CustomViews-types';
+import type { CustomView as CustomViewType } from './CustomViews-types';
 import SlugRedirectHandler, { type SlugRedirectHandlerPageInfo } from '../../../components/SlugRedirectHandler';
 
 interface CustomViewRedirectorProps {
@@ -10,7 +10,7 @@ interface CustomViewRedirectorProps {
 }
 
 const renderMatch = (info: SlugRedirectHandlerPageInfo) =>
-  <RootCustomView customViewId={(info as CustomView).id} />;
+  <CustomView customViewId={(info as CustomViewType).id} />;
 
 const CustomViewRedirector = ({ entityType, Fallback }: CustomViewRedirectorProps) => {
   const { customViews } = useCustomViews(entityType);
@@ -18,7 +18,7 @@ const CustomViewRedirector = ({ entityType, Fallback }: CustomViewRedirectorProp
     (acc, customViewInfo) => ({
       ...acc,
       [customViewInfo.id.replaceAll('-', '')]: customViewInfo,
-    }), {} as Record<string, CustomView>,
+    }), {} as Record<string, CustomViewType>,
   ), [customViews]);
   return (
     <SlugRedirectHandler

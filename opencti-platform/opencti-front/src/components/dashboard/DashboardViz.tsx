@@ -1,11 +1,11 @@
 import { ReactNode } from 'react';
-import { ErrorBoundary } from '../../Error';
-import type { Widget } from '../../../../utils/widget/widget';
+import { ErrorBoundary } from '../../private/components/Error';
+import type { Widget } from '../../utils/widget/widget';
 import DashboardRawViz from './DashboardRawViz';
 import DashboardRelationshipsViz from './DashboardRelationshipsViz';
 import DashboardAuditsViz from './DashboardAuditsViz';
 import DashboardEntitiesViz from './DashboardEntitiesViz';
-import type { DashboardConfig } from '../../../../utils/dashboard';
+import type { DashboardConfig } from './dashboard-types';
 
 interface DashboardVizProps {
   widget: Widget;
