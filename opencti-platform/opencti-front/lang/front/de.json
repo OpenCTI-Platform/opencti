@@ -954,6 +954,7 @@
   "Custom dashboards | Dashboards": "Benutzerdefinierte Dashboards | Dashboards",
   "Custom view": "Benutzerdefinierte Ansicht",
   "Custom view created": "Benutzerdefinierte Ansicht erstellt",
+  "Custom view updated": "Benutzerdefinierte Ansicht aktualisiert",
   "Custom Views": "Benutzerdefinierte Ansichten",
   "Customization": "Anpassungen",
   "Customize columns": "Spalten anpassen",
@@ -1830,6 +1831,7 @@
   "Failed to parse a connector manager contract definition": "Fehler beim Parsen einer Connector Manager-Vertragsdefinition",
   "Failed to parse a contract": "Ein Vertrag konnte nicht analysiert werden",
   "Failed to set draft context.": "Der Entwurfskontext konnte nicht gesetzt werden.",
+  "Failed to update custom view": "Benutzerdefinierte Ansicht konnte nicht aktualisiert werden",
   "Failed to update theme": "Theme konnte nicht aktualisiert werden",
   "Failure": "Fehlschlag",
   "false": "Nein",
@@ -3255,6 +3257,7 @@
   "Popover menu": "Popover-Menü",
   "Popover of actions": "Popover von Aktionen",
   "Popover of actions workspace": "Popover des Arbeitsbereichs für Aktionen",
+  "Popover of custom view actions": "Popover der Aktionen der benutzerdefinierten Ansicht",
   "Positions": "Positionen",
   "Positions | Locations": "Positionen | Standorte",
   "Post": "Beitrag",
@@ -4557,6 +4560,7 @@
   "Update component: {component_name}": "Komponente aktualisieren: {component_name}",
   "Update connector": "Verbinder aktualisieren",
   "Update context": "Kontext aktualisieren",
+  "Update custom view": "Benutzerdefinierte Ansicht aktualisieren",
   "Update dashboard": "Dashboard aktualisieren",
   "Update date": "Aktualisierungsdatum",
   "Update entities": "Entitäten aktualisieren",
@@ -4899,4 +4903,3 @@
   "Zoom in": "Vergrößern",
   "Zoom out": "Verkleinern"
 }
-

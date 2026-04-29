@@ -954,6 +954,7 @@
   "Custom dashboards | Dashboards": "カスタムダッシュボード｜ダッシュボード",
   "Custom view": "カスタムビュー",
   "Custom view created": "カスタムビューの作成",
+  "Custom view updated": "カスタムビュー更新",
   "Custom Views": "カスタムビュー",
   "Customization": "カスタマイズ",
   "Customize columns": "コラムのカスタマイズ",
@@ -1830,6 +1831,7 @@
   "Failed to parse a connector manager contract definition": "コネクター・マネージャーの契約定義の解析に失敗しました。",
   "Failed to parse a contract": "契約の解析に失敗しました",
   "Failed to set draft context.": "ドラフトコンテキストの設定に失敗しました。",
+  "Failed to update custom view": "カスタムビューの更新に失敗しました",
   "Failed to update theme": "テーマの更新に失敗しました",
   "Failure": "失敗",
   "false": "いいえ",
@@ -3255,6 +3257,7 @@
   "Popover menu": "ポップオーバー・メニュー",
   "Popover of actions": "アクションのポップオーバー",
   "Popover of actions workspace": "アクション・ワークスペースのポップオーバー",
+  "Popover of custom view actions": "カスタムビューのポップオーバー",
   "Positions": "位置",
   "Positions | Locations": "場所",
   "Post": "投稿",
@@ -4557,6 +4560,7 @@
   "Update component: {component_name}": "コンポーネントを更新します：{component_name}",
   "Update connector": "コネクタの更新",
   "Update context": "コンテキストの更新",
+  "Update custom view": "カスタムビューを更新する",
   "Update dashboard": "ダッシュボードの更新",
   "Update date": "更新日",
   "Update entities": "エンティティの更新",
@@ -4899,4 +4903,3 @@
   "Zoom in": "ズームイン",
   "Zoom out": "ズームアウト"
 }
-

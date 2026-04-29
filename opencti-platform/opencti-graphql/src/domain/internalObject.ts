@@ -13,16 +13,27 @@ const humanReadableFormatEntityType = (entityType: string) => {
   return entityType.replace(/([A-Z])/g, ' $1').trim();
 };
 
-export const createInternalObject = async <T extends StoreEntity>(context: AuthContext, user: AuthUser, input: Record<string, any>, entityType: string): Promise<T> => {
+export const createInternalObject = async <T extends StoreEntity>(
+  context: AuthContext,
+  user: AuthUser,
+  input: Record<string, any>,
+  entityType: string,
+  opts: {
+    auditLogEnabled?: boolean;
+    auditLogContextSanitizer?: (input: Record<string, unknown>) => Record<string, unknown>;
+  } = {},
+): Promise<T> => {
   const { element, isCreation } = await createEntity(context, user, input, entityType, { complete: true });
-  if (isCreation) {
+  const { auditLogEnabled = true } = opts;
+  if (isCreation && auditLogEnabled) {
+    const sanitizedContextInput = opts?.auditLogContextSanitizer?.(input) ?? input;
     await publishUserAction({
       user,
       event_type: 'mutation',
       event_scope: 'create',
       event_access: 'administration',
       message: `creates ${humanReadableFormatEntityType(entityType)} \`${element.name}\``,
-      context_data: { id: element.id, entity_type: element.entity_type, input },
+      context_data: { id: element.id, entity_type: element.entity_type, input: sanitizedContextInput },
     });
   }
   const notifyTopic = getBusTopicForEntityType(entityType)?.ADDED_TOPIC ?? BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC;
@@ -35,7 +46,10 @@ export const editInternalObject = async <T extends StoreEntity>(
   id: string,
   entityType: string,
   input: EditInput[],
-  opts: { auditLogEnabled?: boolean } = {},
+  opts: {
+    auditLogEnabled?: boolean;
+    auditLogContextSanitizer?: (input: EditInput[]) => EditInput[];
+  } = {},
 ): Promise<T> => {
   const internalObject = await storeLoadById(context, user, id, entityType);
   if (!internalObject) {
@@ -44,38 +58,47 @@ export const editInternalObject = async <T extends StoreEntity>(
   const { element } = await updateAttribute<StoreEntity>(context, user, id, entityType, input);
   const { auditLogEnabled = true } = opts;
   if (auditLogEnabled) {
+    const sanitizedContextInput = opts?.auditLogContextSanitizer?.(input) ?? input;
     await publishUserAction({
       user,
       event_type: 'mutation',
       event_scope: 'update',
       event_access: 'administration',
       message: `updates \`${input.map((i) => i.key).join(', ')}\` for ${humanReadableFormatEntityType(entityType)} \`${element.name}\``,
-      context_data: { id, entity_type: entityType, input },
+      context_data: { id, entity_type: entityType, input: sanitizedContextInput },
     });
   }
   const notifyTopic = getBusTopicForEntityType(entityType)?.EDIT_TOPIC ?? BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC;
   return notify(notifyTopic, element, user);
 };
 
-export const deleteInternalObject = async (
+export const deleteInternalObject = async <T extends StoreEntity>(
   context: AuthContext,
   user: AuthUser,
   id: string,
   entityType: string,
+  opts: {
+    auditLogEnabled?: boolean;
+    auditLogContextSanitizer?: (input: T) => Record<string, unknown>;
+  } = {},
 ) => {
   const internalObject = await storeLoadById(context, user, id, entityType);
   if (!internalObject) {
     throw FunctionalError(`${entityType} ${id} cant be found`);
   }
-  const deleted = await deleteElementById<StoreEntity>(context, user, id, entityType);
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'delete',
-    event_access: 'administration',
-    message: `deletes ${humanReadableFormatEntityType(entityType)} \`${deleted.name}\``,
-    context_data: { id, entity_type: entityType, input: deleted },
-  });
+  const deleted = await deleteElementById<T>(context, user, id, entityType);
+  const { auditLogEnabled = true } = opts;
+  if (auditLogEnabled) {
+    const sanitizedContextInput = opts?.auditLogContextSanitizer?.(deleted) ?? deleted;
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'delete',
+      event_access: 'administration',
+      message: `deletes ${humanReadableFormatEntityType(entityType)} \`${deleted.name}\``,
+      context_data: { id, entity_type: entityType, input: sanitizedContextInput },
+    });
+  }
   const notifyTopic = getBusTopicForEntityType(entityType)?.DELETE_TOPIC ?? BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC;
   await notify(notifyTopic, internalObject, user);
   return id;

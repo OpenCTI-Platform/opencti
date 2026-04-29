@@ -954,6 +954,7 @@
   "Custom dashboards | Dashboards": "사용자 지정 대시보드 | 대시보드",
   "Custom view": "사용자 지정 보기",
   "Custom view created": "사용자 지정 뷰 생성",
+  "Custom view updated": "사용자 지정 뷰 업데이트됨",
   "Custom Views": "사용자 지정 뷰",
   "Customization": "맞춤 설정",
   "Customize columns": "열 사용자 지정",
@@ -1830,6 +1831,7 @@
   "Failed to parse a connector manager contract definition": "커넥터 관리자 컨트랙트 정의를 구문 분석하지 못했습니다",
   "Failed to parse a contract": "컨트랙트 파싱에 실패했습니다",
   "Failed to set draft context.": "초안 컨텍스트를 설정하지 못했습니다.",
+  "Failed to update custom view": "사용자 지정 보기를 업데이트하지 못했습니다",
   "Failed to update theme": "테마를 업데이트하지 못했습니다",
   "Failure": "실패",
   "false": "아니요",
@@ -3255,6 +3257,7 @@
   "Popover menu": "팝오버 메뉴",
   "Popover of actions": "작업 팝오버",
   "Popover of actions workspace": "작업 작업 공간의 팝오버",
+  "Popover of custom view actions": "사용자 지정 뷰 작업의 팝오버",
   "Positions": "직책",
   "Positions | Locations": "포지션 | 위치",
   "Post": "Post",
@@ -4557,6 +4560,7 @@
   "Update component: {component_name}": "컴포넌트 업데이트: {component_name}",
   "Update connector": "커넥터 업데이트",
   "Update context": "컨텍스트 업데이트",
+  "Update custom view": "사용자 지정 보기 업데이트",
   "Update dashboard": "대시보드 업데이트",
   "Update date": "날짜 업데이트",
   "Update entities": "엔터티 업데이트",
@@ -4899,4 +4903,3 @@
   "Zoom in": "확대",
   "Zoom out": "축소"
 }
-
