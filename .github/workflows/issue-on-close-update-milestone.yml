@@ -1,4 +1,4 @@
-name: Auto-assign milestone on issue close
+name: Auto-update milestone on issue close
 
 # Triggers whenever an issue is closed
 on:
@@ -7,7 +7,6 @@ on:
 
 jobs:
   assign-milestone:
-    # Only run when the issue was closed as "completed" (not "not planned")
     runs-on: ubuntu-latest
     permissions:
       issues: write
