@@ -30,13 +30,14 @@ import type { StixRelation } from '../../../types/stix-2-1-sro';
 import { STIX_PATTERN_TYPE } from '../../../utils/syntax';
 import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../../indicator/indicator-types';
 import { schemaTypesDefinition } from '../../../schema/schema-types';
-import { extractBundleBaseElement, isBundleElementInScope } from '../playbook-utils';
+import { extractBundleBaseElement, filterBundleElements, isBundleElementInScope } from '../playbook-utils';
 import { convertStoreToStix_2_1 } from '../../../database/stix-2-1-converter';
 import { pushAll } from '../../../utils/arrayUtil';
 
 interface CreateIndicatorConfiguration {
   applyToElements: PlaybookBundleElementsToApply;
   wrap_in_container: boolean;
+  applyWithFilters?: string;
   types: string[];
 }
 const PLAYBOOK_CREATE_INDICATOR_COMPONENT_SCHEMA: JSONSchemaType<CreateIndicatorConfiguration> = {
@@ -57,6 +58,11 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT_SCHEMA: JSONSchemaType<CreateIndicator
         { const: playbookBundleElementsToApply.allElements.value, title: 'All observables in the bundle' },
         { const: playbookBundleElementsToApply.allExceptMain.value, title: playbookBundleElementsToApply.allExceptMain.title },
       ],
+    },
+    applyWithFilters: {
+      type: 'string',
+      nullable: true,
+      default: '',
     },
     wrap_in_container: { type: 'boolean', $ref: 'If main entity is a container, wrap indicators in container', default: false },
   },
@@ -79,11 +85,13 @@ export const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndica
     return R.mergeDeepRight<JSONSchemaType<CreateIndicatorConfiguration>, any>(PLAYBOOK_CREATE_INDICATOR_COMPONENT_SCHEMA, schemaElement);
   },
   executor: async ({ playbookNode, dataInstanceId, bundle }) => {
-    const { applyToElements, wrap_in_container, types } = playbookNode.configuration;
+    const { applyToElements, applyWithFilters, wrap_in_container, types } = playbookNode.configuration;
     const context = executionContext('playbook_components');
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-
-    const observablesToApply = bundle.objects.filter((object) => isBundleElementInScope(object, applyToElements, dataInstanceId));
+    const scopedElements = bundle.objects.filter(
+      (object) => isBundleElementInScope(object, applyToElements, dataInstanceId),
+    );
+    const observablesToApply = await filterBundleElements(context, scopedElements, applyWithFilters);
 
     const { type: baseDataType, id } = baseData.extensions[STIX_EXT_OCTI];
     const isBaseDataAContainer = isStixDomainObjectContainer(baseDataType);
