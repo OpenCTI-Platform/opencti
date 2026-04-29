@@ -77,9 +77,11 @@ const CustomViewDuplicationDialog: FunctionComponent<
       },
       onError: (error) => {
         handleError(error);
+        setDuplicating(false);
       },
       onCompleted: (result) => {
         handleCloseDuplicate();
+        setDuplicating(false);
         refetchCustomViews();
         MESSAGING$.notifySuccess(
           <span>
