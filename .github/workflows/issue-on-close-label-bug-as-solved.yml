@@ -33,10 +33,14 @@ jobs:
                   name: labelName
                 });
               } catch (error) {
-                console.error(
-                  `Label "${labelName}" does not exist. Please create it in the repository before using this workflow.`
-                );
-                return;
+                if (error.status === 404) {
+                  console.error(
+                    `Label "${labelName}" does not exist. Please create it in the repository before using this workflow.`
+                  );
+                  return;
+                }
+
+                throw error;
               }
 
               await github.rest.issues.addLabels({
