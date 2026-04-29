@@ -1,4 +1,4 @@
-name: issue-on-close-label-bug-as-solved.yml
+name: Label completed bugs as solved
 on:
   issues:
     types: [closed]
@@ -24,10 +24,32 @@ jobs:
               labelNames.includes('bug');
             
             if (isBug && stateReason === 'completed') {
-              await github.issues.addLabels({
+              const labelName = 'solved';
+
+              try {
+                await github.rest.issues.getLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: labelName
+                });
+              } catch (error) {
+                if (error.status === 404) {
+                  await github.rest.issues.createLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: labelName,
+                    color: '0e8a16',
+                    description: 'Issue has been solved'
+                  });
+                } else {
+                  throw error;
+                }
+              }
+
+              await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issue.number,
-                labels: ['solved']
+                labels: [labelName]
               });
             }
