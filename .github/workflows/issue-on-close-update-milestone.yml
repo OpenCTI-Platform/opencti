@@ -51,7 +51,7 @@ jobs:
               labelNames.includes('bug');
             
             // what is not a bug is considered a "feature" for the sake of this workflow
-            // completed bugs goes into "Bugs backlog" milestone, completed features goes into "1. Now"
+            // completed bugs go into "Bugs backlog" milestone, completed features go into "1. Now"
 
             const targetMilestoneTitle = isBug ? 'Bugs backlog' : '1. Now';
             console.log(`Issue #${issue.number} → targeting milestone "${targetMilestoneTitle}"`);
