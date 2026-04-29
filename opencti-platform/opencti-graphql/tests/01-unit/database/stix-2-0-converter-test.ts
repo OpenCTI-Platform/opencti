@@ -507,9 +507,7 @@ describe('Stix 2.0 opencti converter', () => {
     const result = convertAdministrativeAreaToStix_2_0(ADMINISTRATIVE_AREA_INSTANCE);
     expect(result).toEqual(EXPECTED_ADMINISTRATIVE_AREA);
   });
-});
-
-describe('Stix 2.0 opencti converter - SMOs', () => {
+  // SMOs
   it('should convert Marking Definition', () => {
     const result = convertMarkingDefinitionToStix(MARKING_DEFINITION_INSTANCE);
     expect(result).toEqual(EXPECTED_MARKING_DEFINITION);
