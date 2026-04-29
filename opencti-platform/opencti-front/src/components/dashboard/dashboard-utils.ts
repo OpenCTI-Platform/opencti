@@ -1,29 +1,23 @@
-import type { WidgetLayout } from '../../utils/widget/widget';
+import type { GqlWidgetDataSelection, WidgetLayout } from '../../utils/widget/widget';
 import { fromB64, toB64 } from '../../utils/String';
 import { sanitizeFilterGroupKeysForBackend, sanitizeFilterGroupKeysForFrontend } from '../../utils/filters/filtersUtils';
-import type { DashboardManifest } from './dashboard-types';
-
-// Dashboard manifests are complex objects with filters deeply nested in widgets configurations
-// (de)serialization is a bit more complex
-// We use any here and use it when manipulating the manifest or internal fields
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyForDashboardManifest = any;
+import type { DashboardManifest, DashboardWidget } from './dashboard-types';
 
 /**
  * Serialize a complex dashboard manifest, sanitizing all filters inside the manifest before.
  * @param manifest
  */
 export const serializeDashboardManifestForBackend = (
-  manifest: AnyForDashboardManifest,
+  manifest: DashboardManifest,
 ): string => {
-  const newWidgets: Record<string, AnyForDashboardManifest> = {};
+  const newWidgets: Record<string, unknown> = {};
   const widgetIds = manifest.widgets ? Object.keys(manifest.widgets) : [];
   widgetIds.forEach((id) => {
     const widget = manifest.widgets[id];
     newWidgets[id] = {
       ...widget,
       dataSelection: widget.dataSelection.map(
-        (selection: AnyForDashboardManifest) => ({
+        (selection) => ({
           ...selection,
           filters: selection.filters
             ? sanitizeFilterGroupKeysForBackend(selection.filters)
@@ -48,7 +42,7 @@ export const serializeDashboardManifestForBackend = (
 export const deserializeDashboardManifestForFrontend = (
   manifestB64Str: string | undefined | null,
 ): DashboardManifest => {
-  const widgets: Record<string, AnyForDashboardManifest> = {};
+  const widgets: Record<string, DashboardWidget> = {};
   if (!manifestB64Str) {
     return {
       widgets,
@@ -69,7 +63,8 @@ export const deserializeDashboardManifestForFrontend = (
     widgets[id] = {
       ...widget,
       dataSelection: widget.dataSelection.map(
-        (selection: AnyForDashboardManifest) => ({
+        // Assert backend
+        (selection: GqlWidgetDataSelection) => ({
           ...selection,
           filters: selection.filters
             ? sanitizeFilterGroupKeysForFrontend(selection.filters)
