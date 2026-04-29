@@ -44,6 +44,7 @@ describe('App', () => {
         return {
           platform_modules: [],
           otp_mandatory: false,
+          xtm_hub_available_news_feed_types: [],
         };
       },
     });

@@ -479,7 +479,7 @@ const ProfileOverviewComponent = (props) => {
       {settings.xtm_hub_available_news_feed_types?.length > 0 && (
         <ProfileOverviewNewsFeed
           availableNewsFeedTypes={settings.xtm_hub_available_news_feed_types}
-          unsubscribedNewsFeedTypes={me.unsubscribed_news_feed_types ?? []}
+          unsubscribedNewsFeedTypes={me.unsubscribed_news_feed_types}
           onSubmitField={handleSubmitField}
         />
       )}

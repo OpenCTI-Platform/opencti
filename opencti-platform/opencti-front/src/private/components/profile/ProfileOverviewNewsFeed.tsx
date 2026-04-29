@@ -3,9 +3,9 @@ import { ListItem, ListItemText, Switch } from '@mui/material';
 import { useFormatter } from '../../../components/i18n';
 import Box from '@mui/material/Box';
 
-interface ProfileOverviewNewsFeedProps {
-  availableNewsFeedTypes: string[];
-  unsubscribedNewsFeedTypes: string[];
+interface Props {
+  availableNewsFeedTypes?: string[];
+  unsubscribedNewsFeedTypes?: string[];
   onSubmitField: (name: string, value: string[]) => void;
 }
 
@@ -14,10 +14,10 @@ const isAllUnsubscribed = (unsubscribed: string[]): boolean => {
 };
 
 const ProfileOverviewNewsFeed = ({
-  availableNewsFeedTypes,
-  unsubscribedNewsFeedTypes,
+  availableNewsFeedTypes = [],
+  unsubscribedNewsFeedTypes = [],
   onSubmitField,
-}: ProfileOverviewNewsFeedProps) => {
+}: Props) => {
   const { t_i18n } = useFormatter();
   const allUnsubscribed = isAllUnsubscribed(unsubscribedNewsFeedTypes);
 
