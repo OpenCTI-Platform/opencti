@@ -31,7 +31,7 @@ import useHelper from '../../../utils/hooks/useHelper';
 import NotifierField from '../common/form/NotifierField';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../common/form/PasswordPolicies';
-import DashboardSettings from '../DashboardSettings';
+import HomeDashboardSettings from '../HomeDashboardSettings';
 import TokenCreationDrawer from './api_tokens/TokenCreationDrawer';
 import TokenList from './api_tokens/TokenList';
 import ProfileLocalStorage from './ProfileLocalStorage';
@@ -471,7 +471,7 @@ const ProfileOverviewComponent = (props) => {
       </Card>
       {hasKnowledgeAccess ? (
         <Card title={t('Dashboard settings')}>
-          <DashboardSettings />
+          <HomeDashboardSettings />
         </Card>
       ) : null}
       <Card title={t('Authentication')}>
