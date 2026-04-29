@@ -63,6 +63,7 @@ const Workflow = ({ queryRef }: { queryRef: PreloadedQuery<SubTypeWorkflowQuery>
   useWorkflowLayout(layoutOptions);
 
   useEffect(() => {
+    console.log({ nodes, edges });
     fitView();
   }, [nodes, edges, fitView]);
 
