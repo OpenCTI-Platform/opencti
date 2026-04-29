@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
-import { Alert, AlertTitle, DialogActions, DialogContentText, Menu, MenuItem } from '@mui/material';
+import { Alert, AlertTitle, DialogActions, DialogContentText, Divider, Menu, MenuItem } from '@mui/material';
 import { ArrowDropDownOutlined } from '@mui/icons-material';
 import ItemStatus from '../../../../components/ItemStatus';
 import Button from '../../../../components/common/button/Button';
@@ -170,23 +170,42 @@ export const WorkflowTransitions: FunctionComponent<WorkflowTransitionsProps> = 
 
   return (
     <>
-      <Button
-        variant="secondary"
-        onClick={handleOpen}
-        endIcon={<ArrowDropDownOutlined />}
-      >
-        {t_i18n('Workflow')}
-      </Button>
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        {workflowInstance.allowedTransitions.map((transition) => (
-          <MenuItem
-            key={transition.event}
-            onClick={() => handleTransition(transition.event, transition.actions ?? [])}
+      {workflowInstance.allowedTransitions.length < 3 ? (
+        <>
+          <Divider orientation="vertical" flexItem sx={{ marginRight: 1 }} />
+          {workflowInstance.allowedTransitions.map((transition) => {
+            return (
+              <Button
+                key={transition.event}
+                variant="primary"
+                onClick={() => handleTransition(transition.event, transition.actions ?? [])}
+              >
+                {transition.event}
+              </Button>
+            );
+          })}
+        </>
+      ) : (
+        <>
+          <Button
+            variant="primary"
+            onClick={handleOpen}
+            endIcon={<ArrowDropDownOutlined />}
           >
-            {transition.event}
-          </MenuItem>
-        ))}
-      </Menu>
+            {t_i18n('Next status')}
+          </Button>
+          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+            {workflowInstance.allowedTransitions.map((transition) => (
+              <MenuItem
+                key={transition.event}
+                onClick={() => handleTransition(transition.event, transition.actions ?? [])}
+              >
+                {transition.event}
+              </MenuItem>
+            ))}
+          </Menu>
+        </>
+      )}
       <Dialog
         open={Boolean(validationTransition)}
         slotProps={{ paper: { elevation: 1 } }}
