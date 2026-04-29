@@ -27,7 +27,16 @@ const RootCustomization = () => {
 
   return (
     <>
-      <CustomizationMenu />
+      <Routes>
+        <Route
+          path="/entity_types/:subTypeId/custom-views/:customViewId"
+          element={null}
+        />
+        <Route
+          path="*"
+          element={<CustomizationMenu />}
+        />
+      </Routes>
       <Suspense fallback={<Loader />}>
         <Routes>
           <Route
