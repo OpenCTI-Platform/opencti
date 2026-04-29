@@ -261,6 +261,7 @@ const meUserFragment = graphql`
       name
     }
     can_manage_sensitive_config
+    unsubscribed_news_feed_types
   }
 `;
 

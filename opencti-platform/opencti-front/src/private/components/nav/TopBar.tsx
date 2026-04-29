@@ -66,6 +66,7 @@ interface TopBarProps {
 const topBarQuery = graphql`
   query TopBarQuery {
     myUnreadNotificationsCount
+    myUnreadNewsFeedsCount
   }
 `;
 
@@ -83,7 +84,10 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
       platform_enterprise_edition: ee,
       filigran_chatbot_ai_cgu_status,
     },
+    isXTMHubAccessible,
+    me,
   } = useAuth();
+  const isAllNewsFeedUnsubscribed = me.unsubscribed_news_feed_types?.includes('*') ?? false;
   const draftContext = useDraftContext();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
@@ -102,6 +106,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const isNewNotification = notificationsNumber !== null
     ? notificationsNumber > 0
     : (data.myUnreadNotificationsCount ?? 0) > 0;
+  const newsFeedCount = isXTMHubAccessible && !isAllNewsFeedUnsubscribed ? (data.myUnreadNewsFeedsCount ?? 0) : 0;
+  const isNewNewsFeed = newsFeedCount > 0;
+  const hasUnread = isNewNotification || isNewNewsFeed;
   const subConfig = useMemo(
     () => ({
       subscription: topBarNotificationNumberSubscription,
@@ -260,13 +267,13 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       aria-haspopup="true"
                       size="default"
                       component={Link}
-                      to="/dashboard/profile/notifications"
-                      selected={location.pathname === '/dashboard/profile/notifications'}
+                      to="/dashboard/profile/notifications/alerts"
+                      selected={location.pathname.startsWith('/dashboard/profile/notifications')}
                     >
                       <Badge
                         color="secondary"
                         variant="dot"
-                        invisible={!isNewNotification}
+                        invisible={!hasUnread}
                       >
                         <NotificationsOutlined fontSize="medium" />
                       </Badge>
