@@ -76,10 +76,10 @@ const transformToWorkflowDefinition = (
   workflowDefinition: SubTypeWorkflowQuery$data['workflowDefinition'],
 ) => {
   // 1. Extract States
-  const states = nodes.flatMap(({ id, type, data: { onEnter = [], onExit = [] } }) => {
+  const states = nodes.flatMap(({ type, data: { onEnter = [], onExit = [], statusTemplate } }) => {
     if (type === WorkflowNodeType.status) {
       return [{
-        statusId: id,
+        statusId: statusTemplate.id,
         onEnter: formatActions(onEnter),
         onExit: formatActions(onExit),
       }];
@@ -102,8 +102,8 @@ const transformToWorkflowDefinition = (
       if (outgoingEdges.length > 0) {
         return incomingEdges.flatMap((inEdge) =>
           outgoingEdges.map((outEdge) => ({
-            from: inEdge.source,
-            to: outEdge.target as string | null,
+            from: nodes.find((n) => n.id === inEdge.source)?.data.statusTemplate.id,
+            to: nodes.find((n) => n.id === outEdge.target)?.data.statusTemplate.id || null,
             event,
             conditions,
             actions: formatActions(actions),
@@ -112,7 +112,7 @@ const transformToWorkflowDefinition = (
       }
       // Multiple Sources -> 1 Transition -> (no target)
       return incomingEdges.map((inEdge) => ({
-        from: inEdge.source,
+        from: nodes.find((n) => n.id === inEdge.source)?.data.statusTemplate.id,
         to: null as string | null,
         event,
         conditions,
@@ -130,7 +130,7 @@ const transformToWorkflowDefinition = (
   return {
     id: workflowDefinition?.id,
     name: workflowDefinition?.name,
-    initialState: initialState?.id || workflowDefinition?.initialState,
+    initialState: nodes.find((n) => n.id === initialState?.id)?.data.statusTemplate.id || workflowDefinition?.initialState,
     states,
     transitions,
   };
